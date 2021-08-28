@@ -60,6 +60,18 @@ func NewNetworkIPInterfacesGetParamsWithHTTPClient(client *http.Client) *Network
 */
 type NetworkIPInterfacesGetParams struct {
 
+	/* DdnsEnabled.
+
+	   Filter by ddns_enabled
+	*/
+	DDNSEnabledQueryParameter *bool
+
+	/* DNSZone.
+
+	   Filter by dns_zone
+	*/
+	DNSZoneQueryParameter *string
+
 	/* Enabled.
 
 	   Filter by enabled
@@ -70,7 +82,7 @@ type NetworkIPInterfacesGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* IPAddress.
 
@@ -184,7 +196,43 @@ type NetworkIPInterfacesGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
+
+	/* MetricDuration.
+
+	   Filter by metric.duration
+	*/
+	MetricDurationQueryParameter *string
+
+	/* MetricStatus.
+
+	   Filter by metric.status
+	*/
+	MetricStatusQueryParameter *string
+
+	/* MetricThroughputRead.
+
+	   Filter by metric.throughput.read
+	*/
+	MetricThroughputReadQueryParameter *int64
+
+	/* MetricThroughputTotal.
+
+	   Filter by metric.throughput.total
+	*/
+	MetricThroughputTotalQueryParameter *int64
+
+	/* MetricThroughputWrite.
+
+	   Filter by metric.throughput.write
+	*/
+	MetricThroughputWriteQueryParameter *int64
+
+	/* MetricTimestamp.
+
+	   Filter by metric.timestamp
+	*/
+	MetricTimestampQueryParameter *string
 
 	/* Name.
 
@@ -196,7 +244,7 @@ type NetworkIPInterfacesGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -204,7 +252,7 @@ type NetworkIPInterfacesGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -212,7 +260,7 @@ type NetworkIPInterfacesGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Scope.
 
@@ -243,6 +291,36 @@ type NetworkIPInterfacesGetParams struct {
 	   Filter by state
 	*/
 	StateQueryParameter *string
+
+	/* StatisticsStatus.
+
+	   Filter by statistics.status
+	*/
+	StatisticsStatusQueryParameter *string
+
+	/* StatisticsThroughputRawRead.
+
+	   Filter by statistics.throughput_raw.read
+	*/
+	StatisticsThroughputRawReadQueryParameter *int64
+
+	/* StatisticsThroughputRawTotal.
+
+	   Filter by statistics.throughput_raw.total
+	*/
+	StatisticsThroughputRawTotalQueryParameter *int64
+
+	/* StatisticsThroughputRawWrite.
+
+	   Filter by statistics.throughput_raw.write
+	*/
+	StatisticsThroughputRawWriteQueryParameter *int64
+
+	/* StatisticsTimestamp.
+
+	   Filter by statistics.timestamp
+	*/
+	StatisticsTimestampQueryParameter *string
 
 	/* SvmName.
 
@@ -286,14 +364,14 @@ func (o *NetworkIPInterfacesGetParams) WithDefaults() *NetworkIPInterfacesGetPar
 // All values with no default are reset to their zero value.
 func (o *NetworkIPInterfacesGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := NetworkIPInterfacesGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -335,6 +413,28 @@ func (o *NetworkIPInterfacesGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithDDNSEnabledQueryParameter adds the ddnsEnabled to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithDDNSEnabledQueryParameter(ddnsEnabled *bool) *NetworkIPInterfacesGetParams {
+	o.SetDDNSEnabledQueryParameter(ddnsEnabled)
+	return o
+}
+
+// SetDDNSEnabledQueryParameter adds the ddnsEnabled to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetDDNSEnabledQueryParameter(ddnsEnabled *bool) {
+	o.DDNSEnabledQueryParameter = ddnsEnabled
+}
+
+// WithDNSZoneQueryParameter adds the dNSZone to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithDNSZoneQueryParameter(dNSZone *string) *NetworkIPInterfacesGetParams {
+	o.SetDNSZoneQueryParameter(dNSZone)
+	return o
+}
+
+// SetDNSZoneQueryParameter adds the dnsZone to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetDNSZoneQueryParameter(dNSZone *string) {
+	o.DNSZoneQueryParameter = dNSZone
+}
+
 // WithEnabledQueryParameter adds the enabled to the network ip interfaces get params
 func (o *NetworkIPInterfacesGetParams) WithEnabledQueryParameter(enabled *bool) *NetworkIPInterfacesGetParams {
 	o.SetEnabledQueryParameter(enabled)
@@ -346,15 +446,15 @@ func (o *NetworkIPInterfacesGetParams) SetEnabledQueryParameter(enabled *bool) {
 	o.EnabledQueryParameter = enabled
 }
 
-// WithFields adds the fields to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithFields(fields []string) *NetworkIPInterfacesGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithFieldsQueryParameter(fields []string) *NetworkIPInterfacesGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIPAddressQueryParameter adds the iPAddress to the network ip interfaces get params
@@ -555,15 +655,81 @@ func (o *NetworkIPInterfacesGetParams) SetLocationPortUUIDQueryParameter(locatio
 	o.LocationPortUUIDQueryParameter = locationPortUUID
 }
 
-// WithMaxRecords adds the maxRecords to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithMaxRecords(maxRecords *int64) *NetworkIPInterfacesGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NetworkIPInterfacesGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
+}
+
+// WithMetricDurationQueryParameter adds the metricDuration to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMetricDurationQueryParameter(metricDuration *string) *NetworkIPInterfacesGetParams {
+	o.SetMetricDurationQueryParameter(metricDuration)
+	return o
+}
+
+// SetMetricDurationQueryParameter adds the metricDuration to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
+	o.MetricDurationQueryParameter = metricDuration
+}
+
+// WithMetricStatusQueryParameter adds the metricStatus to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMetricStatusQueryParameter(metricStatus *string) *NetworkIPInterfacesGetParams {
+	o.SetMetricStatusQueryParameter(metricStatus)
+	return o
+}
+
+// SetMetricStatusQueryParameter adds the metricStatus to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
+	o.MetricStatusQueryParameter = metricStatus
+}
+
+// WithMetricThroughputReadQueryParameter adds the metricThroughputRead to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMetricThroughputReadQueryParameter(metricThroughputRead *int64) *NetworkIPInterfacesGetParams {
+	o.SetMetricThroughputReadQueryParameter(metricThroughputRead)
+	return o
+}
+
+// SetMetricThroughputReadQueryParameter adds the metricThroughputRead to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMetricThroughputReadQueryParameter(metricThroughputRead *int64) {
+	o.MetricThroughputReadQueryParameter = metricThroughputRead
+}
+
+// WithMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) *NetworkIPInterfacesGetParams {
+	o.SetMetricThroughputTotalQueryParameter(metricThroughputTotal)
+	return o
+}
+
+// SetMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) {
+	o.MetricThroughputTotalQueryParameter = metricThroughputTotal
+}
+
+// WithMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) *NetworkIPInterfacesGetParams {
+	o.SetMetricThroughputWriteQueryParameter(metricThroughputWrite)
+	return o
+}
+
+// SetMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) {
+	o.MetricThroughputWriteQueryParameter = metricThroughputWrite
+}
+
+// WithMetricTimestampQueryParameter adds the metricTimestamp to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *NetworkIPInterfacesGetParams {
+	o.SetMetricTimestampQueryParameter(metricTimestamp)
+	return o
+}
+
+// SetMetricTimestampQueryParameter adds the metricTimestamp to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
+	o.MetricTimestampQueryParameter = metricTimestamp
 }
 
 // WithNameQueryParameter adds the name to the network ip interfaces get params
@@ -577,37 +743,37 @@ func (o *NetworkIPInterfacesGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithOrderBy(orderBy []string) *NetworkIPInterfacesGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithOrderByQueryParameter(orderBy []string) *NetworkIPInterfacesGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithReturnRecords(returnRecords *bool) *NetworkIPInterfacesGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetworkIPInterfacesGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithReturnTimeout(returnTimeout *int64) *NetworkIPInterfacesGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NetworkIPInterfacesGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithScopeQueryParameter adds the scope to the network ip interfaces get params
@@ -665,6 +831,61 @@ func (o *NetworkIPInterfacesGetParams) SetStateQueryParameter(state *string) {
 	o.StateQueryParameter = state
 }
 
+// WithStatisticsStatusQueryParameter adds the statisticsStatus to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *NetworkIPInterfacesGetParams {
+	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+	return o
+}
+
+// SetStatisticsStatusQueryParameter adds the statisticsStatus to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
+	o.StatisticsStatusQueryParameter = statisticsStatus
+}
+
+// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *NetworkIPInterfacesGetParams {
+	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+	return o
+}
+
+// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+}
+
+// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *NetworkIPInterfacesGetParams {
+	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+	return o
+}
+
+// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+}
+
+// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *NetworkIPInterfacesGetParams {
+	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+	return o
+}
+
+// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+}
+
+// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *NetworkIPInterfacesGetParams {
+	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+	return o
+}
+
+// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
+	o.StatisticsTimestampQueryParameter = statisticsTimestamp
+}
+
 // WithSVMNameQueryParameter adds the svmName to the network ip interfaces get params
 func (o *NetworkIPInterfacesGetParams) WithSVMNameQueryParameter(svmName *string) *NetworkIPInterfacesGetParams {
 	o.SetSVMNameQueryParameter(svmName)
@@ -717,6 +938,40 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
+	if o.DDNSEnabledQueryParameter != nil {
+
+		// query param ddns_enabled
+		var qrDdnsEnabled bool
+
+		if o.DDNSEnabledQueryParameter != nil {
+			qrDdnsEnabled = *o.DDNSEnabledQueryParameter
+		}
+		qDdnsEnabled := swag.FormatBool(qrDdnsEnabled)
+		if qDdnsEnabled != "" {
+
+			if err := r.SetQueryParam("ddns_enabled", qDdnsEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DNSZoneQueryParameter != nil {
+
+		// query param dns_zone
+		var qrDNSZone string
+
+		if o.DNSZoneQueryParameter != nil {
+			qrDNSZone = *o.DNSZoneQueryParameter
+		}
+		qDNSZone := qrDNSZone
+		if qDNSZone != "" {
+
+			if err := r.SetQueryParam("dns_zone", qDNSZone); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EnabledQueryParameter != nil {
 
 		// query param enabled
@@ -734,7 +989,7 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1051,18 +1306,120 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricDurationQueryParameter != nil {
+
+		// query param metric.duration
+		var qrMetricDuration string
+
+		if o.MetricDurationQueryParameter != nil {
+			qrMetricDuration = *o.MetricDurationQueryParameter
+		}
+		qMetricDuration := qrMetricDuration
+		if qMetricDuration != "" {
+
+			if err := r.SetQueryParam("metric.duration", qMetricDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricStatusQueryParameter != nil {
+
+		// query param metric.status
+		var qrMetricStatus string
+
+		if o.MetricStatusQueryParameter != nil {
+			qrMetricStatus = *o.MetricStatusQueryParameter
+		}
+		qMetricStatus := qrMetricStatus
+		if qMetricStatus != "" {
+
+			if err := r.SetQueryParam("metric.status", qMetricStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputReadQueryParameter != nil {
+
+		// query param metric.throughput.read
+		var qrMetricThroughputRead int64
+
+		if o.MetricThroughputReadQueryParameter != nil {
+			qrMetricThroughputRead = *o.MetricThroughputReadQueryParameter
+		}
+		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
+		if qMetricThroughputRead != "" {
+
+			if err := r.SetQueryParam("metric.throughput.read", qMetricThroughputRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputTotalQueryParameter != nil {
+
+		// query param metric.throughput.total
+		var qrMetricThroughputTotal int64
+
+		if o.MetricThroughputTotalQueryParameter != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotalQueryParameter
+		}
+		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
+		if qMetricThroughputTotal != "" {
+
+			if err := r.SetQueryParam("metric.throughput.total", qMetricThroughputTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputWriteQueryParameter != nil {
+
+		// query param metric.throughput.write
+		var qrMetricThroughputWrite int64
+
+		if o.MetricThroughputWriteQueryParameter != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWriteQueryParameter
+		}
+		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
+		if qMetricThroughputWrite != "" {
+
+			if err := r.SetQueryParam("metric.throughput.write", qMetricThroughputWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricTimestampQueryParameter != nil {
+
+		// query param metric.timestamp
+		var qrMetricTimestamp string
+
+		if o.MetricTimestampQueryParameter != nil {
+			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		}
+		qMetricTimestamp := qrMetricTimestamp
+		if qMetricTimestamp != "" {
+
+			if err := r.SetQueryParam("metric.timestamp", qMetricTimestamp); err != nil {
 				return err
 			}
 		}
@@ -1085,7 +1442,7 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1096,13 +1453,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1113,13 +1470,13 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1215,6 +1572,91 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.StatisticsStatusQueryParameter != nil {
+
+		// query param statistics.status
+		var qrStatisticsStatus string
+
+		if o.StatisticsStatusQueryParameter != nil {
+			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		}
+		qStatisticsStatus := qrStatisticsStatus
+		if qStatisticsStatus != "" {
+
+			if err := r.SetQueryParam("statistics.status", qStatisticsStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawReadQueryParameter != nil {
+
+		// query param statistics.throughput_raw.read
+		var qrStatisticsThroughputRawRead int64
+
+		if o.StatisticsThroughputRawReadQueryParameter != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		}
+		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
+		if qStatisticsThroughputRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.read", qStatisticsThroughputRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+
+		// query param statistics.throughput_raw.total
+		var qrStatisticsThroughputRawTotal int64
+
+		if o.StatisticsThroughputRawTotalQueryParameter != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		}
+		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
+		if qStatisticsThroughputRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.total", qStatisticsThroughputRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+
+		// query param statistics.throughput_raw.write
+		var qrStatisticsThroughputRawWrite int64
+
+		if o.StatisticsThroughputRawWriteQueryParameter != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		}
+		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
+		if qStatisticsThroughputRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.write", qStatisticsThroughputRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsTimestampQueryParameter != nil {
+
+		// query param statistics.timestamp
+		var qrStatisticsTimestamp string
+
+		if o.StatisticsTimestampQueryParameter != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		}
+		qStatisticsTimestamp := qrStatisticsTimestamp
+		if qStatisticsTimestamp != "" {
+
+			if err := r.SetQueryParam("statistics.timestamp", qStatisticsTimestamp); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SVMNameQueryParameter != nil {
 
 		// query param svm.name
@@ -1291,7 +1733,7 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamNetworkIPInterfacesGet binds the parameter fields
 func (o *NetworkIPInterfacesGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1308,7 +1750,7 @@ func (o *NetworkIPInterfacesGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamNetworkIPInterfacesGet binds the parameter order_by
 func (o *NetworkIPInterfacesGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

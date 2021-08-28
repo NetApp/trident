@@ -78,11 +78,83 @@ type NodesGetParams struct {
 	*/
 	ClusterInterfacesUUIDQueryParameter *string
 
+	/* ControllerBoard.
+
+	   Filter by controller.board
+	*/
+	ControllerBoardQueryParameter *string
+
+	/* ControllerCPUCount.
+
+	   Filter by controller.cpu.count
+	*/
+	ControllerCPUCountQueryParameter *int64
+
+	/* ControllerCPUFirmwareRelease.
+
+	   Filter by controller.cpu.firmware_release
+	*/
+	ControllerCPUFirmwareReleaseQueryParameter *string
+
+	/* ControllerCPUProcessor.
+
+	   Filter by controller.cpu.processor
+	*/
+	ControllerCPUProcessorQueryParameter *string
+
+	/* ControllerFailedFanCount.
+
+	   Filter by controller.failed_fan.count
+	*/
+	ControllerFailedFanCountQueryParameter *int64
+
+	/* ControllerFailedFanMessageCode.
+
+	   Filter by controller.failed_fan.message.code
+	*/
+	ControllerFailedFanMessageCodeQueryParameter *string
+
+	/* ControllerFailedFanMessageMessage.
+
+	   Filter by controller.failed_fan.message.message
+	*/
+	ControllerFailedFanMessageMessageQueryParameter *string
+
+	/* ControllerFailedPowerSupplyCount.
+
+	   Filter by controller.failed_power_supply.count
+	*/
+	ControllerFailedPowerSupplyCountQueryParameter *int64
+
+	/* ControllerFailedPowerSupplyMessageCode.
+
+	   Filter by controller.failed_power_supply.message.code
+	*/
+	ControllerFailedPowerSupplyMessageCodeQueryParameter *string
+
+	/* ControllerFailedPowerSupplyMessageMessage.
+
+	   Filter by controller.failed_power_supply.message.message
+	*/
+	ControllerFailedPowerSupplyMessageMessageQueryParameter *string
+
 	/* ControllerFlashCacheCapacity.
 
 	   Filter by controller.flash_cache.capacity
 	*/
 	ControllerFlashCacheCapacityQueryParameter *int64
+
+	/* ControllerFlashCacheDeviceID.
+
+	   Filter by controller.flash_cache.device_id
+	*/
+	ControllerFlashCacheDeviceIDQueryParameter *int64
+
+	/* ControllerFlashCacheFirmwareFile.
+
+	   Filter by controller.flash_cache.firmware_file
+	*/
+	ControllerFlashCacheFirmwareFileQueryParameter *string
 
 	/* ControllerFlashCacheFirmwareVersion.
 
@@ -130,7 +202,7 @@ type NodesGetParams struct {
 
 	   Filter by controller.frus.id
 	*/
-	ControllerFrusIDQueryParameter *int64
+	ControllerFrusIDQueryParameter *string
 
 	/* ControllerFrusState.
 
@@ -143,6 +215,12 @@ type NodesGetParams struct {
 	   Filter by controller.frus.type
 	*/
 	ControllerFrusTypeQueryParameter *string
+
+	/* ControllerMemorySize.
+
+	   Filter by controller.memory_size
+	*/
+	ControllerMemorySizeQueryParameter *int64
 
 	/* ControllerOverTemperature.
 
@@ -160,7 +238,7 @@ type NodesGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* HaAutoGiveback.
 
@@ -262,13 +340,55 @@ type NodesGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Membership.
 
 	   Filter by membership
 	*/
 	MembershIPQueryParameter *string
+
+	/* MetricDuration.
+
+	   Filter by metric.duration
+	*/
+	MetricDurationQueryParameter *string
+
+	/* MetricProcessorUtilization.
+
+	   Filter by metric.processor_utilization
+	*/
+	MetricProcessorUtilizationQueryParameter *int64
+
+	/* MetricStatus.
+
+	   Filter by metric.status
+	*/
+	MetricStatusQueryParameter *string
+
+	/* MetricTimestamp.
+
+	   Filter by metric.timestamp
+	*/
+	MetricTimestampQueryParameter *string
+
+	/* MetroclusterCustomVlanCapable.
+
+	   Filter by metrocluster.custom_vlan_capable
+	*/
+	MetroclusterCustomVlanCapableQueryParameter *bool
+
+	/* MetroclusterPortsName.
+
+	   Filter by metrocluster.ports.name
+	*/
+	MetroclusterPortsNameQueryParameter *string
+
+	/* MetroclusterType.
+
+	   Filter by metrocluster.type
+	*/
+	MetroclusterTypeQueryParameter *string
 
 	/* Model.
 
@@ -282,11 +402,29 @@ type NodesGetParams struct {
 	*/
 	NameQueryParameter *string
 
+	/* NvramBatteryState.
+
+	   Filter by nvram.battery_state
+	*/
+	NvramBatteryStateQueryParameter *string
+
+	/* NvramID.
+
+	   Filter by nvram.id
+	*/
+	NvramIDQueryParameter *int64
+
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
+
+	/* Owner.
+
+	   Filter by owner
+	*/
+	OwnerQueryParameter *string
 
 	/* ReturnRecords.
 
@@ -294,7 +432,7 @@ type NodesGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -302,7 +440,7 @@ type NodesGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SerialNumber.
 
@@ -356,7 +494,7 @@ type NodesGetParams struct {
 
 	   Filter by service_processor.ipv6_interface.netmask
 	*/
-	ServiceProcessorIPV6InterfaceNetmaskQueryParameter *string
+	ServiceProcessorIPV6InterfaceNetmaskQueryParameter *int64
 
 	/* ServiceProcessorLinkStatus.
 
@@ -381,6 +519,36 @@ type NodesGetParams struct {
 	   Filter by state
 	*/
 	StateQueryParameter *string
+
+	/* StatisticsProcessorUtilizationBase.
+
+	   Filter by statistics.processor_utilization_base
+	*/
+	StatisticsProcessorUtilizationBaseQueryParameter *int64
+
+	/* StatisticsProcessorUtilizationRaw.
+
+	   Filter by statistics.processor_utilization_raw
+	*/
+	StatisticsProcessorUtilizationRawQueryParameter *int64
+
+	/* StatisticsStatus.
+
+	   Filter by statistics.status
+	*/
+	StatisticsStatusQueryParameter *string
+
+	/* StatisticsTimestamp.
+
+	   Filter by statistics.timestamp
+	*/
+	StatisticsTimestampQueryParameter *string
+
+	/* StorageConfiguration.
+
+	   Filter by storage_configuration
+	*/
+	StorageConfigurationQueryParameter *string
 
 	/* SystemID.
 
@@ -460,14 +628,14 @@ func (o *NodesGetParams) WithDefaults() *NodesGetParams {
 // All values with no default are reset to their zero value.
 func (o *NodesGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := NodesGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -542,6 +710,116 @@ func (o *NodesGetParams) SetClusterInterfacesUUIDQueryParameter(clusterInterface
 	o.ClusterInterfacesUUIDQueryParameter = clusterInterfacesUUID
 }
 
+// WithControllerBoardQueryParameter adds the controllerBoard to the nodes get params
+func (o *NodesGetParams) WithControllerBoardQueryParameter(controllerBoard *string) *NodesGetParams {
+	o.SetControllerBoardQueryParameter(controllerBoard)
+	return o
+}
+
+// SetControllerBoardQueryParameter adds the controllerBoard to the nodes get params
+func (o *NodesGetParams) SetControllerBoardQueryParameter(controllerBoard *string) {
+	o.ControllerBoardQueryParameter = controllerBoard
+}
+
+// WithControllerCPUCountQueryParameter adds the controllerCPUCount to the nodes get params
+func (o *NodesGetParams) WithControllerCPUCountQueryParameter(controllerCPUCount *int64) *NodesGetParams {
+	o.SetControllerCPUCountQueryParameter(controllerCPUCount)
+	return o
+}
+
+// SetControllerCPUCountQueryParameter adds the controllerCpuCount to the nodes get params
+func (o *NodesGetParams) SetControllerCPUCountQueryParameter(controllerCPUCount *int64) {
+	o.ControllerCPUCountQueryParameter = controllerCPUCount
+}
+
+// WithControllerCPUFirmwareReleaseQueryParameter adds the controllerCPUFirmwareRelease to the nodes get params
+func (o *NodesGetParams) WithControllerCPUFirmwareReleaseQueryParameter(controllerCPUFirmwareRelease *string) *NodesGetParams {
+	o.SetControllerCPUFirmwareReleaseQueryParameter(controllerCPUFirmwareRelease)
+	return o
+}
+
+// SetControllerCPUFirmwareReleaseQueryParameter adds the controllerCpuFirmwareRelease to the nodes get params
+func (o *NodesGetParams) SetControllerCPUFirmwareReleaseQueryParameter(controllerCPUFirmwareRelease *string) {
+	o.ControllerCPUFirmwareReleaseQueryParameter = controllerCPUFirmwareRelease
+}
+
+// WithControllerCPUProcessorQueryParameter adds the controllerCPUProcessor to the nodes get params
+func (o *NodesGetParams) WithControllerCPUProcessorQueryParameter(controllerCPUProcessor *string) *NodesGetParams {
+	o.SetControllerCPUProcessorQueryParameter(controllerCPUProcessor)
+	return o
+}
+
+// SetControllerCPUProcessorQueryParameter adds the controllerCpuProcessor to the nodes get params
+func (o *NodesGetParams) SetControllerCPUProcessorQueryParameter(controllerCPUProcessor *string) {
+	o.ControllerCPUProcessorQueryParameter = controllerCPUProcessor
+}
+
+// WithControllerFailedFanCountQueryParameter adds the controllerFailedFanCount to the nodes get params
+func (o *NodesGetParams) WithControllerFailedFanCountQueryParameter(controllerFailedFanCount *int64) *NodesGetParams {
+	o.SetControllerFailedFanCountQueryParameter(controllerFailedFanCount)
+	return o
+}
+
+// SetControllerFailedFanCountQueryParameter adds the controllerFailedFanCount to the nodes get params
+func (o *NodesGetParams) SetControllerFailedFanCountQueryParameter(controllerFailedFanCount *int64) {
+	o.ControllerFailedFanCountQueryParameter = controllerFailedFanCount
+}
+
+// WithControllerFailedFanMessageCodeQueryParameter adds the controllerFailedFanMessageCode to the nodes get params
+func (o *NodesGetParams) WithControllerFailedFanMessageCodeQueryParameter(controllerFailedFanMessageCode *string) *NodesGetParams {
+	o.SetControllerFailedFanMessageCodeQueryParameter(controllerFailedFanMessageCode)
+	return o
+}
+
+// SetControllerFailedFanMessageCodeQueryParameter adds the controllerFailedFanMessageCode to the nodes get params
+func (o *NodesGetParams) SetControllerFailedFanMessageCodeQueryParameter(controllerFailedFanMessageCode *string) {
+	o.ControllerFailedFanMessageCodeQueryParameter = controllerFailedFanMessageCode
+}
+
+// WithControllerFailedFanMessageMessageQueryParameter adds the controllerFailedFanMessageMessage to the nodes get params
+func (o *NodesGetParams) WithControllerFailedFanMessageMessageQueryParameter(controllerFailedFanMessageMessage *string) *NodesGetParams {
+	o.SetControllerFailedFanMessageMessageQueryParameter(controllerFailedFanMessageMessage)
+	return o
+}
+
+// SetControllerFailedFanMessageMessageQueryParameter adds the controllerFailedFanMessageMessage to the nodes get params
+func (o *NodesGetParams) SetControllerFailedFanMessageMessageQueryParameter(controllerFailedFanMessageMessage *string) {
+	o.ControllerFailedFanMessageMessageQueryParameter = controllerFailedFanMessageMessage
+}
+
+// WithControllerFailedPowerSupplyCountQueryParameter adds the controllerFailedPowerSupplyCount to the nodes get params
+func (o *NodesGetParams) WithControllerFailedPowerSupplyCountQueryParameter(controllerFailedPowerSupplyCount *int64) *NodesGetParams {
+	o.SetControllerFailedPowerSupplyCountQueryParameter(controllerFailedPowerSupplyCount)
+	return o
+}
+
+// SetControllerFailedPowerSupplyCountQueryParameter adds the controllerFailedPowerSupplyCount to the nodes get params
+func (o *NodesGetParams) SetControllerFailedPowerSupplyCountQueryParameter(controllerFailedPowerSupplyCount *int64) {
+	o.ControllerFailedPowerSupplyCountQueryParameter = controllerFailedPowerSupplyCount
+}
+
+// WithControllerFailedPowerSupplyMessageCodeQueryParameter adds the controllerFailedPowerSupplyMessageCode to the nodes get params
+func (o *NodesGetParams) WithControllerFailedPowerSupplyMessageCodeQueryParameter(controllerFailedPowerSupplyMessageCode *string) *NodesGetParams {
+	o.SetControllerFailedPowerSupplyMessageCodeQueryParameter(controllerFailedPowerSupplyMessageCode)
+	return o
+}
+
+// SetControllerFailedPowerSupplyMessageCodeQueryParameter adds the controllerFailedPowerSupplyMessageCode to the nodes get params
+func (o *NodesGetParams) SetControllerFailedPowerSupplyMessageCodeQueryParameter(controllerFailedPowerSupplyMessageCode *string) {
+	o.ControllerFailedPowerSupplyMessageCodeQueryParameter = controllerFailedPowerSupplyMessageCode
+}
+
+// WithControllerFailedPowerSupplyMessageMessageQueryParameter adds the controllerFailedPowerSupplyMessageMessage to the nodes get params
+func (o *NodesGetParams) WithControllerFailedPowerSupplyMessageMessageQueryParameter(controllerFailedPowerSupplyMessageMessage *string) *NodesGetParams {
+	o.SetControllerFailedPowerSupplyMessageMessageQueryParameter(controllerFailedPowerSupplyMessageMessage)
+	return o
+}
+
+// SetControllerFailedPowerSupplyMessageMessageQueryParameter adds the controllerFailedPowerSupplyMessageMessage to the nodes get params
+func (o *NodesGetParams) SetControllerFailedPowerSupplyMessageMessageQueryParameter(controllerFailedPowerSupplyMessageMessage *string) {
+	o.ControllerFailedPowerSupplyMessageMessageQueryParameter = controllerFailedPowerSupplyMessageMessage
+}
+
 // WithControllerFlashCacheCapacityQueryParameter adds the controllerFlashCacheCapacity to the nodes get params
 func (o *NodesGetParams) WithControllerFlashCacheCapacityQueryParameter(controllerFlashCacheCapacity *int64) *NodesGetParams {
 	o.SetControllerFlashCacheCapacityQueryParameter(controllerFlashCacheCapacity)
@@ -551,6 +829,28 @@ func (o *NodesGetParams) WithControllerFlashCacheCapacityQueryParameter(controll
 // SetControllerFlashCacheCapacityQueryParameter adds the controllerFlashCacheCapacity to the nodes get params
 func (o *NodesGetParams) SetControllerFlashCacheCapacityQueryParameter(controllerFlashCacheCapacity *int64) {
 	o.ControllerFlashCacheCapacityQueryParameter = controllerFlashCacheCapacity
+}
+
+// WithControllerFlashCacheDeviceIDQueryParameter adds the controllerFlashCacheDeviceID to the nodes get params
+func (o *NodesGetParams) WithControllerFlashCacheDeviceIDQueryParameter(controllerFlashCacheDeviceID *int64) *NodesGetParams {
+	o.SetControllerFlashCacheDeviceIDQueryParameter(controllerFlashCacheDeviceID)
+	return o
+}
+
+// SetControllerFlashCacheDeviceIDQueryParameter adds the controllerFlashCacheDeviceId to the nodes get params
+func (o *NodesGetParams) SetControllerFlashCacheDeviceIDQueryParameter(controllerFlashCacheDeviceID *int64) {
+	o.ControllerFlashCacheDeviceIDQueryParameter = controllerFlashCacheDeviceID
+}
+
+// WithControllerFlashCacheFirmwareFileQueryParameter adds the controllerFlashCacheFirmwareFile to the nodes get params
+func (o *NodesGetParams) WithControllerFlashCacheFirmwareFileQueryParameter(controllerFlashCacheFirmwareFile *string) *NodesGetParams {
+	o.SetControllerFlashCacheFirmwareFileQueryParameter(controllerFlashCacheFirmwareFile)
+	return o
+}
+
+// SetControllerFlashCacheFirmwareFileQueryParameter adds the controllerFlashCacheFirmwareFile to the nodes get params
+func (o *NodesGetParams) SetControllerFlashCacheFirmwareFileQueryParameter(controllerFlashCacheFirmwareFile *string) {
+	o.ControllerFlashCacheFirmwareFileQueryParameter = controllerFlashCacheFirmwareFile
 }
 
 // WithControllerFlashCacheFirmwareVersionQueryParameter adds the controllerFlashCacheFirmwareVersion to the nodes get params
@@ -631,13 +931,13 @@ func (o *NodesGetParams) SetControllerFlashCacheStateQueryParameter(controllerFl
 }
 
 // WithControllerFrusIDQueryParameter adds the controllerFrusID to the nodes get params
-func (o *NodesGetParams) WithControllerFrusIDQueryParameter(controllerFrusID *int64) *NodesGetParams {
+func (o *NodesGetParams) WithControllerFrusIDQueryParameter(controllerFrusID *string) *NodesGetParams {
 	o.SetControllerFrusIDQueryParameter(controllerFrusID)
 	return o
 }
 
 // SetControllerFrusIDQueryParameter adds the controllerFrusId to the nodes get params
-func (o *NodesGetParams) SetControllerFrusIDQueryParameter(controllerFrusID *int64) {
+func (o *NodesGetParams) SetControllerFrusIDQueryParameter(controllerFrusID *string) {
 	o.ControllerFrusIDQueryParameter = controllerFrusID
 }
 
@@ -663,6 +963,17 @@ func (o *NodesGetParams) SetControllerFrusTypeQueryParameter(controllerFrusType 
 	o.ControllerFrusTypeQueryParameter = controllerFrusType
 }
 
+// WithControllerMemorySizeQueryParameter adds the controllerMemorySize to the nodes get params
+func (o *NodesGetParams) WithControllerMemorySizeQueryParameter(controllerMemorySize *int64) *NodesGetParams {
+	o.SetControllerMemorySizeQueryParameter(controllerMemorySize)
+	return o
+}
+
+// SetControllerMemorySizeQueryParameter adds the controllerMemorySize to the nodes get params
+func (o *NodesGetParams) SetControllerMemorySizeQueryParameter(controllerMemorySize *int64) {
+	o.ControllerMemorySizeQueryParameter = controllerMemorySize
+}
+
 // WithControllerOverTemperatureQueryParameter adds the controllerOverTemperature to the nodes get params
 func (o *NodesGetParams) WithControllerOverTemperatureQueryParameter(controllerOverTemperature *string) *NodesGetParams {
 	o.SetControllerOverTemperatureQueryParameter(controllerOverTemperature)
@@ -685,15 +996,15 @@ func (o *NodesGetParams) SetDateQueryParameter(date *string) {
 	o.DateQueryParameter = date
 }
 
-// WithFields adds the fields to the nodes get params
-func (o *NodesGetParams) WithFields(fields []string) *NodesGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the nodes get params
+func (o *NodesGetParams) WithFieldsQueryParameter(fields []string) *NodesGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the nodes get params
-func (o *NodesGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the nodes get params
+func (o *NodesGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithHaAutoGivebackQueryParameter adds the haAutoGiveback to the nodes get params
@@ -872,15 +1183,15 @@ func (o *NodesGetParams) SetManagementInterfacesUUIDQueryParameter(managementInt
 	o.ManagementInterfacesUUIDQueryParameter = managementInterfacesUUID
 }
 
-// WithMaxRecords adds the maxRecords to the nodes get params
-func (o *NodesGetParams) WithMaxRecords(maxRecords *int64) *NodesGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the nodes get params
+func (o *NodesGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NodesGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the nodes get params
-func (o *NodesGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the nodes get params
+func (o *NodesGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithMembershIPQueryParameter adds the membership to the nodes get params
@@ -892,6 +1203,83 @@ func (o *NodesGetParams) WithMembershIPQueryParameter(membership *string) *Nodes
 // SetMembershIPQueryParameter adds the membership to the nodes get params
 func (o *NodesGetParams) SetMembershIPQueryParameter(membership *string) {
 	o.MembershIPQueryParameter = membership
+}
+
+// WithMetricDurationQueryParameter adds the metricDuration to the nodes get params
+func (o *NodesGetParams) WithMetricDurationQueryParameter(metricDuration *string) *NodesGetParams {
+	o.SetMetricDurationQueryParameter(metricDuration)
+	return o
+}
+
+// SetMetricDurationQueryParameter adds the metricDuration to the nodes get params
+func (o *NodesGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
+	o.MetricDurationQueryParameter = metricDuration
+}
+
+// WithMetricProcessorUtilizationQueryParameter adds the metricProcessorUtilization to the nodes get params
+func (o *NodesGetParams) WithMetricProcessorUtilizationQueryParameter(metricProcessorUtilization *int64) *NodesGetParams {
+	o.SetMetricProcessorUtilizationQueryParameter(metricProcessorUtilization)
+	return o
+}
+
+// SetMetricProcessorUtilizationQueryParameter adds the metricProcessorUtilization to the nodes get params
+func (o *NodesGetParams) SetMetricProcessorUtilizationQueryParameter(metricProcessorUtilization *int64) {
+	o.MetricProcessorUtilizationQueryParameter = metricProcessorUtilization
+}
+
+// WithMetricStatusQueryParameter adds the metricStatus to the nodes get params
+func (o *NodesGetParams) WithMetricStatusQueryParameter(metricStatus *string) *NodesGetParams {
+	o.SetMetricStatusQueryParameter(metricStatus)
+	return o
+}
+
+// SetMetricStatusQueryParameter adds the metricStatus to the nodes get params
+func (o *NodesGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
+	o.MetricStatusQueryParameter = metricStatus
+}
+
+// WithMetricTimestampQueryParameter adds the metricTimestamp to the nodes get params
+func (o *NodesGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *NodesGetParams {
+	o.SetMetricTimestampQueryParameter(metricTimestamp)
+	return o
+}
+
+// SetMetricTimestampQueryParameter adds the metricTimestamp to the nodes get params
+func (o *NodesGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
+	o.MetricTimestampQueryParameter = metricTimestamp
+}
+
+// WithMetroclusterCustomVlanCapableQueryParameter adds the metroclusterCustomVlanCapable to the nodes get params
+func (o *NodesGetParams) WithMetroclusterCustomVlanCapableQueryParameter(metroclusterCustomVlanCapable *bool) *NodesGetParams {
+	o.SetMetroclusterCustomVlanCapableQueryParameter(metroclusterCustomVlanCapable)
+	return o
+}
+
+// SetMetroclusterCustomVlanCapableQueryParameter adds the metroclusterCustomVlanCapable to the nodes get params
+func (o *NodesGetParams) SetMetroclusterCustomVlanCapableQueryParameter(metroclusterCustomVlanCapable *bool) {
+	o.MetroclusterCustomVlanCapableQueryParameter = metroclusterCustomVlanCapable
+}
+
+// WithMetroclusterPortsNameQueryParameter adds the metroclusterPortsName to the nodes get params
+func (o *NodesGetParams) WithMetroclusterPortsNameQueryParameter(metroclusterPortsName *string) *NodesGetParams {
+	o.SetMetroclusterPortsNameQueryParameter(metroclusterPortsName)
+	return o
+}
+
+// SetMetroclusterPortsNameQueryParameter adds the metroclusterPortsName to the nodes get params
+func (o *NodesGetParams) SetMetroclusterPortsNameQueryParameter(metroclusterPortsName *string) {
+	o.MetroclusterPortsNameQueryParameter = metroclusterPortsName
+}
+
+// WithMetroclusterTypeQueryParameter adds the metroclusterType to the nodes get params
+func (o *NodesGetParams) WithMetroclusterTypeQueryParameter(metroclusterType *string) *NodesGetParams {
+	o.SetMetroclusterTypeQueryParameter(metroclusterType)
+	return o
+}
+
+// SetMetroclusterTypeQueryParameter adds the metroclusterType to the nodes get params
+func (o *NodesGetParams) SetMetroclusterTypeQueryParameter(metroclusterType *string) {
+	o.MetroclusterTypeQueryParameter = metroclusterType
 }
 
 // WithModelQueryParameter adds the model to the nodes get params
@@ -916,37 +1304,70 @@ func (o *NodesGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the nodes get params
-func (o *NodesGetParams) WithOrderBy(orderBy []string) *NodesGetParams {
-	o.SetOrderBy(orderBy)
+// WithNvramBatteryStateQueryParameter adds the nvramBatteryState to the nodes get params
+func (o *NodesGetParams) WithNvramBatteryStateQueryParameter(nvramBatteryState *string) *NodesGetParams {
+	o.SetNvramBatteryStateQueryParameter(nvramBatteryState)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the nodes get params
-func (o *NodesGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetNvramBatteryStateQueryParameter adds the nvramBatteryState to the nodes get params
+func (o *NodesGetParams) SetNvramBatteryStateQueryParameter(nvramBatteryState *string) {
+	o.NvramBatteryStateQueryParameter = nvramBatteryState
 }
 
-// WithReturnRecords adds the returnRecords to the nodes get params
-func (o *NodesGetParams) WithReturnRecords(returnRecords *bool) *NodesGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithNvramIDQueryParameter adds the nvramID to the nodes get params
+func (o *NodesGetParams) WithNvramIDQueryParameter(nvramID *int64) *NodesGetParams {
+	o.SetNvramIDQueryParameter(nvramID)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the nodes get params
-func (o *NodesGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetNvramIDQueryParameter adds the nvramId to the nodes get params
+func (o *NodesGetParams) SetNvramIDQueryParameter(nvramID *int64) {
+	o.NvramIDQueryParameter = nvramID
 }
 
-// WithReturnTimeout adds the returnTimeout to the nodes get params
-func (o *NodesGetParams) WithReturnTimeout(returnTimeout *int64) *NodesGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithOrderByQueryParameter adds the orderBy to the nodes get params
+func (o *NodesGetParams) WithOrderByQueryParameter(orderBy []string) *NodesGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the nodes get params
-func (o *NodesGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetOrderByQueryParameter adds the orderBy to the nodes get params
+func (o *NodesGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
+}
+
+// WithOwnerQueryParameter adds the owner to the nodes get params
+func (o *NodesGetParams) WithOwnerQueryParameter(owner *string) *NodesGetParams {
+	o.SetOwnerQueryParameter(owner)
+	return o
+}
+
+// SetOwnerQueryParameter adds the owner to the nodes get params
+func (o *NodesGetParams) SetOwnerQueryParameter(owner *string) {
+	o.OwnerQueryParameter = owner
+}
+
+// WithReturnRecordsQueryParameter adds the returnRecords to the nodes get params
+func (o *NodesGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NodesGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
+	return o
+}
+
+// SetReturnRecordsQueryParameter adds the returnRecords to the nodes get params
+func (o *NodesGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
+}
+
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the nodes get params
+func (o *NodesGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NodesGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
+	return o
+}
+
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the nodes get params
+func (o *NodesGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSerialNumberQueryParameter adds the serialNumber to the nodes get params
@@ -1038,13 +1459,13 @@ func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceGatewayQueryParameter(s
 }
 
 // WithServiceProcessorIPV6InterfaceNetmaskQueryParameter adds the serviceProcessorIPV6InterfaceNetmask to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceNetmaskQueryParameter(serviceProcessorIPV6InterfaceNetmask *string) *NodesGetParams {
+func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceNetmaskQueryParameter(serviceProcessorIPV6InterfaceNetmask *int64) *NodesGetParams {
 	o.SetServiceProcessorIPV6InterfaceNetmaskQueryParameter(serviceProcessorIPV6InterfaceNetmask)
 	return o
 }
 
 // SetServiceProcessorIPV6InterfaceNetmaskQueryParameter adds the serviceProcessorIpv6InterfaceNetmask to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceNetmaskQueryParameter(serviceProcessorIPV6InterfaceNetmask *string) {
+func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceNetmaskQueryParameter(serviceProcessorIPV6InterfaceNetmask *int64) {
 	o.ServiceProcessorIPV6InterfaceNetmaskQueryParameter = serviceProcessorIPV6InterfaceNetmask
 }
 
@@ -1090,6 +1511,61 @@ func (o *NodesGetParams) WithStateQueryParameter(state *string) *NodesGetParams 
 // SetStateQueryParameter adds the state to the nodes get params
 func (o *NodesGetParams) SetStateQueryParameter(state *string) {
 	o.StateQueryParameter = state
+}
+
+// WithStatisticsProcessorUtilizationBaseQueryParameter adds the statisticsProcessorUtilizationBase to the nodes get params
+func (o *NodesGetParams) WithStatisticsProcessorUtilizationBaseQueryParameter(statisticsProcessorUtilizationBase *int64) *NodesGetParams {
+	o.SetStatisticsProcessorUtilizationBaseQueryParameter(statisticsProcessorUtilizationBase)
+	return o
+}
+
+// SetStatisticsProcessorUtilizationBaseQueryParameter adds the statisticsProcessorUtilizationBase to the nodes get params
+func (o *NodesGetParams) SetStatisticsProcessorUtilizationBaseQueryParameter(statisticsProcessorUtilizationBase *int64) {
+	o.StatisticsProcessorUtilizationBaseQueryParameter = statisticsProcessorUtilizationBase
+}
+
+// WithStatisticsProcessorUtilizationRawQueryParameter adds the statisticsProcessorUtilizationRaw to the nodes get params
+func (o *NodesGetParams) WithStatisticsProcessorUtilizationRawQueryParameter(statisticsProcessorUtilizationRaw *int64) *NodesGetParams {
+	o.SetStatisticsProcessorUtilizationRawQueryParameter(statisticsProcessorUtilizationRaw)
+	return o
+}
+
+// SetStatisticsProcessorUtilizationRawQueryParameter adds the statisticsProcessorUtilizationRaw to the nodes get params
+func (o *NodesGetParams) SetStatisticsProcessorUtilizationRawQueryParameter(statisticsProcessorUtilizationRaw *int64) {
+	o.StatisticsProcessorUtilizationRawQueryParameter = statisticsProcessorUtilizationRaw
+}
+
+// WithStatisticsStatusQueryParameter adds the statisticsStatus to the nodes get params
+func (o *NodesGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *NodesGetParams {
+	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+	return o
+}
+
+// SetStatisticsStatusQueryParameter adds the statisticsStatus to the nodes get params
+func (o *NodesGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
+	o.StatisticsStatusQueryParameter = statisticsStatus
+}
+
+// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the nodes get params
+func (o *NodesGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *NodesGetParams {
+	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+	return o
+}
+
+// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the nodes get params
+func (o *NodesGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
+	o.StatisticsTimestampQueryParameter = statisticsTimestamp
+}
+
+// WithStorageConfigurationQueryParameter adds the storageConfiguration to the nodes get params
+func (o *NodesGetParams) WithStorageConfigurationQueryParameter(storageConfiguration *string) *NodesGetParams {
+	o.SetStorageConfigurationQueryParameter(storageConfiguration)
+	return o
+}
+
+// SetStorageConfigurationQueryParameter adds the storageConfiguration to the nodes get params
+func (o *NodesGetParams) SetStorageConfigurationQueryParameter(storageConfiguration *string) {
+	o.StorageConfigurationQueryParameter = storageConfiguration
 }
 
 // WithSystemIDQueryParameter adds the systemID to the nodes get params
@@ -1261,6 +1737,176 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.ControllerBoardQueryParameter != nil {
+
+		// query param controller.board
+		var qrControllerBoard string
+
+		if o.ControllerBoardQueryParameter != nil {
+			qrControllerBoard = *o.ControllerBoardQueryParameter
+		}
+		qControllerBoard := qrControllerBoard
+		if qControllerBoard != "" {
+
+			if err := r.SetQueryParam("controller.board", qControllerBoard); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ControllerCPUCountQueryParameter != nil {
+
+		// query param controller.cpu.count
+		var qrControllerCPUCount int64
+
+		if o.ControllerCPUCountQueryParameter != nil {
+			qrControllerCPUCount = *o.ControllerCPUCountQueryParameter
+		}
+		qControllerCPUCount := swag.FormatInt64(qrControllerCPUCount)
+		if qControllerCPUCount != "" {
+
+			if err := r.SetQueryParam("controller.cpu.count", qControllerCPUCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ControllerCPUFirmwareReleaseQueryParameter != nil {
+
+		// query param controller.cpu.firmware_release
+		var qrControllerCPUFirmwareRelease string
+
+		if o.ControllerCPUFirmwareReleaseQueryParameter != nil {
+			qrControllerCPUFirmwareRelease = *o.ControllerCPUFirmwareReleaseQueryParameter
+		}
+		qControllerCPUFirmwareRelease := qrControllerCPUFirmwareRelease
+		if qControllerCPUFirmwareRelease != "" {
+
+			if err := r.SetQueryParam("controller.cpu.firmware_release", qControllerCPUFirmwareRelease); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ControllerCPUProcessorQueryParameter != nil {
+
+		// query param controller.cpu.processor
+		var qrControllerCPUProcessor string
+
+		if o.ControllerCPUProcessorQueryParameter != nil {
+			qrControllerCPUProcessor = *o.ControllerCPUProcessorQueryParameter
+		}
+		qControllerCPUProcessor := qrControllerCPUProcessor
+		if qControllerCPUProcessor != "" {
+
+			if err := r.SetQueryParam("controller.cpu.processor", qControllerCPUProcessor); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ControllerFailedFanCountQueryParameter != nil {
+
+		// query param controller.failed_fan.count
+		var qrControllerFailedFanCount int64
+
+		if o.ControllerFailedFanCountQueryParameter != nil {
+			qrControllerFailedFanCount = *o.ControllerFailedFanCountQueryParameter
+		}
+		qControllerFailedFanCount := swag.FormatInt64(qrControllerFailedFanCount)
+		if qControllerFailedFanCount != "" {
+
+			if err := r.SetQueryParam("controller.failed_fan.count", qControllerFailedFanCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ControllerFailedFanMessageCodeQueryParameter != nil {
+
+		// query param controller.failed_fan.message.code
+		var qrControllerFailedFanMessageCode string
+
+		if o.ControllerFailedFanMessageCodeQueryParameter != nil {
+			qrControllerFailedFanMessageCode = *o.ControllerFailedFanMessageCodeQueryParameter
+		}
+		qControllerFailedFanMessageCode := qrControllerFailedFanMessageCode
+		if qControllerFailedFanMessageCode != "" {
+
+			if err := r.SetQueryParam("controller.failed_fan.message.code", qControllerFailedFanMessageCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ControllerFailedFanMessageMessageQueryParameter != nil {
+
+		// query param controller.failed_fan.message.message
+		var qrControllerFailedFanMessageMessage string
+
+		if o.ControllerFailedFanMessageMessageQueryParameter != nil {
+			qrControllerFailedFanMessageMessage = *o.ControllerFailedFanMessageMessageQueryParameter
+		}
+		qControllerFailedFanMessageMessage := qrControllerFailedFanMessageMessage
+		if qControllerFailedFanMessageMessage != "" {
+
+			if err := r.SetQueryParam("controller.failed_fan.message.message", qControllerFailedFanMessageMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ControllerFailedPowerSupplyCountQueryParameter != nil {
+
+		// query param controller.failed_power_supply.count
+		var qrControllerFailedPowerSupplyCount int64
+
+		if o.ControllerFailedPowerSupplyCountQueryParameter != nil {
+			qrControllerFailedPowerSupplyCount = *o.ControllerFailedPowerSupplyCountQueryParameter
+		}
+		qControllerFailedPowerSupplyCount := swag.FormatInt64(qrControllerFailedPowerSupplyCount)
+		if qControllerFailedPowerSupplyCount != "" {
+
+			if err := r.SetQueryParam("controller.failed_power_supply.count", qControllerFailedPowerSupplyCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ControllerFailedPowerSupplyMessageCodeQueryParameter != nil {
+
+		// query param controller.failed_power_supply.message.code
+		var qrControllerFailedPowerSupplyMessageCode string
+
+		if o.ControllerFailedPowerSupplyMessageCodeQueryParameter != nil {
+			qrControllerFailedPowerSupplyMessageCode = *o.ControllerFailedPowerSupplyMessageCodeQueryParameter
+		}
+		qControllerFailedPowerSupplyMessageCode := qrControllerFailedPowerSupplyMessageCode
+		if qControllerFailedPowerSupplyMessageCode != "" {
+
+			if err := r.SetQueryParam("controller.failed_power_supply.message.code", qControllerFailedPowerSupplyMessageCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ControllerFailedPowerSupplyMessageMessageQueryParameter != nil {
+
+		// query param controller.failed_power_supply.message.message
+		var qrControllerFailedPowerSupplyMessageMessage string
+
+		if o.ControllerFailedPowerSupplyMessageMessageQueryParameter != nil {
+			qrControllerFailedPowerSupplyMessageMessage = *o.ControllerFailedPowerSupplyMessageMessageQueryParameter
+		}
+		qControllerFailedPowerSupplyMessageMessage := qrControllerFailedPowerSupplyMessageMessage
+		if qControllerFailedPowerSupplyMessageMessage != "" {
+
+			if err := r.SetQueryParam("controller.failed_power_supply.message.message", qControllerFailedPowerSupplyMessageMessage); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ControllerFlashCacheCapacityQueryParameter != nil {
 
 		// query param controller.flash_cache.capacity
@@ -1273,6 +1919,40 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qControllerFlashCacheCapacity != "" {
 
 			if err := r.SetQueryParam("controller.flash_cache.capacity", qControllerFlashCacheCapacity); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ControllerFlashCacheDeviceIDQueryParameter != nil {
+
+		// query param controller.flash_cache.device_id
+		var qrControllerFlashCacheDeviceID int64
+
+		if o.ControllerFlashCacheDeviceIDQueryParameter != nil {
+			qrControllerFlashCacheDeviceID = *o.ControllerFlashCacheDeviceIDQueryParameter
+		}
+		qControllerFlashCacheDeviceID := swag.FormatInt64(qrControllerFlashCacheDeviceID)
+		if qControllerFlashCacheDeviceID != "" {
+
+			if err := r.SetQueryParam("controller.flash_cache.device_id", qControllerFlashCacheDeviceID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ControllerFlashCacheFirmwareFileQueryParameter != nil {
+
+		// query param controller.flash_cache.firmware_file
+		var qrControllerFlashCacheFirmwareFile string
+
+		if o.ControllerFlashCacheFirmwareFileQueryParameter != nil {
+			qrControllerFlashCacheFirmwareFile = *o.ControllerFlashCacheFirmwareFileQueryParameter
+		}
+		qControllerFlashCacheFirmwareFile := qrControllerFlashCacheFirmwareFile
+		if qControllerFlashCacheFirmwareFile != "" {
+
+			if err := r.SetQueryParam("controller.flash_cache.firmware_file", qControllerFlashCacheFirmwareFile); err != nil {
 				return err
 			}
 		}
@@ -1400,12 +2080,12 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	if o.ControllerFrusIDQueryParameter != nil {
 
 		// query param controller.frus.id
-		var qrControllerFrusID int64
+		var qrControllerFrusID string
 
 		if o.ControllerFrusIDQueryParameter != nil {
 			qrControllerFrusID = *o.ControllerFrusIDQueryParameter
 		}
-		qControllerFrusID := swag.FormatInt64(qrControllerFrusID)
+		qControllerFrusID := qrControllerFrusID
 		if qControllerFrusID != "" {
 
 			if err := r.SetQueryParam("controller.frus.id", qControllerFrusID); err != nil {
@@ -1448,6 +2128,23 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.ControllerMemorySizeQueryParameter != nil {
+
+		// query param controller.memory_size
+		var qrControllerMemorySize int64
+
+		if o.ControllerMemorySizeQueryParameter != nil {
+			qrControllerMemorySize = *o.ControllerMemorySizeQueryParameter
+		}
+		qControllerMemorySize := swag.FormatInt64(qrControllerMemorySize)
+		if qControllerMemorySize != "" {
+
+			if err := r.SetQueryParam("controller.memory_size", qControllerMemorySize); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ControllerOverTemperatureQueryParameter != nil {
 
 		// query param controller.over_temperature
@@ -1482,7 +2179,7 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1765,13 +2462,13 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1794,6 +2491,125 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qMembership != "" {
 
 			if err := r.SetQueryParam("membership", qMembership); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricDurationQueryParameter != nil {
+
+		// query param metric.duration
+		var qrMetricDuration string
+
+		if o.MetricDurationQueryParameter != nil {
+			qrMetricDuration = *o.MetricDurationQueryParameter
+		}
+		qMetricDuration := qrMetricDuration
+		if qMetricDuration != "" {
+
+			if err := r.SetQueryParam("metric.duration", qMetricDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricProcessorUtilizationQueryParameter != nil {
+
+		// query param metric.processor_utilization
+		var qrMetricProcessorUtilization int64
+
+		if o.MetricProcessorUtilizationQueryParameter != nil {
+			qrMetricProcessorUtilization = *o.MetricProcessorUtilizationQueryParameter
+		}
+		qMetricProcessorUtilization := swag.FormatInt64(qrMetricProcessorUtilization)
+		if qMetricProcessorUtilization != "" {
+
+			if err := r.SetQueryParam("metric.processor_utilization", qMetricProcessorUtilization); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricStatusQueryParameter != nil {
+
+		// query param metric.status
+		var qrMetricStatus string
+
+		if o.MetricStatusQueryParameter != nil {
+			qrMetricStatus = *o.MetricStatusQueryParameter
+		}
+		qMetricStatus := qrMetricStatus
+		if qMetricStatus != "" {
+
+			if err := r.SetQueryParam("metric.status", qMetricStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricTimestampQueryParameter != nil {
+
+		// query param metric.timestamp
+		var qrMetricTimestamp string
+
+		if o.MetricTimestampQueryParameter != nil {
+			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		}
+		qMetricTimestamp := qrMetricTimestamp
+		if qMetricTimestamp != "" {
+
+			if err := r.SetQueryParam("metric.timestamp", qMetricTimestamp); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetroclusterCustomVlanCapableQueryParameter != nil {
+
+		// query param metrocluster.custom_vlan_capable
+		var qrMetroclusterCustomVlanCapable bool
+
+		if o.MetroclusterCustomVlanCapableQueryParameter != nil {
+			qrMetroclusterCustomVlanCapable = *o.MetroclusterCustomVlanCapableQueryParameter
+		}
+		qMetroclusterCustomVlanCapable := swag.FormatBool(qrMetroclusterCustomVlanCapable)
+		if qMetroclusterCustomVlanCapable != "" {
+
+			if err := r.SetQueryParam("metrocluster.custom_vlan_capable", qMetroclusterCustomVlanCapable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetroclusterPortsNameQueryParameter != nil {
+
+		// query param metrocluster.ports.name
+		var qrMetroclusterPortsName string
+
+		if o.MetroclusterPortsNameQueryParameter != nil {
+			qrMetroclusterPortsName = *o.MetroclusterPortsNameQueryParameter
+		}
+		qMetroclusterPortsName := qrMetroclusterPortsName
+		if qMetroclusterPortsName != "" {
+
+			if err := r.SetQueryParam("metrocluster.ports.name", qMetroclusterPortsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetroclusterTypeQueryParameter != nil {
+
+		// query param metrocluster.type
+		var qrMetroclusterType string
+
+		if o.MetroclusterTypeQueryParameter != nil {
+			qrMetroclusterType = *o.MetroclusterTypeQueryParameter
+		}
+		qMetroclusterType := qrMetroclusterType
+		if qMetroclusterType != "" {
+
+			if err := r.SetQueryParam("metrocluster.type", qMetroclusterType); err != nil {
 				return err
 			}
 		}
@@ -1833,7 +2649,41 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.NvramBatteryStateQueryParameter != nil {
+
+		// query param nvram.battery_state
+		var qrNvramBatteryState string
+
+		if o.NvramBatteryStateQueryParameter != nil {
+			qrNvramBatteryState = *o.NvramBatteryStateQueryParameter
+		}
+		qNvramBatteryState := qrNvramBatteryState
+		if qNvramBatteryState != "" {
+
+			if err := r.SetQueryParam("nvram.battery_state", qNvramBatteryState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NvramIDQueryParameter != nil {
+
+		// query param nvram.id
+		var qrNvramID int64
+
+		if o.NvramIDQueryParameter != nil {
+			qrNvramID = *o.NvramIDQueryParameter
+		}
+		qNvramID := swag.FormatInt64(qrNvramID)
+		if qNvramID != "" {
+
+			if err := r.SetQueryParam("nvram.id", qNvramID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1844,13 +2694,30 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.OwnerQueryParameter != nil {
+
+		// query param owner
+		var qrOwner string
+
+		if o.OwnerQueryParameter != nil {
+			qrOwner = *o.OwnerQueryParameter
+		}
+		qOwner := qrOwner
+		if qOwner != "" {
+
+			if err := r.SetQueryParam("owner", qOwner); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1861,13 +2728,13 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -2017,12 +2884,12 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	if o.ServiceProcessorIPV6InterfaceNetmaskQueryParameter != nil {
 
 		// query param service_processor.ipv6_interface.netmask
-		var qrServiceProcessorIPV6InterfaceNetmask string
+		var qrServiceProcessorIPV6InterfaceNetmask int64
 
 		if o.ServiceProcessorIPV6InterfaceNetmaskQueryParameter != nil {
 			qrServiceProcessorIPV6InterfaceNetmask = *o.ServiceProcessorIPV6InterfaceNetmaskQueryParameter
 		}
-		qServiceProcessorIPV6InterfaceNetmask := qrServiceProcessorIPV6InterfaceNetmask
+		qServiceProcessorIPV6InterfaceNetmask := swag.FormatInt64(qrServiceProcessorIPV6InterfaceNetmask)
 		if qServiceProcessorIPV6InterfaceNetmask != "" {
 
 			if err := r.SetQueryParam("service_processor.ipv6_interface.netmask", qServiceProcessorIPV6InterfaceNetmask); err != nil {
@@ -2094,6 +2961,91 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qState != "" {
 
 			if err := r.SetQueryParam("state", qState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsProcessorUtilizationBaseQueryParameter != nil {
+
+		// query param statistics.processor_utilization_base
+		var qrStatisticsProcessorUtilizationBase int64
+
+		if o.StatisticsProcessorUtilizationBaseQueryParameter != nil {
+			qrStatisticsProcessorUtilizationBase = *o.StatisticsProcessorUtilizationBaseQueryParameter
+		}
+		qStatisticsProcessorUtilizationBase := swag.FormatInt64(qrStatisticsProcessorUtilizationBase)
+		if qStatisticsProcessorUtilizationBase != "" {
+
+			if err := r.SetQueryParam("statistics.processor_utilization_base", qStatisticsProcessorUtilizationBase); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsProcessorUtilizationRawQueryParameter != nil {
+
+		// query param statistics.processor_utilization_raw
+		var qrStatisticsProcessorUtilizationRaw int64
+
+		if o.StatisticsProcessorUtilizationRawQueryParameter != nil {
+			qrStatisticsProcessorUtilizationRaw = *o.StatisticsProcessorUtilizationRawQueryParameter
+		}
+		qStatisticsProcessorUtilizationRaw := swag.FormatInt64(qrStatisticsProcessorUtilizationRaw)
+		if qStatisticsProcessorUtilizationRaw != "" {
+
+			if err := r.SetQueryParam("statistics.processor_utilization_raw", qStatisticsProcessorUtilizationRaw); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsStatusQueryParameter != nil {
+
+		// query param statistics.status
+		var qrStatisticsStatus string
+
+		if o.StatisticsStatusQueryParameter != nil {
+			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		}
+		qStatisticsStatus := qrStatisticsStatus
+		if qStatisticsStatus != "" {
+
+			if err := r.SetQueryParam("statistics.status", qStatisticsStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsTimestampQueryParameter != nil {
+
+		// query param statistics.timestamp
+		var qrStatisticsTimestamp string
+
+		if o.StatisticsTimestampQueryParameter != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		}
+		qStatisticsTimestamp := qrStatisticsTimestamp
+		if qStatisticsTimestamp != "" {
+
+			if err := r.SetQueryParam("statistics.timestamp", qStatisticsTimestamp); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StorageConfigurationQueryParameter != nil {
+
+		// query param storage_configuration
+		var qrStorageConfiguration string
+
+		if o.StorageConfigurationQueryParameter != nil {
+			qrStorageConfiguration = *o.StorageConfigurationQueryParameter
+		}
+		qStorageConfiguration := qrStorageConfiguration
+		if qStorageConfiguration != "" {
+
+			if err := r.SetQueryParam("storage_configuration", qStorageConfiguration); err != nil {
 				return err
 			}
 		}
@@ -2277,7 +3229,7 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 
 // bindParamNodesGet binds the parameter fields
 func (o *NodesGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -2294,7 +3246,7 @@ func (o *NodesGetParams) bindParamFields(formats strfmt.Registry) []string {
 
 // bindParamNodesGet binds the parameter order_by
 func (o *NodesGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

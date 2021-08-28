@@ -73,7 +73,7 @@ type IscsiServiceCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -93,11 +93,11 @@ func (o *IscsiServiceCreateParams) WithDefaults() *IscsiServiceCreateParams {
 // All values with no default are reset to their zero value.
 func (o *IscsiServiceCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := IscsiServiceCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -150,15 +150,15 @@ func (o *IscsiServiceCreateParams) SetInfo(info *models.IscsiService) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the iscsi service create params
-func (o *IscsiServiceCreateParams) WithReturnRecords(returnRecords *bool) *IscsiServiceCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the iscsi service create params
+func (o *IscsiServiceCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *IscsiServiceCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the iscsi service create params
-func (o *IscsiServiceCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the iscsi service create params
+func (o *IscsiServiceCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,13 +174,13 @@ func (o *IscsiServiceCreateParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

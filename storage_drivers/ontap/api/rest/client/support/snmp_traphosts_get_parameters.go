@@ -64,7 +64,7 @@ type SnmpTraphostsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Host.
 
@@ -78,7 +78,7 @@ type SnmpTraphostsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *SnmpTraphostsGetParams) WithDefaults() *SnmpTraphostsGetParams {
 // All values with no default are reset to their zero value.
 func (o *SnmpTraphostsGetParams) SetDefaults() {
 	var (
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SnmpTraphostsGetParams{
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -144,15 +144,15 @@ func (o *SnmpTraphostsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snmp traphosts get params
-func (o *SnmpTraphostsGetParams) WithFields(fields []string) *SnmpTraphostsGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snmp traphosts get params
+func (o *SnmpTraphostsGetParams) WithFieldsQueryParameter(fields []string) *SnmpTraphostsGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snmp traphosts get params
-func (o *SnmpTraphostsGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snmp traphosts get params
+func (o *SnmpTraphostsGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithHostPathParameter adds the host to the snmp traphosts get params
@@ -166,15 +166,15 @@ func (o *SnmpTraphostsGetParams) SetHostPathParameter(host string) {
 	o.HostPathParameter = host
 }
 
-// WithReturnTimeout adds the returnTimeout to the snmp traphosts get params
-func (o *SnmpTraphostsGetParams) WithReturnTimeout(returnTimeout *int64) *SnmpTraphostsGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the snmp traphosts get params
+func (o *SnmpTraphostsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnmpTraphostsGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the snmp traphosts get params
-func (o *SnmpTraphostsGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the snmp traphosts get params
+func (o *SnmpTraphostsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -185,7 +185,7 @@ func (o *SnmpTraphostsGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,13 +201,13 @@ func (o *SnmpTraphostsGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		return err
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -226,7 +226,7 @@ func (o *SnmpTraphostsGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamSnmpTraphostsGet binds the parameter fields
 func (o *SnmpTraphostsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -87,7 +87,7 @@ func NewQtreeDeleteDefault(code int) *QtreeDeleteDefault {
 | ---------- | ----------- |
 | 918235 | A volume with UUID was not found. |
 | 5242955 | The UUID of the volume is required. |
-| 5242957 | Failed to delete qtree with ID in volume and vserver. |
+| 5242957 | Failed to delete qtree with ID in the volume and SVM. |
 
 */
 type QtreeDeleteDefault struct {

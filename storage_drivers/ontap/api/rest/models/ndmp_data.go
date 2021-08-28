@@ -98,33 +98,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ndmp_data
 	// NdmpData
 	// operation
 	// Operation
 	// backup
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NdmpDataOperationBackup captures enum value "backup"
 	NdmpDataOperationBackup string = "backup"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ndmp_data
 	// NdmpData
 	// operation
 	// Operation
 	// restore
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NdmpDataOperationRestore captures enum value "restore"
 	NdmpDataOperationRestore string = "restore"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ndmp_data
 	// NdmpData
 	// operation
 	// Operation
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NdmpDataOperationNone captures enum value "none"
 	NdmpDataOperationNone string = "none"
 )
@@ -257,5 +257,3 @@ func (m *NdmpData) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

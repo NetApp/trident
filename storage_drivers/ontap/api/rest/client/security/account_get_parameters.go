@@ -64,7 +64,7 @@ type AccountGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Name.
 
@@ -131,15 +131,15 @@ func (o *AccountGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the account get params
-func (o *AccountGetParams) WithFields(fields []string) *AccountGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the account get params
+func (o *AccountGetParams) WithFieldsQueryParameter(fields []string) *AccountGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the account get params
-func (o *AccountGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the account get params
+func (o *AccountGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithNamePathParameter adds the name to the account get params
@@ -172,7 +172,7 @@ func (o *AccountGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *AccountGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamAccountGet binds the parameter fields
 func (o *AccountGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

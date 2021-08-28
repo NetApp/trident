@@ -64,7 +64,7 @@ type SnaplockLegalHoldGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* ID.
 
@@ -125,15 +125,15 @@ func (o *SnaplockLegalHoldGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snaplock legal hold get params
-func (o *SnaplockLegalHoldGetParams) WithFields(fields []string) *SnaplockLegalHoldGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snaplock legal hold get params
+func (o *SnaplockLegalHoldGetParams) WithFieldsQueryParameter(fields []string) *SnaplockLegalHoldGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snaplock legal hold get params
-func (o *SnaplockLegalHoldGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snaplock legal hold get params
+func (o *SnaplockLegalHoldGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIDPathParameter adds the id to the snaplock legal hold get params
@@ -155,7 +155,7 @@ func (o *SnaplockLegalHoldGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *SnaplockLegalHoldGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamSnaplockLegalHoldGet binds the parameter fields
 func (o *SnaplockLegalHoldGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -172,23 +172,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application_component_snapshot
 	// ApplicationComponentSnapshot
 	// consistency_type
 	// ConsistencyType
 	// crash
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationComponentSnapshotConsistencyTypeCrash captures enum value "crash"
 	ApplicationComponentSnapshotConsistencyTypeCrash string = "crash"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application_component_snapshot
 	// ApplicationComponentSnapshot
 	// consistency_type
 	// ConsistencyType
 	// application
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationComponentSnapshotConsistencyTypeApplication captures enum value "application"
 	ApplicationComponentSnapshotConsistencyTypeApplication string = "application"
 )
@@ -940,5 +940,3 @@ func (m *ApplicationComponentSnapshotSvm) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

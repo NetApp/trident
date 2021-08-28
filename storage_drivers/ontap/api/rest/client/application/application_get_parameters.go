@@ -64,7 +64,7 @@ type ApplicationGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *ApplicationGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the application get params
-func (o *ApplicationGetParams) WithFields(fields []string) *ApplicationGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the application get params
+func (o *ApplicationGetParams) WithFieldsQueryParameter(fields []string) *ApplicationGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the application get params
-func (o *ApplicationGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the application get params
+func (o *ApplicationGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the application get params
@@ -155,7 +155,7 @@ func (o *ApplicationGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *ApplicationGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamApplicationGet binds the parameter fields
 func (o *ApplicationGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

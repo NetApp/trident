@@ -19,6 +19,9 @@ import (
 // swagger:model software_node_reference
 type SoftwareNodeReference struct {
 
+	// firmware
+	Firmware *Firmware `json:"firmware,omitempty"`
+
 	// Name of the node.
 	// Example: node1
 	// Read Only: true
@@ -32,12 +35,42 @@ type SoftwareNodeReference struct {
 
 // Validate validates this software node reference
 func (m *SoftwareNodeReference) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateFirmware(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SoftwareNodeReference) validateFirmware(formats strfmt.Registry) error {
+	if swag.IsZero(m.Firmware) { // not required
+		return nil
+	}
+
+	if m.Firmware != nil {
+		if err := m.Firmware.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("firmware")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
 // ContextValidate validate this software node reference based on the context it is used
 func (m *SoftwareNodeReference) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateFirmware(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
 		res = append(res, err)
@@ -50,6 +83,20 @@ func (m *SoftwareNodeReference) ContextValidate(ctx context.Context, formats str
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *SoftwareNodeReference) contextValidateFirmware(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Firmware != nil {
+		if err := m.Firmware.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("firmware")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -88,5 +135,3 @@ func (m *SoftwareNodeReference) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

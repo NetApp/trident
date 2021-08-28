@@ -76,13 +76,13 @@ type S3UserCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -94,7 +94,7 @@ type S3UserCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -102,7 +102,7 @@ type S3UserCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -110,7 +110,7 @@ type S3UserCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SvmName.
 
@@ -120,15 +120,15 @@ type S3UserCollectionGetParams struct {
 
 	/* SvmUUID.
 
-	   UUID of the SVM to which this object belongs.
-	*/
-	SvmUUID string
-
-	/* SvmUUID.
-
 	   Filter by svm.uuid
 	*/
 	SVMUUIDQueryParameter *string
+
+	/* SvmUUID.
+
+	   UUID of the SVM to which this object belongs.
+	*/
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -148,14 +148,14 @@ func (o *S3UserCollectionGetParams) WithDefaults() *S3UserCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *S3UserCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := S3UserCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -219,26 +219,26 @@ func (o *S3UserCollectionGetParams) SetCommentQueryParameter(comment *string) {
 	o.CommentQueryParameter = comment
 }
 
-// WithFields adds the fields to the s3 user collection get params
-func (o *S3UserCollectionGetParams) WithFields(fields []string) *S3UserCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the s3 user collection get params
+func (o *S3UserCollectionGetParams) WithFieldsQueryParameter(fields []string) *S3UserCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the s3 user collection get params
-func (o *S3UserCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the s3 user collection get params
+func (o *S3UserCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithMaxRecords adds the maxRecords to the s3 user collection get params
-func (o *S3UserCollectionGetParams) WithMaxRecords(maxRecords *int64) *S3UserCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the s3 user collection get params
+func (o *S3UserCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *S3UserCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the s3 user collection get params
-func (o *S3UserCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the s3 user collection get params
+func (o *S3UserCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the s3 user collection get params
@@ -252,37 +252,37 @@ func (o *S3UserCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the s3 user collection get params
-func (o *S3UserCollectionGetParams) WithOrderBy(orderBy []string) *S3UserCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the s3 user collection get params
+func (o *S3UserCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *S3UserCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the s3 user collection get params
-func (o *S3UserCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the s3 user collection get params
+func (o *S3UserCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the s3 user collection get params
-func (o *S3UserCollectionGetParams) WithReturnRecords(returnRecords *bool) *S3UserCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the s3 user collection get params
+func (o *S3UserCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *S3UserCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the s3 user collection get params
-func (o *S3UserCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the s3 user collection get params
+func (o *S3UserCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the s3 user collection get params
-func (o *S3UserCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *S3UserCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the s3 user collection get params
+func (o *S3UserCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *S3UserCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the s3 user collection get params
-func (o *S3UserCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the s3 user collection get params
+func (o *S3UserCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSVMNameQueryParameter adds the svmName to the s3 user collection get params
@@ -296,17 +296,6 @@ func (o *S3UserCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
 	o.SVMNameQueryParameter = svmName
 }
 
-// WithSvmUUID adds the svmUUID to the s3 user collection get params
-func (o *S3UserCollectionGetParams) WithSvmUUID(svmUUID string) *S3UserCollectionGetParams {
-	o.SetSvmUUID(svmUUID)
-	return o
-}
-
-// SetSvmUUID adds the svmUuid to the s3 user collection get params
-func (o *S3UserCollectionGetParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
-}
-
 // WithSVMUUIDQueryParameter adds the svmUUID to the s3 user collection get params
 func (o *S3UserCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *S3UserCollectionGetParams {
 	o.SetSVMUUIDQueryParameter(svmUUID)
@@ -316,6 +305,17 @@ func (o *S3UserCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *
 // SetSVMUUIDQueryParameter adds the svmUuid to the s3 user collection get params
 func (o *S3UserCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
 	o.SVMUUIDQueryParameter = svmUUID
+}
+
+// WithSVMUUIDPathParameter adds the svmUUID to the s3 user collection get params
+func (o *S3UserCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *S3UserCollectionGetParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
+	return o
+}
+
+// SetSVMUUIDPathParameter adds the svmUuid to the s3 user collection get params
+func (o *S3UserCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -360,7 +360,7 @@ func (o *S3UserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -371,13 +371,13 @@ func (o *S3UserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -405,7 +405,7 @@ func (o *S3UserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -416,13 +416,13 @@ func (o *S3UserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -433,13 +433,13 @@ func (o *S3UserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -467,11 +467,6 @@ func (o *S3UserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
-		return err
-	}
-
 	if o.SVMUUIDQueryParameter != nil {
 
 		// query param svm.uuid
@@ -489,6 +484,11 @@ func (o *S3UserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	// path param svm.uuid
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
+		return err
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -497,7 +497,7 @@ func (o *S3UserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamS3UserCollectionGet binds the parameter fields
 func (o *S3UserCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -514,7 +514,7 @@ func (o *S3UserCollectionGetParams) bindParamFields(formats strfmt.Registry) []s
 
 // bindParamS3UserCollectionGet binds the parameter order_by
 func (o *S3UserCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

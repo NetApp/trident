@@ -22,19 +22,28 @@ import (
 type Disk struct {
 
 	// List of aggregates sharing this disk
+	// Read Only: true
 	Aggregates []*DiskAggregatesItems0 `json:"aggregates,omitempty"`
 
 	// Disk shelf bay
 	// Example: 1
+	// Read Only: true
 	Bay int64 `json:"bay,omitempty"`
+
+	// Bytes per sector.
+	// Example: 520
+	// Read Only: true
+	BytesPerSector int64 `json:"bytes_per_sector,omitempty"`
 
 	// Disk class
 	// Example: solid_state
+	// Read Only: true
 	// Enum: [unknown capacity performance archive solid_state array virtual]
 	Class string `json:"class,omitempty"`
 
 	// Type of overlying disk container
 	// Example: spare
+	// Read Only: true
 	// Enum: [aggregate broken foreign labelmaint maintenance shared spare unassigned unknown unsupported remote mediator]
 	ContainerType string `json:"container_type,omitempty"`
 
@@ -44,17 +53,27 @@ type Disk struct {
 	// drawer
 	Drawer *DiskDrawer `json:"drawer,omitempty"`
 
-	// Encryption operation to apply to the drives. Possible values are:
-	// - rekey_data_default
-	// - rekey_data_auto_id
+	// Effective Disk type
+	// Example: vmdisk
+	// Read Only: true
+	// Enum: [ata fcal lun msata sas bsas ssd ssd_nvm ssd_cap fsas vmdisk unknown]
+	EffectiveType string `json:"effective_type,omitempty"`
+
+	// This field should only be set as a query parameter in a PATCH operation. It is input only and won't be returned by a subsequent GET.
 	//
 	EncryptionOperation string `json:"encryption_operation,omitempty"`
 
+	// List of disk errors information.
+	// Read Only: true
+	Error []*DiskErrorInfo `json:"error,omitempty"`
+
 	// fips certified
-	FipsCertified bool `json:"fips_certified,omitempty"`
+	// Read Only: true
+	FipsCertified *bool `json:"fips_certified,omitempty"`
 
 	// firmware version
 	// Example: NA51
+	// Read Only: true
 	FirmwareVersion string `json:"firmware_version,omitempty"`
 
 	// home node
@@ -63,19 +82,36 @@ type Disk struct {
 	// key id
 	KeyID *DiskKeyID `json:"key_id,omitempty"`
 
+	// Indicates if a disk is locally attached versus being remotely attached.
+	// A locally attached disk resides in the same proximity as the host
+	// cluster versus been attached to the remote cluster.
+	//
+	// Read Only: true
+	Local *bool `json:"local,omitempty"`
+
 	// model
 	// Example: X421_HCOBE450A10
+	// Read Only: true
 	Model string `json:"model,omitempty"`
 
 	// Cluster-wide disk name
 	// Example: 1.0.1
+	// Read Only: true
 	Name string `json:"name,omitempty"`
 
 	// node
 	Node *DiskNode `json:"node,omitempty"`
 
+	// outage
+	Outage *DiskOutage `json:"outage,omitempty"`
+
+	// List of paths to a disk
+	// Read Only: true
+	Paths []*DiskPathInfo `json:"paths,omitempty"`
+
 	// Pool to which disk is assigned
 	// Example: pool0
+	// Read Only: true
 	// Enum: [pool0 pool1 failed none]
 	Pool string `json:"pool,omitempty"`
 
@@ -85,47 +121,65 @@ type Disk struct {
 	// - _part_ - Partial protection with FIPS compliance only
 	// - _full_ - Full data and FIPS compliance protection
 	//
+	// Read Only: true
 	// Enum: [open data part full]
 	ProtectionMode string `json:"protection_mode,omitempty"`
 
 	// Percentage of rated life used
 	// Example: 10
+	// Read Only: true
 	RatedLifeUsedPercent int64 `json:"rated_life_used_percent,omitempty"`
 
 	// Revolutions per minute
 	// Example: 15000
+	// Read Only: true
 	Rpm int64 `json:"rpm,omitempty"`
 
+	// Number of sectors on the disk.
+	// Example: 1172123568
+	// Read Only: true
+	SectorCount int64 `json:"sector_count,omitempty"`
+
 	// self encrypting
-	SelfEncrypting bool `json:"self_encrypting,omitempty"`
+	// Read Only: true
+	SelfEncrypting *bool `json:"self_encrypting,omitempty"`
 
 	// serial number
 	// Example: KHG2VX8R
+	// Read Only: true
 	SerialNumber string `json:"serial_number,omitempty"`
 
 	// shelf
-	Shelf *ShelfReference `json:"shelf,omitempty"`
+	Shelf *DiskShelf `json:"shelf,omitempty"`
 
 	// State
 	// Example: present
+	// Read Only: true
 	// Enum: [broken copy maintenance partner pending present reconstructing removed spare unfail zeroing]
 	State string `json:"state,omitempty"`
 
+	// stats
+	Stats *DiskStats `json:"stats,omitempty"`
+
 	// Disk interface type
 	// Example: ssd
-	// Enum: [ata bsas fcal fsas lun sas msata ssd vmdisk unknown ssd_nvm]
+	// Read Only: true
+	// Enum: [ata bsas fcal fsas lun sas msata ssd vmdisk unknown ssd_cap ssd_nvm]
 	Type string `json:"type,omitempty"`
 
 	// The unique identifier for a disk
 	// Example: 002538E5:71B00B2F:00000000:00000000:00000000:00000000:00000000:00000000:00000000:00000000
+	// Read Only: true
 	UID string `json:"uid,omitempty"`
 
 	// usable size
 	// Example: 959934889984
+	// Read Only: true
 	UsableSize int64 `json:"usable_size,omitempty"`
 
 	// vendor
 	// Example: NETAPP
+	// Read Only: true
 	Vendor string `json:"vendor,omitempty"`
 }
 
@@ -153,6 +207,14 @@ func (m *Disk) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateEffectiveType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateHomeNode(formats); err != nil {
 		res = append(res, err)
 	}
@@ -162,6 +224,14 @@ func (m *Disk) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOutage(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePaths(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -178,6 +248,10 @@ func (m *Disk) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStats(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -229,73 +303,73 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// class
 	// Class
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskClassUnknown captures enum value "unknown"
 	DiskClassUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// class
 	// Class
 	// capacity
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskClassCapacity captures enum value "capacity"
 	DiskClassCapacity string = "capacity"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// class
 	// Class
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskClassPerformance captures enum value "performance"
 	DiskClassPerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// class
 	// Class
 	// archive
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskClassArchive captures enum value "archive"
 	DiskClassArchive string = "archive"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// class
 	// Class
 	// solid_state
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskClassSolidState captures enum value "solid_state"
 	DiskClassSolidState string = "solid_state"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// class
 	// Class
 	// array
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskClassArray captures enum value "array"
 	DiskClassArray string = "array"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// class
 	// Class
 	// virtual
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskClassVirtual captures enum value "virtual"
 	DiskClassVirtual string = "virtual"
 )
@@ -335,123 +409,123 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// container_type
 	// ContainerType
 	// aggregate
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskContainerTypeAggregate captures enum value "aggregate"
 	DiskContainerTypeAggregate string = "aggregate"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// container_type
 	// ContainerType
 	// broken
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskContainerTypeBroken captures enum value "broken"
 	DiskContainerTypeBroken string = "broken"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// container_type
 	// ContainerType
 	// foreign
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskContainerTypeForeign captures enum value "foreign"
 	DiskContainerTypeForeign string = "foreign"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// container_type
 	// ContainerType
 	// labelmaint
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskContainerTypeLabelmaint captures enum value "labelmaint"
 	DiskContainerTypeLabelmaint string = "labelmaint"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// container_type
 	// ContainerType
 	// maintenance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskContainerTypeMaintenance captures enum value "maintenance"
 	DiskContainerTypeMaintenance string = "maintenance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// container_type
 	// ContainerType
 	// shared
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskContainerTypeShared captures enum value "shared"
 	DiskContainerTypeShared string = "shared"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// container_type
 	// ContainerType
 	// spare
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskContainerTypeSpare captures enum value "spare"
 	DiskContainerTypeSpare string = "spare"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// container_type
 	// ContainerType
 	// unassigned
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskContainerTypeUnassigned captures enum value "unassigned"
 	DiskContainerTypeUnassigned string = "unassigned"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// container_type
 	// ContainerType
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskContainerTypeUnknown captures enum value "unknown"
 	DiskContainerTypeUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// container_type
 	// ContainerType
 	// unsupported
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskContainerTypeUnsupported captures enum value "unsupported"
 	DiskContainerTypeUnsupported string = "unsupported"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// container_type
 	// ContainerType
 	// remote
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskContainerTypeRemote captures enum value "remote"
 	DiskContainerTypeRemote string = "remote"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// container_type
 	// ContainerType
 	// mediator
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskContainerTypeMediator captures enum value "mediator"
 	DiskContainerTypeMediator string = "mediator"
 )
@@ -511,6 +585,186 @@ func (m *Disk) validateDrawer(formats strfmt.Registry) error {
 	return nil
 }
 
+var diskTypeEffectiveTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ata","fcal","lun","msata","sas","bsas","ssd","ssd_nvm","ssd_cap","fsas","vmdisk","unknown"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		diskTypeEffectiveTypePropEnum = append(diskTypeEffectiveTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// ata
+	// END DEBUGGING
+	// DiskEffectiveTypeAta captures enum value "ata"
+	DiskEffectiveTypeAta string = "ata"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// fcal
+	// END DEBUGGING
+	// DiskEffectiveTypeFcal captures enum value "fcal"
+	DiskEffectiveTypeFcal string = "fcal"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// lun
+	// END DEBUGGING
+	// DiskEffectiveTypeLun captures enum value "lun"
+	DiskEffectiveTypeLun string = "lun"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// msata
+	// END DEBUGGING
+	// DiskEffectiveTypeMsata captures enum value "msata"
+	DiskEffectiveTypeMsata string = "msata"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// sas
+	// END DEBUGGING
+	// DiskEffectiveTypeSas captures enum value "sas"
+	DiskEffectiveTypeSas string = "sas"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// bsas
+	// END DEBUGGING
+	// DiskEffectiveTypeBsas captures enum value "bsas"
+	DiskEffectiveTypeBsas string = "bsas"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// ssd
+	// END DEBUGGING
+	// DiskEffectiveTypeSsd captures enum value "ssd"
+	DiskEffectiveTypeSsd string = "ssd"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// ssd_nvm
+	// END DEBUGGING
+	// DiskEffectiveTypeSsdNvm captures enum value "ssd_nvm"
+	DiskEffectiveTypeSsdNvm string = "ssd_nvm"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// ssd_cap
+	// END DEBUGGING
+	// DiskEffectiveTypeSsdCap captures enum value "ssd_cap"
+	DiskEffectiveTypeSsdCap string = "ssd_cap"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// fsas
+	// END DEBUGGING
+	// DiskEffectiveTypeFsas captures enum value "fsas"
+	DiskEffectiveTypeFsas string = "fsas"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// vmdisk
+	// END DEBUGGING
+	// DiskEffectiveTypeVmdisk captures enum value "vmdisk"
+	DiskEffectiveTypeVmdisk string = "vmdisk"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// effective_type
+	// EffectiveType
+	// unknown
+	// END DEBUGGING
+	// DiskEffectiveTypeUnknown captures enum value "unknown"
+	DiskEffectiveTypeUnknown string = "unknown"
+)
+
+// prop value enum
+func (m *Disk) validateEffectiveTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, diskTypeEffectiveTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Disk) validateEffectiveType(formats strfmt.Registry) error {
+	if swag.IsZero(m.EffectiveType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateEffectiveTypeEnum("effective_type", "body", m.EffectiveType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) validateError(formats strfmt.Registry) error {
+	if swag.IsZero(m.Error) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Error); i++ {
+		if swag.IsZero(m.Error[i]) { // not required
+			continue
+		}
+
+		if m.Error[i] != nil {
+			if err := m.Error[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("error" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *Disk) validateHomeNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.HomeNode) { // not required
 		return nil
@@ -562,6 +816,47 @@ func (m *Disk) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Disk) validateOutage(formats strfmt.Registry) error {
+	if swag.IsZero(m.Outage) { // not required
+		return nil
+	}
+
+	if m.Outage != nil {
+		if err := m.Outage.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("outage")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Disk) validatePaths(formats strfmt.Registry) error {
+	if swag.IsZero(m.Paths) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Paths); i++ {
+		if swag.IsZero(m.Paths[i]) { // not required
+			continue
+		}
+
+		if m.Paths[i] != nil {
+			if err := m.Paths[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 var diskTypePoolPropEnum []interface{}
 
 func init() {
@@ -576,43 +871,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// pool
 	// Pool
 	// pool0
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskPoolPool0 captures enum value "pool0"
 	DiskPoolPool0 string = "pool0"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// pool
 	// Pool
 	// pool1
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskPoolPool1 captures enum value "pool1"
 	DiskPoolPool1 string = "pool1"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// pool
 	// Pool
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskPoolFailed captures enum value "failed"
 	DiskPoolFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// pool
 	// Pool
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskPoolNone captures enum value "none"
 	DiskPoolNone string = "none"
 )
@@ -652,43 +947,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// protection_mode
 	// ProtectionMode
 	// open
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskProtectionModeOpen captures enum value "open"
 	DiskProtectionModeOpen string = "open"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// protection_mode
 	// ProtectionMode
 	// data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskProtectionModeData captures enum value "data"
 	DiskProtectionModeData string = "data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// protection_mode
 	// ProtectionMode
 	// part
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskProtectionModePart captures enum value "part"
 	DiskProtectionModePart string = "part"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// protection_mode
 	// ProtectionMode
 	// full
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskProtectionModeFull captures enum value "full"
 	DiskProtectionModeFull string = "full"
 )
@@ -745,113 +1040,113 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// state
 	// State
 	// broken
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskStateBroken captures enum value "broken"
 	DiskStateBroken string = "broken"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// state
 	// State
 	// copy
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskStateCopy captures enum value "copy"
 	DiskStateCopy string = "copy"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// state
 	// State
 	// maintenance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskStateMaintenance captures enum value "maintenance"
 	DiskStateMaintenance string = "maintenance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// state
 	// State
 	// partner
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskStatePartner captures enum value "partner"
 	DiskStatePartner string = "partner"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// state
 	// State
 	// pending
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskStatePending captures enum value "pending"
 	DiskStatePending string = "pending"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// state
 	// State
 	// present
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskStatePresent captures enum value "present"
 	DiskStatePresent string = "present"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// state
 	// State
 	// reconstructing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskStateReconstructing captures enum value "reconstructing"
 	DiskStateReconstructing string = "reconstructing"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// state
 	// State
 	// removed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskStateRemoved captures enum value "removed"
 	DiskStateRemoved string = "removed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// state
 	// State
 	// spare
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskStateSpare captures enum value "spare"
 	DiskStateSpare string = "spare"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// state
 	// State
 	// unfail
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskStateUnfail captures enum value "unfail"
 	DiskStateUnfail string = "unfail"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// state
 	// State
 	// zeroing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskStateZeroing captures enum value "zeroing"
 	DiskStateZeroing string = "zeroing"
 )
@@ -877,11 +1172,28 @@ func (m *Disk) validateState(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Disk) validateStats(formats strfmt.Registry) error {
+	if swag.IsZero(m.Stats) { // not required
+		return nil
+	}
+
+	if m.Stats != nil {
+		if err := m.Stats.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("stats")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 var diskTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ata","bsas","fcal","fsas","lun","sas","msata","ssd","vmdisk","unknown","ssd_nvm"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ata","bsas","fcal","fsas","lun","sas","msata","ssd","vmdisk","unknown","ssd_cap","ssd_nvm"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -891,113 +1203,123 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// type
 	// Type
 	// ata
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskTypeAta captures enum value "ata"
 	DiskTypeAta string = "ata"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// type
 	// Type
 	// bsas
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskTypeBsas captures enum value "bsas"
 	DiskTypeBsas string = "bsas"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// type
 	// Type
 	// fcal
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskTypeFcal captures enum value "fcal"
 	DiskTypeFcal string = "fcal"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// type
 	// Type
 	// fsas
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskTypeFsas captures enum value "fsas"
 	DiskTypeFsas string = "fsas"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// type
 	// Type
 	// lun
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskTypeLun captures enum value "lun"
 	DiskTypeLun string = "lun"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// type
 	// Type
 	// sas
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskTypeSas captures enum value "sas"
 	DiskTypeSas string = "sas"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// type
 	// Type
 	// msata
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskTypeMsata captures enum value "msata"
 	DiskTypeMsata string = "msata"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// type
 	// Type
 	// ssd
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskTypeSsd captures enum value "ssd"
 	DiskTypeSsd string = "ssd"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// type
 	// Type
 	// vmdisk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskTypeVmdisk captures enum value "vmdisk"
 	DiskTypeVmdisk string = "vmdisk"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// type
 	// Type
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskTypeUnknown captures enum value "unknown"
 	DiskTypeUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// type
+	// Type
+	// ssd_cap
+	// END DEBUGGING
+	// DiskTypeSsdCap captures enum value "ssd_cap"
+	DiskTypeSsdCap string = "ssd_cap"
+
+	// BEGIN DEBUGGING
 	// disk
 	// Disk
 	// type
 	// Type
 	// ssd_nvm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// DiskTypeSsdNvm captures enum value "ssd_nvm"
 	DiskTypeSsdNvm string = "ssd_nvm"
 )
@@ -1031,11 +1353,43 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateBay(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBytesPerSector(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateClass(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateContainerType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateDrNode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateDrawer(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEffectiveType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateError(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFipsCertified(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFirmwareVersion(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1047,11 +1401,83 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateModel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateOutage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePaths(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePool(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProtectionMode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRatedLifeUsedPercent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRpm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSectorCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSelfEncrypting(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSerialNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateShelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStats(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsableSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVendor(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1062,6 +1488,10 @@ func (m *Disk) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 }
 
 func (m *Disk) contextValidateAggregates(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "aggregates", "body", []*DiskAggregatesItems0(m.Aggregates)); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(m.Aggregates); i++ {
 
@@ -1074,6 +1504,42 @@ func (m *Disk) contextValidateAggregates(ctx context.Context, formats strfmt.Reg
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateBay(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "bay", "body", int64(m.Bay)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateBytesPerSector(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "bytes_per_sector", "body", int64(m.BytesPerSector)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateClass(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "class", "body", string(m.Class)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateContainerType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "container_type", "body", string(m.ContainerType)); err != nil {
+		return err
 	}
 
 	return nil
@@ -1107,6 +1573,55 @@ func (m *Disk) contextValidateDrawer(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
+func (m *Disk) contextValidateEffectiveType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "effective_type", "body", string(m.EffectiveType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "error", "body", []*DiskErrorInfo(m.Error)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Error); i++ {
+
+		if m.Error[i] != nil {
+			if err := m.Error[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("error" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateFipsCertified(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "fips_certified", "body", m.FipsCertified); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateFirmwareVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "firmware_version", "body", string(m.FirmwareVersion)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Disk) contextValidateHomeNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.HomeNode != nil {
@@ -1135,6 +1650,33 @@ func (m *Disk) contextValidateKeyID(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
+func (m *Disk) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "local", "body", m.Local); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateModel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "model", "body", string(m.Model)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Disk) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Node != nil {
@@ -1149,6 +1691,105 @@ func (m *Disk) contextValidateNode(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
+func (m *Disk) contextValidateOutage(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Outage != nil {
+		if err := m.Outage.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("outage")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidatePaths(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "paths", "body", []*DiskPathInfo(m.Paths)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Paths); i++ {
+
+		if m.Paths[i] != nil {
+			if err := m.Paths[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("paths" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidatePool(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "pool", "body", string(m.Pool)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateProtectionMode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "protection_mode", "body", string(m.ProtectionMode)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateRatedLifeUsedPercent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "rated_life_used_percent", "body", int64(m.RatedLifeUsedPercent)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateRpm(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "rpm", "body", int64(m.Rpm)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateSectorCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sector_count", "body", int64(m.SectorCount)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateSelfEncrypting(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "self_encrypting", "body", m.SelfEncrypting); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Disk) contextValidateShelf(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Shelf != nil {
@@ -1158,6 +1799,65 @@ func (m *Disk) contextValidateShelf(ctx context.Context, formats strfmt.Registry
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateStats(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Stats != nil {
+		if err := m.Stats.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("stats")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uid", "body", string(m.UID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateUsableSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "usable_size", "body", int64(m.UsableSize)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Disk) contextValidateVendor(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "vendor", "body", string(m.Vendor)); err != nil {
+		return err
 	}
 
 	return nil
@@ -1380,13 +2080,8 @@ func (m *DiskDrNode) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this disk dr node based on the context it is used
+// ContextValidate validates this disk dr node based on context it is used
 func (m *DiskDrNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
@@ -1425,8 +2120,13 @@ func (m *DiskDrawer) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this disk drawer based on context it is used
+// ContextValidate validate this disk drawer based on the context it is used
 func (m *DiskDrawer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -1645,8 +2345,13 @@ func (m *DiskKeyID) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this disk key ID based on context it is used
+// ContextValidate validate this disk key ID based on the context it is used
 func (m *DiskKeyID) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -1848,4 +2553,485 @@ func (m *DiskNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HELLO RIPPY
+// DiskOutage Indicates if a disk has an entry in the failed disk registry, along with the reason for the failure.
+//
+// swagger:model DiskOutage
+type DiskOutage struct {
+
+	// Indicates whether RAID maintains the state of this disk as failed accross reboots.
+	// Read Only: true
+	PersistentlyFailed *bool `json:"persistently_failed,omitempty"`
+
+	// reason
+	Reason *DiskOutageReason `json:"reason,omitempty"`
+}
+
+// Validate validates this disk outage
+func (m *DiskOutage) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateReason(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskOutage) validateReason(formats strfmt.Registry) error {
+	if swag.IsZero(m.Reason) { // not required
+		return nil
+	}
+
+	if m.Reason != nil {
+		if err := m.Reason.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("outage" + "." + "reason")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this disk outage based on the context it is used
+func (m *DiskOutage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePersistentlyFailed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReason(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskOutage) contextValidatePersistentlyFailed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "outage"+"."+"persistently_failed", "body", m.PersistentlyFailed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DiskOutage) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Reason != nil {
+		if err := m.Reason.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("outage" + "." + "reason")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DiskOutage) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DiskOutage) UnmarshalBinary(b []byte) error {
+	var res DiskOutage
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// DiskOutageReason disk outage reason
+//
+// swagger:model DiskOutageReason
+type DiskOutageReason struct {
+
+	// This field provides the error code explaining why a disk failed.
+	// Example: 721081
+	// Read Only: true
+	Code string `json:"code,omitempty"`
+
+	// This field provides the error message explaining why a disk failed.
+	// Example: not responding
+	// Read Only: true
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this disk outage reason
+func (m *DiskOutageReason) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this disk outage reason based on the context it is used
+func (m *DiskOutageReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskOutageReason) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "outage"+"."+"reason"+"."+"code", "body", string(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DiskOutageReason) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "outage"+"."+"reason"+"."+"message", "body", string(m.Message)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DiskOutageReason) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DiskOutageReason) UnmarshalBinary(b []byte) error {
+	var res DiskOutageReason
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// DiskShelf disk shelf
+//
+// swagger:model DiskShelf
+type DiskShelf struct {
+
+	// links
+	Links *DiskShelfLinks `json:"_links,omitempty"`
+
+	// uid
+	// Example: 7777841915827391056
+	UID string `json:"uid,omitempty"`
+}
+
+// Validate validates this disk shelf
+func (m *DiskShelf) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskShelf) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("shelf" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this disk shelf based on the context it is used
+func (m *DiskShelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskShelf) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("shelf" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DiskShelf) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DiskShelf) UnmarshalBinary(b []byte) error {
+	var res DiskShelf
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// DiskShelfLinks disk shelf links
+//
+// swagger:model DiskShelfLinks
+type DiskShelfLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this disk shelf links
+func (m *DiskShelfLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskShelfLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("shelf" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this disk shelf links based on the context it is used
+func (m *DiskShelfLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskShelfLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("shelf" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DiskShelfLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DiskShelfLinks) UnmarshalBinary(b []byte) error {
+	var res DiskShelfLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// DiskStats disk stats
+//
+// swagger:model DiskStats
+type DiskStats struct {
+
+	// Average I/O latency across all active paths, in milliseconds.
+	// Example: 3
+	// Read Only: true
+	AverageLatency int64 `json:"average_latency,omitempty"`
+
+	// Total I/O operations per second read and written to this disk across all active paths.
+	// Example: 12854
+	// Read Only: true
+	IopsTotal int64 `json:"iops_total,omitempty"`
+
+	// Disk path error count; failed I/O operations.
+	// Example: 0
+	// Read Only: true
+	PathErrorCount int64 `json:"path_error_count,omitempty"`
+
+	// Hours powered on.
+	// Example: 21016
+	// Read Only: true
+	PowerOnHours int64 `json:"power_on_hours,omitempty"`
+
+	// Total disk throughput per second across all active paths, in bytes.
+	// Example: 1957888
+	// Read Only: true
+	Throughput int64 `json:"throughput,omitempty"`
+}
+
+// Validate validates this disk stats
+func (m *DiskStats) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this disk stats based on the context it is used
+func (m *DiskStats) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAverageLatency(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIopsTotal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePathErrorCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePowerOnHours(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughput(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DiskStats) contextValidateAverageLatency(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "stats"+"."+"average_latency", "body", int64(m.AverageLatency)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DiskStats) contextValidateIopsTotal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "stats"+"."+"iops_total", "body", int64(m.IopsTotal)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DiskStats) contextValidatePathErrorCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "stats"+"."+"path_error_count", "body", int64(m.PathErrorCount)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DiskStats) contextValidatePowerOnHours(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "stats"+"."+"power_on_hours", "body", int64(m.PowerOnHours)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DiskStats) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "stats"+"."+"throughput", "body", int64(m.Throughput)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DiskStats) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DiskStats) UnmarshalBinary(b []byte) error {
+	var res DiskStats
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

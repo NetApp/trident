@@ -344,14 +344,14 @@ type NvmeServiceMetric struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *NvmeServiceMetricThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -426,63 +426,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricDurationPT15S captures enum value "PT15S"
 	NvmeServiceMetricDurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricDurationPT4M captures enum value "PT4M"
 	NvmeServiceMetricDurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricDurationPT30M captures enum value "PT30M"
 	NvmeServiceMetricDurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricDurationPT2H captures enum value "PT2H"
 	NvmeServiceMetricDurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricDurationP1D captures enum value "P1D"
 	NvmeServiceMetricDurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricDurationPT5M captures enum value "PT5M"
 	NvmeServiceMetricDurationPT5M string = "PT5M"
 )
@@ -546,7 +546,7 @@ var nvmeServiceMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -556,105 +556,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricStatusOk captures enum value "ok"
 	NvmeServiceMetricStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricStatusError captures enum value "error"
 	NvmeServiceMetricStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricStatusPartialNoData captures enum value "partial_no_data"
 	NvmeServiceMetricStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// NvmeServiceMetric
-	// NvmeServiceMetric
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// NvmeServiceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	NvmeServiceMetricStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricStatusPartialNoResponse captures enum value "partial_no_response"
 	NvmeServiceMetricStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricStatusPartialOtherError captures enum value "partial_other_error"
 	NvmeServiceMetricStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricStatusNegativeDelta captures enum value "negative_delta"
 	NvmeServiceMetricStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// NvmeServiceMetric
+	// NvmeServiceMetric
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// NvmeServiceMetricStatusNotFound captures enum value "not_found"
+	NvmeServiceMetricStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricStatusBackfilledData captures enum value "backfilled_data"
 	NvmeServiceMetricStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	NvmeServiceMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceMetric
 	// NvmeServiceMetric
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	NvmeServiceMetricStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// NvmeServiceMetric
+	// NvmeServiceMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// NvmeServiceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NvmeServiceMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -1105,14 +1115,14 @@ type NvmeServiceStatistics struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *NvmeServiceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1186,7 +1196,7 @@ var nvmeServiceStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1196,105 +1206,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceStatistics
 	// NvmeServiceStatistics
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceStatisticsStatusOk captures enum value "ok"
 	NvmeServiceStatisticsStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceStatistics
 	// NvmeServiceStatistics
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceStatisticsStatusError captures enum value "error"
 	NvmeServiceStatisticsStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceStatistics
 	// NvmeServiceStatistics
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceStatisticsStatusPartialNoData captures enum value "partial_no_data"
 	NvmeServiceStatisticsStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// NvmeServiceStatistics
-	// NvmeServiceStatistics
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// NvmeServiceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	NvmeServiceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceStatistics
 	// NvmeServiceStatistics
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
 	NvmeServiceStatisticsStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceStatistics
 	// NvmeServiceStatistics
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceStatisticsStatusPartialOtherError captures enum value "partial_other_error"
 	NvmeServiceStatisticsStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceStatistics
 	// NvmeServiceStatistics
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceStatisticsStatusNegativeDelta captures enum value "negative_delta"
 	NvmeServiceStatisticsStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// NvmeServiceStatistics
+	// NvmeServiceStatistics
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// NvmeServiceStatisticsStatusNotFound captures enum value "not_found"
+	NvmeServiceStatisticsStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// NvmeServiceStatistics
 	// NvmeServiceStatistics
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceStatisticsStatusBackfilledData captures enum value "backfilled_data"
 	NvmeServiceStatisticsStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceStatistics
 	// NvmeServiceStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	NvmeServiceStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeServiceStatistics
 	// NvmeServiceStatistics
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeServiceStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	NvmeServiceStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// NvmeServiceStatistics
+	// NvmeServiceStatistics
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// NvmeServiceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NvmeServiceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -1795,5 +1815,3 @@ func (m *NvmeServiceSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

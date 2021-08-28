@@ -64,7 +64,7 @@ type LunMapGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* IgroupUUID.
 
@@ -133,15 +133,15 @@ func (o *LunMapGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the lun map get params
-func (o *LunMapGetParams) WithFields(fields []string) *LunMapGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the lun map get params
+func (o *LunMapGetParams) WithFieldsQueryParameter(fields []string) *LunMapGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the lun map get params
-func (o *LunMapGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the lun map get params
+func (o *LunMapGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIgroupUUIDPathParameter adds the igroupUUID to the lun map get params
@@ -174,7 +174,7 @@ func (o *LunMapGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -203,7 +203,7 @@ func (o *LunMapGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 
 // bindParamLunMapGet binds the parameter fields
 func (o *LunMapGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

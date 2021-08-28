@@ -88,7 +88,7 @@ func NewSnapmirrorPolicyModifyDefault(code int) *SnapmirrorPolicyModifyDefault {
 | 13303842    | SnapMirror policy is not supported.|
 | 13303843    | Conflicting values between SnapMirror policy and SnapMirror relationships for either 'transfer_schedule, throttle or identity_preservation' properties |
 | 13303850    | Invalid input parameter |
-| 13303887    | Maximum number of allowed retention rules reached |
+| 13303887    | Failed to create SnapMirror policy. Reason: Maximum number of allowed retention rules reached |
 
 */
 type SnapmirrorPolicyModifyDefault struct {

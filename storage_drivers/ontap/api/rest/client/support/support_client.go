@@ -167,7 +167,7 @@ func (a *Client) AutosupportCreate(params *AutosupportCreateParams, authInfo run
 </br>Important note:
 * The **issues** field consists of a list of objects containing details of the node that has a connectivity issue, the issue description, and corrective action you can take to address the issue. When not empty, this indicates a connection issue to the **HTTP/S**, **SMTP**, or **AutoSupport On Demand** server.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `issues`
 ### Related ONTAP commands
 * `system node autosupport show -instance`
@@ -303,8 +303,6 @@ func (a *Client) AutosupportModify(params *AutosupportModifyParams, authInfo run
 ### Related ONTAP commands
 * `system configuration backup show`
 
-### Learn more
-* [`DOC /support/configuration-backup/backups`](#docs-support-support_configuration-backup_backups)
 */
 func (a *Client) ConfigurationBackupFileCollectionGet(params *ConfigurationBackupFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -349,8 +347,6 @@ func (a *Client) ConfigurationBackupFileCollectionGet(params *ConfigurationBacku
 ### Related ONTAP commands
 * `system configuration backup create`
 
-### Learn more
-* [`DOC /support/configuration-backup/backups`](#docs-support-support_configuration-backup_backups)
 */
 func (a *Client) ConfigurationBackupFileCreate(params *ConfigurationBackupFileCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -392,8 +388,6 @@ func (a *Client) ConfigurationBackupFileCreate(params *ConfigurationBackupFileCr
 ### Related ONTAP commands
 * `system configuration backup delete`
 
-### Learn more
-* [`DOC /support/configuration-backup/backups`](#docs-support-support_configuration-backup_backups)
 */
 func (a *Client) ConfigurationBackupFileDelete(params *ConfigurationBackupFileDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -435,8 +429,6 @@ func (a *Client) ConfigurationBackupFileDelete(params *ConfigurationBackupFileDe
 ### Related ONTAP commands
 * `system configuration backup show`
 
-### Learn more
-* [`DOC /support/configuration-backup/backups`](#docs-support-support_configuration-backup_backups)
 */
 func (a *Client) ConfigurationBackupFileGet(params *ConfigurationBackupFileGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupFileGetOK, error) {
 	// TODO: Validate the params before sending
@@ -475,8 +467,6 @@ func (a *Client) ConfigurationBackupFileGet(params *ConfigurationBackupFileGetPa
 
 /*
   ConfigurationBackupGet Retrieves the cluster configuration backup information.
-### Learn more
-* [`DOC /support/configuration-backup`](#docs-support-support_configuration-backup)
 */
 func (a *Client) ConfigurationBackupGet(params *ConfigurationBackupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupGetOK, error) {
 	// TODO: Validate the params before sending
@@ -516,8 +506,6 @@ func (a *Client) ConfigurationBackupGet(params *ConfigurationBackupGetParams, au
 /*
   ConfigurationBackupModify Updates the cluster configuration backup information.
 
-### Learn more
-* [`DOC /support/configuration-backup`](#docs-support-support_configuration-backup)
 */
 func (a *Client) ConfigurationBackupModify(params *ConfigurationBackupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -559,8 +547,6 @@ func (a *Client) ConfigurationBackupModify(params *ConfigurationBackupModifyPara
 ### Related ONTAP commands
 * `event config show`
 
-### Learn more
-* [`DOC /support/ems`](#docs-support-support_ems)
 */
 func (a *Client) EmsConfigGet(params *EmsConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsConfigGetOK, error) {
 	// TODO: Validate the params before sending
@@ -602,8 +588,6 @@ func (a *Client) EmsConfigGet(params *EmsConfigGetParams, authInfo runtime.Clien
 ### Related ONTAP commands
 * `event config modify`
 
-### Learn more
-* [`DOC /support/ems`](#docs-support-support_ems)
 */
 func (a *Client) EmsConfigModify(params *EmsConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsConfigModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -646,8 +630,6 @@ func (a *Client) EmsConfigModify(params *EmsConfigModifyParams, authInfo runtime
 * `event notification destination show`
 * `event notification show`
 
-### Learn more
-* [`DOC /support/ems/destinations`](#docs-support-support_ems_destinations)
 */
 func (a *Client) EmsDestinationCollectionGet(params *EmsDestinationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -697,8 +679,6 @@ func (a *Client) EmsDestinationCollectionGet(params *EmsDestinationCollectionGet
 * `event notification destination create`
 * `event notification create`
 
-### Learn more
-* [`DOC /support/ems/destinations`](#docs-support-support_ems_destinations)
 */
 func (a *Client) EmsDestinationCreate(params *EmsDestinationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -741,8 +721,6 @@ func (a *Client) EmsDestinationCreate(params *EmsDestinationCreateParams, authIn
 * `event notification destination delete`
 * `event notification delete`
 
-### Learn more
-* [`DOC /support/ems/destinations/{name}`](#docs-support-support_ems_destinations_{name})
 */
 func (a *Client) EmsDestinationDelete(params *EmsDestinationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -785,8 +763,6 @@ func (a *Client) EmsDestinationDelete(params *EmsDestinationDeleteParams, authIn
 * `event notification destination show`
 * `event notification show`
 
-### Learn more
-* [`DOC /support/ems/destinations/{name}`](#docs-support-support_ems_destinations_{name})
 */
 func (a *Client) EmsDestinationGet(params *EmsDestinationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationGetOK, error) {
 	// TODO: Validate the params before sending
@@ -832,8 +808,6 @@ func (a *Client) EmsDestinationGet(params *EmsDestinationGetParams, authInfo run
 * `event notification destination modify`
 * `event notification modify`
 
-### Learn more
-* [`DOC /support/ems/destinations/{name}`](#docs-support-support_ems_destinations_{name})
 */
 func (a *Client) EmsDestinationModify(params *EmsDestinationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsDestinationModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -875,8 +849,6 @@ func (a *Client) EmsDestinationModify(params *EmsDestinationModifyParams, authIn
 ### Related ONTAP commands
 * `event log show`
 
-### Learn more
-* [`DOC /support/ems/events`](#docs-support-support_ems_events)
 */
 func (a *Client) EmsEventCollectionGet(params *EmsEventCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsEventCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -918,8 +890,6 @@ func (a *Client) EmsEventCollectionGet(params *EmsEventCollectionGetParams, auth
 ### Related ONTAP commands
 * `event filter show`
 
-### Learn more
-* [`DOC /support/ems/filters`](#docs-support-support_ems_filters)
 */
 func (a *Client) EmsFilterCollectionGet(params *EmsFilterCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -965,8 +935,6 @@ func (a *Client) EmsFilterCollectionGet(params *EmsFilterCollectionGetParams, au
 ### Related ONTAP commands
 * `event filter create`
 
-### Learn more
-* [`DOC /support/ems/filters`](#docs-support-support_ems_filters)
 */
 func (a *Client) EmsFilterCreate(params *EmsFilterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1008,8 +976,6 @@ func (a *Client) EmsFilterCreate(params *EmsFilterCreateParams, authInfo runtime
 ### Related ONTAP commands
 * `event filter delete`
 
-### Learn more
-* [`DOC /support/ems/filters/{name}`](#docs-support-support_ems_filters_{name})
 */
 func (a *Client) EmsFilterDelete(params *EmsFilterDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1051,8 +1017,6 @@ func (a *Client) EmsFilterDelete(params *EmsFilterDeleteParams, authInfo runtime
 ### Related ONTAP commands
 * `event filter show`
 
-### Learn more
-* [`DOC /support/ems/filters/{name}`](#docs-support-support_ems_filters_{name})
 */
 func (a *Client) EmsFilterGet(params *EmsFilterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1102,8 +1066,6 @@ func (a *Client) EmsFilterGet(params *EmsFilterGetParams, authInfo runtime.Clien
 * `event filter rule delete`
 * `event filter rule reorder`
 
-### Learn more
-* [`DOC /support/ems/filters/{name}`](#docs-support-support_ems_filters_{name})
 */
 func (a *Client) EmsFilterModify(params *EmsFilterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1145,8 +1107,6 @@ func (a *Client) EmsFilterModify(params *EmsFilterModifyParams, authInfo runtime
 ### Related ONTAP commands
 * `event filter show`
 
-### Learn more
-* [`DOC /support/ems/filters/{name}/rules`](#docs-support-support_ems_filters_{name}_rules)
 */
 func (a *Client) EmsFilterRuleCollectionGet(params *EmsFilterRuleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1188,8 +1148,6 @@ func (a *Client) EmsFilterRuleCollectionGet(params *EmsFilterRuleCollectionGetPa
 ### Related ONTAP commands
 * `event filter rule delete`
 
-### Learn more
-* [`DOC /support/ems/filters/{name}/rules/{index}`](#docs-support-support_ems_filters_{name}_rules_{index})
 */
 func (a *Client) EmsFilterRuleDelete(params *EmsFilterRuleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1231,8 +1189,6 @@ func (a *Client) EmsFilterRuleDelete(params *EmsFilterRuleDeleteParams, authInfo
 ### Related ONTAP commands
 * `event filter show`
 
-### Learn more
-* [`DOC /support/ems/filters/{name}/rules/{index}`](#docs-support-support_ems_filters_{name}_rules_{index})
 */
 func (a *Client) EmsFilterRuleGet(params *EmsFilterRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1277,8 +1233,6 @@ func (a *Client) EmsFilterRuleGet(params *EmsFilterRuleGetParams, authInfo runti
 * `event filter rule add`
 * `event filter rule delete`
 
-### Learn more
-* [`DOC /support/ems/filters/{name}/rules/{index}`](#docs-support-support_ems_filters_{name}_rules_{index})
 */
 func (a *Client) EmsFilterRuleModify(params *EmsFilterRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFilterRuleModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1324,8 +1278,6 @@ func (a *Client) EmsFilterRuleModify(params *EmsFilterRuleModifyParams, authInfo
 ### Related ONTAP commands
 * `event filter rule add`
 
-### Learn more
-* [`DOC /support/ems/filters/{name}/rules`](#docs-support-support_ems_filters_{name}_rules)
 */
 func (a *Client) EmsFiltersRulesCreate(params *EmsFiltersRulesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsFiltersRulesCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1367,8 +1319,6 @@ func (a *Client) EmsFiltersRulesCreate(params *EmsFiltersRulesCreateParams, auth
 ### Related ONTAP commands
 * `event catalog show`
 
-### Learn more
-* [`DOC /support/ems/messages`](#docs-support-support_ems_messages)
 */
 func (a *Client) EmsMessageCollectionGet(params *EmsMessageCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsMessageCollectionGetOK, error) {
 	// TODO: Validate the params before sending

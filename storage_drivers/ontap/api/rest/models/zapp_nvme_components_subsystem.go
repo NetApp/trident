@@ -91,33 +91,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme_components_subsystem
 	// ZappNvmeComponentsSubsystem
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsSubsystemOsTypeLinux captures enum value "linux"
 	ZappNvmeComponentsSubsystemOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme_components_subsystem
 	// ZappNvmeComponentsSubsystem
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsSubsystemOsTypeVmware captures enum value "vmware"
 	ZappNvmeComponentsSubsystemOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme_components_subsystem
 	// ZappNvmeComponentsSubsystem
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsSubsystemOsTypeWindows captures enum value "windows"
 	ZappNvmeComponentsSubsystemOsTypeWindows string = "windows"
 )
@@ -229,5 +229,3 @@ func (m *ZappNvmeComponentsSubsystemHostsItems0) UnmarshalBinary(b []byte) error
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -68,14 +68,14 @@ type QosPolicyModifyParams struct {
 	*/
 	Info *models.QosPolicy
 
-	// PolicyUUID.
-	PolicyUUIDPathParameter string
-
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
+
+	// UUID.
+	UUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -95,11 +95,11 @@ func (o *QosPolicyModifyParams) WithDefaults() *QosPolicyModifyParams {
 // All values with no default are reset to their zero value.
 func (o *QosPolicyModifyParams) SetDefaults() {
 	var (
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := QosPolicyModifyParams{
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -152,26 +152,26 @@ func (o *QosPolicyModifyParams) SetInfo(info *models.QosPolicy) {
 	o.Info = info
 }
 
-// WithPolicyUUIDPathParameter adds the policyUUID to the qos policy modify params
-func (o *QosPolicyModifyParams) WithPolicyUUIDPathParameter(policyUUID string) *QosPolicyModifyParams {
-	o.SetPolicyUUIDPathParameter(policyUUID)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the qos policy modify params
+func (o *QosPolicyModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *QosPolicyModifyParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetPolicyUUIDPathParameter adds the policyUuid to the qos policy modify params
-func (o *QosPolicyModifyParams) SetPolicyUUIDPathParameter(policyUUID string) {
-	o.PolicyUUIDPathParameter = policyUUID
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the qos policy modify params
+func (o *QosPolicyModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
-// WithReturnTimeout adds the returnTimeout to the qos policy modify params
-func (o *QosPolicyModifyParams) WithReturnTimeout(returnTimeout *int64) *QosPolicyModifyParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithUUIDPathParameter adds the uuid to the qos policy modify params
+func (o *QosPolicyModifyParams) WithUUIDPathParameter(uuid string) *QosPolicyModifyParams {
+	o.SetUUIDPathParameter(uuid)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the qos policy modify params
-func (o *QosPolicyModifyParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetUUIDPathParameter adds the uuid to the qos policy modify params
+func (o *QosPolicyModifyParams) SetUUIDPathParameter(uuid string) {
+	o.UUIDPathParameter = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -187,18 +187,13 @@ func (o *QosPolicyModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	// path param policy.uuid
-	if err := r.SetPathParam("policy.uuid", o.PolicyUUIDPathParameter); err != nil {
-		return err
-	}
-
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -207,6 +202,11 @@ func (o *QosPolicyModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 				return err
 			}
 		}
+	}
+
+	// path param uuid
+	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+		return err
 	}
 
 	if len(res) > 0 {

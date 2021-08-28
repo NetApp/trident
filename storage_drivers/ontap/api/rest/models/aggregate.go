@@ -31,7 +31,7 @@ type Aggregate struct {
 	CloudStorage *AggregateCloudStorage `json:"cloud_storage,omitempty"`
 
 	// Timestamp of aggregate creation
-	// Example: 2018-01-01 16:00:00
+	// Example: 2018-01-01T12:00:00-04:00
 	// Read Only: true
 	CreateTime string `json:"create_time,omitempty"`
 
@@ -43,6 +43,9 @@ type Aggregate struct {
 
 	// home node
 	HomeNode *AggregateHomeNode `json:"home_node,omitempty"`
+
+	// inactive data reporting
+	InactiveDataReporting *AggregateInactiveDataReporting `json:"inactive_data_reporting,omitempty"`
 
 	// metric
 	Metric *AggregateMetric `json:"metric,omitempty"`
@@ -99,6 +102,10 @@ func (m *Aggregate) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateHomeNode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateInactiveDataReporting(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -234,6 +241,23 @@ func (m *Aggregate) validateHomeNode(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Aggregate) validateInactiveDataReporting(formats strfmt.Registry) error {
+	if swag.IsZero(m.InactiveDataReporting) { // not required
+		return nil
+	}
+
+	if m.InactiveDataReporting != nil {
+		if err := m.InactiveDataReporting.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("inactive_data_reporting")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Aggregate) validateMetric(formats strfmt.Registry) error {
 	if swag.IsZero(m.Metric) { // not required
 		return nil
@@ -282,33 +306,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// snaplock_type
 	// SnaplockType
 	// non_snaplock
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSnaplockTypeNonSnaplock captures enum value "non_snaplock"
 	AggregateSnaplockTypeNonSnaplock string = "non_snaplock"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// snaplock_type
 	// SnaplockType
 	// compliance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSnaplockTypeCompliance captures enum value "compliance"
 	AggregateSnaplockTypeCompliance string = "compliance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// snaplock_type
 	// SnaplockType
 	// enterprise
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSnaplockTypeEnterprise captures enum value "enterprise"
 	AggregateSnaplockTypeEnterprise string = "enterprise"
 )
@@ -365,103 +389,103 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// state
 	// State
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStateOnline captures enum value "online"
 	AggregateStateOnline string = "online"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// state
 	// State
 	// onlining
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStateOnlining captures enum value "onlining"
 	AggregateStateOnlining string = "onlining"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// state
 	// State
 	// offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStateOffline captures enum value "offline"
 	AggregateStateOffline string = "offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// state
 	// State
 	// offlining
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStateOfflining captures enum value "offlining"
 	AggregateStateOfflining string = "offlining"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// state
 	// State
 	// relocating
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStateRelocating captures enum value "relocating"
 	AggregateStateRelocating string = "relocating"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// state
 	// State
 	// unmounted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStateUnmounted captures enum value "unmounted"
 	AggregateStateUnmounted string = "unmounted"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// state
 	// State
 	// restricted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStateRestricted captures enum value "restricted"
 	AggregateStateRestricted string = "restricted"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// state
 	// State
 	// inconsistent
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStateInconsistent captures enum value "inconsistent"
 	AggregateStateInconsistent string = "inconsistent"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStateFailed captures enum value "failed"
 	AggregateStateFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate
 	// Aggregate
 	// state
 	// State
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStateUnknown captures enum value "unknown"
 	AggregateStateUnknown string = "unknown"
 )
@@ -533,6 +557,10 @@ func (m *Aggregate) ContextValidate(ctx context.Context, formats strfmt.Registry
 	}
 
 	if err := m.contextValidateHomeNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInactiveDataReporting(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -651,6 +679,20 @@ func (m *Aggregate) contextValidateHomeNode(ctx context.Context, formats strfmt.
 		if err := m.HomeNode.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("home_node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Aggregate) contextValidateInactiveDataReporting(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.InactiveDataReporting != nil {
+		if err := m.InactiveDataReporting.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("inactive_data_reporting")
 			}
 			return err
 		}
@@ -989,7 +1031,7 @@ type AggregateBlockStorageHybridCache struct {
 	// Read Only: true
 	DiskCount int64 `json:"disk_count,omitempty"`
 
-	// Aggregate uses HDDs with SSDs as a cache
+	// Specifies whether the aggregate uses HDDs with SSDs as a cache.
 	// Read Only: true
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -1037,33 +1079,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStorageHybridCache
 	// AggregateBlockStorageHybridCache
 	// raid_type
 	// RaidType
 	// raid_dp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStorageHybridCacheRaidTypeRaidDp captures enum value "raid_dp"
 	AggregateBlockStorageHybridCacheRaidTypeRaidDp string = "raid_dp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStorageHybridCache
 	// AggregateBlockStorageHybridCache
 	// raid_type
 	// RaidType
 	// raid_tec
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStorageHybridCacheRaidTypeRaidTec captures enum value "raid_tec"
 	AggregateBlockStorageHybridCacheRaidTypeRaidTec string = "raid_tec"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStorageHybridCache
 	// AggregateBlockStorageHybridCache
 	// raid_type
 	// RaidType
 	// raid4
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStorageHybridCacheRaidTypeRaid4 captures enum value "raid4"
 	AggregateBlockStorageHybridCacheRaidTypeRaid4 string = "raid4"
 )
@@ -1225,53 +1267,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStorageMirror
 	// AggregateBlockStorageMirror
 	// state
 	// State
 	// unmirrored
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStorageMirrorStateUnmirrored captures enum value "unmirrored"
 	AggregateBlockStorageMirrorStateUnmirrored string = "unmirrored"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStorageMirror
 	// AggregateBlockStorageMirror
 	// state
 	// State
 	// normal
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStorageMirrorStateNormal captures enum value "normal"
 	AggregateBlockStorageMirrorStateNormal string = "normal"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStorageMirror
 	// AggregateBlockStorageMirror
 	// state
 	// State
 	// degraded
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStorageMirrorStateDegraded captures enum value "degraded"
 	AggregateBlockStorageMirrorStateDegraded string = "degraded"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStorageMirror
 	// AggregateBlockStorageMirror
 	// state
 	// State
 	// resynchronizing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStorageMirrorStateResynchronizing captures enum value "resynchronizing"
 	AggregateBlockStorageMirrorStateResynchronizing string = "resynchronizing"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStorageMirror
 	// AggregateBlockStorageMirror
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStorageMirrorStateFailed captures enum value "failed"
 	AggregateBlockStorageMirrorStateFailed string = "failed"
 )
@@ -1358,7 +1400,7 @@ type AggregateBlockStoragePrimary struct {
 
 	// The type of disk being used by the aggregate.
 	// Read Only: true
-	// Enum: [fc lun nl_sas nvme_ssd sas sata scsi ssd vm_disk]
+	// Enum: [fc lun nl_sas nvme_ssd sas sata scsi ssd ssd_cap vm_disk]
 	DiskType string `json:"disk_type,omitempty"`
 
 	// Option to specify the maximum number of disks that can be included in a RAID group.
@@ -1410,33 +1452,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// checksum_style
 	// ChecksumStyle
 	// block
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryChecksumStyleBlock captures enum value "block"
 	AggregateBlockStoragePrimaryChecksumStyleBlock string = "block"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// checksum_style
 	// ChecksumStyle
 	// advanced_zoned
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryChecksumStyleAdvancedZoned captures enum value "advanced_zoned"
 	AggregateBlockStoragePrimaryChecksumStyleAdvancedZoned string = "advanced_zoned"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// checksum_style
 	// ChecksumStyle
 	// mixed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryChecksumStyleMixed captures enum value "mixed"
 	AggregateBlockStoragePrimaryChecksumStyleMixed string = "mixed"
 )
@@ -1476,83 +1518,83 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_class
 	// DiskClass
 	// capacity
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskClassCapacity captures enum value "capacity"
 	AggregateBlockStoragePrimaryDiskClassCapacity string = "capacity"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_class
 	// DiskClass
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskClassPerformance captures enum value "performance"
 	AggregateBlockStoragePrimaryDiskClassPerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_class
 	// DiskClass
 	// archive
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskClassArchive captures enum value "archive"
 	AggregateBlockStoragePrimaryDiskClassArchive string = "archive"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_class
 	// DiskClass
 	// solid_state
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskClassSolidState captures enum value "solid_state"
 	AggregateBlockStoragePrimaryDiskClassSolidState string = "solid_state"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_class
 	// DiskClass
 	// array
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskClassArray captures enum value "array"
 	AggregateBlockStoragePrimaryDiskClassArray string = "array"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_class
 	// DiskClass
 	// virtual
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskClassVirtual captures enum value "virtual"
 	AggregateBlockStoragePrimaryDiskClassVirtual string = "virtual"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_class
 	// DiskClass
 	// data_center
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskClassDataCenter captures enum value "data_center"
 	AggregateBlockStoragePrimaryDiskClassDataCenter string = "data_center"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_class
 	// DiskClass
 	// capacity_flash
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskClassCapacityFlash captures enum value "capacity_flash"
 	AggregateBlockStoragePrimaryDiskClassCapacityFlash string = "capacity_flash"
 )
@@ -1582,7 +1624,7 @@ var aggregateBlockStoragePrimaryTypeDiskTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["fc","lun","nl_sas","nvme_ssd","sas","sata","scsi","ssd","vm_disk"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["fc","lun","nl_sas","nvme_ssd","sas","sata","scsi","ssd","ssd_cap","vm_disk"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1592,93 +1634,103 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_type
 	// DiskType
 	// fc
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskTypeFc captures enum value "fc"
 	AggregateBlockStoragePrimaryDiskTypeFc string = "fc"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_type
 	// DiskType
 	// lun
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskTypeLun captures enum value "lun"
 	AggregateBlockStoragePrimaryDiskTypeLun string = "lun"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_type
 	// DiskType
 	// nl_sas
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskTypeNlSas captures enum value "nl_sas"
 	AggregateBlockStoragePrimaryDiskTypeNlSas string = "nl_sas"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_type
 	// DiskType
 	// nvme_ssd
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskTypeNvmeSsd captures enum value "nvme_ssd"
 	AggregateBlockStoragePrimaryDiskTypeNvmeSsd string = "nvme_ssd"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_type
 	// DiskType
 	// sas
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskTypeSas captures enum value "sas"
 	AggregateBlockStoragePrimaryDiskTypeSas string = "sas"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_type
 	// DiskType
 	// sata
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskTypeSata captures enum value "sata"
 	AggregateBlockStoragePrimaryDiskTypeSata string = "sata"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_type
 	// DiskType
 	// scsi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskTypeScsi captures enum value "scsi"
 	AggregateBlockStoragePrimaryDiskTypeScsi string = "scsi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_type
 	// DiskType
 	// ssd
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskTypeSsd captures enum value "ssd"
 	AggregateBlockStoragePrimaryDiskTypeSsd string = "ssd"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// AggregateBlockStoragePrimary
+	// AggregateBlockStoragePrimary
+	// disk_type
+	// DiskType
+	// ssd_cap
+	// END DEBUGGING
+	// AggregateBlockStoragePrimaryDiskTypeSsdCap captures enum value "ssd_cap"
+	AggregateBlockStoragePrimaryDiskTypeSsdCap string = "ssd_cap"
+
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// disk_type
 	// DiskType
 	// vm_disk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryDiskTypeVMDisk captures enum value "vm_disk"
 	AggregateBlockStoragePrimaryDiskTypeVMDisk string = "vm_disk"
 )
@@ -1718,43 +1770,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// raid_type
 	// RaidType
 	// raid_dp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryRaidTypeRaidDp captures enum value "raid_dp"
 	AggregateBlockStoragePrimaryRaidTypeRaidDp string = "raid_dp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// raid_type
 	// RaidType
 	// raid_tec
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryRaidTypeRaidTec captures enum value "raid_tec"
 	AggregateBlockStoragePrimaryRaidTypeRaidTec string = "raid_tec"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// raid_type
 	// RaidType
 	// raid0
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryRaidTypeRaid0 captures enum value "raid0"
 	AggregateBlockStoragePrimaryRaidTypeRaid0 string = "raid0"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateBlockStoragePrimary
 	// AggregateBlockStoragePrimary
 	// raid_type
 	// RaidType
 	// raid4
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateBlockStoragePrimaryRaidTypeRaid4 captures enum value "raid4"
 	AggregateBlockStoragePrimaryRaidTypeRaid4 string = "raid4"
 )
@@ -1826,7 +1878,7 @@ func (m *AggregateBlockStoragePrimary) UnmarshalBinary(b []byte) error {
 // swagger:model AggregateCloudStorage
 type AggregateCloudStorage struct {
 
-	// Aggregate is eligible for a cloud store to be attached.
+	// Specifies whether the aggregate is eligible for a cloud store to be attached.
 	// Read Only: true
 	AttachEligible *bool `json:"attach_eligible,omitempty"`
 
@@ -1948,13 +2000,12 @@ func (m *AggregateCloudStorage) UnmarshalBinary(b []byte) error {
 // swagger:model AggregateDataEncryption
 type AggregateDataEncryption struct {
 
-	// Aggregate uses self-encrypting drives with data protection enabled.
+	// Specifies whether the aggregate uses self-encrypting drives with data protection enabled.
 	// Read Only: true
 	DriveProtectionEnabled *bool `json:"drive_protection_enabled,omitempty"`
 
-	// NetApp Aggregate Encryption enabled. All data in the aggregate is encrypted.
-	// Read Only: true
-	SoftwareEncryptionEnabled *bool `json:"software_encryption_enabled,omitempty"`
+	// Specifies whether NetApp aggregate encryption is enabled. All data in the aggregate is encrypted.
+	SoftwareEncryptionEnabled bool `json:"software_encryption_enabled,omitempty"`
 }
 
 // Validate validates this aggregate data encryption
@@ -1970,10 +2021,6 @@ func (m *AggregateDataEncryption) ContextValidate(ctx context.Context, formats s
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateSoftwareEncryptionEnabled(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -1983,15 +2030,6 @@ func (m *AggregateDataEncryption) ContextValidate(ctx context.Context, formats s
 func (m *AggregateDataEncryption) contextValidateDriveProtectionEnabled(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "data_encryption"+"."+"drive_protection_enabled", "body", m.DriveProtectionEnabled); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *AggregateDataEncryption) contextValidateSoftwareEncryptionEnabled(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "data_encryption"+"."+"software_encryption_enabled", "body", m.SoftwareEncryptionEnabled); err != nil {
 		return err
 	}
 
@@ -2016,7 +2054,7 @@ func (m *AggregateDataEncryption) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateDrHomeNode Node where the aggregate belongs after disaster recovery. The value for this field might differ from the 'node' field during switchover.
+// AggregateDrHomeNode Node where the aggregate resides after disaster recovery. The value for this field might differ from the 'node' field during switchover.
 //
 // swagger:model AggregateDrHomeNode
 type AggregateDrHomeNode struct {
@@ -2063,7 +2101,7 @@ func (m *AggregateDrHomeNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateHomeNode Node where the aggregate belongs after giveback. The value for this field might differ from the value of the 'node' field during takeover.
+// AggregateHomeNode Node where the aggregate resides after giveback. The value for this field might differ from the value of the 'node' field during takeover.
 //
 // swagger:model AggregateHomeNode
 type AggregateHomeNode struct {
@@ -2243,6 +2281,88 @@ func (m *AggregateHomeNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// AggregateInactiveDataReporting aggregate inactive data reporting
+//
+// swagger:model AggregateInactiveDataReporting
+type AggregateInactiveDataReporting struct {
+
+	// Specifes whether or not inactive data reporting is enabled on the aggregate.
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Timestamp at which inactive data reporting was enabled on the aggregate.
+	// Example: 2019-12-12T12:00:00-04:00
+	// Read Only: true
+	// Format: date-time
+	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
+}
+
+// Validate validates this aggregate inactive data reporting
+func (m *AggregateInactiveDataReporting) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateStartTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AggregateInactiveDataReporting) validateStartTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.StartTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("inactive_data_reporting"+"."+"start_time", "body", "date-time", m.StartTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this aggregate inactive data reporting based on the context it is used
+func (m *AggregateInactiveDataReporting) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateStartTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AggregateInactiveDataReporting) contextValidateStartTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "inactive_data_reporting"+"."+"start_time", "body", m.StartTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AggregateInactiveDataReporting) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AggregateInactiveDataReporting) UnmarshalBinary(b []byte) error {
+	var res AggregateInactiveDataReporting
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // AggregateLinks aggregate links
 //
 // swagger:model AggregateLinks
@@ -2353,14 +2473,14 @@ type AggregateMetric struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *AggregateMetricThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2435,63 +2555,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricDurationPT15S captures enum value "PT15S"
 	AggregateMetricDurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricDurationPT4M captures enum value "PT4M"
 	AggregateMetricDurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricDurationPT30M captures enum value "PT30M"
 	AggregateMetricDurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricDurationPT2H captures enum value "PT2H"
 	AggregateMetricDurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricDurationP1D captures enum value "P1D"
 	AggregateMetricDurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricDurationPT5M captures enum value "PT5M"
 	AggregateMetricDurationPT5M string = "PT5M"
 )
@@ -2555,7 +2675,7 @@ var aggregateMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -2565,105 +2685,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricStatusOk captures enum value "ok"
 	AggregateMetricStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricStatusError captures enum value "error"
 	AggregateMetricStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricStatusPartialNoData captures enum value "partial_no_data"
 	AggregateMetricStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// AggregateMetric
-	// AggregateMetric
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// AggregateMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	AggregateMetricStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricStatusPartialNoResponse captures enum value "partial_no_response"
 	AggregateMetricStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricStatusPartialOtherError captures enum value "partial_other_error"
 	AggregateMetricStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricStatusNegativeDelta captures enum value "negative_delta"
 	AggregateMetricStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// AggregateMetric
+	// AggregateMetric
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// AggregateMetricStatusNotFound captures enum value "not_found"
+	AggregateMetricStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricStatusBackfilledData captures enum value "backfilled_data"
 	AggregateMetricStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	AggregateMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateMetric
 	// AggregateMetric
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	AggregateMetricStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// AggregateMetric
+	// AggregateMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// AggregateMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	AggregateMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -3300,6 +3430,9 @@ type AggregateSpace struct {
 	// efficiency without snapshots
 	EfficiencyWithoutSnapshots *AggregateSpaceEfficiencyWithoutSnapshots `json:"efficiency_without_snapshots,omitempty"`
 
+	// efficiency without snapshots flexclones
+	EfficiencyWithoutSnapshotsFlexclones *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones `json:"efficiency_without_snapshots_flexclones,omitempty"`
+
 	// A summation of volume footprints (including volume guarantees), in bytes. This includes all of the volume footprints in the block_storage tier and the cloud_storage tier.
 	// This is an advanced property; there is an added cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either footprint or **.
 	//
@@ -3325,6 +3458,10 @@ func (m *AggregateSpace) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateEfficiencyWithoutSnapshots(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateEfficiencyWithoutSnapshotsFlexclones(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3402,6 +3539,23 @@ func (m *AggregateSpace) validateEfficiencyWithoutSnapshots(formats strfmt.Regis
 	return nil
 }
 
+func (m *AggregateSpace) validateEfficiencyWithoutSnapshotsFlexclones(formats strfmt.Registry) error {
+	if swag.IsZero(m.EfficiencyWithoutSnapshotsFlexclones) { // not required
+		return nil
+	}
+
+	if m.EfficiencyWithoutSnapshotsFlexclones != nil {
+		if err := m.EfficiencyWithoutSnapshotsFlexclones.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "efficiency_without_snapshots_flexclones")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this aggregate space based on the context it is used
 func (m *AggregateSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -3419,6 +3573,10 @@ func (m *AggregateSpace) ContextValidate(ctx context.Context, formats strfmt.Reg
 	}
 
 	if err := m.contextValidateEfficiencyWithoutSnapshots(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEfficiencyWithoutSnapshotsFlexclones(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3488,6 +3646,20 @@ func (m *AggregateSpace) contextValidateEfficiencyWithoutSnapshots(ctx context.C
 	return nil
 }
 
+func (m *AggregateSpace) contextValidateEfficiencyWithoutSnapshotsFlexclones(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.EfficiencyWithoutSnapshotsFlexclones != nil {
+		if err := m.EfficiencyWithoutSnapshotsFlexclones.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "efficiency_without_snapshots_flexclones")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *AggregateSpace) contextValidateFootprint(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"footprint", "body", int64(m.Footprint)); err != nil {
@@ -3520,7 +3692,7 @@ func (m *AggregateSpace) UnmarshalBinary(b []byte) error {
 // swagger:model AggregateSpaceBlockStorage
 type AggregateSpaceBlockStorage struct {
 
-	// Space available in bytes
+	// Space available in bytes.
 	// Example: 10156560384
 	// Read Only: true
 	Available int64 `json:"available,omitempty"`
@@ -3535,6 +3707,11 @@ type AggregateSpaceBlockStorage struct {
 	// Example: 304448
 	// Read Only: true
 	InactiveUserData int64 `json:"inactive_user_data,omitempty"`
+
+	// Total physical used size of an aggregate in bytes.
+	// Example: 2461696
+	// Read Only: true
+	PhysicalUsed int64 `json:"physical_used,omitempty"`
 
 	// Total usable space in bytes, not including WAFL reserve and aggregate Snapshot copy reserve.
 	// Example: 10156769280
@@ -3565,6 +3742,10 @@ func (m *AggregateSpaceBlockStorage) ContextValidate(ctx context.Context, format
 	}
 
 	if err := m.contextValidateInactiveUserData(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePhysicalUsed(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3603,6 +3784,15 @@ func (m *AggregateSpaceBlockStorage) contextValidateFullThresholdPercent(ctx con
 func (m *AggregateSpaceBlockStorage) contextValidateInactiveUserData(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"inactive_user_data", "body", int64(m.InactiveUserData)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateSpaceBlockStorage) contextValidatePhysicalUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage"+"."+"physical_used", "body", int64(m.PhysicalUsed)); err != nil {
 		return err
 	}
 
@@ -3650,7 +3840,7 @@ func (m *AggregateSpaceBlockStorage) UnmarshalBinary(b []byte) error {
 // swagger:model AggregateSpaceCloudStorage
 type AggregateSpaceCloudStorage struct {
 
-	// Used space in bytes in the cloud store. Only applicable for aggregate with a cloud store tier.
+	// Used space in bytes in the cloud store. Only applicable for aggregates with a cloud store tier.
 	// Example: 402743264
 	// Read Only: true
 	Used int64 `json:"used,omitempty"`
@@ -3792,7 +3982,7 @@ func (m *AggregateSpaceEfficiency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateSpaceEfficiencyWithoutSnapshots Storage efficiency that does not include the savings provided by Snapshot copies
+// AggregateSpaceEfficiencyWithoutSnapshots Storage efficiency that does not include the savings provided by Snapshot copies.
 //
 // swagger:model AggregateSpaceEfficiencyWithoutSnapshots
 type AggregateSpaceEfficiencyWithoutSnapshots struct {
@@ -3882,6 +4072,96 @@ func (m *AggregateSpaceEfficiencyWithoutSnapshots) UnmarshalBinary(b []byte) err
 	return nil
 }
 
+// AggregateSpaceEfficiencyWithoutSnapshotsFlexclones Storage efficiency that does not include the savings provided by Snapshot copies and FlexClones.
+//
+// swagger:model AggregateSpaceEfficiencyWithoutSnapshotsFlexclones
+type AggregateSpaceEfficiencyWithoutSnapshotsFlexclones struct {
+
+	// Logical used
+	// Read Only: true
+	LogicalUsed int64 `json:"logical_used,omitempty"`
+
+	// Data reduction ratio (logical_used / used)
+	// Read Only: true
+	Ratio float64 `json:"ratio,omitempty"`
+
+	// Space saved by storage efficiencies (logical_used - used)
+	// Read Only: true
+	Savings int64 `json:"savings,omitempty"`
+}
+
+// Validate validates this aggregate space efficiency without snapshots flexclones
+func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this aggregate space efficiency without snapshots flexclones based on the context it is used
+func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLogicalUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRatio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSavings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) contextValidateLogicalUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots_flexclones"+"."+"logical_used", "body", int64(m.LogicalUsed)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots_flexclones"+"."+"ratio", "body", float64(m.Ratio)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) contextValidateSavings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"efficiency_without_snapshots_flexclones"+"."+"savings", "body", int64(m.Savings)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AggregateSpaceEfficiencyWithoutSnapshotsFlexclones) UnmarshalBinary(b []byte) error {
+	var res AggregateSpaceEfficiencyWithoutSnapshotsFlexclones
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // AggregateStatistics The real time I/O statistics for the aggregate.
 //
 // swagger:model AggregateStatistics
@@ -3896,14 +4176,14 @@ type AggregateStatistics struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *AggregateStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -3977,7 +4257,7 @@ var aggregateStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -3987,105 +4267,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateStatistics
 	// AggregateStatistics
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStatisticsStatusOk captures enum value "ok"
 	AggregateStatisticsStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateStatistics
 	// AggregateStatistics
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStatisticsStatusError captures enum value "error"
 	AggregateStatisticsStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateStatistics
 	// AggregateStatistics
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStatisticsStatusPartialNoData captures enum value "partial_no_data"
 	AggregateStatisticsStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// AggregateStatistics
-	// AggregateStatistics
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// AggregateStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	AggregateStatisticsStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateStatistics
 	// AggregateStatistics
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
 	AggregateStatisticsStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateStatistics
 	// AggregateStatistics
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStatisticsStatusPartialOtherError captures enum value "partial_other_error"
 	AggregateStatisticsStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateStatistics
 	// AggregateStatistics
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStatisticsStatusNegativeDelta captures enum value "negative_delta"
 	AggregateStatisticsStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// AggregateStatistics
+	// AggregateStatistics
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// AggregateStatisticsStatusNotFound captures enum value "not_found"
+	AggregateStatisticsStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// AggregateStatistics
 	// AggregateStatistics
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStatisticsStatusBackfilledData captures enum value "backfilled_data"
 	AggregateStatisticsStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateStatistics
 	// AggregateStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	AggregateStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// AggregateStatistics
 	// AggregateStatistics
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	AggregateStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// AggregateStatistics
+	// AggregateStatistics
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// AggregateStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	AggregateStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -4407,5 +4697,3 @@ func (m *AggregateStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

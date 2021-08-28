@@ -70,5 +70,3 @@ func (m SecurityStyle) Validate(formats strfmt.Registry) error {
 func (m SecurityStyle) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

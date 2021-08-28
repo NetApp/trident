@@ -69,7 +69,7 @@ type CifsShareACLDeleteParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	/* Type.
 
@@ -147,15 +147,15 @@ func (o *CifsShareACLDeleteParams) SetSharePathParameter(share string) {
 	o.SharePathParameter = share
 }
 
-// WithSvmUUID adds the svmUUID to the cifs share acl delete params
-func (o *CifsShareACLDeleteParams) WithSvmUUID(svmUUID string) *CifsShareACLDeleteParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the cifs share acl delete params
+func (o *CifsShareACLDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *CifsShareACLDeleteParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the cifs share acl delete params
-func (o *CifsShareACLDeleteParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the cifs share acl delete params
+func (o *CifsShareACLDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WithTypePathParameter adds the typeVar to the cifs share acl delete params
@@ -194,7 +194,7 @@ func (o *CifsShareACLDeleteParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

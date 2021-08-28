@@ -67,5 +67,3 @@ func (m SvmPeerPermissionApplications) Validate(formats strfmt.Registry) error {
 func (m SvmPeerPermissionApplications) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

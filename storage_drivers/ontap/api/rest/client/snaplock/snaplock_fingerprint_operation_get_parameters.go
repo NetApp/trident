@@ -64,7 +64,7 @@ type SnaplockFingerprintOperationGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* ID.
 
@@ -125,15 +125,15 @@ func (o *SnaplockFingerprintOperationGetParams) SetHTTPClient(client *http.Clien
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snaplock fingerprint operation get params
-func (o *SnaplockFingerprintOperationGetParams) WithFields(fields []string) *SnaplockFingerprintOperationGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snaplock fingerprint operation get params
+func (o *SnaplockFingerprintOperationGetParams) WithFieldsQueryParameter(fields []string) *SnaplockFingerprintOperationGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snaplock fingerprint operation get params
-func (o *SnaplockFingerprintOperationGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snaplock fingerprint operation get params
+func (o *SnaplockFingerprintOperationGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIDPathParameter adds the id to the snaplock fingerprint operation get params
@@ -155,7 +155,7 @@ func (o *SnaplockFingerprintOperationGetParams) WriteToRequest(r runtime.ClientR
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *SnaplockFingerprintOperationGetParams) WriteToRequest(r runtime.ClientR
 
 // bindParamSnaplockFingerprintOperationGet binds the parameter fields
 func (o *SnaplockFingerprintOperationGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

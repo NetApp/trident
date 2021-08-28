@@ -64,7 +64,7 @@ type DiskGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Name.
 
@@ -125,15 +125,15 @@ func (o *DiskGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the disk get params
-func (o *DiskGetParams) WithFields(fields []string) *DiskGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the disk get params
+func (o *DiskGetParams) WithFieldsQueryParameter(fields []string) *DiskGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the disk get params
-func (o *DiskGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the disk get params
+func (o *DiskGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithNamePathParameter adds the name to the disk get params
@@ -155,7 +155,7 @@ func (o *DiskGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *DiskGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 
 // bindParamDiskGet binds the parameter fields
 func (o *DiskGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

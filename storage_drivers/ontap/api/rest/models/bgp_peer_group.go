@@ -135,23 +135,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// bgp_peer_group
 	// BgpPeerGroup
 	// state
 	// State
 	// up
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// BgpPeerGroupStateUp captures enum value "up"
 	BgpPeerGroupStateUp string = "up"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// bgp_peer_group
 	// BgpPeerGroup
 	// state
 	// State
 	// down
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// BgpPeerGroupStateDown captures enum value "down"
 	BgpPeerGroupStateDown string = "down"
 )
@@ -1330,6 +1330,9 @@ type BgpPeerGroupPeer struct {
 
 	// Autonomous system number of peer
 	Asn int64 `json:"asn,omitempty"`
+
+	// Use peer address as next hop.
+	IsNextHop bool `json:"is_next_hop,omitempty"`
 }
 
 // Validate validates this bgp peer group peer
@@ -1359,5 +1362,3 @@ func (m *BgpPeerGroupPeer) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

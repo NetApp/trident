@@ -28,6 +28,9 @@ type Application struct {
 	// Read Only: true
 	CreationTimestamp string `json:"creation_timestamp,omitempty"`
 
+	// Should application storage elements be deleted? An application is considered to use storage elements from a shared storage pool. Possible values are 'true' and 'false'. If the value is 'true', the application will be deleted in its entirety. If the value is 'false', the storage elements will be disassociated from the application and preserved. The application will then be deleted.
+	DeleteData *bool `json:"delete_data,omitempty"`
+
 	// The generation number of the application. This indicates which features are supported on the application. For example, generation 1 applications do not support Snapshot copies. Support for Snapshot copies was added at generation 2. Any future generation numbers and their feature set will be documented.
 	// Read Only: true
 	Generation int64 `json:"generation,omitempty"`
@@ -67,6 +70,9 @@ type Application struct {
 
 	// rpo
 	Rpo *ApplicationRpo `json:"rpo,omitempty"`
+
+	// s3 bucket
+	S3Bucket *ZappS3Bucket `json:"s3_bucket,omitempty"`
 
 	// san
 	San *San `json:"san,omitempty"`
@@ -160,6 +166,10 @@ func (m *Application) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRpo(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateS3Bucket(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -389,23 +399,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application
 	// Application
 	// protection_granularity
 	// ProtectionGranularity
 	// application
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationProtectionGranularityApplication captures enum value "application"
 	ApplicationProtectionGranularityApplication string = "application"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application
 	// Application
 	// protection_granularity
 	// ProtectionGranularity
 	// component
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationProtectionGranularityComponent captures enum value "component"
 	ApplicationProtectionGranularityComponent string = "component"
 )
@@ -440,6 +450,23 @@ func (m *Application) validateRpo(formats strfmt.Registry) error {
 		if err := m.Rpo.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("rpo")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Application) validateS3Bucket(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3Bucket) { // not required
+		return nil
+	}
+
+	if m.S3Bucket != nil {
+		if err := m.S3Bucket.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("s3_bucket")
 			}
 			return err
 		}
@@ -513,53 +540,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application
 	// Application
 	// state
 	// State
 	// creating
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationStateCreating captures enum value "creating"
 	ApplicationStateCreating string = "creating"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application
 	// Application
 	// state
 	// State
 	// deleting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationStateDeleting captures enum value "deleting"
 	ApplicationStateDeleting string = "deleting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application
 	// Application
 	// state
 	// State
 	// modifying
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationStateModifying captures enum value "modifying"
 	ApplicationStateModifying string = "modifying"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application
 	// Application
 	// state
 	// State
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationStateOnline captures enum value "online"
 	ApplicationStateOnline string = "online"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application
 	// Application
 	// state
 	// State
 	// restoring
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationStateRestoring captures enum value "restoring"
 	ApplicationStateRestoring string = "restoring"
 )
@@ -757,6 +784,10 @@ func (m *Application) ContextValidate(ctx context.Context, formats strfmt.Regist
 	}
 
 	if err := m.contextValidateRpo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateS3Bucket(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -973,6 +1004,20 @@ func (m *Application) contextValidateRpo(ctx context.Context, formats strfmt.Reg
 		if err := m.Rpo.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("rpo")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Application) contextValidateS3Bucket(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.S3Bucket != nil {
+		if err := m.S3Bucket.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("s3_bucket")
 			}
 			return err
 		}
@@ -1779,43 +1824,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoComponentsItems0RpoLocal
 	// ApplicationRpoComponentsItems0RpoLocal
 	// name
 	// Name
 	// 6_hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoComponentsItems0RpoLocalNameNr6Hourly captures enum value "6_hourly"
 	ApplicationRpoComponentsItems0RpoLocalNameNr6Hourly string = "6_hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoComponentsItems0RpoLocal
 	// ApplicationRpoComponentsItems0RpoLocal
 	// name
 	// Name
 	// 15_minutely
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoComponentsItems0RpoLocalNameNr15Minutely captures enum value "15_minutely"
 	ApplicationRpoComponentsItems0RpoLocalNameNr15Minutely string = "15_minutely"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoComponentsItems0RpoLocal
 	// ApplicationRpoComponentsItems0RpoLocal
 	// name
 	// Name
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoComponentsItems0RpoLocalNameHourly captures enum value "hourly"
 	ApplicationRpoComponentsItems0RpoLocalNameHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoComponentsItems0RpoLocal
 	// ApplicationRpoComponentsItems0RpoLocal
 	// name
 	// Name
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoComponentsItems0RpoLocalNameNone captures enum value "none"
 	ApplicationRpoComponentsItems0RpoLocalNameNone string = "none"
 )
@@ -1938,53 +1983,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoComponentsItems0RpoRemote
 	// ApplicationRpoComponentsItems0RpoRemote
 	// name
 	// Name
 	// 6_hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoComponentsItems0RpoRemoteNameNr6Hourly captures enum value "6_hourly"
 	ApplicationRpoComponentsItems0RpoRemoteNameNr6Hourly string = "6_hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoComponentsItems0RpoRemote
 	// ApplicationRpoComponentsItems0RpoRemote
 	// name
 	// Name
 	// 15_minutely
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoComponentsItems0RpoRemoteNameNr15Minutely captures enum value "15_minutely"
 	ApplicationRpoComponentsItems0RpoRemoteNameNr15Minutely string = "15_minutely"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoComponentsItems0RpoRemote
 	// ApplicationRpoComponentsItems0RpoRemote
 	// name
 	// Name
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoComponentsItems0RpoRemoteNameHourly captures enum value "hourly"
 	ApplicationRpoComponentsItems0RpoRemoteNameHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoComponentsItems0RpoRemote
 	// ApplicationRpoComponentsItems0RpoRemote
 	// name
 	// Name
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoComponentsItems0RpoRemoteNameNone captures enum value "none"
 	ApplicationRpoComponentsItems0RpoRemoteNameNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoComponentsItems0RpoRemote
 	// ApplicationRpoComponentsItems0RpoRemote
 	// name
 	// Name
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoComponentsItems0RpoRemoteNameZero captures enum value "zero"
 	ApplicationRpoComponentsItems0RpoRemoteNameZero string = "zero"
 )
@@ -2107,43 +2152,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoLocal
 	// ApplicationRpoLocal
 	// name
 	// Name
 	// 6_hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoLocalNameNr6Hourly captures enum value "6_hourly"
 	ApplicationRpoLocalNameNr6Hourly string = "6_hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoLocal
 	// ApplicationRpoLocal
 	// name
 	// Name
 	// 15_minutely
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoLocalNameNr15Minutely captures enum value "15_minutely"
 	ApplicationRpoLocalNameNr15Minutely string = "15_minutely"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoLocal
 	// ApplicationRpoLocal
 	// name
 	// Name
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoLocalNameHourly captures enum value "hourly"
 	ApplicationRpoLocalNameHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoLocal
 	// ApplicationRpoLocal
 	// name
 	// Name
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoLocalNameNone captures enum value "none"
 	ApplicationRpoLocalNameNone string = "none"
 )
@@ -2266,53 +2311,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoRemote
 	// ApplicationRpoRemote
 	// name
 	// Name
 	// 6_hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoRemoteNameNr6Hourly captures enum value "6_hourly"
 	ApplicationRpoRemoteNameNr6Hourly string = "6_hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoRemote
 	// ApplicationRpoRemote
 	// name
 	// Name
 	// 15_minutely
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoRemoteNameNr15Minutely captures enum value "15_minutely"
 	ApplicationRpoRemoteNameNr15Minutely string = "15_minutely"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoRemote
 	// ApplicationRpoRemote
 	// name
 	// Name
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoRemoteNameHourly captures enum value "hourly"
 	ApplicationRpoRemoteNameHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoRemote
 	// ApplicationRpoRemote
 	// name
 	// Name
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoRemoteNameNone captures enum value "none"
 	ApplicationRpoRemoteNameNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationRpoRemote
 	// ApplicationRpoRemote
 	// name
 	// Name
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationRpoRemoteNameZero captures enum value "zero"
 	ApplicationRpoRemoteNameZero string = "zero"
 )
@@ -3932,7 +3977,7 @@ type ApplicationTemplateType struct {
 
 	// The protocol access of the template that was used to provision this application.
 	// Read Only: true
-	// Enum: [nas nvme san]
+	// Enum: [nas nvme s3 san]
 	Protocol string `json:"protocol,omitempty"`
 
 	// The version of the template that was used to provision this application. The template version changes only if the layout of the application changes over time. For example, redo logs in Oracle RAC templates were updated and provisioned differently in DATA ONTAP 9.3.0 compared to prior releases, so the version number was increased. If layouts change in the future, the changes will be documented along with the corresponding version numbers.
@@ -3979,7 +4024,7 @@ var applicationTemplateTypeTypeProtocolPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["nas","nvme","san"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["nas","nvme","s3","san"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -3989,33 +4034,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationTemplateType
 	// ApplicationTemplateType
 	// protocol
 	// Protocol
 	// nas
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationTemplateTypeProtocolNas captures enum value "nas"
 	ApplicationTemplateTypeProtocolNas string = "nas"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationTemplateType
 	// ApplicationTemplateType
 	// protocol
 	// Protocol
 	// nvme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationTemplateTypeProtocolNvme captures enum value "nvme"
 	ApplicationTemplateTypeProtocolNvme string = "nvme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// ApplicationTemplateType
+	// ApplicationTemplateType
+	// protocol
+	// Protocol
+	// s3
+	// END DEBUGGING
+	// ApplicationTemplateTypeProtocolS3 captures enum value "s3"
+	ApplicationTemplateTypeProtocolS3 string = "s3"
+
+	// BEGIN DEBUGGING
 	// ApplicationTemplateType
 	// ApplicationTemplateType
 	// protocol
 	// Protocol
 	// san
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationTemplateTypeProtocolSan captures enum value "san"
 	ApplicationTemplateTypeProtocolSan string = "san"
 )
@@ -4112,5 +4167,3 @@ func (m *ApplicationTemplateType) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

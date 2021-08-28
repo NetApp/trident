@@ -68,6 +68,9 @@ type Svm struct {
 	// ldap
 	Ldap *SvmLdap `json:"ldap,omitempty"`
 
+	// This property is used by cluster administrator to specify the limit on maximum number of volumes allowed in the SVM. The value can be either the string "unlimited" or a number.
+	MaxVolumes *string `json:"max_volumes,omitempty"`
+
 	// The name of the SVM.
 	//
 	// Example: svm1
@@ -84,6 +87,9 @@ type Svm struct {
 
 	// nvme
 	Nvme *SvmNvme `json:"nvme,omitempty"`
+
+	// qos policy
+	QosPolicy *SvmQosPolicy `json:"qos_policy,omitempty"`
 
 	// Optional array of routes for the SVM
 	Routes []*NetworkRouteForSvm `json:"routes,omitempty"`
@@ -111,6 +117,9 @@ type Svm struct {
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
+
+	// volume efficiency policy
+	VolumeEfficiencyPolicy *SvmVolumeEfficiencyPolicy `json:"volume_efficiency_policy,omitempty"`
 }
 
 // Validate validates this svm
@@ -185,6 +194,10 @@ func (m *Svm) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateQosPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateRoutes(formats); err != nil {
 		res = append(res, err)
 	}
@@ -206,6 +219,10 @@ func (m *Svm) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSubtype(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVolumeEfficiencyPolicy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -436,693 +453,693 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// c
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageC captures enum value "c"
 	SvmLanguageC string = "c"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// da
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageDa captures enum value "da"
 	SvmLanguageDa string = "da"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// de
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageDe captures enum value "de"
 	SvmLanguageDe string = "de"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// en
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageEn captures enum value "en"
 	SvmLanguageEn string = "en"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// en_us
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageEnUs captures enum value "en_us"
 	SvmLanguageEnUs string = "en_us"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// es
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageEs captures enum value "es"
 	SvmLanguageEs string = "es"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// fi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageFi captures enum value "fi"
 	SvmLanguageFi string = "fi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// fr
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageFr captures enum value "fr"
 	SvmLanguageFr string = "fr"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// he
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageHe captures enum value "he"
 	SvmLanguageHe string = "he"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// it
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageIt captures enum value "it"
 	SvmLanguageIt string = "it"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ja
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageJa captures enum value "ja"
 	SvmLanguageJa string = "ja"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ja_jp.pck
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageJaJpDotPck captures enum value "ja_jp.pck"
 	SvmLanguageJaJpDotPck string = "ja_jp.pck"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ko
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageKo captures enum value "ko"
 	SvmLanguageKo string = "ko"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// no
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageNo captures enum value "no"
 	SvmLanguageNo string = "no"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// nl
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageNl captures enum value "nl"
 	SvmLanguageNl string = "nl"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// pt
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguagePt captures enum value "pt"
 	SvmLanguagePt string = "pt"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// sv
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageSv captures enum value "sv"
 	SvmLanguageSv string = "sv"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// zh
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageZh captures enum value "zh"
 	SvmLanguageZh string = "zh"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// zh.gbk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageZhDotGbk captures enum value "zh.gbk"
 	SvmLanguageZhDotGbk string = "zh.gbk"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// zh_tw
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageZhTw captures enum value "zh_tw"
 	SvmLanguageZhTw string = "zh_tw"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// zh_tw.big5
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageZhTwDotBig5 captures enum value "zh_tw.big5"
 	SvmLanguageZhTwDotBig5 string = "zh_tw.big5"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// c.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageCDotUTF8 captures enum value "c.utf_8"
 	SvmLanguageCDotUTF8 string = "c.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ar
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageAr captures enum value "ar"
 	SvmLanguageAr string = "ar"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ar.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageArDotUTF8 captures enum value "ar.utf_8"
 	SvmLanguageArDotUTF8 string = "ar.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// cs
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageCs captures enum value "cs"
 	SvmLanguageCs string = "cs"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// cs.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageCsDotUTF8 captures enum value "cs.utf_8"
 	SvmLanguageCsDotUTF8 string = "cs.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// da.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageDaDotUTF8 captures enum value "da.utf_8"
 	SvmLanguageDaDotUTF8 string = "da.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// de.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageDeDotUTF8 captures enum value "de.utf_8"
 	SvmLanguageDeDotUTF8 string = "de.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// en.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageEnDotUTF8 captures enum value "en.utf_8"
 	SvmLanguageEnDotUTF8 string = "en.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// en_us.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageEnUsDotUTF8 captures enum value "en_us.utf_8"
 	SvmLanguageEnUsDotUTF8 string = "en_us.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// es.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageEsDotUTF8 captures enum value "es.utf_8"
 	SvmLanguageEsDotUTF8 string = "es.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// fi.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageFiDotUTF8 captures enum value "fi.utf_8"
 	SvmLanguageFiDotUTF8 string = "fi.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// fr.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageFrDotUTF8 captures enum value "fr.utf_8"
 	SvmLanguageFrDotUTF8 string = "fr.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// he.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageHeDotUTF8 captures enum value "he.utf_8"
 	SvmLanguageHeDotUTF8 string = "he.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// hr
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageHr captures enum value "hr"
 	SvmLanguageHr string = "hr"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// hr.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageHrDotUTF8 captures enum value "hr.utf_8"
 	SvmLanguageHrDotUTF8 string = "hr.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// hu
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageHu captures enum value "hu"
 	SvmLanguageHu string = "hu"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// hu.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageHuDotUTF8 captures enum value "hu.utf_8"
 	SvmLanguageHuDotUTF8 string = "hu.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// it.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageItDotUTF8 captures enum value "it.utf_8"
 	SvmLanguageItDotUTF8 string = "it.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ja.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageJaDotUTF8 captures enum value "ja.utf_8"
 	SvmLanguageJaDotUTF8 string = "ja.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ja_v1
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageJaV1 captures enum value "ja_v1"
 	SvmLanguageJaV1 string = "ja_v1"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ja_v1.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageJaV1DotUTF8 captures enum value "ja_v1.utf_8"
 	SvmLanguageJaV1DotUTF8 string = "ja_v1.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ja_jp.pck.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageJaJpDotPckDotUTF8 captures enum value "ja_jp.pck.utf_8"
 	SvmLanguageJaJpDotPckDotUTF8 string = "ja_jp.pck.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ja_jp.932
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageJaJpDot932 captures enum value "ja_jp.932"
 	SvmLanguageJaJpDot932 string = "ja_jp.932"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ja_jp.932.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageJaJpDot932DotUTF8 captures enum value "ja_jp.932.utf_8"
 	SvmLanguageJaJpDot932DotUTF8 string = "ja_jp.932.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ja_jp.pck_v2
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageJaJpDotPckV2 captures enum value "ja_jp.pck_v2"
 	SvmLanguageJaJpDotPckV2 string = "ja_jp.pck_v2"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ja_jp.pck_v2.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageJaJpDotPckV2DotUTF8 captures enum value "ja_jp.pck_v2.utf_8"
 	SvmLanguageJaJpDotPckV2DotUTF8 string = "ja_jp.pck_v2.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ko.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageKoDotUTF8 captures enum value "ko.utf_8"
 	SvmLanguageKoDotUTF8 string = "ko.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// no.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageNoDotUTF8 captures enum value "no.utf_8"
 	SvmLanguageNoDotUTF8 string = "no.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// nl.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageNlDotUTF8 captures enum value "nl.utf_8"
 	SvmLanguageNlDotUTF8 string = "nl.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// pl
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguagePl captures enum value "pl"
 	SvmLanguagePl string = "pl"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// pl.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguagePlDotUTF8 captures enum value "pl.utf_8"
 	SvmLanguagePlDotUTF8 string = "pl.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// pt.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguagePtDotUTF8 captures enum value "pt.utf_8"
 	SvmLanguagePtDotUTF8 string = "pt.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ro
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageRo captures enum value "ro"
 	SvmLanguageRo string = "ro"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ro.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageRoDotUTF8 captures enum value "ro.utf_8"
 	SvmLanguageRoDotUTF8 string = "ro.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ru
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageRu captures enum value "ru"
 	SvmLanguageRu string = "ru"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// ru.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageRuDotUTF8 captures enum value "ru.utf_8"
 	SvmLanguageRuDotUTF8 string = "ru.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// sk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageSk captures enum value "sk"
 	SvmLanguageSk string = "sk"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// sk.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageSkDotUTF8 captures enum value "sk.utf_8"
 	SvmLanguageSkDotUTF8 string = "sk.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// sl
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageSl captures enum value "sl"
 	SvmLanguageSl string = "sl"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// sl.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageSlDotUTF8 captures enum value "sl.utf_8"
 	SvmLanguageSlDotUTF8 string = "sl.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// sv.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageSvDotUTF8 captures enum value "sv.utf_8"
 	SvmLanguageSvDotUTF8 string = "sv.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// tr
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageTr captures enum value "tr"
 	SvmLanguageTr string = "tr"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// tr.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageTrDotUTF8 captures enum value "tr.utf_8"
 	SvmLanguageTrDotUTF8 string = "tr.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// zh.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageZhDotUTF8 captures enum value "zh.utf_8"
 	SvmLanguageZhDotUTF8 string = "zh.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// zh.gbk.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageZhDotGbkDotUTF8 captures enum value "zh.gbk.utf_8"
 	SvmLanguageZhDotGbkDotUTF8 string = "zh.gbk.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// zh_tw.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageZhTwDotUTF8 captures enum value "zh_tw.utf_8"
 	SvmLanguageZhTwDotUTF8 string = "zh_tw.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// zh_tw.big5.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageZhTwDotBig5DotUTF8 captures enum value "zh_tw.big5.utf_8"
 	SvmLanguageZhTwDotBig5DotUTF8 string = "zh_tw.big5.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// language
 	// Language
 	// utf8mb4
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmLanguageUtf8mb4 captures enum value "utf8mb4"
 	SvmLanguageUtf8mb4 string = "utf8mb4"
 )
@@ -1233,6 +1250,23 @@ func (m *Svm) validateNvme(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Svm) validateQosPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.QosPolicy) { // not required
+		return nil
+	}
+
+	if m.QosPolicy != nil {
+		if err := m.QosPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Svm) validateRoutes(formats strfmt.Registry) error {
 	if swag.IsZero(m.Routes) { // not required
 		return nil
@@ -1322,53 +1356,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// state
 	// State
 	// starting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmStateStarting captures enum value "starting"
 	SvmStateStarting string = "starting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// state
 	// State
 	// running
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmStateRunning captures enum value "running"
 	SvmStateRunning string = "running"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// state
 	// State
 	// stopping
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmStateStopping captures enum value "stopping"
 	SvmStateStopping string = "stopping"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// state
 	// State
 	// stopped
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmStateStopped captures enum value "stopped"
 	SvmStateStopped string = "stopped"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// state
 	// State
 	// deleting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmStateDeleting captures enum value "deleting"
 	SvmStateDeleting string = "deleting"
 )
@@ -1408,43 +1442,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// subtype
 	// Subtype
 	// default
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmSubtypeDefault captures enum value "default"
 	SvmSubtypeDefault string = "default"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// subtype
 	// Subtype
 	// dp_destination
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmSubtypeDpDestination captures enum value "dp_destination"
 	SvmSubtypeDpDestination string = "dp_destination"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// subtype
 	// Subtype
 	// sync_source
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmSubtypeSyncSource captures enum value "sync_source"
 	SvmSubtypeSyncSource string = "sync_source"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm
 	// Svm
 	// subtype
 	// Subtype
 	// sync_destination
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmSubtypeSyncDestination captures enum value "sync_destination"
 	SvmSubtypeSyncDestination string = "sync_destination"
 )
@@ -1465,6 +1499,23 @@ func (m *Svm) validateSubtype(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateSubtypeEnum("subtype", "body", m.Subtype); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Svm) validateVolumeEfficiencyPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.VolumeEfficiencyPolicy) { // not required
+		return nil
+	}
+
+	if m.VolumeEfficiencyPolicy != nil {
+		if err := m.VolumeEfficiencyPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume_efficiency_policy")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1538,6 +1589,10 @@ func (m *Svm) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateQosPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateRoutes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1555,6 +1610,10 @@ func (m *Svm) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 	}
 
 	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeEfficiencyPolicy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1795,6 +1854,20 @@ func (m *Svm) contextValidateNvme(ctx context.Context, formats strfmt.Registry) 
 	return nil
 }
 
+func (m *Svm) contextValidateQosPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.QosPolicy != nil {
+		if err := m.QosPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Svm) contextValidateRoutes(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Routes); i++ {
@@ -1859,6 +1932,20 @@ func (m *Svm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) 
 
 	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Svm) contextValidateVolumeEfficiencyPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.VolumeEfficiencyPolicy != nil {
+		if err := m.VolumeEfficiencyPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume_efficiency_policy")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -2070,6 +2157,10 @@ type SvmCertificate struct {
 	// links
 	Links *SvmCertificateLinks `json:"_links,omitempty"`
 
+	// Certificate name
+	// Example: cert1
+	Name string `json:"name,omitempty"`
+
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID string `json:"uuid,omitempty"`
@@ -2249,9 +2340,11 @@ type SvmCifs struct {
 	// ad domain
 	AdDomain *SvmCifsAdDomain `json:"ad_domain,omitempty"`
 
-	// Specifies whether or not the CIFS service is administratively enabled.
-	//
-	Enabled bool `json:"enabled,omitempty"`
+	// If this is set to true, an SVM administrator can manage the CIFS service. If it is false, only the cluster administrator can manage the service.
+	Allowed *bool `json:"allowed,omitempty"`
+
+	// If allowed, setting to true enables the CIFS service.
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// The NetBIOS name of the CIFS server.
 	// Example: CIFS1
@@ -2789,8 +2882,11 @@ type SvmFcp struct {
 	// links
 	Links *SvmFcpLinks `json:"_links,omitempty"`
 
-	// Enable Fiber Channel Protocol (FCP)? Setting to true creates a service if not already created.
-	Enabled bool `json:"enabled,omitempty"`
+	// If this is set to true, an SVM administrator can manage the FCP service. If it is false, only the cluster administrator can manage the service.
+	Allowed *bool `json:"allowed,omitempty"`
+
+	// If allowed, setting to true enables the FCP service.
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // Validate validates this svm fcp
@@ -3144,8 +3240,11 @@ type SvmIscsi struct {
 	// links
 	Links *SvmIscsiLinks `json:"_links,omitempty"`
 
-	// Enable iSCSI? Setting to true creates a service if not already created.
-	Enabled bool `json:"enabled,omitempty"`
+	// If this is set to true, an SVM administrator can manage the iSCSI service. If it is false, only the cluster administrator can manage the service.
+	Allowed *bool `json:"allowed,omitempty"`
+
+	// If allowed, setting to true enables the ISCSI service.
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // Validate validates this svm iscsi
@@ -3457,8 +3556,11 @@ type SvmNfs struct {
 	// links
 	Links *SvmNfsLinks `json:"_links,omitempty"`
 
-	// Enable NFS? Setting to true creates a service if not already created.
-	Enabled bool `json:"enabled,omitempty"`
+	// If this is set to true, an SVM administrator can manage the NFS service. If it is false, only the cluster administrator can manage the service.
+	Allowed *bool `json:"allowed,omitempty"`
+
+	// If allowed, setting to true enables the NFS service.
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // Validate validates this svm nfs
@@ -4157,8 +4259,11 @@ type SvmNvme struct {
 	// links
 	Links *SvmNvmeLinks `json:"_links,omitempty"`
 
-	// Enable NVMe? Setting to true creates a service if not already created.
-	Enabled bool `json:"enabled,omitempty"`
+	// If this is set to true, an SVM administrator can manage the NVMe service. If it is false, only the cluster administrator can manage the service.
+	Allowed *bool `json:"allowed,omitempty"`
+
+	// If allowed, setting to true enables the NVMe service.
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // Validate validates this svm nvme
@@ -4324,6 +4429,202 @@ func (m *SvmNvmeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// SvmQosPolicy This optionally specifies which QoS policy group to apply to the Vserver. This policy group defines measurable service level objectives (SLOs) that apply to the storage objects with which the policy group is associated.
+//
+// swagger:model SvmQosPolicy
+type SvmQosPolicy struct {
+
+	// links
+	Links *SvmQosPolicyLinks `json:"_links,omitempty"`
+
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 10000
+	MaxThroughputIops int64 `json:"max_throughput_iops,omitempty"`
+
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 500
+	MaxThroughputMbps int64 `json:"max_throughput_mbps,omitempty"`
+
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 2000
+	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
+
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 500
+	MinThroughputMbps int64 `json:"min_throughput_mbps,omitempty"`
+
+	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
+	// Example: performance
+	Name string `json:"name,omitempty"`
+
+	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this svm qos policy
+func (m *SvmQosPolicy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmQosPolicy) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm qos policy based on the context it is used
+func (m *SvmQosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmQosPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmQosPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmQosPolicy) UnmarshalBinary(b []byte) error {
+	var res SvmQosPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmQosPolicyLinks svm qos policy links
+//
+// swagger:model SvmQosPolicyLinks
+type SvmQosPolicyLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this svm qos policy links
+func (m *SvmQosPolicyLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmQosPolicyLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm qos policy links based on the context it is used
+func (m *SvmQosPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmQosPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmQosPolicyLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmQosPolicyLinks) UnmarshalBinary(b []byte) error {
+	var res SvmQosPolicyLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // SvmS3 svm s3
 //
 // swagger:model SvmS3
@@ -4332,14 +4633,29 @@ type SvmS3 struct {
 	// links
 	Links *SvmS3Links `json:"_links,omitempty"`
 
+	// certificate
+	Certificate *SvmS3Certificate `json:"certificate,omitempty"`
+
 	// Specifies whether or not to enable S3. Setting this value to true creates a service if one is not yet created.
 	Enabled bool `json:"enabled,omitempty"`
 
-	// Specifies the name of the S3 server. A server name length can range from 1 to 15 characters and can only contain the following combination of characters 0-9, A-Z, a-z, ".", and "-".
+	// Specifies whether HTTP is enabled on the S3 server. By default, HTTP is disabled on the S3 server.
+	IsHTTPEnabled *bool `json:"is_http_enabled,omitempty"`
+
+	// Specifies whether HTTPS is enabled on the S3 server. By default, HTTPS is enabled on the S3 server.
+	IsHTTPSEnabled *bool `json:"is_https_enabled,omitempty"`
+
+	// Specifies the name of the S3 server. A server name length can range from 1 to 253 characters and can only contain the following combination of characters 0-9, A-Z, a-z, ".", and "-".
 	// Example: s3-server-1
-	// Max Length: 15
+	// Max Length: 253
 	// Min Length: 1
 	Name string `json:"name,omitempty"`
+
+	// Specifies the HTTP listener port for the S3 server. By default, HTTP is enabled on port 80.
+	Port *int64 `json:"port,omitempty"`
+
+	// Specifies the HTTPS listener port for the S3 server. By default, HTTPS is enabled on port 443.
+	SecurePort *int64 `json:"secure_port,omitempty"`
 }
 
 // Validate validates this svm s3
@@ -4347,6 +4663,10 @@ func (m *SvmS3) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCertificate(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4377,6 +4697,23 @@ func (m *SvmS3) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SvmS3) validateCertificate(formats strfmt.Registry) error {
+	if swag.IsZero(m.Certificate) { // not required
+		return nil
+	}
+
+	if m.Certificate != nil {
+		if err := m.Certificate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("s3" + "." + "certificate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *SvmS3) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
@@ -4386,7 +4723,7 @@ func (m *SvmS3) validateName(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MaxLength("s3"+"."+"name", "body", m.Name, 15); err != nil {
+	if err := validate.MaxLength("s3"+"."+"name", "body", m.Name, 253); err != nil {
 		return err
 	}
 
@@ -4398,6 +4735,10 @@ func (m *SvmS3) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCertificate(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4421,6 +4762,20 @@ func (m *SvmS3) contextValidateLinks(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
+func (m *SvmS3) contextValidateCertificate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Certificate != nil {
+		if err := m.Certificate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("s3" + "." + "certificate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *SvmS3) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -4432,6 +4787,186 @@ func (m *SvmS3) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SvmS3) UnmarshalBinary(b []byte) error {
 	var res SvmS3
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmS3Certificate Specifies the certificate that will be used for creating HTTPS connections to the S3 server.
+//
+// swagger:model SvmS3Certificate
+type SvmS3Certificate struct {
+
+	// links
+	Links *SvmS3CertificateLinks `json:"_links,omitempty"`
+
+	// Certificate name
+	// Example: cert1
+	Name string `json:"name,omitempty"`
+
+	// Certificate UUID
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this svm s3 certificate
+func (m *SvmS3Certificate) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmS3Certificate) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("s3" + "." + "certificate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm s3 certificate based on the context it is used
+func (m *SvmS3Certificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmS3Certificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("s3" + "." + "certificate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmS3Certificate) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmS3Certificate) UnmarshalBinary(b []byte) error {
+	var res SvmS3Certificate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmS3CertificateLinks svm s3 certificate links
+//
+// swagger:model SvmS3CertificateLinks
+type SvmS3CertificateLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this svm s3 certificate links
+func (m *SvmS3CertificateLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmS3CertificateLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("s3" + "." + "certificate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm s3 certificate links based on the context it is used
+func (m *SvmS3CertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmS3CertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("s3" + "." + "certificate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmS3CertificateLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmS3CertificateLinks) UnmarshalBinary(b []byte) error {
+	var res SvmS3CertificateLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4778,4 +5313,184 @@ func (m *SvmSnapshotPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HELLO RIPPY
+// SvmVolumeEfficiencyPolicy This is a reference to the volume efficiency policy.
+//
+// swagger:model SvmVolumeEfficiencyPolicy
+type SvmVolumeEfficiencyPolicy struct {
+
+	// links
+	Links *SvmVolumeEfficiencyPolicyLinks `json:"_links,omitempty"`
+
+	// Name of the volume efficiency policy
+	//
+	// Example: default
+	Name string `json:"name,omitempty"`
+
+	// Unique identifier of the volume efficiency policy.
+	//
+	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this svm volume efficiency policy
+func (m *SvmVolumeEfficiencyPolicy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmVolumeEfficiencyPolicy) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume_efficiency_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm volume efficiency policy based on the context it is used
+func (m *SvmVolumeEfficiencyPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmVolumeEfficiencyPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume_efficiency_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmVolumeEfficiencyPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmVolumeEfficiencyPolicy) UnmarshalBinary(b []byte) error {
+	var res SvmVolumeEfficiencyPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmVolumeEfficiencyPolicyLinks svm volume efficiency policy links
+//
+// swagger:model SvmVolumeEfficiencyPolicyLinks
+type SvmVolumeEfficiencyPolicyLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this svm volume efficiency policy links
+func (m *SvmVolumeEfficiencyPolicyLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmVolumeEfficiencyPolicyLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume_efficiency_policy" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm volume efficiency policy links based on the context it is used
+func (m *SvmVolumeEfficiencyPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmVolumeEfficiencyPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volume_efficiency_policy" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmVolumeEfficiencyPolicyLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmVolumeEfficiencyPolicyLinks) UnmarshalBinary(b []byte) error {
+	var res SvmVolumeEfficiencyPolicyLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

@@ -86,15 +86,36 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 787141 | The specified \"aggregates.name\" and \"aggregates.uuid\" refer to different aggregates. |
+| 917829 | Volume autosize grow threshold must be larger than autosize shrink threshold. |
+| 917831 | Volume minimum autosize must be smaller than the maximum autosize. |
+| 918193 | Cannot modify tiering min cooling days when vol move is in progress. |
+| 918194 | Tiering min cooling days not supported for SVMDR. |
+| 918195 | Tiering min cooling days not supported for non data volumes. |
+| 918196 | Tiering min cooling days not allowed for the provided tiering policy. |
 | 918248 | Specifying a value is not valid for initiating volume FlexClone split operation. |
 | 918251 | Specifying a value is not valid for a Snapshot copy restore operation. |
 | 918252 | specified \"nas.path\" is invalid. |
 | 918265 | Volume is on the same aggregate. |
 | 918266 | \"movement.destination_aggregate\" and \"movement.state\" are mutually exclusive, unless the state is \"cutover-wait\". |
 | 918267 | The specified \"movement.destination_aggregate\" does not exist. |
+| 918291 | Invalid volume cloud retrieval policy for the provided tiering policy. |
+| 918292 | cloud retrieval policy not supported for non data volume. |
+| 918293 | Cannot modify cloud retrieval policy when vol move is in progress. |
+| 918521 | The volume maximum autosize must be smaller than or equal to the maximum volume size. |
+| 918532 | The FlexClone match-parent-storage-tier option requires an effective cluster version of 9.9.1 or later. |
+| 918533 | The FlexClone match-parent-storage-tier option not applicable for FlexClone volumes hosted on non-FabricPool storage. |
+| 918534 | The tiering policy values are different for the FlexClone volume and its parent volume. The match-parent-storage-tier option cannot be set to true. |
+| 918535 | The tiering minimum cooling day values are different for the FlexClone volume and its parent volume. The match-parent-storage-tier option cannot be set to true. |
+| 918537 | Could not get the FlexClone volume tiering policy or its parent volume tiering policy. Wait a minute and try again. |
+| 918538 | The match-parent-storage-tier option is not supported for clone creation. |
 | 13107404 | When adding new resources to a FlexGroup by specifying \"aggregates.name\" or \"aggregates.uuid\", the FlexGroup cannot be resized using \"size\". These operations must be done separately. |
 | 13109187 | When adding new resources to a FlexGroup using \"sizing_method\", \"size\" must be specified.  Neither \"aggregates.name\" nor \"aggregates.uuid\" are allowed to be specified, as the aggregates are selected automatically by the system. |
 | 13109198 | Resizing by adding new resources is only supported for FlexGroups. |
+| 111411201 | File system analytics cannot be enabled on the target volume because of the specified reason. |
+| 111411202 | File system analytics cannot be disabled on the target volume because of the specified reason. |
+| 111411205 | File system analytics requires an effective cluster version of 9.8 or later. |
+| 111411206 | The specified \"analytics.state\" is invalid. |
+| 111411207 | File system analytics cannot be enabled on volumes that contain LUNs. |
 
 */
 type VolumeModifyDefault struct {

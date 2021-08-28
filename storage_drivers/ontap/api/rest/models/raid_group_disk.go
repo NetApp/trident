@@ -36,7 +36,7 @@ type RaidGroupDisk struct {
 	// Disk interface type
 	// Example: ssd
 	// Read Only: true
-	// Enum: [ata bsas fcal fsas lun sas msata ssd vmdisk unknown ssd_nvm]
+	// Enum: [ata bsas fcal fsas lun sas msata ssd vmdisk unknown ssd_cap ssd_nvm]
 	Type string `json:"type,omitempty"`
 
 	// Size in bytes that is usable by the aggregate.
@@ -102,53 +102,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// position
 	// Position
 	// data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskPositionData captures enum value "data"
 	RaidGroupDiskPositionData string = "data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// position
 	// Position
 	// parity
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskPositionParity captures enum value "parity"
 	RaidGroupDiskPositionParity string = "parity"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// position
 	// Position
 	// dparity
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskPositionDparity captures enum value "dparity"
 	RaidGroupDiskPositionDparity string = "dparity"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// position
 	// Position
 	// tparity
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskPositionTparity captures enum value "tparity"
 	RaidGroupDiskPositionTparity string = "tparity"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// position
 	// Position
 	// copy
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskPositionCopy captures enum value "copy"
 	RaidGroupDiskPositionCopy string = "copy"
 )
@@ -188,93 +188,93 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// state
 	// State
 	// normal
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskStateNormal captures enum value "normal"
 	RaidGroupDiskStateNormal string = "normal"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskStateFailed captures enum value "failed"
 	RaidGroupDiskStateFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// state
 	// State
 	// zeroing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskStateZeroing captures enum value "zeroing"
 	RaidGroupDiskStateZeroing string = "zeroing"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// state
 	// State
 	// copy
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskStateCopy captures enum value "copy"
 	RaidGroupDiskStateCopy string = "copy"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// state
 	// State
 	// replacing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskStateReplacing captures enum value "replacing"
 	RaidGroupDiskStateReplacing string = "replacing"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// state
 	// State
 	// evacuating
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskStateEvacuating captures enum value "evacuating"
 	RaidGroupDiskStateEvacuating string = "evacuating"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// state
 	// State
 	// prefail
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskStatePrefail captures enum value "prefail"
 	RaidGroupDiskStatePrefail string = "prefail"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// state
 	// State
 	// offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskStateOffline captures enum value "offline"
 	RaidGroupDiskStateOffline string = "offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// state
 	// State
 	// reconstructing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskStateReconstructing captures enum value "reconstructing"
 	RaidGroupDiskStateReconstructing string = "reconstructing"
 )
@@ -304,7 +304,7 @@ var raidGroupDiskTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ata","bsas","fcal","fsas","lun","sas","msata","ssd","vmdisk","unknown","ssd_nvm"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ata","bsas","fcal","fsas","lun","sas","msata","ssd","vmdisk","unknown","ssd_cap","ssd_nvm"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -314,113 +314,123 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// type
 	// Type
 	// ata
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskTypeAta captures enum value "ata"
 	RaidGroupDiskTypeAta string = "ata"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// type
 	// Type
 	// bsas
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskTypeBsas captures enum value "bsas"
 	RaidGroupDiskTypeBsas string = "bsas"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// type
 	// Type
 	// fcal
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskTypeFcal captures enum value "fcal"
 	RaidGroupDiskTypeFcal string = "fcal"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// type
 	// Type
 	// fsas
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskTypeFsas captures enum value "fsas"
 	RaidGroupDiskTypeFsas string = "fsas"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// type
 	// Type
 	// lun
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskTypeLun captures enum value "lun"
 	RaidGroupDiskTypeLun string = "lun"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// type
 	// Type
 	// sas
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskTypeSas captures enum value "sas"
 	RaidGroupDiskTypeSas string = "sas"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// type
 	// Type
 	// msata
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskTypeMsata captures enum value "msata"
 	RaidGroupDiskTypeMsata string = "msata"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// type
 	// Type
 	// ssd
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskTypeSsd captures enum value "ssd"
 	RaidGroupDiskTypeSsd string = "ssd"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// type
 	// Type
 	// vmdisk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskTypeVmdisk captures enum value "vmdisk"
 	RaidGroupDiskTypeVmdisk string = "vmdisk"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// type
 	// Type
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskTypeUnknown captures enum value "unknown"
 	RaidGroupDiskTypeUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// raid_group_disk
+	// RaidGroupDisk
+	// type
+	// Type
+	// ssd_cap
+	// END DEBUGGING
+	// RaidGroupDiskTypeSsdCap captures enum value "ssd_cap"
+	RaidGroupDiskTypeSsdCap string = "ssd_cap"
+
+	// BEGIN DEBUGGING
 	// raid_group_disk
 	// RaidGroupDisk
 	// type
 	// Type
 	// ssd_nvm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RaidGroupDiskTypeSsdNvm captures enum value "ssd_nvm"
 	RaidGroupDiskTypeSsdNvm string = "ssd_nvm"
 )
@@ -719,5 +729,3 @@ func (m *RaidGroupDiskDiskLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

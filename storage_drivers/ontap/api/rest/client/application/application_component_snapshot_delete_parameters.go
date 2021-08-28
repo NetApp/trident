@@ -76,7 +76,7 @@ type ApplicationComponentSnapshotDeleteParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* UUID.
 
@@ -102,11 +102,11 @@ func (o *ApplicationComponentSnapshotDeleteParams) WithDefaults() *ApplicationCo
 // All values with no default are reset to their zero value.
 func (o *ApplicationComponentSnapshotDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := ApplicationComponentSnapshotDeleteParams{
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -170,15 +170,15 @@ func (o *ApplicationComponentSnapshotDeleteParams) SetComponentUUIDPathParameter
 	o.ComponentUUIDPathParameter = componentUUID
 }
 
-// WithReturnTimeout adds the returnTimeout to the application component snapshot delete params
-func (o *ApplicationComponentSnapshotDeleteParams) WithReturnTimeout(returnTimeout *int64) *ApplicationComponentSnapshotDeleteParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the application component snapshot delete params
+func (o *ApplicationComponentSnapshotDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ApplicationComponentSnapshotDeleteParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the application component snapshot delete params
-func (o *ApplicationComponentSnapshotDeleteParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the application component snapshot delete params
+func (o *ApplicationComponentSnapshotDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithUUIDPathParameter adds the uuid to the application component snapshot delete params
@@ -210,13 +210,13 @@ func (o *ApplicationComponentSnapshotDeleteParams) WriteToRequest(r runtime.Clie
 		return err
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

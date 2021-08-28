@@ -399,43 +399,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicensePackageResponseRecordsItems0
 	// LicensePackageResponseRecordsItems0
 	// scope
 	// Scope
 	// not_available
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicensePackageResponseRecordsItems0ScopeNotAvailable captures enum value "not_available"
 	LicensePackageResponseRecordsItems0ScopeNotAvailable string = "not_available"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicensePackageResponseRecordsItems0
 	// LicensePackageResponseRecordsItems0
 	// scope
 	// Scope
 	// site
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicensePackageResponseRecordsItems0ScopeSite captures enum value "site"
 	LicensePackageResponseRecordsItems0ScopeSite string = "site"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicensePackageResponseRecordsItems0
 	// LicensePackageResponseRecordsItems0
 	// scope
 	// Scope
 	// cluster
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicensePackageResponseRecordsItems0ScopeCluster captures enum value "cluster"
 	LicensePackageResponseRecordsItems0ScopeCluster string = "cluster"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicensePackageResponseRecordsItems0
 	// LicensePackageResponseRecordsItems0
 	// scope
 	// Scope
 	// node
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicensePackageResponseRecordsItems0ScopeNode captures enum value "node"
 	LicensePackageResponseRecordsItems0ScopeNode string = "node"
 )
@@ -475,43 +475,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicensePackageResponseRecordsItems0
 	// LicensePackageResponseRecordsItems0
 	// state
 	// State
 	// compliant
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicensePackageResponseRecordsItems0StateCompliant captures enum value "compliant"
 	LicensePackageResponseRecordsItems0StateCompliant string = "compliant"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicensePackageResponseRecordsItems0
 	// LicensePackageResponseRecordsItems0
 	// state
 	// State
 	// noncompliant
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicensePackageResponseRecordsItems0StateNoncompliant captures enum value "noncompliant"
 	LicensePackageResponseRecordsItems0StateNoncompliant string = "noncompliant"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicensePackageResponseRecordsItems0
 	// LicensePackageResponseRecordsItems0
 	// state
 	// State
 	// unlicensed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicensePackageResponseRecordsItems0StateUnlicensed captures enum value "unlicensed"
 	LicensePackageResponseRecordsItems0StateUnlicensed string = "unlicensed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicensePackageResponseRecordsItems0
 	// LicensePackageResponseRecordsItems0
 	// state
 	// State
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicensePackageResponseRecordsItems0StateUnknown captures enum value "unknown"
 	LicensePackageResponseRecordsItems0StateUnknown string = "unknown"
 )
@@ -668,10 +668,20 @@ type LicensePackageResponseRecordsItems0LicensesItems0 struct {
 	Evaluation *bool `json:"evaluation,omitempty"`
 
 	// Date and time when the license expires.
-	// Example: 2019-03-02 19:00:00
+	// Example: 2019-03-02T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
+
+	// A string that associates the license with a node or cluster.
+	// Example: 456-44-1234
+	// Read Only: true
+	HostID string `json:"host_id,omitempty"`
+
+	// Name of license that enabled the feature.
+	// Example: Core Bundle
+	// Read Only: true
+	InstalledLicense string `json:"installed_license,omitempty"`
 
 	// Cluster, node or license manager that owns the license.
 	// Example: cluster1
@@ -684,7 +694,7 @@ type LicensePackageResponseRecordsItems0LicensesItems0 struct {
 	SerialNumber string `json:"serial_number,omitempty"`
 
 	// Date and time when the license starts.
-	// Example: 2019-02-02 19:00:00
+	// Example: 2019-02-02T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -798,6 +808,14 @@ func (m *LicensePackageResponseRecordsItems0LicensesItems0) ContextValidate(ctx 
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateHostID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstalledLicense(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateOwner(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -865,6 +883,24 @@ func (m *LicensePackageResponseRecordsItems0LicensesItems0) contextValidateEvalu
 func (m *LicensePackageResponseRecordsItems0LicensesItems0) contextValidateExpiryTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "expiry_time", "body", m.ExpiryTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LicensePackageResponseRecordsItems0LicensesItems0) contextValidateHostID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "host_id", "body", string(m.HostID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LicensePackageResponseRecordsItems0LicensesItems0) contextValidateInstalledLicense(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "installed_license", "body", string(m.InstalledLicense)); err != nil {
 		return err
 	}
 
@@ -1029,43 +1065,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicensePackageResponseRecordsItems0LicensesItems0Compliance
 	// LicensePackageResponseRecordsItems0LicensesItems0Compliance
 	// state
 	// State
 	// compliant
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicensePackageResponseRecordsItems0LicensesItems0ComplianceStateCompliant captures enum value "compliant"
 	LicensePackageResponseRecordsItems0LicensesItems0ComplianceStateCompliant string = "compliant"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicensePackageResponseRecordsItems0LicensesItems0Compliance
 	// LicensePackageResponseRecordsItems0LicensesItems0Compliance
 	// state
 	// State
 	// noncompliant
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicensePackageResponseRecordsItems0LicensesItems0ComplianceStateNoncompliant captures enum value "noncompliant"
 	LicensePackageResponseRecordsItems0LicensesItems0ComplianceStateNoncompliant string = "noncompliant"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicensePackageResponseRecordsItems0LicensesItems0Compliance
 	// LicensePackageResponseRecordsItems0LicensesItems0Compliance
 	// state
 	// State
 	// unlicensed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicensePackageResponseRecordsItems0LicensesItems0ComplianceStateUnlicensed captures enum value "unlicensed"
 	LicensePackageResponseRecordsItems0LicensesItems0ComplianceStateUnlicensed string = "unlicensed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicensePackageResponseRecordsItems0LicensesItems0Compliance
 	// LicensePackageResponseRecordsItems0LicensesItems0Compliance
 	// state
 	// State
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicensePackageResponseRecordsItems0LicensesItems0ComplianceStateUnknown captures enum value "unknown"
 	LicensePackageResponseRecordsItems0LicensesItems0ComplianceStateUnknown string = "unknown"
 )
@@ -1217,5 +1253,3 @@ func (m *LicensePackageResponseRecordsItems0Links) UnmarshalBinary(b []byte) err
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

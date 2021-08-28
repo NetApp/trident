@@ -60,6 +60,12 @@ func NewVolumeCollectionGetParamsWithHTTPClient(client *http.Client) *VolumeColl
 */
 type VolumeCollectionGetParams struct {
 
+	/* AccessTimeEnabled.
+
+	   Filter by access_time_enabled
+	*/
+	AccessTimeEnabledQueryParameter *bool
+
 	/* AggregatesName.
 
 	   Filter by aggregates.name
@@ -71,6 +77,36 @@ type VolumeCollectionGetParams struct {
 	   Filter by aggregates.uuid
 	*/
 	AggregatesUUIDQueryParameter *string
+
+	/* AnalyticsScanProgress.
+
+	   Filter by analytics.scan_progress
+	*/
+	AnalyticsScanProgressQueryParameter *int64
+
+	/* AnalyticsState.
+
+	   Filter by analytics.state
+	*/
+	AnalyticsStateQueryParameter *string
+
+	/* AnalyticsSupported.
+
+	   Filter by analytics.supported
+	*/
+	AnalyticsSupportedQueryParameter *bool
+
+	/* AnalyticsUnsupportedReasonCode.
+
+	   Filter by analytics.unsupported_reason.code
+	*/
+	AnalyticsUnsupportedReasonCodeQueryParameter *string
+
+	/* AnalyticsUnsupportedReasonMessage.
+
+	   Filter by analytics.unsupported_reason.message
+	*/
+	AnalyticsUnsupportedReasonMessageQueryParameter *string
 
 	/* ApplicationName.
 
@@ -174,6 +210,12 @@ type VolumeCollectionGetParams struct {
 	*/
 	CloneSplitInitiatedQueryParameter *bool
 
+	/* CloudRetrievalPolicy.
+
+	   Filter by cloud_retrieval_policy
+	*/
+	CloudRetrievalPolicyQueryParameter *string
+
 	/* Comment.
 
 	   Filter by comment
@@ -186,11 +228,185 @@ type VolumeCollectionGetParams struct {
 	*/
 	ConsistencyGroupNameQueryParameter *string
 
+	/* ConstituentsAggregatesName.
+
+	   Filter by constituents.aggregates.name
+	*/
+	ConstituentsAggregatesNameQueryParameter *string
+
+	/* ConstituentsAggregatesUUID.
+
+	   Filter by constituents.aggregates.uuid
+	*/
+	ConstituentsAggregatesUUIDQueryParameter *string
+
+	/* ConstituentsMovementCutoverWindow.
+
+	   Filter by constituents.movement.cutover_window
+	*/
+	ConstituentsMovementCutoverWindowQueryParameter *int64
+
+	/* ConstituentsMovementDestinationAggregateName.
+
+	   Filter by constituents.movement.destination_aggregate.name
+	*/
+	ConstituentsMovementDestinationAggregateNameQueryParameter *string
+
+	/* ConstituentsMovementDestinationAggregateUUID.
+
+	   Filter by constituents.movement.destination_aggregate.uuid
+	*/
+	ConstituentsMovementDestinationAggregateUUIDQueryParameter *string
+
+	/* ConstituentsMovementPercentComplete.
+
+	   Filter by constituents.movement.percent_complete
+	*/
+	ConstituentsMovementPercentCompleteQueryParameter *int64
+
+	/* ConstituentsMovementState.
+
+	   Filter by constituents.movement.state
+	*/
+	ConstituentsMovementStateQueryParameter *string
+
+	/* ConstituentsName.
+
+	   Filter by constituents.name
+	*/
+	ConstituentsNameQueryParameter *string
+
+	/* ConstituentsSpaceAfsTotal.
+
+	   Filter by constituents.space.afs_total
+	*/
+	ConstituentsSpaceAfsTotalQueryParameter *int64
+
+	/* ConstituentsSpaceAvailable.
+
+	   Filter by constituents.space.available
+	*/
+	ConstituentsSpaceAvailableQueryParameter *int64
+
+	/* ConstituentsSpaceAvailablePercent.
+
+	   Filter by constituents.space.available_percent
+	*/
+	ConstituentsSpaceAvailablePercentQueryParameter *int64
+
+	/* ConstituentsSpaceBlockStorageInactiveUserData.
+
+	   Filter by constituents.space.block_storage_inactive_user_data
+	*/
+	ConstituentsSpaceBlockStorageInactiveUserDataQueryParameter *int64
+
+	/* ConstituentsSpaceCapacityTierFootprint.
+
+	   Filter by constituents.space.capacity_tier_footprint
+	*/
+	ConstituentsSpaceCapacityTierFootprintQueryParameter *int64
+
+	/* ConstituentsSpaceFootprint.
+
+	   Filter by constituents.space.footprint
+	*/
+	ConstituentsSpaceFootprintQueryParameter *int64
+
+	/* ConstituentsSpaceLocalTierFootprint.
+
+	   Filter by constituents.space.local_tier_footprint
+	*/
+	ConstituentsSpaceLocalTierFootprintQueryParameter *int64
+
+	/* ConstituentsSpaceLogicalSpaceAvailable.
+
+	   Filter by constituents.space.logical_space.available
+	*/
+	ConstituentsSpaceLogicalSpaceAvailableQueryParameter *int64
+
+	/* ConstituentsSpaceLogicalSpaceEnforcement.
+
+	   Filter by constituents.space.logical_space.enforcement
+	*/
+	ConstituentsSpaceLogicalSpaceEnforcementQueryParameter *bool
+
+	/* ConstituentsSpaceLogicalSpaceReporting.
+
+	   Filter by constituents.space.logical_space.reporting
+	*/
+	ConstituentsSpaceLogicalSpaceReportingQueryParameter *bool
+
+	/* ConstituentsSpaceLogicalSpaceUsedByAfs.
+
+	   Filter by constituents.space.logical_space.used_by_afs
+	*/
+	ConstituentsSpaceLogicalSpaceUsedByAfsQueryParameter *int64
+
+	/* ConstituentsSpaceMetadata.
+
+	   Filter by constituents.space.metadata
+	*/
+	ConstituentsSpaceMetadataQueryParameter *int64
+
+	/* ConstituentsSpaceOverProvisioned.
+
+	   Filter by constituents.space.over_provisioned
+	*/
+	ConstituentsSpaceOverProvisionedQueryParameter *int64
+
+	/* ConstituentsSpacePerformanceTierFootprint.
+
+	   Filter by constituents.space.performance_tier_footprint
+	*/
+	ConstituentsSpacePerformanceTierFootprintQueryParameter *int64
+
+	/* ConstituentsSpaceSize.
+
+	   Filter by constituents.space.size
+	*/
+	ConstituentsSpaceSizeQueryParameter *int64
+
+	/* ConstituentsSpaceSnapshotReservePercent.
+
+	   Filter by constituents.space.snapshot.reserve_percent
+	*/
+	ConstituentsSpaceSnapshotReservePercentQueryParameter *int64
+
+	/* ConstituentsSpaceSnapshotUsed.
+
+	   Filter by constituents.space.snapshot.used
+	*/
+	ConstituentsSpaceSnapshotUsedQueryParameter *int64
+
+	/* ConstituentsSpaceTotalFootprint.
+
+	   Filter by constituents.space.total_footprint
+	*/
+	ConstituentsSpaceTotalFootprintQueryParameter *int64
+
+	/* ConstituentsSpaceUsed.
+
+	   Filter by constituents.space.used
+	*/
+	ConstituentsSpaceUsedQueryParameter *int64
+
+	/* ConstituentsSpaceUsedByAfs.
+
+	   Filter by constituents.space.used_by_afs
+	*/
+	ConstituentsSpaceUsedByAfsQueryParameter *int64
+
 	/* CreateTime.
 
 	   Filter by create_time
 	*/
 	CreateTimeQueryParameter *string
+
+	/* EfficiencyApplicationIoSize.
+
+	   Filter by efficiency.application_io_size
+	*/
+	EfficiencyApplicationIoSizeQueryParameter *string
 
 	/* EfficiencyCompaction.
 
@@ -216,11 +432,77 @@ type VolumeCollectionGetParams struct {
 	*/
 	EfficiencyDedupeQueryParameter *string
 
+	/* EfficiencyLastOpBegin.
+
+	   Filter by efficiency.last_op_begin
+	*/
+	EfficiencyLastOpBeginQueryParameter *string
+
+	/* EfficiencyLastOpEnd.
+
+	   Filter by efficiency.last_op_end
+	*/
+	EfficiencyLastOpEndQueryParameter *string
+
+	/* EfficiencyLastOpErr.
+
+	   Filter by efficiency.last_op_err
+	*/
+	EfficiencyLastOpErrQueryParameter *string
+
+	/* EfficiencyLastOpSize.
+
+	   Filter by efficiency.last_op_size
+	*/
+	EfficiencyLastOpSizeQueryParameter *int64
+
+	/* EfficiencyLastOpState.
+
+	   Filter by efficiency.last_op_state
+	*/
+	EfficiencyLastOpStateQueryParameter *string
+
+	/* EfficiencyOpState.
+
+	   Filter by efficiency.op_state
+	*/
+	EfficiencyOpStateQueryParameter *string
+
+	/* EfficiencyPath.
+
+	   Filter by efficiency.path
+	*/
+	EfficiencyPathQueryParameter *string
+
 	/* EfficiencyPolicyName.
 
 	   Filter by efficiency.policy.name
 	*/
 	EfficiencyPolicyNameQueryParameter *string
+
+	/* EfficiencyProgress.
+
+	   Filter by efficiency.progress
+	*/
+	EfficiencyProgressQueryParameter *string
+
+	/* EfficiencySchedule.
+
+	   Filter by efficiency.schedule
+	*/
+	EfficiencyScheduleQueryParameter *string
+
+	/* EfficiencyState.
+
+	   Filter by efficiency.state
+	*/
+	EfficiencyStateQueryParameter *string
+
+	/* EfficiencyType.
+
+	   Filter by efficiency.type
+	*/
+	EfficiencyTypeQueryParameter *string
 
 	/* EncryptionEnabled.
 
@@ -280,7 +562,7 @@ type VolumeCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* FilesMaximum.
 
@@ -312,6 +594,12 @@ type VolumeCollectionGetParams struct {
 	*/
 	GuaranteeTypeQueryParameter *string
 
+	/* IsObjectStore.
+
+	   Filter by is_object_store
+	*/
+	IsObjectStoreQueryParameter *bool
+
 	/* IsSvmRoot.
 
 	   Filter by is_svm_root
@@ -328,7 +616,7 @@ type VolumeCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* MetricCloudDuration.
 
@@ -401,6 +689,36 @@ type VolumeCollectionGetParams struct {
 	   Filter by metric.duration
 	*/
 	MetricDurationQueryParameter *string
+
+	/* MetricFlexcacheBandwidthSavings.
+
+	   Filter by metric.flexcache.bandwidth_savings
+	*/
+	MetricFlexcacheBandwidthSavingsQueryParameter *int64
+
+	/* MetricFlexcacheCacheMissPercent.
+
+	   Filter by metric.flexcache.cache_miss_percent
+	*/
+	MetricFlexcacheCacheMissPercentQueryParameter *int64
+
+	/* MetricFlexcacheDuration.
+
+	   Filter by metric.flexcache.duration
+	*/
+	MetricFlexcacheDurationQueryParameter *string
+
+	/* MetricFlexcacheStatus.
+
+	   Filter by metric.flexcache.status
+	*/
+	MetricFlexcacheStatusQueryParameter *string
+
+	/* MetricFlexcacheTimestamp.
+
+	   Filter by metric.flexcache.timestamp
+	*/
+	MetricFlexcacheTimestampQueryParameter *string
 
 	/* MetricIopsOther.
 
@@ -510,6 +828,12 @@ type VolumeCollectionGetParams struct {
 	*/
 	MovementPercentCompleteQueryParameter *int64
 
+	/* MovementStartTime.
+
+	   Filter by movement.start_time
+	*/
+	MovementStartTimeQueryParameter *string
+
 	/* MovementState.
 
 	   Filter by movement.state
@@ -540,6 +864,18 @@ type VolumeCollectionGetParams struct {
 	*/
 	NasGIDQueryParameter *int64
 
+	/* NasJunctionParentName.
+
+	   Filter by nas.junction_parent.name
+	*/
+	NasJunctionParentNameQueryParameter *string
+
+	/* NasJunctionParentUUID.
+
+	   Filter by nas.junction_parent.uuid
+	*/
+	NasJunctionParentUUIDQueryParameter *string
+
 	/* NasPath.
 
 	   Filter by nas.path
@@ -568,7 +904,7 @@ type VolumeCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* QosPolicyMaxThroughputIops.
 
@@ -588,6 +924,12 @@ type VolumeCollectionGetParams struct {
 	*/
 	QosPolicyMinThroughputIopsQueryParameter *int64
 
+	/* QosPolicyMinThroughputMbps.
+
+	   Filter by qos.policy.min_throughput_mbps
+	*/
+	QosPolicyMinThroughputMbpsQueryParameter *int64
+
 	/* QosPolicyName.
 
 	   Filter by qos.policy.name
@@ -599,6 +941,12 @@ type VolumeCollectionGetParams struct {
 	   Filter by qos.policy.uuid
 	*/
 	QosPolicyUUIDQueryParameter *string
+
+	/* QueueForEncryption.
+
+	   Filter by queue_for_encryption
+	*/
+	QueueForEncryptionQueryParameter *bool
 
 	/* QuotaState.
 
@@ -612,7 +960,7 @@ type VolumeCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -620,7 +968,7 @@ type VolumeCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Size.
 
@@ -694,6 +1042,24 @@ type VolumeCollectionGetParams struct {
 	*/
 	SnaplockTypeQueryParameter *string
 
+	/* SnaplockUnspecifiedRetentionFileCount.
+
+	   Filter by snaplock.unspecified_retention_file_count
+	*/
+	SnaplockUnspecifiedRetentionFileCountQueryParameter *int64
+
+	/* SnapmirrorDestinationsIsCloud.
+
+	   Filter by snapmirror.destinations.is_cloud
+	*/
+	SnapmirrorDestinationsIsCloudQueryParameter *bool
+
+	/* SnapmirrorDestinationsIsOntap.
+
+	   Filter by snapmirror.destinations.is_ontap
+	*/
+	SnapmirrorDestinationsIsOntapQueryParameter *bool
+
 	/* SnapmirrorIsProtected.
 
 	   Filter by snapmirror.is_protected
@@ -712,17 +1078,35 @@ type VolumeCollectionGetParams struct {
 	*/
 	SnapshotPolicyUUIDQueryParameter *string
 
+	/* SpaceAfsTotal.
+
+	   Filter by space.afs_total
+	*/
+	SpaceAfsTotalQueryParameter *int64
+
 	/* SpaceAvailable.
 
 	   Filter by space.available
 	*/
 	SpaceAvailableQueryParameter *int64
 
+	/* SpaceAvailablePercent.
+
+	   Filter by space.available_percent
+	*/
+	SpaceAvailablePercentQueryParameter *int64
+
 	/* SpaceBlockStorageInactiveUserData.
 
 	   Filter by space.block_storage_inactive_user_data
 	*/
 	SpaceBlockStorageInactiveUserDataQueryParameter *int64
+
+	/* SpaceBlockStorageInactiveUserDataPercent.
+
+	   Filter by space.block_storage_inactive_user_data_percent
+	*/
+	SpaceBlockStorageInactiveUserDataPercentQueryParameter *int64
 
 	/* SpaceCapacityTierFootprint.
 
@@ -735,6 +1119,24 @@ type VolumeCollectionGetParams struct {
 	   Filter by space.footprint
 	*/
 	SpaceFootprintQueryParameter *int64
+
+	/* SpaceFractionalReserve.
+
+	   Filter by space.fractional_reserve
+	*/
+	SpaceFractionalReserveQueryParameter *int64
+
+	/* SpaceFullThresholdPercent.
+
+	   Filter by space.full_threshold_percent
+	*/
+	SpaceFullThresholdPercentQueryParameter *int64
+
+	/* SpaceLocalTierFootprint.
+
+	   Filter by space.local_tier_footprint
+	*/
+	SpaceLocalTierFootprintQueryParameter *int64
 
 	/* SpaceLogicalSpaceAvailable.
 
@@ -754,11 +1156,23 @@ type VolumeCollectionGetParams struct {
 	*/
 	SpaceLogicalSpaceReportingQueryParameter *bool
 
+	/* SpaceLogicalSpaceUsed.
+
+	   Filter by space.logical_space.used
+	*/
+	SpaceLogicalSpaceUsedQueryParameter *int64
+
 	/* SpaceLogicalSpaceUsedByAfs.
 
 	   Filter by space.logical_space.used_by_afs
 	*/
 	SpaceLogicalSpaceUsedByAfsQueryParameter *int64
+
+	/* SpaceLogicalSpaceUsedPercent.
+
+	   Filter by space.logical_space.used_percent
+	*/
+	SpaceLogicalSpaceUsedPercentQueryParameter *int64
 
 	/* SpaceMetadata.
 
@@ -766,11 +1180,41 @@ type VolumeCollectionGetParams struct {
 	*/
 	SpaceMetadataQueryParameter *int64
 
+	/* SpaceNearlyFullThresholdPercent.
+
+	   Filter by space.nearly_full_threshold_percent
+	*/
+	SpaceNearlyFullThresholdPercentQueryParameter *int64
+
 	/* SpaceOverProvisioned.
 
 	   Filter by space.over_provisioned
 	*/
 	SpaceOverProvisionedQueryParameter *int64
+
+	/* SpaceOverwriteReserve.
+
+	   Filter by space.overwrite_reserve
+	*/
+	SpaceOverwriteReserveQueryParameter *int64
+
+	/* SpaceOverwriteReserveUsed.
+
+	   Filter by space.overwrite_reserve_used
+	*/
+	SpaceOverwriteReserveUsedQueryParameter *int64
+
+	/* SpacePercentUsed.
+
+	   Filter by space.percent_used
+	*/
+	SpacePercentUsedQueryParameter *int64
+
+	/* SpacePerformanceTierFootprint.
+
+	   Filter by space.performance_tier_footprint
+	*/
+	SpacePerformanceTierFootprintQueryParameter *int64
 
 	/* SpaceSize.
 
@@ -778,11 +1222,29 @@ type VolumeCollectionGetParams struct {
 	*/
 	SpaceSizeQueryParameter *int64
 
+	/* SpaceSizeAvailableForSnapshots.
+
+	   Filter by space.size_available_for_snapshots
+	*/
+	SpaceSizeAvailableForSnapshotsQueryParameter *int64
+
 	/* SpaceSnapshotReservePercent.
 
 	   Filter by space.snapshot.reserve_percent
 	*/
 	SpaceSnapshotReservePercentQueryParameter *int64
+
+	/* SpaceSnapshotReserveSize.
+
+	   Filter by space.snapshot.reserve_size
+	*/
+	SpaceSnapshotReserveSizeQueryParameter *int64
+
+	/* SpaceSnapshotSpaceUsedPercent.
+
+	   Filter by space.snapshot.space_used_percent
+	*/
+	SpaceSnapshotSpaceUsedPercentQueryParameter *int64
 
 	/* SpaceSnapshotUsed.
 
@@ -790,11 +1252,23 @@ type VolumeCollectionGetParams struct {
 	*/
 	SpaceSnapshotUsedQueryParameter *int64
 
+	/* SpaceTotalFootprint.
+
+	   Filter by space.total_footprint
+	*/
+	SpaceTotalFootprintQueryParameter *int64
+
 	/* SpaceUsed.
 
 	   Filter by space.used
 	*/
 	SpaceUsedQueryParameter *int64
+
+	/* SpaceUsedByAfs.
+
+	   Filter by space.used_by_afs
+	*/
+	SpaceUsedByAfsQueryParameter *int64
 
 	/* State.
 
@@ -861,6 +1335,30 @@ type VolumeCollectionGetParams struct {
 	   Filter by statistics.cloud.timestamp
 	*/
 	StatisticsCloudTimestampQueryParameter *string
+
+	/* StatisticsFlexcacheRawCacheMissBlocks.
+
+	   Filter by statistics.flexcache_raw.cache_miss_blocks
+	*/
+	StatisticsFlexcacheRawCacheMissBlocksQueryParameter *int64
+
+	/* StatisticsFlexcacheRawClientRequestedBlocks.
+
+	   Filter by statistics.flexcache_raw.client_requested_blocks
+	*/
+	StatisticsFlexcacheRawClientRequestedBlocksQueryParameter *int64
+
+	/* StatisticsFlexcacheRawStatus.
+
+	   Filter by statistics.flexcache_raw.status
+	*/
+	StatisticsFlexcacheRawStatusQueryParameter *string
+
+	/* StatisticsFlexcacheRawTimestamp.
+
+	   Filter by statistics.flexcache_raw.timestamp
+	*/
+	StatisticsFlexcacheRawTimestampQueryParameter *string
 
 	/* StatisticsIopsRawOther.
 
@@ -946,6 +1444,12 @@ type VolumeCollectionGetParams struct {
 	*/
 	StatisticsTimestampQueryParameter *string
 
+	/* Status.
+
+	   Filter by status
+	*/
+	StatusQueryParameter *string
+
 	/* Style.
 
 	   Filter by style
@@ -963,6 +1467,18 @@ type VolumeCollectionGetParams struct {
 	   Filter by svm.uuid
 	*/
 	SVMUUIDQueryParameter *string
+
+	/* TieringMinCoolingDays.
+
+	   Filter by tiering.min_cooling_days
+	*/
+	TieringMinCoolingDaysQueryParameter *int64
+
+	/* TieringObjectTags.
+
+	   Filter by tiering.object_tags
+	*/
+	TieringObjectTagsQueryParameter *string
 
 	/* TieringPolicy.
 
@@ -1000,14 +1516,14 @@ func (o *VolumeCollectionGetParams) WithDefaults() *VolumeCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *VolumeCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := VolumeCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -1049,6 +1565,17 @@ func (o *VolumeCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAccessTimeEnabledQueryParameter adds the accessTimeEnabled to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAccessTimeEnabledQueryParameter(accessTimeEnabled *bool) *VolumeCollectionGetParams {
+	o.SetAccessTimeEnabledQueryParameter(accessTimeEnabled)
+	return o
+}
+
+// SetAccessTimeEnabledQueryParameter adds the accessTimeEnabled to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAccessTimeEnabledQueryParameter(accessTimeEnabled *bool) {
+	o.AccessTimeEnabledQueryParameter = accessTimeEnabled
+}
+
 // WithAggregatesNameQueryParameter adds the aggregatesName to the volume collection get params
 func (o *VolumeCollectionGetParams) WithAggregatesNameQueryParameter(aggregatesName *string) *VolumeCollectionGetParams {
 	o.SetAggregatesNameQueryParameter(aggregatesName)
@@ -1069,6 +1596,61 @@ func (o *VolumeCollectionGetParams) WithAggregatesUUIDQueryParameter(aggregatesU
 // SetAggregatesUUIDQueryParameter adds the aggregatesUuid to the volume collection get params
 func (o *VolumeCollectionGetParams) SetAggregatesUUIDQueryParameter(aggregatesUUID *string) {
 	o.AggregatesUUIDQueryParameter = aggregatesUUID
+}
+
+// WithAnalyticsScanProgressQueryParameter adds the analyticsScanProgress to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsScanProgressQueryParameter(analyticsScanProgress *int64) *VolumeCollectionGetParams {
+	o.SetAnalyticsScanProgressQueryParameter(analyticsScanProgress)
+	return o
+}
+
+// SetAnalyticsScanProgressQueryParameter adds the analyticsScanProgress to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsScanProgressQueryParameter(analyticsScanProgress *int64) {
+	o.AnalyticsScanProgressQueryParameter = analyticsScanProgress
+}
+
+// WithAnalyticsStateQueryParameter adds the analyticsState to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsStateQueryParameter(analyticsState *string) *VolumeCollectionGetParams {
+	o.SetAnalyticsStateQueryParameter(analyticsState)
+	return o
+}
+
+// SetAnalyticsStateQueryParameter adds the analyticsState to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsStateQueryParameter(analyticsState *string) {
+	o.AnalyticsStateQueryParameter = analyticsState
+}
+
+// WithAnalyticsSupportedQueryParameter adds the analyticsSupported to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsSupportedQueryParameter(analyticsSupported *bool) *VolumeCollectionGetParams {
+	o.SetAnalyticsSupportedQueryParameter(analyticsSupported)
+	return o
+}
+
+// SetAnalyticsSupportedQueryParameter adds the analyticsSupported to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsSupportedQueryParameter(analyticsSupported *bool) {
+	o.AnalyticsSupportedQueryParameter = analyticsSupported
+}
+
+// WithAnalyticsUnsupportedReasonCodeQueryParameter adds the analyticsUnsupportedReasonCode to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsUnsupportedReasonCodeQueryParameter(analyticsUnsupportedReasonCode *string) *VolumeCollectionGetParams {
+	o.SetAnalyticsUnsupportedReasonCodeQueryParameter(analyticsUnsupportedReasonCode)
+	return o
+}
+
+// SetAnalyticsUnsupportedReasonCodeQueryParameter adds the analyticsUnsupportedReasonCode to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsUnsupportedReasonCodeQueryParameter(analyticsUnsupportedReasonCode *string) {
+	o.AnalyticsUnsupportedReasonCodeQueryParameter = analyticsUnsupportedReasonCode
+}
+
+// WithAnalyticsUnsupportedReasonMessageQueryParameter adds the analyticsUnsupportedReasonMessage to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsUnsupportedReasonMessageQueryParameter(analyticsUnsupportedReasonMessage *string) *VolumeCollectionGetParams {
+	o.SetAnalyticsUnsupportedReasonMessageQueryParameter(analyticsUnsupportedReasonMessage)
+	return o
+}
+
+// SetAnalyticsUnsupportedReasonMessageQueryParameter adds the analyticsUnsupportedReasonMessage to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsUnsupportedReasonMessageQueryParameter(analyticsUnsupportedReasonMessage *string) {
+	o.AnalyticsUnsupportedReasonMessageQueryParameter = analyticsUnsupportedReasonMessage
 }
 
 // WithApplicationNameQueryParameter adds the applicationName to the volume collection get params
@@ -1258,6 +1840,17 @@ func (o *VolumeCollectionGetParams) SetCloneSplitInitiatedQueryParameter(cloneSp
 	o.CloneSplitInitiatedQueryParameter = cloneSplitInitiated
 }
 
+// WithCloudRetrievalPolicyQueryParameter adds the cloudRetrievalPolicy to the volume collection get params
+func (o *VolumeCollectionGetParams) WithCloudRetrievalPolicyQueryParameter(cloudRetrievalPolicy *string) *VolumeCollectionGetParams {
+	o.SetCloudRetrievalPolicyQueryParameter(cloudRetrievalPolicy)
+	return o
+}
+
+// SetCloudRetrievalPolicyQueryParameter adds the cloudRetrievalPolicy to the volume collection get params
+func (o *VolumeCollectionGetParams) SetCloudRetrievalPolicyQueryParameter(cloudRetrievalPolicy *string) {
+	o.CloudRetrievalPolicyQueryParameter = cloudRetrievalPolicy
+}
+
 // WithCommentQueryParameter adds the comment to the volume collection get params
 func (o *VolumeCollectionGetParams) WithCommentQueryParameter(comment *string) *VolumeCollectionGetParams {
 	o.SetCommentQueryParameter(comment)
@@ -1280,6 +1873,314 @@ func (o *VolumeCollectionGetParams) SetConsistencyGroupNameQueryParameter(consis
 	o.ConsistencyGroupNameQueryParameter = consistencyGroupName
 }
 
+// WithConstituentsAggregatesNameQueryParameter adds the constituentsAggregatesName to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsAggregatesNameQueryParameter(constituentsAggregatesName *string) *VolumeCollectionGetParams {
+	o.SetConstituentsAggregatesNameQueryParameter(constituentsAggregatesName)
+	return o
+}
+
+// SetConstituentsAggregatesNameQueryParameter adds the constituentsAggregatesName to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsAggregatesNameQueryParameter(constituentsAggregatesName *string) {
+	o.ConstituentsAggregatesNameQueryParameter = constituentsAggregatesName
+}
+
+// WithConstituentsAggregatesUUIDQueryParameter adds the constituentsAggregatesUUID to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsAggregatesUUIDQueryParameter(constituentsAggregatesUUID *string) *VolumeCollectionGetParams {
+	o.SetConstituentsAggregatesUUIDQueryParameter(constituentsAggregatesUUID)
+	return o
+}
+
+// SetConstituentsAggregatesUUIDQueryParameter adds the constituentsAggregatesUuid to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsAggregatesUUIDQueryParameter(constituentsAggregatesUUID *string) {
+	o.ConstituentsAggregatesUUIDQueryParameter = constituentsAggregatesUUID
+}
+
+// WithConstituentsMovementCutoverWindowQueryParameter adds the constituentsMovementCutoverWindow to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsMovementCutoverWindowQueryParameter(constituentsMovementCutoverWindow *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsMovementCutoverWindowQueryParameter(constituentsMovementCutoverWindow)
+	return o
+}
+
+// SetConstituentsMovementCutoverWindowQueryParameter adds the constituentsMovementCutoverWindow to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsMovementCutoverWindowQueryParameter(constituentsMovementCutoverWindow *int64) {
+	o.ConstituentsMovementCutoverWindowQueryParameter = constituentsMovementCutoverWindow
+}
+
+// WithConstituentsMovementDestinationAggregateNameQueryParameter adds the constituentsMovementDestinationAggregateName to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsMovementDestinationAggregateNameQueryParameter(constituentsMovementDestinationAggregateName *string) *VolumeCollectionGetParams {
+	o.SetConstituentsMovementDestinationAggregateNameQueryParameter(constituentsMovementDestinationAggregateName)
+	return o
+}
+
+// SetConstituentsMovementDestinationAggregateNameQueryParameter adds the constituentsMovementDestinationAggregateName to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsMovementDestinationAggregateNameQueryParameter(constituentsMovementDestinationAggregateName *string) {
+	o.ConstituentsMovementDestinationAggregateNameQueryParameter = constituentsMovementDestinationAggregateName
+}
+
+// WithConstituentsMovementDestinationAggregateUUIDQueryParameter adds the constituentsMovementDestinationAggregateUUID to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsMovementDestinationAggregateUUIDQueryParameter(constituentsMovementDestinationAggregateUUID *string) *VolumeCollectionGetParams {
+	o.SetConstituentsMovementDestinationAggregateUUIDQueryParameter(constituentsMovementDestinationAggregateUUID)
+	return o
+}
+
+// SetConstituentsMovementDestinationAggregateUUIDQueryParameter adds the constituentsMovementDestinationAggregateUuid to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsMovementDestinationAggregateUUIDQueryParameter(constituentsMovementDestinationAggregateUUID *string) {
+	o.ConstituentsMovementDestinationAggregateUUIDQueryParameter = constituentsMovementDestinationAggregateUUID
+}
+
+// WithConstituentsMovementPercentCompleteQueryParameter adds the constituentsMovementPercentComplete to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsMovementPercentCompleteQueryParameter(constituentsMovementPercentComplete *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsMovementPercentCompleteQueryParameter(constituentsMovementPercentComplete)
+	return o
+}
+
+// SetConstituentsMovementPercentCompleteQueryParameter adds the constituentsMovementPercentComplete to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsMovementPercentCompleteQueryParameter(constituentsMovementPercentComplete *int64) {
+	o.ConstituentsMovementPercentCompleteQueryParameter = constituentsMovementPercentComplete
+}
+
+// WithConstituentsMovementStateQueryParameter adds the constituentsMovementState to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsMovementStateQueryParameter(constituentsMovementState *string) *VolumeCollectionGetParams {
+	o.SetConstituentsMovementStateQueryParameter(constituentsMovementState)
+	return o
+}
+
+// SetConstituentsMovementStateQueryParameter adds the constituentsMovementState to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsMovementStateQueryParameter(constituentsMovementState *string) {
+	o.ConstituentsMovementStateQueryParameter = constituentsMovementState
+}
+
+// WithConstituentsNameQueryParameter adds the constituentsName to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsNameQueryParameter(constituentsName *string) *VolumeCollectionGetParams {
+	o.SetConstituentsNameQueryParameter(constituentsName)
+	return o
+}
+
+// SetConstituentsNameQueryParameter adds the constituentsName to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsNameQueryParameter(constituentsName *string) {
+	o.ConstituentsNameQueryParameter = constituentsName
+}
+
+// WithConstituentsSpaceAfsTotalQueryParameter adds the constituentsSpaceAfsTotal to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceAfsTotalQueryParameter(constituentsSpaceAfsTotal *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceAfsTotalQueryParameter(constituentsSpaceAfsTotal)
+	return o
+}
+
+// SetConstituentsSpaceAfsTotalQueryParameter adds the constituentsSpaceAfsTotal to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceAfsTotalQueryParameter(constituentsSpaceAfsTotal *int64) {
+	o.ConstituentsSpaceAfsTotalQueryParameter = constituentsSpaceAfsTotal
+}
+
+// WithConstituentsSpaceAvailableQueryParameter adds the constituentsSpaceAvailable to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceAvailableQueryParameter(constituentsSpaceAvailable *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceAvailableQueryParameter(constituentsSpaceAvailable)
+	return o
+}
+
+// SetConstituentsSpaceAvailableQueryParameter adds the constituentsSpaceAvailable to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceAvailableQueryParameter(constituentsSpaceAvailable *int64) {
+	o.ConstituentsSpaceAvailableQueryParameter = constituentsSpaceAvailable
+}
+
+// WithConstituentsSpaceAvailablePercentQueryParameter adds the constituentsSpaceAvailablePercent to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceAvailablePercentQueryParameter(constituentsSpaceAvailablePercent *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceAvailablePercentQueryParameter(constituentsSpaceAvailablePercent)
+	return o
+}
+
+// SetConstituentsSpaceAvailablePercentQueryParameter adds the constituentsSpaceAvailablePercent to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceAvailablePercentQueryParameter(constituentsSpaceAvailablePercent *int64) {
+	o.ConstituentsSpaceAvailablePercentQueryParameter = constituentsSpaceAvailablePercent
+}
+
+// WithConstituentsSpaceBlockStorageInactiveUserDataQueryParameter adds the constituentsSpaceBlockStorageInactiveUserData to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceBlockStorageInactiveUserDataQueryParameter(constituentsSpaceBlockStorageInactiveUserData *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceBlockStorageInactiveUserDataQueryParameter(constituentsSpaceBlockStorageInactiveUserData)
+	return o
+}
+
+// SetConstituentsSpaceBlockStorageInactiveUserDataQueryParameter adds the constituentsSpaceBlockStorageInactiveUserData to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceBlockStorageInactiveUserDataQueryParameter(constituentsSpaceBlockStorageInactiveUserData *int64) {
+	o.ConstituentsSpaceBlockStorageInactiveUserDataQueryParameter = constituentsSpaceBlockStorageInactiveUserData
+}
+
+// WithConstituentsSpaceCapacityTierFootprintQueryParameter adds the constituentsSpaceCapacityTierFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceCapacityTierFootprintQueryParameter(constituentsSpaceCapacityTierFootprint *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceCapacityTierFootprintQueryParameter(constituentsSpaceCapacityTierFootprint)
+	return o
+}
+
+// SetConstituentsSpaceCapacityTierFootprintQueryParameter adds the constituentsSpaceCapacityTierFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceCapacityTierFootprintQueryParameter(constituentsSpaceCapacityTierFootprint *int64) {
+	o.ConstituentsSpaceCapacityTierFootprintQueryParameter = constituentsSpaceCapacityTierFootprint
+}
+
+// WithConstituentsSpaceFootprintQueryParameter adds the constituentsSpaceFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceFootprintQueryParameter(constituentsSpaceFootprint *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceFootprintQueryParameter(constituentsSpaceFootprint)
+	return o
+}
+
+// SetConstituentsSpaceFootprintQueryParameter adds the constituentsSpaceFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceFootprintQueryParameter(constituentsSpaceFootprint *int64) {
+	o.ConstituentsSpaceFootprintQueryParameter = constituentsSpaceFootprint
+}
+
+// WithConstituentsSpaceLocalTierFootprintQueryParameter adds the constituentsSpaceLocalTierFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceLocalTierFootprintQueryParameter(constituentsSpaceLocalTierFootprint *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceLocalTierFootprintQueryParameter(constituentsSpaceLocalTierFootprint)
+	return o
+}
+
+// SetConstituentsSpaceLocalTierFootprintQueryParameter adds the constituentsSpaceLocalTierFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceLocalTierFootprintQueryParameter(constituentsSpaceLocalTierFootprint *int64) {
+	o.ConstituentsSpaceLocalTierFootprintQueryParameter = constituentsSpaceLocalTierFootprint
+}
+
+// WithConstituentsSpaceLogicalSpaceAvailableQueryParameter adds the constituentsSpaceLogicalSpaceAvailable to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceLogicalSpaceAvailableQueryParameter(constituentsSpaceLogicalSpaceAvailable *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceLogicalSpaceAvailableQueryParameter(constituentsSpaceLogicalSpaceAvailable)
+	return o
+}
+
+// SetConstituentsSpaceLogicalSpaceAvailableQueryParameter adds the constituentsSpaceLogicalSpaceAvailable to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceLogicalSpaceAvailableQueryParameter(constituentsSpaceLogicalSpaceAvailable *int64) {
+	o.ConstituentsSpaceLogicalSpaceAvailableQueryParameter = constituentsSpaceLogicalSpaceAvailable
+}
+
+// WithConstituentsSpaceLogicalSpaceEnforcementQueryParameter adds the constituentsSpaceLogicalSpaceEnforcement to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceLogicalSpaceEnforcementQueryParameter(constituentsSpaceLogicalSpaceEnforcement *bool) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceLogicalSpaceEnforcementQueryParameter(constituentsSpaceLogicalSpaceEnforcement)
+	return o
+}
+
+// SetConstituentsSpaceLogicalSpaceEnforcementQueryParameter adds the constituentsSpaceLogicalSpaceEnforcement to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceLogicalSpaceEnforcementQueryParameter(constituentsSpaceLogicalSpaceEnforcement *bool) {
+	o.ConstituentsSpaceLogicalSpaceEnforcementQueryParameter = constituentsSpaceLogicalSpaceEnforcement
+}
+
+// WithConstituentsSpaceLogicalSpaceReportingQueryParameter adds the constituentsSpaceLogicalSpaceReporting to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceLogicalSpaceReportingQueryParameter(constituentsSpaceLogicalSpaceReporting *bool) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceLogicalSpaceReportingQueryParameter(constituentsSpaceLogicalSpaceReporting)
+	return o
+}
+
+// SetConstituentsSpaceLogicalSpaceReportingQueryParameter adds the constituentsSpaceLogicalSpaceReporting to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceLogicalSpaceReportingQueryParameter(constituentsSpaceLogicalSpaceReporting *bool) {
+	o.ConstituentsSpaceLogicalSpaceReportingQueryParameter = constituentsSpaceLogicalSpaceReporting
+}
+
+// WithConstituentsSpaceLogicalSpaceUsedByAfsQueryParameter adds the constituentsSpaceLogicalSpaceUsedByAfs to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceLogicalSpaceUsedByAfsQueryParameter(constituentsSpaceLogicalSpaceUsedByAfs *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceLogicalSpaceUsedByAfsQueryParameter(constituentsSpaceLogicalSpaceUsedByAfs)
+	return o
+}
+
+// SetConstituentsSpaceLogicalSpaceUsedByAfsQueryParameter adds the constituentsSpaceLogicalSpaceUsedByAfs to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceLogicalSpaceUsedByAfsQueryParameter(constituentsSpaceLogicalSpaceUsedByAfs *int64) {
+	o.ConstituentsSpaceLogicalSpaceUsedByAfsQueryParameter = constituentsSpaceLogicalSpaceUsedByAfs
+}
+
+// WithConstituentsSpaceMetadataQueryParameter adds the constituentsSpaceMetadata to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceMetadataQueryParameter(constituentsSpaceMetadata *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceMetadataQueryParameter(constituentsSpaceMetadata)
+	return o
+}
+
+// SetConstituentsSpaceMetadataQueryParameter adds the constituentsSpaceMetadata to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceMetadataQueryParameter(constituentsSpaceMetadata *int64) {
+	o.ConstituentsSpaceMetadataQueryParameter = constituentsSpaceMetadata
+}
+
+// WithConstituentsSpaceOverProvisionedQueryParameter adds the constituentsSpaceOverProvisioned to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceOverProvisionedQueryParameter(constituentsSpaceOverProvisioned *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceOverProvisionedQueryParameter(constituentsSpaceOverProvisioned)
+	return o
+}
+
+// SetConstituentsSpaceOverProvisionedQueryParameter adds the constituentsSpaceOverProvisioned to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceOverProvisionedQueryParameter(constituentsSpaceOverProvisioned *int64) {
+	o.ConstituentsSpaceOverProvisionedQueryParameter = constituentsSpaceOverProvisioned
+}
+
+// WithConstituentsSpacePerformanceTierFootprintQueryParameter adds the constituentsSpacePerformanceTierFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpacePerformanceTierFootprintQueryParameter(constituentsSpacePerformanceTierFootprint *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpacePerformanceTierFootprintQueryParameter(constituentsSpacePerformanceTierFootprint)
+	return o
+}
+
+// SetConstituentsSpacePerformanceTierFootprintQueryParameter adds the constituentsSpacePerformanceTierFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpacePerformanceTierFootprintQueryParameter(constituentsSpacePerformanceTierFootprint *int64) {
+	o.ConstituentsSpacePerformanceTierFootprintQueryParameter = constituentsSpacePerformanceTierFootprint
+}
+
+// WithConstituentsSpaceSizeQueryParameter adds the constituentsSpaceSize to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceSizeQueryParameter(constituentsSpaceSize *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceSizeQueryParameter(constituentsSpaceSize)
+	return o
+}
+
+// SetConstituentsSpaceSizeQueryParameter adds the constituentsSpaceSize to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceSizeQueryParameter(constituentsSpaceSize *int64) {
+	o.ConstituentsSpaceSizeQueryParameter = constituentsSpaceSize
+}
+
+// WithConstituentsSpaceSnapshotReservePercentQueryParameter adds the constituentsSpaceSnapshotReservePercent to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceSnapshotReservePercentQueryParameter(constituentsSpaceSnapshotReservePercent *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceSnapshotReservePercentQueryParameter(constituentsSpaceSnapshotReservePercent)
+	return o
+}
+
+// SetConstituentsSpaceSnapshotReservePercentQueryParameter adds the constituentsSpaceSnapshotReservePercent to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceSnapshotReservePercentQueryParameter(constituentsSpaceSnapshotReservePercent *int64) {
+	o.ConstituentsSpaceSnapshotReservePercentQueryParameter = constituentsSpaceSnapshotReservePercent
+}
+
+// WithConstituentsSpaceSnapshotUsedQueryParameter adds the constituentsSpaceSnapshotUsed to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceSnapshotUsedQueryParameter(constituentsSpaceSnapshotUsed *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceSnapshotUsedQueryParameter(constituentsSpaceSnapshotUsed)
+	return o
+}
+
+// SetConstituentsSpaceSnapshotUsedQueryParameter adds the constituentsSpaceSnapshotUsed to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceSnapshotUsedQueryParameter(constituentsSpaceSnapshotUsed *int64) {
+	o.ConstituentsSpaceSnapshotUsedQueryParameter = constituentsSpaceSnapshotUsed
+}
+
+// WithConstituentsSpaceTotalFootprintQueryParameter adds the constituentsSpaceTotalFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceTotalFootprintQueryParameter(constituentsSpaceTotalFootprint *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceTotalFootprintQueryParameter(constituentsSpaceTotalFootprint)
+	return o
+}
+
+// SetConstituentsSpaceTotalFootprintQueryParameter adds the constituentsSpaceTotalFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceTotalFootprintQueryParameter(constituentsSpaceTotalFootprint *int64) {
+	o.ConstituentsSpaceTotalFootprintQueryParameter = constituentsSpaceTotalFootprint
+}
+
+// WithConstituentsSpaceUsedQueryParameter adds the constituentsSpaceUsed to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceUsedQueryParameter(constituentsSpaceUsed *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceUsedQueryParameter(constituentsSpaceUsed)
+	return o
+}
+
+// SetConstituentsSpaceUsedQueryParameter adds the constituentsSpaceUsed to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceUsedQueryParameter(constituentsSpaceUsed *int64) {
+	o.ConstituentsSpaceUsedQueryParameter = constituentsSpaceUsed
+}
+
+// WithConstituentsSpaceUsedByAfsQueryParameter adds the constituentsSpaceUsedByAfs to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsSpaceUsedByAfsQueryParameter(constituentsSpaceUsedByAfs *int64) *VolumeCollectionGetParams {
+	o.SetConstituentsSpaceUsedByAfsQueryParameter(constituentsSpaceUsedByAfs)
+	return o
+}
+
+// SetConstituentsSpaceUsedByAfsQueryParameter adds the constituentsSpaceUsedByAfs to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsSpaceUsedByAfsQueryParameter(constituentsSpaceUsedByAfs *int64) {
+	o.ConstituentsSpaceUsedByAfsQueryParameter = constituentsSpaceUsedByAfs
+}
+
 // WithCreateTimeQueryParameter adds the createTime to the volume collection get params
 func (o *VolumeCollectionGetParams) WithCreateTimeQueryParameter(createTime *string) *VolumeCollectionGetParams {
 	o.SetCreateTimeQueryParameter(createTime)
@@ -1289,6 +2190,17 @@ func (o *VolumeCollectionGetParams) WithCreateTimeQueryParameter(createTime *str
 // SetCreateTimeQueryParameter adds the createTime to the volume collection get params
 func (o *VolumeCollectionGetParams) SetCreateTimeQueryParameter(createTime *string) {
 	o.CreateTimeQueryParameter = createTime
+}
+
+// WithEfficiencyApplicationIoSizeQueryParameter adds the efficiencyApplicationIoSize to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyApplicationIoSizeQueryParameter(efficiencyApplicationIoSize *string) *VolumeCollectionGetParams {
+	o.SetEfficiencyApplicationIoSizeQueryParameter(efficiencyApplicationIoSize)
+	return o
+}
+
+// SetEfficiencyApplicationIoSizeQueryParameter adds the efficiencyApplicationIoSize to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyApplicationIoSizeQueryParameter(efficiencyApplicationIoSize *string) {
+	o.EfficiencyApplicationIoSizeQueryParameter = efficiencyApplicationIoSize
 }
 
 // WithEfficiencyCompactionQueryParameter adds the efficiencyCompaction to the volume collection get params
@@ -1335,6 +2247,83 @@ func (o *VolumeCollectionGetParams) SetEfficiencyDedupeQueryParameter(efficiency
 	o.EfficiencyDedupeQueryParameter = efficiencyDedupe
 }
 
+// WithEfficiencyLastOpBeginQueryParameter adds the efficiencyLastOpBegin to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyLastOpBeginQueryParameter(efficiencyLastOpBegin *string) *VolumeCollectionGetParams {
+	o.SetEfficiencyLastOpBeginQueryParameter(efficiencyLastOpBegin)
+	return o
+}
+
+// SetEfficiencyLastOpBeginQueryParameter adds the efficiencyLastOpBegin to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyLastOpBeginQueryParameter(efficiencyLastOpBegin *string) {
+	o.EfficiencyLastOpBeginQueryParameter = efficiencyLastOpBegin
+}
+
+// WithEfficiencyLastOpEndQueryParameter adds the efficiencyLastOpEnd to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyLastOpEndQueryParameter(efficiencyLastOpEnd *string) *VolumeCollectionGetParams {
+	o.SetEfficiencyLastOpEndQueryParameter(efficiencyLastOpEnd)
+	return o
+}
+
+// SetEfficiencyLastOpEndQueryParameter adds the efficiencyLastOpEnd to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyLastOpEndQueryParameter(efficiencyLastOpEnd *string) {
+	o.EfficiencyLastOpEndQueryParameter = efficiencyLastOpEnd
+}
+
+// WithEfficiencyLastOpErrQueryParameter adds the efficiencyLastOpErr to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyLastOpErrQueryParameter(efficiencyLastOpErr *string) *VolumeCollectionGetParams {
+	o.SetEfficiencyLastOpErrQueryParameter(efficiencyLastOpErr)
+	return o
+}
+
+// SetEfficiencyLastOpErrQueryParameter adds the efficiencyLastOpErr to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyLastOpErrQueryParameter(efficiencyLastOpErr *string) {
+	o.EfficiencyLastOpErrQueryParameter = efficiencyLastOpErr
+}
+
+// WithEfficiencyLastOpSizeQueryParameter adds the efficiencyLastOpSize to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyLastOpSizeQueryParameter(efficiencyLastOpSize *int64) *VolumeCollectionGetParams {
+	o.SetEfficiencyLastOpSizeQueryParameter(efficiencyLastOpSize)
+	return o
+}
+
+// SetEfficiencyLastOpSizeQueryParameter adds the efficiencyLastOpSize to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyLastOpSizeQueryParameter(efficiencyLastOpSize *int64) {
+	o.EfficiencyLastOpSizeQueryParameter = efficiencyLastOpSize
+}
+
+// WithEfficiencyLastOpStateQueryParameter adds the efficiencyLastOpState to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyLastOpStateQueryParameter(efficiencyLastOpState *string) *VolumeCollectionGetParams {
+	o.SetEfficiencyLastOpStateQueryParameter(efficiencyLastOpState)
+	return o
+}
+
+// SetEfficiencyLastOpStateQueryParameter adds the efficiencyLastOpState to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyLastOpStateQueryParameter(efficiencyLastOpState *string) {
+	o.EfficiencyLastOpStateQueryParameter = efficiencyLastOpState
+}
+
+// WithEfficiencyOpStateQueryParameter adds the efficiencyOpState to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyOpStateQueryParameter(efficiencyOpState *string) *VolumeCollectionGetParams {
+	o.SetEfficiencyOpStateQueryParameter(efficiencyOpState)
+	return o
+}
+
+// SetEfficiencyOpStateQueryParameter adds the efficiencyOpState to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyOpStateQueryParameter(efficiencyOpState *string) {
+	o.EfficiencyOpStateQueryParameter = efficiencyOpState
+}
+
+// WithEfficiencyPathQueryParameter adds the efficiencyPath to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyPathQueryParameter(efficiencyPath *string) *VolumeCollectionGetParams {
+	o.SetEfficiencyPathQueryParameter(efficiencyPath)
+	return o
+}
+
+// SetEfficiencyPathQueryParameter adds the efficiencyPath to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyPathQueryParameter(efficiencyPath *string) {
+	o.EfficiencyPathQueryParameter = efficiencyPath
+}
+
 // WithEfficiencyPolicyNameQueryParameter adds the efficiencyPolicyName to the volume collection get params
 func (o *VolumeCollectionGetParams) WithEfficiencyPolicyNameQueryParameter(efficiencyPolicyName *string) *VolumeCollectionGetParams {
 	o.SetEfficiencyPolicyNameQueryParameter(efficiencyPolicyName)
@@ -1344,6 +2333,50 @@ func (o *VolumeCollectionGetParams) WithEfficiencyPolicyNameQueryParameter(effic
 // SetEfficiencyPolicyNameQueryParameter adds the efficiencyPolicyName to the volume collection get params
 func (o *VolumeCollectionGetParams) SetEfficiencyPolicyNameQueryParameter(efficiencyPolicyName *string) {
 	o.EfficiencyPolicyNameQueryParameter = efficiencyPolicyName
+}
+
+// WithEfficiencyProgressQueryParameter adds the efficiencyProgress to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyProgressQueryParameter(efficiencyProgress *string) *VolumeCollectionGetParams {
+	o.SetEfficiencyProgressQueryParameter(efficiencyProgress)
+	return o
+}
+
+// SetEfficiencyProgressQueryParameter adds the efficiencyProgress to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyProgressQueryParameter(efficiencyProgress *string) {
+	o.EfficiencyProgressQueryParameter = efficiencyProgress
+}
+
+// WithEfficiencyScheduleQueryParameter adds the efficiencySchedule to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyScheduleQueryParameter(efficiencySchedule *string) *VolumeCollectionGetParams {
+	o.SetEfficiencyScheduleQueryParameter(efficiencySchedule)
+	return o
+}
+
+// SetEfficiencyScheduleQueryParameter adds the efficiencySchedule to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyScheduleQueryParameter(efficiencySchedule *string) {
+	o.EfficiencyScheduleQueryParameter = efficiencySchedule
+}
+
+// WithEfficiencyStateQueryParameter adds the efficiencyState to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyStateQueryParameter(efficiencyState *string) *VolumeCollectionGetParams {
+	o.SetEfficiencyStateQueryParameter(efficiencyState)
+	return o
+}
+
+// SetEfficiencyStateQueryParameter adds the efficiencyState to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyStateQueryParameter(efficiencyState *string) {
+	o.EfficiencyStateQueryParameter = efficiencyState
+}
+
+// WithEfficiencyTypeQueryParameter adds the efficiencyType to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyTypeQueryParameter(efficiencyType *string) *VolumeCollectionGetParams {
+	o.SetEfficiencyTypeQueryParameter(efficiencyType)
+	return o
+}
+
+// SetEfficiencyTypeQueryParameter adds the efficiencyType to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyTypeQueryParameter(efficiencyType *string) {
+	o.EfficiencyTypeQueryParameter = efficiencyType
 }
 
 // WithEncryptionEnabledQueryParameter adds the encryptionEnabled to the volume collection get params
@@ -1445,15 +2478,15 @@ func (o *VolumeCollectionGetParams) SetErrorStateIsInconsistentQueryParameter(er
 	o.ErrorStateIsInconsistentQueryParameter = errorStateIsInconsistent
 }
 
-// WithFields adds the fields to the volume collection get params
-func (o *VolumeCollectionGetParams) WithFields(fields []string) *VolumeCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the volume collection get params
+func (o *VolumeCollectionGetParams) WithFieldsQueryParameter(fields []string) *VolumeCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the volume collection get params
-func (o *VolumeCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the volume collection get params
+func (o *VolumeCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithFilesMaximumQueryParameter adds the filesMaximum to the volume collection get params
@@ -1511,6 +2544,17 @@ func (o *VolumeCollectionGetParams) SetGuaranteeTypeQueryParameter(guaranteeType
 	o.GuaranteeTypeQueryParameter = guaranteeType
 }
 
+// WithIsObjectStoreQueryParameter adds the isObjectStore to the volume collection get params
+func (o *VolumeCollectionGetParams) WithIsObjectStoreQueryParameter(isObjectStore *bool) *VolumeCollectionGetParams {
+	o.SetIsObjectStoreQueryParameter(isObjectStore)
+	return o
+}
+
+// SetIsObjectStoreQueryParameter adds the isObjectStore to the volume collection get params
+func (o *VolumeCollectionGetParams) SetIsObjectStoreQueryParameter(isObjectStore *bool) {
+	o.IsObjectStoreQueryParameter = isObjectStore
+}
+
 // WithIsSVMRootQueryParameter adds the isSvmRoot to the volume collection get params
 func (o *VolumeCollectionGetParams) WithIsSVMRootQueryParameter(isSvmRoot *bool) *VolumeCollectionGetParams {
 	o.SetIsSVMRootQueryParameter(isSvmRoot)
@@ -1533,15 +2577,15 @@ func (o *VolumeCollectionGetParams) SetLanguageQueryParameter(language *string) 
 	o.LanguageQueryParameter = language
 }
 
-// WithMaxRecords adds the maxRecords to the volume collection get params
-func (o *VolumeCollectionGetParams) WithMaxRecords(maxRecords *int64) *VolumeCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the volume collection get params
+func (o *VolumeCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *VolumeCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the volume collection get params
-func (o *VolumeCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the volume collection get params
+func (o *VolumeCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithMetricCloudDurationQueryParameter adds the metricCloudDuration to the volume collection get params
@@ -1674,6 +2718,61 @@ func (o *VolumeCollectionGetParams) WithMetricDurationQueryParameter(metricDurat
 // SetMetricDurationQueryParameter adds the metricDuration to the volume collection get params
 func (o *VolumeCollectionGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
 	o.MetricDurationQueryParameter = metricDuration
+}
+
+// WithMetricFlexcacheBandwidthSavingsQueryParameter adds the metricFlexcacheBandwidthSavings to the volume collection get params
+func (o *VolumeCollectionGetParams) WithMetricFlexcacheBandwidthSavingsQueryParameter(metricFlexcacheBandwidthSavings *int64) *VolumeCollectionGetParams {
+	o.SetMetricFlexcacheBandwidthSavingsQueryParameter(metricFlexcacheBandwidthSavings)
+	return o
+}
+
+// SetMetricFlexcacheBandwidthSavingsQueryParameter adds the metricFlexcacheBandwidthSavings to the volume collection get params
+func (o *VolumeCollectionGetParams) SetMetricFlexcacheBandwidthSavingsQueryParameter(metricFlexcacheBandwidthSavings *int64) {
+	o.MetricFlexcacheBandwidthSavingsQueryParameter = metricFlexcacheBandwidthSavings
+}
+
+// WithMetricFlexcacheCacheMissPercentQueryParameter adds the metricFlexcacheCacheMissPercent to the volume collection get params
+func (o *VolumeCollectionGetParams) WithMetricFlexcacheCacheMissPercentQueryParameter(metricFlexcacheCacheMissPercent *int64) *VolumeCollectionGetParams {
+	o.SetMetricFlexcacheCacheMissPercentQueryParameter(metricFlexcacheCacheMissPercent)
+	return o
+}
+
+// SetMetricFlexcacheCacheMissPercentQueryParameter adds the metricFlexcacheCacheMissPercent to the volume collection get params
+func (o *VolumeCollectionGetParams) SetMetricFlexcacheCacheMissPercentQueryParameter(metricFlexcacheCacheMissPercent *int64) {
+	o.MetricFlexcacheCacheMissPercentQueryParameter = metricFlexcacheCacheMissPercent
+}
+
+// WithMetricFlexcacheDurationQueryParameter adds the metricFlexcacheDuration to the volume collection get params
+func (o *VolumeCollectionGetParams) WithMetricFlexcacheDurationQueryParameter(metricFlexcacheDuration *string) *VolumeCollectionGetParams {
+	o.SetMetricFlexcacheDurationQueryParameter(metricFlexcacheDuration)
+	return o
+}
+
+// SetMetricFlexcacheDurationQueryParameter adds the metricFlexcacheDuration to the volume collection get params
+func (o *VolumeCollectionGetParams) SetMetricFlexcacheDurationQueryParameter(metricFlexcacheDuration *string) {
+	o.MetricFlexcacheDurationQueryParameter = metricFlexcacheDuration
+}
+
+// WithMetricFlexcacheStatusQueryParameter adds the metricFlexcacheStatus to the volume collection get params
+func (o *VolumeCollectionGetParams) WithMetricFlexcacheStatusQueryParameter(metricFlexcacheStatus *string) *VolumeCollectionGetParams {
+	o.SetMetricFlexcacheStatusQueryParameter(metricFlexcacheStatus)
+	return o
+}
+
+// SetMetricFlexcacheStatusQueryParameter adds the metricFlexcacheStatus to the volume collection get params
+func (o *VolumeCollectionGetParams) SetMetricFlexcacheStatusQueryParameter(metricFlexcacheStatus *string) {
+	o.MetricFlexcacheStatusQueryParameter = metricFlexcacheStatus
+}
+
+// WithMetricFlexcacheTimestampQueryParameter adds the metricFlexcacheTimestamp to the volume collection get params
+func (o *VolumeCollectionGetParams) WithMetricFlexcacheTimestampQueryParameter(metricFlexcacheTimestamp *string) *VolumeCollectionGetParams {
+	o.SetMetricFlexcacheTimestampQueryParameter(metricFlexcacheTimestamp)
+	return o
+}
+
+// SetMetricFlexcacheTimestampQueryParameter adds the metricFlexcacheTimestamp to the volume collection get params
+func (o *VolumeCollectionGetParams) SetMetricFlexcacheTimestampQueryParameter(metricFlexcacheTimestamp *string) {
+	o.MetricFlexcacheTimestampQueryParameter = metricFlexcacheTimestamp
 }
 
 // WithMetricIopsOtherQueryParameter adds the metricIopsOther to the volume collection get params
@@ -1874,6 +2973,17 @@ func (o *VolumeCollectionGetParams) SetMovementPercentCompleteQueryParameter(mov
 	o.MovementPercentCompleteQueryParameter = movementPercentComplete
 }
 
+// WithMovementStartTimeQueryParameter adds the movementStartTime to the volume collection get params
+func (o *VolumeCollectionGetParams) WithMovementStartTimeQueryParameter(movementStartTime *string) *VolumeCollectionGetParams {
+	o.SetMovementStartTimeQueryParameter(movementStartTime)
+	return o
+}
+
+// SetMovementStartTimeQueryParameter adds the movementStartTime to the volume collection get params
+func (o *VolumeCollectionGetParams) SetMovementStartTimeQueryParameter(movementStartTime *string) {
+	o.MovementStartTimeQueryParameter = movementStartTime
+}
+
 // WithMovementStateQueryParameter adds the movementState to the volume collection get params
 func (o *VolumeCollectionGetParams) WithMovementStateQueryParameter(movementState *string) *VolumeCollectionGetParams {
 	o.SetMovementStateQueryParameter(movementState)
@@ -1929,6 +3039,28 @@ func (o *VolumeCollectionGetParams) SetNasGIDQueryParameter(nasGid *int64) {
 	o.NasGIDQueryParameter = nasGid
 }
 
+// WithNasJunctionParentNameQueryParameter adds the nasJunctionParentName to the volume collection get params
+func (o *VolumeCollectionGetParams) WithNasJunctionParentNameQueryParameter(nasJunctionParentName *string) *VolumeCollectionGetParams {
+	o.SetNasJunctionParentNameQueryParameter(nasJunctionParentName)
+	return o
+}
+
+// SetNasJunctionParentNameQueryParameter adds the nasJunctionParentName to the volume collection get params
+func (o *VolumeCollectionGetParams) SetNasJunctionParentNameQueryParameter(nasJunctionParentName *string) {
+	o.NasJunctionParentNameQueryParameter = nasJunctionParentName
+}
+
+// WithNasJunctionParentUUIDQueryParameter adds the nasJunctionParentUUID to the volume collection get params
+func (o *VolumeCollectionGetParams) WithNasJunctionParentUUIDQueryParameter(nasJunctionParentUUID *string) *VolumeCollectionGetParams {
+	o.SetNasJunctionParentUUIDQueryParameter(nasJunctionParentUUID)
+	return o
+}
+
+// SetNasJunctionParentUUIDQueryParameter adds the nasJunctionParentUuid to the volume collection get params
+func (o *VolumeCollectionGetParams) SetNasJunctionParentUUIDQueryParameter(nasJunctionParentUUID *string) {
+	o.NasJunctionParentUUIDQueryParameter = nasJunctionParentUUID
+}
+
 // WithNasPathQueryParameter adds the nasPath to the volume collection get params
 func (o *VolumeCollectionGetParams) WithNasPathQueryParameter(nasPath *string) *VolumeCollectionGetParams {
 	o.SetNasPathQueryParameter(nasPath)
@@ -1973,15 +3105,15 @@ func (o *VolumeCollectionGetParams) SetNasUnixPermissionsQueryParameter(nasUnixP
 	o.NasUnixPermissionsQueryParameter = nasUnixPermissions
 }
 
-// WithOrderBy adds the orderBy to the volume collection get params
-func (o *VolumeCollectionGetParams) WithOrderBy(orderBy []string) *VolumeCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the volume collection get params
+func (o *VolumeCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *VolumeCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the volume collection get params
-func (o *VolumeCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the volume collection get params
+func (o *VolumeCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithQosPolicyMaxThroughputIopsQueryParameter adds the qosPolicyMaxThroughputIops to the volume collection get params
@@ -2017,6 +3149,17 @@ func (o *VolumeCollectionGetParams) SetQosPolicyMinThroughputIopsQueryParameter(
 	o.QosPolicyMinThroughputIopsQueryParameter = qosPolicyMinThroughputIops
 }
 
+// WithQosPolicyMinThroughputMbpsQueryParameter adds the qosPolicyMinThroughputMbps to the volume collection get params
+func (o *VolumeCollectionGetParams) WithQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps *int64) *VolumeCollectionGetParams {
+	o.SetQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps)
+	return o
+}
+
+// SetQosPolicyMinThroughputMbpsQueryParameter adds the qosPolicyMinThroughputMbps to the volume collection get params
+func (o *VolumeCollectionGetParams) SetQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps *int64) {
+	o.QosPolicyMinThroughputMbpsQueryParameter = qosPolicyMinThroughputMbps
+}
+
 // WithQosPolicyNameQueryParameter adds the qosPolicyName to the volume collection get params
 func (o *VolumeCollectionGetParams) WithQosPolicyNameQueryParameter(qosPolicyName *string) *VolumeCollectionGetParams {
 	o.SetQosPolicyNameQueryParameter(qosPolicyName)
@@ -2039,6 +3182,17 @@ func (o *VolumeCollectionGetParams) SetQosPolicyUUIDQueryParameter(qosPolicyUUID
 	o.QosPolicyUUIDQueryParameter = qosPolicyUUID
 }
 
+// WithQueueForEncryptionQueryParameter adds the queueForEncryption to the volume collection get params
+func (o *VolumeCollectionGetParams) WithQueueForEncryptionQueryParameter(queueForEncryption *bool) *VolumeCollectionGetParams {
+	o.SetQueueForEncryptionQueryParameter(queueForEncryption)
+	return o
+}
+
+// SetQueueForEncryptionQueryParameter adds the queueForEncryption to the volume collection get params
+func (o *VolumeCollectionGetParams) SetQueueForEncryptionQueryParameter(queueForEncryption *bool) {
+	o.QueueForEncryptionQueryParameter = queueForEncryption
+}
+
 // WithQuotaStateQueryParameter adds the quotaState to the volume collection get params
 func (o *VolumeCollectionGetParams) WithQuotaStateQueryParameter(quotaState *string) *VolumeCollectionGetParams {
 	o.SetQuotaStateQueryParameter(quotaState)
@@ -2050,26 +3204,26 @@ func (o *VolumeCollectionGetParams) SetQuotaStateQueryParameter(quotaState *stri
 	o.QuotaStateQueryParameter = quotaState
 }
 
-// WithReturnRecords adds the returnRecords to the volume collection get params
-func (o *VolumeCollectionGetParams) WithReturnRecords(returnRecords *bool) *VolumeCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the volume collection get params
+func (o *VolumeCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *VolumeCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the volume collection get params
-func (o *VolumeCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the volume collection get params
+func (o *VolumeCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the volume collection get params
-func (o *VolumeCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *VolumeCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the volume collection get params
+func (o *VolumeCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VolumeCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the volume collection get params
-func (o *VolumeCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the volume collection get params
+func (o *VolumeCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSizeQueryParameter adds the size to the volume collection get params
@@ -2204,6 +3358,39 @@ func (o *VolumeCollectionGetParams) SetSnaplockTypeQueryParameter(snaplockType *
 	o.SnaplockTypeQueryParameter = snaplockType
 }
 
+// WithSnaplockUnspecifiedRetentionFileCountQueryParameter adds the snaplockUnspecifiedRetentionFileCount to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSnaplockUnspecifiedRetentionFileCountQueryParameter(snaplockUnspecifiedRetentionFileCount *int64) *VolumeCollectionGetParams {
+	o.SetSnaplockUnspecifiedRetentionFileCountQueryParameter(snaplockUnspecifiedRetentionFileCount)
+	return o
+}
+
+// SetSnaplockUnspecifiedRetentionFileCountQueryParameter adds the snaplockUnspecifiedRetentionFileCount to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSnaplockUnspecifiedRetentionFileCountQueryParameter(snaplockUnspecifiedRetentionFileCount *int64) {
+	o.SnaplockUnspecifiedRetentionFileCountQueryParameter = snaplockUnspecifiedRetentionFileCount
+}
+
+// WithSnapmirrorDestinationsIsCloudQueryParameter adds the snapmirrorDestinationsIsCloud to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSnapmirrorDestinationsIsCloudQueryParameter(snapmirrorDestinationsIsCloud *bool) *VolumeCollectionGetParams {
+	o.SetSnapmirrorDestinationsIsCloudQueryParameter(snapmirrorDestinationsIsCloud)
+	return o
+}
+
+// SetSnapmirrorDestinationsIsCloudQueryParameter adds the snapmirrorDestinationsIsCloud to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSnapmirrorDestinationsIsCloudQueryParameter(snapmirrorDestinationsIsCloud *bool) {
+	o.SnapmirrorDestinationsIsCloudQueryParameter = snapmirrorDestinationsIsCloud
+}
+
+// WithSnapmirrorDestinationsIsOntapQueryParameter adds the snapmirrorDestinationsIsOntap to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSnapmirrorDestinationsIsOntapQueryParameter(snapmirrorDestinationsIsOntap *bool) *VolumeCollectionGetParams {
+	o.SetSnapmirrorDestinationsIsOntapQueryParameter(snapmirrorDestinationsIsOntap)
+	return o
+}
+
+// SetSnapmirrorDestinationsIsOntapQueryParameter adds the snapmirrorDestinationsIsOntap to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSnapmirrorDestinationsIsOntapQueryParameter(snapmirrorDestinationsIsOntap *bool) {
+	o.SnapmirrorDestinationsIsOntapQueryParameter = snapmirrorDestinationsIsOntap
+}
+
 // WithSnapmirrorIsProtectedQueryParameter adds the snapmirrorIsProtected to the volume collection get params
 func (o *VolumeCollectionGetParams) WithSnapmirrorIsProtectedQueryParameter(snapmirrorIsProtected *bool) *VolumeCollectionGetParams {
 	o.SetSnapmirrorIsProtectedQueryParameter(snapmirrorIsProtected)
@@ -2237,6 +3424,17 @@ func (o *VolumeCollectionGetParams) SetSnapshotPolicyUUIDQueryParameter(snapshot
 	o.SnapshotPolicyUUIDQueryParameter = snapshotPolicyUUID
 }
 
+// WithSpaceAfsTotalQueryParameter adds the spaceAfsTotal to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceAfsTotalQueryParameter(spaceAfsTotal *int64) *VolumeCollectionGetParams {
+	o.SetSpaceAfsTotalQueryParameter(spaceAfsTotal)
+	return o
+}
+
+// SetSpaceAfsTotalQueryParameter adds the spaceAfsTotal to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceAfsTotalQueryParameter(spaceAfsTotal *int64) {
+	o.SpaceAfsTotalQueryParameter = spaceAfsTotal
+}
+
 // WithSpaceAvailableQueryParameter adds the spaceAvailable to the volume collection get params
 func (o *VolumeCollectionGetParams) WithSpaceAvailableQueryParameter(spaceAvailable *int64) *VolumeCollectionGetParams {
 	o.SetSpaceAvailableQueryParameter(spaceAvailable)
@@ -2248,6 +3446,17 @@ func (o *VolumeCollectionGetParams) SetSpaceAvailableQueryParameter(spaceAvailab
 	o.SpaceAvailableQueryParameter = spaceAvailable
 }
 
+// WithSpaceAvailablePercentQueryParameter adds the spaceAvailablePercent to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceAvailablePercentQueryParameter(spaceAvailablePercent *int64) *VolumeCollectionGetParams {
+	o.SetSpaceAvailablePercentQueryParameter(spaceAvailablePercent)
+	return o
+}
+
+// SetSpaceAvailablePercentQueryParameter adds the spaceAvailablePercent to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceAvailablePercentQueryParameter(spaceAvailablePercent *int64) {
+	o.SpaceAvailablePercentQueryParameter = spaceAvailablePercent
+}
+
 // WithSpaceBlockStorageInactiveUserDataQueryParameter adds the spaceBlockStorageInactiveUserData to the volume collection get params
 func (o *VolumeCollectionGetParams) WithSpaceBlockStorageInactiveUserDataQueryParameter(spaceBlockStorageInactiveUserData *int64) *VolumeCollectionGetParams {
 	o.SetSpaceBlockStorageInactiveUserDataQueryParameter(spaceBlockStorageInactiveUserData)
@@ -2257,6 +3466,17 @@ func (o *VolumeCollectionGetParams) WithSpaceBlockStorageInactiveUserDataQueryPa
 // SetSpaceBlockStorageInactiveUserDataQueryParameter adds the spaceBlockStorageInactiveUserData to the volume collection get params
 func (o *VolumeCollectionGetParams) SetSpaceBlockStorageInactiveUserDataQueryParameter(spaceBlockStorageInactiveUserData *int64) {
 	o.SpaceBlockStorageInactiveUserDataQueryParameter = spaceBlockStorageInactiveUserData
+}
+
+// WithSpaceBlockStorageInactiveUserDataPercentQueryParameter adds the spaceBlockStorageInactiveUserDataPercent to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceBlockStorageInactiveUserDataPercentQueryParameter(spaceBlockStorageInactiveUserDataPercent *int64) *VolumeCollectionGetParams {
+	o.SetSpaceBlockStorageInactiveUserDataPercentQueryParameter(spaceBlockStorageInactiveUserDataPercent)
+	return o
+}
+
+// SetSpaceBlockStorageInactiveUserDataPercentQueryParameter adds the spaceBlockStorageInactiveUserDataPercent to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceBlockStorageInactiveUserDataPercentQueryParameter(spaceBlockStorageInactiveUserDataPercent *int64) {
+	o.SpaceBlockStorageInactiveUserDataPercentQueryParameter = spaceBlockStorageInactiveUserDataPercent
 }
 
 // WithSpaceCapacityTierFootprintQueryParameter adds the spaceCapacityTierFootprint to the volume collection get params
@@ -2279,6 +3499,39 @@ func (o *VolumeCollectionGetParams) WithSpaceFootprintQueryParameter(spaceFootpr
 // SetSpaceFootprintQueryParameter adds the spaceFootprint to the volume collection get params
 func (o *VolumeCollectionGetParams) SetSpaceFootprintQueryParameter(spaceFootprint *int64) {
 	o.SpaceFootprintQueryParameter = spaceFootprint
+}
+
+// WithSpaceFractionalReserveQueryParameter adds the spaceFractionalReserve to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceFractionalReserveQueryParameter(spaceFractionalReserve *int64) *VolumeCollectionGetParams {
+	o.SetSpaceFractionalReserveQueryParameter(spaceFractionalReserve)
+	return o
+}
+
+// SetSpaceFractionalReserveQueryParameter adds the spaceFractionalReserve to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceFractionalReserveQueryParameter(spaceFractionalReserve *int64) {
+	o.SpaceFractionalReserveQueryParameter = spaceFractionalReserve
+}
+
+// WithSpaceFullThresholdPercentQueryParameter adds the spaceFullThresholdPercent to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceFullThresholdPercentQueryParameter(spaceFullThresholdPercent *int64) *VolumeCollectionGetParams {
+	o.SetSpaceFullThresholdPercentQueryParameter(spaceFullThresholdPercent)
+	return o
+}
+
+// SetSpaceFullThresholdPercentQueryParameter adds the spaceFullThresholdPercent to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceFullThresholdPercentQueryParameter(spaceFullThresholdPercent *int64) {
+	o.SpaceFullThresholdPercentQueryParameter = spaceFullThresholdPercent
+}
+
+// WithSpaceLocalTierFootprintQueryParameter adds the spaceLocalTierFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceLocalTierFootprintQueryParameter(spaceLocalTierFootprint *int64) *VolumeCollectionGetParams {
+	o.SetSpaceLocalTierFootprintQueryParameter(spaceLocalTierFootprint)
+	return o
+}
+
+// SetSpaceLocalTierFootprintQueryParameter adds the spaceLocalTierFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceLocalTierFootprintQueryParameter(spaceLocalTierFootprint *int64) {
+	o.SpaceLocalTierFootprintQueryParameter = spaceLocalTierFootprint
 }
 
 // WithSpaceLogicalSpaceAvailableQueryParameter adds the spaceLogicalSpaceAvailable to the volume collection get params
@@ -2314,6 +3567,17 @@ func (o *VolumeCollectionGetParams) SetSpaceLogicalSpaceReportingQueryParameter(
 	o.SpaceLogicalSpaceReportingQueryParameter = spaceLogicalSpaceReporting
 }
 
+// WithSpaceLogicalSpaceUsedQueryParameter adds the spaceLogicalSpaceUsed to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceLogicalSpaceUsedQueryParameter(spaceLogicalSpaceUsed *int64) *VolumeCollectionGetParams {
+	o.SetSpaceLogicalSpaceUsedQueryParameter(spaceLogicalSpaceUsed)
+	return o
+}
+
+// SetSpaceLogicalSpaceUsedQueryParameter adds the spaceLogicalSpaceUsed to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceLogicalSpaceUsedQueryParameter(spaceLogicalSpaceUsed *int64) {
+	o.SpaceLogicalSpaceUsedQueryParameter = spaceLogicalSpaceUsed
+}
+
 // WithSpaceLogicalSpaceUsedByAfsQueryParameter adds the spaceLogicalSpaceUsedByAfs to the volume collection get params
 func (o *VolumeCollectionGetParams) WithSpaceLogicalSpaceUsedByAfsQueryParameter(spaceLogicalSpaceUsedByAfs *int64) *VolumeCollectionGetParams {
 	o.SetSpaceLogicalSpaceUsedByAfsQueryParameter(spaceLogicalSpaceUsedByAfs)
@@ -2323,6 +3587,17 @@ func (o *VolumeCollectionGetParams) WithSpaceLogicalSpaceUsedByAfsQueryParameter
 // SetSpaceLogicalSpaceUsedByAfsQueryParameter adds the spaceLogicalSpaceUsedByAfs to the volume collection get params
 func (o *VolumeCollectionGetParams) SetSpaceLogicalSpaceUsedByAfsQueryParameter(spaceLogicalSpaceUsedByAfs *int64) {
 	o.SpaceLogicalSpaceUsedByAfsQueryParameter = spaceLogicalSpaceUsedByAfs
+}
+
+// WithSpaceLogicalSpaceUsedPercentQueryParameter adds the spaceLogicalSpaceUsedPercent to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceLogicalSpaceUsedPercentQueryParameter(spaceLogicalSpaceUsedPercent *int64) *VolumeCollectionGetParams {
+	o.SetSpaceLogicalSpaceUsedPercentQueryParameter(spaceLogicalSpaceUsedPercent)
+	return o
+}
+
+// SetSpaceLogicalSpaceUsedPercentQueryParameter adds the spaceLogicalSpaceUsedPercent to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceLogicalSpaceUsedPercentQueryParameter(spaceLogicalSpaceUsedPercent *int64) {
+	o.SpaceLogicalSpaceUsedPercentQueryParameter = spaceLogicalSpaceUsedPercent
 }
 
 // WithSpaceMetadataQueryParameter adds the spaceMetadata to the volume collection get params
@@ -2336,6 +3611,17 @@ func (o *VolumeCollectionGetParams) SetSpaceMetadataQueryParameter(spaceMetadata
 	o.SpaceMetadataQueryParameter = spaceMetadata
 }
 
+// WithSpaceNearlyFullThresholdPercentQueryParameter adds the spaceNearlyFullThresholdPercent to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceNearlyFullThresholdPercentQueryParameter(spaceNearlyFullThresholdPercent *int64) *VolumeCollectionGetParams {
+	o.SetSpaceNearlyFullThresholdPercentQueryParameter(spaceNearlyFullThresholdPercent)
+	return o
+}
+
+// SetSpaceNearlyFullThresholdPercentQueryParameter adds the spaceNearlyFullThresholdPercent to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceNearlyFullThresholdPercentQueryParameter(spaceNearlyFullThresholdPercent *int64) {
+	o.SpaceNearlyFullThresholdPercentQueryParameter = spaceNearlyFullThresholdPercent
+}
+
 // WithSpaceOverProvisionedQueryParameter adds the spaceOverProvisioned to the volume collection get params
 func (o *VolumeCollectionGetParams) WithSpaceOverProvisionedQueryParameter(spaceOverProvisioned *int64) *VolumeCollectionGetParams {
 	o.SetSpaceOverProvisionedQueryParameter(spaceOverProvisioned)
@@ -2345,6 +3631,50 @@ func (o *VolumeCollectionGetParams) WithSpaceOverProvisionedQueryParameter(space
 // SetSpaceOverProvisionedQueryParameter adds the spaceOverProvisioned to the volume collection get params
 func (o *VolumeCollectionGetParams) SetSpaceOverProvisionedQueryParameter(spaceOverProvisioned *int64) {
 	o.SpaceOverProvisionedQueryParameter = spaceOverProvisioned
+}
+
+// WithSpaceOverwriteReserveQueryParameter adds the spaceOverwriteReserve to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceOverwriteReserveQueryParameter(spaceOverwriteReserve *int64) *VolumeCollectionGetParams {
+	o.SetSpaceOverwriteReserveQueryParameter(spaceOverwriteReserve)
+	return o
+}
+
+// SetSpaceOverwriteReserveQueryParameter adds the spaceOverwriteReserve to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceOverwriteReserveQueryParameter(spaceOverwriteReserve *int64) {
+	o.SpaceOverwriteReserveQueryParameter = spaceOverwriteReserve
+}
+
+// WithSpaceOverwriteReserveUsedQueryParameter adds the spaceOverwriteReserveUsed to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceOverwriteReserveUsedQueryParameter(spaceOverwriteReserveUsed *int64) *VolumeCollectionGetParams {
+	o.SetSpaceOverwriteReserveUsedQueryParameter(spaceOverwriteReserveUsed)
+	return o
+}
+
+// SetSpaceOverwriteReserveUsedQueryParameter adds the spaceOverwriteReserveUsed to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceOverwriteReserveUsedQueryParameter(spaceOverwriteReserveUsed *int64) {
+	o.SpaceOverwriteReserveUsedQueryParameter = spaceOverwriteReserveUsed
+}
+
+// WithSpacePercentUsedQueryParameter adds the spacePercentUsed to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpacePercentUsedQueryParameter(spacePercentUsed *int64) *VolumeCollectionGetParams {
+	o.SetSpacePercentUsedQueryParameter(spacePercentUsed)
+	return o
+}
+
+// SetSpacePercentUsedQueryParameter adds the spacePercentUsed to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpacePercentUsedQueryParameter(spacePercentUsed *int64) {
+	o.SpacePercentUsedQueryParameter = spacePercentUsed
+}
+
+// WithSpacePerformanceTierFootprintQueryParameter adds the spacePerformanceTierFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpacePerformanceTierFootprintQueryParameter(spacePerformanceTierFootprint *int64) *VolumeCollectionGetParams {
+	o.SetSpacePerformanceTierFootprintQueryParameter(spacePerformanceTierFootprint)
+	return o
+}
+
+// SetSpacePerformanceTierFootprintQueryParameter adds the spacePerformanceTierFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpacePerformanceTierFootprintQueryParameter(spacePerformanceTierFootprint *int64) {
+	o.SpacePerformanceTierFootprintQueryParameter = spacePerformanceTierFootprint
 }
 
 // WithSpaceSizeQueryParameter adds the spaceSize to the volume collection get params
@@ -2358,6 +3688,17 @@ func (o *VolumeCollectionGetParams) SetSpaceSizeQueryParameter(spaceSize *int64)
 	o.SpaceSizeQueryParameter = spaceSize
 }
 
+// WithSpaceSizeAvailableForSnapshotsQueryParameter adds the spaceSizeAvailableForSnapshots to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceSizeAvailableForSnapshotsQueryParameter(spaceSizeAvailableForSnapshots *int64) *VolumeCollectionGetParams {
+	o.SetSpaceSizeAvailableForSnapshotsQueryParameter(spaceSizeAvailableForSnapshots)
+	return o
+}
+
+// SetSpaceSizeAvailableForSnapshotsQueryParameter adds the spaceSizeAvailableForSnapshots to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceSizeAvailableForSnapshotsQueryParameter(spaceSizeAvailableForSnapshots *int64) {
+	o.SpaceSizeAvailableForSnapshotsQueryParameter = spaceSizeAvailableForSnapshots
+}
+
 // WithSpaceSnapshotReservePercentQueryParameter adds the spaceSnapshotReservePercent to the volume collection get params
 func (o *VolumeCollectionGetParams) WithSpaceSnapshotReservePercentQueryParameter(spaceSnapshotReservePercent *int64) *VolumeCollectionGetParams {
 	o.SetSpaceSnapshotReservePercentQueryParameter(spaceSnapshotReservePercent)
@@ -2367,6 +3708,28 @@ func (o *VolumeCollectionGetParams) WithSpaceSnapshotReservePercentQueryParamete
 // SetSpaceSnapshotReservePercentQueryParameter adds the spaceSnapshotReservePercent to the volume collection get params
 func (o *VolumeCollectionGetParams) SetSpaceSnapshotReservePercentQueryParameter(spaceSnapshotReservePercent *int64) {
 	o.SpaceSnapshotReservePercentQueryParameter = spaceSnapshotReservePercent
+}
+
+// WithSpaceSnapshotReserveSizeQueryParameter adds the spaceSnapshotReserveSize to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceSnapshotReserveSizeQueryParameter(spaceSnapshotReserveSize *int64) *VolumeCollectionGetParams {
+	o.SetSpaceSnapshotReserveSizeQueryParameter(spaceSnapshotReserveSize)
+	return o
+}
+
+// SetSpaceSnapshotReserveSizeQueryParameter adds the spaceSnapshotReserveSize to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceSnapshotReserveSizeQueryParameter(spaceSnapshotReserveSize *int64) {
+	o.SpaceSnapshotReserveSizeQueryParameter = spaceSnapshotReserveSize
+}
+
+// WithSpaceSnapshotSpaceUsedPercentQueryParameter adds the spaceSnapshotSpaceUsedPercent to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceSnapshotSpaceUsedPercentQueryParameter(spaceSnapshotSpaceUsedPercent *int64) *VolumeCollectionGetParams {
+	o.SetSpaceSnapshotSpaceUsedPercentQueryParameter(spaceSnapshotSpaceUsedPercent)
+	return o
+}
+
+// SetSpaceSnapshotSpaceUsedPercentQueryParameter adds the spaceSnapshotSpaceUsedPercent to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceSnapshotSpaceUsedPercentQueryParameter(spaceSnapshotSpaceUsedPercent *int64) {
+	o.SpaceSnapshotSpaceUsedPercentQueryParameter = spaceSnapshotSpaceUsedPercent
 }
 
 // WithSpaceSnapshotUsedQueryParameter adds the spaceSnapshotUsed to the volume collection get params
@@ -2380,6 +3743,17 @@ func (o *VolumeCollectionGetParams) SetSpaceSnapshotUsedQueryParameter(spaceSnap
 	o.SpaceSnapshotUsedQueryParameter = spaceSnapshotUsed
 }
 
+// WithSpaceTotalFootprintQueryParameter adds the spaceTotalFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceTotalFootprintQueryParameter(spaceTotalFootprint *int64) *VolumeCollectionGetParams {
+	o.SetSpaceTotalFootprintQueryParameter(spaceTotalFootprint)
+	return o
+}
+
+// SetSpaceTotalFootprintQueryParameter adds the spaceTotalFootprint to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceTotalFootprintQueryParameter(spaceTotalFootprint *int64) {
+	o.SpaceTotalFootprintQueryParameter = spaceTotalFootprint
+}
+
 // WithSpaceUsedQueryParameter adds the spaceUsed to the volume collection get params
 func (o *VolumeCollectionGetParams) WithSpaceUsedQueryParameter(spaceUsed *int64) *VolumeCollectionGetParams {
 	o.SetSpaceUsedQueryParameter(spaceUsed)
@@ -2389,6 +3763,17 @@ func (o *VolumeCollectionGetParams) WithSpaceUsedQueryParameter(spaceUsed *int64
 // SetSpaceUsedQueryParameter adds the spaceUsed to the volume collection get params
 func (o *VolumeCollectionGetParams) SetSpaceUsedQueryParameter(spaceUsed *int64) {
 	o.SpaceUsedQueryParameter = spaceUsed
+}
+
+// WithSpaceUsedByAfsQueryParameter adds the spaceUsedByAfs to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSpaceUsedByAfsQueryParameter(spaceUsedByAfs *int64) *VolumeCollectionGetParams {
+	o.SetSpaceUsedByAfsQueryParameter(spaceUsedByAfs)
+	return o
+}
+
+// SetSpaceUsedByAfsQueryParameter adds the spaceUsedByAfs to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSpaceUsedByAfsQueryParameter(spaceUsedByAfs *int64) {
+	o.SpaceUsedByAfsQueryParameter = spaceUsedByAfs
 }
 
 // WithStateQueryParameter adds the state to the volume collection get params
@@ -2510,6 +3895,50 @@ func (o *VolumeCollectionGetParams) WithStatisticsCloudTimestampQueryParameter(s
 // SetStatisticsCloudTimestampQueryParameter adds the statisticsCloudTimestamp to the volume collection get params
 func (o *VolumeCollectionGetParams) SetStatisticsCloudTimestampQueryParameter(statisticsCloudTimestamp *string) {
 	o.StatisticsCloudTimestampQueryParameter = statisticsCloudTimestamp
+}
+
+// WithStatisticsFlexcacheRawCacheMissBlocksQueryParameter adds the statisticsFlexcacheRawCacheMissBlocks to the volume collection get params
+func (o *VolumeCollectionGetParams) WithStatisticsFlexcacheRawCacheMissBlocksQueryParameter(statisticsFlexcacheRawCacheMissBlocks *int64) *VolumeCollectionGetParams {
+	o.SetStatisticsFlexcacheRawCacheMissBlocksQueryParameter(statisticsFlexcacheRawCacheMissBlocks)
+	return o
+}
+
+// SetStatisticsFlexcacheRawCacheMissBlocksQueryParameter adds the statisticsFlexcacheRawCacheMissBlocks to the volume collection get params
+func (o *VolumeCollectionGetParams) SetStatisticsFlexcacheRawCacheMissBlocksQueryParameter(statisticsFlexcacheRawCacheMissBlocks *int64) {
+	o.StatisticsFlexcacheRawCacheMissBlocksQueryParameter = statisticsFlexcacheRawCacheMissBlocks
+}
+
+// WithStatisticsFlexcacheRawClientRequestedBlocksQueryParameter adds the statisticsFlexcacheRawClientRequestedBlocks to the volume collection get params
+func (o *VolumeCollectionGetParams) WithStatisticsFlexcacheRawClientRequestedBlocksQueryParameter(statisticsFlexcacheRawClientRequestedBlocks *int64) *VolumeCollectionGetParams {
+	o.SetStatisticsFlexcacheRawClientRequestedBlocksQueryParameter(statisticsFlexcacheRawClientRequestedBlocks)
+	return o
+}
+
+// SetStatisticsFlexcacheRawClientRequestedBlocksQueryParameter adds the statisticsFlexcacheRawClientRequestedBlocks to the volume collection get params
+func (o *VolumeCollectionGetParams) SetStatisticsFlexcacheRawClientRequestedBlocksQueryParameter(statisticsFlexcacheRawClientRequestedBlocks *int64) {
+	o.StatisticsFlexcacheRawClientRequestedBlocksQueryParameter = statisticsFlexcacheRawClientRequestedBlocks
+}
+
+// WithStatisticsFlexcacheRawStatusQueryParameter adds the statisticsFlexcacheRawStatus to the volume collection get params
+func (o *VolumeCollectionGetParams) WithStatisticsFlexcacheRawStatusQueryParameter(statisticsFlexcacheRawStatus *string) *VolumeCollectionGetParams {
+	o.SetStatisticsFlexcacheRawStatusQueryParameter(statisticsFlexcacheRawStatus)
+	return o
+}
+
+// SetStatisticsFlexcacheRawStatusQueryParameter adds the statisticsFlexcacheRawStatus to the volume collection get params
+func (o *VolumeCollectionGetParams) SetStatisticsFlexcacheRawStatusQueryParameter(statisticsFlexcacheRawStatus *string) {
+	o.StatisticsFlexcacheRawStatusQueryParameter = statisticsFlexcacheRawStatus
+}
+
+// WithStatisticsFlexcacheRawTimestampQueryParameter adds the statisticsFlexcacheRawTimestamp to the volume collection get params
+func (o *VolumeCollectionGetParams) WithStatisticsFlexcacheRawTimestampQueryParameter(statisticsFlexcacheRawTimestamp *string) *VolumeCollectionGetParams {
+	o.SetStatisticsFlexcacheRawTimestampQueryParameter(statisticsFlexcacheRawTimestamp)
+	return o
+}
+
+// SetStatisticsFlexcacheRawTimestampQueryParameter adds the statisticsFlexcacheRawTimestamp to the volume collection get params
+func (o *VolumeCollectionGetParams) SetStatisticsFlexcacheRawTimestampQueryParameter(statisticsFlexcacheRawTimestamp *string) {
+	o.StatisticsFlexcacheRawTimestampQueryParameter = statisticsFlexcacheRawTimestamp
 }
 
 // WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the volume collection get params
@@ -2666,6 +4095,17 @@ func (o *VolumeCollectionGetParams) SetStatisticsTimestampQueryParameter(statist
 	o.StatisticsTimestampQueryParameter = statisticsTimestamp
 }
 
+// WithStatusQueryParameter adds the status to the volume collection get params
+func (o *VolumeCollectionGetParams) WithStatusQueryParameter(status *string) *VolumeCollectionGetParams {
+	o.SetStatusQueryParameter(status)
+	return o
+}
+
+// SetStatusQueryParameter adds the status to the volume collection get params
+func (o *VolumeCollectionGetParams) SetStatusQueryParameter(status *string) {
+	o.StatusQueryParameter = status
+}
+
 // WithStyleQueryParameter adds the style to the volume collection get params
 func (o *VolumeCollectionGetParams) WithStyleQueryParameter(style *string) *VolumeCollectionGetParams {
 	o.SetStyleQueryParameter(style)
@@ -2697,6 +4137,28 @@ func (o *VolumeCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *
 // SetSVMUUIDQueryParameter adds the svmUuid to the volume collection get params
 func (o *VolumeCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
 	o.SVMUUIDQueryParameter = svmUUID
+}
+
+// WithTieringMinCoolingDaysQueryParameter adds the tieringMinCoolingDays to the volume collection get params
+func (o *VolumeCollectionGetParams) WithTieringMinCoolingDaysQueryParameter(tieringMinCoolingDays *int64) *VolumeCollectionGetParams {
+	o.SetTieringMinCoolingDaysQueryParameter(tieringMinCoolingDays)
+	return o
+}
+
+// SetTieringMinCoolingDaysQueryParameter adds the tieringMinCoolingDays to the volume collection get params
+func (o *VolumeCollectionGetParams) SetTieringMinCoolingDaysQueryParameter(tieringMinCoolingDays *int64) {
+	o.TieringMinCoolingDaysQueryParameter = tieringMinCoolingDays
+}
+
+// WithTieringObjectTagsQueryParameter adds the tieringObjectTags to the volume collection get params
+func (o *VolumeCollectionGetParams) WithTieringObjectTagsQueryParameter(tieringObjectTags *string) *VolumeCollectionGetParams {
+	o.SetTieringObjectTagsQueryParameter(tieringObjectTags)
+	return o
+}
+
+// SetTieringObjectTagsQueryParameter adds the tieringObjectTags to the volume collection get params
+func (o *VolumeCollectionGetParams) SetTieringObjectTagsQueryParameter(tieringObjectTags *string) {
+	o.TieringObjectTagsQueryParameter = tieringObjectTags
 }
 
 // WithTieringPolicyQueryParameter adds the tieringPolicy to the volume collection get params
@@ -2740,6 +4202,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
+	if o.AccessTimeEnabledQueryParameter != nil {
+
+		// query param access_time_enabled
+		var qrAccessTimeEnabled bool
+
+		if o.AccessTimeEnabledQueryParameter != nil {
+			qrAccessTimeEnabled = *o.AccessTimeEnabledQueryParameter
+		}
+		qAccessTimeEnabled := swag.FormatBool(qrAccessTimeEnabled)
+		if qAccessTimeEnabled != "" {
+
+			if err := r.SetQueryParam("access_time_enabled", qAccessTimeEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.AggregatesNameQueryParameter != nil {
 
 		// query param aggregates.name
@@ -2769,6 +4248,91 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qAggregatesUUID != "" {
 
 			if err := r.SetQueryParam("aggregates.uuid", qAggregatesUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsScanProgressQueryParameter != nil {
+
+		// query param analytics.scan_progress
+		var qrAnalyticsScanProgress int64
+
+		if o.AnalyticsScanProgressQueryParameter != nil {
+			qrAnalyticsScanProgress = *o.AnalyticsScanProgressQueryParameter
+		}
+		qAnalyticsScanProgress := swag.FormatInt64(qrAnalyticsScanProgress)
+		if qAnalyticsScanProgress != "" {
+
+			if err := r.SetQueryParam("analytics.scan_progress", qAnalyticsScanProgress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsStateQueryParameter != nil {
+
+		// query param analytics.state
+		var qrAnalyticsState string
+
+		if o.AnalyticsStateQueryParameter != nil {
+			qrAnalyticsState = *o.AnalyticsStateQueryParameter
+		}
+		qAnalyticsState := qrAnalyticsState
+		if qAnalyticsState != "" {
+
+			if err := r.SetQueryParam("analytics.state", qAnalyticsState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsSupportedQueryParameter != nil {
+
+		// query param analytics.supported
+		var qrAnalyticsSupported bool
+
+		if o.AnalyticsSupportedQueryParameter != nil {
+			qrAnalyticsSupported = *o.AnalyticsSupportedQueryParameter
+		}
+		qAnalyticsSupported := swag.FormatBool(qrAnalyticsSupported)
+		if qAnalyticsSupported != "" {
+
+			if err := r.SetQueryParam("analytics.supported", qAnalyticsSupported); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsUnsupportedReasonCodeQueryParameter != nil {
+
+		// query param analytics.unsupported_reason.code
+		var qrAnalyticsUnsupportedReasonCode string
+
+		if o.AnalyticsUnsupportedReasonCodeQueryParameter != nil {
+			qrAnalyticsUnsupportedReasonCode = *o.AnalyticsUnsupportedReasonCodeQueryParameter
+		}
+		qAnalyticsUnsupportedReasonCode := qrAnalyticsUnsupportedReasonCode
+		if qAnalyticsUnsupportedReasonCode != "" {
+
+			if err := r.SetQueryParam("analytics.unsupported_reason.code", qAnalyticsUnsupportedReasonCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsUnsupportedReasonMessageQueryParameter != nil {
+
+		// query param analytics.unsupported_reason.message
+		var qrAnalyticsUnsupportedReasonMessage string
+
+		if o.AnalyticsUnsupportedReasonMessageQueryParameter != nil {
+			qrAnalyticsUnsupportedReasonMessage = *o.AnalyticsUnsupportedReasonMessageQueryParameter
+		}
+		qAnalyticsUnsupportedReasonMessage := qrAnalyticsUnsupportedReasonMessage
+		if qAnalyticsUnsupportedReasonMessage != "" {
+
+			if err := r.SetQueryParam("analytics.unsupported_reason.message", qAnalyticsUnsupportedReasonMessage); err != nil {
 				return err
 			}
 		}
@@ -3063,6 +4627,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.CloudRetrievalPolicyQueryParameter != nil {
+
+		// query param cloud_retrieval_policy
+		var qrCloudRetrievalPolicy string
+
+		if o.CloudRetrievalPolicyQueryParameter != nil {
+			qrCloudRetrievalPolicy = *o.CloudRetrievalPolicyQueryParameter
+		}
+		qCloudRetrievalPolicy := qrCloudRetrievalPolicy
+		if qCloudRetrievalPolicy != "" {
+
+			if err := r.SetQueryParam("cloud_retrieval_policy", qCloudRetrievalPolicy); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CommentQueryParameter != nil {
 
 		// query param comment
@@ -3097,6 +4678,482 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.ConstituentsAggregatesNameQueryParameter != nil {
+
+		// query param constituents.aggregates.name
+		var qrConstituentsAggregatesName string
+
+		if o.ConstituentsAggregatesNameQueryParameter != nil {
+			qrConstituentsAggregatesName = *o.ConstituentsAggregatesNameQueryParameter
+		}
+		qConstituentsAggregatesName := qrConstituentsAggregatesName
+		if qConstituentsAggregatesName != "" {
+
+			if err := r.SetQueryParam("constituents.aggregates.name", qConstituentsAggregatesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsAggregatesUUIDQueryParameter != nil {
+
+		// query param constituents.aggregates.uuid
+		var qrConstituentsAggregatesUUID string
+
+		if o.ConstituentsAggregatesUUIDQueryParameter != nil {
+			qrConstituentsAggregatesUUID = *o.ConstituentsAggregatesUUIDQueryParameter
+		}
+		qConstituentsAggregatesUUID := qrConstituentsAggregatesUUID
+		if qConstituentsAggregatesUUID != "" {
+
+			if err := r.SetQueryParam("constituents.aggregates.uuid", qConstituentsAggregatesUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsMovementCutoverWindowQueryParameter != nil {
+
+		// query param constituents.movement.cutover_window
+		var qrConstituentsMovementCutoverWindow int64
+
+		if o.ConstituentsMovementCutoverWindowQueryParameter != nil {
+			qrConstituentsMovementCutoverWindow = *o.ConstituentsMovementCutoverWindowQueryParameter
+		}
+		qConstituentsMovementCutoverWindow := swag.FormatInt64(qrConstituentsMovementCutoverWindow)
+		if qConstituentsMovementCutoverWindow != "" {
+
+			if err := r.SetQueryParam("constituents.movement.cutover_window", qConstituentsMovementCutoverWindow); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsMovementDestinationAggregateNameQueryParameter != nil {
+
+		// query param constituents.movement.destination_aggregate.name
+		var qrConstituentsMovementDestinationAggregateName string
+
+		if o.ConstituentsMovementDestinationAggregateNameQueryParameter != nil {
+			qrConstituentsMovementDestinationAggregateName = *o.ConstituentsMovementDestinationAggregateNameQueryParameter
+		}
+		qConstituentsMovementDestinationAggregateName := qrConstituentsMovementDestinationAggregateName
+		if qConstituentsMovementDestinationAggregateName != "" {
+
+			if err := r.SetQueryParam("constituents.movement.destination_aggregate.name", qConstituentsMovementDestinationAggregateName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsMovementDestinationAggregateUUIDQueryParameter != nil {
+
+		// query param constituents.movement.destination_aggregate.uuid
+		var qrConstituentsMovementDestinationAggregateUUID string
+
+		if o.ConstituentsMovementDestinationAggregateUUIDQueryParameter != nil {
+			qrConstituentsMovementDestinationAggregateUUID = *o.ConstituentsMovementDestinationAggregateUUIDQueryParameter
+		}
+		qConstituentsMovementDestinationAggregateUUID := qrConstituentsMovementDestinationAggregateUUID
+		if qConstituentsMovementDestinationAggregateUUID != "" {
+
+			if err := r.SetQueryParam("constituents.movement.destination_aggregate.uuid", qConstituentsMovementDestinationAggregateUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsMovementPercentCompleteQueryParameter != nil {
+
+		// query param constituents.movement.percent_complete
+		var qrConstituentsMovementPercentComplete int64
+
+		if o.ConstituentsMovementPercentCompleteQueryParameter != nil {
+			qrConstituentsMovementPercentComplete = *o.ConstituentsMovementPercentCompleteQueryParameter
+		}
+		qConstituentsMovementPercentComplete := swag.FormatInt64(qrConstituentsMovementPercentComplete)
+		if qConstituentsMovementPercentComplete != "" {
+
+			if err := r.SetQueryParam("constituents.movement.percent_complete", qConstituentsMovementPercentComplete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsMovementStateQueryParameter != nil {
+
+		// query param constituents.movement.state
+		var qrConstituentsMovementState string
+
+		if o.ConstituentsMovementStateQueryParameter != nil {
+			qrConstituentsMovementState = *o.ConstituentsMovementStateQueryParameter
+		}
+		qConstituentsMovementState := qrConstituentsMovementState
+		if qConstituentsMovementState != "" {
+
+			if err := r.SetQueryParam("constituents.movement.state", qConstituentsMovementState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsNameQueryParameter != nil {
+
+		// query param constituents.name
+		var qrConstituentsName string
+
+		if o.ConstituentsNameQueryParameter != nil {
+			qrConstituentsName = *o.ConstituentsNameQueryParameter
+		}
+		qConstituentsName := qrConstituentsName
+		if qConstituentsName != "" {
+
+			if err := r.SetQueryParam("constituents.name", qConstituentsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceAfsTotalQueryParameter != nil {
+
+		// query param constituents.space.afs_total
+		var qrConstituentsSpaceAfsTotal int64
+
+		if o.ConstituentsSpaceAfsTotalQueryParameter != nil {
+			qrConstituentsSpaceAfsTotal = *o.ConstituentsSpaceAfsTotalQueryParameter
+		}
+		qConstituentsSpaceAfsTotal := swag.FormatInt64(qrConstituentsSpaceAfsTotal)
+		if qConstituentsSpaceAfsTotal != "" {
+
+			if err := r.SetQueryParam("constituents.space.afs_total", qConstituentsSpaceAfsTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceAvailableQueryParameter != nil {
+
+		// query param constituents.space.available
+		var qrConstituentsSpaceAvailable int64
+
+		if o.ConstituentsSpaceAvailableQueryParameter != nil {
+			qrConstituentsSpaceAvailable = *o.ConstituentsSpaceAvailableQueryParameter
+		}
+		qConstituentsSpaceAvailable := swag.FormatInt64(qrConstituentsSpaceAvailable)
+		if qConstituentsSpaceAvailable != "" {
+
+			if err := r.SetQueryParam("constituents.space.available", qConstituentsSpaceAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceAvailablePercentQueryParameter != nil {
+
+		// query param constituents.space.available_percent
+		var qrConstituentsSpaceAvailablePercent int64
+
+		if o.ConstituentsSpaceAvailablePercentQueryParameter != nil {
+			qrConstituentsSpaceAvailablePercent = *o.ConstituentsSpaceAvailablePercentQueryParameter
+		}
+		qConstituentsSpaceAvailablePercent := swag.FormatInt64(qrConstituentsSpaceAvailablePercent)
+		if qConstituentsSpaceAvailablePercent != "" {
+
+			if err := r.SetQueryParam("constituents.space.available_percent", qConstituentsSpaceAvailablePercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceBlockStorageInactiveUserDataQueryParameter != nil {
+
+		// query param constituents.space.block_storage_inactive_user_data
+		var qrConstituentsSpaceBlockStorageInactiveUserData int64
+
+		if o.ConstituentsSpaceBlockStorageInactiveUserDataQueryParameter != nil {
+			qrConstituentsSpaceBlockStorageInactiveUserData = *o.ConstituentsSpaceBlockStorageInactiveUserDataQueryParameter
+		}
+		qConstituentsSpaceBlockStorageInactiveUserData := swag.FormatInt64(qrConstituentsSpaceBlockStorageInactiveUserData)
+		if qConstituentsSpaceBlockStorageInactiveUserData != "" {
+
+			if err := r.SetQueryParam("constituents.space.block_storage_inactive_user_data", qConstituentsSpaceBlockStorageInactiveUserData); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceCapacityTierFootprintQueryParameter != nil {
+
+		// query param constituents.space.capacity_tier_footprint
+		var qrConstituentsSpaceCapacityTierFootprint int64
+
+		if o.ConstituentsSpaceCapacityTierFootprintQueryParameter != nil {
+			qrConstituentsSpaceCapacityTierFootprint = *o.ConstituentsSpaceCapacityTierFootprintQueryParameter
+		}
+		qConstituentsSpaceCapacityTierFootprint := swag.FormatInt64(qrConstituentsSpaceCapacityTierFootprint)
+		if qConstituentsSpaceCapacityTierFootprint != "" {
+
+			if err := r.SetQueryParam("constituents.space.capacity_tier_footprint", qConstituentsSpaceCapacityTierFootprint); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceFootprintQueryParameter != nil {
+
+		// query param constituents.space.footprint
+		var qrConstituentsSpaceFootprint int64
+
+		if o.ConstituentsSpaceFootprintQueryParameter != nil {
+			qrConstituentsSpaceFootprint = *o.ConstituentsSpaceFootprintQueryParameter
+		}
+		qConstituentsSpaceFootprint := swag.FormatInt64(qrConstituentsSpaceFootprint)
+		if qConstituentsSpaceFootprint != "" {
+
+			if err := r.SetQueryParam("constituents.space.footprint", qConstituentsSpaceFootprint); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceLocalTierFootprintQueryParameter != nil {
+
+		// query param constituents.space.local_tier_footprint
+		var qrConstituentsSpaceLocalTierFootprint int64
+
+		if o.ConstituentsSpaceLocalTierFootprintQueryParameter != nil {
+			qrConstituentsSpaceLocalTierFootprint = *o.ConstituentsSpaceLocalTierFootprintQueryParameter
+		}
+		qConstituentsSpaceLocalTierFootprint := swag.FormatInt64(qrConstituentsSpaceLocalTierFootprint)
+		if qConstituentsSpaceLocalTierFootprint != "" {
+
+			if err := r.SetQueryParam("constituents.space.local_tier_footprint", qConstituentsSpaceLocalTierFootprint); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceLogicalSpaceAvailableQueryParameter != nil {
+
+		// query param constituents.space.logical_space.available
+		var qrConstituentsSpaceLogicalSpaceAvailable int64
+
+		if o.ConstituentsSpaceLogicalSpaceAvailableQueryParameter != nil {
+			qrConstituentsSpaceLogicalSpaceAvailable = *o.ConstituentsSpaceLogicalSpaceAvailableQueryParameter
+		}
+		qConstituentsSpaceLogicalSpaceAvailable := swag.FormatInt64(qrConstituentsSpaceLogicalSpaceAvailable)
+		if qConstituentsSpaceLogicalSpaceAvailable != "" {
+
+			if err := r.SetQueryParam("constituents.space.logical_space.available", qConstituentsSpaceLogicalSpaceAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceLogicalSpaceEnforcementQueryParameter != nil {
+
+		// query param constituents.space.logical_space.enforcement
+		var qrConstituentsSpaceLogicalSpaceEnforcement bool
+
+		if o.ConstituentsSpaceLogicalSpaceEnforcementQueryParameter != nil {
+			qrConstituentsSpaceLogicalSpaceEnforcement = *o.ConstituentsSpaceLogicalSpaceEnforcementQueryParameter
+		}
+		qConstituentsSpaceLogicalSpaceEnforcement := swag.FormatBool(qrConstituentsSpaceLogicalSpaceEnforcement)
+		if qConstituentsSpaceLogicalSpaceEnforcement != "" {
+
+			if err := r.SetQueryParam("constituents.space.logical_space.enforcement", qConstituentsSpaceLogicalSpaceEnforcement); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceLogicalSpaceReportingQueryParameter != nil {
+
+		// query param constituents.space.logical_space.reporting
+		var qrConstituentsSpaceLogicalSpaceReporting bool
+
+		if o.ConstituentsSpaceLogicalSpaceReportingQueryParameter != nil {
+			qrConstituentsSpaceLogicalSpaceReporting = *o.ConstituentsSpaceLogicalSpaceReportingQueryParameter
+		}
+		qConstituentsSpaceLogicalSpaceReporting := swag.FormatBool(qrConstituentsSpaceLogicalSpaceReporting)
+		if qConstituentsSpaceLogicalSpaceReporting != "" {
+
+			if err := r.SetQueryParam("constituents.space.logical_space.reporting", qConstituentsSpaceLogicalSpaceReporting); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceLogicalSpaceUsedByAfsQueryParameter != nil {
+
+		// query param constituents.space.logical_space.used_by_afs
+		var qrConstituentsSpaceLogicalSpaceUsedByAfs int64
+
+		if o.ConstituentsSpaceLogicalSpaceUsedByAfsQueryParameter != nil {
+			qrConstituentsSpaceLogicalSpaceUsedByAfs = *o.ConstituentsSpaceLogicalSpaceUsedByAfsQueryParameter
+		}
+		qConstituentsSpaceLogicalSpaceUsedByAfs := swag.FormatInt64(qrConstituentsSpaceLogicalSpaceUsedByAfs)
+		if qConstituentsSpaceLogicalSpaceUsedByAfs != "" {
+
+			if err := r.SetQueryParam("constituents.space.logical_space.used_by_afs", qConstituentsSpaceLogicalSpaceUsedByAfs); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceMetadataQueryParameter != nil {
+
+		// query param constituents.space.metadata
+		var qrConstituentsSpaceMetadata int64
+
+		if o.ConstituentsSpaceMetadataQueryParameter != nil {
+			qrConstituentsSpaceMetadata = *o.ConstituentsSpaceMetadataQueryParameter
+		}
+		qConstituentsSpaceMetadata := swag.FormatInt64(qrConstituentsSpaceMetadata)
+		if qConstituentsSpaceMetadata != "" {
+
+			if err := r.SetQueryParam("constituents.space.metadata", qConstituentsSpaceMetadata); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceOverProvisionedQueryParameter != nil {
+
+		// query param constituents.space.over_provisioned
+		var qrConstituentsSpaceOverProvisioned int64
+
+		if o.ConstituentsSpaceOverProvisionedQueryParameter != nil {
+			qrConstituentsSpaceOverProvisioned = *o.ConstituentsSpaceOverProvisionedQueryParameter
+		}
+		qConstituentsSpaceOverProvisioned := swag.FormatInt64(qrConstituentsSpaceOverProvisioned)
+		if qConstituentsSpaceOverProvisioned != "" {
+
+			if err := r.SetQueryParam("constituents.space.over_provisioned", qConstituentsSpaceOverProvisioned); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpacePerformanceTierFootprintQueryParameter != nil {
+
+		// query param constituents.space.performance_tier_footprint
+		var qrConstituentsSpacePerformanceTierFootprint int64
+
+		if o.ConstituentsSpacePerformanceTierFootprintQueryParameter != nil {
+			qrConstituentsSpacePerformanceTierFootprint = *o.ConstituentsSpacePerformanceTierFootprintQueryParameter
+		}
+		qConstituentsSpacePerformanceTierFootprint := swag.FormatInt64(qrConstituentsSpacePerformanceTierFootprint)
+		if qConstituentsSpacePerformanceTierFootprint != "" {
+
+			if err := r.SetQueryParam("constituents.space.performance_tier_footprint", qConstituentsSpacePerformanceTierFootprint); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceSizeQueryParameter != nil {
+
+		// query param constituents.space.size
+		var qrConstituentsSpaceSize int64
+
+		if o.ConstituentsSpaceSizeQueryParameter != nil {
+			qrConstituentsSpaceSize = *o.ConstituentsSpaceSizeQueryParameter
+		}
+		qConstituentsSpaceSize := swag.FormatInt64(qrConstituentsSpaceSize)
+		if qConstituentsSpaceSize != "" {
+
+			if err := r.SetQueryParam("constituents.space.size", qConstituentsSpaceSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceSnapshotReservePercentQueryParameter != nil {
+
+		// query param constituents.space.snapshot.reserve_percent
+		var qrConstituentsSpaceSnapshotReservePercent int64
+
+		if o.ConstituentsSpaceSnapshotReservePercentQueryParameter != nil {
+			qrConstituentsSpaceSnapshotReservePercent = *o.ConstituentsSpaceSnapshotReservePercentQueryParameter
+		}
+		qConstituentsSpaceSnapshotReservePercent := swag.FormatInt64(qrConstituentsSpaceSnapshotReservePercent)
+		if qConstituentsSpaceSnapshotReservePercent != "" {
+
+			if err := r.SetQueryParam("constituents.space.snapshot.reserve_percent", qConstituentsSpaceSnapshotReservePercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceSnapshotUsedQueryParameter != nil {
+
+		// query param constituents.space.snapshot.used
+		var qrConstituentsSpaceSnapshotUsed int64
+
+		if o.ConstituentsSpaceSnapshotUsedQueryParameter != nil {
+			qrConstituentsSpaceSnapshotUsed = *o.ConstituentsSpaceSnapshotUsedQueryParameter
+		}
+		qConstituentsSpaceSnapshotUsed := swag.FormatInt64(qrConstituentsSpaceSnapshotUsed)
+		if qConstituentsSpaceSnapshotUsed != "" {
+
+			if err := r.SetQueryParam("constituents.space.snapshot.used", qConstituentsSpaceSnapshotUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceTotalFootprintQueryParameter != nil {
+
+		// query param constituents.space.total_footprint
+		var qrConstituentsSpaceTotalFootprint int64
+
+		if o.ConstituentsSpaceTotalFootprintQueryParameter != nil {
+			qrConstituentsSpaceTotalFootprint = *o.ConstituentsSpaceTotalFootprintQueryParameter
+		}
+		qConstituentsSpaceTotalFootprint := swag.FormatInt64(qrConstituentsSpaceTotalFootprint)
+		if qConstituentsSpaceTotalFootprint != "" {
+
+			if err := r.SetQueryParam("constituents.space.total_footprint", qConstituentsSpaceTotalFootprint); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceUsedQueryParameter != nil {
+
+		// query param constituents.space.used
+		var qrConstituentsSpaceUsed int64
+
+		if o.ConstituentsSpaceUsedQueryParameter != nil {
+			qrConstituentsSpaceUsed = *o.ConstituentsSpaceUsedQueryParameter
+		}
+		qConstituentsSpaceUsed := swag.FormatInt64(qrConstituentsSpaceUsed)
+		if qConstituentsSpaceUsed != "" {
+
+			if err := r.SetQueryParam("constituents.space.used", qConstituentsSpaceUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsSpaceUsedByAfsQueryParameter != nil {
+
+		// query param constituents.space.used_by_afs
+		var qrConstituentsSpaceUsedByAfs int64
+
+		if o.ConstituentsSpaceUsedByAfsQueryParameter != nil {
+			qrConstituentsSpaceUsedByAfs = *o.ConstituentsSpaceUsedByAfsQueryParameter
+		}
+		qConstituentsSpaceUsedByAfs := swag.FormatInt64(qrConstituentsSpaceUsedByAfs)
+		if qConstituentsSpaceUsedByAfs != "" {
+
+			if err := r.SetQueryParam("constituents.space.used_by_afs", qConstituentsSpaceUsedByAfs); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CreateTimeQueryParameter != nil {
 
 		// query param create_time
@@ -3109,6 +5166,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qCreateTime != "" {
 
 			if err := r.SetQueryParam("create_time", qCreateTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyApplicationIoSizeQueryParameter != nil {
+
+		// query param efficiency.application_io_size
+		var qrEfficiencyApplicationIoSize string
+
+		if o.EfficiencyApplicationIoSizeQueryParameter != nil {
+			qrEfficiencyApplicationIoSize = *o.EfficiencyApplicationIoSizeQueryParameter
+		}
+		qEfficiencyApplicationIoSize := qrEfficiencyApplicationIoSize
+		if qEfficiencyApplicationIoSize != "" {
+
+			if err := r.SetQueryParam("efficiency.application_io_size", qEfficiencyApplicationIoSize); err != nil {
 				return err
 			}
 		}
@@ -3182,6 +5256,125 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.EfficiencyLastOpBeginQueryParameter != nil {
+
+		// query param efficiency.last_op_begin
+		var qrEfficiencyLastOpBegin string
+
+		if o.EfficiencyLastOpBeginQueryParameter != nil {
+			qrEfficiencyLastOpBegin = *o.EfficiencyLastOpBeginQueryParameter
+		}
+		qEfficiencyLastOpBegin := qrEfficiencyLastOpBegin
+		if qEfficiencyLastOpBegin != "" {
+
+			if err := r.SetQueryParam("efficiency.last_op_begin", qEfficiencyLastOpBegin); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyLastOpEndQueryParameter != nil {
+
+		// query param efficiency.last_op_end
+		var qrEfficiencyLastOpEnd string
+
+		if o.EfficiencyLastOpEndQueryParameter != nil {
+			qrEfficiencyLastOpEnd = *o.EfficiencyLastOpEndQueryParameter
+		}
+		qEfficiencyLastOpEnd := qrEfficiencyLastOpEnd
+		if qEfficiencyLastOpEnd != "" {
+
+			if err := r.SetQueryParam("efficiency.last_op_end", qEfficiencyLastOpEnd); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyLastOpErrQueryParameter != nil {
+
+		// query param efficiency.last_op_err
+		var qrEfficiencyLastOpErr string
+
+		if o.EfficiencyLastOpErrQueryParameter != nil {
+			qrEfficiencyLastOpErr = *o.EfficiencyLastOpErrQueryParameter
+		}
+		qEfficiencyLastOpErr := qrEfficiencyLastOpErr
+		if qEfficiencyLastOpErr != "" {
+
+			if err := r.SetQueryParam("efficiency.last_op_err", qEfficiencyLastOpErr); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyLastOpSizeQueryParameter != nil {
+
+		// query param efficiency.last_op_size
+		var qrEfficiencyLastOpSize int64
+
+		if o.EfficiencyLastOpSizeQueryParameter != nil {
+			qrEfficiencyLastOpSize = *o.EfficiencyLastOpSizeQueryParameter
+		}
+		qEfficiencyLastOpSize := swag.FormatInt64(qrEfficiencyLastOpSize)
+		if qEfficiencyLastOpSize != "" {
+
+			if err := r.SetQueryParam("efficiency.last_op_size", qEfficiencyLastOpSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyLastOpStateQueryParameter != nil {
+
+		// query param efficiency.last_op_state
+		var qrEfficiencyLastOpState string
+
+		if o.EfficiencyLastOpStateQueryParameter != nil {
+			qrEfficiencyLastOpState = *o.EfficiencyLastOpStateQueryParameter
+		}
+		qEfficiencyLastOpState := qrEfficiencyLastOpState
+		if qEfficiencyLastOpState != "" {
+
+			if err := r.SetQueryParam("efficiency.last_op_state", qEfficiencyLastOpState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyOpStateQueryParameter != nil {
+
+		// query param efficiency.op_state
+		var qrEfficiencyOpState string
+
+		if o.EfficiencyOpStateQueryParameter != nil {
+			qrEfficiencyOpState = *o.EfficiencyOpStateQueryParameter
+		}
+		qEfficiencyOpState := qrEfficiencyOpState
+		if qEfficiencyOpState != "" {
+
+			if err := r.SetQueryParam("efficiency.op_state", qEfficiencyOpState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyPathQueryParameter != nil {
+
+		// query param efficiency.path
+		var qrEfficiencyPath string
+
+		if o.EfficiencyPathQueryParameter != nil {
+			qrEfficiencyPath = *o.EfficiencyPathQueryParameter
+		}
+		qEfficiencyPath := qrEfficiencyPath
+		if qEfficiencyPath != "" {
+
+			if err := r.SetQueryParam("efficiency.path", qEfficiencyPath); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EfficiencyPolicyNameQueryParameter != nil {
 
 		// query param efficiency.policy.name
@@ -3194,6 +5387,74 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qEfficiencyPolicyName != "" {
 
 			if err := r.SetQueryParam("efficiency.policy.name", qEfficiencyPolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyProgressQueryParameter != nil {
+
+		// query param efficiency.progress
+		var qrEfficiencyProgress string
+
+		if o.EfficiencyProgressQueryParameter != nil {
+			qrEfficiencyProgress = *o.EfficiencyProgressQueryParameter
+		}
+		qEfficiencyProgress := qrEfficiencyProgress
+		if qEfficiencyProgress != "" {
+
+			if err := r.SetQueryParam("efficiency.progress", qEfficiencyProgress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyScheduleQueryParameter != nil {
+
+		// query param efficiency.schedule
+		var qrEfficiencySchedule string
+
+		if o.EfficiencyScheduleQueryParameter != nil {
+			qrEfficiencySchedule = *o.EfficiencyScheduleQueryParameter
+		}
+		qEfficiencySchedule := qrEfficiencySchedule
+		if qEfficiencySchedule != "" {
+
+			if err := r.SetQueryParam("efficiency.schedule", qEfficiencySchedule); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyStateQueryParameter != nil {
+
+		// query param efficiency.state
+		var qrEfficiencyState string
+
+		if o.EfficiencyStateQueryParameter != nil {
+			qrEfficiencyState = *o.EfficiencyStateQueryParameter
+		}
+		qEfficiencyState := qrEfficiencyState
+		if qEfficiencyState != "" {
+
+			if err := r.SetQueryParam("efficiency.state", qEfficiencyState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EfficiencyTypeQueryParameter != nil {
+
+		// query param efficiency.type
+		var qrEfficiencyType string
+
+		if o.EfficiencyTypeQueryParameter != nil {
+			qrEfficiencyType = *o.EfficiencyTypeQueryParameter
+		}
+		qEfficiencyType := qrEfficiencyType
+		if qEfficiencyType != "" {
+
+			if err := r.SetQueryParam("efficiency.type", qEfficiencyType); err != nil {
 				return err
 			}
 		}
@@ -3352,7 +5613,7 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -3448,6 +5709,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.IsObjectStoreQueryParameter != nil {
+
+		// query param is_object_store
+		var qrIsObjectStore bool
+
+		if o.IsObjectStoreQueryParameter != nil {
+			qrIsObjectStore = *o.IsObjectStoreQueryParameter
+		}
+		qIsObjectStore := swag.FormatBool(qrIsObjectStore)
+		if qIsObjectStore != "" {
+
+			if err := r.SetQueryParam("is_object_store", qIsObjectStore); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.IsSVMRootQueryParameter != nil {
 
 		// query param is_svm_root
@@ -3482,13 +5760,13 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -3698,6 +5976,91 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qMetricDuration != "" {
 
 			if err := r.SetQueryParam("metric.duration", qMetricDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricFlexcacheBandwidthSavingsQueryParameter != nil {
+
+		// query param metric.flexcache.bandwidth_savings
+		var qrMetricFlexcacheBandwidthSavings int64
+
+		if o.MetricFlexcacheBandwidthSavingsQueryParameter != nil {
+			qrMetricFlexcacheBandwidthSavings = *o.MetricFlexcacheBandwidthSavingsQueryParameter
+		}
+		qMetricFlexcacheBandwidthSavings := swag.FormatInt64(qrMetricFlexcacheBandwidthSavings)
+		if qMetricFlexcacheBandwidthSavings != "" {
+
+			if err := r.SetQueryParam("metric.flexcache.bandwidth_savings", qMetricFlexcacheBandwidthSavings); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricFlexcacheCacheMissPercentQueryParameter != nil {
+
+		// query param metric.flexcache.cache_miss_percent
+		var qrMetricFlexcacheCacheMissPercent int64
+
+		if o.MetricFlexcacheCacheMissPercentQueryParameter != nil {
+			qrMetricFlexcacheCacheMissPercent = *o.MetricFlexcacheCacheMissPercentQueryParameter
+		}
+		qMetricFlexcacheCacheMissPercent := swag.FormatInt64(qrMetricFlexcacheCacheMissPercent)
+		if qMetricFlexcacheCacheMissPercent != "" {
+
+			if err := r.SetQueryParam("metric.flexcache.cache_miss_percent", qMetricFlexcacheCacheMissPercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricFlexcacheDurationQueryParameter != nil {
+
+		// query param metric.flexcache.duration
+		var qrMetricFlexcacheDuration string
+
+		if o.MetricFlexcacheDurationQueryParameter != nil {
+			qrMetricFlexcacheDuration = *o.MetricFlexcacheDurationQueryParameter
+		}
+		qMetricFlexcacheDuration := qrMetricFlexcacheDuration
+		if qMetricFlexcacheDuration != "" {
+
+			if err := r.SetQueryParam("metric.flexcache.duration", qMetricFlexcacheDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricFlexcacheStatusQueryParameter != nil {
+
+		// query param metric.flexcache.status
+		var qrMetricFlexcacheStatus string
+
+		if o.MetricFlexcacheStatusQueryParameter != nil {
+			qrMetricFlexcacheStatus = *o.MetricFlexcacheStatusQueryParameter
+		}
+		qMetricFlexcacheStatus := qrMetricFlexcacheStatus
+		if qMetricFlexcacheStatus != "" {
+
+			if err := r.SetQueryParam("metric.flexcache.status", qMetricFlexcacheStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricFlexcacheTimestampQueryParameter != nil {
+
+		// query param metric.flexcache.timestamp
+		var qrMetricFlexcacheTimestamp string
+
+		if o.MetricFlexcacheTimestampQueryParameter != nil {
+			qrMetricFlexcacheTimestamp = *o.MetricFlexcacheTimestampQueryParameter
+		}
+		qMetricFlexcacheTimestamp := qrMetricFlexcacheTimestamp
+		if qMetricFlexcacheTimestamp != "" {
+
+			if err := r.SetQueryParam("metric.flexcache.timestamp", qMetricFlexcacheTimestamp); err != nil {
 				return err
 			}
 		}
@@ -4009,6 +6372,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.MovementStartTimeQueryParameter != nil {
+
+		// query param movement.start_time
+		var qrMovementStartTime string
+
+		if o.MovementStartTimeQueryParameter != nil {
+			qrMovementStartTime = *o.MovementStartTimeQueryParameter
+		}
+		qMovementStartTime := qrMovementStartTime
+		if qMovementStartTime != "" {
+
+			if err := r.SetQueryParam("movement.start_time", qMovementStartTime); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.MovementStateQueryParameter != nil {
 
 		// query param movement.state
@@ -4094,6 +6474,40 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.NasJunctionParentNameQueryParameter != nil {
+
+		// query param nas.junction_parent.name
+		var qrNasJunctionParentName string
+
+		if o.NasJunctionParentNameQueryParameter != nil {
+			qrNasJunctionParentName = *o.NasJunctionParentNameQueryParameter
+		}
+		qNasJunctionParentName := qrNasJunctionParentName
+		if qNasJunctionParentName != "" {
+
+			if err := r.SetQueryParam("nas.junction_parent.name", qNasJunctionParentName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NasJunctionParentUUIDQueryParameter != nil {
+
+		// query param nas.junction_parent.uuid
+		var qrNasJunctionParentUUID string
+
+		if o.NasJunctionParentUUIDQueryParameter != nil {
+			qrNasJunctionParentUUID = *o.NasJunctionParentUUIDQueryParameter
+		}
+		qNasJunctionParentUUID := qrNasJunctionParentUUID
+		if qNasJunctionParentUUID != "" {
+
+			if err := r.SetQueryParam("nas.junction_parent.uuid", qNasJunctionParentUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.NasPathQueryParameter != nil {
 
 		// query param nas.path
@@ -4162,7 +6576,7 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -4224,6 +6638,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.QosPolicyMinThroughputMbpsQueryParameter != nil {
+
+		// query param qos.policy.min_throughput_mbps
+		var qrQosPolicyMinThroughputMbps int64
+
+		if o.QosPolicyMinThroughputMbpsQueryParameter != nil {
+			qrQosPolicyMinThroughputMbps = *o.QosPolicyMinThroughputMbpsQueryParameter
+		}
+		qQosPolicyMinThroughputMbps := swag.FormatInt64(qrQosPolicyMinThroughputMbps)
+		if qQosPolicyMinThroughputMbps != "" {
+
+			if err := r.SetQueryParam("qos.policy.min_throughput_mbps", qQosPolicyMinThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.QosPolicyNameQueryParameter != nil {
 
 		// query param qos.policy.name
@@ -4258,6 +6689,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.QueueForEncryptionQueryParameter != nil {
+
+		// query param queue_for_encryption
+		var qrQueueForEncryption bool
+
+		if o.QueueForEncryptionQueryParameter != nil {
+			qrQueueForEncryption = *o.QueueForEncryptionQueryParameter
+		}
+		qQueueForEncryption := swag.FormatBool(qrQueueForEncryption)
+		if qQueueForEncryption != "" {
+
+			if err := r.SetQueryParam("queue_for_encryption", qQueueForEncryption); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.QuotaStateQueryParameter != nil {
 
 		// query param quota.state
@@ -4275,13 +6723,13 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -4292,13 +6740,13 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -4513,6 +6961,57 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.SnaplockUnspecifiedRetentionFileCountQueryParameter != nil {
+
+		// query param snaplock.unspecified_retention_file_count
+		var qrSnaplockUnspecifiedRetentionFileCount int64
+
+		if o.SnaplockUnspecifiedRetentionFileCountQueryParameter != nil {
+			qrSnaplockUnspecifiedRetentionFileCount = *o.SnaplockUnspecifiedRetentionFileCountQueryParameter
+		}
+		qSnaplockUnspecifiedRetentionFileCount := swag.FormatInt64(qrSnaplockUnspecifiedRetentionFileCount)
+		if qSnaplockUnspecifiedRetentionFileCount != "" {
+
+			if err := r.SetQueryParam("snaplock.unspecified_retention_file_count", qSnaplockUnspecifiedRetentionFileCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapmirrorDestinationsIsCloudQueryParameter != nil {
+
+		// query param snapmirror.destinations.is_cloud
+		var qrSnapmirrorDestinationsIsCloud bool
+
+		if o.SnapmirrorDestinationsIsCloudQueryParameter != nil {
+			qrSnapmirrorDestinationsIsCloud = *o.SnapmirrorDestinationsIsCloudQueryParameter
+		}
+		qSnapmirrorDestinationsIsCloud := swag.FormatBool(qrSnapmirrorDestinationsIsCloud)
+		if qSnapmirrorDestinationsIsCloud != "" {
+
+			if err := r.SetQueryParam("snapmirror.destinations.is_cloud", qSnapmirrorDestinationsIsCloud); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapmirrorDestinationsIsOntapQueryParameter != nil {
+
+		// query param snapmirror.destinations.is_ontap
+		var qrSnapmirrorDestinationsIsOntap bool
+
+		if o.SnapmirrorDestinationsIsOntapQueryParameter != nil {
+			qrSnapmirrorDestinationsIsOntap = *o.SnapmirrorDestinationsIsOntapQueryParameter
+		}
+		qSnapmirrorDestinationsIsOntap := swag.FormatBool(qrSnapmirrorDestinationsIsOntap)
+		if qSnapmirrorDestinationsIsOntap != "" {
+
+			if err := r.SetQueryParam("snapmirror.destinations.is_ontap", qSnapmirrorDestinationsIsOntap); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SnapmirrorIsProtectedQueryParameter != nil {
 
 		// query param snapmirror.is_protected
@@ -4564,6 +7063,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.SpaceAfsTotalQueryParameter != nil {
+
+		// query param space.afs_total
+		var qrSpaceAfsTotal int64
+
+		if o.SpaceAfsTotalQueryParameter != nil {
+			qrSpaceAfsTotal = *o.SpaceAfsTotalQueryParameter
+		}
+		qSpaceAfsTotal := swag.FormatInt64(qrSpaceAfsTotal)
+		if qSpaceAfsTotal != "" {
+
+			if err := r.SetQueryParam("space.afs_total", qSpaceAfsTotal); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SpaceAvailableQueryParameter != nil {
 
 		// query param space.available
@@ -4581,6 +7097,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.SpaceAvailablePercentQueryParameter != nil {
+
+		// query param space.available_percent
+		var qrSpaceAvailablePercent int64
+
+		if o.SpaceAvailablePercentQueryParameter != nil {
+			qrSpaceAvailablePercent = *o.SpaceAvailablePercentQueryParameter
+		}
+		qSpaceAvailablePercent := swag.FormatInt64(qrSpaceAvailablePercent)
+		if qSpaceAvailablePercent != "" {
+
+			if err := r.SetQueryParam("space.available_percent", qSpaceAvailablePercent); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SpaceBlockStorageInactiveUserDataQueryParameter != nil {
 
 		// query param space.block_storage_inactive_user_data
@@ -4593,6 +7126,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qSpaceBlockStorageInactiveUserData != "" {
 
 			if err := r.SetQueryParam("space.block_storage_inactive_user_data", qSpaceBlockStorageInactiveUserData); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceBlockStorageInactiveUserDataPercentQueryParameter != nil {
+
+		// query param space.block_storage_inactive_user_data_percent
+		var qrSpaceBlockStorageInactiveUserDataPercent int64
+
+		if o.SpaceBlockStorageInactiveUserDataPercentQueryParameter != nil {
+			qrSpaceBlockStorageInactiveUserDataPercent = *o.SpaceBlockStorageInactiveUserDataPercentQueryParameter
+		}
+		qSpaceBlockStorageInactiveUserDataPercent := swag.FormatInt64(qrSpaceBlockStorageInactiveUserDataPercent)
+		if qSpaceBlockStorageInactiveUserDataPercent != "" {
+
+			if err := r.SetQueryParam("space.block_storage_inactive_user_data_percent", qSpaceBlockStorageInactiveUserDataPercent); err != nil {
 				return err
 			}
 		}
@@ -4627,6 +7177,57 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qSpaceFootprint != "" {
 
 			if err := r.SetQueryParam("space.footprint", qSpaceFootprint); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceFractionalReserveQueryParameter != nil {
+
+		// query param space.fractional_reserve
+		var qrSpaceFractionalReserve int64
+
+		if o.SpaceFractionalReserveQueryParameter != nil {
+			qrSpaceFractionalReserve = *o.SpaceFractionalReserveQueryParameter
+		}
+		qSpaceFractionalReserve := swag.FormatInt64(qrSpaceFractionalReserve)
+		if qSpaceFractionalReserve != "" {
+
+			if err := r.SetQueryParam("space.fractional_reserve", qSpaceFractionalReserve); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceFullThresholdPercentQueryParameter != nil {
+
+		// query param space.full_threshold_percent
+		var qrSpaceFullThresholdPercent int64
+
+		if o.SpaceFullThresholdPercentQueryParameter != nil {
+			qrSpaceFullThresholdPercent = *o.SpaceFullThresholdPercentQueryParameter
+		}
+		qSpaceFullThresholdPercent := swag.FormatInt64(qrSpaceFullThresholdPercent)
+		if qSpaceFullThresholdPercent != "" {
+
+			if err := r.SetQueryParam("space.full_threshold_percent", qSpaceFullThresholdPercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceLocalTierFootprintQueryParameter != nil {
+
+		// query param space.local_tier_footprint
+		var qrSpaceLocalTierFootprint int64
+
+		if o.SpaceLocalTierFootprintQueryParameter != nil {
+			qrSpaceLocalTierFootprint = *o.SpaceLocalTierFootprintQueryParameter
+		}
+		qSpaceLocalTierFootprint := swag.FormatInt64(qrSpaceLocalTierFootprint)
+		if qSpaceLocalTierFootprint != "" {
+
+			if err := r.SetQueryParam("space.local_tier_footprint", qSpaceLocalTierFootprint); err != nil {
 				return err
 			}
 		}
@@ -4683,6 +7284,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.SpaceLogicalSpaceUsedQueryParameter != nil {
+
+		// query param space.logical_space.used
+		var qrSpaceLogicalSpaceUsed int64
+
+		if o.SpaceLogicalSpaceUsedQueryParameter != nil {
+			qrSpaceLogicalSpaceUsed = *o.SpaceLogicalSpaceUsedQueryParameter
+		}
+		qSpaceLogicalSpaceUsed := swag.FormatInt64(qrSpaceLogicalSpaceUsed)
+		if qSpaceLogicalSpaceUsed != "" {
+
+			if err := r.SetQueryParam("space.logical_space.used", qSpaceLogicalSpaceUsed); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SpaceLogicalSpaceUsedByAfsQueryParameter != nil {
 
 		// query param space.logical_space.used_by_afs
@@ -4695,6 +7313,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qSpaceLogicalSpaceUsedByAfs != "" {
 
 			if err := r.SetQueryParam("space.logical_space.used_by_afs", qSpaceLogicalSpaceUsedByAfs); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceLogicalSpaceUsedPercentQueryParameter != nil {
+
+		// query param space.logical_space.used_percent
+		var qrSpaceLogicalSpaceUsedPercent int64
+
+		if o.SpaceLogicalSpaceUsedPercentQueryParameter != nil {
+			qrSpaceLogicalSpaceUsedPercent = *o.SpaceLogicalSpaceUsedPercentQueryParameter
+		}
+		qSpaceLogicalSpaceUsedPercent := swag.FormatInt64(qrSpaceLogicalSpaceUsedPercent)
+		if qSpaceLogicalSpaceUsedPercent != "" {
+
+			if err := r.SetQueryParam("space.logical_space.used_percent", qSpaceLogicalSpaceUsedPercent); err != nil {
 				return err
 			}
 		}
@@ -4717,6 +7352,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.SpaceNearlyFullThresholdPercentQueryParameter != nil {
+
+		// query param space.nearly_full_threshold_percent
+		var qrSpaceNearlyFullThresholdPercent int64
+
+		if o.SpaceNearlyFullThresholdPercentQueryParameter != nil {
+			qrSpaceNearlyFullThresholdPercent = *o.SpaceNearlyFullThresholdPercentQueryParameter
+		}
+		qSpaceNearlyFullThresholdPercent := swag.FormatInt64(qrSpaceNearlyFullThresholdPercent)
+		if qSpaceNearlyFullThresholdPercent != "" {
+
+			if err := r.SetQueryParam("space.nearly_full_threshold_percent", qSpaceNearlyFullThresholdPercent); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SpaceOverProvisionedQueryParameter != nil {
 
 		// query param space.over_provisioned
@@ -4729,6 +7381,74 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qSpaceOverProvisioned != "" {
 
 			if err := r.SetQueryParam("space.over_provisioned", qSpaceOverProvisioned); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceOverwriteReserveQueryParameter != nil {
+
+		// query param space.overwrite_reserve
+		var qrSpaceOverwriteReserve int64
+
+		if o.SpaceOverwriteReserveQueryParameter != nil {
+			qrSpaceOverwriteReserve = *o.SpaceOverwriteReserveQueryParameter
+		}
+		qSpaceOverwriteReserve := swag.FormatInt64(qrSpaceOverwriteReserve)
+		if qSpaceOverwriteReserve != "" {
+
+			if err := r.SetQueryParam("space.overwrite_reserve", qSpaceOverwriteReserve); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceOverwriteReserveUsedQueryParameter != nil {
+
+		// query param space.overwrite_reserve_used
+		var qrSpaceOverwriteReserveUsed int64
+
+		if o.SpaceOverwriteReserveUsedQueryParameter != nil {
+			qrSpaceOverwriteReserveUsed = *o.SpaceOverwriteReserveUsedQueryParameter
+		}
+		qSpaceOverwriteReserveUsed := swag.FormatInt64(qrSpaceOverwriteReserveUsed)
+		if qSpaceOverwriteReserveUsed != "" {
+
+			if err := r.SetQueryParam("space.overwrite_reserve_used", qSpaceOverwriteReserveUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpacePercentUsedQueryParameter != nil {
+
+		// query param space.percent_used
+		var qrSpacePercentUsed int64
+
+		if o.SpacePercentUsedQueryParameter != nil {
+			qrSpacePercentUsed = *o.SpacePercentUsedQueryParameter
+		}
+		qSpacePercentUsed := swag.FormatInt64(qrSpacePercentUsed)
+		if qSpacePercentUsed != "" {
+
+			if err := r.SetQueryParam("space.percent_used", qSpacePercentUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpacePerformanceTierFootprintQueryParameter != nil {
+
+		// query param space.performance_tier_footprint
+		var qrSpacePerformanceTierFootprint int64
+
+		if o.SpacePerformanceTierFootprintQueryParameter != nil {
+			qrSpacePerformanceTierFootprint = *o.SpacePerformanceTierFootprintQueryParameter
+		}
+		qSpacePerformanceTierFootprint := swag.FormatInt64(qrSpacePerformanceTierFootprint)
+		if qSpacePerformanceTierFootprint != "" {
+
+			if err := r.SetQueryParam("space.performance_tier_footprint", qSpacePerformanceTierFootprint); err != nil {
 				return err
 			}
 		}
@@ -4751,6 +7471,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.SpaceSizeAvailableForSnapshotsQueryParameter != nil {
+
+		// query param space.size_available_for_snapshots
+		var qrSpaceSizeAvailableForSnapshots int64
+
+		if o.SpaceSizeAvailableForSnapshotsQueryParameter != nil {
+			qrSpaceSizeAvailableForSnapshots = *o.SpaceSizeAvailableForSnapshotsQueryParameter
+		}
+		qSpaceSizeAvailableForSnapshots := swag.FormatInt64(qrSpaceSizeAvailableForSnapshots)
+		if qSpaceSizeAvailableForSnapshots != "" {
+
+			if err := r.SetQueryParam("space.size_available_for_snapshots", qSpaceSizeAvailableForSnapshots); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SpaceSnapshotReservePercentQueryParameter != nil {
 
 		// query param space.snapshot.reserve_percent
@@ -4763,6 +7500,40 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qSpaceSnapshotReservePercent != "" {
 
 			if err := r.SetQueryParam("space.snapshot.reserve_percent", qSpaceSnapshotReservePercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceSnapshotReserveSizeQueryParameter != nil {
+
+		// query param space.snapshot.reserve_size
+		var qrSpaceSnapshotReserveSize int64
+
+		if o.SpaceSnapshotReserveSizeQueryParameter != nil {
+			qrSpaceSnapshotReserveSize = *o.SpaceSnapshotReserveSizeQueryParameter
+		}
+		qSpaceSnapshotReserveSize := swag.FormatInt64(qrSpaceSnapshotReserveSize)
+		if qSpaceSnapshotReserveSize != "" {
+
+			if err := r.SetQueryParam("space.snapshot.reserve_size", qSpaceSnapshotReserveSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceSnapshotSpaceUsedPercentQueryParameter != nil {
+
+		// query param space.snapshot.space_used_percent
+		var qrSpaceSnapshotSpaceUsedPercent int64
+
+		if o.SpaceSnapshotSpaceUsedPercentQueryParameter != nil {
+			qrSpaceSnapshotSpaceUsedPercent = *o.SpaceSnapshotSpaceUsedPercentQueryParameter
+		}
+		qSpaceSnapshotSpaceUsedPercent := swag.FormatInt64(qrSpaceSnapshotSpaceUsedPercent)
+		if qSpaceSnapshotSpaceUsedPercent != "" {
+
+			if err := r.SetQueryParam("space.snapshot.space_used_percent", qSpaceSnapshotSpaceUsedPercent); err != nil {
 				return err
 			}
 		}
@@ -4785,6 +7556,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.SpaceTotalFootprintQueryParameter != nil {
+
+		// query param space.total_footprint
+		var qrSpaceTotalFootprint int64
+
+		if o.SpaceTotalFootprintQueryParameter != nil {
+			qrSpaceTotalFootprint = *o.SpaceTotalFootprintQueryParameter
+		}
+		qSpaceTotalFootprint := swag.FormatInt64(qrSpaceTotalFootprint)
+		if qSpaceTotalFootprint != "" {
+
+			if err := r.SetQueryParam("space.total_footprint", qSpaceTotalFootprint); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SpaceUsedQueryParameter != nil {
 
 		// query param space.used
@@ -4797,6 +7585,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qSpaceUsed != "" {
 
 			if err := r.SetQueryParam("space.used", qSpaceUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceUsedByAfsQueryParameter != nil {
+
+		// query param space.used_by_afs
+		var qrSpaceUsedByAfs int64
+
+		if o.SpaceUsedByAfsQueryParameter != nil {
+			qrSpaceUsedByAfs = *o.SpaceUsedByAfsQueryParameter
+		}
+		qSpaceUsedByAfs := swag.FormatInt64(qrSpaceUsedByAfs)
+		if qSpaceUsedByAfs != "" {
+
+			if err := r.SetQueryParam("space.used_by_afs", qSpaceUsedByAfs); err != nil {
 				return err
 			}
 		}
@@ -4984,6 +7789,74 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qStatisticsCloudTimestamp != "" {
 
 			if err := r.SetQueryParam("statistics.cloud.timestamp", qStatisticsCloudTimestamp); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsFlexcacheRawCacheMissBlocksQueryParameter != nil {
+
+		// query param statistics.flexcache_raw.cache_miss_blocks
+		var qrStatisticsFlexcacheRawCacheMissBlocks int64
+
+		if o.StatisticsFlexcacheRawCacheMissBlocksQueryParameter != nil {
+			qrStatisticsFlexcacheRawCacheMissBlocks = *o.StatisticsFlexcacheRawCacheMissBlocksQueryParameter
+		}
+		qStatisticsFlexcacheRawCacheMissBlocks := swag.FormatInt64(qrStatisticsFlexcacheRawCacheMissBlocks)
+		if qStatisticsFlexcacheRawCacheMissBlocks != "" {
+
+			if err := r.SetQueryParam("statistics.flexcache_raw.cache_miss_blocks", qStatisticsFlexcacheRawCacheMissBlocks); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsFlexcacheRawClientRequestedBlocksQueryParameter != nil {
+
+		// query param statistics.flexcache_raw.client_requested_blocks
+		var qrStatisticsFlexcacheRawClientRequestedBlocks int64
+
+		if o.StatisticsFlexcacheRawClientRequestedBlocksQueryParameter != nil {
+			qrStatisticsFlexcacheRawClientRequestedBlocks = *o.StatisticsFlexcacheRawClientRequestedBlocksQueryParameter
+		}
+		qStatisticsFlexcacheRawClientRequestedBlocks := swag.FormatInt64(qrStatisticsFlexcacheRawClientRequestedBlocks)
+		if qStatisticsFlexcacheRawClientRequestedBlocks != "" {
+
+			if err := r.SetQueryParam("statistics.flexcache_raw.client_requested_blocks", qStatisticsFlexcacheRawClientRequestedBlocks); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsFlexcacheRawStatusQueryParameter != nil {
+
+		// query param statistics.flexcache_raw.status
+		var qrStatisticsFlexcacheRawStatus string
+
+		if o.StatisticsFlexcacheRawStatusQueryParameter != nil {
+			qrStatisticsFlexcacheRawStatus = *o.StatisticsFlexcacheRawStatusQueryParameter
+		}
+		qStatisticsFlexcacheRawStatus := qrStatisticsFlexcacheRawStatus
+		if qStatisticsFlexcacheRawStatus != "" {
+
+			if err := r.SetQueryParam("statistics.flexcache_raw.status", qStatisticsFlexcacheRawStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsFlexcacheRawTimestampQueryParameter != nil {
+
+		// query param statistics.flexcache_raw.timestamp
+		var qrStatisticsFlexcacheRawTimestamp string
+
+		if o.StatisticsFlexcacheRawTimestampQueryParameter != nil {
+			qrStatisticsFlexcacheRawTimestamp = *o.StatisticsFlexcacheRawTimestampQueryParameter
+		}
+		qStatisticsFlexcacheRawTimestamp := qrStatisticsFlexcacheRawTimestamp
+		if qStatisticsFlexcacheRawTimestamp != "" {
+
+			if err := r.SetQueryParam("statistics.flexcache_raw.timestamp", qStatisticsFlexcacheRawTimestamp); err != nil {
 				return err
 			}
 		}
@@ -5227,6 +8100,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.StatusQueryParameter != nil {
+
+		// query param status
+		var qrStatus string
+
+		if o.StatusQueryParameter != nil {
+			qrStatus = *o.StatusQueryParameter
+		}
+		qStatus := qrStatus
+		if qStatus != "" {
+
+			if err := r.SetQueryParam("status", qStatus); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.StyleQueryParameter != nil {
 
 		// query param style
@@ -5273,6 +8163,40 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qSvmUUID != "" {
 
 			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TieringMinCoolingDaysQueryParameter != nil {
+
+		// query param tiering.min_cooling_days
+		var qrTieringMinCoolingDays int64
+
+		if o.TieringMinCoolingDaysQueryParameter != nil {
+			qrTieringMinCoolingDays = *o.TieringMinCoolingDaysQueryParameter
+		}
+		qTieringMinCoolingDays := swag.FormatInt64(qrTieringMinCoolingDays)
+		if qTieringMinCoolingDays != "" {
+
+			if err := r.SetQueryParam("tiering.min_cooling_days", qTieringMinCoolingDays); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TieringObjectTagsQueryParameter != nil {
+
+		// query param tiering.object_tags
+		var qrTieringObjectTags string
+
+		if o.TieringObjectTagsQueryParameter != nil {
+			qrTieringObjectTags = *o.TieringObjectTagsQueryParameter
+		}
+		qTieringObjectTags := qrTieringObjectTags
+		if qTieringObjectTags != "" {
+
+			if err := r.SetQueryParam("tiering.object_tags", qTieringObjectTags); err != nil {
 				return err
 			}
 		}
@@ -5337,7 +8261,7 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamVolumeCollectionGet binds the parameter fields
 func (o *VolumeCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -5354,7 +8278,7 @@ func (o *VolumeCollectionGetParams) bindParamFields(formats strfmt.Registry) []s
 
 // bindParamVolumeCollectionGet binds the parameter order_by
 func (o *VolumeCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

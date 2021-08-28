@@ -72,7 +72,7 @@ type ClusterAccountAdProxyCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -92,11 +92,11 @@ func (o *ClusterAccountAdProxyCreateParams) WithDefaults() *ClusterAccountAdProx
 // All values with no default are reset to their zero value.
 func (o *ClusterAccountAdProxyCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := ClusterAccountAdProxyCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -149,15 +149,15 @@ func (o *ClusterAccountAdProxyCreateParams) SetInfo(info *models.ClusterAdProxy)
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the cluster account ad proxy create params
-func (o *ClusterAccountAdProxyCreateParams) WithReturnRecords(returnRecords *bool) *ClusterAccountAdProxyCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the cluster account ad proxy create params
+func (o *ClusterAccountAdProxyCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ClusterAccountAdProxyCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the cluster account ad proxy create params
-func (o *ClusterAccountAdProxyCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the cluster account ad proxy create params
+func (o *ClusterAccountAdProxyCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -173,13 +173,13 @@ func (o *ClusterAccountAdProxyCreateParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

@@ -84,7 +84,7 @@ type ExportRuleClientsCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,11 +104,11 @@ func (o *ExportRuleClientsCreateParams) WithDefaults() *ExportRuleClientsCreateP
 // All values with no default are reset to their zero value.
 func (o *ExportRuleClientsCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := ExportRuleClientsCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -183,15 +183,15 @@ func (o *ExportRuleClientsCreateParams) SetPolicyIDPathParameter(policyID int64)
 	o.PolicyIDPathParameter = policyID
 }
 
-// WithReturnRecords adds the returnRecords to the export rule clients create params
-func (o *ExportRuleClientsCreateParams) WithReturnRecords(returnRecords *bool) *ExportRuleClientsCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the export rule clients create params
+func (o *ExportRuleClientsCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ExportRuleClientsCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the export rule clients create params
-func (o *ExportRuleClientsCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the export rule clients create params
+func (o *ExportRuleClientsCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -217,13 +217,13 @@ func (o *ExportRuleClientsCreateParams) WriteToRequest(r runtime.ClientRequest, 
 		return err
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

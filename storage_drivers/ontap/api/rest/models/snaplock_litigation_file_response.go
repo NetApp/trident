@@ -323,5 +323,3 @@ func (m *SnaplockLitigationFileResponseRecordsItems0) UnmarshalBinary(b []byte) 
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

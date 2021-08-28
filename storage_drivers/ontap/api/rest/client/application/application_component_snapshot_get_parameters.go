@@ -76,7 +76,7 @@ type ApplicationComponentSnapshotGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -159,15 +159,15 @@ func (o *ApplicationComponentSnapshotGetParams) SetComponentUUIDPathParameter(co
 	o.ComponentUUIDPathParameter = componentUUID
 }
 
-// WithFields adds the fields to the application component snapshot get params
-func (o *ApplicationComponentSnapshotGetParams) WithFields(fields []string) *ApplicationComponentSnapshotGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the application component snapshot get params
+func (o *ApplicationComponentSnapshotGetParams) WithFieldsQueryParameter(fields []string) *ApplicationComponentSnapshotGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the application component snapshot get params
-func (o *ApplicationComponentSnapshotGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the application component snapshot get params
+func (o *ApplicationComponentSnapshotGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the application component snapshot get params
@@ -199,7 +199,7 @@ func (o *ApplicationComponentSnapshotGetParams) WriteToRequest(r runtime.ClientR
 		return err
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -223,7 +223,7 @@ func (o *ApplicationComponentSnapshotGetParams) WriteToRequest(r runtime.ClientR
 
 // bindParamApplicationComponentSnapshotGet binds the parameter fields
 func (o *ApplicationComponentSnapshotGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

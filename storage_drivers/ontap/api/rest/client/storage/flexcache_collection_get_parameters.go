@@ -78,11 +78,23 @@ type FlexcacheCollectionGetParams struct {
 	*/
 	ConstituentsPerAggregateQueryParameter *int64
 
+	/* DrCache.
+
+	   Filter by dr_cache
+	*/
+	DrCacheQueryParameter *bool
+
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
+
+	/* GlobalFileLockingEnabled.
+
+	   Filter by global_file_locking_enabled
+	*/
+	GlobalFileLockingEnabledQueryParameter *bool
 
 	/* GuaranteeType.
 
@@ -94,7 +106,7 @@ type FlexcacheCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -106,7 +118,7 @@ type FlexcacheCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* OriginsClusterName.
 
@@ -180,7 +192,7 @@ type FlexcacheCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -188,7 +200,7 @@ type FlexcacheCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Size.
 
@@ -207,6 +219,12 @@ type FlexcacheCollectionGetParams struct {
 	   Filter by svm.uuid
 	*/
 	SVMUUIDQueryParameter *string
+
+	/* UseTieredAggregate.
+
+	   Filter by use_tiered_aggregate
+	*/
+	UseTieredAggregateQueryParameter *bool
 
 	/* UUID.
 
@@ -232,14 +250,14 @@ func (o *FlexcacheCollectionGetParams) WithDefaults() *FlexcacheCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *FlexcacheCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := FlexcacheCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -314,15 +332,37 @@ func (o *FlexcacheCollectionGetParams) SetConstituentsPerAggregateQueryParameter
 	o.ConstituentsPerAggregateQueryParameter = constituentsPerAggregate
 }
 
-// WithFields adds the fields to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) WithFields(fields []string) *FlexcacheCollectionGetParams {
-	o.SetFields(fields)
+// WithDrCacheQueryParameter adds the drCache to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithDrCacheQueryParameter(drCache *bool) *FlexcacheCollectionGetParams {
+	o.SetDrCacheQueryParameter(drCache)
 	return o
 }
 
-// SetFields adds the fields to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetDrCacheQueryParameter adds the drCache to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetDrCacheQueryParameter(drCache *bool) {
+	o.DrCacheQueryParameter = drCache
+}
+
+// WithFieldsQueryParameter adds the fields to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithFieldsQueryParameter(fields []string) *FlexcacheCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
+	return o
+}
+
+// SetFieldsQueryParameter adds the fields to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
+}
+
+// WithGlobalFileLockingEnabledQueryParameter adds the globalFileLockingEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithGlobalFileLockingEnabledQueryParameter(globalFileLockingEnabled *bool) *FlexcacheCollectionGetParams {
+	o.SetGlobalFileLockingEnabledQueryParameter(globalFileLockingEnabled)
+	return o
+}
+
+// SetGlobalFileLockingEnabledQueryParameter adds the globalFileLockingEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetGlobalFileLockingEnabledQueryParameter(globalFileLockingEnabled *bool) {
+	o.GlobalFileLockingEnabledQueryParameter = globalFileLockingEnabled
 }
 
 // WithGuaranteeTypeQueryParameter adds the guaranteeType to the flexcache collection get params
@@ -336,15 +376,15 @@ func (o *FlexcacheCollectionGetParams) SetGuaranteeTypeQueryParameter(guaranteeT
 	o.GuaranteeTypeQueryParameter = guaranteeType
 }
 
-// WithMaxRecords adds the maxRecords to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) WithMaxRecords(maxRecords *int64) *FlexcacheCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FlexcacheCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the flexcache collection get params
@@ -358,15 +398,15 @@ func (o *FlexcacheCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) WithOrderBy(orderBy []string) *FlexcacheCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FlexcacheCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithOriginsClusterNameQueryParameter adds the originsClusterName to the flexcache collection get params
@@ -490,26 +530,26 @@ func (o *FlexcacheCollectionGetParams) SetPathQueryParameter(path *string) {
 	o.PathQueryParameter = path
 }
 
-// WithReturnRecords adds the returnRecords to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) WithReturnRecords(returnRecords *bool) *FlexcacheCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FlexcacheCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FlexcacheCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FlexcacheCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the flexcache collection get params
-func (o *FlexcacheCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSizeQueryParameter adds the size to the flexcache collection get params
@@ -543,6 +583,17 @@ func (o *FlexcacheCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string
 // SetSVMUUIDQueryParameter adds the svmUuid to the flexcache collection get params
 func (o *FlexcacheCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
 	o.SVMUUIDQueryParameter = svmUUID
+}
+
+// WithUseTieredAggregateQueryParameter adds the useTieredAggregate to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithUseTieredAggregateQueryParameter(useTieredAggregate *bool) *FlexcacheCollectionGetParams {
+	o.SetUseTieredAggregateQueryParameter(useTieredAggregate)
+	return o
+}
+
+// SetUseTieredAggregateQueryParameter adds the useTieredAggregate to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetUseTieredAggregateQueryParameter(useTieredAggregate *bool) {
+	o.UseTieredAggregateQueryParameter = useTieredAggregate
 }
 
 // WithUUIDQueryParameter adds the uuid to the flexcache collection get params
@@ -615,7 +666,24 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.Fields != nil {
+	if o.DrCacheQueryParameter != nil {
+
+		// query param dr_cache
+		var qrDrCache bool
+
+		if o.DrCacheQueryParameter != nil {
+			qrDrCache = *o.DrCacheQueryParameter
+		}
+		qDrCache := swag.FormatBool(qrDrCache)
+		if qDrCache != "" {
+
+			if err := r.SetQueryParam("dr_cache", qDrCache); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -623,6 +691,23 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.GlobalFileLockingEnabledQueryParameter != nil {
+
+		// query param global_file_locking_enabled
+		var qrGlobalFileLockingEnabled bool
+
+		if o.GlobalFileLockingEnabledQueryParameter != nil {
+			qrGlobalFileLockingEnabled = *o.GlobalFileLockingEnabledQueryParameter
+		}
+		qGlobalFileLockingEnabled := swag.FormatBool(qrGlobalFileLockingEnabled)
+		if qGlobalFileLockingEnabled != "" {
+
+			if err := r.SetQueryParam("global_file_locking_enabled", qGlobalFileLockingEnabled); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -643,13 +728,13 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -677,7 +762,7 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -875,13 +960,13 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -892,13 +977,13 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -960,6 +1045,23 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.UseTieredAggregateQueryParameter != nil {
+
+		// query param use_tiered_aggregate
+		var qrUseTieredAggregate bool
+
+		if o.UseTieredAggregateQueryParameter != nil {
+			qrUseTieredAggregate = *o.UseTieredAggregateQueryParameter
+		}
+		qUseTieredAggregate := swag.FormatBool(qrUseTieredAggregate)
+		if qUseTieredAggregate != "" {
+
+			if err := r.SetQueryParam("use_tiered_aggregate", qUseTieredAggregate); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.UUIDQueryParameter != nil {
 
 		// query param uuid
@@ -985,7 +1087,7 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamFlexcacheCollectionGet binds the parameter fields
 func (o *FlexcacheCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1002,7 +1104,7 @@ func (o *FlexcacheCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamFlexcacheCollectionGet binds the parameter order_by
 func (o *FlexcacheCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

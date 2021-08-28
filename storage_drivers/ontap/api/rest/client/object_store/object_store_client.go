@@ -32,6 +32,16 @@ type ClientService interface {
 
 	BucketsCollectionGet(params *BucketsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BucketsCollectionGetOK, error)
 
+	PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceS3MetricCollectionGetOK, error)
+
+	S3BucketCreate(params *S3BucketCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketCreateAccepted, error)
+
+	S3BucketDelete(params *S3BucketDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketDeleteAccepted, error)
+
+	S3BucketGet(params *S3BucketGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketGetOK, error)
+
+	S3BucketModify(params *S3BucketModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketModifyAccepted, error)
+
 	S3BucketSvmCreate(params *S3BucketSvmCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmCreateAccepted, error)
 
 	S3BucketSvmDelete(params *S3BucketSvmDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmDeleteAccepted, error)
@@ -39,6 +49,26 @@ type ClientService interface {
 	S3BucketSvmGet(params *S3BucketSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmGetOK, error)
 
 	S3BucketSvmModify(params *S3BucketSvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketSvmModifyAccepted, error)
+
+	S3GroupCollectionGet(params *S3GroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupCollectionGetOK, error)
+
+	S3GroupCreate(params *S3GroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupCreateCreated, error)
+
+	S3GroupDelete(params *S3GroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupDeleteOK, error)
+
+	S3GroupGet(params *S3GroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupGetOK, error)
+
+	S3GroupModify(params *S3GroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupModifyOK, error)
+
+	S3PolicyCollectionGet(params *S3PolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyCollectionGetOK, error)
+
+	S3PolicyCreate(params *S3PolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyCreateCreated, error)
+
+	S3PolicyDelete(params *S3PolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyDeleteOK, error)
+
+	S3PolicyGet(params *S3PolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyGetOK, error)
+
+	S3PolicyModify(params *S3PolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyModifyOK, error)
 
 	S3ServiceCollectionGet(params *S3ServiceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceCollectionGetOK, error)
 
@@ -64,9 +94,11 @@ type ClientService interface {
 }
 
 /*
-  AllSvmBucketsCollectionGet Retrieves all S3 buckets for all SVMs.
+  AllSvmBucketsCollectionGet Retrieves all S3 buckets for all SVMs. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
 ### Related ONTAP commands
 * `vserver object-store-server bucket show`
+* `vserver object-store-server bucket policy statement show`
+* `vserver object-store-server bucket policy-statement-condition show`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
 
@@ -107,9 +139,11 @@ func (a *Client) AllSvmBucketsCollectionGet(params *AllSvmBucketsCollectionGetPa
 }
 
 /*
-  BucketsCollectionGet Retrieves the S3 bucket's configuration of an SVM.
+  BucketsCollectionGet Retrieves the S3 bucket's configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
 ### Related ONTAP commands
 * `vserver object-store-server bucket show`
+* `vserver object-store-server bucket policy statement show`
+* `vserver object-store-server bucket policy-statement-condition show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 
@@ -150,11 +184,260 @@ func (a *Client) BucketsCollectionGet(params *BucketsCollectionGetParams, authIn
 }
 
 /*
+  PerformanceS3MetricCollectionGet Retrieves historical performance metrics for the S3 protocol of an SVM.
+*/
+func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceS3MetricCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceS3MetricCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_s3_metric_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/metrics",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceS3MetricCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceS3MetricCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceS3MetricCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3BucketCreate Creates the S3 bucket configuration of an SVM.
+### Important notes
+- Each SVM can have one or more bucket configurations.
+- Aggregate lists should be specified explicitly. If not specified, then the bucket is auto-provisioned as a FlexGroup volume.
+- Constituents per aggregate specifies the number of components (or FlexVol volumes) per aggregate. Is specified only when an aggregate list is explicitly defined.
+- An access policy can be created along with a bucket create. If creating an access policy fails, bucket configurations are saved and the access policy can be created using the PATCH endpoint.
+- "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
+### Required properties
+* `svm.uuid or svm.name` - Existing SVM in which to create the bucket configuration.
+* `name` - Bucket name that is to be created.
+### Recommended optional properties
+* `aggregates` - List of aggregates for the FlexGroup volume on which the bucket is hosted on.
+* `constituents_per_aggregate` - Number of constituents per aggregate.
+* `size` - Specifying the bucket size is recommended.
+* `policy` - Specifying a policy enables users to perform operations on buckets; specifying the resource permissions is recommended.
+* `qos_policy` - A QoS policy for buckets.
+### Default property values
+* `size` - 800MB
+* `comment` - ""
+* `aggregates` - No default value.
+* `constituents_per_aggregate` - _4_ , if an aggregates list is specified. Otherwise, no default value.
+* `policy.statements.actions` - GetObject, PutObject, DeleteObject, ListBucket, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging.
+* `policy.statements.principals` - all S3 users and groups in the SVM.
+* `policy.statements.resources` - all objects in the bucket.
+* `policy.statements.conditions` - list of bucket policy conditions.
+### Related ONTAP commands
+* `vserver object-store-server bucket create`
+* `vserver object-store-server bucket policy statement create`
+### Learn more
+* [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
+
+*/
+func (a *Client) S3BucketCreate(params *S3BucketCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/s3/buckets",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3BucketCreateAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3BucketDelete Deletes the S3 bucket configuration of an SVM. An access policy is also deleted on an S3 bucket "delete" command.
+### Related ONTAP commands
+* `vserver object-store-server bucket delete`
+* `vserver object-store-server bucket policy statement delete`
+* `vserver object-store-server bucket policy-statement-condition delete`
+### Learn more
+* [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
+
+*/
+func (a *Client) S3BucketDelete(params *S3BucketDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/buckets/{svm.uuid}/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3BucketDeleteAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3BucketGet Retrieves the S3 bucket configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
+### Related ONTAP commands
+* `vserver object-store-server bucket show`
+* `vserver object-store-server bucket policy statement show`
+* `vserver object-store-server bucket policy-statement-condition show`
+### Learn more
+* [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
+
+*/
+func (a *Client) S3BucketGet(params *S3BucketGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/s3/buckets/{svm.uuid}/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3BucketGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3BucketModify Updates the S3 bucket configuration of an SVM.
+### Important notes
+- The following fields can be modified for a bucket:
+  * `comment` - Any information related to the bucket.
+  * `size` - Bucket size.
+  * `policy` - An access policy for resources (buckets and objects) that defines their permissions. New policies are created after existing policies are deleted. To retain any of the existing policy statements, you need to specify those statements again. Also, policy conditions can be specified as part of a bucket policy.
+  * `qos_policy` - A QoS policy for buckets.
+### Related ONTAP commands
+* `vserver object-store-server bucket modify`
+* `vserver object-store-server bucket policy statement modify`
+* `vserver object-store-server bucket policy-statement-condition modify`
+### Learn more
+* [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
+
+*/
+func (a *Client) S3BucketModify(params *S3BucketModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3BucketModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3BucketModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_bucket_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/s3/buckets/{svm.uuid}/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3BucketModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3BucketModifyAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3BucketModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   S3BucketSvmCreate Creates the S3 bucket configuration of an SVM.
 ### Important notes
 - Each SVM can have one or more bucket configurations.
 - Aggregate lists should be specified explicitly. If not specified, then the bucket is auto-provisioned as a FlexGroup.
 - Constituents per aggregate specifies the number of components (or FlexVols) per aggregate. Is specified only when an aggregate list is explicitly defined.
+- An access policy can be created when a bucket is created.
+- "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
 ### Required properties
 * `svm.uuid` - Existing SVM in which to create the bucket configuration.
 * `name` - Bucket name that is to be created.
@@ -162,13 +445,22 @@ func (a *Client) BucketsCollectionGet(params *BucketsCollectionGetParams, authIn
 * `aggregates` - List of aggregates for the FlexGroup on which the bucket is hosted on.
 * `constituents_per_aggregate` - Number of constituents per aggregate.
 * `size` - Specifying the bucket size is recommended.
+* `policy` - Specifying policy enables users to perform operations on buckets. Hence specifying the resource permissions is recommended.
+* `qos_policy` - A QoS policy for buckets.
 ### Default property values
 * `size` - 800MB
 * `comment` - ""
 * `aggregates` - No default value.
 * `constituents_per_aggregate` - _4_ , if an aggregates list is specified. Otherwise, no default value.
+* `policy.statements.actions` - GetObject, PutObject, DeleteObject, ListBucket, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging.
+* `policy.statements.principals` - all S3 users and groups in the SVM.
+* `policy.statements.resources` - all objects in the bucket.
+* `policy.statements.conditions` - list of bucket policy conditions.
+* `qos-policy` - No default value.
 ### Related ONTAP commands
 * `vserver object-store-server bucket create`
+* `vserver object-store-server bucket policy statement create`
+* `vserver object-store-server bucket policy-statement-condition create`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 
@@ -209,9 +501,11 @@ func (a *Client) S3BucketSvmCreate(params *S3BucketSvmCreateParams, authInfo run
 }
 
 /*
-  S3BucketSvmDelete Deletes the S3 bucket configuration of an SVM.
+  S3BucketSvmDelete Deletes the S3 bucket configuration of an SVM. An access policy is also deleted on an S3 bucket "delete" command.
 ### Related ONTAP commands
 * `vserver object-store-server bucket delete`
+* `vserver object-store-server bucket policy statement delete`
+* `vserver object-store-server bucket policy-statement-condition delete`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 
@@ -252,9 +546,11 @@ func (a *Client) S3BucketSvmDelete(params *S3BucketSvmDeleteParams, authInfo run
 }
 
 /*
-  S3BucketSvmGet Retrieves the S3 bucket configuration of an SVM.
+  S3BucketSvmGet Retrieves the S3 bucket configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
 ### Related ONTAP commands
 * `vserver object-store-server bucket show`
+* `vserver object-store-server bucket policy statement show`
+* `vserver object-store-server bucket policy-statement-condition show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 
@@ -300,8 +596,12 @@ func (a *Client) S3BucketSvmGet(params *S3BucketSvmGetParams, authInfo runtime.C
 - The following fields can be modified for a bucket:
   * `comment` - Any information related to the bucket.
   * `size` - Bucket size.
+  * `policy` - An access policy for resources (buckets and objects) that defines their permissions. New policies are created after existing policies are deleted. To retain any of the existing policy statements, you need to specify those statements again. Policy conditions can also be modified using this API.
+  * `qos_policy` - A QoS policy for buckets.
 ### Related ONTAP commands
 * `vserver object-store-server bucket modify`
+* `vserver object-store-server bucket policy statement modify`
+* `vserver object-store-server bucket policy-statement-condition modify`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 
@@ -342,7 +642,475 @@ func (a *Client) S3BucketSvmModify(params *S3BucketSvmModifyParams, authInfo run
 }
 
 /*
-  S3ServiceCollectionGet Retrieves the S3 server configuration for all SVMs.
+  S3GroupCollectionGet Retrieves the S3 group's SVM configuration.
+### Related ONTAP commands
+* `vserver object-store-server group show`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/groups`](#docs-object-store-protocols_s3_services_{svm.uuid}_groups)
+
+*/
+func (a *Client) S3GroupCollectionGet(params *S3GroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3GroupCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_group_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/groups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3GroupCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3GroupCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3GroupCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3GroupCreate Creates the S3 group configuration.
+### Important notes
+- Each SVM can have one or more s3 group configurations.
+### Required properties
+* `svm.uuid` - Existing SVM in which to create the user configuration.
+* `name` - Group name that is to be created.
+* `users` - List of users to be added into the group.
+* `policies` - List of policies are to be attached to this group.
+### Recommended optional properties
+* `comment` - Short description about the S3 Group.
+### Related ONTAP commands
+* `vserver object-store-server group create`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/groups`](#docs-object-store-protocols_s3_services_{svm.uuid}_groups)
+
+*/
+func (a *Client) S3GroupCreate(params *S3GroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3GroupCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_group_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/groups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3GroupCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3GroupCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3GroupCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3GroupDelete Deletes the S3 group configuration of an SVM.
+### Related ONTAP commands
+* `vserver object-store-server group delete`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/groups`](#docs-object-store-protocols_s3_services_{svm.uuid}_groups)
+
+*/
+func (a *Client) S3GroupDelete(params *S3GroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3GroupDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_group_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/groups/{id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3GroupDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3GroupDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3GroupDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3GroupGet Retrieves the S3 group configuration of an SVM.
+### Related ONTAP commands
+* `vserver object-store-server group show`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/groups`](#docs-object-store-protocols_s3_services_{svm.uuid}_groups)
+
+*/
+func (a *Client) S3GroupGet(params *S3GroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3GroupGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_group_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/groups/{id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3GroupGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3GroupGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3GroupGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3GroupModify Updates the S3 group configuration of an SVM.
+### Important notes
+- The following fields can be modified for a group:
+* `name` - Group name that needs to be modified.
+* `users` - List of users present in the group.
+* `policies` - List of policies to be attached to this group.
+### Recommended optional properties
+* `comment` - Short description about the S3 Group.
+### Related ONTAP commands
+* `vserver object-store-server group modify`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/groups`](#docs-object-store-protocols_s3_services_{svm.uuid}_groups)
+
+*/
+func (a *Client) S3GroupModify(params *S3GroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3GroupModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3GroupModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_group_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/groups/{id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3GroupModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3GroupModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3GroupModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3PolicyCollectionGet Retrieves the S3 policies SVM configuration.
+### Related ONTAP commands
+* `vserver object-store-server policy show`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/policies`](#docs-object-store-protocols_s3_services_{svm.uuid}_policies)
+
+*/
+func (a *Client) S3PolicyCollectionGet(params *S3PolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3PolicyCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_policy_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/policies",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3PolicyCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3PolicyCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3PolicyCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3PolicyCreate Creates the S3 policy configuration.
+### Important notes
+- Each SVM can have one or more s3 policy configurations.
+### Required properties
+* `svm.uuid` - Existing SVM in which to create the s3 policy configuration.
+* `name` - Policy name that is to be created.
+### Recommended optional properties
+* `comment` - Short description about the S3 policy.
+* `statements.effect` - Indicates whether to allow or deny access.
+* `statements.actions` - List of actions that can be allowed or denied access. Example: GetObject, PutObject, DeleteObject, ListBucket, ListMyBuckets, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging.
+* `statements.resources` - Buckets or objects that can be allowed or denied access.
+* `statements.sid` - Statement identifier providing additional information about the statement.
+### Related ONTAP commands
+* `vserver object-store-server policy create`
+* `vserver object-store-server policy add-statement`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/policies`](#docs-object-store-protocols_s3_services_{svm.uuid}_policies)
+
+*/
+func (a *Client) S3PolicyCreate(params *S3PolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3PolicyCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_policy_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/policies",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3PolicyCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3PolicyCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3PolicyCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3PolicyDelete Deletes the S3 policy configuration of an SVM.
+### Related ONTAP commands
+* `vserver object-store-server policy delete`
+* `vserver object-store-server policy delete-statement`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/policies`](#docs-object-store-protocols_s3_services_{svm.uuid}_policies)
+
+*/
+func (a *Client) S3PolicyDelete(params *S3PolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3PolicyDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_policy_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/policies/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3PolicyDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3PolicyDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3PolicyDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3PolicyGet Retrieves the S3 policy configuration of an SVM.
+### Related ONTAP commands
+* `vserver object-store-server policy show`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/policies`](#docs-object-store-protocols_s3_services_{svm.uuid}_policies)
+
+*/
+func (a *Client) S3PolicyGet(params *S3PolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3PolicyGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_policy_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/policies/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3PolicyGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3PolicyGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3PolicyGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3PolicyModify Updates the S3 policy configuration of an SVM.
+### Important notes
+- The following fields can be modified for a policy:
+  * `comment` - Any information related to the policy.
+  * `statements` - Specifies the array of policy statements.
+### Related ONTAP commands
+* `vserver object-store-server policy modify`
+* `vserver object-store-server policy modify-statement`
+### Learn more
+* [`DOC /protocols/s3/services/{svm.uuid}/policies`](#docs-object-store-protocols_s3_services_{svm.uuid}_policies)
+
+*/
+func (a *Client) S3PolicyModify(params *S3PolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3PolicyModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3PolicyModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_policy_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/s3/services/{svm.uuid}/policies/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3PolicyModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3PolicyModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3PolicyModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3ServiceCollectionGet Retrieves the S3 server configuration for all SVMs. Note that in order to retrieve S3 bucket policy conditions, 'fields' option should be set to '**'.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `statistics.*`
+* `metric.*`
 ### Related ONTAP commands
 * `vserver object-store-server show`
 ### Learn more
@@ -402,6 +1170,8 @@ func (a *Client) S3ServiceCollectionGet(params *S3ServiceCollectionGetParams, au
 ### Related ONTAP commands
 * `vserver object-store-server create`
 * `vserver object-store-server bucket create`
+* `vserver object-store-server bucket policy statement create`
+* `vserver object-store-server bucket policy-statement-condition create`
 * `vserver object-store-server user create`
 ### Learn more
 * [`DOC /protocols/s3/services`](#docs-object-store-protocols_s3_services)
@@ -486,7 +1256,7 @@ func (a *Client) S3ServiceDelete(params *S3ServiceDeleteParams, authInfo runtime
 }
 
 /*
-  S3ServiceGet Retrieves the S3 Server configuration of an SVM.
+  S3ServiceGet Retrieves the S3 Server configuration of an SVM. Note that in order to retrieve S3 bucket policy conditions, the 'fields' option should be set to '**'.
 ### Related ONTAP commands
 * `vserver object-store-server show`
 ### Learn more

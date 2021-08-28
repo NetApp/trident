@@ -38,6 +38,9 @@ type Port struct {
 	// Read Only: true
 	MacAddress string `json:"mac_address,omitempty"`
 
+	// metric
+	Metric *PortMetric `json:"metric,omitempty"`
+
 	// MTU of the port in bytes. Set by broadcast domain.
 	// Example: 1500
 	// Read Only: true
@@ -52,6 +55,15 @@ type Port struct {
 	// node
 	Node *PortNode `json:"node,omitempty"`
 
+	// Reachability status of the port. Enum value "ok" is the only acceptable value for a PATCH request to repair a port.
+	// Example: ok
+	// Enum: [ok repairable not_repairable]
+	Reachability string `json:"reachability,omitempty"`
+
+	// Reachable broadcast domains.
+	// Read Only: true
+	ReachableBroadcastDomains []*PortReachableBroadcastDomainsItems0 `json:"reachable_broadcast_domains,omitempty"`
+
 	// Link speed in Mbps
 	// Example: 1000
 	// Read Only: true
@@ -61,6 +73,9 @@ type Port struct {
 	// Read Only: true
 	// Enum: [up down]
 	State string `json:"state,omitempty"`
+
+	// statistics
+	Statistics *PortStatisticsType `json:"statistics,omitempty"`
 
 	// Type of physical or virtual port
 	// Enum: [vlan physical lag]
@@ -91,6 +106,10 @@ func (m *Port) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateMetric(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateMtu(formats); err != nil {
 		res = append(res, err)
 	}
@@ -99,7 +118,19 @@ func (m *Port) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateReachability(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateReachableBroadcastDomains(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatistics(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -168,6 +199,23 @@ func (m *Port) validateLag(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Port) validateMetric(formats strfmt.Registry) error {
+	if swag.IsZero(m.Metric) { // not required
+		return nil
+	}
+
+	if m.Metric != nil {
+		if err := m.Metric.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Port) validateMtu(formats strfmt.Registry) error {
 	if swag.IsZero(m.Mtu) { // not required
 		return nil
@@ -197,6 +245,96 @@ func (m *Port) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
+var portTypeReachabilityPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","repairable","not_repairable"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		portTypeReachabilityPropEnum = append(portTypeReachabilityPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// port
+	// Port
+	// reachability
+	// Reachability
+	// ok
+	// END DEBUGGING
+	// PortReachabilityOk captures enum value "ok"
+	PortReachabilityOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// port
+	// Port
+	// reachability
+	// Reachability
+	// repairable
+	// END DEBUGGING
+	// PortReachabilityRepairable captures enum value "repairable"
+	PortReachabilityRepairable string = "repairable"
+
+	// BEGIN DEBUGGING
+	// port
+	// Port
+	// reachability
+	// Reachability
+	// not_repairable
+	// END DEBUGGING
+	// PortReachabilityNotRepairable captures enum value "not_repairable"
+	PortReachabilityNotRepairable string = "not_repairable"
+)
+
+// prop value enum
+func (m *Port) validateReachabilityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portTypeReachabilityPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Port) validateReachability(formats strfmt.Registry) error {
+	if swag.IsZero(m.Reachability) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateReachabilityEnum("reachability", "body", m.Reachability); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Port) validateReachableBroadcastDomains(formats strfmt.Registry) error {
+	if swag.IsZero(m.ReachableBroadcastDomains) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ReachableBroadcastDomains); i++ {
+		if swag.IsZero(m.ReachableBroadcastDomains[i]) { // not required
+			continue
+		}
+
+		if m.ReachableBroadcastDomains[i] != nil {
+			if err := m.ReachableBroadcastDomains[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("reachable_broadcast_domains" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 var portTypeStatePropEnum []interface{}
 
 func init() {
@@ -211,23 +349,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// port
 	// Port
 	// state
 	// State
 	// up
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PortStateUp captures enum value "up"
 	PortStateUp string = "up"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// port
 	// Port
 	// state
 	// State
 	// down
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PortStateDown captures enum value "down"
 	PortStateDown string = "down"
 )
@@ -253,6 +391,23 @@ func (m *Port) validateState(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Port) validateStatistics(formats strfmt.Registry) error {
+	if swag.IsZero(m.Statistics) { // not required
+		return nil
+	}
+
+	if m.Statistics != nil {
+		if err := m.Statistics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 var portTypeTypePropEnum []interface{}
 
 func init() {
@@ -267,33 +422,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// port
 	// Port
 	// type
 	// Type
 	// vlan
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PortTypeVlan captures enum value "vlan"
 	PortTypeVlan string = "vlan"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// port
 	// Port
 	// type
 	// Type
 	// physical
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PortTypePhysical captures enum value "physical"
 	PortTypePhysical string = "physical"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// port
 	// Port
 	// type
 	// Type
 	// lag
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PortTypeLag captures enum value "lag"
 	PortTypeLag string = "lag"
 )
@@ -356,6 +511,10 @@ func (m *Port) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateMetric(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateMtu(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -368,11 +527,19 @@ func (m *Port) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateReachableBroadcastDomains(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSpeed(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatistics(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -441,6 +608,20 @@ func (m *Port) contextValidateMacAddress(ctx context.Context, formats strfmt.Reg
 	return nil
 }
 
+func (m *Port) contextValidateMetric(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Metric != nil {
+		if err := m.Metric.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Port) contextValidateMtu(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "mtu", "body", int64(m.Mtu)); err != nil {
@@ -473,6 +654,28 @@ func (m *Port) contextValidateNode(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
+func (m *Port) contextValidateReachableBroadcastDomains(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reachable_broadcast_domains", "body", []*PortReachableBroadcastDomainsItems0(m.ReachableBroadcastDomains)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ReachableBroadcastDomains); i++ {
+
+		if m.ReachableBroadcastDomains[i] != nil {
+			if err := m.ReachableBroadcastDomains[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("reachable_broadcast_domains" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *Port) contextValidateSpeed(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "speed", "body", int64(m.Speed)); err != nil {
@@ -486,6 +689,20 @@ func (m *Port) contextValidateState(ctx context.Context, formats strfmt.Registry
 
 	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Port) contextValidateStatistics(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Statistics != nil {
+		if err := m.Statistics.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -877,43 +1094,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PortLag
 	// PortLag
 	// distribution_policy
 	// DistributionPolicy
 	// port
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PortLagDistributionPolicyPort captures enum value "port"
 	PortLagDistributionPolicyPort string = "port"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PortLag
 	// PortLag
 	// distribution_policy
 	// DistributionPolicy
 	// ip
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PortLagDistributionPolicyIP captures enum value "ip"
 	PortLagDistributionPolicyIP string = "ip"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PortLag
 	// PortLag
 	// distribution_policy
 	// DistributionPolicy
 	// mac
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PortLagDistributionPolicyMac captures enum value "mac"
 	PortLagDistributionPolicyMac string = "mac"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PortLag
 	// PortLag
 	// distribution_policy
 	// DistributionPolicy
 	// sequential
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PortLagDistributionPolicySequential captures enum value "sequential"
 	PortLagDistributionPolicySequential string = "sequential"
 )
@@ -977,33 +1194,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PortLag
 	// PortLag
 	// mode
 	// Mode
 	// multimode_lacp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PortLagModeMultimodeLacp captures enum value "multimode_lacp"
 	PortLagModeMultimodeLacp string = "multimode_lacp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PortLag
 	// PortLag
 	// mode
 	// Mode
 	// multimode
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PortLagModeMultimode captures enum value "multimode"
 	PortLagModeMultimode string = "multimode"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PortLag
 	// PortLag
 	// mode
 	// Mode
 	// singlemode
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PortLagModeSinglemode captures enum value "singlemode"
 	PortLagModeSinglemode string = "singlemode"
 )
@@ -1711,6 +1928,538 @@ func (m *PortLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// PortMetric The most recent sample of I/O metrics for the port.
+//
+// swagger:model PortMetric
+type PortMetric struct {
+
+	// links
+	Links *PortMetricLinks `json:"_links,omitempty"`
+
+	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
+	//
+	// Example: PT15S
+	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	Duration string `json:"duration,omitempty"`
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	Status string `json:"status,omitempty"`
+
+	// throughput
+	Throughput *PortMetricThroughput `json:"throughput,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this port metric
+func (m *PortMetric) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughput(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortMetric) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var portMetricTypeDurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		portMetricTypeDurationPropEnum = append(portMetricTypeDurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// duration
+	// Duration
+	// PT15S
+	// END DEBUGGING
+	// PortMetricDurationPT15S captures enum value "PT15S"
+	PortMetricDurationPT15S string = "PT15S"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// duration
+	// Duration
+	// PT4M
+	// END DEBUGGING
+	// PortMetricDurationPT4M captures enum value "PT4M"
+	PortMetricDurationPT4M string = "PT4M"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// duration
+	// Duration
+	// PT30M
+	// END DEBUGGING
+	// PortMetricDurationPT30M captures enum value "PT30M"
+	PortMetricDurationPT30M string = "PT30M"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// duration
+	// Duration
+	// PT2H
+	// END DEBUGGING
+	// PortMetricDurationPT2H captures enum value "PT2H"
+	PortMetricDurationPT2H string = "PT2H"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// duration
+	// Duration
+	// P1D
+	// END DEBUGGING
+	// PortMetricDurationP1D captures enum value "P1D"
+	PortMetricDurationP1D string = "P1D"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// duration
+	// Duration
+	// PT5M
+	// END DEBUGGING
+	// PortMetricDurationPT5M captures enum value "PT5M"
+	PortMetricDurationPT5M string = "PT5M"
+)
+
+// prop value enum
+func (m *PortMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portMetricTypeDurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PortMetric) validateDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Duration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var portMetricTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		portMetricTypeStatusPropEnum = append(portMetricTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// PortMetricStatusOk captures enum value "ok"
+	PortMetricStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// PortMetricStatusError captures enum value "error"
+	PortMetricStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// PortMetricStatusPartialNoData captures enum value "partial_no_data"
+	PortMetricStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// PortMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PortMetricStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// PortMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	PortMetricStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// PortMetricStatusPartialOtherError captures enum value "partial_other_error"
+	PortMetricStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// PortMetricStatusNegativeDelta captures enum value "negative_delta"
+	PortMetricStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// PortMetricStatusBackfilledData captures enum value "backfilled_data"
+	PortMetricStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// PortMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PortMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// PortMetric
+	// PortMetric
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// PortMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PortMetricStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *PortMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portMetricTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PortMetric) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PortMetric) validateThroughput(formats strfmt.Registry) error {
+	if swag.IsZero(m.Throughput) { // not required
+		return nil
+	}
+
+	if m.Throughput != nil {
+		if err := m.Throughput.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "throughput")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PortMetric) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("metric"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this port metric based on the context it is used
+func (m *PortMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughput(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PortMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Throughput != nil {
+		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "throughput")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PortMetric) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PortMetric) UnmarshalBinary(b []byte) error {
+	var res PortMetric
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PortMetricLinks port metric links
+//
+// swagger:model PortMetricLinks
+type PortMetricLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this port metric links
+func (m *PortMetricLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortMetricLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this port metric links based on the context it is used
+func (m *PortMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PortMetricLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PortMetricLinks) UnmarshalBinary(b []byte) error {
+	var res PortMetricLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PortMetricThroughput The rate of throughput bytes per second observed at the port object.
+//
+// swagger:model PortMetricThroughput
+type PortMetricThroughput struct {
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this port metric throughput
+func (m *PortMetricThroughput) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this port metric throughput based on context it is used
+func (m *PortMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PortMetricThroughput) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PortMetricThroughput) UnmarshalBinary(b []byte) error {
+	var res PortMetricThroughput
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // PortNode port node
 //
 // swagger:model PortNode
@@ -1884,6 +2633,851 @@ func (m *PortNodeLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *PortNodeLinks) UnmarshalBinary(b []byte) error {
 	var res PortNodeLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PortReachableBroadcastDomainsItems0 Broadcast domain UUID along with a readable name. Either the UUID or both names may be provided on input.
+//
+// swagger:model PortReachableBroadcastDomainsItems0
+type PortReachableBroadcastDomainsItems0 struct {
+
+	// links
+	Links *PortReachableBroadcastDomainsItems0Links `json:"_links,omitempty"`
+
+	// ipspace
+	Ipspace *PortReachableBroadcastDomainsItems0Ipspace `json:"ipspace,omitempty"`
+
+	// Name of the broadcast domain, scoped to its IPspace
+	// Example: bd1
+	Name string `json:"name,omitempty"`
+
+	// Broadcast domain UUID
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this port reachable broadcast domains items0
+func (m *PortReachableBroadcastDomainsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIpspace(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortReachableBroadcastDomainsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PortReachableBroadcastDomainsItems0) validateIpspace(formats strfmt.Registry) error {
+	if swag.IsZero(m.Ipspace) { // not required
+		return nil
+	}
+
+	if m.Ipspace != nil {
+		if err := m.Ipspace.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ipspace")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this port reachable broadcast domains items0 based on the context it is used
+func (m *PortReachableBroadcastDomainsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIpspace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortReachableBroadcastDomainsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PortReachableBroadcastDomainsItems0) contextValidateIpspace(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Ipspace != nil {
+		if err := m.Ipspace.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ipspace")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PortReachableBroadcastDomainsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PortReachableBroadcastDomainsItems0) UnmarshalBinary(b []byte) error {
+	var res PortReachableBroadcastDomainsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PortReachableBroadcastDomainsItems0Ipspace port reachable broadcast domains items0 ipspace
+//
+// swagger:model PortReachableBroadcastDomainsItems0Ipspace
+type PortReachableBroadcastDomainsItems0Ipspace struct {
+
+	// Name of the broadcast domain's IPspace
+	// Example: ipspace1
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this port reachable broadcast domains items0 ipspace
+func (m *PortReachableBroadcastDomainsItems0Ipspace) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this port reachable broadcast domains items0 ipspace based on context it is used
+func (m *PortReachableBroadcastDomainsItems0Ipspace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PortReachableBroadcastDomainsItems0Ipspace) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PortReachableBroadcastDomainsItems0Ipspace) UnmarshalBinary(b []byte) error {
+	var res PortReachableBroadcastDomainsItems0Ipspace
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PortReachableBroadcastDomainsItems0Links port reachable broadcast domains items0 links
+//
+// swagger:model PortReachableBroadcastDomainsItems0Links
+type PortReachableBroadcastDomainsItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this port reachable broadcast domains items0 links
+func (m *PortReachableBroadcastDomainsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortReachableBroadcastDomainsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this port reachable broadcast domains items0 links based on the context it is used
+func (m *PortReachableBroadcastDomainsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortReachableBroadcastDomainsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PortReachableBroadcastDomainsItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PortReachableBroadcastDomainsItems0Links) UnmarshalBinary(b []byte) error {
+	var res PortReachableBroadcastDomainsItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PortStatisticsType The real time I/O statistics for the port.
+//
+// swagger:model PortStatisticsType
+type PortStatisticsType struct {
+
+	// device
+	Device *PortStatisticsTypeDeviceType `json:"device,omitempty"`
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	Status string `json:"status,omitempty"`
+
+	// throughput raw
+	ThroughputRaw *PortStatisticsTypeThroughputRawType `json:"throughput_raw,omitempty"`
+
+	// The timestamp of the throughput_raw performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this port statistics type
+func (m *PortStatisticsType) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDevice(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughputRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortStatisticsType) validateDevice(formats strfmt.Registry) error {
+	if swag.IsZero(m.Device) { // not required
+		return nil
+	}
+
+	if m.Device != nil {
+		if err := m.Device.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "device")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var portStatisticsTypeTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		portStatisticsTypeTypeStatusPropEnum = append(portStatisticsTypeTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// PortStatisticsType
+	// PortStatisticsType
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// PortStatisticsTypeStatusOk captures enum value "ok"
+	PortStatisticsTypeStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// PortStatisticsType
+	// PortStatisticsType
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// PortStatisticsTypeStatusError captures enum value "error"
+	PortStatisticsTypeStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// PortStatisticsType
+	// PortStatisticsType
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// PortStatisticsTypeStatusPartialNoData captures enum value "partial_no_data"
+	PortStatisticsTypeStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// PortStatisticsType
+	// PortStatisticsType
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// PortStatisticsTypeStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PortStatisticsTypeStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// PortStatisticsType
+	// PortStatisticsType
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// PortStatisticsTypeStatusPartialNoResponse captures enum value "partial_no_response"
+	PortStatisticsTypeStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// PortStatisticsType
+	// PortStatisticsType
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// PortStatisticsTypeStatusPartialOtherError captures enum value "partial_other_error"
+	PortStatisticsTypeStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// PortStatisticsType
+	// PortStatisticsType
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// PortStatisticsTypeStatusNegativeDelta captures enum value "negative_delta"
+	PortStatisticsTypeStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// PortStatisticsType
+	// PortStatisticsType
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// PortStatisticsTypeStatusBackfilledData captures enum value "backfilled_data"
+	PortStatisticsTypeStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// PortStatisticsType
+	// PortStatisticsType
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// PortStatisticsTypeStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	PortStatisticsTypeStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// PortStatisticsType
+	// PortStatisticsType
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// PortStatisticsTypeStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	PortStatisticsTypeStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *PortStatisticsType) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portStatisticsTypeTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PortStatisticsType) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PortStatisticsType) validateThroughputRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.ThroughputRaw) { // not required
+		return nil
+	}
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PortStatisticsType) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("statistics"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this port statistics type based on the context it is used
+func (m *PortStatisticsType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDevice(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughputRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortStatisticsType) contextValidateDevice(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Device != nil {
+		if err := m.Device.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "device")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PortStatisticsType) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PortStatisticsType) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PortStatisticsType) UnmarshalBinary(b []byte) error {
+	var res PortStatisticsType
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PortStatisticsTypeDeviceType Device-related counters for the port object. These counters are applicable at the lowest layer of the networking stack. These values can be used to calculate both transmit and receive packet and error rates by comparing two samples taken at different times and calculating the increase in counter value divided by the elapsed time between the two samples.
+//
+// swagger:model PortStatisticsTypeDeviceType
+type PortStatisticsTypeDeviceType struct {
+
+	// The number of link state changes from up to down seen on the device.
+	// Example: 3
+	LinkDownCountRaw int64 `json:"link_down_count_raw,omitempty"`
+
+	// receive raw
+	ReceiveRaw *PortStatisticsTypeDeviceTypeReceiveRawType `json:"receive_raw,omitempty"`
+
+	// The timestamp when the device specific counters were collected.
+	// Example: 2017-01-25T11:20:13Z
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+
+	// transmit raw
+	TransmitRaw *PortStatisticsTypeDeviceTypeTransmitRawType `json:"transmit_raw,omitempty"`
+}
+
+// Validate validates this port statistics type device type
+func (m *PortStatisticsTypeDeviceType) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateReceiveRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTransmitRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortStatisticsTypeDeviceType) validateReceiveRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.ReceiveRaw) { // not required
+		return nil
+	}
+
+	if m.ReceiveRaw != nil {
+		if err := m.ReceiveRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "device" + "." + "receive_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PortStatisticsTypeDeviceType) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("statistics"+"."+"device"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PortStatisticsTypeDeviceType) validateTransmitRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.TransmitRaw) { // not required
+		return nil
+	}
+
+	if m.TransmitRaw != nil {
+		if err := m.TransmitRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "device" + "." + "transmit_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this port statistics type device type based on the context it is used
+func (m *PortStatisticsTypeDeviceType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateReceiveRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTransmitRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PortStatisticsTypeDeviceType) contextValidateReceiveRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ReceiveRaw != nil {
+		if err := m.ReceiveRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "device" + "." + "receive_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PortStatisticsTypeDeviceType) contextValidateTransmitRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.TransmitRaw != nil {
+		if err := m.TransmitRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "device" + "." + "transmit_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PortStatisticsTypeDeviceType) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PortStatisticsTypeDeviceType) UnmarshalBinary(b []byte) error {
+	var res PortStatisticsTypeDeviceType
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PortStatisticsTypeDeviceTypeReceiveRawType Packet receive counters for the Ethernet port.
+//
+// swagger:model PortStatisticsTypeDeviceTypeReceiveRawType
+type PortStatisticsTypeDeviceTypeReceiveRawType struct {
+
+	// Total number of discarded packets.
+	// Example: 100
+	Discards int64 `json:"discards,omitempty"`
+
+	// Number of packet errors.
+	// Example: 200
+	Errors int64 `json:"errors,omitempty"`
+
+	// Total packet count.
+	// Example: 500
+	Packets int64 `json:"packets,omitempty"`
+}
+
+// Validate validates this port statistics type device type receive raw type
+func (m *PortStatisticsTypeDeviceTypeReceiveRawType) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this port statistics type device type receive raw type based on context it is used
+func (m *PortStatisticsTypeDeviceTypeReceiveRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PortStatisticsTypeDeviceTypeReceiveRawType) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PortStatisticsTypeDeviceTypeReceiveRawType) UnmarshalBinary(b []byte) error {
+	var res PortStatisticsTypeDeviceTypeReceiveRawType
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PortStatisticsTypeDeviceTypeTransmitRawType Packet transmit counters for the Ethernet port.
+//
+// swagger:model PortStatisticsTypeDeviceTypeTransmitRawType
+type PortStatisticsTypeDeviceTypeTransmitRawType struct {
+
+	// Total number of discarded packets.
+	// Example: 100
+	Discards int64 `json:"discards,omitempty"`
+
+	// Number of packet errors.
+	// Example: 200
+	Errors int64 `json:"errors,omitempty"`
+
+	// Total packet count.
+	// Example: 500
+	Packets int64 `json:"packets,omitempty"`
+}
+
+// Validate validates this port statistics type device type transmit raw type
+func (m *PortStatisticsTypeDeviceTypeTransmitRawType) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this port statistics type device type transmit raw type based on context it is used
+func (m *PortStatisticsTypeDeviceTypeTransmitRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PortStatisticsTypeDeviceTypeTransmitRawType) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PortStatisticsTypeDeviceTypeTransmitRawType) UnmarshalBinary(b []byte) error {
+	var res PortStatisticsTypeDeviceTypeTransmitRawType
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PortStatisticsTypeThroughputRawType Throughput bytes observed at the port object. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
+//
+// swagger:model PortStatisticsTypeThroughputRawType
+type PortStatisticsTypeThroughputRawType struct {
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this port statistics type throughput raw type
+func (m *PortStatisticsTypeThroughputRawType) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this port statistics type throughput raw type based on context it is used
+func (m *PortStatisticsTypeThroughputRawType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PortStatisticsTypeThroughputRawType) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PortStatisticsTypeThroughputRawType) UnmarshalBinary(b []byte) error {
+	var res PortStatisticsTypeThroughputRawType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2262,5 +3856,3 @@ func (m *PortVlanBasePortNode) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

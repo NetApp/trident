@@ -27,10 +27,13 @@ type Nas struct {
 	// Min Items: 1
 	ApplicationComponents []*NasApplicationComponentsItems0 `json:"application_components"`
 
-	// The list of CIFS access controls.
+	// The list of CIFS access controls. You must provide either 'user_or_group' or 'access' to enable CIFS access.
 	CifsAccess []*AppCifsAccess `json:"cifs_access,omitempty"`
 
-	// The list of NFS access controls.
+	// exclude aggregates
+	ExcludeAggregates []*NasExcludeAggregatesItems0 `json:"exclude_aggregates,omitempty"`
+
+	// The list of NFS access controls. You must provide either 'host' or 'access' to enable NFS access.
 	NfsAccess []*AppNfsAccess `json:"nfs_access,omitempty"`
 
 	// protection type
@@ -46,6 +49,10 @@ func (m *Nas) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateCifsAccess(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExcludeAggregates(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,6 +129,30 @@ func (m *Nas) validateCifsAccess(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Nas) validateExcludeAggregates(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExcludeAggregates) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ExcludeAggregates); i++ {
+		if swag.IsZero(m.ExcludeAggregates[i]) { // not required
+			continue
+		}
+
+		if m.ExcludeAggregates[i] != nil {
+			if err := m.ExcludeAggregates[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *Nas) validateNfsAccess(formats strfmt.Registry) error {
 	if swag.IsZero(m.NfsAccess) { // not required
 		return nil
@@ -175,6 +206,10 @@ func (m *Nas) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateExcludeAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNfsAccess(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -215,6 +250,24 @@ func (m *Nas) contextValidateCifsAccess(ctx context.Context, formats strfmt.Regi
 			if err := m.CifsAccess[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("cifs_access" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Nas) contextValidateExcludeAggregates(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ExcludeAggregates); i++ {
+
+		if m.ExcludeAggregates[i] != nil {
+			if err := m.ExcludeAggregates[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -280,6 +333,9 @@ func (m *Nas) UnmarshalBinary(b []byte) error {
 // swagger:model NasApplicationComponentsItems0
 type NasApplicationComponentsItems0 struct {
 
+	// export policy
+	ExportPolicy *NasApplicationComponentsItems0ExportPolicy `json:"export_policy,omitempty"`
+
 	// flexcache
 	Flexcache *NasApplicationComponentsItems0Flexcache `json:"flexcache,omitempty"`
 
@@ -288,6 +344,9 @@ type NasApplicationComponentsItems0 struct {
 	// Max Length: 512
 	// Min Length: 1
 	Name *string `json:"name"`
+
+	// qos
+	Qos *NasApplicationComponentsItems0Qos `json:"qos,omitempty"`
 
 	// Denotes a Flexgroup.
 	// Enum: [false true]
@@ -314,11 +373,19 @@ type NasApplicationComponentsItems0 struct {
 func (m *NasApplicationComponentsItems0) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateExportPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateFlexcache(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateQos(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -345,6 +412,23 @@ func (m *NasApplicationComponentsItems0) Validate(formats strfmt.Registry) error
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NasApplicationComponentsItems0) validateExportPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExportPolicy) { // not required
+		return nil
+	}
+
+	if m.ExportPolicy != nil {
+		if err := m.ExportPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("export_policy")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -377,6 +461,23 @@ func (m *NasApplicationComponentsItems0) validateName(formats strfmt.Registry) e
 
 	if err := validate.MaxLength("name", "body", *m.Name, 512); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *NasApplicationComponentsItems0) validateQos(formats strfmt.Registry) error {
+	if swag.IsZero(m.Qos) { // not required
+		return nil
+	}
+
+	if m.Qos != nil {
+		if err := m.Qos.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -479,7 +580,15 @@ func (m *NasApplicationComponentsItems0) validateTotalSize(formats strfmt.Regist
 func (m *NasApplicationComponentsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateExportPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFlexcache(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateQos(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -497,12 +606,40 @@ func (m *NasApplicationComponentsItems0) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
+func (m *NasApplicationComponentsItems0) contextValidateExportPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ExportPolicy != nil {
+		if err := m.ExportPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("export_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *NasApplicationComponentsItems0) contextValidateFlexcache(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Flexcache != nil {
 		if err := m.Flexcache.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("flexcache")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NasApplicationComponentsItems0) contextValidateQos(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Qos != nil {
+		if err := m.Qos.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos")
 			}
 			return err
 		}
@@ -557,10 +694,54 @@ func (m *NasApplicationComponentsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// NasApplicationComponentsItems0ExportPolicy nas application components items0 export policy
+//
+// swagger:model NasApplicationComponentsItems0ExportPolicy
+type NasApplicationComponentsItems0ExportPolicy struct {
+
+	// The ID of an existing NFS export policy.
+	ID int64 `json:"id,omitempty"`
+
+	// The name of an existing NFS export policy.
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this nas application components items0 export policy
+func (m *NasApplicationComponentsItems0ExportPolicy) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this nas application components items0 export policy based on context it is used
+func (m *NasApplicationComponentsItems0ExportPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NasApplicationComponentsItems0ExportPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NasApplicationComponentsItems0ExportPolicy) UnmarshalBinary(b []byte) error {
+	var res NasApplicationComponentsItems0ExportPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NasApplicationComponentsItems0Flexcache nas application components items0 flexcache
 //
 // swagger:model NasApplicationComponentsItems0Flexcache
 type NasApplicationComponentsItems0Flexcache struct {
+
+	// Dr-cache is a FlexCache volume create time option that has the same flexgroup-msid as that of the origin of a FlexCache volume. By default, dr-cache is disabled. The flexgroup-msid of the FlexCache volume does not need to be same as that of the origin of a FlexCache volume.
+	// Enum: [false true]
+	DrCache *bool `json:"dr_cache,omitempty"`
 
 	// origin
 	Origin *NasApplicationComponentsItems0FlexcacheOrigin `json:"origin,omitempty"`
@@ -570,6 +751,10 @@ type NasApplicationComponentsItems0Flexcache struct {
 func (m *NasApplicationComponentsItems0Flexcache) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDrCache(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateOrigin(formats); err != nil {
 		res = append(res, err)
 	}
@@ -577,6 +762,39 @@ func (m *NasApplicationComponentsItems0Flexcache) Validate(formats strfmt.Regist
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var nasApplicationComponentsItems0FlexcacheTypeDrCachePropEnum []interface{}
+
+func init() {
+	var res []bool
+	if err := json.Unmarshal([]byte(`[false,true]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nasApplicationComponentsItems0FlexcacheTypeDrCachePropEnum = append(nasApplicationComponentsItems0FlexcacheTypeDrCachePropEnum, v)
+	}
+}
+
+// prop value enum
+func (m *NasApplicationComponentsItems0Flexcache) validateDrCacheEnum(path, location string, value bool) error {
+	if err := validate.EnumCase(path, location, value, nasApplicationComponentsItems0FlexcacheTypeDrCachePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NasApplicationComponentsItems0Flexcache) validateDrCache(formats strfmt.Registry) error {
+	if swag.IsZero(m.DrCache) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDrCacheEnum("flexcache"+"."+"dr_cache", "body", *m.DrCache); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -887,6 +1105,132 @@ func (m *NasApplicationComponentsItems0FlexcacheOriginSvm) UnmarshalBinary(b []b
 	return nil
 }
 
+// NasApplicationComponentsItems0Qos nas application components items0 qos
+//
+// swagger:model NasApplicationComponentsItems0Qos
+type NasApplicationComponentsItems0Qos struct {
+
+	// policy
+	Policy *NasApplicationComponentsItems0QosPolicy `json:"policy,omitempty"`
+}
+
+// Validate validates this nas application components items0 qos
+func (m *NasApplicationComponentsItems0Qos) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NasApplicationComponentsItems0Qos) validatePolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.Policy) { // not required
+		return nil
+	}
+
+	if m.Policy != nil {
+		if err := m.Policy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos" + "." + "policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nas application components items0 qos based on the context it is used
+func (m *NasApplicationComponentsItems0Qos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NasApplicationComponentsItems0Qos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Policy != nil {
+		if err := m.Policy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos" + "." + "policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NasApplicationComponentsItems0Qos) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NasApplicationComponentsItems0Qos) UnmarshalBinary(b []byte) error {
+	var res NasApplicationComponentsItems0Qos
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NasApplicationComponentsItems0QosPolicy nas application components items0 qos policy
+//
+// swagger:model NasApplicationComponentsItems0QosPolicy
+type NasApplicationComponentsItems0QosPolicy struct {
+
+	// The name of an existing QoS policy.
+	Name string `json:"name,omitempty"`
+
+	// The UUID of an existing QoS policy. Usage: &lt;UUID&gt;
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this nas application components items0 qos policy
+func (m *NasApplicationComponentsItems0QosPolicy) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this nas application components items0 qos policy based on context it is used
+func (m *NasApplicationComponentsItems0QosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NasApplicationComponentsItems0QosPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NasApplicationComponentsItems0QosPolicy) UnmarshalBinary(b []byte) error {
+	var res NasApplicationComponentsItems0QosPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NasApplicationComponentsItems0StorageService nas application components items0 storage service
 //
 // swagger:model NasApplicationComponentsItems0StorageService
@@ -925,33 +1269,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NasApplicationComponentsItems0StorageService
 	// NasApplicationComponentsItems0StorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasApplicationComponentsItems0StorageServiceNameExtreme captures enum value "extreme"
 	NasApplicationComponentsItems0StorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NasApplicationComponentsItems0StorageService
 	// NasApplicationComponentsItems0StorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasApplicationComponentsItems0StorageServiceNamePerformance captures enum value "performance"
 	NasApplicationComponentsItems0StorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NasApplicationComponentsItems0StorageService
 	// NasApplicationComponentsItems0StorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasApplicationComponentsItems0StorageServiceNameValue captures enum value "value"
 	NasApplicationComponentsItems0StorageServiceNameValue string = "value"
 )
@@ -1000,19 +1344,59 @@ func (m *NasApplicationComponentsItems0StorageService) UnmarshalBinary(b []byte)
 	return nil
 }
 
+// NasExcludeAggregatesItems0 nas exclude aggregates items0
+//
+// swagger:model NasExcludeAggregatesItems0
+type NasExcludeAggregatesItems0 struct {
+
+	// The name of the aggregate to exclude. Usage: &lt;aggr0_akerr_vsim1&gt;
+	Name string `json:"name,omitempty"`
+
+	// The ID of the aggregate to exclude. Usage: &lt;UUID&gt;
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this nas exclude aggregates items0
+func (m *NasExcludeAggregatesItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this nas exclude aggregates items0 based on context it is used
+func (m *NasExcludeAggregatesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NasExcludeAggregatesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NasExcludeAggregatesItems0) UnmarshalBinary(b []byte) error {
+	var res NasExcludeAggregatesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NasProtectionType nas protection type
 //
 // swagger:model NasProtectionType
 type NasProtectionType struct {
 
-	// The snapshot policy to apply to each volume in the smart container. This property is only supported for smart containers. Usage: &lt;snapshot policy&gt;
+	// The Snapshot copy policy to apply to each volume in the smart container. This property is only supported for smart containers. Usage: &lt;snapshot policy&gt;
 	LocalPolicy string `json:"local_policy,omitempty"`
 
-	// The local rpo of the application.
+	// The local RPO of the application.
 	// Enum: [hourly none]
 	LocalRpo string `json:"local_rpo,omitempty"`
 
-	// The remote rpo of the application.
+	// The remote RPO of the application.
 	// Enum: [none zero]
 	RemoteRpo string `json:"remote_rpo,omitempty"`
 }
@@ -1049,23 +1433,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NasProtectionType
 	// NasProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasProtectionTypeLocalRpoHourly captures enum value "hourly"
 	NasProtectionTypeLocalRpoHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NasProtectionType
 	// NasProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasProtectionTypeLocalRpoNone captures enum value "none"
 	NasProtectionTypeLocalRpoNone string = "none"
 )
@@ -1105,23 +1489,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NasProtectionType
 	// NasProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasProtectionTypeRemoteRpoNone captures enum value "none"
 	NasProtectionTypeRemoteRpoNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NasProtectionType
 	// NasProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasProtectionTypeRemoteRpoZero captures enum value "zero"
 	NasProtectionTypeRemoteRpoZero string = "zero"
 )
@@ -1169,5 +1553,3 @@ func (m *NasProtectionType) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -62,6 +62,12 @@ func NewVolumeModifyParamsWithHTTPClient(client *http.Client) *VolumeModifyParam
 */
 type VolumeModifyParams struct {
 
+	/* CloneMatchParentStorageTier.
+
+	   Specifies whether the FlexClone volume splits the data blocks by matching its parent storage tier. This option is applicable only if the tiering policy and the tiering minimum cooling days of the parent volume and the FlexClone volume are the same.
+	*/
+	CloneMatchParentStorageTierQueryParameter *bool
+
 	/* Info.
 
 	   Info specification
@@ -84,13 +90,13 @@ type VolumeModifyParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SizingMethod.
 
 	     Represents the method to modify the size of a Flexgroup. The following methods are supported:
 	* use_existing_resources - Increases or decreases the size of the FlexGroup by increasing or decreasing the size of the current FlexGroup resources
-	* add_new_resources - Increases the size of the FlexGroup by adding new resources
+	* add_new_resources - Increases the size of the FlexGroup by adding new resources. This is limited to two new resources per available aggregate.
 
 
 	     Default: "use_existing_resources"
@@ -107,7 +113,7 @@ type VolumeModifyParams struct {
 
 	   Validate the operation and its parameters, without actually performing the operation.
 	*/
-	ValidateOnly *bool
+	ValidateOnlyQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -127,14 +133,14 @@ func (o *VolumeModifyParams) WithDefaults() *VolumeModifyParams {
 // All values with no default are reset to their zero value.
 func (o *VolumeModifyParams) SetDefaults() {
 	var (
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 
 		sizingMethodQueryParameterDefault = string("use_existing_resources")
 	)
 
 	val := VolumeModifyParams{
-		ReturnTimeout:              &returnTimeoutDefault,
-		SizingMethodQueryParameter: &sizingMethodQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		SizingMethodQueryParameter:  &sizingMethodQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -176,6 +182,17 @@ func (o *VolumeModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithCloneMatchParentStorageTierQueryParameter adds the cloneMatchParentStorageTier to the volume modify params
+func (o *VolumeModifyParams) WithCloneMatchParentStorageTierQueryParameter(cloneMatchParentStorageTier *bool) *VolumeModifyParams {
+	o.SetCloneMatchParentStorageTierQueryParameter(cloneMatchParentStorageTier)
+	return o
+}
+
+// SetCloneMatchParentStorageTierQueryParameter adds the cloneMatchParentStorageTier to the volume modify params
+func (o *VolumeModifyParams) SetCloneMatchParentStorageTierQueryParameter(cloneMatchParentStorageTier *bool) {
+	o.CloneMatchParentStorageTierQueryParameter = cloneMatchParentStorageTier
+}
+
 // WithInfo adds the info to the volume modify params
 func (o *VolumeModifyParams) WithInfo(info *models.Volume) *VolumeModifyParams {
 	o.SetInfo(info)
@@ -209,15 +226,15 @@ func (o *VolumeModifyParams) SetRestoreToSnapshotUUIDQueryParameter(restoreToSna
 	o.RestoreToSnapshotUUIDQueryParameter = restoreToSnapshotUUID
 }
 
-// WithReturnTimeout adds the returnTimeout to the volume modify params
-func (o *VolumeModifyParams) WithReturnTimeout(returnTimeout *int64) *VolumeModifyParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the volume modify params
+func (o *VolumeModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VolumeModifyParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the volume modify params
-func (o *VolumeModifyParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the volume modify params
+func (o *VolumeModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSizingMethodQueryParameter adds the sizingMethod to the volume modify params
@@ -242,15 +259,15 @@ func (o *VolumeModifyParams) SetUUIDPathParameter(uuid string) {
 	o.UUIDPathParameter = uuid
 }
 
-// WithValidateOnly adds the validateOnly to the volume modify params
-func (o *VolumeModifyParams) WithValidateOnly(validateOnly *bool) *VolumeModifyParams {
-	o.SetValidateOnly(validateOnly)
+// WithValidateOnlyQueryParameter adds the validateOnly to the volume modify params
+func (o *VolumeModifyParams) WithValidateOnlyQueryParameter(validateOnly *bool) *VolumeModifyParams {
+	o.SetValidateOnlyQueryParameter(validateOnly)
 	return o
 }
 
-// SetValidateOnly adds the validateOnly to the volume modify params
-func (o *VolumeModifyParams) SetValidateOnly(validateOnly *bool) {
-	o.ValidateOnly = validateOnly
+// SetValidateOnlyQueryParameter adds the validateOnly to the volume modify params
+func (o *VolumeModifyParams) SetValidateOnlyQueryParameter(validateOnly *bool) {
+	o.ValidateOnlyQueryParameter = validateOnly
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -260,6 +277,23 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		return err
 	}
 	var res []error
+
+	if o.CloneMatchParentStorageTierQueryParameter != nil {
+
+		// query param clone.match_parent_storage_tier
+		var qrCloneMatchParentStorageTier bool
+
+		if o.CloneMatchParentStorageTierQueryParameter != nil {
+			qrCloneMatchParentStorageTier = *o.CloneMatchParentStorageTierQueryParameter
+		}
+		qCloneMatchParentStorageTier := swag.FormatBool(qrCloneMatchParentStorageTier)
+		if qCloneMatchParentStorageTier != "" {
+
+			if err := r.SetQueryParam("clone.match_parent_storage_tier", qCloneMatchParentStorageTier); err != nil {
+				return err
+			}
+		}
+	}
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
@@ -300,13 +334,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -339,13 +373,13 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		return err
 	}
 
-	if o.ValidateOnly != nil {
+	if o.ValidateOnlyQueryParameter != nil {
 
 		// query param validate_only
 		var qrValidateOnly bool
 
-		if o.ValidateOnly != nil {
-			qrValidateOnly = *o.ValidateOnly
+		if o.ValidateOnlyQueryParameter != nil {
+			qrValidateOnly = *o.ValidateOnlyQueryParameter
 		}
 		qValidateOnly := swag.FormatBool(qrValidateOnly)
 		if qValidateOnly != "" {

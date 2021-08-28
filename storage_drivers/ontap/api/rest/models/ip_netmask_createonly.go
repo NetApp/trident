@@ -26,5 +26,3 @@ func (m IPNetmaskCreateonly) Validate(formats strfmt.Registry) error {
 func (m IPNetmaskCreateonly) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

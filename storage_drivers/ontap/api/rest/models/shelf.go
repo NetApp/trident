@@ -36,6 +36,12 @@ type Shelf struct {
 	// drawers
 	Drawers []*ShelfDrawersItems0 `json:"drawers,omitempty"`
 
+	// errors
+	Errors []*ShelfErrorsItems0 `json:"errors,omitempty"`
+
+	// fans
+	Fans []*ShelfFansItems0 `json:"fans,omitempty"`
+
 	// frus
 	Frus []*ShelfFrusItems0 `json:"frus,omitempty"`
 
@@ -45,6 +51,9 @@ type Shelf struct {
 
 	// internal
 	Internal bool `json:"internal,omitempty"`
+
+	// local
+	Local bool `json:"local,omitempty"`
 
 	// model
 	// Example: DS2246
@@ -77,6 +86,9 @@ type Shelf struct {
 	// uid
 	// Example: 7777841915827391056
 	UID string `json:"uid,omitempty"`
+
+	// vendor
+	Vendor *ShelfVendor `json:"vendor,omitempty"`
 }
 
 // Validate validates this shelf
@@ -92,6 +104,14 @@ func (m *Shelf) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDrawers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateErrors(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFans(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -112,6 +132,10 @@ func (m *Shelf) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVendor(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -159,43 +183,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// connection_type
 	// ConnectionType
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfConnectionTypeUnknown captures enum value "unknown"
 	ShelfConnectionTypeUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// connection_type
 	// ConnectionType
 	// fc
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfConnectionTypeFc captures enum value "fc"
 	ShelfConnectionTypeFc string = "fc"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// connection_type
 	// ConnectionType
 	// sas
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfConnectionTypeSas captures enum value "sas"
 	ShelfConnectionTypeSas string = "sas"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// connection_type
 	// ConnectionType
 	// nvme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfConnectionTypeNvme captures enum value "nvme"
 	ShelfConnectionTypeNvme string = "nvme"
 )
@@ -245,6 +269,54 @@ func (m *Shelf) validateDrawers(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Shelf) validateErrors(formats strfmt.Registry) error {
+	if swag.IsZero(m.Errors) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Errors); i++ {
+		if swag.IsZero(m.Errors[i]) { // not required
+			continue
+		}
+
+		if m.Errors[i] != nil {
+			if err := m.Errors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) validateFans(formats strfmt.Registry) error {
+	if swag.IsZero(m.Fans) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Fans); i++ {
+		if swag.IsZero(m.Fans[i]) { // not required
+			continue
+		}
+
+		if m.Fans[i] != nil {
+			if err := m.Fans[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("fans" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *Shelf) validateFrus(formats strfmt.Registry) error {
 	if swag.IsZero(m.Frus) { // not required
 		return nil
@@ -283,83 +355,83 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// module_type
 	// ModuleType
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfModuleTypeUnknown captures enum value "unknown"
 	ShelfModuleTypeUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// module_type
 	// ModuleType
 	// iom6
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfModuleTypeIom6 captures enum value "iom6"
 	ShelfModuleTypeIom6 string = "iom6"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// module_type
 	// ModuleType
 	// iom6e
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfModuleTypeIom6e captures enum value "iom6e"
 	ShelfModuleTypeIom6e string = "iom6e"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// module_type
 	// ModuleType
 	// iom12
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfModuleTypeIom12 captures enum value "iom12"
 	ShelfModuleTypeIom12 string = "iom12"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// module_type
 	// ModuleType
 	// iom12e
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfModuleTypeIom12e captures enum value "iom12e"
 	ShelfModuleTypeIom12e string = "iom12e"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// module_type
 	// ModuleType
 	// iom12f
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfModuleTypeIom12f captures enum value "iom12f"
 	ShelfModuleTypeIom12f string = "iom12f"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// module_type
 	// ModuleType
 	// nsm100
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfModuleTypeNsm100 captures enum value "nsm100"
 	ShelfModuleTypeNsm100 string = "nsm100"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// module_type
 	// ModuleType
 	// psm3e
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfModuleTypePsm3e captures enum value "psm3e"
 	ShelfModuleTypePsm3e string = "psm3e"
 )
@@ -447,33 +519,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// state
 	// State
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfStateUnknown captures enum value "unknown"
 	ShelfStateUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// state
 	// State
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfStateOk captures enum value "ok"
 	ShelfStateOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// shelf
 	// Shelf
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfStateError captures enum value "error"
 	ShelfStateError string = "error"
 )
@@ -499,6 +571,23 @@ func (m *Shelf) validateState(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Shelf) validateVendor(formats strfmt.Registry) error {
+	if swag.IsZero(m.Vendor) { // not required
+		return nil
+	}
+
+	if m.Vendor != nil {
+		if err := m.Vendor.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("vendor")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this shelf based on the context it is used
 func (m *Shelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -511,6 +600,14 @@ func (m *Shelf) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateErrors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFans(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFrus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -520,6 +617,10 @@ func (m *Shelf) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 	}
 
 	if err := m.contextValidatePorts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVendor(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -555,6 +656,42 @@ func (m *Shelf) contextValidateDrawers(ctx context.Context, formats strfmt.Regis
 			if err := m.Drawers[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("drawers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateErrors(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Errors); i++ {
+
+		if m.Errors[i] != nil {
+			if err := m.Errors[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateFans(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Fans); i++ {
+
+		if m.Fans[i] != nil {
+			if err := m.Fans[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("fans" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -614,6 +751,20 @@ func (m *Shelf) contextValidatePorts(ctx context.Context, formats strfmt.Registr
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateVendor(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Vendor != nil {
+		if err := m.Vendor.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("vendor")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -692,33 +843,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfBaysItems0
 	// ShelfBaysItems0
 	// state
 	// State
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfBaysItems0StateUnknown captures enum value "unknown"
 	ShelfBaysItems0StateUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfBaysItems0
 	// ShelfBaysItems0
 	// state
 	// State
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfBaysItems0StateOk captures enum value "ok"
 	ShelfBaysItems0StateOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfBaysItems0
 	// ShelfBaysItems0
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfBaysItems0StateError captures enum value "error"
 	ShelfBaysItems0StateError string = "error"
 )
@@ -758,33 +909,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfBaysItems0
 	// ShelfBaysItems0
 	// type
 	// Type
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfBaysItems0TypeUnknown captures enum value "unknown"
 	ShelfBaysItems0TypeUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfBaysItems0
 	// ShelfBaysItems0
 	// type
 	// Type
 	// single_disk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfBaysItems0TypeSingleDisk captures enum value "single_disk"
 	ShelfBaysItems0TypeSingleDisk string = "single_disk"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfBaysItems0
 	// ShelfBaysItems0
 	// type
 	// Type
 	// multi_lun
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfBaysItems0TypeMultiLun captures enum value "multi_lun"
 	ShelfBaysItems0TypeMultiLun string = "multi_lun"
 )
@@ -893,23 +1044,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfDrawersItems0
 	// ShelfDrawersItems0
 	// state
 	// State
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfDrawersItems0StateOk captures enum value "ok"
 	ShelfDrawersItems0StateOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfDrawersItems0
 	// ShelfDrawersItems0
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfDrawersItems0StateError captures enum value "error"
 	ShelfDrawersItems0StateError string = "error"
 )
@@ -951,6 +1102,248 @@ func (m *ShelfDrawersItems0) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ShelfDrawersItems0) UnmarshalBinary(b []byte) error {
 	var res ShelfDrawersItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfErrorsItems0 shelf errors items0
+//
+// swagger:model ShelfErrorsItems0
+type ShelfErrorsItems0 struct {
+
+	// reason
+	Reason *ShelfErrorsItems0Reason `json:"reason,omitempty"`
+}
+
+// Validate validates this shelf errors items0
+func (m *ShelfErrorsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateReason(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfErrorsItems0) validateReason(formats strfmt.Registry) error {
+	if swag.IsZero(m.Reason) { // not required
+		return nil
+	}
+
+	if m.Reason != nil {
+		if err := m.Reason.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("reason")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this shelf errors items0 based on the context it is used
+func (m *ShelfErrorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateReason(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfErrorsItems0) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Reason != nil {
+		if err := m.Reason.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("reason")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfErrorsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfErrorsItems0) UnmarshalBinary(b []byte) error {
+	var res ShelfErrorsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfErrorsItems0Reason shelf errors items0 reason
+//
+// swagger:model ShelfErrorsItems0Reason
+type ShelfErrorsItems0Reason struct {
+
+	// Error code
+	Code string `json:"code,omitempty"`
+
+	// Error message
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this shelf errors items0 reason
+func (m *ShelfErrorsItems0Reason) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this shelf errors items0 reason based on context it is used
+func (m *ShelfErrorsItems0Reason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfErrorsItems0Reason) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfErrorsItems0Reason) UnmarshalBinary(b []byte) error {
+	var res ShelfErrorsItems0Reason
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfFansItems0 shelf fans items0
+//
+// swagger:model ShelfFansItems0
+type ShelfFansItems0 struct {
+
+	// id
+	// Example: 1
+	ID int64 `json:"id,omitempty"`
+
+	// location
+	// Example: rear of the shelf on the lower left power supply
+	Location string `json:"location,omitempty"`
+
+	// rpm
+	// Example: 3020
+	Rpm int64 `json:"rpm,omitempty"`
+
+	// state
+	// Example: ok
+	// Enum: [ok error]
+	State string `json:"state,omitempty"`
+}
+
+// Validate validates this shelf fans items0
+func (m *ShelfFansItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var shelfFansItems0TypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		shelfFansItems0TypeStatePropEnum = append(shelfFansItems0TypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ShelfFansItems0
+	// ShelfFansItems0
+	// state
+	// State
+	// ok
+	// END DEBUGGING
+	// ShelfFansItems0StateOk captures enum value "ok"
+	ShelfFansItems0StateOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// ShelfFansItems0
+	// ShelfFansItems0
+	// state
+	// State
+	// error
+	// END DEBUGGING
+	// ShelfFansItems0StateError captures enum value "error"
+	ShelfFansItems0StateError string = "error"
+)
+
+// prop value enum
+func (m *ShelfFansItems0) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfFansItems0TypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ShelfFansItems0) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this shelf fans items0 based on context it is used
+func (m *ShelfFansItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfFansItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfFansItems0) UnmarshalBinary(b []byte) error {
+	var res ShelfFansItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1021,23 +1414,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfFrusItems0
 	// ShelfFrusItems0
 	// state
 	// State
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfFrusItems0StateOk captures enum value "ok"
 	ShelfFrusItems0StateOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfFrusItems0
 	// ShelfFrusItems0
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfFrusItems0StateError captures enum value "error"
 	ShelfFrusItems0StateError string = "error"
 )
@@ -1077,23 +1470,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfFrusItems0
 	// ShelfFrusItems0
 	// type
 	// Type
 	// module
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfFrusItems0TypeModule captures enum value "module"
 	ShelfFrusItems0TypeModule string = "module"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfFrusItems0
 	// ShelfFrusItems0
 	// type
 	// Type
 	// psu
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfFrusItems0TypePsu captures enum value "psu"
 	ShelfFrusItems0TypePsu string = "psu"
 )
@@ -1642,63 +2035,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfPortsItems0
 	// ShelfPortsItems0
 	// designator
 	// Designator
 	// circle
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfPortsItems0DesignatorCircle captures enum value "circle"
 	ShelfPortsItems0DesignatorCircle string = "circle"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfPortsItems0
 	// ShelfPortsItems0
 	// designator
 	// Designator
 	// square
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfPortsItems0DesignatorSquare captures enum value "square"
 	ShelfPortsItems0DesignatorSquare string = "square"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfPortsItems0
 	// ShelfPortsItems0
 	// designator
 	// Designator
 	// 1
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfPortsItems0DesignatorNr1 captures enum value "1"
 	ShelfPortsItems0DesignatorNr1 string = "1"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfPortsItems0
 	// ShelfPortsItems0
 	// designator
 	// Designator
 	// 2
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfPortsItems0DesignatorNr2 captures enum value "2"
 	ShelfPortsItems0DesignatorNr2 string = "2"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfPortsItems0
 	// ShelfPortsItems0
 	// designator
 	// Designator
 	// 3
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfPortsItems0DesignatorNr3 captures enum value "3"
 	ShelfPortsItems0DesignatorNr3 string = "3"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfPortsItems0
 	// ShelfPortsItems0
 	// designator
 	// Designator
 	// 4
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfPortsItems0DesignatorNr4 captures enum value "4"
 	ShelfPortsItems0DesignatorNr4 string = "4"
 )
@@ -1738,23 +2131,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfPortsItems0
 	// ShelfPortsItems0
 	// module_id
 	// ModuleID
 	// a
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfPortsItems0ModuleIDA captures enum value "a"
 	ShelfPortsItems0ModuleIDA string = "a"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfPortsItems0
 	// ShelfPortsItems0
 	// module_id
 	// ModuleID
 	// b
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfPortsItems0ModuleIDB captures enum value "b"
 	ShelfPortsItems0ModuleIDB string = "b"
 )
@@ -1811,33 +2204,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfPortsItems0
 	// ShelfPortsItems0
 	// state
 	// State
 	// connected
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfPortsItems0StateConnected captures enum value "connected"
 	ShelfPortsItems0StateConnected string = "connected"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfPortsItems0
 	// ShelfPortsItems0
 	// state
 	// State
 	// disconnected
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfPortsItems0StateDisconnected captures enum value "disconnected"
 	ShelfPortsItems0StateDisconnected string = "disconnected"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ShelfPortsItems0
 	// ShelfPortsItems0
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ShelfPortsItems0StateError captures enum value "error"
 	ShelfPortsItems0StateError string = "error"
 )
@@ -1985,6 +2378,9 @@ type ShelfPortsItems0Remote struct {
 	// chassis
 	Chassis string `json:"chassis,omitempty"`
 
+	// device
+	Device string `json:"device,omitempty"`
+
 	// mac address
 	MacAddress string `json:"mac_address,omitempty"`
 
@@ -2028,4 +2424,52 @@ func (m *ShelfPortsItems0Remote) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HELLO RIPPY
+// ShelfVendor shelf vendor
+//
+// swagger:model ShelfVendor
+type ShelfVendor struct {
+
+	// Manufacturer name
+	// Example: XYZ
+	Manufacturer string `json:"manufacturer,omitempty"`
+
+	// Part number
+	// Example: A92831142733
+	PartNumber string `json:"part_number,omitempty"`
+
+	// Product name
+	// Example: LS2246
+	Product string `json:"product,omitempty"`
+
+	// Serial number
+	// Example: 891234572210221
+	SerialNumber string `json:"serial_number,omitempty"`
+}
+
+// Validate validates this shelf vendor
+func (m *ShelfVendor) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this shelf vendor based on context it is used
+func (m *ShelfVendor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfVendor) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfVendor) UnmarshalBinary(b []byte) error {
+	var res ShelfVendor
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

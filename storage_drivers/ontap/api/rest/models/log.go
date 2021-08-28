@@ -95,23 +95,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// log
 	// Log
 	// format
 	// Format
 	// xml
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LogFormatXML captures enum value "xml"
 	LogFormatXML string = "xml"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// log
 	// Log
 	// format
 	// Format
 	// evtx
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LogFormatEvtx captures enum value "evtx"
 	LogFormatEvtx string = "evtx"
 )
@@ -384,5 +384,3 @@ func (m *LogRetention) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

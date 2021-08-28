@@ -69,33 +69,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san_application_components_tiering
 	// SanApplicationComponentsTiering
 	// control
 	// Control
 	// required
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanApplicationComponentsTieringControlRequired captures enum value "required"
 	SanApplicationComponentsTieringControlRequired string = "required"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san_application_components_tiering
 	// SanApplicationComponentsTiering
 	// control
 	// Control
 	// best_effort
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanApplicationComponentsTieringControlBestEffort captures enum value "best_effort"
 	SanApplicationComponentsTieringControlBestEffort string = "best_effort"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san_application_components_tiering
 	// SanApplicationComponentsTiering
 	// control
 	// Control
 	// disallowed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanApplicationComponentsTieringControlDisallowed captures enum value "disallowed"
 	SanApplicationComponentsTieringControlDisallowed string = "disallowed"
 )
@@ -159,43 +159,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san_application_components_tiering
 	// SanApplicationComponentsTiering
 	// policy
 	// Policy
 	// all
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanApplicationComponentsTieringPolicyAll captures enum value "all"
 	SanApplicationComponentsTieringPolicyAll string = "all"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san_application_components_tiering
 	// SanApplicationComponentsTiering
 	// policy
 	// Policy
 	// auto
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanApplicationComponentsTieringPolicyAuto captures enum value "auto"
 	SanApplicationComponentsTieringPolicyAuto string = "auto"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san_application_components_tiering
 	// SanApplicationComponentsTiering
 	// policy
 	// Policy
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanApplicationComponentsTieringPolicyNone captures enum value "none"
 	SanApplicationComponentsTieringPolicyNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san_application_components_tiering
 	// SanApplicationComponentsTiering
 	// policy
 	// Policy
 	// snapshot_only
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanApplicationComponentsTieringPolicySnapshotOnly captures enum value "snapshot_only"
 	SanApplicationComponentsTieringPolicySnapshotOnly string = "snapshot_only"
 )
@@ -276,7 +276,7 @@ func (m *SanApplicationComponentsTiering) UnmarshalBinary(b []byte) error {
 // swagger:model SanApplicationComponentsTieringObjectStoresItems0
 type SanApplicationComponentsTieringObjectStoresItems0 struct {
 
-	// The name of the object-store to use. Usage: &lt;(size 1..512)&gt;
+	// The name of the object-store to use.
 	// Max Length: 512
 	// Min Length: 1
 	Name string `json:"name,omitempty"`
@@ -334,5 +334,3 @@ func (m *SanApplicationComponentsTieringObjectStoresItems0) UnmarshalBinary(b []
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

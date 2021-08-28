@@ -75,6 +75,7 @@ func NewNetworkIPBgpPeerGroupModifyDefault(code int) *NetworkIPBgpPeerGroupModif
 | Error Code | Description |
 | ---------- | ----------- |
 | 1967171 | Internal error. Fail to access or update BGP peer group. Retry the command, if necessary. |
+| 1967188 | Configuring peer address as a next hop requires an effective cluster version of 9.9.1 or later. |
 | 53281998 | Failed to rename the BGP peer group because that name is already assigned to a different peer group in the IPspace. |
 | 53282006 | BGP peer group could not be updated to use a peer address because the value provided is not a valid peer address. If necessary, try the command again with a routable host address. |
 | 53282007 | BGP peer group could not be updated to use a peer address because the address represents a different address family to the address of the associated BGP LIF. If necessary, try the command again with a matching address family. |

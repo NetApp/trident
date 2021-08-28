@@ -65,33 +65,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_errors_reference
 	// SoftwareErrorsReference
 	// severity
 	// Severity
 	// informational
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareErrorsReferenceSeverityInformational captures enum value "informational"
 	SoftwareErrorsReferenceSeverityInformational string = "informational"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_errors_reference
 	// SoftwareErrorsReference
 	// severity
 	// Severity
 	// warning
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareErrorsReferenceSeverityWarning captures enum value "warning"
 	SoftwareErrorsReferenceSeverityWarning string = "warning"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_errors_reference
 	// SoftwareErrorsReference
 	// severity
 	// Severity
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareErrorsReferenceSeverityError captures enum value "error"
 	SoftwareErrorsReferenceSeverityError string = "error"
 )
@@ -183,5 +183,3 @@ func (m *SoftwareErrorsReference) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

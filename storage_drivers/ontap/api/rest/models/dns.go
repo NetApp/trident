@@ -7,10 +7,13 @@ package models
 
 import (
 	"context"
+	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // DNS dns
@@ -21,14 +24,54 @@ type DNS struct {
 	// links
 	Links *DNSLinks `json:"_links,omitempty"`
 
+	// Number of attempts allowed when querying the DNS name servers.
+	//
+	// Maximum: 4
+	// Minimum: 1
+	Attempts int64 `json:"attempts,omitempty"`
+
 	// domains
 	Domains DNSDomains `json:"domains,omitempty"`
+
+	// dynamic dns
+	DynamicDNS *DNSDynamicDNS `json:"dynamic_dns,omitempty"`
+
+	// Indicates whether or not the query section of the reply packet is equal to that of the query packet.
+	//
+	PacketQueryMatch *bool `json:"packet_query_match,omitempty"`
+
+	// Set to "svm" for DNS owned by an SVM, otherwise set to "cluster".
+	//
+	// Enum: [svm cluster]
+	Scope *string `json:"scope,omitempty"`
 
 	// servers
 	Servers NameServers `json:"servers,omitempty"`
 
+	// Indicates whether or not the validation for the specified DNS configuration is disabled.
+	//
+	SkipConfigValidation *bool `json:"skip_config_validation,omitempty"`
+
+	// Indicates whether or not the DNS responses are from a different IP address to the IP address the request was sent to.
+	//
+	SourceAddressMatch *bool `json:"source_address_match,omitempty"`
+
+	// Status of all the DNS name servers configured for the specified SVM.
+	//
+	Status []*Status `json:"status,omitempty"`
+
 	// svm
 	Svm *DNSSvm `json:"svm,omitempty"`
+
+	// Timeout values for queries to the name servers, in seconds.
+	//
+	// Maximum: 5
+	// Minimum: 1
+	Timeout int64 `json:"timeout,omitempty"`
+
+	// Enable or disable top-level domain (TLD) queries.
+	//
+	TldQueryEnabled *bool `json:"tld_query_enabled,omitempty"`
 }
 
 // Validate validates this dns
@@ -39,7 +82,19 @@ func (m *DNS) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAttempts(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateDomains(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDynamicDNS(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScope(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -47,7 +102,15 @@ func (m *DNS) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimeout(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -74,6 +137,22 @@ func (m *DNS) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *DNS) validateAttempts(formats strfmt.Registry) error {
+	if swag.IsZero(m.Attempts) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("attempts", "body", m.Attempts, 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("attempts", "body", m.Attempts, 4, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *DNS) validateDomains(formats strfmt.Registry) error {
 	if swag.IsZero(m.Domains) { // not required
 		return nil
@@ -83,6 +162,79 @@ func (m *DNS) validateDomains(formats strfmt.Registry) error {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("domains")
 		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *DNS) validateDynamicDNS(formats strfmt.Registry) error {
+	if swag.IsZero(m.DynamicDNS) { // not required
+		return nil
+	}
+
+	if m.DynamicDNS != nil {
+		if err := m.DynamicDNS.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("dynamic_dns")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var dnsTypeScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["svm","cluster"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		dnsTypeScopePropEnum = append(dnsTypeScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// dns
+	// DNS
+	// scope
+	// Scope
+	// svm
+	// END DEBUGGING
+	// DNSScopeSvm captures enum value "svm"
+	DNSScopeSvm string = "svm"
+
+	// BEGIN DEBUGGING
+	// dns
+	// DNS
+	// scope
+	// Scope
+	// cluster
+	// END DEBUGGING
+	// DNSScopeCluster captures enum value "cluster"
+	DNSScopeCluster string = "cluster"
+)
+
+// prop value enum
+func (m *DNS) validateScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, dnsTypeScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *DNS) validateScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.Scope) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateScopeEnum("scope", "body", *m.Scope); err != nil {
 		return err
 	}
 
@@ -99,6 +251,30 @@ func (m *DNS) validateServers(formats strfmt.Registry) error {
 			return ve.ValidateName("servers")
 		}
 		return err
+	}
+
+	return nil
+}
+
+func (m *DNS) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Status); i++ {
+		if swag.IsZero(m.Status[i]) { // not required
+			continue
+		}
+
+		if m.Status[i] != nil {
+			if err := m.Status[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("status" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -121,6 +297,22 @@ func (m *DNS) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *DNS) validateTimeout(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timeout) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("timeout", "body", m.Timeout, 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("timeout", "body", m.Timeout, 5, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this dns based on the context it is used
 func (m *DNS) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -133,7 +325,15 @@ func (m *DNS) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateDynamicDNS(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateServers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -173,6 +373,20 @@ func (m *DNS) contextValidateDomains(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
+func (m *DNS) contextValidateDynamicDNS(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.DynamicDNS != nil {
+		if err := m.DynamicDNS.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("dynamic_dns")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *DNS) contextValidateServers(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := m.Servers.ContextValidate(ctx, formats); err != nil {
@@ -180,6 +394,24 @@ func (m *DNS) contextValidateServers(ctx context.Context, formats strfmt.Registr
 			return ve.ValidateName("servers")
 		}
 		return err
+	}
+
+	return nil
+}
+
+func (m *DNS) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Status); i++ {
+
+		if m.Status[i] != nil {
+			if err := m.Status[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("status" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -210,6 +442,63 @@ func (m *DNS) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *DNS) UnmarshalBinary(b []byte) error {
 	var res DNS
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// DNSDynamicDNS DNS dynamic DNS
+//
+// swagger:model DNSDynamicDNS
+type DNSDynamicDNS struct {
+
+	// Enable or disable Dynamic DNS (DDNS) updates for the specified SVM.
+	//
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Fully Qualified Domain Name (FQDN) to be used for dynamic DNS updates.
+	//
+	// Example: example.com
+	Fqdn string `json:"fqdn,omitempty"`
+
+	// Enable or disable FQDN validation.
+	//
+	SkipFqdnValidation *bool `json:"skip_fqdn_validation,omitempty"`
+
+	// Time to live value for the dynamic DNS updates, in an ISO-8601 duration formatted string.
+	// Maximum Time To Live is 720 hours(P30D in ISO-8601 format) and the default is 24 hours(P1D in ISO-8601 format).
+	//
+	// Example: P2D
+	TimeToLive *string `json:"time_to_live,omitempty"`
+
+	// Enable or disable secure dynamic DNS updates for the specified SVM.
+	//
+	UseSecure *bool `json:"use_secure,omitempty"`
+}
+
+// Validate validates this DNS dynamic DNS
+func (m *DNSDynamicDNS) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this DNS dynamic DNS based on context it is used
+func (m *DNSDynamicDNS) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DNSDynamicDNS) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DNSDynamicDNS) UnmarshalBinary(b []byte) error {
+	var res DNSDynamicDNS
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -484,5 +773,3 @@ func (m *DNSSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

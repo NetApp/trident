@@ -66,6 +66,107 @@ type FileInfoCollectionGetParams struct {
 	*/
 	AccessedTimeQueryParameter *string
 
+	/* AnalyticsByAccessedTimeBytesUsedLabels.
+
+	   Filter by analytics.by_accessed_time.bytes_used.labels
+	*/
+	AnalyticsByAccessedTimeBytesUsedLabelsQueryParameter *string
+
+	/* AnalyticsByAccessedTimeBytesUsedNewestLabel.
+
+	   Filter by analytics.by_accessed_time.bytes_used.newest_label
+	*/
+	AnalyticsByAccessedTimeBytesUsedNewestLabelQueryParameter *string
+
+	/* AnalyticsByAccessedTimeBytesUsedOldestLabel.
+
+	   Filter by analytics.by_accessed_time.bytes_used.oldest_label
+	*/
+	AnalyticsByAccessedTimeBytesUsedOldestLabelQueryParameter *string
+
+	/* AnalyticsByAccessedTimeBytesUsedPercentages.
+
+	   Filter by analytics.by_accessed_time.bytes_used.percentages
+	*/
+	AnalyticsByAccessedTimeBytesUsedPercentagesQueryParameter *float64
+
+	/* AnalyticsByAccessedTimeBytesUsedValues.
+
+	   Filter by analytics.by_accessed_time.bytes_used.values
+	*/
+	AnalyticsByAccessedTimeBytesUsedValuesQueryParameter *int64
+
+	/* AnalyticsByModifiedTimeBytesUsedLabels.
+
+	   Filter by analytics.by_modified_time.bytes_used.labels
+	*/
+	AnalyticsByModifiedTimeBytesUsedLabelsQueryParameter *string
+
+	/* AnalyticsByModifiedTimeBytesUsedNewestLabel.
+
+	   Filter by analytics.by_modified_time.bytes_used.newest_label
+	*/
+	AnalyticsByModifiedTimeBytesUsedNewestLabelQueryParameter *string
+
+	/* AnalyticsByModifiedTimeBytesUsedOldestLabel.
+
+	   Filter by analytics.by_modified_time.bytes_used.oldest_label
+	*/
+	AnalyticsByModifiedTimeBytesUsedOldestLabelQueryParameter *string
+
+	/* AnalyticsByModifiedTimeBytesUsedPercentages.
+
+	   Filter by analytics.by_modified_time.bytes_used.percentages
+	*/
+	AnalyticsByModifiedTimeBytesUsedPercentagesQueryParameter *float64
+
+	/* AnalyticsByModifiedTimeBytesUsedValues.
+
+	   Filter by analytics.by_modified_time.bytes_used.values
+	*/
+	AnalyticsByModifiedTimeBytesUsedValuesQueryParameter *int64
+
+	/* AnalyticsBytesUsed.
+
+	   Filter by analytics.bytes_used
+	*/
+	AnalyticsBytesUsedQueryParameter *int64
+
+	/* AnalyticsFileCount.
+
+	   Filter by analytics.file_count
+	*/
+	AnalyticsFileCountQueryParameter *int64
+
+	/* AnalyticsHistogramByTimeLabels.
+
+	     Request that returned [`analytics_histogram_by_time`](#model-analytics_histogram_by_time) objects including values associated with the specified labels. <br/>
+	As described in the object description, the labels may take the following forms:<ul>
+	<li><i>partial-date</i></li>
+	<li><tt><span>-</span>-</tt><i>partial-date</i></li>
+	<li><i>partial-date</i><tt><span>-</span>-</tt></li>
+	<li><i>partial-date</i><span><tt>-</span>-</tt><i>partial-date</i></li>
+	<li><tt>unknown</tt></li>
+	</ul>Intervals that the system would not normally return may be specified.  In this case, the appropriate values and percentages summarizing all files with a time-based attribute within the indicated period of time are calculated and returned in the response.  However, there are some restrictions:<ul>
+	<li>Any <i>partial-date</i> specified as the beginning or end of an interval must be tracked by the system.  Valid <i>partial-date</i>s may be determined by making an OPTIONS request to the <tt>/storage/volumes/{volume.uuid}/files/{path}</tt> endpoint.</li>
+	<li>Intervals may not mix week-based <i>partial-date</i>s in the form <i>yyyy</i>-W<i>ww</i> with other types of <i>partial-date</i>s.</li>
+	</ul>
+
+	*/
+	AnalyticsHistogramByTimeLabelsQueryParameter []string
+
+	/* AnalyticsSubdirCount.
+
+	   Filter by analytics.subdir_count
+	*/
+	AnalyticsSubdirCountQueryParameter *int64
+
+	/* ByteOffset.
+
+	   The file offset to start reading from.
+	*/
+	ByteOffsetQueryParameter *int64
+
 	/* BytesUsed.
 
 	   Filter by bytes_used
@@ -88,7 +189,13 @@ type FileInfoCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
+
+	/* FillEnabled.
+
+	   Filter by fill_enabled
+	*/
+	FillEnabledQueryParameter *bool
 
 	/* GroupID.
 
@@ -126,17 +233,29 @@ type FileInfoCollectionGetParams struct {
 	*/
 	IsJunctionQueryParameter *bool
 
+	/* IsSnapshot.
+
+	   Filter by is_snapshot
+	*/
+	IsSnapshotQueryParameter *bool
+
 	/* IsVMAligned.
 
 	   Filter by is_vm_aligned
 	*/
 	IsVMAlignedQueryParameter *bool
 
+	/* Length.
+
+	   Length of the range in bytes.
+	*/
+	LengthQueryParameter *int64
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* ModifiedTime.
 
@@ -154,7 +273,13 @@ type FileInfoCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
+
+	/* OverwriteEnabled.
+
+	   Filter by overwrite_enabled
+	*/
+	OverwriteEnabledQueryParameter *bool
 
 	/* OwnerID.
 
@@ -164,15 +289,27 @@ type FileInfoCollectionGetParams struct {
 
 	/* Path.
 
-	   Filter by path
-	*/
-	PathQueryParameter *string
-
-	/* Path.
-
-	   Relative path of a directory in the volume.
+	   Relative path of a file or directory in the volume. The path field requires using "%2E" to represent "." and "%2F" to represent "/" for the path provided.
 	*/
 	PathPathParameter string
+
+	/* QosPolicyName.
+
+	   Filter by qos_policy.name
+	*/
+	QosPolicyNameQueryParameter *string
+
+	/* QosPolicyUUID.
+
+	   Filter by qos_policy.uuid
+	*/
+	QosPolicyUUIDQueryParameter *string
+
+	/* ReturnMetadata.
+
+	   If true, the request returns metadata for the the directory or file specified in the path.
+	*/
+	ReturnMetadataQueryParameter *bool
 
 	/* ReturnRecords.
 
@@ -180,7 +317,7 @@ type FileInfoCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -188,7 +325,7 @@ type FileInfoCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Size.
 
@@ -196,11 +333,23 @@ type FileInfoCollectionGetParams struct {
 	*/
 	SizeQueryParameter *int64
 
+	/* Target.
+
+	   Filter by target
+	*/
+	TargetQueryParameter *string
+
 	/* Type.
 
 	   Filter by type
 	*/
 	TypeQueryParameter *string
+
+	/* UniqueBytes.
+
+	   Filter by unique_bytes
+	*/
+	UniqueBytesQueryParameter *int64
 
 	/* UnixPermissions.
 
@@ -220,12 +369,6 @@ type FileInfoCollectionGetParams struct {
 	*/
 	VolumeUUIDPathParameter string
 
-	/* VolumeUUID.
-
-	   Filter by volume.uuid
-	*/
-	VolumeUUIDQueryParameter *string
-
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -244,14 +387,17 @@ func (o *FileInfoCollectionGetParams) WithDefaults() *FileInfoCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *FileInfoCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnMetadataQueryParameterDefault = bool(false)
 
-		returnTimeoutDefault = int64(15)
+		returnRecordsQueryParameterDefault = bool(true)
+
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := FileInfoCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnMetadataQueryParameter: &returnMetadataQueryParameterDefault,
+		ReturnRecordsQueryParameter:  &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter:  &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -304,6 +450,171 @@ func (o *FileInfoCollectionGetParams) SetAccessedTimeQueryParameter(accessedTime
 	o.AccessedTimeQueryParameter = accessedTime
 }
 
+// WithAnalyticsByAccessedTimeBytesUsedLabelsQueryParameter adds the analyticsByAccessedTimeBytesUsedLabels to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsByAccessedTimeBytesUsedLabelsQueryParameter(analyticsByAccessedTimeBytesUsedLabels *string) *FileInfoCollectionGetParams {
+	o.SetAnalyticsByAccessedTimeBytesUsedLabelsQueryParameter(analyticsByAccessedTimeBytesUsedLabels)
+	return o
+}
+
+// SetAnalyticsByAccessedTimeBytesUsedLabelsQueryParameter adds the analyticsByAccessedTimeBytesUsedLabels to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsByAccessedTimeBytesUsedLabelsQueryParameter(analyticsByAccessedTimeBytesUsedLabels *string) {
+	o.AnalyticsByAccessedTimeBytesUsedLabelsQueryParameter = analyticsByAccessedTimeBytesUsedLabels
+}
+
+// WithAnalyticsByAccessedTimeBytesUsedNewestLabelQueryParameter adds the analyticsByAccessedTimeBytesUsedNewestLabel to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsByAccessedTimeBytesUsedNewestLabelQueryParameter(analyticsByAccessedTimeBytesUsedNewestLabel *string) *FileInfoCollectionGetParams {
+	o.SetAnalyticsByAccessedTimeBytesUsedNewestLabelQueryParameter(analyticsByAccessedTimeBytesUsedNewestLabel)
+	return o
+}
+
+// SetAnalyticsByAccessedTimeBytesUsedNewestLabelQueryParameter adds the analyticsByAccessedTimeBytesUsedNewestLabel to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsByAccessedTimeBytesUsedNewestLabelQueryParameter(analyticsByAccessedTimeBytesUsedNewestLabel *string) {
+	o.AnalyticsByAccessedTimeBytesUsedNewestLabelQueryParameter = analyticsByAccessedTimeBytesUsedNewestLabel
+}
+
+// WithAnalyticsByAccessedTimeBytesUsedOldestLabelQueryParameter adds the analyticsByAccessedTimeBytesUsedOldestLabel to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsByAccessedTimeBytesUsedOldestLabelQueryParameter(analyticsByAccessedTimeBytesUsedOldestLabel *string) *FileInfoCollectionGetParams {
+	o.SetAnalyticsByAccessedTimeBytesUsedOldestLabelQueryParameter(analyticsByAccessedTimeBytesUsedOldestLabel)
+	return o
+}
+
+// SetAnalyticsByAccessedTimeBytesUsedOldestLabelQueryParameter adds the analyticsByAccessedTimeBytesUsedOldestLabel to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsByAccessedTimeBytesUsedOldestLabelQueryParameter(analyticsByAccessedTimeBytesUsedOldestLabel *string) {
+	o.AnalyticsByAccessedTimeBytesUsedOldestLabelQueryParameter = analyticsByAccessedTimeBytesUsedOldestLabel
+}
+
+// WithAnalyticsByAccessedTimeBytesUsedPercentagesQueryParameter adds the analyticsByAccessedTimeBytesUsedPercentages to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsByAccessedTimeBytesUsedPercentagesQueryParameter(analyticsByAccessedTimeBytesUsedPercentages *float64) *FileInfoCollectionGetParams {
+	o.SetAnalyticsByAccessedTimeBytesUsedPercentagesQueryParameter(analyticsByAccessedTimeBytesUsedPercentages)
+	return o
+}
+
+// SetAnalyticsByAccessedTimeBytesUsedPercentagesQueryParameter adds the analyticsByAccessedTimeBytesUsedPercentages to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsByAccessedTimeBytesUsedPercentagesQueryParameter(analyticsByAccessedTimeBytesUsedPercentages *float64) {
+	o.AnalyticsByAccessedTimeBytesUsedPercentagesQueryParameter = analyticsByAccessedTimeBytesUsedPercentages
+}
+
+// WithAnalyticsByAccessedTimeBytesUsedValuesQueryParameter adds the analyticsByAccessedTimeBytesUsedValues to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsByAccessedTimeBytesUsedValuesQueryParameter(analyticsByAccessedTimeBytesUsedValues *int64) *FileInfoCollectionGetParams {
+	o.SetAnalyticsByAccessedTimeBytesUsedValuesQueryParameter(analyticsByAccessedTimeBytesUsedValues)
+	return o
+}
+
+// SetAnalyticsByAccessedTimeBytesUsedValuesQueryParameter adds the analyticsByAccessedTimeBytesUsedValues to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsByAccessedTimeBytesUsedValuesQueryParameter(analyticsByAccessedTimeBytesUsedValues *int64) {
+	o.AnalyticsByAccessedTimeBytesUsedValuesQueryParameter = analyticsByAccessedTimeBytesUsedValues
+}
+
+// WithAnalyticsByModifiedTimeBytesUsedLabelsQueryParameter adds the analyticsByModifiedTimeBytesUsedLabels to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsByModifiedTimeBytesUsedLabelsQueryParameter(analyticsByModifiedTimeBytesUsedLabels *string) *FileInfoCollectionGetParams {
+	o.SetAnalyticsByModifiedTimeBytesUsedLabelsQueryParameter(analyticsByModifiedTimeBytesUsedLabels)
+	return o
+}
+
+// SetAnalyticsByModifiedTimeBytesUsedLabelsQueryParameter adds the analyticsByModifiedTimeBytesUsedLabels to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsByModifiedTimeBytesUsedLabelsQueryParameter(analyticsByModifiedTimeBytesUsedLabels *string) {
+	o.AnalyticsByModifiedTimeBytesUsedLabelsQueryParameter = analyticsByModifiedTimeBytesUsedLabels
+}
+
+// WithAnalyticsByModifiedTimeBytesUsedNewestLabelQueryParameter adds the analyticsByModifiedTimeBytesUsedNewestLabel to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsByModifiedTimeBytesUsedNewestLabelQueryParameter(analyticsByModifiedTimeBytesUsedNewestLabel *string) *FileInfoCollectionGetParams {
+	o.SetAnalyticsByModifiedTimeBytesUsedNewestLabelQueryParameter(analyticsByModifiedTimeBytesUsedNewestLabel)
+	return o
+}
+
+// SetAnalyticsByModifiedTimeBytesUsedNewestLabelQueryParameter adds the analyticsByModifiedTimeBytesUsedNewestLabel to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsByModifiedTimeBytesUsedNewestLabelQueryParameter(analyticsByModifiedTimeBytesUsedNewestLabel *string) {
+	o.AnalyticsByModifiedTimeBytesUsedNewestLabelQueryParameter = analyticsByModifiedTimeBytesUsedNewestLabel
+}
+
+// WithAnalyticsByModifiedTimeBytesUsedOldestLabelQueryParameter adds the analyticsByModifiedTimeBytesUsedOldestLabel to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsByModifiedTimeBytesUsedOldestLabelQueryParameter(analyticsByModifiedTimeBytesUsedOldestLabel *string) *FileInfoCollectionGetParams {
+	o.SetAnalyticsByModifiedTimeBytesUsedOldestLabelQueryParameter(analyticsByModifiedTimeBytesUsedOldestLabel)
+	return o
+}
+
+// SetAnalyticsByModifiedTimeBytesUsedOldestLabelQueryParameter adds the analyticsByModifiedTimeBytesUsedOldestLabel to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsByModifiedTimeBytesUsedOldestLabelQueryParameter(analyticsByModifiedTimeBytesUsedOldestLabel *string) {
+	o.AnalyticsByModifiedTimeBytesUsedOldestLabelQueryParameter = analyticsByModifiedTimeBytesUsedOldestLabel
+}
+
+// WithAnalyticsByModifiedTimeBytesUsedPercentagesQueryParameter adds the analyticsByModifiedTimeBytesUsedPercentages to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsByModifiedTimeBytesUsedPercentagesQueryParameter(analyticsByModifiedTimeBytesUsedPercentages *float64) *FileInfoCollectionGetParams {
+	o.SetAnalyticsByModifiedTimeBytesUsedPercentagesQueryParameter(analyticsByModifiedTimeBytesUsedPercentages)
+	return o
+}
+
+// SetAnalyticsByModifiedTimeBytesUsedPercentagesQueryParameter adds the analyticsByModifiedTimeBytesUsedPercentages to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsByModifiedTimeBytesUsedPercentagesQueryParameter(analyticsByModifiedTimeBytesUsedPercentages *float64) {
+	o.AnalyticsByModifiedTimeBytesUsedPercentagesQueryParameter = analyticsByModifiedTimeBytesUsedPercentages
+}
+
+// WithAnalyticsByModifiedTimeBytesUsedValuesQueryParameter adds the analyticsByModifiedTimeBytesUsedValues to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsByModifiedTimeBytesUsedValuesQueryParameter(analyticsByModifiedTimeBytesUsedValues *int64) *FileInfoCollectionGetParams {
+	o.SetAnalyticsByModifiedTimeBytesUsedValuesQueryParameter(analyticsByModifiedTimeBytesUsedValues)
+	return o
+}
+
+// SetAnalyticsByModifiedTimeBytesUsedValuesQueryParameter adds the analyticsByModifiedTimeBytesUsedValues to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsByModifiedTimeBytesUsedValuesQueryParameter(analyticsByModifiedTimeBytesUsedValues *int64) {
+	o.AnalyticsByModifiedTimeBytesUsedValuesQueryParameter = analyticsByModifiedTimeBytesUsedValues
+}
+
+// WithAnalyticsBytesUsedQueryParameter adds the analyticsBytesUsed to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsBytesUsedQueryParameter(analyticsBytesUsed *int64) *FileInfoCollectionGetParams {
+	o.SetAnalyticsBytesUsedQueryParameter(analyticsBytesUsed)
+	return o
+}
+
+// SetAnalyticsBytesUsedQueryParameter adds the analyticsBytesUsed to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsBytesUsedQueryParameter(analyticsBytesUsed *int64) {
+	o.AnalyticsBytesUsedQueryParameter = analyticsBytesUsed
+}
+
+// WithAnalyticsFileCountQueryParameter adds the analyticsFileCount to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsFileCountQueryParameter(analyticsFileCount *int64) *FileInfoCollectionGetParams {
+	o.SetAnalyticsFileCountQueryParameter(analyticsFileCount)
+	return o
+}
+
+// SetAnalyticsFileCountQueryParameter adds the analyticsFileCount to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsFileCountQueryParameter(analyticsFileCount *int64) {
+	o.AnalyticsFileCountQueryParameter = analyticsFileCount
+}
+
+// WithAnalyticsHistogramByTimeLabelsQueryParameter adds the analyticsHistogramByTimeLabels to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsHistogramByTimeLabelsQueryParameter(analyticsHistogramByTimeLabels []string) *FileInfoCollectionGetParams {
+	o.SetAnalyticsHistogramByTimeLabelsQueryParameter(analyticsHistogramByTimeLabels)
+	return o
+}
+
+// SetAnalyticsHistogramByTimeLabelsQueryParameter adds the analyticsHistogramByTimeLabels to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsHistogramByTimeLabelsQueryParameter(analyticsHistogramByTimeLabels []string) {
+	o.AnalyticsHistogramByTimeLabelsQueryParameter = analyticsHistogramByTimeLabels
+}
+
+// WithAnalyticsSubdirCountQueryParameter adds the analyticsSubdirCount to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithAnalyticsSubdirCountQueryParameter(analyticsSubdirCount *int64) *FileInfoCollectionGetParams {
+	o.SetAnalyticsSubdirCountQueryParameter(analyticsSubdirCount)
+	return o
+}
+
+// SetAnalyticsSubdirCountQueryParameter adds the analyticsSubdirCount to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetAnalyticsSubdirCountQueryParameter(analyticsSubdirCount *int64) {
+	o.AnalyticsSubdirCountQueryParameter = analyticsSubdirCount
+}
+
+// WithByteOffsetQueryParameter adds the byteOffset to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithByteOffsetQueryParameter(byteOffset *int64) *FileInfoCollectionGetParams {
+	o.SetByteOffsetQueryParameter(byteOffset)
+	return o
+}
+
+// SetByteOffsetQueryParameter adds the byteOffset to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetByteOffsetQueryParameter(byteOffset *int64) {
+	o.ByteOffsetQueryParameter = byteOffset
+}
+
 // WithBytesUsedQueryParameter adds the bytesUsed to the file info collection get params
 func (o *FileInfoCollectionGetParams) WithBytesUsedQueryParameter(bytesUsed *int64) *FileInfoCollectionGetParams {
 	o.SetBytesUsedQueryParameter(bytesUsed)
@@ -337,15 +648,26 @@ func (o *FileInfoCollectionGetParams) SetCreationTimeQueryParameter(creationTime
 	o.CreationTimeQueryParameter = creationTime
 }
 
-// WithFields adds the fields to the file info collection get params
-func (o *FileInfoCollectionGetParams) WithFields(fields []string) *FileInfoCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithFieldsQueryParameter(fields []string) *FileInfoCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the file info collection get params
-func (o *FileInfoCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
+}
+
+// WithFillEnabledQueryParameter adds the fillEnabled to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithFillEnabledQueryParameter(fillEnabled *bool) *FileInfoCollectionGetParams {
+	o.SetFillEnabledQueryParameter(fillEnabled)
+	return o
+}
+
+// SetFillEnabledQueryParameter adds the fillEnabled to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetFillEnabledQueryParameter(fillEnabled *bool) {
+	o.FillEnabledQueryParameter = fillEnabled
 }
 
 // WithGroupIDQueryParameter adds the groupID to the file info collection get params
@@ -414,6 +736,17 @@ func (o *FileInfoCollectionGetParams) SetIsJunctionQueryParameter(isJunction *bo
 	o.IsJunctionQueryParameter = isJunction
 }
 
+// WithIsSnapshotQueryParameter adds the isSnapshot to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithIsSnapshotQueryParameter(isSnapshot *bool) *FileInfoCollectionGetParams {
+	o.SetIsSnapshotQueryParameter(isSnapshot)
+	return o
+}
+
+// SetIsSnapshotQueryParameter adds the isSnapshot to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetIsSnapshotQueryParameter(isSnapshot *bool) {
+	o.IsSnapshotQueryParameter = isSnapshot
+}
+
 // WithIsVMAlignedQueryParameter adds the isVMAligned to the file info collection get params
 func (o *FileInfoCollectionGetParams) WithIsVMAlignedQueryParameter(isVMAligned *bool) *FileInfoCollectionGetParams {
 	o.SetIsVMAlignedQueryParameter(isVMAligned)
@@ -425,15 +758,26 @@ func (o *FileInfoCollectionGetParams) SetIsVMAlignedQueryParameter(isVMAligned *
 	o.IsVMAlignedQueryParameter = isVMAligned
 }
 
-// WithMaxRecords adds the maxRecords to the file info collection get params
-func (o *FileInfoCollectionGetParams) WithMaxRecords(maxRecords *int64) *FileInfoCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithLengthQueryParameter adds the length to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithLengthQueryParameter(length *int64) *FileInfoCollectionGetParams {
+	o.SetLengthQueryParameter(length)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the file info collection get params
-func (o *FileInfoCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetLengthQueryParameter adds the length to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetLengthQueryParameter(length *int64) {
+	o.LengthQueryParameter = length
+}
+
+// WithMaxRecordsQueryParameter adds the maxRecords to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FileInfoCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
+	return o
+}
+
+// SetMaxRecordsQueryParameter adds the maxRecords to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithModifiedTimeQueryParameter adds the modifiedTime to the file info collection get params
@@ -458,15 +802,26 @@ func (o *FileInfoCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the file info collection get params
-func (o *FileInfoCollectionGetParams) WithOrderBy(orderBy []string) *FileInfoCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FileInfoCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the file info collection get params
-func (o *FileInfoCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
+}
+
+// WithOverwriteEnabledQueryParameter adds the overwriteEnabled to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithOverwriteEnabledQueryParameter(overwriteEnabled *bool) *FileInfoCollectionGetParams {
+	o.SetOverwriteEnabledQueryParameter(overwriteEnabled)
+	return o
+}
+
+// SetOverwriteEnabledQueryParameter adds the overwriteEnabled to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetOverwriteEnabledQueryParameter(overwriteEnabled *bool) {
+	o.OverwriteEnabledQueryParameter = overwriteEnabled
 }
 
 // WithOwnerIDQueryParameter adds the ownerID to the file info collection get params
@@ -480,17 +835,6 @@ func (o *FileInfoCollectionGetParams) SetOwnerIDQueryParameter(ownerID *int64) {
 	o.OwnerIDQueryParameter = ownerID
 }
 
-// WithPathQueryParameter adds the path to the file info collection get params
-func (o *FileInfoCollectionGetParams) WithPathQueryParameter(path *string) *FileInfoCollectionGetParams {
-	o.SetPathQueryParameter(path)
-	return o
-}
-
-// SetPathQueryParameter adds the path to the file info collection get params
-func (o *FileInfoCollectionGetParams) SetPathQueryParameter(path *string) {
-	o.PathQueryParameter = path
-}
-
 // WithPathPathParameter adds the path to the file info collection get params
 func (o *FileInfoCollectionGetParams) WithPathPathParameter(path string) *FileInfoCollectionGetParams {
 	o.SetPathPathParameter(path)
@@ -502,26 +846,59 @@ func (o *FileInfoCollectionGetParams) SetPathPathParameter(path string) {
 	o.PathPathParameter = path
 }
 
-// WithReturnRecords adds the returnRecords to the file info collection get params
-func (o *FileInfoCollectionGetParams) WithReturnRecords(returnRecords *bool) *FileInfoCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithQosPolicyNameQueryParameter adds the qosPolicyName to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithQosPolicyNameQueryParameter(qosPolicyName *string) *FileInfoCollectionGetParams {
+	o.SetQosPolicyNameQueryParameter(qosPolicyName)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the file info collection get params
-func (o *FileInfoCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetQosPolicyNameQueryParameter adds the qosPolicyName to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetQosPolicyNameQueryParameter(qosPolicyName *string) {
+	o.QosPolicyNameQueryParameter = qosPolicyName
 }
 
-// WithReturnTimeout adds the returnTimeout to the file info collection get params
-func (o *FileInfoCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FileInfoCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithQosPolicyUUIDQueryParameter adds the qosPolicyUUID to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithQosPolicyUUIDQueryParameter(qosPolicyUUID *string) *FileInfoCollectionGetParams {
+	o.SetQosPolicyUUIDQueryParameter(qosPolicyUUID)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the file info collection get params
-func (o *FileInfoCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetQosPolicyUUIDQueryParameter adds the qosPolicyUuid to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetQosPolicyUUIDQueryParameter(qosPolicyUUID *string) {
+	o.QosPolicyUUIDQueryParameter = qosPolicyUUID
+}
+
+// WithReturnMetadataQueryParameter adds the returnMetadata to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithReturnMetadataQueryParameter(returnMetadata *bool) *FileInfoCollectionGetParams {
+	o.SetReturnMetadataQueryParameter(returnMetadata)
+	return o
+}
+
+// SetReturnMetadataQueryParameter adds the returnMetadata to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetReturnMetadataQueryParameter(returnMetadata *bool) {
+	o.ReturnMetadataQueryParameter = returnMetadata
+}
+
+// WithReturnRecordsQueryParameter adds the returnRecords to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FileInfoCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
+	return o
+}
+
+// SetReturnRecordsQueryParameter adds the returnRecords to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
+}
+
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FileInfoCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
+	return o
+}
+
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSizeQueryParameter adds the size to the file info collection get params
@@ -535,6 +912,17 @@ func (o *FileInfoCollectionGetParams) SetSizeQueryParameter(size *int64) {
 	o.SizeQueryParameter = size
 }
 
+// WithTargetQueryParameter adds the target to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithTargetQueryParameter(target *string) *FileInfoCollectionGetParams {
+	o.SetTargetQueryParameter(target)
+	return o
+}
+
+// SetTargetQueryParameter adds the target to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetTargetQueryParameter(target *string) {
+	o.TargetQueryParameter = target
+}
+
 // WithTypeQueryParameter adds the typeVar to the file info collection get params
 func (o *FileInfoCollectionGetParams) WithTypeQueryParameter(typeVar *string) *FileInfoCollectionGetParams {
 	o.SetTypeQueryParameter(typeVar)
@@ -544,6 +932,17 @@ func (o *FileInfoCollectionGetParams) WithTypeQueryParameter(typeVar *string) *F
 // SetTypeQueryParameter adds the type to the file info collection get params
 func (o *FileInfoCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
 	o.TypeQueryParameter = typeVar
+}
+
+// WithUniqueBytesQueryParameter adds the uniqueBytes to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithUniqueBytesQueryParameter(uniqueBytes *int64) *FileInfoCollectionGetParams {
+	o.SetUniqueBytesQueryParameter(uniqueBytes)
+	return o
+}
+
+// SetUniqueBytesQueryParameter adds the uniqueBytes to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetUniqueBytesQueryParameter(uniqueBytes *int64) {
+	o.UniqueBytesQueryParameter = uniqueBytes
 }
 
 // WithUnixPermissionsQueryParameter adds the unixPermissions to the file info collection get params
@@ -579,17 +978,6 @@ func (o *FileInfoCollectionGetParams) SetVolumeUUIDPathParameter(volumeUUID stri
 	o.VolumeUUIDPathParameter = volumeUUID
 }
 
-// WithVolumeUUIDQueryParameter adds the volumeUUID to the file info collection get params
-func (o *FileInfoCollectionGetParams) WithVolumeUUIDQueryParameter(volumeUUID *string) *FileInfoCollectionGetParams {
-	o.SetVolumeUUIDQueryParameter(volumeUUID)
-	return o
-}
-
-// SetVolumeUUIDQueryParameter adds the volumeUuid to the file info collection get params
-func (o *FileInfoCollectionGetParams) SetVolumeUUIDQueryParameter(volumeUUID *string) {
-	o.VolumeUUIDQueryParameter = volumeUUID
-}
-
 // WriteToRequest writes these params to a swagger request
 func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -610,6 +998,255 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qAccessedTime != "" {
 
 			if err := r.SetQueryParam("accessed_time", qAccessedTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByAccessedTimeBytesUsedLabelsQueryParameter != nil {
+
+		// query param analytics.by_accessed_time.bytes_used.labels
+		var qrAnalyticsByAccessedTimeBytesUsedLabels string
+
+		if o.AnalyticsByAccessedTimeBytesUsedLabelsQueryParameter != nil {
+			qrAnalyticsByAccessedTimeBytesUsedLabels = *o.AnalyticsByAccessedTimeBytesUsedLabelsQueryParameter
+		}
+		qAnalyticsByAccessedTimeBytesUsedLabels := qrAnalyticsByAccessedTimeBytesUsedLabels
+		if qAnalyticsByAccessedTimeBytesUsedLabels != "" {
+
+			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.labels", qAnalyticsByAccessedTimeBytesUsedLabels); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByAccessedTimeBytesUsedNewestLabelQueryParameter != nil {
+
+		// query param analytics.by_accessed_time.bytes_used.newest_label
+		var qrAnalyticsByAccessedTimeBytesUsedNewestLabel string
+
+		if o.AnalyticsByAccessedTimeBytesUsedNewestLabelQueryParameter != nil {
+			qrAnalyticsByAccessedTimeBytesUsedNewestLabel = *o.AnalyticsByAccessedTimeBytesUsedNewestLabelQueryParameter
+		}
+		qAnalyticsByAccessedTimeBytesUsedNewestLabel := qrAnalyticsByAccessedTimeBytesUsedNewestLabel
+		if qAnalyticsByAccessedTimeBytesUsedNewestLabel != "" {
+
+			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.newest_label", qAnalyticsByAccessedTimeBytesUsedNewestLabel); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByAccessedTimeBytesUsedOldestLabelQueryParameter != nil {
+
+		// query param analytics.by_accessed_time.bytes_used.oldest_label
+		var qrAnalyticsByAccessedTimeBytesUsedOldestLabel string
+
+		if o.AnalyticsByAccessedTimeBytesUsedOldestLabelQueryParameter != nil {
+			qrAnalyticsByAccessedTimeBytesUsedOldestLabel = *o.AnalyticsByAccessedTimeBytesUsedOldestLabelQueryParameter
+		}
+		qAnalyticsByAccessedTimeBytesUsedOldestLabel := qrAnalyticsByAccessedTimeBytesUsedOldestLabel
+		if qAnalyticsByAccessedTimeBytesUsedOldestLabel != "" {
+
+			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.oldest_label", qAnalyticsByAccessedTimeBytesUsedOldestLabel); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByAccessedTimeBytesUsedPercentagesQueryParameter != nil {
+
+		// query param analytics.by_accessed_time.bytes_used.percentages
+		var qrAnalyticsByAccessedTimeBytesUsedPercentages float64
+
+		if o.AnalyticsByAccessedTimeBytesUsedPercentagesQueryParameter != nil {
+			qrAnalyticsByAccessedTimeBytesUsedPercentages = *o.AnalyticsByAccessedTimeBytesUsedPercentagesQueryParameter
+		}
+		qAnalyticsByAccessedTimeBytesUsedPercentages := swag.FormatFloat64(qrAnalyticsByAccessedTimeBytesUsedPercentages)
+		if qAnalyticsByAccessedTimeBytesUsedPercentages != "" {
+
+			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.percentages", qAnalyticsByAccessedTimeBytesUsedPercentages); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByAccessedTimeBytesUsedValuesQueryParameter != nil {
+
+		// query param analytics.by_accessed_time.bytes_used.values
+		var qrAnalyticsByAccessedTimeBytesUsedValues int64
+
+		if o.AnalyticsByAccessedTimeBytesUsedValuesQueryParameter != nil {
+			qrAnalyticsByAccessedTimeBytesUsedValues = *o.AnalyticsByAccessedTimeBytesUsedValuesQueryParameter
+		}
+		qAnalyticsByAccessedTimeBytesUsedValues := swag.FormatInt64(qrAnalyticsByAccessedTimeBytesUsedValues)
+		if qAnalyticsByAccessedTimeBytesUsedValues != "" {
+
+			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.values", qAnalyticsByAccessedTimeBytesUsedValues); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByModifiedTimeBytesUsedLabelsQueryParameter != nil {
+
+		// query param analytics.by_modified_time.bytes_used.labels
+		var qrAnalyticsByModifiedTimeBytesUsedLabels string
+
+		if o.AnalyticsByModifiedTimeBytesUsedLabelsQueryParameter != nil {
+			qrAnalyticsByModifiedTimeBytesUsedLabels = *o.AnalyticsByModifiedTimeBytesUsedLabelsQueryParameter
+		}
+		qAnalyticsByModifiedTimeBytesUsedLabels := qrAnalyticsByModifiedTimeBytesUsedLabels
+		if qAnalyticsByModifiedTimeBytesUsedLabels != "" {
+
+			if err := r.SetQueryParam("analytics.by_modified_time.bytes_used.labels", qAnalyticsByModifiedTimeBytesUsedLabels); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByModifiedTimeBytesUsedNewestLabelQueryParameter != nil {
+
+		// query param analytics.by_modified_time.bytes_used.newest_label
+		var qrAnalyticsByModifiedTimeBytesUsedNewestLabel string
+
+		if o.AnalyticsByModifiedTimeBytesUsedNewestLabelQueryParameter != nil {
+			qrAnalyticsByModifiedTimeBytesUsedNewestLabel = *o.AnalyticsByModifiedTimeBytesUsedNewestLabelQueryParameter
+		}
+		qAnalyticsByModifiedTimeBytesUsedNewestLabel := qrAnalyticsByModifiedTimeBytesUsedNewestLabel
+		if qAnalyticsByModifiedTimeBytesUsedNewestLabel != "" {
+
+			if err := r.SetQueryParam("analytics.by_modified_time.bytes_used.newest_label", qAnalyticsByModifiedTimeBytesUsedNewestLabel); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByModifiedTimeBytesUsedOldestLabelQueryParameter != nil {
+
+		// query param analytics.by_modified_time.bytes_used.oldest_label
+		var qrAnalyticsByModifiedTimeBytesUsedOldestLabel string
+
+		if o.AnalyticsByModifiedTimeBytesUsedOldestLabelQueryParameter != nil {
+			qrAnalyticsByModifiedTimeBytesUsedOldestLabel = *o.AnalyticsByModifiedTimeBytesUsedOldestLabelQueryParameter
+		}
+		qAnalyticsByModifiedTimeBytesUsedOldestLabel := qrAnalyticsByModifiedTimeBytesUsedOldestLabel
+		if qAnalyticsByModifiedTimeBytesUsedOldestLabel != "" {
+
+			if err := r.SetQueryParam("analytics.by_modified_time.bytes_used.oldest_label", qAnalyticsByModifiedTimeBytesUsedOldestLabel); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByModifiedTimeBytesUsedPercentagesQueryParameter != nil {
+
+		// query param analytics.by_modified_time.bytes_used.percentages
+		var qrAnalyticsByModifiedTimeBytesUsedPercentages float64
+
+		if o.AnalyticsByModifiedTimeBytesUsedPercentagesQueryParameter != nil {
+			qrAnalyticsByModifiedTimeBytesUsedPercentages = *o.AnalyticsByModifiedTimeBytesUsedPercentagesQueryParameter
+		}
+		qAnalyticsByModifiedTimeBytesUsedPercentages := swag.FormatFloat64(qrAnalyticsByModifiedTimeBytesUsedPercentages)
+		if qAnalyticsByModifiedTimeBytesUsedPercentages != "" {
+
+			if err := r.SetQueryParam("analytics.by_modified_time.bytes_used.percentages", qAnalyticsByModifiedTimeBytesUsedPercentages); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByModifiedTimeBytesUsedValuesQueryParameter != nil {
+
+		// query param analytics.by_modified_time.bytes_used.values
+		var qrAnalyticsByModifiedTimeBytesUsedValues int64
+
+		if o.AnalyticsByModifiedTimeBytesUsedValuesQueryParameter != nil {
+			qrAnalyticsByModifiedTimeBytesUsedValues = *o.AnalyticsByModifiedTimeBytesUsedValuesQueryParameter
+		}
+		qAnalyticsByModifiedTimeBytesUsedValues := swag.FormatInt64(qrAnalyticsByModifiedTimeBytesUsedValues)
+		if qAnalyticsByModifiedTimeBytesUsedValues != "" {
+
+			if err := r.SetQueryParam("analytics.by_modified_time.bytes_used.values", qAnalyticsByModifiedTimeBytesUsedValues); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsBytesUsedQueryParameter != nil {
+
+		// query param analytics.bytes_used
+		var qrAnalyticsBytesUsed int64
+
+		if o.AnalyticsBytesUsedQueryParameter != nil {
+			qrAnalyticsBytesUsed = *o.AnalyticsBytesUsedQueryParameter
+		}
+		qAnalyticsBytesUsed := swag.FormatInt64(qrAnalyticsBytesUsed)
+		if qAnalyticsBytesUsed != "" {
+
+			if err := r.SetQueryParam("analytics.bytes_used", qAnalyticsBytesUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsFileCountQueryParameter != nil {
+
+		// query param analytics.file_count
+		var qrAnalyticsFileCount int64
+
+		if o.AnalyticsFileCountQueryParameter != nil {
+			qrAnalyticsFileCount = *o.AnalyticsFileCountQueryParameter
+		}
+		qAnalyticsFileCount := swag.FormatInt64(qrAnalyticsFileCount)
+		if qAnalyticsFileCount != "" {
+
+			if err := r.SetQueryParam("analytics.file_count", qAnalyticsFileCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsHistogramByTimeLabelsQueryParameter != nil {
+
+		// binding items for analytics.histogram_by_time_labels
+		joinedAnalyticsHistogramByTimeLabels := o.bindParamAnalyticsHistogramByTimeLabels(reg)
+
+		// query array param analytics.histogram_by_time_labels
+		if err := r.SetQueryParam("analytics.histogram_by_time_labels", joinedAnalyticsHistogramByTimeLabels...); err != nil {
+			return err
+		}
+	}
+
+	if o.AnalyticsSubdirCountQueryParameter != nil {
+
+		// query param analytics.subdir_count
+		var qrAnalyticsSubdirCount int64
+
+		if o.AnalyticsSubdirCountQueryParameter != nil {
+			qrAnalyticsSubdirCount = *o.AnalyticsSubdirCountQueryParameter
+		}
+		qAnalyticsSubdirCount := swag.FormatInt64(qrAnalyticsSubdirCount)
+		if qAnalyticsSubdirCount != "" {
+
+			if err := r.SetQueryParam("analytics.subdir_count", qAnalyticsSubdirCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ByteOffsetQueryParameter != nil {
+
+		// query param byte_offset
+		var qrByteOffset int64
+
+		if o.ByteOffsetQueryParameter != nil {
+			qrByteOffset = *o.ByteOffsetQueryParameter
+		}
+		qByteOffset := swag.FormatInt64(qrByteOffset)
+		if qByteOffset != "" {
+
+			if err := r.SetQueryParam("byte_offset", qByteOffset); err != nil {
 				return err
 			}
 		}
@@ -666,7 +1303,7 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -674,6 +1311,23 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.FillEnabledQueryParameter != nil {
+
+		// query param fill_enabled
+		var qrFillEnabled bool
+
+		if o.FillEnabledQueryParameter != nil {
+			qrFillEnabled = *o.FillEnabledQueryParameter
+		}
+		qFillEnabled := swag.FormatBool(qrFillEnabled)
+		if qFillEnabled != "" {
+
+			if err := r.SetQueryParam("fill_enabled", qFillEnabled); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -779,6 +1433,23 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
+	if o.IsSnapshotQueryParameter != nil {
+
+		// query param is_snapshot
+		var qrIsSnapshot bool
+
+		if o.IsSnapshotQueryParameter != nil {
+			qrIsSnapshot = *o.IsSnapshotQueryParameter
+		}
+		qIsSnapshot := swag.FormatBool(qrIsSnapshot)
+		if qIsSnapshot != "" {
+
+			if err := r.SetQueryParam("is_snapshot", qIsSnapshot); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.IsVMAlignedQueryParameter != nil {
 
 		// query param is_vm_aligned
@@ -796,13 +1467,30 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.LengthQueryParameter != nil {
+
+		// query param length
+		var qrLength int64
+
+		if o.LengthQueryParameter != nil {
+			qrLength = *o.LengthQueryParameter
+		}
+		qLength := swag.FormatInt64(qrLength)
+		if qLength != "" {
+
+			if err := r.SetQueryParam("length", qLength); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -847,7 +1535,7 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -855,6 +1543,23 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.OverwriteEnabledQueryParameter != nil {
+
+		// query param overwrite_enabled
+		var qrOverwriteEnabled bool
+
+		if o.OverwriteEnabledQueryParameter != nil {
+			qrOverwriteEnabled = *o.OverwriteEnabledQueryParameter
+		}
+		qOverwriteEnabled := swag.FormatBool(qrOverwriteEnabled)
+		if qOverwriteEnabled != "" {
+
+			if err := r.SetQueryParam("overwrite_enabled", qOverwriteEnabled); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -875,35 +1580,69 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.PathQueryParameter != nil {
-
-		// query param path
-		var qrPath string
-
-		if o.PathQueryParameter != nil {
-			qrPath = *o.PathQueryParameter
-		}
-		qPath := qrPath
-		if qPath != "" {
-
-			if err := r.SetQueryParam("path", qPath); err != nil {
-				return err
-			}
-		}
-	}
-
 	// path param path
 	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
 		return err
 	}
 
-	if o.ReturnRecords != nil {
+	if o.QosPolicyNameQueryParameter != nil {
+
+		// query param qos_policy.name
+		var qrQosPolicyName string
+
+		if o.QosPolicyNameQueryParameter != nil {
+			qrQosPolicyName = *o.QosPolicyNameQueryParameter
+		}
+		qQosPolicyName := qrQosPolicyName
+		if qQosPolicyName != "" {
+
+			if err := r.SetQueryParam("qos_policy.name", qQosPolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyUUIDQueryParameter != nil {
+
+		// query param qos_policy.uuid
+		var qrQosPolicyUUID string
+
+		if o.QosPolicyUUIDQueryParameter != nil {
+			qrQosPolicyUUID = *o.QosPolicyUUIDQueryParameter
+		}
+		qQosPolicyUUID := qrQosPolicyUUID
+		if qQosPolicyUUID != "" {
+
+			if err := r.SetQueryParam("qos_policy.uuid", qQosPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnMetadataQueryParameter != nil {
+
+		// query param return_metadata
+		var qrReturnMetadata bool
+
+		if o.ReturnMetadataQueryParameter != nil {
+			qrReturnMetadata = *o.ReturnMetadataQueryParameter
+		}
+		qReturnMetadata := swag.FormatBool(qrReturnMetadata)
+		if qReturnMetadata != "" {
+
+			if err := r.SetQueryParam("return_metadata", qReturnMetadata); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -914,13 +1653,13 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -948,6 +1687,23 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
+	if o.TargetQueryParameter != nil {
+
+		// query param target
+		var qrTarget string
+
+		if o.TargetQueryParameter != nil {
+			qrTarget = *o.TargetQueryParameter
+		}
+		qTarget := qrTarget
+		if qTarget != "" {
+
+			if err := r.SetQueryParam("target", qTarget); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.TypeQueryParameter != nil {
 
 		// query param type
@@ -960,6 +1716,23 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qType != "" {
 
 			if err := r.SetQueryParam("type", qType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UniqueBytesQueryParameter != nil {
+
+		// query param unique_bytes
+		var qrUniqueBytes int64
+
+		if o.UniqueBytesQueryParameter != nil {
+			qrUniqueBytes = *o.UniqueBytesQueryParameter
+		}
+		qUniqueBytes := swag.FormatInt64(qrUniqueBytes)
+		if qUniqueBytes != "" {
+
+			if err := r.SetQueryParam("unique_bytes", qUniqueBytes); err != nil {
 				return err
 			}
 		}
@@ -1004,32 +1777,32 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		return err
 	}
 
-	if o.VolumeUUIDQueryParameter != nil {
-
-		// query param volume.uuid
-		var qrVolumeUUID string
-
-		if o.VolumeUUIDQueryParameter != nil {
-			qrVolumeUUID = *o.VolumeUUIDQueryParameter
-		}
-		qVolumeUUID := qrVolumeUUID
-		if qVolumeUUID != "" {
-
-			if err := r.SetQueryParam("volume.uuid", qVolumeUUID); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
 	return nil
 }
 
+// bindParamFileInfoCollectionGet binds the parameter analytics.histogram_by_time_labels
+func (o *FileInfoCollectionGetParams) bindParamAnalyticsHistogramByTimeLabels(formats strfmt.Registry) []string {
+	analyticsHistogramByTimeLabelsIR := o.AnalyticsHistogramByTimeLabelsQueryParameter
+
+	var analyticsHistogramByTimeLabelsIC []string
+	for _, analyticsHistogramByTimeLabelsIIR := range analyticsHistogramByTimeLabelsIR { // explode []string
+
+		analyticsHistogramByTimeLabelsIIV := analyticsHistogramByTimeLabelsIIR // string as string
+		analyticsHistogramByTimeLabelsIC = append(analyticsHistogramByTimeLabelsIC, analyticsHistogramByTimeLabelsIIV)
+	}
+
+	// items.CollectionFormat: "csv"
+	analyticsHistogramByTimeLabelsIS := swag.JoinByFormat(analyticsHistogramByTimeLabelsIC, "csv")
+
+	return analyticsHistogramByTimeLabelsIS
+}
+
 // bindParamFileInfoCollectionGet binds the parameter fields
 func (o *FileInfoCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1046,7 +1819,7 @@ func (o *FileInfoCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamFileInfoCollectionGet binds the parameter order_by
 func (o *FileInfoCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

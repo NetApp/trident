@@ -51,19 +51,19 @@ func NewCloudStoreGetOK() *CloudStoreGetOK {
 OK
 */
 type CloudStoreGetOK struct {
-	Payload *models.CloudStoreResponse
+	Payload *models.CloudStore
 }
 
 func (o *CloudStoreGetOK) Error() string {
 	return fmt.Sprintf("[GET /storage/aggregates/{aggregate.uuid}/cloud-stores/{target.uuid}][%d] cloudStoreGetOK  %+v", 200, o.Payload)
 }
-func (o *CloudStoreGetOK) GetPayload() *models.CloudStoreResponse {
+func (o *CloudStoreGetOK) GetPayload() *models.CloudStore {
 	return o.Payload
 }
 
 func (o *CloudStoreGetOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.CloudStoreResponse)
+	o.Payload = new(models.CloudStore)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -82,7 +82,7 @@ func NewCloudStoreGetDefault(code int) *CloudStoreGetDefault {
 
 /* CloudStoreGetDefault describes a response with status code -1, with default header values.
 
-CloudStoreGetDefault cloud store get default
+Error
 */
 type CloudStoreGetDefault struct {
 	_statusCode int

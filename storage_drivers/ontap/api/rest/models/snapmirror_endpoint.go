@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -14,7 +15,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// SnapmirrorEndpoint Endpoint of a SnapMirror relationship. For a GET request, the property "cluster" is populated when the endpoint is on a remote cluster. A POST request to create the destination SVM endpoint or to establish an SVM DR relationship must have the property "cluster" populated with the remote cluster details. A POST request to create the destination FlexVol volume or FlexGroup volume endpoints can optionally specify the "cluster" property. A POST request to establish a SnapMirror relationship when the source SVM and the destination SVM are not peered, must specify the "cluster" property.
+// SnapmirrorEndpoint Endpoint of a SnapMirror relationship. For a GET request, the property "cluster" is populated when the endpoint is on a remote cluster. A POST request to create the destination SVM endpoint or to establish an SVM DR relationship must have the property "cluster" populated with the remote cluster details. A POST request to create the destination FlexVol volume, FlexGroup volume, and Consistency Group endpoints can optionally specify the "cluster" property when the source SVM and the destination SVM are peered. A POST request to establish a SnapMirror relationship between the source endpoint and destination endpoint and when the source SVM and the destination SVM are not peered, must specify the "cluster" property for the remote endpoint.
 //
 // swagger:model snapmirror_endpoint
 type SnapmirrorEndpoint struct {
@@ -22,12 +23,16 @@ type SnapmirrorEndpoint struct {
 	// cluster
 	Cluster *SnapmirrorEndpointCluster `json:"cluster,omitempty"`
 
+	// Mandatory property for a Consistency Group endpoint. Specifies the list of FlexVol volumes for a Consistency Group.
+	ConsistencyGroupVolumes []*SnapmirrorEndpointConsistencyGroupVolumesItems0 `json:"consistency_group_volumes,omitempty"`
+
 	// Optional property to specify the IPSpace of the SVM.
 	// Example: Default
 	Ipspace *string `json:"ipspace,omitempty"`
 
 	// ONTAP FlexVol/FlexGroup - svm1:volume1
 	// ONTAP SVM               - svm1:
+	// ONTAP Consistency Group - svm1:/cg/cg_name
 	//
 	// Example: svm1:volume1
 	Path string `json:"path,omitempty"`
@@ -41,6 +46,10 @@ func (m *SnapmirrorEndpoint) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCluster(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConsistencyGroupVolumes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -71,6 +80,30 @@ func (m *SnapmirrorEndpoint) validateCluster(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SnapmirrorEndpoint) validateConsistencyGroupVolumes(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConsistencyGroupVolumes) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ConsistencyGroupVolumes); i++ {
+		if swag.IsZero(m.ConsistencyGroupVolumes[i]) { // not required
+			continue
+		}
+
+		if m.ConsistencyGroupVolumes[i] != nil {
+			if err := m.ConsistencyGroupVolumes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("consistency_group_volumes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *SnapmirrorEndpoint) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -96,6 +129,10 @@ func (m *SnapmirrorEndpoint) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateConsistencyGroupVolumes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -115,6 +152,24 @@ func (m *SnapmirrorEndpoint) contextValidateCluster(ctx context.Context, formats
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorEndpoint) contextValidateConsistencyGroupVolumes(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ConsistencyGroupVolumes); i++ {
+
+		if m.ConsistencyGroupVolumes[i] != nil {
+			if err := m.ConsistencyGroupVolumes[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("consistency_group_volumes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -349,6 +404,186 @@ func (m *SnapmirrorEndpointClusterLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// SnapmirrorEndpointConsistencyGroupVolumesItems0 snapmirror endpoint consistency group volumes items0
+//
+// swagger:model SnapmirrorEndpointConsistencyGroupVolumesItems0
+type SnapmirrorEndpointConsistencyGroupVolumesItems0 struct {
+
+	// links
+	Links *SnapmirrorEndpointConsistencyGroupVolumesItems0Links `json:"_links,omitempty"`
+
+	// The name of the volume.
+	// Example: volume1
+	Name string `json:"name,omitempty"`
+
+	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
+	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this snapmirror endpoint consistency group volumes items0
+func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this snapmirror endpoint consistency group volumes items0 based on the context it is used
+func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorEndpointConsistencyGroupVolumesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SnapmirrorEndpointConsistencyGroupVolumesItems0Links snapmirror endpoint consistency group volumes items0 links
+//
+// swagger:model SnapmirrorEndpointConsistencyGroupVolumesItems0Links
+type SnapmirrorEndpointConsistencyGroupVolumesItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this snapmirror endpoint consistency group volumes items0 links
+func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this snapmirror endpoint consistency group volumes items0 links based on the context it is used
+func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SnapmirrorEndpointConsistencyGroupVolumesItems0Links) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorEndpointConsistencyGroupVolumesItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // SnapmirrorEndpointSvm snapmirror endpoint svm
 //
 // swagger:model SnapmirrorEndpointSvm
@@ -530,5 +765,3 @@ func (m *SnapmirrorEndpointSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

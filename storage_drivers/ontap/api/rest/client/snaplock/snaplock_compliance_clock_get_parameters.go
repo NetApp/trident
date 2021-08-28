@@ -64,7 +64,7 @@ type SnaplockComplianceClockGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* NodeUUID.
 
@@ -125,15 +125,15 @@ func (o *SnaplockComplianceClockGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snaplock compliance clock get params
-func (o *SnaplockComplianceClockGetParams) WithFields(fields []string) *SnaplockComplianceClockGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snaplock compliance clock get params
+func (o *SnaplockComplianceClockGetParams) WithFieldsQueryParameter(fields []string) *SnaplockComplianceClockGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snaplock compliance clock get params
-func (o *SnaplockComplianceClockGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snaplock compliance clock get params
+func (o *SnaplockComplianceClockGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithNodeUUIDPathParameter adds the nodeUUID to the snaplock compliance clock get params
@@ -155,7 +155,7 @@ func (o *SnaplockComplianceClockGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *SnaplockComplianceClockGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamSnaplockComplianceClockGet binds the parameter fields
 func (o *SnaplockComplianceClockGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

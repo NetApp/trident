@@ -48,7 +48,7 @@ type AggregateSpare struct {
 	// Enum: [pool0 pool1]
 	SyncmirrorPool string `json:"syncmirror_pool,omitempty"`
 
-	// Total number of usable spares
+	// Total number of usable spares in the bucket. The usable count for each class of spares does not include reserved spare capacity recommended by ONTAP best practices.
 	// Example: 9
 	// Read Only: true
 	Usable int64 `json:"usable,omitempty"`
@@ -98,23 +98,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// checksum_style
 	// ChecksumStyle
 	// block
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareChecksumStyleBlock captures enum value "block"
 	AggregateSpareChecksumStyleBlock string = "block"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// checksum_style
 	// ChecksumStyle
 	// advanced_zoned
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareChecksumStyleAdvancedZoned captures enum value "advanced_zoned"
 	AggregateSpareChecksumStyleAdvancedZoned string = "advanced_zoned"
 )
@@ -154,93 +154,93 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// disk_class
 	// DiskClass
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareDiskClassUnknown captures enum value "unknown"
 	AggregateSpareDiskClassUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// disk_class
 	// DiskClass
 	// capacity
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareDiskClassCapacity captures enum value "capacity"
 	AggregateSpareDiskClassCapacity string = "capacity"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// disk_class
 	// DiskClass
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareDiskClassPerformance captures enum value "performance"
 	AggregateSpareDiskClassPerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// disk_class
 	// DiskClass
 	// archive
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareDiskClassArchive captures enum value "archive"
 	AggregateSpareDiskClassArchive string = "archive"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// disk_class
 	// DiskClass
 	// solid_state
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareDiskClassSolidState captures enum value "solid_state"
 	AggregateSpareDiskClassSolidState string = "solid_state"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// disk_class
 	// DiskClass
 	// array
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareDiskClassArray captures enum value "array"
 	AggregateSpareDiskClassArray string = "array"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// disk_class
 	// DiskClass
 	// virtual
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareDiskClassVirtual captures enum value "virtual"
 	AggregateSpareDiskClassVirtual string = "virtual"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// disk_class
 	// DiskClass
 	// data_center
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareDiskClassDataCenter captures enum value "data_center"
 	AggregateSpareDiskClassDataCenter string = "data_center"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// disk_class
 	// DiskClass
 	// capacity_flash
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareDiskClassCapacityFlash captures enum value "capacity_flash"
 	AggregateSpareDiskClassCapacityFlash string = "capacity_flash"
 )
@@ -321,23 +321,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// syncmirror_pool
 	// SyncmirrorPool
 	// pool0
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareSyncmirrorPoolPool0 captures enum value "pool0"
 	AggregateSpareSyncmirrorPoolPool0 string = "pool0"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// aggregate_spare
 	// AggregateSpare
 	// syncmirror_pool
 	// SyncmirrorPool
 	// pool1
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AggregateSpareSyncmirrorPoolPool1 captures enum value "pool1"
 	AggregateSpareSyncmirrorPoolPool1 string = "pool1"
 )
@@ -675,5 +675,3 @@ func (m *AggregateSpareNodeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

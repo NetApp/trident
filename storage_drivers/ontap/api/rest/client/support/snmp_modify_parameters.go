@@ -72,7 +72,7 @@ type SnmpModifyParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -92,11 +92,11 @@ func (o *SnmpModifyParams) WithDefaults() *SnmpModifyParams {
 // All values with no default are reset to their zero value.
 func (o *SnmpModifyParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := SnmpModifyParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -149,15 +149,15 @@ func (o *SnmpModifyParams) SetInfo(info *models.Snmp) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the snmp modify params
-func (o *SnmpModifyParams) WithReturnRecords(returnRecords *bool) *SnmpModifyParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the snmp modify params
+func (o *SnmpModifyParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnmpModifyParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the snmp modify params
-func (o *SnmpModifyParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the snmp modify params
+func (o *SnmpModifyParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -173,13 +173,13 @@ func (o *SnmpModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

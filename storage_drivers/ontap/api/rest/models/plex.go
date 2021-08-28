@@ -112,23 +112,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// plex
 	// Plex
 	// pool
 	// Pool
 	// pool0
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PlexPoolPool0 captures enum value "pool0"
 	PlexPoolPool0 string = "pool0"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// plex
 	// Plex
 	// pool
 	// Pool
 	// pool1
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PlexPoolPool1 captures enum value "pool1"
 	PlexPoolPool1 string = "pool1"
 )
@@ -209,33 +209,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// plex
 	// Plex
 	// state
 	// State
 	// normal
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PlexStateNormal captures enum value "normal"
 	PlexStateNormal string = "normal"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// plex
 	// Plex
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PlexStateFailed captures enum value "failed"
 	PlexStateFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// plex
 	// Plex
 	// state
 	// State
 	// out_of_date
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PlexStateOutOfDate captures enum value "out_of_date"
 	PlexStateOutOfDate string = "out_of_date"
 )
@@ -631,23 +631,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PlexResync
 	// PlexResync
 	// level
 	// Level
 	// full
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PlexResyncLevelFull captures enum value "full"
 	PlexResyncLevelFull string = "full"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PlexResync
 	// PlexResync
 	// level
 	// Level
 	// incremental
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PlexResyncLevelIncremental captures enum value "incremental"
 	PlexResyncLevelIncremental string = "incremental"
 )
@@ -739,5 +739,3 @@ func (m *PlexResync) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

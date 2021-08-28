@@ -60,11 +60,17 @@ func NewAggregateGetParamsWithHTTPClient(client *http.Client) *AggregateGetParam
 */
 type AggregateGetParams struct {
 
+	/* AutoProvisionPolicy.
+
+	   If set to expand, a query is run on the system for the recommended optimal expansion layout of the aggregate.
+	*/
+	AutoProvisionPolicyQueryParameter *string
+
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +131,26 @@ func (o *AggregateGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the aggregate get params
-func (o *AggregateGetParams) WithFields(fields []string) *AggregateGetParams {
-	o.SetFields(fields)
+// WithAutoProvisionPolicyQueryParameter adds the autoProvisionPolicy to the aggregate get params
+func (o *AggregateGetParams) WithAutoProvisionPolicyQueryParameter(autoProvisionPolicy *string) *AggregateGetParams {
+	o.SetAutoProvisionPolicyQueryParameter(autoProvisionPolicy)
 	return o
 }
 
-// SetFields adds the fields to the aggregate get params
-func (o *AggregateGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetAutoProvisionPolicyQueryParameter adds the autoProvisionPolicy to the aggregate get params
+func (o *AggregateGetParams) SetAutoProvisionPolicyQueryParameter(autoProvisionPolicy *string) {
+	o.AutoProvisionPolicyQueryParameter = autoProvisionPolicy
+}
+
+// WithFieldsQueryParameter adds the fields to the aggregate get params
+func (o *AggregateGetParams) WithFieldsQueryParameter(fields []string) *AggregateGetParams {
+	o.SetFieldsQueryParameter(fields)
+	return o
+}
+
+// SetFieldsQueryParameter adds the fields to the aggregate get params
+func (o *AggregateGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the aggregate get params
@@ -155,7 +172,24 @@ func (o *AggregateGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.AutoProvisionPolicyQueryParameter != nil {
+
+		// query param auto_provision_policy
+		var qrAutoProvisionPolicy string
+
+		if o.AutoProvisionPolicyQueryParameter != nil {
+			qrAutoProvisionPolicy = *o.AutoProvisionPolicyQueryParameter
+		}
+		qAutoProvisionPolicy := qrAutoProvisionPolicy
+		if qAutoProvisionPolicy != "" {
+
+			if err := r.SetQueryParam("auto_provision_policy", qAutoProvisionPolicy); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +213,7 @@ func (o *AggregateGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamAggregateGet binds the parameter fields
 func (o *AggregateGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -62,21 +62,33 @@ func NewSnapmirrorRelationshipModifyParamsWithHTTPClient(client *http.Client) *S
 */
 type SnapmirrorRelationshipModifyParams struct {
 
+	/* Failback.
+
+	   If this parameter is set while specifying the state as "snapmirrored", indicates recovery of the failed over SnapMirror relationship by preserving the data written on the destination endpoint when the SnapMirror relationship was in failed over state. This flag is only applicable to SVM-DR SnapMirror relationships.
+	*/
+	FailbackQueryParameter *bool
+
 	/* Failover.
 
-	   If this parameter is set, validation and failover will occur to the Snapmirror relationship destination endpoint. Any other fields specified with this parameter will be ignored.
+	   If this parameter is set, validation and failover will occur to the SVM-DR SnapMirror relationship destination endpoint. Any other fields specified with this parameter will be ignored. This parameter is supported only for SVM-DR SnapMirror relationships.
 	*/
 	FailoverQueryParameter *bool
 
+	/* Force.
+
+	   If this parameter is set while specifying the state as "broken_off", indicates a forced failover overriding the validation errors.
+	*/
+	ForceQueryParameter *bool
+
 	/* ForceFailover.
 
-	   If this parameter is set, failover will occur to the SVM DR relationship endpoint, overriding the validation errors.
+	   If this parameter is set, failover will occur to the SVM-DR SnapMirror relationship destination endpoint, overriding the validation errors. Any other fields specified with this parameter will be ignored. This parameter is supported only for SVM-DR SnapMirror relationships.
 	*/
 	ForceFailoverQueryParameter *bool
 
 	/* Info.
 
-	   Information on the SnapMirror relationship
+	   Information on the SnapMirror relationship.
 	*/
 	Info *models.SnapmirrorRelationship
 
@@ -84,7 +96,7 @@ type SnapmirrorRelationshipModifyParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* UUID.
 
@@ -96,7 +108,7 @@ type SnapmirrorRelationshipModifyParams struct {
 
 	   Validate the operation and its parameters, without actually performing the operation.
 	*/
-	ValidateOnly *bool
+	ValidateOnlyQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -116,11 +128,23 @@ func (o *SnapmirrorRelationshipModifyParams) WithDefaults() *SnapmirrorRelations
 // All values with no default are reset to their zero value.
 func (o *SnapmirrorRelationshipModifyParams) SetDefaults() {
 	var (
-		returnTimeoutDefault = int64(0)
+		failbackQueryParameterDefault = bool(false)
+
+		failoverQueryParameterDefault = bool(false)
+
+		forceQueryParameterDefault = bool(false)
+
+		forceFailoverQueryParameterDefault = bool(false)
+
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := SnapmirrorRelationshipModifyParams{
-		ReturnTimeout: &returnTimeoutDefault,
+		FailbackQueryParameter:      &failbackQueryParameterDefault,
+		FailoverQueryParameter:      &failoverQueryParameterDefault,
+		ForceQueryParameter:         &forceQueryParameterDefault,
+		ForceFailoverQueryParameter: &forceFailoverQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -162,6 +186,17 @@ func (o *SnapmirrorRelationshipModifyParams) SetHTTPClient(client *http.Client) 
 	o.HTTPClient = client
 }
 
+// WithFailbackQueryParameter adds the failback to the snapmirror relationship modify params
+func (o *SnapmirrorRelationshipModifyParams) WithFailbackQueryParameter(failback *bool) *SnapmirrorRelationshipModifyParams {
+	o.SetFailbackQueryParameter(failback)
+	return o
+}
+
+// SetFailbackQueryParameter adds the failback to the snapmirror relationship modify params
+func (o *SnapmirrorRelationshipModifyParams) SetFailbackQueryParameter(failback *bool) {
+	o.FailbackQueryParameter = failback
+}
+
 // WithFailoverQueryParameter adds the failover to the snapmirror relationship modify params
 func (o *SnapmirrorRelationshipModifyParams) WithFailoverQueryParameter(failover *bool) *SnapmirrorRelationshipModifyParams {
 	o.SetFailoverQueryParameter(failover)
@@ -171,6 +206,17 @@ func (o *SnapmirrorRelationshipModifyParams) WithFailoverQueryParameter(failover
 // SetFailoverQueryParameter adds the failover to the snapmirror relationship modify params
 func (o *SnapmirrorRelationshipModifyParams) SetFailoverQueryParameter(failover *bool) {
 	o.FailoverQueryParameter = failover
+}
+
+// WithForceQueryParameter adds the force to the snapmirror relationship modify params
+func (o *SnapmirrorRelationshipModifyParams) WithForceQueryParameter(force *bool) *SnapmirrorRelationshipModifyParams {
+	o.SetForceQueryParameter(force)
+	return o
+}
+
+// SetForceQueryParameter adds the force to the snapmirror relationship modify params
+func (o *SnapmirrorRelationshipModifyParams) SetForceQueryParameter(force *bool) {
+	o.ForceQueryParameter = force
 }
 
 // WithForceFailoverQueryParameter adds the forceFailover to the snapmirror relationship modify params
@@ -195,15 +241,15 @@ func (o *SnapmirrorRelationshipModifyParams) SetInfo(info *models.SnapmirrorRela
 	o.Info = info
 }
 
-// WithReturnTimeout adds the returnTimeout to the snapmirror relationship modify params
-func (o *SnapmirrorRelationshipModifyParams) WithReturnTimeout(returnTimeout *int64) *SnapmirrorRelationshipModifyParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationship modify params
+func (o *SnapmirrorRelationshipModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnapmirrorRelationshipModifyParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the snapmirror relationship modify params
-func (o *SnapmirrorRelationshipModifyParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationship modify params
+func (o *SnapmirrorRelationshipModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithUUIDPathParameter adds the uuid to the snapmirror relationship modify params
@@ -217,15 +263,15 @@ func (o *SnapmirrorRelationshipModifyParams) SetUUIDPathParameter(uuid string) {
 	o.UUIDPathParameter = uuid
 }
 
-// WithValidateOnly adds the validateOnly to the snapmirror relationship modify params
-func (o *SnapmirrorRelationshipModifyParams) WithValidateOnly(validateOnly *bool) *SnapmirrorRelationshipModifyParams {
-	o.SetValidateOnly(validateOnly)
+// WithValidateOnlyQueryParameter adds the validateOnly to the snapmirror relationship modify params
+func (o *SnapmirrorRelationshipModifyParams) WithValidateOnlyQueryParameter(validateOnly *bool) *SnapmirrorRelationshipModifyParams {
+	o.SetValidateOnlyQueryParameter(validateOnly)
 	return o
 }
 
-// SetValidateOnly adds the validateOnly to the snapmirror relationship modify params
-func (o *SnapmirrorRelationshipModifyParams) SetValidateOnly(validateOnly *bool) {
-	o.ValidateOnly = validateOnly
+// SetValidateOnlyQueryParameter adds the validateOnly to the snapmirror relationship modify params
+func (o *SnapmirrorRelationshipModifyParams) SetValidateOnlyQueryParameter(validateOnly *bool) {
+	o.ValidateOnlyQueryParameter = validateOnly
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -235,6 +281,23 @@ func (o *SnapmirrorRelationshipModifyParams) WriteToRequest(r runtime.ClientRequ
 		return err
 	}
 	var res []error
+
+	if o.FailbackQueryParameter != nil {
+
+		// query param failback
+		var qrFailback bool
+
+		if o.FailbackQueryParameter != nil {
+			qrFailback = *o.FailbackQueryParameter
+		}
+		qFailback := swag.FormatBool(qrFailback)
+		if qFailback != "" {
+
+			if err := r.SetQueryParam("failback", qFailback); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.FailoverQueryParameter != nil {
 
@@ -248,6 +311,23 @@ func (o *SnapmirrorRelationshipModifyParams) WriteToRequest(r runtime.ClientRequ
 		if qFailover != "" {
 
 			if err := r.SetQueryParam("failover", qFailover); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ForceQueryParameter != nil {
+
+		// query param force
+		var qrForce bool
+
+		if o.ForceQueryParameter != nil {
+			qrForce = *o.ForceQueryParameter
+		}
+		qForce := swag.FormatBool(qrForce)
+		if qForce != "" {
+
+			if err := r.SetQueryParam("force", qForce); err != nil {
 				return err
 			}
 		}
@@ -275,13 +355,13 @@ func (o *SnapmirrorRelationshipModifyParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -297,13 +377,13 @@ func (o *SnapmirrorRelationshipModifyParams) WriteToRequest(r runtime.ClientRequ
 		return err
 	}
 
-	if o.ValidateOnly != nil {
+	if o.ValidateOnlyQueryParameter != nil {
 
 		// query param validate_only
 		var qrValidateOnly bool
 
-		if o.ValidateOnly != nil {
-			qrValidateOnly = *o.ValidateOnly
+		if o.ValidateOnlyQueryParameter != nil {
+			qrValidateOnly = *o.ValidateOnlyQueryParameter
 		}
 		qValidateOnly := swag.FormatBool(qrValidateOnly)
 		if qValidateOnly != "" {

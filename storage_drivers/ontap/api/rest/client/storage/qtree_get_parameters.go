@@ -64,7 +64,7 @@ type QtreeGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* ID.
 
@@ -131,15 +131,15 @@ func (o *QtreeGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the qtree get params
-func (o *QtreeGetParams) WithFields(fields []string) *QtreeGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the qtree get params
+func (o *QtreeGetParams) WithFieldsQueryParameter(fields []string) *QtreeGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the qtree get params
-func (o *QtreeGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the qtree get params
+func (o *QtreeGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIDPathParameter adds the id to the qtree get params
@@ -172,7 +172,7 @@ func (o *QtreeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *QtreeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 
 // bindParamQtreeGet binds the parameter fields
 func (o *QtreeGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

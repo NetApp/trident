@@ -63,18 +63,7 @@ func (m NetworkScopeReadonly) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this network scope readonly based on the context it is used
+// ContextValidate validates this network scope readonly based on context it is used
 func (m NetworkScopeReadonly) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := validate.ReadOnly(ctx, "", "body", NetworkScopeReadonly(m)); err != nil {
-		return err
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
-
-// HELLO RIPPY

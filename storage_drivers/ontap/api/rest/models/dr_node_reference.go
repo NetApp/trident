@@ -8,7 +8,6 @@ package models
 import (
 	"context"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -32,13 +31,8 @@ func (m *DrNodeReference) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this dr node reference based on the context it is used
+// ContextValidate validates this dr node reference based on context it is used
 func (m *DrNodeReference) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
@@ -59,5 +53,3 @@ func (m *DrNodeReference) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

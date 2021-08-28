@@ -346,103 +346,103 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// os_type
 	// OsType
 	// aix
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupOsTypeAix captures enum value "aix"
 	LunMapIgroupOsTypeAix string = "aix"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// os_type
 	// OsType
 	// hpux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupOsTypeHpux captures enum value "hpux"
 	LunMapIgroupOsTypeHpux string = "hpux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// os_type
 	// OsType
 	// hyper_v
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupOsTypeHyperv captures enum value "hyper_v"
 	LunMapIgroupOsTypeHyperv string = "hyper_v"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupOsTypeLinux captures enum value "linux"
 	LunMapIgroupOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// os_type
 	// OsType
 	// netware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupOsTypeNetware captures enum value "netware"
 	LunMapIgroupOsTypeNetware string = "netware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// os_type
 	// OsType
 	// openvms
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupOsTypeOpenvms captures enum value "openvms"
 	LunMapIgroupOsTypeOpenvms string = "openvms"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// os_type
 	// OsType
 	// solaris
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupOsTypeSolaris captures enum value "solaris"
 	LunMapIgroupOsTypeSolaris string = "solaris"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupOsTypeVmware captures enum value "vmware"
 	LunMapIgroupOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupOsTypeWindows captures enum value "windows"
 	LunMapIgroupOsTypeWindows string = "windows"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// os_type
 	// OsType
 	// xen
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupOsTypeXen captures enum value "xen"
 	LunMapIgroupOsTypeXen string = "xen"
 )
@@ -482,33 +482,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// protocol
 	// Protocol
 	// fcp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupProtocolFcp captures enum value "fcp"
 	LunMapIgroupProtocolFcp string = "fcp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// protocol
 	// Protocol
 	// iscsi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupProtocolIscsi captures enum value "iscsi"
 	LunMapIgroupProtocolIscsi string = "iscsi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMapIgroup
 	// LunMapIgroup
 	// protocol
 	// Protocol
 	// mixed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMapIgroupProtocolMixed captures enum value "mixed"
 	LunMapIgroupProtocolMixed string = "mixed"
 )
@@ -1416,5 +1416,3 @@ func (m *LunMapSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

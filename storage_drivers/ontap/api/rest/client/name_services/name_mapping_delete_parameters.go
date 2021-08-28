@@ -76,7 +76,7 @@ type NameMappingDeleteParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -153,15 +153,15 @@ func (o *NameMappingDeleteParams) SetIndexPathParameter(index int64) {
 	o.IndexPathParameter = index
 }
 
-// WithSvmUUID adds the svmUUID to the name mapping delete params
-func (o *NameMappingDeleteParams) WithSvmUUID(svmUUID string) *NameMappingDeleteParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the name mapping delete params
+func (o *NameMappingDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *NameMappingDeleteParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the name mapping delete params
-func (o *NameMappingDeleteParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the name mapping delete params
+func (o *NameMappingDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -183,7 +183,7 @@ func (o *NameMappingDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

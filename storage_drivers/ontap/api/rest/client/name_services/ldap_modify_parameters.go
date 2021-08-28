@@ -71,7 +71,7 @@ type LdapModifyParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -137,15 +137,15 @@ func (o *LdapModifyParams) SetInfo(info *models.LdapService) {
 	o.Info = info
 }
 
-// WithSvmUUID adds the svmUUID to the ldap modify params
-func (o *LdapModifyParams) WithSvmUUID(svmUUID string) *LdapModifyParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the ldap modify params
+func (o *LdapModifyParams) WithSVMUUIDPathParameter(svmUUID string) *LdapModifyParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the ldap modify params
-func (o *LdapModifyParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the ldap modify params
+func (o *LdapModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -162,7 +162,7 @@ func (o *LdapModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

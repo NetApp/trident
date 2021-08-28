@@ -72,7 +72,7 @@ type LicenseCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -92,11 +92,11 @@ func (o *LicenseCreateParams) WithDefaults() *LicenseCreateParams {
 // All values with no default are reset to their zero value.
 func (o *LicenseCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := LicenseCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -149,15 +149,15 @@ func (o *LicenseCreateParams) SetInfo(info *models.LicensePackage) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the license create params
-func (o *LicenseCreateParams) WithReturnRecords(returnRecords *bool) *LicenseCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the license create params
+func (o *LicenseCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LicenseCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the license create params
-func (o *LicenseCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the license create params
+func (o *LicenseCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -173,13 +173,13 @@ func (o *LicenseCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

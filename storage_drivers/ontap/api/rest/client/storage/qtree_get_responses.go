@@ -86,7 +86,7 @@ func NewQtreeGetDefault(code int) *QtreeGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 918235 | A volume with UUID was not found. |
-| 5242956 | Failed to obtain qtree with ID. |
+| 5242956 | Failed to obtain a qtree with ID. |
 
 */
 type QtreeGetDefault struct {

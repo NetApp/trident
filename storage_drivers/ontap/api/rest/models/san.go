@@ -27,15 +27,17 @@ type San struct {
 	// Min Items: 1
 	ApplicationComponents []*SanApplicationComponentsItems0 `json:"application_components"`
 
+	// exclude aggregates
+	ExcludeAggregates []*SanExcludeAggregatesItems0 `json:"exclude_aggregates,omitempty"`
+
 	// The list of initiator groups to create.
 	// Max Items: 10
 	// Min Items: 0
 	NewIgroups []*SanNewIgroups `json:"new_igroups,omitempty"`
 
 	// The name of the host OS running the application.
-	// Required: true
 	// Enum: [aix hpux hyper_v linux netware openvms solaris solaris_efi vmware windows windows_2008 windows_gpt xen]
-	OsType *string `json:"os_type"`
+	OsType string `json:"os_type,omitempty"`
 
 	// protection type
 	ProtectionType *SanProtectionType `json:"protection_type,omitempty"`
@@ -46,6 +48,10 @@ func (m *San) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateApplicationComponents(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExcludeAggregates(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -92,6 +98,30 @@ func (m *San) validateApplicationComponents(formats strfmt.Registry) error {
 			if err := m.ApplicationComponents[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("application_components" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *San) validateExcludeAggregates(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExcludeAggregates) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ExcludeAggregates); i++ {
+		if swag.IsZero(m.ExcludeAggregates[i]) { // not required
+			continue
+		}
+
+		if m.ExcludeAggregates[i] != nil {
+			if err := m.ExcludeAggregates[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -150,133 +180,133 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// aix
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeAix captures enum value "aix"
 	SanOsTypeAix string = "aix"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// hpux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeHpux captures enum value "hpux"
 	SanOsTypeHpux string = "hpux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// hyper_v
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeHyperv captures enum value "hyper_v"
 	SanOsTypeHyperv string = "hyper_v"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeLinux captures enum value "linux"
 	SanOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// netware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeNetware captures enum value "netware"
 	SanOsTypeNetware string = "netware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// openvms
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeOpenvms captures enum value "openvms"
 	SanOsTypeOpenvms string = "openvms"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// solaris
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeSolaris captures enum value "solaris"
 	SanOsTypeSolaris string = "solaris"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// solaris_efi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeSolarisEfi captures enum value "solaris_efi"
 	SanOsTypeSolarisEfi string = "solaris_efi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeVmware captures enum value "vmware"
 	SanOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeWindows captures enum value "windows"
 	SanOsTypeWindows string = "windows"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// windows_2008
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeWindows2008 captures enum value "windows_2008"
 	SanOsTypeWindows2008 string = "windows_2008"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// windows_gpt
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeWindowsGpt captures enum value "windows_gpt"
 	SanOsTypeWindowsGpt string = "windows_gpt"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// san
 	// San
 	// os_type
 	// OsType
 	// xen
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanOsTypeXen captures enum value "xen"
 	SanOsTypeXen string = "xen"
 )
@@ -290,13 +320,12 @@ func (m *San) validateOsTypeEnum(path, location string, value string) error {
 }
 
 func (m *San) validateOsType(formats strfmt.Registry) error {
-
-	if err := validate.Required("os_type", "body", m.OsType); err != nil {
-		return err
+	if swag.IsZero(m.OsType) { // not required
+		return nil
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("os_type", "body", *m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
 		return err
 	}
 
@@ -328,6 +357,10 @@ func (m *San) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateExcludeAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNewIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -350,6 +383,24 @@ func (m *San) contextValidateApplicationComponents(ctx context.Context, formats 
 			if err := m.ApplicationComponents[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("application_components" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *San) contextValidateExcludeAggregates(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ExcludeAggregates); i++ {
+
+		if m.ExcludeAggregates[i] != nil {
+			if err := m.ExcludeAggregates[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -416,22 +467,27 @@ func (m *San) UnmarshalBinary(b []byte) error {
 type SanApplicationComponentsItems0 struct {
 
 	// The name of the initiator group through which the contents of this application will be accessed. Modification of this parameter is a disruptive operation. All LUNs in the application component will be unmapped from the current igroup and re-mapped to the new igroup.
-	// Required: true
 	// Max Length: 96
 	// Min Length: 1
-	IgroupName *string `json:"igroup_name"`
+	IgroupName string `json:"igroup_name,omitempty"`
 
 	// The number of LUNs in the application component.
-	// Required: true
-	// Maximum: 100
+	// Maximum: 32
 	// Minimum: 1
-	LunCount *int64 `json:"lun_count"`
+	LunCount int64 `json:"lun_count,omitempty"`
 
 	// The name of the application component.
 	// Required: true
 	// Max Length: 512
 	// Min Length: 1
 	Name *string `json:"name"`
+
+	// The name of the host OS running the application.
+	// Enum: [aix hpux hyper_v linux netware openvms solaris solaris_efi vmware windows windows_2008 windows_gpt xen]
+	OsType string `json:"os_type,omitempty"`
+
+	// qos
+	Qos *SanApplicationComponentsItems0Qos `json:"qos,omitempty"`
 
 	// storage service
 	StorageService *SanApplicationComponentsItems0StorageService `json:"storage_service,omitempty"`
@@ -440,8 +496,7 @@ type SanApplicationComponentsItems0 struct {
 	Tiering *SanApplicationComponentsTiering `json:"tiering,omitempty"`
 
 	// The total size of the application component, split across the member LUNs. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
-	// Required: true
-	TotalSize *int64 `json:"total_size"`
+	TotalSize int64 `json:"total_size,omitempty"`
 }
 
 // Validate validates this san application components items0
@@ -460,15 +515,19 @@ func (m *SanApplicationComponentsItems0) Validate(formats strfmt.Registry) error
 		res = append(res, err)
 	}
 
+	if err := m.validateOsType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateQos(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateStorageService(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateTiering(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateTotalSize(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -479,16 +538,15 @@ func (m *SanApplicationComponentsItems0) Validate(formats strfmt.Registry) error
 }
 
 func (m *SanApplicationComponentsItems0) validateIgroupName(formats strfmt.Registry) error {
+	if swag.IsZero(m.IgroupName) { // not required
+		return nil
+	}
 
-	if err := validate.Required("igroup_name", "body", m.IgroupName); err != nil {
+	if err := validate.MinLength("igroup_name", "body", m.IgroupName, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MinLength("igroup_name", "body", *m.IgroupName, 1); err != nil {
-		return err
-	}
-
-	if err := validate.MaxLength("igroup_name", "body", *m.IgroupName, 96); err != nil {
+	if err := validate.MaxLength("igroup_name", "body", m.IgroupName, 96); err != nil {
 		return err
 	}
 
@@ -496,16 +554,15 @@ func (m *SanApplicationComponentsItems0) validateIgroupName(formats strfmt.Regis
 }
 
 func (m *SanApplicationComponentsItems0) validateLunCount(formats strfmt.Registry) error {
+	if swag.IsZero(m.LunCount) { // not required
+		return nil
+	}
 
-	if err := validate.Required("lun_count", "body", m.LunCount); err != nil {
+	if err := validate.MinimumInt("lun_count", "body", m.LunCount, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MinimumInt("lun_count", "body", *m.LunCount, 1, false); err != nil {
-		return err
-	}
-
-	if err := validate.MaximumInt("lun_count", "body", *m.LunCount, 100, false); err != nil {
+	if err := validate.MaximumInt("lun_count", "body", m.LunCount, 32, false); err != nil {
 		return err
 	}
 
@@ -524,6 +581,189 @@ func (m *SanApplicationComponentsItems0) validateName(formats strfmt.Registry) e
 
 	if err := validate.MaxLength("name", "body", *m.Name, 512); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+var sanApplicationComponentsItems0TypeOsTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["aix","hpux","hyper_v","linux","netware","openvms","solaris","solaris_efi","vmware","windows","windows_2008","windows_gpt","xen"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		sanApplicationComponentsItems0TypeOsTypePropEnum = append(sanApplicationComponentsItems0TypeOsTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// aix
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeAix captures enum value "aix"
+	SanApplicationComponentsItems0OsTypeAix string = "aix"
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// hpux
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeHpux captures enum value "hpux"
+	SanApplicationComponentsItems0OsTypeHpux string = "hpux"
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// hyper_v
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeHyperv captures enum value "hyper_v"
+	SanApplicationComponentsItems0OsTypeHyperv string = "hyper_v"
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// linux
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeLinux captures enum value "linux"
+	SanApplicationComponentsItems0OsTypeLinux string = "linux"
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// netware
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeNetware captures enum value "netware"
+	SanApplicationComponentsItems0OsTypeNetware string = "netware"
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// openvms
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeOpenvms captures enum value "openvms"
+	SanApplicationComponentsItems0OsTypeOpenvms string = "openvms"
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// solaris
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeSolaris captures enum value "solaris"
+	SanApplicationComponentsItems0OsTypeSolaris string = "solaris"
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// solaris_efi
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeSolarisEfi captures enum value "solaris_efi"
+	SanApplicationComponentsItems0OsTypeSolarisEfi string = "solaris_efi"
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// vmware
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeVmware captures enum value "vmware"
+	SanApplicationComponentsItems0OsTypeVmware string = "vmware"
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// windows
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeWindows captures enum value "windows"
+	SanApplicationComponentsItems0OsTypeWindows string = "windows"
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// windows_2008
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeWindows2008 captures enum value "windows_2008"
+	SanApplicationComponentsItems0OsTypeWindows2008 string = "windows_2008"
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// windows_gpt
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeWindowsGpt captures enum value "windows_gpt"
+	SanApplicationComponentsItems0OsTypeWindowsGpt string = "windows_gpt"
+
+	// BEGIN DEBUGGING
+	// SanApplicationComponentsItems0
+	// SanApplicationComponentsItems0
+	// os_type
+	// OsType
+	// xen
+	// END DEBUGGING
+	// SanApplicationComponentsItems0OsTypeXen captures enum value "xen"
+	SanApplicationComponentsItems0OsTypeXen string = "xen"
+)
+
+// prop value enum
+func (m *SanApplicationComponentsItems0) validateOsTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sanApplicationComponentsItems0TypeOsTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SanApplicationComponentsItems0) validateOsType(formats strfmt.Registry) error {
+	if swag.IsZero(m.OsType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SanApplicationComponentsItems0) validateQos(formats strfmt.Registry) error {
+	if swag.IsZero(m.Qos) { // not required
+		return nil
+	}
+
+	if m.Qos != nil {
+		if err := m.Qos.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -563,18 +803,13 @@ func (m *SanApplicationComponentsItems0) validateTiering(formats strfmt.Registry
 	return nil
 }
 
-func (m *SanApplicationComponentsItems0) validateTotalSize(formats strfmt.Registry) error {
-
-	if err := validate.Required("total_size", "body", m.TotalSize); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // ContextValidate validate this san application components items0 based on the context it is used
 func (m *SanApplicationComponentsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateQos(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
 		res = append(res, err)
@@ -587,6 +822,20 @@ func (m *SanApplicationComponentsItems0) ContextValidate(ctx context.Context, fo
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *SanApplicationComponentsItems0) contextValidateQos(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Qos != nil {
+		if err := m.Qos.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -636,6 +885,132 @@ func (m *SanApplicationComponentsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// SanApplicationComponentsItems0Qos san application components items0 qos
+//
+// swagger:model SanApplicationComponentsItems0Qos
+type SanApplicationComponentsItems0Qos struct {
+
+	// policy
+	Policy *SanApplicationComponentsItems0QosPolicy `json:"policy,omitempty"`
+}
+
+// Validate validates this san application components items0 qos
+func (m *SanApplicationComponentsItems0Qos) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SanApplicationComponentsItems0Qos) validatePolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.Policy) { // not required
+		return nil
+	}
+
+	if m.Policy != nil {
+		if err := m.Policy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos" + "." + "policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this san application components items0 qos based on the context it is used
+func (m *SanApplicationComponentsItems0Qos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SanApplicationComponentsItems0Qos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Policy != nil {
+		if err := m.Policy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos" + "." + "policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SanApplicationComponentsItems0Qos) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SanApplicationComponentsItems0Qos) UnmarshalBinary(b []byte) error {
+	var res SanApplicationComponentsItems0Qos
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SanApplicationComponentsItems0QosPolicy san application components items0 qos policy
+//
+// swagger:model SanApplicationComponentsItems0QosPolicy
+type SanApplicationComponentsItems0QosPolicy struct {
+
+	// The name of an existing QoS policy.
+	Name string `json:"name,omitempty"`
+
+	// The UUID of an existing QoS policy. Usage: &lt;UUID&gt;
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this san application components items0 qos policy
+func (m *SanApplicationComponentsItems0QosPolicy) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this san application components items0 qos policy based on context it is used
+func (m *SanApplicationComponentsItems0QosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SanApplicationComponentsItems0QosPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SanApplicationComponentsItems0QosPolicy) UnmarshalBinary(b []byte) error {
+	var res SanApplicationComponentsItems0QosPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // SanApplicationComponentsItems0StorageService san application components items0 storage service
 //
 // swagger:model SanApplicationComponentsItems0StorageService
@@ -674,33 +1049,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SanApplicationComponentsItems0StorageService
 	// SanApplicationComponentsItems0StorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanApplicationComponentsItems0StorageServiceNameExtreme captures enum value "extreme"
 	SanApplicationComponentsItems0StorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SanApplicationComponentsItems0StorageService
 	// SanApplicationComponentsItems0StorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanApplicationComponentsItems0StorageServiceNamePerformance captures enum value "performance"
 	SanApplicationComponentsItems0StorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SanApplicationComponentsItems0StorageService
 	// SanApplicationComponentsItems0StorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanApplicationComponentsItems0StorageServiceNameValue captures enum value "value"
 	SanApplicationComponentsItems0StorageServiceNameValue string = "value"
 )
@@ -749,19 +1124,59 @@ func (m *SanApplicationComponentsItems0StorageService) UnmarshalBinary(b []byte)
 	return nil
 }
 
+// SanExcludeAggregatesItems0 san exclude aggregates items0
+//
+// swagger:model SanExcludeAggregatesItems0
+type SanExcludeAggregatesItems0 struct {
+
+	// The name of the aggregate to exclude. Usage: &lt;aggr0_akerr_vsim1&gt;
+	Name string `json:"name,omitempty"`
+
+	// The ID of the aggregate to exclude. Usage: &lt;UUID&gt;
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this san exclude aggregates items0
+func (m *SanExcludeAggregatesItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this san exclude aggregates items0 based on context it is used
+func (m *SanExcludeAggregatesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SanExcludeAggregatesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SanExcludeAggregatesItems0) UnmarshalBinary(b []byte) error {
+	var res SanExcludeAggregatesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // SanProtectionType san protection type
 //
 // swagger:model SanProtectionType
 type SanProtectionType struct {
 
-	// The snapshot policy to apply to each volume in the smart container. This property is only supported for smart containers. Usage: &lt;snapshot policy&gt;
+	// The Snapshot copy policy to apply to each volume in the smart container. This property is only supported for smart containers. Usage: &lt;snapshot policy&gt;
 	LocalPolicy string `json:"local_policy,omitempty"`
 
-	// The local rpo of the application.
+	// The local RPO of the application.
 	// Enum: [hourly none]
 	LocalRpo string `json:"local_rpo,omitempty"`
 
-	// The remote rpo of the application.
+	// The remote RPO of the application.
 	// Enum: [none zero]
 	RemoteRpo string `json:"remote_rpo,omitempty"`
 }
@@ -798,23 +1213,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SanProtectionType
 	// SanProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanProtectionTypeLocalRpoHourly captures enum value "hourly"
 	SanProtectionTypeLocalRpoHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SanProtectionType
 	// SanProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanProtectionTypeLocalRpoNone captures enum value "none"
 	SanProtectionTypeLocalRpoNone string = "none"
 )
@@ -854,23 +1269,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SanProtectionType
 	// SanProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanProtectionTypeRemoteRpoNone captures enum value "none"
 	SanProtectionTypeRemoteRpoNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SanProtectionType
 	// SanProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SanProtectionTypeRemoteRpoZero captures enum value "zero"
 	SanProtectionTypeRemoteRpoZero string = "zero"
 )
@@ -918,5 +1333,3 @@ func (m *SanProtectionType) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

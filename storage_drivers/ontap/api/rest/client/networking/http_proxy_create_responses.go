@@ -89,6 +89,8 @@ func NewHTTPProxyCreateDefault(code int) *HTTPProxyCreateDefault {
 | 26214476   | The "IPspace" parameter should not be specified in the SVM context. |
 | 26214477   | The specified IPspace does not exist. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces. |
+| 26214481   | Username and password cannot be empty when HTTP proxy authentication is enabled. |
+| 26214482   | Username and password cannot be specified when HTTP proxy authentication is disabled. |
 
 */
 type HTTPProxyCreateDefault struct {

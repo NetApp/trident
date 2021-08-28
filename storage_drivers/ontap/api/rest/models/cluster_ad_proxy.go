@@ -408,5 +408,3 @@ func (m *ClusterAdProxySvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

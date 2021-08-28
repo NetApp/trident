@@ -64,7 +64,7 @@ type IscsiSessionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* SvmUUID.
 
@@ -140,15 +140,15 @@ func (o *IscsiSessionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the iscsi session get params
-func (o *IscsiSessionGetParams) WithFields(fields []string) *IscsiSessionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the iscsi session get params
+func (o *IscsiSessionGetParams) WithFieldsQueryParameter(fields []string) *IscsiSessionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the iscsi session get params
-func (o *IscsiSessionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the iscsi session get params
+func (o *IscsiSessionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithSVMUUIDPathParameter adds the svmUUID to the iscsi session get params
@@ -192,7 +192,7 @@ func (o *IscsiSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -226,7 +226,7 @@ func (o *IscsiSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamIscsiSessionGet binds the parameter fields
 func (o *IscsiSessionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -283,5 +283,3 @@ func (m *SnapmirrorRelationshipResponseLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

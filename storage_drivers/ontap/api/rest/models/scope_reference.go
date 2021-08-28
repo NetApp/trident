@@ -76,5 +76,3 @@ func (m ScopeReference) ContextValidate(ctx context.Context, formats strfmt.Regi
 	}
 	return nil
 }
-
-// HELLO RIPPY

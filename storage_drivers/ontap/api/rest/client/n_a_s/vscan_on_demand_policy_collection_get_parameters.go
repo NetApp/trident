@@ -64,7 +64,7 @@ type VscanOnDemandPolicyCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* LogPath.
 
@@ -76,7 +76,7 @@ type VscanOnDemandPolicyCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -88,7 +88,7 @@ type VscanOnDemandPolicyCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -96,7 +96,7 @@ type VscanOnDemandPolicyCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -104,7 +104,7 @@ type VscanOnDemandPolicyCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* ScanPaths.
 
@@ -158,7 +158,7 @@ type VscanOnDemandPolicyCollectionGetParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -178,14 +178,14 @@ func (o *VscanOnDemandPolicyCollectionGetParams) WithDefaults() *VscanOnDemandPo
 // All values with no default are reset to their zero value.
 func (o *VscanOnDemandPolicyCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := VscanOnDemandPolicyCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -227,15 +227,15 @@ func (o *VscanOnDemandPolicyCollectionGetParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the vscan on demand policy collection get params
-func (o *VscanOnDemandPolicyCollectionGetParams) WithFields(fields []string) *VscanOnDemandPolicyCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the vscan on demand policy collection get params
+func (o *VscanOnDemandPolicyCollectionGetParams) WithFieldsQueryParameter(fields []string) *VscanOnDemandPolicyCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the vscan on demand policy collection get params
-func (o *VscanOnDemandPolicyCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the vscan on demand policy collection get params
+func (o *VscanOnDemandPolicyCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithLogPathQueryParameter adds the logPath to the vscan on demand policy collection get params
@@ -249,15 +249,15 @@ func (o *VscanOnDemandPolicyCollectionGetParams) SetLogPathQueryParameter(logPat
 	o.LogPathQueryParameter = logPath
 }
 
-// WithMaxRecords adds the maxRecords to the vscan on demand policy collection get params
-func (o *VscanOnDemandPolicyCollectionGetParams) WithMaxRecords(maxRecords *int64) *VscanOnDemandPolicyCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the vscan on demand policy collection get params
+func (o *VscanOnDemandPolicyCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *VscanOnDemandPolicyCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the vscan on demand policy collection get params
-func (o *VscanOnDemandPolicyCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the vscan on demand policy collection get params
+func (o *VscanOnDemandPolicyCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the vscan on demand policy collection get params
@@ -271,37 +271,37 @@ func (o *VscanOnDemandPolicyCollectionGetParams) SetNameQueryParameter(name *str
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the vscan on demand policy collection get params
-func (o *VscanOnDemandPolicyCollectionGetParams) WithOrderBy(orderBy []string) *VscanOnDemandPolicyCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the vscan on demand policy collection get params
+func (o *VscanOnDemandPolicyCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *VscanOnDemandPolicyCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the vscan on demand policy collection get params
-func (o *VscanOnDemandPolicyCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the vscan on demand policy collection get params
+func (o *VscanOnDemandPolicyCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the vscan on demand policy collection get params
-func (o *VscanOnDemandPolicyCollectionGetParams) WithReturnRecords(returnRecords *bool) *VscanOnDemandPolicyCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the vscan on demand policy collection get params
+func (o *VscanOnDemandPolicyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *VscanOnDemandPolicyCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the vscan on demand policy collection get params
-func (o *VscanOnDemandPolicyCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the vscan on demand policy collection get params
+func (o *VscanOnDemandPolicyCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the vscan on demand policy collection get params
-func (o *VscanOnDemandPolicyCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *VscanOnDemandPolicyCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the vscan on demand policy collection get params
+func (o *VscanOnDemandPolicyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VscanOnDemandPolicyCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the vscan on demand policy collection get params
-func (o *VscanOnDemandPolicyCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the vscan on demand policy collection get params
+func (o *VscanOnDemandPolicyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithScanPathsQueryParameter adds the scanPaths to the vscan on demand policy collection get params
@@ -392,15 +392,15 @@ func (o *VscanOnDemandPolicyCollectionGetParams) SetScopeScanWithoutExtensionQue
 	o.ScopeScanWithoutExtensionQueryParameter = scopeScanWithoutExtension
 }
 
-// WithSvmUUID adds the svmUUID to the vscan on demand policy collection get params
-func (o *VscanOnDemandPolicyCollectionGetParams) WithSvmUUID(svmUUID string) *VscanOnDemandPolicyCollectionGetParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the vscan on demand policy collection get params
+func (o *VscanOnDemandPolicyCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *VscanOnDemandPolicyCollectionGetParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the vscan on demand policy collection get params
-func (o *VscanOnDemandPolicyCollectionGetParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the vscan on demand policy collection get params
+func (o *VscanOnDemandPolicyCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -411,7 +411,7 @@ func (o *VscanOnDemandPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -439,13 +439,13 @@ func (o *VscanOnDemandPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -473,7 +473,7 @@ func (o *VscanOnDemandPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -484,13 +484,13 @@ func (o *VscanOnDemandPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -501,13 +501,13 @@ func (o *VscanOnDemandPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -655,7 +655,7 @@ func (o *VscanOnDemandPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 
@@ -667,7 +667,7 @@ func (o *VscanOnDemandPolicyCollectionGetParams) WriteToRequest(r runtime.Client
 
 // bindParamVscanOnDemandPolicyCollectionGet binds the parameter fields
 func (o *VscanOnDemandPolicyCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -684,7 +684,7 @@ func (o *VscanOnDemandPolicyCollectionGetParams) bindParamFields(formats strfmt.
 
 // bindParamVscanOnDemandPolicyCollectionGet binds the parameter order_by
 func (o *VscanOnDemandPolicyCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

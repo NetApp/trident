@@ -64,7 +64,7 @@ type SecurityCertificateGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *SecurityCertificateGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the security certificate get params
-func (o *SecurityCertificateGetParams) WithFields(fields []string) *SecurityCertificateGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the security certificate get params
+func (o *SecurityCertificateGetParams) WithFieldsQueryParameter(fields []string) *SecurityCertificateGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the security certificate get params
-func (o *SecurityCertificateGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the security certificate get params
+func (o *SecurityCertificateGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the security certificate get params
@@ -155,7 +155,7 @@ func (o *SecurityCertificateGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *SecurityCertificateGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamSecurityCertificateGet binds the parameter fields
 func (o *SecurityCertificateGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

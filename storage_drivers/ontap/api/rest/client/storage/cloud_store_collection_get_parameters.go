@@ -60,6 +60,12 @@ func NewCloudStoreCollectionGetParamsWithHTTPClient(client *http.Client) *CloudS
 */
 type CloudStoreCollectionGetParams struct {
 
+	/* AggregateName.
+
+	   Filter by aggregate.name
+	*/
+	AggregateNameQueryParameter *string
+
 	/* AggregateUUID.
 
 	   Aggregate UUID
@@ -76,13 +82,13 @@ type CloudStoreCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* MirrorDegraded.
 
@@ -94,7 +100,7 @@ type CloudStoreCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* Primary.
 
@@ -108,7 +114,7 @@ type CloudStoreCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -116,7 +122,7 @@ type CloudStoreCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* TargetName.
 
@@ -166,14 +172,14 @@ func (o *CloudStoreCollectionGetParams) WithDefaults() *CloudStoreCollectionGetP
 // All values with no default are reset to their zero value.
 func (o *CloudStoreCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := CloudStoreCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -215,6 +221,17 @@ func (o *CloudStoreCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAggregateNameQueryParameter adds the aggregateName to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithAggregateNameQueryParameter(aggregateName *string) *CloudStoreCollectionGetParams {
+	o.SetAggregateNameQueryParameter(aggregateName)
+	return o
+}
+
+// SetAggregateNameQueryParameter adds the aggregateName to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetAggregateNameQueryParameter(aggregateName *string) {
+	o.AggregateNameQueryParameter = aggregateName
+}
+
 // WithAggregateUUIDPathParameter adds the aggregateUUID to the cloud store collection get params
 func (o *CloudStoreCollectionGetParams) WithAggregateUUIDPathParameter(aggregateUUID string) *CloudStoreCollectionGetParams {
 	o.SetAggregateUUIDPathParameter(aggregateUUID)
@@ -237,26 +254,26 @@ func (o *CloudStoreCollectionGetParams) SetAvailabilityQueryParameter(availabili
 	o.AvailabilityQueryParameter = availability
 }
 
-// WithFields adds the fields to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithFields(fields []string) *CloudStoreCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithFieldsQueryParameter(fields []string) *CloudStoreCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithMaxRecords adds the maxRecords to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithMaxRecords(maxRecords *int64) *CloudStoreCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CloudStoreCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithMirrorDegradedQueryParameter adds the mirrorDegraded to the cloud store collection get params
@@ -270,15 +287,15 @@ func (o *CloudStoreCollectionGetParams) SetMirrorDegradedQueryParameter(mirrorDe
 	o.MirrorDegradedQueryParameter = mirrorDegraded
 }
 
-// WithOrderBy adds the orderBy to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithOrderBy(orderBy []string) *CloudStoreCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CloudStoreCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPrimaryQueryParameter adds the primary to the cloud store collection get params
@@ -292,26 +309,26 @@ func (o *CloudStoreCollectionGetParams) SetPrimaryQueryParameter(primary *bool) 
 	o.PrimaryQueryParameter = primary
 }
 
-// WithReturnRecords adds the returnRecords to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithReturnRecords(returnRecords *bool) *CloudStoreCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CloudStoreCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CloudStoreCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CloudStoreCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the cloud store collection get params
-func (o *CloudStoreCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the cloud store collection get params
+func (o *CloudStoreCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithTargetNameQueryParameter adds the targetName to the cloud store collection get params
@@ -377,6 +394,23 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 	}
 	var res []error
 
+	if o.AggregateNameQueryParameter != nil {
+
+		// query param aggregate.name
+		var qrAggregateName string
+
+		if o.AggregateNameQueryParameter != nil {
+			qrAggregateName = *o.AggregateNameQueryParameter
+		}
+		qAggregateName := qrAggregateName
+		if qAggregateName != "" {
+
+			if err := r.SetQueryParam("aggregate.name", qAggregateName); err != nil {
+				return err
+			}
+		}
+	}
+
 	// path param aggregate.uuid
 	if err := r.SetPathParam("aggregate.uuid", o.AggregateUUIDPathParameter); err != nil {
 		return err
@@ -399,7 +433,7 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -410,13 +444,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -444,7 +478,7 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -472,13 +506,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -489,13 +523,13 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -599,7 +633,7 @@ func (o *CloudStoreCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamCloudStoreCollectionGet binds the parameter fields
 func (o *CloudStoreCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -616,7 +650,7 @@ func (o *CloudStoreCollectionGetParams) bindParamFields(formats strfmt.Registry)
 
 // bindParamCloudStoreCollectionGet binds the parameter order_by
 func (o *CloudStoreCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

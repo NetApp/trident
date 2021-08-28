@@ -411,23 +411,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// KerberosRealmKdc
 	// KerberosRealmKdc
 	// vendor
 	// Vendor
 	// microsoft
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// KerberosRealmKdcVendorMicrosoft captures enum value "microsoft"
 	KerberosRealmKdcVendorMicrosoft string = "microsoft"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// KerberosRealmKdc
 	// KerberosRealmKdc
 	// vendor
 	// Vendor
 	// other
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// KerberosRealmKdcVendorOther captures enum value "other"
 	KerberosRealmKdcVendorOther string = "other"
 )
@@ -743,5 +743,3 @@ func (m *KerberosRealmSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

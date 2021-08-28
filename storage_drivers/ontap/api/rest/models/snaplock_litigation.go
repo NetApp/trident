@@ -710,5 +710,3 @@ func (m *SnaplockLitigationVolumeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

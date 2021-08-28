@@ -23,8 +23,14 @@ type FlexcacheOrigin struct {
 	// links
 	Links *FlexcacheOriginLinks `json:"_links,omitempty"`
 
+	// Block level invalidation enables the FlexCache volume to retain blocks that are not changed at the FlexCache volume without having to evict them. This means that the FlexCache volume does not have to again incur the cost of fetching blocks over the WAN from the FlexCache volume origin on the next client access. Block level invalidation is a property of the origin volume. Without block level invalidation, any write at the origin volume would evict the whole file at the FlexCache volume, since by default, origin volume does a file level invalidation.
+	BlockLevelInvalidation bool `json:"block_level_invalidation,omitempty"`
+
 	// flexcaches
 	Flexcaches []*FlexcacheRelationship `json:"flexcaches,omitempty"`
+
+	// Specifies whether a global file locking option is enabled for an origin volume of a FlexCache volume.
+	GlobalFileLockingEnabled bool `json:"global_file_locking_enabled,omitempty"`
 
 	// Origin volume name
 	// Example: vol1, vol_2
@@ -507,5 +513,3 @@ func (m *FlexcacheOriginSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

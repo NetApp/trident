@@ -76,5 +76,3 @@ func (m FailoverScope) Validate(formats strfmt.Registry) error {
 func (m FailoverScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

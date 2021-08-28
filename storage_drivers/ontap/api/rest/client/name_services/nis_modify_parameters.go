@@ -71,7 +71,7 @@ type NisModifyParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -137,15 +137,15 @@ func (o *NisModifyParams) SetInfo(info *models.NisService) {
 	o.Info = info
 }
 
-// WithSvmUUID adds the svmUUID to the nis modify params
-func (o *NisModifyParams) WithSvmUUID(svmUUID string) *NisModifyParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the nis modify params
+func (o *NisModifyParams) WithSVMUUIDPathParameter(svmUUID string) *NisModifyParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the nis modify params
-func (o *NisModifyParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the nis modify params
+func (o *NisModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -162,7 +162,7 @@ func (o *NisModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

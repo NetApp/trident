@@ -138,11 +138,47 @@ type ShelfCollectionGetParams struct {
 	*/
 	DrawersStateQueryParameter *string
 
+	/* ErrorsReasonCode.
+
+	   Filter by errors.reason.code
+	*/
+	ErrorsReasonCodeQueryParameter *string
+
+	/* ErrorsReasonMessage.
+
+	   Filter by errors.reason.message
+	*/
+	ErrorsReasonMessageQueryParameter *string
+
+	/* FansID.
+
+	   Filter by fans.id
+	*/
+	FansIDQueryParameter *int64
+
+	/* FansLocation.
+
+	   Filter by fans.location
+	*/
+	FansLocationQueryParameter *string
+
+	/* FansRpm.
+
+	   Filter by fans.rpm
+	*/
+	FansRpmQueryParameter *int64
+
+	/* FansState.
+
+	   Filter by fans.state
+	*/
+	FansStateQueryParameter *string
+
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* FrusFirmwareVersion.
 
@@ -192,11 +228,17 @@ type ShelfCollectionGetParams struct {
 	*/
 	InternalQueryParameter *bool
 
+	/* Local.
+
+	   Filter by local
+	*/
+	LocalQueryParameter *bool
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Model.
 
@@ -220,7 +262,7 @@ type ShelfCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* PathsName.
 
@@ -300,6 +342,12 @@ type ShelfCollectionGetParams struct {
 	*/
 	PortsRemoteChassisQueryParameter *string
 
+	/* PortsRemoteDevice.
+
+	   Filter by ports.remote.device
+	*/
+	PortsRemoteDeviceQueryParameter *string
+
 	/* PortsRemoteMacAddress.
 
 	   Filter by ports.remote.mac_address
@@ -342,7 +390,7 @@ type ShelfCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -350,7 +398,7 @@ type ShelfCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SerialNumber.
 
@@ -370,6 +418,30 @@ type ShelfCollectionGetParams struct {
 	*/
 	UIDQueryParameter *string
 
+	/* VendorManufacturer.
+
+	   Filter by vendor.manufacturer
+	*/
+	VendorManufacturerQueryParameter *string
+
+	/* VendorPartNumber.
+
+	   Filter by vendor.part_number
+	*/
+	VendorPartNumberQueryParameter *string
+
+	/* VendorProduct.
+
+	   Filter by vendor.product
+	*/
+	VendorProductQueryParameter *string
+
+	/* VendorSerialNumber.
+
+	   Filter by vendor.serial_number
+	*/
+	VendorSerialNumberQueryParameter *string
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -388,14 +460,14 @@ func (o *ShelfCollectionGetParams) WithDefaults() *ShelfCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *ShelfCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := ShelfCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -580,15 +652,81 @@ func (o *ShelfCollectionGetParams) SetDrawersStateQueryParameter(drawersState *s
 	o.DrawersStateQueryParameter = drawersState
 }
 
-// WithFields adds the fields to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithFields(fields []string) *ShelfCollectionGetParams {
-	o.SetFields(fields)
+// WithErrorsReasonCodeQueryParameter adds the errorsReasonCode to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithErrorsReasonCodeQueryParameter(errorsReasonCode *string) *ShelfCollectionGetParams {
+	o.SetErrorsReasonCodeQueryParameter(errorsReasonCode)
 	return o
 }
 
-// SetFields adds the fields to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetErrorsReasonCodeQueryParameter adds the errorsReasonCode to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetErrorsReasonCodeQueryParameter(errorsReasonCode *string) {
+	o.ErrorsReasonCodeQueryParameter = errorsReasonCode
+}
+
+// WithErrorsReasonMessageQueryParameter adds the errorsReasonMessage to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithErrorsReasonMessageQueryParameter(errorsReasonMessage *string) *ShelfCollectionGetParams {
+	o.SetErrorsReasonMessageQueryParameter(errorsReasonMessage)
+	return o
+}
+
+// SetErrorsReasonMessageQueryParameter adds the errorsReasonMessage to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetErrorsReasonMessageQueryParameter(errorsReasonMessage *string) {
+	o.ErrorsReasonMessageQueryParameter = errorsReasonMessage
+}
+
+// WithFansIDQueryParameter adds the fansID to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFansIDQueryParameter(fansID *int64) *ShelfCollectionGetParams {
+	o.SetFansIDQueryParameter(fansID)
+	return o
+}
+
+// SetFansIDQueryParameter adds the fansId to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFansIDQueryParameter(fansID *int64) {
+	o.FansIDQueryParameter = fansID
+}
+
+// WithFansLocationQueryParameter adds the fansLocation to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFansLocationQueryParameter(fansLocation *string) *ShelfCollectionGetParams {
+	o.SetFansLocationQueryParameter(fansLocation)
+	return o
+}
+
+// SetFansLocationQueryParameter adds the fansLocation to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFansLocationQueryParameter(fansLocation *string) {
+	o.FansLocationQueryParameter = fansLocation
+}
+
+// WithFansRpmQueryParameter adds the fansRpm to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFansRpmQueryParameter(fansRpm *int64) *ShelfCollectionGetParams {
+	o.SetFansRpmQueryParameter(fansRpm)
+	return o
+}
+
+// SetFansRpmQueryParameter adds the fansRpm to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFansRpmQueryParameter(fansRpm *int64) {
+	o.FansRpmQueryParameter = fansRpm
+}
+
+// WithFansStateQueryParameter adds the fansState to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFansStateQueryParameter(fansState *string) *ShelfCollectionGetParams {
+	o.SetFansStateQueryParameter(fansState)
+	return o
+}
+
+// SetFansStateQueryParameter adds the fansState to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFansStateQueryParameter(fansState *string) {
+	o.FansStateQueryParameter = fansState
+}
+
+// WithFieldsQueryParameter adds the fields to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithFieldsQueryParameter(fields []string) *ShelfCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
+	return o
+}
+
+// SetFieldsQueryParameter adds the fields to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithFrusFirmwareVersionQueryParameter adds the frusFirmwareVersion to the shelf collection get params
@@ -679,15 +817,26 @@ func (o *ShelfCollectionGetParams) SetInternalQueryParameter(internal *bool) {
 	o.InternalQueryParameter = internal
 }
 
-// WithMaxRecords adds the maxRecords to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithMaxRecords(maxRecords *int64) *ShelfCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithLocalQueryParameter adds the local to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithLocalQueryParameter(local *bool) *ShelfCollectionGetParams {
+	o.SetLocalQueryParameter(local)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetLocalQueryParameter adds the local to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetLocalQueryParameter(local *bool) {
+	o.LocalQueryParameter = local
+}
+
+// WithMaxRecordsQueryParameter adds the maxRecords to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ShelfCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
+	return o
+}
+
+// SetMaxRecordsQueryParameter adds the maxRecords to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithModelQueryParameter adds the model to the shelf collection get params
@@ -723,15 +872,15 @@ func (o *ShelfCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithOrderBy(orderBy []string) *ShelfCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ShelfCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPathsNameQueryParameter adds the pathsName to the shelf collection get params
@@ -877,6 +1026,17 @@ func (o *ShelfCollectionGetParams) SetPortsRemoteChassisQueryParameter(portsRemo
 	o.PortsRemoteChassisQueryParameter = portsRemoteChassis
 }
 
+// WithPortsRemoteDeviceQueryParameter adds the portsRemoteDevice to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithPortsRemoteDeviceQueryParameter(portsRemoteDevice *string) *ShelfCollectionGetParams {
+	o.SetPortsRemoteDeviceQueryParameter(portsRemoteDevice)
+	return o
+}
+
+// SetPortsRemoteDeviceQueryParameter adds the portsRemoteDevice to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetPortsRemoteDeviceQueryParameter(portsRemoteDevice *string) {
+	o.PortsRemoteDeviceQueryParameter = portsRemoteDevice
+}
+
 // WithPortsRemoteMacAddressQueryParameter adds the portsRemoteMacAddress to the shelf collection get params
 func (o *ShelfCollectionGetParams) WithPortsRemoteMacAddressQueryParameter(portsRemoteMacAddress *string) *ShelfCollectionGetParams {
 	o.SetPortsRemoteMacAddressQueryParameter(portsRemoteMacAddress)
@@ -943,26 +1103,26 @@ func (o *ShelfCollectionGetParams) SetPortsWwnQueryParameter(portsWwn *string) {
 	o.PortsWwnQueryParameter = portsWwn
 }
 
-// WithReturnRecords adds the returnRecords to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithReturnRecords(returnRecords *bool) *ShelfCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ShelfCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the shelf collection get params
-func (o *ShelfCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ShelfCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ShelfCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the shelf collection get params
-func (o *ShelfCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSerialNumberQueryParameter adds the serialNumber to the shelf collection get params
@@ -996,6 +1156,50 @@ func (o *ShelfCollectionGetParams) WithUIDQueryParameter(uid *string) *ShelfColl
 // SetUIDQueryParameter adds the uid to the shelf collection get params
 func (o *ShelfCollectionGetParams) SetUIDQueryParameter(uid *string) {
 	o.UIDQueryParameter = uid
+}
+
+// WithVendorManufacturerQueryParameter adds the vendorManufacturer to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVendorManufacturerQueryParameter(vendorManufacturer *string) *ShelfCollectionGetParams {
+	o.SetVendorManufacturerQueryParameter(vendorManufacturer)
+	return o
+}
+
+// SetVendorManufacturerQueryParameter adds the vendorManufacturer to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVendorManufacturerQueryParameter(vendorManufacturer *string) {
+	o.VendorManufacturerQueryParameter = vendorManufacturer
+}
+
+// WithVendorPartNumberQueryParameter adds the vendorPartNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVendorPartNumberQueryParameter(vendorPartNumber *string) *ShelfCollectionGetParams {
+	o.SetVendorPartNumberQueryParameter(vendorPartNumber)
+	return o
+}
+
+// SetVendorPartNumberQueryParameter adds the vendorPartNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVendorPartNumberQueryParameter(vendorPartNumber *string) {
+	o.VendorPartNumberQueryParameter = vendorPartNumber
+}
+
+// WithVendorProductQueryParameter adds the vendorProduct to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVendorProductQueryParameter(vendorProduct *string) *ShelfCollectionGetParams {
+	o.SetVendorProductQueryParameter(vendorProduct)
+	return o
+}
+
+// SetVendorProductQueryParameter adds the vendorProduct to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVendorProductQueryParameter(vendorProduct *string) {
+	o.VendorProductQueryParameter = vendorProduct
+}
+
+// WithVendorSerialNumberQueryParameter adds the vendorSerialNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) WithVendorSerialNumberQueryParameter(vendorSerialNumber *string) *ShelfCollectionGetParams {
+	o.SetVendorSerialNumberQueryParameter(vendorSerialNumber)
+	return o
+}
+
+// SetVendorSerialNumberQueryParameter adds the vendorSerialNumber to the shelf collection get params
+func (o *ShelfCollectionGetParams) SetVendorSerialNumberQueryParameter(vendorSerialNumber *string) {
+	o.VendorSerialNumberQueryParameter = vendorSerialNumber
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -1227,7 +1431,109 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.Fields != nil {
+	if o.ErrorsReasonCodeQueryParameter != nil {
+
+		// query param errors.reason.code
+		var qrErrorsReasonCode string
+
+		if o.ErrorsReasonCodeQueryParameter != nil {
+			qrErrorsReasonCode = *o.ErrorsReasonCodeQueryParameter
+		}
+		qErrorsReasonCode := qrErrorsReasonCode
+		if qErrorsReasonCode != "" {
+
+			if err := r.SetQueryParam("errors.reason.code", qErrorsReasonCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ErrorsReasonMessageQueryParameter != nil {
+
+		// query param errors.reason.message
+		var qrErrorsReasonMessage string
+
+		if o.ErrorsReasonMessageQueryParameter != nil {
+			qrErrorsReasonMessage = *o.ErrorsReasonMessageQueryParameter
+		}
+		qErrorsReasonMessage := qrErrorsReasonMessage
+		if qErrorsReasonMessage != "" {
+
+			if err := r.SetQueryParam("errors.reason.message", qErrorsReasonMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FansIDQueryParameter != nil {
+
+		// query param fans.id
+		var qrFansID int64
+
+		if o.FansIDQueryParameter != nil {
+			qrFansID = *o.FansIDQueryParameter
+		}
+		qFansID := swag.FormatInt64(qrFansID)
+		if qFansID != "" {
+
+			if err := r.SetQueryParam("fans.id", qFansID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FansLocationQueryParameter != nil {
+
+		// query param fans.location
+		var qrFansLocation string
+
+		if o.FansLocationQueryParameter != nil {
+			qrFansLocation = *o.FansLocationQueryParameter
+		}
+		qFansLocation := qrFansLocation
+		if qFansLocation != "" {
+
+			if err := r.SetQueryParam("fans.location", qFansLocation); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FansRpmQueryParameter != nil {
+
+		// query param fans.rpm
+		var qrFansRpm int64
+
+		if o.FansRpmQueryParameter != nil {
+			qrFansRpm = *o.FansRpmQueryParameter
+		}
+		qFansRpm := swag.FormatInt64(qrFansRpm)
+		if qFansRpm != "" {
+
+			if err := r.SetQueryParam("fans.rpm", qFansRpm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FansStateQueryParameter != nil {
+
+		// query param fans.state
+		var qrFansState string
+
+		if o.FansStateQueryParameter != nil {
+			qrFansState = *o.FansStateQueryParameter
+		}
+		qFansState := qrFansState
+		if qFansState != "" {
+
+			if err := r.SetQueryParam("fans.state", qFansState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1374,13 +1680,30 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.LocalQueryParameter != nil {
+
+		// query param local
+		var qrLocal bool
+
+		if o.LocalQueryParameter != nil {
+			qrLocal = *o.LocalQueryParameter
+		}
+		qLocal := swag.FormatBool(qrLocal)
+		if qLocal != "" {
+
+			if err := r.SetQueryParam("local", qLocal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1442,7 +1765,7 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1674,6 +1997,23 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
+	if o.PortsRemoteDeviceQueryParameter != nil {
+
+		// query param ports.remote.device
+		var qrPortsRemoteDevice string
+
+		if o.PortsRemoteDeviceQueryParameter != nil {
+			qrPortsRemoteDevice = *o.PortsRemoteDeviceQueryParameter
+		}
+		qPortsRemoteDevice := qrPortsRemoteDevice
+		if qPortsRemoteDevice != "" {
+
+			if err := r.SetQueryParam("ports.remote.device", qPortsRemoteDevice); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.PortsRemoteMacAddressQueryParameter != nil {
 
 		// query param ports.remote.mac_address
@@ -1776,13 +2116,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1793,13 +2133,13 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1861,6 +2201,74 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
+	if o.VendorManufacturerQueryParameter != nil {
+
+		// query param vendor.manufacturer
+		var qrVendorManufacturer string
+
+		if o.VendorManufacturerQueryParameter != nil {
+			qrVendorManufacturer = *o.VendorManufacturerQueryParameter
+		}
+		qVendorManufacturer := qrVendorManufacturer
+		if qVendorManufacturer != "" {
+
+			if err := r.SetQueryParam("vendor.manufacturer", qVendorManufacturer); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VendorPartNumberQueryParameter != nil {
+
+		// query param vendor.part_number
+		var qrVendorPartNumber string
+
+		if o.VendorPartNumberQueryParameter != nil {
+			qrVendorPartNumber = *o.VendorPartNumberQueryParameter
+		}
+		qVendorPartNumber := qrVendorPartNumber
+		if qVendorPartNumber != "" {
+
+			if err := r.SetQueryParam("vendor.part_number", qVendorPartNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VendorProductQueryParameter != nil {
+
+		// query param vendor.product
+		var qrVendorProduct string
+
+		if o.VendorProductQueryParameter != nil {
+			qrVendorProduct = *o.VendorProductQueryParameter
+		}
+		qVendorProduct := qrVendorProduct
+		if qVendorProduct != "" {
+
+			if err := r.SetQueryParam("vendor.product", qVendorProduct); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VendorSerialNumberQueryParameter != nil {
+
+		// query param vendor.serial_number
+		var qrVendorSerialNumber string
+
+		if o.VendorSerialNumberQueryParameter != nil {
+			qrVendorSerialNumber = *o.VendorSerialNumberQueryParameter
+		}
+		qVendorSerialNumber := qrVendorSerialNumber
+		if qVendorSerialNumber != "" {
+
+			if err := r.SetQueryParam("vendor.serial_number", qVendorSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -1869,7 +2277,7 @@ func (o *ShelfCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamShelfCollectionGet binds the parameter fields
 func (o *ShelfCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1886,7 +2294,7 @@ func (o *ShelfCollectionGetParams) bindParamFields(formats strfmt.Registry) []st
 
 // bindParamShelfCollectionGet binds the parameter order_by
 func (o *ShelfCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

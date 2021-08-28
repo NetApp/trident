@@ -386,14 +386,14 @@ type IscsiServiceMetric struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *IscsiServiceMetricThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -468,63 +468,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricDurationPT15S captures enum value "PT15S"
 	IscsiServiceMetricDurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricDurationPT4M captures enum value "PT4M"
 	IscsiServiceMetricDurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricDurationPT30M captures enum value "PT30M"
 	IscsiServiceMetricDurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricDurationPT2H captures enum value "PT2H"
 	IscsiServiceMetricDurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricDurationP1D captures enum value "P1D"
 	IscsiServiceMetricDurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricDurationPT5M captures enum value "PT5M"
 	IscsiServiceMetricDurationPT5M string = "PT5M"
 )
@@ -588,7 +588,7 @@ var iscsiServiceMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -598,105 +598,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricStatusOk captures enum value "ok"
 	IscsiServiceMetricStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricStatusError captures enum value "error"
 	IscsiServiceMetricStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricStatusPartialNoData captures enum value "partial_no_data"
 	IscsiServiceMetricStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// IscsiServiceMetric
-	// IscsiServiceMetric
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// IscsiServiceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	IscsiServiceMetricStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricStatusPartialNoResponse captures enum value "partial_no_response"
 	IscsiServiceMetricStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricStatusPartialOtherError captures enum value "partial_other_error"
 	IscsiServiceMetricStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricStatusNegativeDelta captures enum value "negative_delta"
 	IscsiServiceMetricStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// IscsiServiceMetric
+	// IscsiServiceMetric
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// IscsiServiceMetricStatusNotFound captures enum value "not_found"
+	IscsiServiceMetricStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricStatusBackfilledData captures enum value "backfilled_data"
 	IscsiServiceMetricStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	IscsiServiceMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceMetric
 	// IscsiServiceMetric
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	IscsiServiceMetricStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// IscsiServiceMetric
+	// IscsiServiceMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// IscsiServiceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	IscsiServiceMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -1147,14 +1157,14 @@ type IscsiServiceStatistics struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *IscsiServiceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1228,7 +1238,7 @@ var iscsiServiceStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1238,105 +1248,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceStatistics
 	// IscsiServiceStatistics
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceStatisticsStatusOk captures enum value "ok"
 	IscsiServiceStatisticsStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceStatistics
 	// IscsiServiceStatistics
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceStatisticsStatusError captures enum value "error"
 	IscsiServiceStatisticsStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceStatistics
 	// IscsiServiceStatistics
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceStatisticsStatusPartialNoData captures enum value "partial_no_data"
 	IscsiServiceStatisticsStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// IscsiServiceStatistics
-	// IscsiServiceStatistics
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// IscsiServiceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	IscsiServiceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceStatistics
 	// IscsiServiceStatistics
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
 	IscsiServiceStatisticsStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceStatistics
 	// IscsiServiceStatistics
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceStatisticsStatusPartialOtherError captures enum value "partial_other_error"
 	IscsiServiceStatisticsStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceStatistics
 	// IscsiServiceStatistics
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceStatisticsStatusNegativeDelta captures enum value "negative_delta"
 	IscsiServiceStatisticsStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// IscsiServiceStatistics
+	// IscsiServiceStatistics
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// IscsiServiceStatisticsStatusNotFound captures enum value "not_found"
+	IscsiServiceStatisticsStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// IscsiServiceStatistics
 	// IscsiServiceStatistics
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceStatisticsStatusBackfilledData captures enum value "backfilled_data"
 	IscsiServiceStatisticsStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceStatistics
 	// IscsiServiceStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	IscsiServiceStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// IscsiServiceStatistics
 	// IscsiServiceStatistics
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiServiceStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	IscsiServiceStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// IscsiServiceStatistics
+	// IscsiServiceStatistics
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// IscsiServiceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	IscsiServiceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -1952,5 +1972,3 @@ func (m *IscsiServiceTarget) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

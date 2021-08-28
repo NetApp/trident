@@ -64,7 +64,7 @@ type FcLoginGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* InitiatorWwpn.
 
@@ -133,15 +133,15 @@ func (o *FcLoginGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the fc login get params
-func (o *FcLoginGetParams) WithFields(fields []string) *FcLoginGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the fc login get params
+func (o *FcLoginGetParams) WithFieldsQueryParameter(fields []string) *FcLoginGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the fc login get params
-func (o *FcLoginGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the fc login get params
+func (o *FcLoginGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithInitiatorWwpnPathParameter adds the initiatorWwpn to the fc login get params
@@ -174,7 +174,7 @@ func (o *FcLoginGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -203,7 +203,7 @@ func (o *FcLoginGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamFcLoginGet binds the parameter fields
 func (o *FcLoginGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

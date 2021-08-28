@@ -39,14 +39,14 @@ type PerformanceCifsMetric struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *PerformanceCifsMetricThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -121,63 +121,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricDurationPT15S captures enum value "PT15S"
 	PerformanceCifsMetricDurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricDurationPT4M captures enum value "PT4M"
 	PerformanceCifsMetricDurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricDurationPT30M captures enum value "PT30M"
 	PerformanceCifsMetricDurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricDurationPT2H captures enum value "PT2H"
 	PerformanceCifsMetricDurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricDurationP1D captures enum value "P1D"
 	PerformanceCifsMetricDurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricDurationPT5M captures enum value "PT5M"
 	PerformanceCifsMetricDurationPT5M string = "PT5M"
 )
@@ -241,7 +241,7 @@ var performanceCifsMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -251,105 +251,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricStatusOk captures enum value "ok"
 	PerformanceCifsMetricStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricStatusError captures enum value "error"
 	PerformanceCifsMetricStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricStatusPartialNoData captures enum value "partial_no_data"
 	PerformanceCifsMetricStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// performance_cifs_metric
-	// PerformanceCifsMetric
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// PerformanceCifsMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceCifsMetricStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricStatusPartialNoResponse captures enum value "partial_no_response"
 	PerformanceCifsMetricStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricStatusPartialOtherError captures enum value "partial_other_error"
 	PerformanceCifsMetricStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricStatusNegativeDelta captures enum value "negative_delta"
 	PerformanceCifsMetricStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// performance_cifs_metric
+	// PerformanceCifsMetric
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// PerformanceCifsMetricStatusNotFound captures enum value "not_found"
+	PerformanceCifsMetricStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricStatusBackfilledData captures enum value "backfilled_data"
 	PerformanceCifsMetricStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	PerformanceCifsMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_cifs_metric
 	// PerformanceCifsMetric
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceCifsMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	PerformanceCifsMetricStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// performance_cifs_metric
+	// PerformanceCifsMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// PerformanceCifsMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceCifsMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -788,5 +798,3 @@ func (m *PerformanceCifsMetricThroughput) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -37,6 +38,12 @@ type RaidGroup struct {
 	// Read Only: true
 	Name string `json:"name,omitempty"`
 
+	// RAID type of the raid group.
+	// Example: raid_dp
+	// Read Only: true
+	// Enum: [raid_dp raid_tec raid0 raid4]
+	RaidType string `json:"raid_type,omitempty"`
+
 	// recomputing parity
 	RecomputingParity *RaidGroupRecomputingParity `json:"recomputing_parity,omitempty"`
 
@@ -49,6 +56,10 @@ func (m *RaidGroup) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDisks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRaidType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -85,6 +96,82 @@ func (m *RaidGroup) validateDisks(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+var raidGroupTypeRaidTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["raid_dp","raid_tec","raid0","raid4"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		raidGroupTypeRaidTypePropEnum = append(raidGroupTypeRaidTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// raid_group
+	// RaidGroup
+	// raid_type
+	// RaidType
+	// raid_dp
+	// END DEBUGGING
+	// RaidGroupRaidTypeRaidDp captures enum value "raid_dp"
+	RaidGroupRaidTypeRaidDp string = "raid_dp"
+
+	// BEGIN DEBUGGING
+	// raid_group
+	// RaidGroup
+	// raid_type
+	// RaidType
+	// raid_tec
+	// END DEBUGGING
+	// RaidGroupRaidTypeRaidTec captures enum value "raid_tec"
+	RaidGroupRaidTypeRaidTec string = "raid_tec"
+
+	// BEGIN DEBUGGING
+	// raid_group
+	// RaidGroup
+	// raid_type
+	// RaidType
+	// raid0
+	// END DEBUGGING
+	// RaidGroupRaidTypeRaid0 captures enum value "raid0"
+	RaidGroupRaidTypeRaid0 string = "raid0"
+
+	// BEGIN DEBUGGING
+	// raid_group
+	// RaidGroup
+	// raid_type
+	// RaidType
+	// raid4
+	// END DEBUGGING
+	// RaidGroupRaidTypeRaid4 captures enum value "raid4"
+	RaidGroupRaidTypeRaid4 string = "raid4"
+)
+
+// prop value enum
+func (m *RaidGroup) validateRaidTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, raidGroupTypeRaidTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *RaidGroup) validateRaidType(formats strfmt.Registry) error {
+	if swag.IsZero(m.RaidType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateRaidTypeEnum("raid_type", "body", m.RaidType); err != nil {
+		return err
 	}
 
 	return nil
@@ -141,6 +228,10 @@ func (m *RaidGroup) ContextValidate(ctx context.Context, formats strfmt.Registry
 	}
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRaidType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -201,6 +292,15 @@ func (m *RaidGroup) contextValidateDisks(ctx context.Context, formats strfmt.Reg
 func (m *RaidGroup) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *RaidGroup) contextValidateRaidType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "raid_type", "body", string(m.RaidType)); err != nil {
 		return err
 	}
 
@@ -400,5 +500,3 @@ func (m *RaidGroupReconstruct) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

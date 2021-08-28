@@ -319,7 +319,8 @@ type EmsEventResponseRecordsItems0 struct {
 
 	// Timestamp of the event. Returned by default.
 	// Read Only: true
-	Time string `json:"time,omitempty"`
+	// Format: date-time
+	Time *strfmt.DateTime `json:"time,omitempty"`
 }
 
 // Validate validates this ems event response records items0
@@ -339,6 +340,10 @@ func (m *EmsEventResponseRecordsItems0) Validate(formats strfmt.Registry) error 
 	}
 
 	if err := m.validateParameters(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTime(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -418,6 +423,18 @@ func (m *EmsEventResponseRecordsItems0) validateParameters(formats strfmt.Regist
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *EmsEventResponseRecordsItems0) validateTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.Time) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("time", "body", "date-time", m.Time.String(), formats); err != nil {
+		return err
 	}
 
 	return nil
@@ -554,7 +571,7 @@ func (m *EmsEventResponseRecordsItems0) contextValidateSource(ctx context.Contex
 
 func (m *EmsEventResponseRecordsItems0) contextValidateTime(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "time", "body", string(m.Time)); err != nil {
+	if err := validate.ReadOnly(ctx, "time", "body", m.Time); err != nil {
 		return err
 	}
 
@@ -734,63 +751,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsEventResponseRecordsItems0Message
 	// EmsEventResponseRecordsItems0Message
 	// severity
 	// Severity
 	// emergency
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsEventResponseRecordsItems0MessageSeverityEmergency captures enum value "emergency"
 	EmsEventResponseRecordsItems0MessageSeverityEmergency string = "emergency"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsEventResponseRecordsItems0Message
 	// EmsEventResponseRecordsItems0Message
 	// severity
 	// Severity
 	// alert
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsEventResponseRecordsItems0MessageSeverityAlert captures enum value "alert"
 	EmsEventResponseRecordsItems0MessageSeverityAlert string = "alert"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsEventResponseRecordsItems0Message
 	// EmsEventResponseRecordsItems0Message
 	// severity
 	// Severity
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsEventResponseRecordsItems0MessageSeverityError captures enum value "error"
 	EmsEventResponseRecordsItems0MessageSeverityError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsEventResponseRecordsItems0Message
 	// EmsEventResponseRecordsItems0Message
 	// severity
 	// Severity
 	// notice
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsEventResponseRecordsItems0MessageSeverityNotice captures enum value "notice"
 	EmsEventResponseRecordsItems0MessageSeverityNotice string = "notice"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsEventResponseRecordsItems0Message
 	// EmsEventResponseRecordsItems0Message
 	// severity
 	// Severity
 	// informational
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsEventResponseRecordsItems0MessageSeverityInformational captures enum value "informational"
 	EmsEventResponseRecordsItems0MessageSeverityInformational string = "informational"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsEventResponseRecordsItems0Message
 	// EmsEventResponseRecordsItems0Message
 	// severity
 	// Severity
 	// debug
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsEventResponseRecordsItems0MessageSeverityDebug captures enum value "debug"
 	EmsEventResponseRecordsItems0MessageSeverityDebug string = "debug"
 )
@@ -1228,5 +1245,3 @@ func (m *EmsEventResponseRecordsItems0ParametersItems0) UnmarshalBinary(b []byte
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

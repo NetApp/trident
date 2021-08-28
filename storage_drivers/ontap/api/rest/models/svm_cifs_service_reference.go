@@ -25,9 +25,11 @@ type SvmCifsServiceReference struct {
 	// ad domain
 	AdDomain *SvmCifsServiceReferenceAdDomain `json:"ad_domain,omitempty"`
 
-	// Specifies whether or not the CIFS service is administratively enabled.
-	//
-	Enabled bool `json:"enabled,omitempty"`
+	// If this is set to true, an SVM administrator can manage the CIFS service. If it is false, only the cluster administrator can manage the service.
+	Allowed *bool `json:"allowed,omitempty"`
+
+	// If allowed, setting to true enables the CIFS service.
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// The NetBIOS name of the CIFS server.
 	// Example: CIFS1
@@ -308,5 +310,3 @@ func (m *SvmCifsServiceReferenceLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

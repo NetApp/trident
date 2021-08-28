@@ -64,7 +64,7 @@ type VscanOnDemandGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	// Name.
 	NamePathParameter string
@@ -73,7 +73,7 @@ type VscanOnDemandGetParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,15 +128,15 @@ func (o *VscanOnDemandGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the vscan on demand get params
-func (o *VscanOnDemandGetParams) WithFields(fields []string) *VscanOnDemandGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the vscan on demand get params
+func (o *VscanOnDemandGetParams) WithFieldsQueryParameter(fields []string) *VscanOnDemandGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the vscan on demand get params
-func (o *VscanOnDemandGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the vscan on demand get params
+func (o *VscanOnDemandGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithNamePathParameter adds the name to the vscan on demand get params
@@ -150,15 +150,15 @@ func (o *VscanOnDemandGetParams) SetNamePathParameter(name string) {
 	o.NamePathParameter = name
 }
 
-// WithSvmUUID adds the svmUUID to the vscan on demand get params
-func (o *VscanOnDemandGetParams) WithSvmUUID(svmUUID string) *VscanOnDemandGetParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the vscan on demand get params
+func (o *VscanOnDemandGetParams) WithSVMUUIDPathParameter(svmUUID string) *VscanOnDemandGetParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the vscan on demand get params
-func (o *VscanOnDemandGetParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the vscan on demand get params
+func (o *VscanOnDemandGetParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -169,7 +169,7 @@ func (o *VscanOnDemandGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -186,7 +186,7 @@ func (o *VscanOnDemandGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 
@@ -198,7 +198,7 @@ func (o *VscanOnDemandGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamVscanOnDemandGet binds the parameter fields
 func (o *VscanOnDemandGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

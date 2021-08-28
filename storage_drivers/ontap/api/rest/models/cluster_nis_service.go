@@ -289,5 +289,3 @@ func (m *ClusterNisServiceLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

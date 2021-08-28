@@ -33,7 +33,7 @@ type CifsShare struct {
 	AccessBasedEnumeration *bool `json:"access_based_enumeration,omitempty"`
 
 	// acls
-	Acls []*CifsShareACL `json:"acls,omitempty"`
+	Acls []*CifsShareAclsItems0 `json:"acls,omitempty"`
 
 	// Specifies whether CIFS clients can request for change notifications for directories on this share.
 	ChangeNotify *bool `json:"change_notify,omitempty"`
@@ -69,6 +69,10 @@ type CifsShare struct {
 	// Max Length: 80
 	// Min Length: 1
 	Name string `json:"name,omitempty"`
+
+	// Specifies whether or not CIFS clients can follow a unix symlinks outside the share boundaries.
+	//
+	NoStrictSecurity *bool `json:"no_strict_security,omitempty"`
 
 	// Specify whether opportunistic locks are enabled on this share. "Oplocks" allow clients to lock files and cache content locally,
 	// which can increase performance for file operations.
@@ -264,33 +268,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cifs_share
 	// CifsShare
 	// unix_symlink
 	// UnixSymlink
 	// local
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsShareUnixSymlinkLocal captures enum value "local"
 	CifsShareUnixSymlinkLocal string = "local"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cifs_share
 	// CifsShare
 	// unix_symlink
 	// UnixSymlink
 	// widelink
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsShareUnixSymlinkWidelink captures enum value "widelink"
 	CifsShareUnixSymlinkWidelink string = "widelink"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cifs_share
 	// CifsShare
 	// unix_symlink
 	// UnixSymlink
 	// disable
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsShareUnixSymlinkDisable captures enum value "disable"
 	CifsShareUnixSymlinkDisable string = "disable"
 )
@@ -430,6 +434,351 @@ func (m *CifsShare) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *CifsShare) UnmarshalBinary(b []byte) error {
 	var res CifsShare
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// CifsShareAclsItems0 The permissions that users and groups have on a CIFS share.
+//
+// swagger:model CifsShareAclsItems0
+type CifsShareAclsItems0 struct {
+
+	// links
+	Links *CifsShareAclsItems0Links `json:"_links,omitempty"`
+
+	// Specifies the access rights that a user or group has on the defined CIFS Share.
+	// The following values are allowed:
+	// * no_access    - User does not have CIFS share access
+	// * read         - User has only read access
+	// * change       - User has change access
+	// * full_control - User has full_control access
+	//
+	// Enum: [no_access read change full_control]
+	Permission string `json:"permission,omitempty"`
+
+	// Specifies the type of the user or group to add to the access control
+	// list of a CIFS share. The following values are allowed:
+	// * windows    - Windows user or group
+	// * unix_user  - UNIX user
+	// * unix_group - UNIX group
+	//
+	// Enum: [windows unix_user unix_group]
+	Type string `json:"type,omitempty"`
+
+	// Specifies the user or group name to add to the access control list of a CIFS share.
+	// Example: ENGDOMAIN\\ad_user
+	UserOrGroup string `json:"user_or_group,omitempty"`
+}
+
+// Validate validates this cifs share acls items0
+func (m *CifsShareAclsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePermission(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *CifsShareAclsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var cifsShareAclsItems0TypePermissionPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["no_access","read","change","full_control"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cifsShareAclsItems0TypePermissionPropEnum = append(cifsShareAclsItems0TypePermissionPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// CifsShareAclsItems0
+	// CifsShareAclsItems0
+	// permission
+	// Permission
+	// no_access
+	// END DEBUGGING
+	// CifsShareAclsItems0PermissionNoAccess captures enum value "no_access"
+	CifsShareAclsItems0PermissionNoAccess string = "no_access"
+
+	// BEGIN DEBUGGING
+	// CifsShareAclsItems0
+	// CifsShareAclsItems0
+	// permission
+	// Permission
+	// read
+	// END DEBUGGING
+	// CifsShareAclsItems0PermissionRead captures enum value "read"
+	CifsShareAclsItems0PermissionRead string = "read"
+
+	// BEGIN DEBUGGING
+	// CifsShareAclsItems0
+	// CifsShareAclsItems0
+	// permission
+	// Permission
+	// change
+	// END DEBUGGING
+	// CifsShareAclsItems0PermissionChange captures enum value "change"
+	CifsShareAclsItems0PermissionChange string = "change"
+
+	// BEGIN DEBUGGING
+	// CifsShareAclsItems0
+	// CifsShareAclsItems0
+	// permission
+	// Permission
+	// full_control
+	// END DEBUGGING
+	// CifsShareAclsItems0PermissionFullControl captures enum value "full_control"
+	CifsShareAclsItems0PermissionFullControl string = "full_control"
+)
+
+// prop value enum
+func (m *CifsShareAclsItems0) validatePermissionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsShareAclsItems0TypePermissionPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CifsShareAclsItems0) validatePermission(formats strfmt.Registry) error {
+	if swag.IsZero(m.Permission) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePermissionEnum("permission", "body", m.Permission); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var cifsShareAclsItems0TypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["windows","unix_user","unix_group"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cifsShareAclsItems0TypeTypePropEnum = append(cifsShareAclsItems0TypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// CifsShareAclsItems0
+	// CifsShareAclsItems0
+	// type
+	// Type
+	// windows
+	// END DEBUGGING
+	// CifsShareAclsItems0TypeWindows captures enum value "windows"
+	CifsShareAclsItems0TypeWindows string = "windows"
+
+	// BEGIN DEBUGGING
+	// CifsShareAclsItems0
+	// CifsShareAclsItems0
+	// type
+	// Type
+	// unix_user
+	// END DEBUGGING
+	// CifsShareAclsItems0TypeUnixUser captures enum value "unix_user"
+	CifsShareAclsItems0TypeUnixUser string = "unix_user"
+
+	// BEGIN DEBUGGING
+	// CifsShareAclsItems0
+	// CifsShareAclsItems0
+	// type
+	// Type
+	// unix_group
+	// END DEBUGGING
+	// CifsShareAclsItems0TypeUnixGroup captures enum value "unix_group"
+	CifsShareAclsItems0TypeUnixGroup string = "unix_group"
+)
+
+// prop value enum
+func (m *CifsShareAclsItems0) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsShareAclsItems0TypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CifsShareAclsItems0) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cifs share acls items0 based on the context it is used
+func (m *CifsShareAclsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *CifsShareAclsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *CifsShareAclsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *CifsShareAclsItems0) UnmarshalBinary(b []byte) error {
+	var res CifsShareAclsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// CifsShareAclsItems0Links cifs share acls items0 links
+//
+// swagger:model CifsShareAclsItems0Links
+type CifsShareAclsItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this cifs share acls items0 links
+func (m *CifsShareAclsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *CifsShareAclsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cifs share acls items0 links based on the context it is used
+func (m *CifsShareAclsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *CifsShareAclsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *CifsShareAclsItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *CifsShareAclsItems0Links) UnmarshalBinary(b []byte) error {
+	var res CifsShareAclsItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -884,5 +1233,3 @@ func (m *CifsShareVolumeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

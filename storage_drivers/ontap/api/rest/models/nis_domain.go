@@ -41,5 +41,3 @@ func (m NisDomain) Validate(formats strfmt.Registry) error {
 func (m NisDomain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

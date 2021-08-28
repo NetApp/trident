@@ -60,14 +60,14 @@ func NewQosPolicyDeleteParamsWithHTTPClient(client *http.Client) *QosPolicyDelet
 */
 type QosPolicyDeleteParams struct {
 
-	// PolicyUUID.
-	PolicyUUIDPathParameter string
-
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
+
+	// UUID.
+	UUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -87,11 +87,11 @@ func (o *QosPolicyDeleteParams) WithDefaults() *QosPolicyDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *QosPolicyDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := QosPolicyDeleteParams{
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -133,26 +133,26 @@ func (o *QosPolicyDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithPolicyUUIDPathParameter adds the policyUUID to the qos policy delete params
-func (o *QosPolicyDeleteParams) WithPolicyUUIDPathParameter(policyUUID string) *QosPolicyDeleteParams {
-	o.SetPolicyUUIDPathParameter(policyUUID)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the qos policy delete params
+func (o *QosPolicyDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *QosPolicyDeleteParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetPolicyUUIDPathParameter adds the policyUuid to the qos policy delete params
-func (o *QosPolicyDeleteParams) SetPolicyUUIDPathParameter(policyUUID string) {
-	o.PolicyUUIDPathParameter = policyUUID
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the qos policy delete params
+func (o *QosPolicyDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
-// WithReturnTimeout adds the returnTimeout to the qos policy delete params
-func (o *QosPolicyDeleteParams) WithReturnTimeout(returnTimeout *int64) *QosPolicyDeleteParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithUUIDPathParameter adds the uuid to the qos policy delete params
+func (o *QosPolicyDeleteParams) WithUUIDPathParameter(uuid string) *QosPolicyDeleteParams {
+	o.SetUUIDPathParameter(uuid)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the qos policy delete params
-func (o *QosPolicyDeleteParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetUUIDPathParameter adds the uuid to the qos policy delete params
+func (o *QosPolicyDeleteParams) SetUUIDPathParameter(uuid string) {
+	o.UUIDPathParameter = uuid
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -163,18 +163,13 @@ func (o *QosPolicyDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	// path param policy.uuid
-	if err := r.SetPathParam("policy.uuid", o.PolicyUUIDPathParameter); err != nil {
-		return err
-	}
-
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -183,6 +178,11 @@ func (o *QosPolicyDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strf
 				return err
 			}
 		}
+	}
+
+	// path param uuid
+	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+		return err
 	}
 
 	if len(res) > 0 {

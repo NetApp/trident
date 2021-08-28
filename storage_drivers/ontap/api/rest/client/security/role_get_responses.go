@@ -51,19 +51,19 @@ func NewRoleGetOK() *RoleGetOK {
 OK
 */
 type RoleGetOK struct {
-	Payload *models.RoleResponse
+	Payload *models.Role
 }
 
 func (o *RoleGetOK) Error() string {
 	return fmt.Sprintf("[GET /security/roles/{owner.uuid}/{name}][%d] roleGetOK  %+v", 200, o.Payload)
 }
-func (o *RoleGetOK) GetPayload() *models.RoleResponse {
+func (o *RoleGetOK) GetPayload() *models.Role {
 	return o.Payload
 }
 
 func (o *RoleGetOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.RoleResponse)
+	o.Payload = new(models.Role)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

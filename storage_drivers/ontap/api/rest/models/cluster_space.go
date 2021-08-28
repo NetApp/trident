@@ -27,11 +27,14 @@ type ClusterSpace struct {
 	// cloud storage
 	CloudStorage *ClusterSpaceCloudStorage `json:"cloud_storage,omitempty"`
 
-	// efficiency
+	// Storage efficiency
 	Efficiency *SpaceEfficiency `json:"efficiency,omitempty"`
 
-	// efficiency without snapshots
+	// Storage efficiency that does not include the savings provided by Snapshot copies.
 	EfficiencyWithoutSnapshots *SpaceEfficiency `json:"efficiency_without_snapshots,omitempty"`
+
+	// Storage efficiency that does not include the savings provided by Snapshot copies and FlexClones.
+	EfficiencyWithoutSnapshotsFlexclones *SpaceEfficiency `json:"efficiency_without_snapshots_flexclones,omitempty"`
 }
 
 // Validate validates this cluster space
@@ -51,6 +54,10 @@ func (m *ClusterSpace) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateEfficiencyWithoutSnapshots(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateEfficiencyWithoutSnapshotsFlexclones(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -128,6 +135,23 @@ func (m *ClusterSpace) validateEfficiencyWithoutSnapshots(formats strfmt.Registr
 	return nil
 }
 
+func (m *ClusterSpace) validateEfficiencyWithoutSnapshotsFlexclones(formats strfmt.Registry) error {
+	if swag.IsZero(m.EfficiencyWithoutSnapshotsFlexclones) { // not required
+		return nil
+	}
+
+	if m.EfficiencyWithoutSnapshotsFlexclones != nil {
+		if err := m.EfficiencyWithoutSnapshotsFlexclones.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("efficiency_without_snapshots_flexclones")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this cluster space based on the context it is used
 func (m *ClusterSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -145,6 +169,10 @@ func (m *ClusterSpace) ContextValidate(ctx context.Context, formats strfmt.Regis
 	}
 
 	if err := m.contextValidateEfficiencyWithoutSnapshots(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEfficiencyWithoutSnapshotsFlexclones(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -210,6 +238,20 @@ func (m *ClusterSpace) contextValidateEfficiencyWithoutSnapshots(ctx context.Con
 	return nil
 }
 
+func (m *ClusterSpace) contextValidateEfficiencyWithoutSnapshotsFlexclones(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.EfficiencyWithoutSnapshotsFlexclones != nil {
+		if err := m.EfficiencyWithoutSnapshotsFlexclones.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("efficiency_without_snapshots_flexclones")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *ClusterSpace) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -238,6 +280,9 @@ type ClusterSpaceBlockStorage struct {
 
 	// medias
 	Medias []*ClusterSpaceBlockStorageMediasItems0 `json:"medias,omitempty"`
+
+	// Total physical used space across the cluster
+	PhysicalUsed int64 `json:"physical_used,omitempty"`
 
 	// Total space across the cluster
 	Size int64 `json:"size,omitempty"`
@@ -342,8 +387,14 @@ type ClusterSpaceBlockStorageMediasItems0 struct {
 	// Available space
 	Available int64 `json:"available,omitempty"`
 
-	// efficiency
+	// Storage Efficiency
 	Efficiency *SpaceEfficiency `json:"efficiency,omitempty"`
+
+	// Storage efficiency that does not include the savings provided by Snapshot copies.
+	EfficiencyWithoutSnapshots *SpaceEfficiency `json:"efficiency_without_snapshots,omitempty"`
+
+	// Storage efficiency that does not include the savings provided by Snapshot copies and FlexClones.
+	EfficiencyWithoutSnapshotsFlexclones *SpaceEfficiency `json:"efficiency_without_snapshots_flexclones,omitempty"`
 
 	// Total space
 	Size int64 `json:"size,omitempty"`
@@ -361,6 +412,14 @@ func (m *ClusterSpaceBlockStorageMediasItems0) Validate(formats strfmt.Registry)
 	var res []error
 
 	if err := m.validateEfficiency(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateEfficiencyWithoutSnapshots(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateEfficiencyWithoutSnapshotsFlexclones(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -391,6 +450,40 @@ func (m *ClusterSpaceBlockStorageMediasItems0) validateEfficiency(formats strfmt
 	return nil
 }
 
+func (m *ClusterSpaceBlockStorageMediasItems0) validateEfficiencyWithoutSnapshots(formats strfmt.Registry) error {
+	if swag.IsZero(m.EfficiencyWithoutSnapshots) { // not required
+		return nil
+	}
+
+	if m.EfficiencyWithoutSnapshots != nil {
+		if err := m.EfficiencyWithoutSnapshots.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("efficiency_without_snapshots")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceBlockStorageMediasItems0) validateEfficiencyWithoutSnapshotsFlexclones(formats strfmt.Registry) error {
+	if swag.IsZero(m.EfficiencyWithoutSnapshotsFlexclones) { // not required
+		return nil
+	}
+
+	if m.EfficiencyWithoutSnapshotsFlexclones != nil {
+		if err := m.EfficiencyWithoutSnapshotsFlexclones.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("efficiency_without_snapshots_flexclones")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 var clusterSpaceBlockStorageMediasItems0TypeTypePropEnum []interface{}
 
 func init() {
@@ -405,53 +498,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterSpaceBlockStorageMediasItems0
 	// ClusterSpaceBlockStorageMediasItems0
 	// type
 	// Type
 	// hdd
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterSpaceBlockStorageMediasItems0TypeHdd captures enum value "hdd"
 	ClusterSpaceBlockStorageMediasItems0TypeHdd string = "hdd"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterSpaceBlockStorageMediasItems0
 	// ClusterSpaceBlockStorageMediasItems0
 	// type
 	// Type
 	// hybrid
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterSpaceBlockStorageMediasItems0TypeHybrid captures enum value "hybrid"
 	ClusterSpaceBlockStorageMediasItems0TypeHybrid string = "hybrid"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterSpaceBlockStorageMediasItems0
 	// ClusterSpaceBlockStorageMediasItems0
 	// type
 	// Type
 	// lun
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterSpaceBlockStorageMediasItems0TypeLun captures enum value "lun"
 	ClusterSpaceBlockStorageMediasItems0TypeLun string = "lun"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterSpaceBlockStorageMediasItems0
 	// ClusterSpaceBlockStorageMediasItems0
 	// type
 	// Type
 	// ssd
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterSpaceBlockStorageMediasItems0TypeSsd captures enum value "ssd"
 	ClusterSpaceBlockStorageMediasItems0TypeSsd string = "ssd"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterSpaceBlockStorageMediasItems0
 	// ClusterSpaceBlockStorageMediasItems0
 	// type
 	// Type
 	// vmdisk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterSpaceBlockStorageMediasItems0TypeVmdisk captures enum value "vmdisk"
 	ClusterSpaceBlockStorageMediasItems0TypeVmdisk string = "vmdisk"
 )
@@ -485,6 +578,14 @@ func (m *ClusterSpaceBlockStorageMediasItems0) ContextValidate(ctx context.Conte
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateEfficiencyWithoutSnapshots(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEfficiencyWithoutSnapshotsFlexclones(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -497,6 +598,34 @@ func (m *ClusterSpaceBlockStorageMediasItems0) contextValidateEfficiency(ctx con
 		if err := m.Efficiency.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("efficiency")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceBlockStorageMediasItems0) contextValidateEfficiencyWithoutSnapshots(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.EfficiencyWithoutSnapshots != nil {
+		if err := m.EfficiencyWithoutSnapshots.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("efficiency_without_snapshots")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceBlockStorageMediasItems0) contextValidateEfficiencyWithoutSnapshotsFlexclones(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.EfficiencyWithoutSnapshotsFlexclones != nil {
+		if err := m.EfficiencyWithoutSnapshotsFlexclones.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("efficiency_without_snapshots_flexclones")
 			}
 			return err
 		}
@@ -578,5 +707,3 @@ func (m *ClusterSpaceCloudStorage) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

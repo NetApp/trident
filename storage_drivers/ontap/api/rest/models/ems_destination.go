@@ -142,43 +142,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ems_destination
 	// EmsDestination
 	// type
 	// Type
 	// snmp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsDestinationTypeSnmp captures enum value "snmp"
 	EmsDestinationTypeSnmp string = "snmp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ems_destination
 	// EmsDestination
 	// type
 	// Type
 	// email
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsDestinationTypeEmail captures enum value "email"
 	EmsDestinationTypeEmail string = "email"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ems_destination
 	// EmsDestination
 	// type
 	// Type
 	// syslog
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsDestinationTypeSyslog captures enum value "syslog"
 	EmsDestinationTypeSyslog string = "syslog"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ems_destination
 	// EmsDestination
 	// type
 	// Type
 	// rest_api
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsDestinationTypeRestAPI captures enum value "rest_api"
 	EmsDestinationTypeRestAPI string = "rest_api"
 )
@@ -642,5 +642,3 @@ func (m *EmsDestinationLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -64,7 +64,7 @@ type NvmeSubsystemGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -126,15 +126,15 @@ func (o *NvmeSubsystemGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the nvme subsystem get params
-func (o *NvmeSubsystemGetParams) WithFields(fields []string) *NvmeSubsystemGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the nvme subsystem get params
+func (o *NvmeSubsystemGetParams) WithFieldsQueryParameter(fields []string) *NvmeSubsystemGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the nvme subsystem get params
-func (o *NvmeSubsystemGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the nvme subsystem get params
+func (o *NvmeSubsystemGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the nvme subsystem get params
@@ -156,7 +156,7 @@ func (o *NvmeSubsystemGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -180,7 +180,7 @@ func (o *NvmeSubsystemGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamNvmeSubsystemGet binds the parameter fields
 func (o *NvmeSubsystemGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

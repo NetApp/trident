@@ -142,23 +142,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// role
 	// Role
 	// scope
 	// Scope
 	// cluster
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RoleScopeCluster captures enum value "cluster"
 	RoleScopeCluster string = "cluster"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// role
 	// Role
 	// scope
 	// Scope
 	// svm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// RoleScopeSvm captures enum value "svm"
 	RoleScopeSvm string = "svm"
 )
@@ -563,5 +563,3 @@ func (m *RoleOwnerLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

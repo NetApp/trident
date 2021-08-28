@@ -280,113 +280,113 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// oracle_rac_on_san
 	// OracleRacOnSan
 	// os_type
 	// OsType
 	// aix
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOsTypeAix captures enum value "aix"
 	OracleRacOnSanOsTypeAix string = "aix"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// oracle_rac_on_san
 	// OracleRacOnSan
 	// os_type
 	// OsType
 	// hpux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOsTypeHpux captures enum value "hpux"
 	OracleRacOnSanOsTypeHpux string = "hpux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// oracle_rac_on_san
 	// OracleRacOnSan
 	// os_type
 	// OsType
 	// hyper_v
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOsTypeHyperv captures enum value "hyper_v"
 	OracleRacOnSanOsTypeHyperv string = "hyper_v"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// oracle_rac_on_san
 	// OracleRacOnSan
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOsTypeLinux captures enum value "linux"
 	OracleRacOnSanOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// oracle_rac_on_san
 	// OracleRacOnSan
 	// os_type
 	// OsType
 	// solaris
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOsTypeSolaris captures enum value "solaris"
 	OracleRacOnSanOsTypeSolaris string = "solaris"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// oracle_rac_on_san
 	// OracleRacOnSan
 	// os_type
 	// OsType
 	// solaris_efi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOsTypeSolarisEfi captures enum value "solaris_efi"
 	OracleRacOnSanOsTypeSolarisEfi string = "solaris_efi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// oracle_rac_on_san
 	// OracleRacOnSan
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOsTypeVmware captures enum value "vmware"
 	OracleRacOnSanOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// oracle_rac_on_san
 	// OracleRacOnSan
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOsTypeWindows captures enum value "windows"
 	OracleRacOnSanOsTypeWindows string = "windows"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// oracle_rac_on_san
 	// OracleRacOnSan
 	// os_type
 	// OsType
 	// windows_2008
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOsTypeWindows2008 captures enum value "windows_2008"
 	OracleRacOnSanOsTypeWindows2008 string = "windows_2008"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// oracle_rac_on_san
 	// OracleRacOnSan
 	// os_type
 	// OsType
 	// windows_gpt
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOsTypeWindowsGpt captures enum value "windows_gpt"
 	OracleRacOnSanOsTypeWindowsGpt string = "windows_gpt"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// oracle_rac_on_san
 	// OracleRacOnSan
 	// os_type
 	// OsType
 	// xen
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOsTypeXen captures enum value "xen"
 	OracleRacOnSanOsTypeXen string = "xen"
 )
@@ -773,33 +773,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanArchiveLogStorageService
 	// OracleRacOnSanArchiveLogStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanArchiveLogStorageServiceNameExtreme captures enum value "extreme"
 	OracleRacOnSanArchiveLogStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanArchiveLogStorageService
 	// OracleRacOnSanArchiveLogStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanArchiveLogStorageServiceNamePerformance captures enum value "performance"
 	OracleRacOnSanArchiveLogStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanArchiveLogStorageService
 	// OracleRacOnSanArchiveLogStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanArchiveLogStorageServiceNameValue captures enum value "value"
 	OracleRacOnSanArchiveLogStorageServiceNameValue string = "value"
 )
@@ -1055,33 +1055,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanDbStorageService
 	// OracleRacOnSanDbStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanDbStorageServiceNameExtreme captures enum value "extreme"
 	OracleRacOnSanDbStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanDbStorageService
 	// OracleRacOnSanDbStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanDbStorageServiceNamePerformance captures enum value "performance"
 	OracleRacOnSanDbStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanDbStorageService
 	// OracleRacOnSanDbStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanDbStorageServiceNameValue captures enum value "value"
 	OracleRacOnSanDbStorageServiceNameValue string = "value"
 )
@@ -1257,33 +1257,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanGridBinaryStorageService
 	// OracleRacOnSanGridBinaryStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanGridBinaryStorageServiceNameExtreme captures enum value "extreme"
 	OracleRacOnSanGridBinaryStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanGridBinaryStorageService
 	// OracleRacOnSanGridBinaryStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanGridBinaryStorageServiceNamePerformance captures enum value "performance"
 	OracleRacOnSanGridBinaryStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanGridBinaryStorageService
 	// OracleRacOnSanGridBinaryStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanGridBinaryStorageServiceNameValue captures enum value "value"
 	OracleRacOnSanGridBinaryStorageServiceNameValue string = "value"
 )
@@ -1459,33 +1459,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanOraHomeStorageService
 	// OracleRacOnSanOraHomeStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOraHomeStorageServiceNameExtreme captures enum value "extreme"
 	OracleRacOnSanOraHomeStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanOraHomeStorageService
 	// OracleRacOnSanOraHomeStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOraHomeStorageServiceNamePerformance captures enum value "performance"
 	OracleRacOnSanOraHomeStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanOraHomeStorageService
 	// OracleRacOnSanOraHomeStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOraHomeStorageServiceNameValue captures enum value "value"
 	OracleRacOnSanOraHomeStorageServiceNameValue string = "value"
 )
@@ -1686,33 +1686,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanOracleCrsStorageService
 	// OracleRacOnSanOracleCrsStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOracleCrsStorageServiceNameExtreme captures enum value "extreme"
 	OracleRacOnSanOracleCrsStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanOracleCrsStorageService
 	// OracleRacOnSanOracleCrsStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOracleCrsStorageServiceNamePerformance captures enum value "performance"
 	OracleRacOnSanOracleCrsStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanOracleCrsStorageService
 	// OracleRacOnSanOracleCrsStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanOracleCrsStorageServiceNameValue captures enum value "value"
 	OracleRacOnSanOracleCrsStorageServiceNameValue string = "value"
 )
@@ -1766,11 +1766,11 @@ func (m *OracleRacOnSanOracleCrsStorageService) UnmarshalBinary(b []byte) error 
 // swagger:model OracleRacOnSanProtectionType
 type OracleRacOnSanProtectionType struct {
 
-	// The local rpo of the application.
+	// The local RPO of the application.
 	// Enum: [hourly none]
 	LocalRpo string `json:"local_rpo,omitempty"`
 
-	// The remote rpo of the application.
+	// The remote RPO of the application.
 	// Enum: [none zero]
 	RemoteRpo string `json:"remote_rpo,omitempty"`
 }
@@ -1807,23 +1807,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanProtectionType
 	// OracleRacOnSanProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanProtectionTypeLocalRpoHourly captures enum value "hourly"
 	OracleRacOnSanProtectionTypeLocalRpoHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanProtectionType
 	// OracleRacOnSanProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanProtectionTypeLocalRpoNone captures enum value "none"
 	OracleRacOnSanProtectionTypeLocalRpoNone string = "none"
 )
@@ -1863,23 +1863,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanProtectionType
 	// OracleRacOnSanProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanProtectionTypeRemoteRpoNone captures enum value "none"
 	OracleRacOnSanProtectionTypeRemoteRpoNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanProtectionType
 	// OracleRacOnSanProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanProtectionTypeRemoteRpoZero captures enum value "zero"
 	OracleRacOnSanProtectionTypeRemoteRpoZero string = "zero"
 )
@@ -2110,33 +2110,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanRedoLogStorageService
 	// OracleRacOnSanRedoLogStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanRedoLogStorageServiceNameExtreme captures enum value "extreme"
 	OracleRacOnSanRedoLogStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanRedoLogStorageService
 	// OracleRacOnSanRedoLogStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanRedoLogStorageServiceNamePerformance captures enum value "performance"
 	OracleRacOnSanRedoLogStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleRacOnSanRedoLogStorageService
 	// OracleRacOnSanRedoLogStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleRacOnSanRedoLogStorageServiceNameValue captures enum value "value"
 	OracleRacOnSanRedoLogStorageServiceNameValue string = "value"
 )
@@ -2184,5 +2184,3 @@ func (m *OracleRacOnSanRedoLogStorageService) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

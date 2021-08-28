@@ -73,7 +73,7 @@ type NvmeSubsystemHostCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* SubsystemUUID.
 
@@ -100,11 +100,11 @@ func (o *NvmeSubsystemHostCreateParams) WithDefaults() *NvmeSubsystemHostCreateP
 // All values with no default are reset to their zero value.
 func (o *NvmeSubsystemHostCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := NvmeSubsystemHostCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -157,15 +157,15 @@ func (o *NvmeSubsystemHostCreateParams) SetInfo(info *models.NvmeSubsystemHost) 
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the nvme subsystem host create params
-func (o *NvmeSubsystemHostCreateParams) WithReturnRecords(returnRecords *bool) *NvmeSubsystemHostCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the nvme subsystem host create params
+func (o *NvmeSubsystemHostCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NvmeSubsystemHostCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the nvme subsystem host create params
-func (o *NvmeSubsystemHostCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the nvme subsystem host create params
+func (o *NvmeSubsystemHostCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WithSubsystemUUIDPathParameter adds the subsystemUUID to the nvme subsystem host create params
@@ -192,13 +192,13 @@ func (o *NvmeSubsystemHostCreateParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

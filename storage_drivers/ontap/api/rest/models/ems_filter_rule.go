@@ -106,23 +106,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ems_filter_rule
 	// EmsFilterRule
 	// type
 	// Type
 	// include
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsFilterRuleTypeInclude captures enum value "include"
 	EmsFilterRuleTypeInclude string = "include"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ems_filter_rule
 	// EmsFilterRule
 	// type
 	// Type
 	// exclude
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsFilterRuleTypeExclude captures enum value "exclude"
 	EmsFilterRuleTypeExclude string = "exclude"
 )
@@ -481,5 +481,3 @@ func (m *EmsFilterRuleMessageCriteriaLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

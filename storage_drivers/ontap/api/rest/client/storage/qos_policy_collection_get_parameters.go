@@ -82,7 +82,7 @@ type QosPolicyCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* FixedCapacityShared.
 
@@ -108,11 +108,17 @@ type QosPolicyCollectionGetParams struct {
 	*/
 	FixedMinThroughputIopsQueryParameter *int64
 
+	/* FixedMinThroughputMbps.
+
+	   Filter by fixed.min_throughput_mbps
+	*/
+	FixedMinThroughputMbpsQueryParameter *int64
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -130,7 +136,7 @@ type QosPolicyCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -138,7 +144,7 @@ type QosPolicyCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -146,7 +152,7 @@ type QosPolicyCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SvmName.
 
@@ -184,14 +190,14 @@ func (o *QosPolicyCollectionGetParams) WithDefaults() *QosPolicyCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *QosPolicyCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := QosPolicyCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -266,15 +272,15 @@ func (o *QosPolicyCollectionGetParams) SetAdaptivePeakIopsQueryParameter(adaptiv
 	o.AdaptivePeakIopsQueryParameter = adaptivePeakIops
 }
 
-// WithFields adds the fields to the qos policy collection get params
-func (o *QosPolicyCollectionGetParams) WithFields(fields []string) *QosPolicyCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithFieldsQueryParameter(fields []string) *QosPolicyCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the qos policy collection get params
-func (o *QosPolicyCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithFixedCapacitySharedQueryParameter adds the fixedCapacityShared to the qos policy collection get params
@@ -321,15 +327,26 @@ func (o *QosPolicyCollectionGetParams) SetFixedMinThroughputIopsQueryParameter(f
 	o.FixedMinThroughputIopsQueryParameter = fixedMinThroughputIops
 }
 
-// WithMaxRecords adds the maxRecords to the qos policy collection get params
-func (o *QosPolicyCollectionGetParams) WithMaxRecords(maxRecords *int64) *QosPolicyCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithFixedMinThroughputMbpsQueryParameter adds the fixedMinThroughputMbps to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithFixedMinThroughputMbpsQueryParameter(fixedMinThroughputMbps *int64) *QosPolicyCollectionGetParams {
+	o.SetFixedMinThroughputMbpsQueryParameter(fixedMinThroughputMbps)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the qos policy collection get params
-func (o *QosPolicyCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetFixedMinThroughputMbpsQueryParameter adds the fixedMinThroughputMbps to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetFixedMinThroughputMbpsQueryParameter(fixedMinThroughputMbps *int64) {
+	o.FixedMinThroughputMbpsQueryParameter = fixedMinThroughputMbps
+}
+
+// WithMaxRecordsQueryParameter adds the maxRecords to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *QosPolicyCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
+	return o
+}
+
+// SetMaxRecordsQueryParameter adds the maxRecords to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the qos policy collection get params
@@ -354,37 +371,37 @@ func (o *QosPolicyCollectionGetParams) SetObjectCountQueryParameter(objectCount 
 	o.ObjectCountQueryParameter = objectCount
 }
 
-// WithOrderBy adds the orderBy to the qos policy collection get params
-func (o *QosPolicyCollectionGetParams) WithOrderBy(orderBy []string) *QosPolicyCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *QosPolicyCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the qos policy collection get params
-func (o *QosPolicyCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the qos policy collection get params
-func (o *QosPolicyCollectionGetParams) WithReturnRecords(returnRecords *bool) *QosPolicyCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *QosPolicyCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the qos policy collection get params
-func (o *QosPolicyCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the qos policy collection get params
-func (o *QosPolicyCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *QosPolicyCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *QosPolicyCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the qos policy collection get params
-func (o *QosPolicyCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSVMNameQueryParameter adds the svmName to the qos policy collection get params
@@ -479,7 +496,7 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -558,13 +575,30 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.FixedMinThroughputMbpsQueryParameter != nil {
+
+		// query param fixed.min_throughput_mbps
+		var qrFixedMinThroughputMbps int64
+
+		if o.FixedMinThroughputMbpsQueryParameter != nil {
+			qrFixedMinThroughputMbps = *o.FixedMinThroughputMbpsQueryParameter
+		}
+		qFixedMinThroughputMbps := swag.FormatInt64(qrFixedMinThroughputMbps)
+		if qFixedMinThroughputMbps != "" {
+
+			if err := r.SetQueryParam("fixed.min_throughput_mbps", qFixedMinThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -609,7 +643,7 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -620,13 +654,13 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -637,13 +671,13 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -713,7 +747,7 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamQosPolicyCollectionGet binds the parameter fields
 func (o *QosPolicyCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -730,7 +764,7 @@ func (o *QosPolicyCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamQosPolicyCollectionGet binds the parameter order_by
 func (o *QosPolicyCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

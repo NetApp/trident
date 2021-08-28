@@ -64,7 +64,7 @@ type NdmpSvmGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* SvmUUID.
 
@@ -125,15 +125,15 @@ func (o *NdmpSvmGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the ndmp svm get params
-func (o *NdmpSvmGetParams) WithFields(fields []string) *NdmpSvmGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the ndmp svm get params
+func (o *NdmpSvmGetParams) WithFieldsQueryParameter(fields []string) *NdmpSvmGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the ndmp svm get params
-func (o *NdmpSvmGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the ndmp svm get params
+func (o *NdmpSvmGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithSVMUUIDPathParameter adds the svmUUID to the ndmp svm get params
@@ -155,7 +155,7 @@ func (o *NdmpSvmGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *NdmpSvmGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamNdmpSvmGet binds the parameter fields
 func (o *NdmpSvmGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

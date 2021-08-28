@@ -199,5 +199,3 @@ func (m *S3ServiceDeleteResponseRecordsItems0) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -31,7 +31,7 @@ type Lun struct {
 	// This property marks the LUN for auto deletion when the volume containing the LUN runs out of space. This is most commonly set on LUN clones.<br/>
 	// When set to _true_, the LUN becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the LUN is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new LUN is _false_.<br/>
-	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
@@ -51,7 +51,7 @@ type Lun struct {
 	Comment *string `json:"comment,omitempty"`
 
 	// The time the LUN was created.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -64,7 +64,7 @@ type Lun struct {
 	Location *LunLocation `json:"location,omitempty"`
 
 	// The LUN maps with which the LUN is associated.<br/>
-	// There is an added cost to retrieving property values for `lun_maps`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+	// There is an added cost to retrieving property values for `lun_maps`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Read Only: true
 	LunMaps []*LunLunMapsItems0 `json:"lun_maps,omitempty"`
@@ -222,33 +222,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// class
 	// Class
 	// regular
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunClassRegular captures enum value "regular"
 	LunClassRegular string = "regular"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// class
 	// Class
 	// protocol_endpoint
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunClassProtocolEndpoint captures enum value "protocol_endpoint"
 	LunClassProtocolEndpoint string = "protocol_endpoint"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// class
 	// Class
 	// vvol
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunClassVvol captures enum value "vvol"
 	LunClassVvol string = "vvol"
 )
@@ -408,133 +408,133 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// aix
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeAix captures enum value "aix"
 	LunOsTypeAix string = "aix"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// hpux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeHpux captures enum value "hpux"
 	LunOsTypeHpux string = "hpux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// hyper_v
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeHyperv captures enum value "hyper_v"
 	LunOsTypeHyperv string = "hyper_v"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeLinux captures enum value "linux"
 	LunOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// netware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeNetware captures enum value "netware"
 	LunOsTypeNetware string = "netware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// openvms
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeOpenvms captures enum value "openvms"
 	LunOsTypeOpenvms string = "openvms"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// solaris
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeSolaris captures enum value "solaris"
 	LunOsTypeSolaris string = "solaris"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// solaris_efi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeSolarisEfi captures enum value "solaris_efi"
 	LunOsTypeSolarisEfi string = "solaris_efi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeVmware captures enum value "vmware"
 	LunOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeWindows captures enum value "windows"
 	LunOsTypeWindows string = "windows"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// windows_2008
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeWindows2008 captures enum value "windows_2008"
 	LunOsTypeWindows2008 string = "windows_2008"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// windows_gpt
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeWindowsGpt captures enum value "windows_gpt"
 	LunOsTypeWindowsGpt string = "windows_gpt"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// lun
 	// Lun
 	// os_type
 	// OsType
 	// xen
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunOsTypeXen captures enum value "xen"
 	LunOsTypeXen string = "xen"
 )
@@ -2162,14 +2162,14 @@ type LunMetric struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *LunMetricThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2244,63 +2244,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricDurationPT15S captures enum value "PT15S"
 	LunMetricDurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricDurationPT4M captures enum value "PT4M"
 	LunMetricDurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricDurationPT30M captures enum value "PT30M"
 	LunMetricDurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricDurationPT2H captures enum value "PT2H"
 	LunMetricDurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricDurationP1D captures enum value "P1D"
 	LunMetricDurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricDurationPT5M captures enum value "PT5M"
 	LunMetricDurationPT5M string = "PT5M"
 )
@@ -2364,7 +2364,7 @@ var lunMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -2374,105 +2374,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricStatusOk captures enum value "ok"
 	LunMetricStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricStatusError captures enum value "error"
 	LunMetricStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricStatusPartialNoData captures enum value "partial_no_data"
 	LunMetricStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// LunMetric
-	// LunMetric
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// LunMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	LunMetricStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricStatusPartialNoResponse captures enum value "partial_no_response"
 	LunMetricStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricStatusPartialOtherError captures enum value "partial_other_error"
 	LunMetricStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricStatusNegativeDelta captures enum value "negative_delta"
 	LunMetricStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// LunMetric
+	// LunMetric
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// LunMetricStatusNotFound captures enum value "not_found"
+	LunMetricStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricStatusBackfilledData captures enum value "backfilled_data"
 	LunMetricStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	LunMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMetric
 	// LunMetric
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	LunMetricStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// LunMetric
+	// LunMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// LunMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	LunMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -2915,7 +2925,7 @@ func (m *LunMetricThroughput) UnmarshalBinary(b []byte) error {
 // LunMovement This sub-object applies to LUN movement between volumes. A LUN can be moved to a new volume with a PATCH request that changes either the volume portion of property `name`, `location.volume.uuid`, or `location.volume.name`. If the volume is changed using more than one of these properties, the supplied properties used must refer to the same volume.<br/>
 // Moving a LUN between volumes is an asynchronous activity begun by a PATCH request. The data for the LUN is then asynchronously copied from the source volume to the destination volume. The time required to complete the move depends on the size of the LUN and the load on the cluster. The `movement` sub-object is populated while a LUN movement is in progress and for two (2) minutes following completion of a movement.<br/>
 // While the LUN is being moved, the status of the LUN movement operation can be obtained using a GET for the LUN that requests the `movement` properties. The LUN movement operation can be further modified using a PATCH on the properties on the `movement` sub-object.<br/>
-// There is added cost to retrieving property values for `movement`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+// There is added cost to retrieving property values for `movement`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 //
 //
 // swagger:model LunMovement
@@ -2926,7 +2936,7 @@ type LunMovement struct {
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.<br/>
 	// This property is valid only in a POST that begins a LUN movement or a PATCH when a LUN movement is already in process.
 	//
-	MaxThroughput string `json:"max_throughput,omitempty"`
+	MaxThroughput int64 `json:"max_throughput,omitempty"`
 
 	// paths
 	Paths *LunMovementPaths `json:"paths,omitempty"`
@@ -3229,73 +3239,73 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMovementProgress
 	// LunMovementProgress
 	// state
 	// State
 	// preparing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMovementProgressStatePreparing captures enum value "preparing"
 	LunMovementProgressStatePreparing string = "preparing"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMovementProgress
 	// LunMovementProgress
 	// state
 	// State
 	// replicating
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMovementProgressStateReplicating captures enum value "replicating"
 	LunMovementProgressStateReplicating string = "replicating"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMovementProgress
 	// LunMovementProgress
 	// state
 	// State
 	// paused
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMovementProgressStatePaused captures enum value "paused"
 	LunMovementProgressStatePaused string = "paused"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMovementProgress
 	// LunMovementProgress
 	// state
 	// State
 	// paused_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMovementProgressStatePausedError captures enum value "paused_error"
 	LunMovementProgressStatePausedError string = "paused_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMovementProgress
 	// LunMovementProgress
 	// state
 	// State
 	// complete
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMovementProgressStateComplete captures enum value "complete"
 	LunMovementProgressStateComplete string = "complete"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMovementProgress
 	// LunMovementProgress
 	// state
 	// State
 	// reverting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMovementProgressStateReverting captures enum value "reverting"
 	LunMovementProgressStateReverting string = "reverting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunMovementProgress
 	// LunMovementProgress
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunMovementProgressStateFailed captures enum value "failed"
 	LunMovementProgressStateFailed string = "failed"
 )
@@ -3678,9 +3688,12 @@ type LunSpace struct {
 	Guarantee *LunSpaceGuarantee `json:"guarantee,omitempty"`
 
 	// The total provisioned size of the LUN. The LUN size can be increased but not be made smaller using the REST interface.<br/>
+	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes in bytes. The actual minimum and maxiumum sizes vary depending on the ONTAP version, ONTAP platform and the available space in the containing volume and aggregate.
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
 	//
 	// Example: 1073741824
+	// Maximum: 1.40737488355328e+14
+	// Minimum: 4096
 	Size int64 `json:"size,omitempty"`
 
 	// The amount of space consumed by the main data stream of the LUN.<br/>
@@ -3696,6 +3709,10 @@ func (m *LunSpace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateGuarantee(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSize(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3717,6 +3734,22 @@ func (m *LunSpace) validateGuarantee(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *LunSpace) validateSize(formats strfmt.Registry) error {
+	if swag.IsZero(m.Size) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("space"+"."+"size", "body", m.Size, 4096, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("space"+"."+"size", "body", m.Size, 1.40737488355328e+14, false); err != nil {
+		return err
 	}
 
 	return nil
@@ -3858,14 +3891,14 @@ type LunStatistics struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *LunStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -3939,7 +3972,7 @@ var lunStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -3949,105 +3982,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatistics
 	// LunStatistics
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatisticsStatusOk captures enum value "ok"
 	LunStatisticsStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatistics
 	// LunStatistics
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatisticsStatusError captures enum value "error"
 	LunStatisticsStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatistics
 	// LunStatistics
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatisticsStatusPartialNoData captures enum value "partial_no_data"
 	LunStatisticsStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// LunStatistics
-	// LunStatistics
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// LunStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	LunStatisticsStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatistics
 	// LunStatistics
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
 	LunStatisticsStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatistics
 	// LunStatistics
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatisticsStatusPartialOtherError captures enum value "partial_other_error"
 	LunStatisticsStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatistics
 	// LunStatistics
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatisticsStatusNegativeDelta captures enum value "negative_delta"
 	LunStatisticsStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// LunStatistics
+	// LunStatistics
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// LunStatisticsStatusNotFound captures enum value "not_found"
+	LunStatisticsStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// LunStatistics
 	// LunStatistics
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatisticsStatusBackfilledData captures enum value "backfilled_data"
 	LunStatisticsStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatistics
 	// LunStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	LunStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatistics
 	// LunStatistics
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	LunStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// LunStatistics
+	// LunStatistics
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// LunStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	LunStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -4383,7 +4426,7 @@ type LunStatus struct {
 	ContainerState string `json:"container_state,omitempty"`
 
 	// Reports if the LUN is mapped to one or more initiator groups.<br/>
-	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Read Only: true
 	Mapped *bool `json:"mapped,omitempty"`
@@ -4433,33 +4476,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatus
 	// LunStatus
 	// container_state
 	// ContainerState
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatusContainerStateOnline captures enum value "online"
 	LunStatusContainerStateOnline string = "online"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatus
 	// LunStatus
 	// container_state
 	// ContainerState
 	// aggregate_offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatusContainerStateAggregateOffline captures enum value "aggregate_offline"
 	LunStatusContainerStateAggregateOffline string = "aggregate_offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatus
 	// LunStatus
 	// container_state
 	// ContainerState
 	// volume_offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatusContainerStateVolumeOffline captures enum value "volume_offline"
 	LunStatusContainerStateVolumeOffline string = "volume_offline"
 )
@@ -4499,53 +4542,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatus
 	// LunStatus
 	// state
 	// State
 	// foreign_lun_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatusStateForeignLunError captures enum value "foreign_lun_error"
 	LunStatusStateForeignLunError string = "foreign_lun_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatus
 	// LunStatus
 	// state
 	// State
 	// nvfail
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatusStateNvfail captures enum value "nvfail"
 	LunStatusStateNvfail string = "nvfail"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatus
 	// LunStatus
 	// state
 	// State
 	// offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatusStateOffline captures enum value "offline"
 	LunStatusStateOffline string = "offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatus
 	// LunStatus
 	// state
 	// State
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatusStateOnline captures enum value "online"
 	LunStatusStateOnline string = "online"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LunStatus
 	// LunStatus
 	// state
 	// State
 	// space_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LunStatusStateSpaceError captures enum value "space_error"
 	LunStatusStateSpaceError string = "space_error"
 )
@@ -4833,5 +4876,3 @@ func (m *LunSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

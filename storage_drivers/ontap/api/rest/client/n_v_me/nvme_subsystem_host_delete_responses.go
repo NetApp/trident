@@ -77,6 +77,7 @@ func NewNvmeSubsystemHostDeleteDefault(code int) *NvmeSubsystemHostDeleteDefault
 | 72089771 | The NQN is invalid. A non-empty qualifier is required after the prefix. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089772 | The NQN is invalid. Add the prefix _'nqn'_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089773 | The NQN is invalid. The date field must be formatted _yyyy-mm_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
+| 72090001 | The NVMe subsystem does not exist. |
 
 */
 type NvmeSubsystemHostDeleteDefault struct {

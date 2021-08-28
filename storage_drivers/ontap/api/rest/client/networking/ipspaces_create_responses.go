@@ -74,6 +74,7 @@ func NewIpspacesCreateDefault(code int) *IpspacesCreateDefault {
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
+| 1966586 | The specified IPspace name is invalid because it is already used by a peered SVM. |
 | 1967102 | A POST operation might have left the configuration in an inconsistent state. Check the configuration. |
 ONTAP Error Response Codes
 | Error Code | Description |

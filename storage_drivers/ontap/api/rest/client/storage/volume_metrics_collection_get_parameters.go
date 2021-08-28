@@ -136,7 +136,37 @@ type VolumeMetricsCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
+
+	/* FlexcacheBandwidthSavings.
+
+	   Filter by flexcache.bandwidth_savings
+	*/
+	FlexcacheBandwidthSavingsQueryParameter *int64
+
+	/* FlexcacheCacheMissPercent.
+
+	   Filter by flexcache.cache_miss_percent
+	*/
+	FlexcacheCacheMissPercentQueryParameter *int64
+
+	/* FlexcacheDuration.
+
+	   Filter by flexcache.duration
+	*/
+	FlexcacheDurationQueryParameter *string
+
+	/* FlexcacheStatus.
+
+	   Filter by flexcache.status
+	*/
+	FlexcacheStatusQueryParameter *string
+
+	/* FlexcacheTimestamp.
+
+	   Filter by flexcache.timestamp
+	*/
+	FlexcacheTimestampQueryParameter *string
 
 	/* Interval.
 
@@ -205,13 +235,13 @@ type VolumeMetricsCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -219,7 +249,7 @@ type VolumeMetricsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -227,7 +257,7 @@ type VolumeMetricsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Status.
 
@@ -291,15 +321,15 @@ func (o *VolumeMetricsCollectionGetParams) SetDefaults() {
 	var (
 		intervalQueryParameterDefault = string("1h")
 
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := VolumeMetricsCollectionGetParams{
-		IntervalQueryParameter: &intervalQueryParameterDefault,
-		ReturnRecords:          &returnRecordsDefault,
-		ReturnTimeout:          &returnTimeoutDefault,
+		IntervalQueryParameter:      &intervalQueryParameterDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -473,15 +503,70 @@ func (o *VolumeMetricsCollectionGetParams) SetDurationQueryParameter(duration *s
 	o.DurationQueryParameter = duration
 }
 
-// WithFields adds the fields to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithFields(fields []string) *VolumeMetricsCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithFieldsQueryParameter(fields []string) *VolumeMetricsCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
+}
+
+// WithFlexcacheBandwidthSavingsQueryParameter adds the flexcacheBandwidthSavings to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithFlexcacheBandwidthSavingsQueryParameter(flexcacheBandwidthSavings *int64) *VolumeMetricsCollectionGetParams {
+	o.SetFlexcacheBandwidthSavingsQueryParameter(flexcacheBandwidthSavings)
+	return o
+}
+
+// SetFlexcacheBandwidthSavingsQueryParameter adds the flexcacheBandwidthSavings to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetFlexcacheBandwidthSavingsQueryParameter(flexcacheBandwidthSavings *int64) {
+	o.FlexcacheBandwidthSavingsQueryParameter = flexcacheBandwidthSavings
+}
+
+// WithFlexcacheCacheMissPercentQueryParameter adds the flexcacheCacheMissPercent to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithFlexcacheCacheMissPercentQueryParameter(flexcacheCacheMissPercent *int64) *VolumeMetricsCollectionGetParams {
+	o.SetFlexcacheCacheMissPercentQueryParameter(flexcacheCacheMissPercent)
+	return o
+}
+
+// SetFlexcacheCacheMissPercentQueryParameter adds the flexcacheCacheMissPercent to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetFlexcacheCacheMissPercentQueryParameter(flexcacheCacheMissPercent *int64) {
+	o.FlexcacheCacheMissPercentQueryParameter = flexcacheCacheMissPercent
+}
+
+// WithFlexcacheDurationQueryParameter adds the flexcacheDuration to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithFlexcacheDurationQueryParameter(flexcacheDuration *string) *VolumeMetricsCollectionGetParams {
+	o.SetFlexcacheDurationQueryParameter(flexcacheDuration)
+	return o
+}
+
+// SetFlexcacheDurationQueryParameter adds the flexcacheDuration to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetFlexcacheDurationQueryParameter(flexcacheDuration *string) {
+	o.FlexcacheDurationQueryParameter = flexcacheDuration
+}
+
+// WithFlexcacheStatusQueryParameter adds the flexcacheStatus to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithFlexcacheStatusQueryParameter(flexcacheStatus *string) *VolumeMetricsCollectionGetParams {
+	o.SetFlexcacheStatusQueryParameter(flexcacheStatus)
+	return o
+}
+
+// SetFlexcacheStatusQueryParameter adds the flexcacheStatus to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetFlexcacheStatusQueryParameter(flexcacheStatus *string) {
+	o.FlexcacheStatusQueryParameter = flexcacheStatus
+}
+
+// WithFlexcacheTimestampQueryParameter adds the flexcacheTimestamp to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithFlexcacheTimestampQueryParameter(flexcacheTimestamp *string) *VolumeMetricsCollectionGetParams {
+	o.SetFlexcacheTimestampQueryParameter(flexcacheTimestamp)
+	return o
+}
+
+// SetFlexcacheTimestampQueryParameter adds the flexcacheTimestamp to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetFlexcacheTimestampQueryParameter(flexcacheTimestamp *string) {
+	o.FlexcacheTimestampQueryParameter = flexcacheTimestamp
 }
 
 // WithIntervalQueryParameter adds the interval to the volume metrics collection get params
@@ -583,48 +668,48 @@ func (o *VolumeMetricsCollectionGetParams) SetLatencyWriteQueryParameter(latency
 	o.LatencyWriteQueryParameter = latencyWrite
 }
 
-// WithMaxRecords adds the maxRecords to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithMaxRecords(maxRecords *int64) *VolumeMetricsCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *VolumeMetricsCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
-// WithOrderBy adds the orderBy to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithOrderBy(orderBy []string) *VolumeMetricsCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *VolumeMetricsCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithReturnRecords(returnRecords *bool) *VolumeMetricsCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *VolumeMetricsCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *VolumeMetricsCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VolumeMetricsCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the volume metrics collection get params
-func (o *VolumeMetricsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the volume metrics collection get params
+func (o *VolumeMetricsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithStatusQueryParameter adds the status to the volume metrics collection get params
@@ -916,7 +1001,7 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -924,6 +1009,91 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.FlexcacheBandwidthSavingsQueryParameter != nil {
+
+		// query param flexcache.bandwidth_savings
+		var qrFlexcacheBandwidthSavings int64
+
+		if o.FlexcacheBandwidthSavingsQueryParameter != nil {
+			qrFlexcacheBandwidthSavings = *o.FlexcacheBandwidthSavingsQueryParameter
+		}
+		qFlexcacheBandwidthSavings := swag.FormatInt64(qrFlexcacheBandwidthSavings)
+		if qFlexcacheBandwidthSavings != "" {
+
+			if err := r.SetQueryParam("flexcache.bandwidth_savings", qFlexcacheBandwidthSavings); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FlexcacheCacheMissPercentQueryParameter != nil {
+
+		// query param flexcache.cache_miss_percent
+		var qrFlexcacheCacheMissPercent int64
+
+		if o.FlexcacheCacheMissPercentQueryParameter != nil {
+			qrFlexcacheCacheMissPercent = *o.FlexcacheCacheMissPercentQueryParameter
+		}
+		qFlexcacheCacheMissPercent := swag.FormatInt64(qrFlexcacheCacheMissPercent)
+		if qFlexcacheCacheMissPercent != "" {
+
+			if err := r.SetQueryParam("flexcache.cache_miss_percent", qFlexcacheCacheMissPercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FlexcacheDurationQueryParameter != nil {
+
+		// query param flexcache.duration
+		var qrFlexcacheDuration string
+
+		if o.FlexcacheDurationQueryParameter != nil {
+			qrFlexcacheDuration = *o.FlexcacheDurationQueryParameter
+		}
+		qFlexcacheDuration := qrFlexcacheDuration
+		if qFlexcacheDuration != "" {
+
+			if err := r.SetQueryParam("flexcache.duration", qFlexcacheDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FlexcacheStatusQueryParameter != nil {
+
+		// query param flexcache.status
+		var qrFlexcacheStatus string
+
+		if o.FlexcacheStatusQueryParameter != nil {
+			qrFlexcacheStatus = *o.FlexcacheStatusQueryParameter
+		}
+		qFlexcacheStatus := qrFlexcacheStatus
+		if qFlexcacheStatus != "" {
+
+			if err := r.SetQueryParam("flexcache.status", qFlexcacheStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FlexcacheTimestampQueryParameter != nil {
+
+		// query param flexcache.timestamp
+		var qrFlexcacheTimestamp string
+
+		if o.FlexcacheTimestampQueryParameter != nil {
+			qrFlexcacheTimestamp = *o.FlexcacheTimestampQueryParameter
+		}
+		qFlexcacheTimestamp := qrFlexcacheTimestamp
+		if qFlexcacheTimestamp != "" {
+
+			if err := r.SetQueryParam("flexcache.timestamp", qFlexcacheTimestamp); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -1080,13 +1250,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1097,7 +1267,7 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1108,13 +1278,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1125,13 +1295,13 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1257,7 +1427,7 @@ func (o *VolumeMetricsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamVolumeMetricsCollectionGet binds the parameter fields
 func (o *VolumeMetricsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1274,7 +1444,7 @@ func (o *VolumeMetricsCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamVolumeMetricsCollectionGet binds the parameter order_by
 func (o *VolumeMetricsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

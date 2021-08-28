@@ -94,5 +94,3 @@ func (m ExportAuthenticationFlavor) Validate(formats strfmt.Registry) error {
 func (m ExportAuthenticationFlavor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

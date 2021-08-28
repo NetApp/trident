@@ -107,33 +107,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vsi_on_san
 	// VsiOnSan
 	// hypervisor
 	// Hypervisor
 	// hyper_v
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanHypervisorHyperv captures enum value "hyper_v"
 	VsiOnSanHypervisorHyperv string = "hyper_v"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vsi_on_san
 	// VsiOnSan
 	// hypervisor
 	// Hypervisor
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanHypervisorVmware captures enum value "vmware"
 	VsiOnSanHypervisorVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vsi_on_san
 	// VsiOnSan
 	// hypervisor
 	// Hypervisor
 	// xen
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanHypervisorXen captures enum value "xen"
 	VsiOnSanHypervisorXen string = "xen"
 )
@@ -480,33 +480,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnSanDatastoreStorageService
 	// VsiOnSanDatastoreStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanDatastoreStorageServiceNameExtreme captures enum value "extreme"
 	VsiOnSanDatastoreStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnSanDatastoreStorageService
 	// VsiOnSanDatastoreStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanDatastoreStorageServiceNamePerformance captures enum value "performance"
 	VsiOnSanDatastoreStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnSanDatastoreStorageService
 	// VsiOnSanDatastoreStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanDatastoreStorageServiceNameValue captures enum value "value"
 	VsiOnSanDatastoreStorageServiceNameValue string = "value"
 )
@@ -560,11 +560,11 @@ func (m *VsiOnSanDatastoreStorageService) UnmarshalBinary(b []byte) error {
 // swagger:model VsiOnSanProtectionType
 type VsiOnSanProtectionType struct {
 
-	// The local rpo of the application.
+	// The local RPO of the application.
 	// Enum: [hourly none]
 	LocalRpo string `json:"local_rpo,omitempty"`
 
-	// The remote rpo of the application.
+	// The remote RPO of the application.
 	// Enum: [none zero]
 	RemoteRpo string `json:"remote_rpo,omitempty"`
 }
@@ -601,23 +601,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnSanProtectionType
 	// VsiOnSanProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanProtectionTypeLocalRpoHourly captures enum value "hourly"
 	VsiOnSanProtectionTypeLocalRpoHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnSanProtectionType
 	// VsiOnSanProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanProtectionTypeLocalRpoNone captures enum value "none"
 	VsiOnSanProtectionTypeLocalRpoNone string = "none"
 )
@@ -657,23 +657,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnSanProtectionType
 	// VsiOnSanProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanProtectionTypeRemoteRpoNone captures enum value "none"
 	VsiOnSanProtectionTypeRemoteRpoNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnSanProtectionType
 	// VsiOnSanProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanProtectionTypeRemoteRpoZero captures enum value "zero"
 	VsiOnSanProtectionTypeRemoteRpoZero string = "zero"
 )
@@ -721,5 +721,3 @@ func (m *VsiOnSanProtectionType) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

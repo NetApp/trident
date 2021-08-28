@@ -8,9 +8,7 @@ package models
 import (
 	"context"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/validate"
 )
 
 // IPAddressReadonly IPv4 or IPv6 address
@@ -24,18 +22,7 @@ func (m IPAddressReadonly) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this ip address readonly based on the context it is used
+// ContextValidate validates this ip address readonly based on context it is used
 func (m IPAddressReadonly) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := validate.ReadOnly(ctx, "", "body", IPAddressReadonly(m)); err != nil {
-		return err
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
-
-// HELLO RIPPY

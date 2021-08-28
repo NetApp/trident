@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -26,6 +27,9 @@ type S3Service struct {
 	// buckets
 	Buckets []*S3Bucket `json:"buckets,omitempty"`
 
+	// certificate
+	Certificate *S3ServiceCertificate `json:"certificate,omitempty"`
+
 	// Can contain any additional information about the server being created or modified.
 	// Example: S3 server
 	// Max Length: 256
@@ -35,11 +39,29 @@ type S3Service struct {
 	// Specifies whether the S3 server being created or modified should be up or down.
 	Enabled *bool `json:"enabled,omitempty"`
 
-	// Specifies the name of the S3 server. A server name can contain 0 to 15 characters using only the following combination of characters':' 0-9, A-Z, a-z, ".", and "-".
+	// Specifies whether HTTP is enabled on the S3 server being created or modified. By default, HTTP is disabled on the S3 server.
+	IsHTTPEnabled *bool `json:"is_http_enabled,omitempty"`
+
+	// Specifies whether HTTPS is enabled on the S3 server being created or modified. By default, HTTPS is enabled on the S3 server.
+	IsHTTPSEnabled *bool `json:"is_https_enabled,omitempty"`
+
+	// metric
+	Metric *S3ServiceMetric `json:"metric,omitempty"`
+
+	// Specifies the name of the S3 server. A server name can contain 1 to 253 characters using only the following combination of characters':' 0-9, A-Z, a-z, ".", and "-".
 	// Example: Server-1
-	// Max Length: 15
-	// Min Length: 0
-	Name *string `json:"name,omitempty"`
+	// Max Length: 253
+	// Min Length: 1
+	Name string `json:"name,omitempty"`
+
+	// Specifies the HTTP listener port for the S3 server. By default, HTTP is enabled on port 80.
+	Port *int64 `json:"port,omitempty"`
+
+	// Specifies the HTTPS listener port for the S3 server. By default, HTTPS is enabled on port 443.
+	SecurePort *int64 `json:"secure_port,omitempty"`
+
+	// statistics
+	Statistics *S3ServiceStatistics `json:"statistics,omitempty"`
 
 	// svm
 	Svm *S3ServiceSvm `json:"svm,omitempty"`
@@ -60,11 +82,23 @@ func (m *S3Service) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateCertificate(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateComment(formats); err != nil {
 		res = append(res, err)
 	}
 
+	if err := m.validateMetric(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatistics(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -123,6 +157,23 @@ func (m *S3Service) validateBuckets(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *S3Service) validateCertificate(formats strfmt.Registry) error {
+	if swag.IsZero(m.Certificate) { // not required
+		return nil
+	}
+
+	if m.Certificate != nil {
+		if err := m.Certificate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *S3Service) validateComment(formats strfmt.Registry) error {
 	if swag.IsZero(m.Comment) { // not required
 		return nil
@@ -139,17 +190,51 @@ func (m *S3Service) validateComment(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *S3Service) validateMetric(formats strfmt.Registry) error {
+	if swag.IsZero(m.Metric) { // not required
+		return nil
+	}
+
+	if m.Metric != nil {
+		if err := m.Metric.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *S3Service) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", *m.Name, 0); err != nil {
+	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", *m.Name, 15); err != nil {
+	if err := validate.MaxLength("name", "body", m.Name, 253); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *S3Service) validateStatistics(formats strfmt.Registry) error {
+	if swag.IsZero(m.Statistics) { // not required
+		return nil
+	}
+
+	if m.Statistics != nil {
+		if err := m.Statistics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -208,6 +293,18 @@ func (m *S3Service) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateCertificate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMetric(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatistics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -249,6 +346,48 @@ func (m *S3Service) contextValidateBuckets(ctx context.Context, formats strfmt.R
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *S3Service) contextValidateCertificate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Certificate != nil {
+		if err := m.Certificate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3Service) contextValidateMetric(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Metric != nil {
+		if err := m.Metric.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3Service) contextValidateStatistics(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Statistics != nil {
+		if err := m.Statistics.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -297,6 +436,1500 @@ func (m *S3Service) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *S3Service) UnmarshalBinary(b []byte) error {
 	var res S3Service
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3ServiceCertificate Specifies the certificate that will be used for creating HTTPS connections to the S3 server.
+//
+// swagger:model S3ServiceCertificate
+type S3ServiceCertificate struct {
+
+	// links
+	Links *S3ServiceCertificateLinks `json:"_links,omitempty"`
+
+	// Certificate name
+	// Example: cert1
+	Name string `json:"name,omitempty"`
+
+	// Certificate UUID
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this s3 service certificate
+func (m *S3ServiceCertificate) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3ServiceCertificate) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 service certificate based on the context it is used
+func (m *S3ServiceCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3ServiceCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3ServiceCertificate) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3ServiceCertificate) UnmarshalBinary(b []byte) error {
+	var res S3ServiceCertificate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3ServiceCertificateLinks s3 service certificate links
+//
+// swagger:model S3ServiceCertificateLinks
+type S3ServiceCertificateLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this s3 service certificate links
+func (m *S3ServiceCertificateLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3ServiceCertificateLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 service certificate links based on the context it is used
+func (m *S3ServiceCertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3ServiceCertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3ServiceCertificateLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3ServiceCertificateLinks) UnmarshalBinary(b []byte) error {
+	var res S3ServiceCertificateLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3ServiceMetric Performance numbers, such as IOPS latency and throughput, for SVM protocols.
+//
+// swagger:model S3ServiceMetric
+type S3ServiceMetric struct {
+
+	// links
+	Links *S3ServiceMetricLinks `json:"_links,omitempty"`
+
+	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
+	//
+	// Example: PT15S
+	// Read Only: true
+	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	Duration string `json:"duration,omitempty"`
+
+	// iops
+	Iops *S3ServiceMetricIops `json:"iops,omitempty"`
+
+	// latency
+	Latency *S3ServiceMetricLatency `json:"latency,omitempty"`
+
+	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	Status string `json:"status,omitempty"`
+
+	// throughput
+	Throughput *S3ServiceMetricThroughput `json:"throughput,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this s3 service metric
+func (m *S3ServiceMetric) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLatency(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughput(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3ServiceMetric) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var s3ServiceMetricTypeDurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		s3ServiceMetricTypeDurationPropEnum = append(s3ServiceMetricTypeDurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// duration
+	// Duration
+	// PT15S
+	// END DEBUGGING
+	// S3ServiceMetricDurationPT15S captures enum value "PT15S"
+	S3ServiceMetricDurationPT15S string = "PT15S"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// duration
+	// Duration
+	// PT4M
+	// END DEBUGGING
+	// S3ServiceMetricDurationPT4M captures enum value "PT4M"
+	S3ServiceMetricDurationPT4M string = "PT4M"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// duration
+	// Duration
+	// PT30M
+	// END DEBUGGING
+	// S3ServiceMetricDurationPT30M captures enum value "PT30M"
+	S3ServiceMetricDurationPT30M string = "PT30M"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// duration
+	// Duration
+	// PT2H
+	// END DEBUGGING
+	// S3ServiceMetricDurationPT2H captures enum value "PT2H"
+	S3ServiceMetricDurationPT2H string = "PT2H"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// duration
+	// Duration
+	// P1D
+	// END DEBUGGING
+	// S3ServiceMetricDurationP1D captures enum value "P1D"
+	S3ServiceMetricDurationP1D string = "P1D"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// duration
+	// Duration
+	// PT5M
+	// END DEBUGGING
+	// S3ServiceMetricDurationPT5M captures enum value "PT5M"
+	S3ServiceMetricDurationPT5M string = "PT5M"
+)
+
+// prop value enum
+func (m *S3ServiceMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3ServiceMetricTypeDurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *S3ServiceMetric) validateDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Duration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3ServiceMetric) validateIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.Iops) { // not required
+		return nil
+	}
+
+	if m.Iops != nil {
+		if err := m.Iops.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "iops")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3ServiceMetric) validateLatency(formats strfmt.Registry) error {
+	if swag.IsZero(m.Latency) { // not required
+		return nil
+	}
+
+	if m.Latency != nil {
+		if err := m.Latency.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "latency")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var s3ServiceMetricTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		s3ServiceMetricTypeStatusPropEnum = append(s3ServiceMetricTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// S3ServiceMetricStatusOk captures enum value "ok"
+	S3ServiceMetricStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// S3ServiceMetricStatusError captures enum value "error"
+	S3ServiceMetricStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// S3ServiceMetricStatusPartialNoData captures enum value "partial_no_data"
+	S3ServiceMetricStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// S3ServiceMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	S3ServiceMetricStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// S3ServiceMetricStatusPartialOtherError captures enum value "partial_other_error"
+	S3ServiceMetricStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// S3ServiceMetricStatusNegativeDelta captures enum value "negative_delta"
+	S3ServiceMetricStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// S3ServiceMetricStatusNotFound captures enum value "not_found"
+	S3ServiceMetricStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// S3ServiceMetricStatusBackfilledData captures enum value "backfilled_data"
+	S3ServiceMetricStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// S3ServiceMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	S3ServiceMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// S3ServiceMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	S3ServiceMetricStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// S3ServiceMetric
+	// S3ServiceMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// S3ServiceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	S3ServiceMetricStatusPartialNoUUID string = "partial_no_uuid"
+)
+
+// prop value enum
+func (m *S3ServiceMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3ServiceMetricTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *S3ServiceMetric) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3ServiceMetric) validateThroughput(formats strfmt.Registry) error {
+	if swag.IsZero(m.Throughput) { // not required
+		return nil
+	}
+
+	if m.Throughput != nil {
+		if err := m.Throughput.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "throughput")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3ServiceMetric) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("metric"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 service metric based on the context it is used
+func (m *S3ServiceMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDuration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIops(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLatency(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughput(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3ServiceMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3ServiceMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", string(m.Duration)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3ServiceMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Iops != nil {
+		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "iops")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3ServiceMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Latency != nil {
+		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "latency")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3ServiceMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3ServiceMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Throughput != nil {
+		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "throughput")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3ServiceMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3ServiceMetric) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3ServiceMetric) UnmarshalBinary(b []byte) error {
+	var res S3ServiceMetric
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3ServiceMetricIops The rate of I/O operations observed at the storage object.
+//
+// swagger:model S3ServiceMetricIops
+type S3ServiceMetricIops struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this s3 service metric iops
+func (m *S3ServiceMetricIops) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this s3 service metric iops based on the context it is used
+func (m *S3ServiceMetricIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3ServiceMetricIops) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3ServiceMetricIops) UnmarshalBinary(b []byte) error {
+	var res S3ServiceMetricIops
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3ServiceMetricLatency The round trip latency in microseconds observed at the storage object.
+//
+// swagger:model S3ServiceMetricLatency
+type S3ServiceMetricLatency struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this s3 service metric latency
+func (m *S3ServiceMetricLatency) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this s3 service metric latency based on the context it is used
+func (m *S3ServiceMetricLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3ServiceMetricLatency) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3ServiceMetricLatency) UnmarshalBinary(b []byte) error {
+	var res S3ServiceMetricLatency
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3ServiceMetricLinks s3 service metric links
+//
+// swagger:model S3ServiceMetricLinks
+type S3ServiceMetricLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this s3 service metric links
+func (m *S3ServiceMetricLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3ServiceMetricLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 service metric links based on the context it is used
+func (m *S3ServiceMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3ServiceMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3ServiceMetricLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3ServiceMetricLinks) UnmarshalBinary(b []byte) error {
+	var res S3ServiceMetricLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3ServiceMetricThroughput The rate of throughput bytes per second observed at the storage object.
+//
+// swagger:model S3ServiceMetricThroughput
+type S3ServiceMetricThroughput struct {
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this s3 service metric throughput
+func (m *S3ServiceMetricThroughput) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this s3 service metric throughput based on the context it is used
+func (m *S3ServiceMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3ServiceMetricThroughput) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3ServiceMetricThroughput) UnmarshalBinary(b []byte) error {
+	var res S3ServiceMetricThroughput
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3ServiceStatistics These are raw performance numbers, such as IOPS latency and throughput for SVM protocols. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
+//
+// swagger:model S3ServiceStatistics
+type S3ServiceStatistics struct {
+
+	// iops raw
+	IopsRaw *S3ServiceStatisticsIopsRaw `json:"iops_raw,omitempty"`
+
+	// latency raw
+	LatencyRaw *S3ServiceStatisticsLatencyRaw `json:"latency_raw,omitempty"`
+
+	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	Status string `json:"status,omitempty"`
+
+	// throughput raw
+	ThroughputRaw *S3ServiceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this s3 service statistics
+func (m *S3ServiceStatistics) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateIopsRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLatencyRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughputRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3ServiceStatistics) validateIopsRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.IopsRaw) { // not required
+		return nil
+	}
+
+	if m.IopsRaw != nil {
+		if err := m.IopsRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "iops_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3ServiceStatistics) validateLatencyRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.LatencyRaw) { // not required
+		return nil
+	}
+
+	if m.LatencyRaw != nil {
+		if err := m.LatencyRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "latency_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var s3ServiceStatisticsTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		s3ServiceStatisticsTypeStatusPropEnum = append(s3ServiceStatisticsTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// S3ServiceStatistics
+	// S3ServiceStatistics
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// S3ServiceStatisticsStatusOk captures enum value "ok"
+	S3ServiceStatisticsStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// S3ServiceStatistics
+	// S3ServiceStatistics
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// S3ServiceStatisticsStatusError captures enum value "error"
+	S3ServiceStatisticsStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// S3ServiceStatistics
+	// S3ServiceStatistics
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// S3ServiceStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	S3ServiceStatisticsStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// S3ServiceStatistics
+	// S3ServiceStatistics
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// S3ServiceStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	S3ServiceStatisticsStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// S3ServiceStatistics
+	// S3ServiceStatistics
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// S3ServiceStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	S3ServiceStatisticsStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// S3ServiceStatistics
+	// S3ServiceStatistics
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// S3ServiceStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	S3ServiceStatisticsStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// S3ServiceStatistics
+	// S3ServiceStatistics
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// S3ServiceStatisticsStatusNotFound captures enum value "not_found"
+	S3ServiceStatisticsStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
+	// S3ServiceStatistics
+	// S3ServiceStatistics
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// S3ServiceStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	S3ServiceStatisticsStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// S3ServiceStatistics
+	// S3ServiceStatistics
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// S3ServiceStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	S3ServiceStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// S3ServiceStatistics
+	// S3ServiceStatistics
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// S3ServiceStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	S3ServiceStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// S3ServiceStatistics
+	// S3ServiceStatistics
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// S3ServiceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	S3ServiceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
+)
+
+// prop value enum
+func (m *S3ServiceStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3ServiceStatisticsTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *S3ServiceStatistics) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3ServiceStatistics) validateThroughputRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.ThroughputRaw) { // not required
+		return nil
+	}
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3ServiceStatistics) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("statistics"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 service statistics based on the context it is used
+func (m *S3ServiceStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLatencyRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughputRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3ServiceStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IopsRaw != nil {
+		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "iops_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3ServiceStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.LatencyRaw != nil {
+		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "latency_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3ServiceStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3ServiceStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3ServiceStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3ServiceStatistics) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3ServiceStatistics) UnmarshalBinary(b []byte) error {
+	var res S3ServiceStatistics
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3ServiceStatisticsIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+//
+// swagger:model S3ServiceStatisticsIopsRaw
+type S3ServiceStatisticsIopsRaw struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this s3 service statistics iops raw
+func (m *S3ServiceStatisticsIopsRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this s3 service statistics iops raw based on the context it is used
+func (m *S3ServiceStatisticsIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3ServiceStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3ServiceStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
+	var res S3ServiceStatisticsIopsRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3ServiceStatisticsLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+//
+// swagger:model S3ServiceStatisticsLatencyRaw
+type S3ServiceStatisticsLatencyRaw struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this s3 service statistics latency raw
+func (m *S3ServiceStatisticsLatencyRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this s3 service statistics latency raw based on the context it is used
+func (m *S3ServiceStatisticsLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3ServiceStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3ServiceStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res S3ServiceStatisticsLatencyRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3ServiceStatisticsThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+//
+// swagger:model S3ServiceStatisticsThroughputRaw
+type S3ServiceStatisticsThroughputRaw struct {
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this s3 service statistics throughput raw
+func (m *S3ServiceStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this s3 service statistics throughput raw based on the context it is used
+func (m *S3ServiceStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3ServiceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3ServiceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res S3ServiceStatisticsThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -485,5 +2118,3 @@ func (m *S3ServiceSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -70,13 +70,13 @@ type NvmeServiceCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* MetricDuration.
 
@@ -166,7 +166,7 @@ type NvmeServiceCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -174,7 +174,7 @@ type NvmeServiceCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -182,7 +182,7 @@ type NvmeServiceCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* StatisticsIopsRawOther.
 
@@ -292,14 +292,14 @@ func (o *NvmeServiceCollectionGetParams) WithDefaults() *NvmeServiceCollectionGe
 // All values with no default are reset to their zero value.
 func (o *NvmeServiceCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := NvmeServiceCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -352,26 +352,26 @@ func (o *NvmeServiceCollectionGetParams) SetEnabledQueryParameter(enabled *bool)
 	o.EnabledQueryParameter = enabled
 }
 
-// WithFields adds the fields to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithFields(fields []string) *NvmeServiceCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithFieldsQueryParameter(fields []string) *NvmeServiceCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithMaxRecords adds the maxRecords to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithMaxRecords(maxRecords *int64) *NvmeServiceCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NvmeServiceCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithMetricDurationQueryParameter adds the metricDuration to the nvme service collection get params
@@ -528,37 +528,37 @@ func (o *NvmeServiceCollectionGetParams) SetMetricTimestampQueryParameter(metric
 	o.MetricTimestampQueryParameter = metricTimestamp
 }
 
-// WithOrderBy adds the orderBy to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithOrderBy(orderBy []string) *NvmeServiceCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NvmeServiceCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithReturnRecords(returnRecords *bool) *NvmeServiceCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NvmeServiceCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NvmeServiceCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NvmeServiceCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the nvme service collection get params
-func (o *NvmeServiceCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the nvme service collection get params
+func (o *NvmeServiceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the nvme service collection get params
@@ -751,7 +751,7 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -762,13 +762,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1017,7 +1017,7 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1028,13 +1028,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1045,13 +1045,13 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1325,7 +1325,7 @@ func (o *NvmeServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamNvmeServiceCollectionGet binds the parameter fields
 func (o *NvmeServiceCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1342,7 +1342,7 @@ func (o *NvmeServiceCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamNvmeServiceCollectionGet binds the parameter order_by
 func (o *NvmeServiceCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

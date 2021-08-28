@@ -64,13 +64,13 @@ type NisGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -125,26 +125,26 @@ func (o *NisGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the nis get params
-func (o *NisGetParams) WithFields(fields []string) *NisGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the nis get params
+func (o *NisGetParams) WithFieldsQueryParameter(fields []string) *NisGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the nis get params
-func (o *NisGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the nis get params
+func (o *NisGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithSvmUUID adds the svmUUID to the nis get params
-func (o *NisGetParams) WithSvmUUID(svmUUID string) *NisGetParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the nis get params
+func (o *NisGetParams) WithSVMUUIDPathParameter(svmUUID string) *NisGetParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the nis get params
-func (o *NisGetParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the nis get params
+func (o *NisGetParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -155,7 +155,7 @@ func (o *NisGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -167,7 +167,7 @@ func (o *NisGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 
@@ -179,7 +179,7 @@ func (o *NisGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 
 // bindParamNisGet binds the parameter fields
 func (o *NisGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

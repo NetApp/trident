@@ -594,6 +594,12 @@ type IscsiSessionInitiator struct {
 	// Read Only: true
 	Alias string `json:"alias,omitempty"`
 
+	// A comment available for use by the administrator. This is modifiable from the initiator REST endpoint directly. See [`PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}`](#/SAN/igroup_initiator_modify).
+	//
+	// Example: This is an iSCSI initiator for host 5
+	// Read Only: true
+	Comment string `json:"comment,omitempty"`
+
 	// The world wide unique name of the initiator.
 	//
 	// Example: iqn.1992-01.example.com:string
@@ -614,6 +620,10 @@ func (m *IscsiSessionInitiator) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateComment(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateName(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -627,6 +637,15 @@ func (m *IscsiSessionInitiator) ContextValidate(ctx context.Context, formats str
 func (m *IscsiSessionInitiator) contextValidateAlias(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "initiator"+"."+"alias", "body", string(m.Alias)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *IscsiSessionInitiator) contextValidateComment(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "initiator"+"."+"comment", "body", string(m.Comment)); err != nil {
 		return err
 	}
 
@@ -927,5 +946,3 @@ func (m *IscsiSessionSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

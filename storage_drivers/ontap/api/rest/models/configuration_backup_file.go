@@ -47,7 +47,7 @@ type ConfigurationBackupFile struct {
 	Size int64 `json:"size,omitempty"`
 
 	// The backup creation time.
-	// Example: 2019-02-04 18:33:48
+	// Example: 2019-02-04T13:33:48-05:00
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`
@@ -156,23 +156,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// configuration_backup_file
 	// ConfigurationBackupFile
 	// type
 	// Type
 	// node
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ConfigurationBackupFileTypeNode captures enum value "node"
 	ConfigurationBackupFileTypeNode string = "node"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// configuration_backup_file
 	// ConfigurationBackupFile
 	// type
 	// Type
 	// cluster
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ConfigurationBackupFileTypeCluster captures enum value "cluster"
 	ConfigurationBackupFileTypeCluster string = "cluster"
 )
@@ -527,5 +527,3 @@ func (m *ConfigurationBackupFileNodeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

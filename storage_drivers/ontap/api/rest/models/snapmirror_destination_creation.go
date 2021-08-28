@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// SnapmirrorDestinationCreation Use this object to provision the destination endpoint when establishing a SnapMirror relationship for a FlexVol volume, FlexGroup volume, or SVM. Given a source endpoint, the destination endpoint is provisioned in the SVM specified in the "destination.path" property. The SVM destination endpoint can only be provisioned on the local cluster. To provision the SVM destination endpoint use the optional "source.cluster.name" property to specify the remote cluster name or use the optional "source.cluster.uuid" property to specify the remote cluster UUID. When "create_destination.enabled" option is specified while making a POST for a SnapMirror relationship, the relationship can be automatically initialized by setting the "state" either to "snapmirrored" when the policy is of type "async" or to "in_sync" when the policy is of type "sync". The "destination.path" property must specify the destination endpoint path. For example, for FlexVol volume and FlexGroup volume, the "destination.path" can be specified as <destination-SVM-name:dp-volume-name>, and for SVM data protection, the "destination.path" must be specified as <destination-SVM-name:>. For a FlexVol volume or FlexGroup volume destination endpoint, the properties in this object can be specified either from the source or destination cluster. For an SVM destination endpoint, the properties in this object can be specified from the destination cluster. This object is not supported for non ONTAP endpoints.
+// SnapmirrorDestinationCreation Use this object to provision the destination endpoint when establishing a SnapMirror relationship for a FlexVol volume, FlexGroup volume, SVM, or Consistency Group. Given a source endpoint, the destination endpoint is provisioned in the SVM specified in the "destination.path" property. While protecting an SVM, the SVM destination endpoint can only be provisioned on the local cluster. To provision the SVM destination endpoint use the optional "source.cluster.name" property to specify the remote cluster name or use the optional "source.cluster.uuid" property to specify the remote cluster UUID. When "create_destination.enabled" option is specified while making a POST for a SnapMirror relationship, the relationship can be automatically initialized by setting the "state" either to "snapmirrored" when the policy is of type "async" or to "in_sync" when the policy is of type "sync". The "destination.path" property must specify the destination endpoint path. For example, for FlexVol volume and FlexGroup volume, the "destination.path" can be specified as <destination-SVM-name:dp-volume-name>, for SVM data protection, the "destination.path" must be specified as <destination-SVM-name:>, and for Consistency Group, the "destination.path" must be specified as <destination-SVM-name:/cg/consistency-group-name> along with the "destination.consistency_group_volumes" property to indicate the list of destination volumes of type "DP" in the Consistency Group. For a FlexVol volume, a FlexGroup volume, or a Consistency Group destination endpoint, the properties in this object can be specified either from the source or the destination cluster. For an SVM destination endpoint, the properties in this object can be specified from the destination cluster only. This object is not supported for non ONTAP endpoints.
 //
 // swagger:model snapmirror_destination_creation
 type SnapmirrorDestinationCreation struct {
@@ -154,10 +154,10 @@ type SnapmirrorDestinationCreationStorageService struct {
 	// This property indicates whether to create the destination endpoint using storage service.
 	Enabled bool `json:"enabled,omitempty"`
 
-	// Optional property to enforce storage service performance on the destination endpoint when the destination endpoint is used for read-write operations. This property is applicable to FlexVol volume and FlexGroup volume endpoints.
+	// Optional property to enforce storage service performance on the destination endpoint. This property is applicable to FlexVol volume, FlexGroup volume, and Consistency Group endpoints.
 	EnforcePerformance *bool `json:"enforce_performance,omitempty"`
 
-	// Optional property to specify the storage service name for the destination endpoint. This property is considered when the property "create_destination.storage_service.enabled" is set to "true". When the property "create_destination.storage_service.enabled" is set to "true" and the "create_destination.storage_service.name" for the endpoint is not specified, then ONTAP selects the highest storage service available on the cluster to provision the destination endpoint. This property is applicable to FlexVol volume and FlexGroup volume endpoints.
+	// Optional property to specify the storage service name for the destination endpoint. This property is considered when the property "create_destination.storage_service.enabled" is set to "true". When the property "create_destination.storage_service.enabled" is set to "true" and the "create_destination.storage_service.name" for the endpoint is not specified, then ONTAP selects the highest storage service available on the cluster to provision the destination endpoint. This property is applicable to FlexVol volume, FlexGroup volume, and Consistency Group endpoints.
 	// Enum: [extreme performance value]
 	Name string `json:"name,omitempty"`
 }
@@ -190,33 +190,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnapmirrorDestinationCreationStorageService
 	// SnapmirrorDestinationCreationStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorDestinationCreationStorageServiceNameExtreme captures enum value "extreme"
 	SnapmirrorDestinationCreationStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnapmirrorDestinationCreationStorageService
 	// SnapmirrorDestinationCreationStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorDestinationCreationStorageServiceNamePerformance captures enum value "performance"
 	SnapmirrorDestinationCreationStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnapmirrorDestinationCreationStorageService
 	// SnapmirrorDestinationCreationStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorDestinationCreationStorageServiceNameValue captures enum value "value"
 	SnapmirrorDestinationCreationStorageServiceNameValue string = "value"
 )
@@ -270,11 +270,11 @@ func (m *SnapmirrorDestinationCreationStorageService) UnmarshalBinary(b []byte) 
 // swagger:model SnapmirrorDestinationCreationTiering
 type SnapmirrorDestinationCreationTiering struct {
 
-	// Optional property to specify the destination endpoint's tiering policy when "create_destination.tiering.supported" is set to "true". This property is applicable to FlexVol volume and FlexGroup volume endpoints. This property determines whether the user data blocks of the destination endpoint in a FabricPool will be tiered to the cloud store when they become cold. FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of the destination endpoint volume blocks increases if they are accessed frequently and decreases when they are not.<br>all &dash; This policy allows tiering of both destination endpoint Snapshot copies and the user transfered data blocks to the cloud store as soon as possible by ignoring the temperature on the volume blocks. This tiering policy is not applicable for synchronous relationships.<br>auto &dash; This policy allows tiering of both destination endpoint Snapshot copies and the active file system user data to the cloud store<br>none &dash; Destination endpoint volume blocks will not be tiered to the cloud store.<br>snapshot_only &dash; This policy allows tiering of only the destination endpoint volume Snapshot copies not associated with the active file system. The default tiering policy is "snapshot_only" for a FlexVol volume and "none" for a FlexGroup volume.
+	// Optional property to specify the destination endpoint's tiering policy when "create_destination.tiering.supported" is set to "true". This property is applicable to FlexVol volume, FlexGroup volume, and Consistency Group endpoints. This property determines whether the user data blocks of the destination endpoint in a FabricPool will be tiered to the cloud store when they become cold. FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of the destination endpoint volume blocks increases if they are accessed frequently and decreases when they are not.<br>all &dash; This policy allows tiering of both destination endpoint Snapshot copies and the user transfered data blocks to the cloud store as soon as possible by ignoring the temperature on the volume blocks. This tiering policy is not applicable for Consistency Group destination endpoints or for synchronous relationships.<br>auto &dash; This policy allows tiering of both destination endpoint Snapshot copies and the active file system user data to the cloud store<br>none &dash; Destination endpoint volume blocks will not be tiered to the cloud store.<br>snapshot_only &dash; This policy allows tiering of only the destination endpoint volume Snapshot copies not associated with the active file system. The default tiering policy is "snapshot_only" for a FlexVol volume and "none" for a FlexGroup volume.
 	// Enum: [all auto none snapshot_only]
 	Policy string `json:"policy,omitempty"`
 
-	// Optional property to enable provisioning of the destination endpoint volumes on FabricPool aggregates. This property is applicable to FlexVol volume and FlexGroup volume endpoints. Only FabricPool aggregates are used if this property is set to "true" and only non FabricPool aggregates are used if this property is set to "false". Tiering support for a FlexGroup volume can be changed by moving all of the constituents to the required aggregates. Note that in order to tier data, not only do the destination endpoint volumes need to support tiering by using FabricPools, the "create_destination.tiering.policy" must not be "none". A destination endpoint that uses FabricPools but has a tiering "policy" of "none" supports tiering but will not tier any data.
+	// Optional property to enable provisioning of the destination endpoint volumes on FabricPool aggregates. This property is applicable to FlexVol volume, FlexGroup volume, and Consistency Group endpoints. Only FabricPool aggregates are used if this property is set to "true" and only non FabricPool aggregates are used if this property is set to "false". Tiering support for a FlexGroup volume can be changed by moving all of the constituents to the required aggregates. Note that in order to tier data, not only do the destination endpoint volumes need to support tiering by using FabricPools, the "create_destination.tiering.policy" must not be "none". A destination endpoint that uses FabricPools but has a tiering "policy" of "none" supports tiering but will not tier any data.
 	Supported bool `json:"supported,omitempty"`
 }
 
@@ -306,43 +306,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnapmirrorDestinationCreationTiering
 	// SnapmirrorDestinationCreationTiering
 	// policy
 	// Policy
 	// all
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorDestinationCreationTieringPolicyAll captures enum value "all"
 	SnapmirrorDestinationCreationTieringPolicyAll string = "all"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnapmirrorDestinationCreationTiering
 	// SnapmirrorDestinationCreationTiering
 	// policy
 	// Policy
 	// auto
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorDestinationCreationTieringPolicyAuto captures enum value "auto"
 	SnapmirrorDestinationCreationTieringPolicyAuto string = "auto"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnapmirrorDestinationCreationTiering
 	// SnapmirrorDestinationCreationTiering
 	// policy
 	// Policy
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorDestinationCreationTieringPolicyNone captures enum value "none"
 	SnapmirrorDestinationCreationTieringPolicyNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnapmirrorDestinationCreationTiering
 	// SnapmirrorDestinationCreationTiering
 	// policy
 	// Policy
 	// snapshot_only
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorDestinationCreationTieringPolicySnapshotOnly captures enum value "snapshot_only"
 	SnapmirrorDestinationCreationTieringPolicySnapshotOnly string = "snapshot_only"
 )
@@ -390,5 +390,3 @@ func (m *SnapmirrorDestinationCreationTiering) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

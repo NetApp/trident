@@ -62,6 +62,12 @@ func NewAggregateModifyParamsWithHTTPClient(client *http.Client) *AggregateModif
 */
 type AggregateModifyParams struct {
 
+	/* AutoProvisionPolicy.
+
+	   If set to expand, the PATCH operation runs the recommended expansion of the aggregate.
+	*/
+	AutoProvisionPolicyQueryParameter *string
+
 	/* DiskSize.
 
 	   If set, PATCH only selects disks of the specified size.
@@ -78,7 +84,13 @@ type AggregateModifyParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
+
+	/* Simulate.
+
+	   If set to true, the PATCH operation runs a simulated aggregate expansion with the provided input disk count and returns the proposed size of the new aggregate along with any associated warnings.
+	*/
+	SimulateQueryParameter *bool
 
 	/* UUID.
 
@@ -104,11 +116,11 @@ func (o *AggregateModifyParams) WithDefaults() *AggregateModifyParams {
 // All values with no default are reset to their zero value.
 func (o *AggregateModifyParams) SetDefaults() {
 	var (
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := AggregateModifyParams{
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -150,6 +162,17 @@ func (o *AggregateModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAutoProvisionPolicyQueryParameter adds the autoProvisionPolicy to the aggregate modify params
+func (o *AggregateModifyParams) WithAutoProvisionPolicyQueryParameter(autoProvisionPolicy *string) *AggregateModifyParams {
+	o.SetAutoProvisionPolicyQueryParameter(autoProvisionPolicy)
+	return o
+}
+
+// SetAutoProvisionPolicyQueryParameter adds the autoProvisionPolicy to the aggregate modify params
+func (o *AggregateModifyParams) SetAutoProvisionPolicyQueryParameter(autoProvisionPolicy *string) {
+	o.AutoProvisionPolicyQueryParameter = autoProvisionPolicy
+}
+
 // WithDiskSizeQueryParameter adds the diskSize to the aggregate modify params
 func (o *AggregateModifyParams) WithDiskSizeQueryParameter(diskSize *int64) *AggregateModifyParams {
 	o.SetDiskSizeQueryParameter(diskSize)
@@ -172,15 +195,26 @@ func (o *AggregateModifyParams) SetInfo(info *models.Aggregate) {
 	o.Info = info
 }
 
-// WithReturnTimeout adds the returnTimeout to the aggregate modify params
-func (o *AggregateModifyParams) WithReturnTimeout(returnTimeout *int64) *AggregateModifyParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the aggregate modify params
+func (o *AggregateModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AggregateModifyParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the aggregate modify params
-func (o *AggregateModifyParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the aggregate modify params
+func (o *AggregateModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
+}
+
+// WithSimulateQueryParameter adds the simulate to the aggregate modify params
+func (o *AggregateModifyParams) WithSimulateQueryParameter(simulate *bool) *AggregateModifyParams {
+	o.SetSimulateQueryParameter(simulate)
+	return o
+}
+
+// SetSimulateQueryParameter adds the simulate to the aggregate modify params
+func (o *AggregateModifyParams) SetSimulateQueryParameter(simulate *bool) {
+	o.SimulateQueryParameter = simulate
 }
 
 // WithUUIDPathParameter adds the uuid to the aggregate modify params
@@ -201,6 +235,23 @@ func (o *AggregateModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		return err
 	}
 	var res []error
+
+	if o.AutoProvisionPolicyQueryParameter != nil {
+
+		// query param auto_provision_policy
+		var qrAutoProvisionPolicy string
+
+		if o.AutoProvisionPolicyQueryParameter != nil {
+			qrAutoProvisionPolicy = *o.AutoProvisionPolicyQueryParameter
+		}
+		qAutoProvisionPolicy := qrAutoProvisionPolicy
+		if qAutoProvisionPolicy != "" {
+
+			if err := r.SetQueryParam("auto_provision_policy", qAutoProvisionPolicy); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.DiskSizeQueryParameter != nil {
 
@@ -224,18 +275,35 @@ func (o *AggregateModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SimulateQueryParameter != nil {
+
+		// query param simulate
+		var qrSimulate bool
+
+		if o.SimulateQueryParameter != nil {
+			qrSimulate = *o.SimulateQueryParameter
+		}
+		qSimulate := swag.FormatBool(qrSimulate)
+		if qSimulate != "" {
+
+			if err := r.SetQueryParam("simulate", qSimulate); err != nil {
 				return err
 			}
 		}

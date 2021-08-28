@@ -22,11 +22,14 @@ type IgroupInitiatorNoRecords struct {
 	// links
 	Links *IgroupInitiatorNoRecordsLinks `json:"_links,omitempty"`
 
-	// igroup
-	Igroup *IgroupInitiatorNoRecordsIgroup `json:"igroup,omitempty"`
+	// A comment available for use by the administrator. Valid in POST and PATCH.
+	//
+	// Max Length: 254
+	// Min Length: 0
+	Comment *string `json:"comment,omitempty"`
 
 	// The FC WWPN, iSCSI IQN, or iSCSI EUI that identifies the host initiator. Valid in POST only and not allowed when the `records` property is used.<br/>
-	// An FC WWPN consist of 16 hexadecimal digits grouped as 8 pairs separated by colons. The format for an iSCSI IQN is _iqn.yyyy-mm.reverse_domain_name:any_. The iSCSI EUI format consists of the _eui._ prefix followed by 16 hexadecimal characters.
+	// An FC WWPN consists of 16 hexadecimal digits grouped as 8 pairs separated by colons. The format for an iSCSI IQN is _iqn.yyyy-mm.reverse_domain_name:any_. The iSCSI EUI format consists of the _eui._ prefix followed by 16 hexadecimal characters.
 	//
 	// Example: iqn.1998-01.com.corp.iscsi:name1
 	// Max Length: 96
@@ -42,7 +45,7 @@ func (m *IgroupInitiatorNoRecords) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateIgroup(formats); err != nil {
+	if err := m.validateComment(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -73,18 +76,17 @@ func (m *IgroupInitiatorNoRecords) validateLinks(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *IgroupInitiatorNoRecords) validateIgroup(formats strfmt.Registry) error {
-	if swag.IsZero(m.Igroup) { // not required
+func (m *IgroupInitiatorNoRecords) validateComment(formats strfmt.Registry) error {
+	if swag.IsZero(m.Comment) { // not required
 		return nil
 	}
 
-	if m.Igroup != nil {
-		if err := m.Igroup.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("igroup")
-			}
-			return err
-		}
+	if err := validate.MinLength("comment", "body", *m.Comment, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("comment", "body", *m.Comment, 254); err != nil {
+		return err
 	}
 
 	return nil
@@ -114,10 +116,6 @@ func (m *IgroupInitiatorNoRecords) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateIgroup(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -138,20 +136,6 @@ func (m *IgroupInitiatorNoRecords) contextValidateLinks(ctx context.Context, for
 	return nil
 }
 
-func (m *IgroupInitiatorNoRecords) contextValidateIgroup(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Igroup != nil {
-		if err := m.Igroup.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("igroup")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
 // MarshalBinary interface implementation
 func (m *IgroupInitiatorNoRecords) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -163,199 +147,6 @@ func (m *IgroupInitiatorNoRecords) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *IgroupInitiatorNoRecords) UnmarshalBinary(b []byte) error {
 	var res IgroupInitiatorNoRecords
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// IgroupInitiatorNoRecordsIgroup The initiator group in which the initiator is found.<br/>
-// Note that this does not mean that the initiator cannot also be found in other initiator groups.
-//
-//
-// swagger:model IgroupInitiatorNoRecordsIgroup
-type IgroupInitiatorNoRecordsIgroup struct {
-
-	// links
-	Links *IgroupInitiatorNoRecordsIgroupLinks `json:"_links,omitempty"`
-
-	// The unique identifier of the initiator group.
-	//
-	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
-	// Read Only: true
-	UUID string `json:"uuid,omitempty"`
-}
-
-// Validate validates this igroup initiator no records igroup
-func (m *IgroupInitiatorNoRecordsIgroup) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *IgroupInitiatorNoRecordsIgroup) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(m.Links) { // not required
-		return nil
-	}
-
-	if m.Links != nil {
-		if err := m.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("igroup" + "." + "_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this igroup initiator no records igroup based on the context it is used
-func (m *IgroupInitiatorNoRecordsIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateUUID(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *IgroupInitiatorNoRecordsIgroup) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Links != nil {
-		if err := m.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("igroup" + "." + "_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *IgroupInitiatorNoRecordsIgroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "igroup"+"."+"uuid", "body", string(m.UUID)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *IgroupInitiatorNoRecordsIgroup) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *IgroupInitiatorNoRecordsIgroup) UnmarshalBinary(b []byte) error {
-	var res IgroupInitiatorNoRecordsIgroup
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// IgroupInitiatorNoRecordsIgroupLinks igroup initiator no records igroup links
-//
-// swagger:model IgroupInitiatorNoRecordsIgroupLinks
-type IgroupInitiatorNoRecordsIgroupLinks struct {
-
-	// self
-	Self *Href `json:"self,omitempty"`
-}
-
-// Validate validates this igroup initiator no records igroup links
-func (m *IgroupInitiatorNoRecordsIgroupLinks) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateSelf(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *IgroupInitiatorNoRecordsIgroupLinks) validateSelf(formats strfmt.Registry) error {
-	if swag.IsZero(m.Self) { // not required
-		return nil
-	}
-
-	if m.Self != nil {
-		if err := m.Self.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("igroup" + "." + "_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this igroup initiator no records igroup links based on the context it is used
-func (m *IgroupInitiatorNoRecordsIgroupLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateSelf(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *IgroupInitiatorNoRecordsIgroupLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Self != nil {
-		if err := m.Self.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("igroup" + "." + "_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *IgroupInitiatorNoRecordsIgroupLinks) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *IgroupInitiatorNoRecordsIgroupLinks) UnmarshalBinary(b []byte) error {
-	var res IgroupInitiatorNoRecordsIgroupLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -448,5 +239,3 @@ func (m *IgroupInitiatorNoRecordsLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

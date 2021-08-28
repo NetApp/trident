@@ -283,5 +283,3 @@ func (m *ApplicationSnapshotResponseLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

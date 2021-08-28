@@ -25,13 +25,12 @@ type FcInterfaceReference struct {
 
 	// The name of the FC interface.
 	//
-	// Example: lif1
+	// Example: fc_lif1
 	Name string `json:"name,omitempty"`
 
 	// The unique identifier of the FC interface.
 	//
-	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	// Read Only: true
+	// Example: 3a09ab42-4da1-32cf-9d35-3385a6101a0b
 	UUID string `json:"uuid,omitempty"`
 
 	// The WWPN of the FC interface.
@@ -80,10 +79,6 @@ func (m *FcInterfaceReference) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateUUID(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateWwpn(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -103,15 +98,6 @@ func (m *FcInterfaceReference) contextValidateLinks(ctx context.Context, formats
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *FcInterfaceReference) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
-		return err
 	}
 
 	return nil
@@ -229,5 +215,3 @@ func (m *FcInterfaceReferenceLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

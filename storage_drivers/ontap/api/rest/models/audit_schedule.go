@@ -197,5 +197,3 @@ func (m *AuditSchedule) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

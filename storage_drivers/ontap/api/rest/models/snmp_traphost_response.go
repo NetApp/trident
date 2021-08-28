@@ -283,5 +283,3 @@ func (m *SnmpTraphostResponseLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

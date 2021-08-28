@@ -64,7 +64,7 @@ type SnaplockLogCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* LogArchiveBaseName.
 
@@ -142,13 +142,13 @@ type SnaplockLogCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -156,7 +156,7 @@ type SnaplockLogCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -164,7 +164,7 @@ type SnaplockLogCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SvmName.
 
@@ -196,14 +196,14 @@ func (o *SnaplockLogCollectionGetParams) WithDefaults() *SnaplockLogCollectionGe
 // All values with no default are reset to their zero value.
 func (o *SnaplockLogCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SnaplockLogCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -245,15 +245,15 @@ func (o *SnaplockLogCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithFields(fields []string) *SnaplockLogCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithFieldsQueryParameter(fields []string) *SnaplockLogCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithLogArchiveBaseNameQueryParameter adds the logArchiveBaseName to the snaplock log collection get params
@@ -388,48 +388,48 @@ func (o *SnaplockLogCollectionGetParams) SetLogVolumeVolumeUUIDQueryParameter(lo
 	o.LogVolumeVolumeUUIDQueryParameter = logVolumeVolumeUUID
 }
 
-// WithMaxRecords adds the maxRecords to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithMaxRecords(maxRecords *int64) *SnaplockLogCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnaplockLogCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
-// WithOrderBy adds the orderBy to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithOrderBy(orderBy []string) *SnaplockLogCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SnaplockLogCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithReturnRecords(returnRecords *bool) *SnaplockLogCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnaplockLogCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SnaplockLogCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnaplockLogCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the snaplock log collection get params
-func (o *SnaplockLogCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the snaplock log collection get params
+func (o *SnaplockLogCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSVMNameQueryParameter adds the svmName to the snaplock log collection get params
@@ -462,7 +462,7 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -677,13 +677,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -694,7 +694,7 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -705,13 +705,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -722,13 +722,13 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -781,7 +781,7 @@ func (o *SnaplockLogCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamSnaplockLogCollectionGet binds the parameter fields
 func (o *SnaplockLogCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -798,7 +798,7 @@ func (o *SnaplockLogCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamSnaplockLogCollectionGet binds the parameter order_by
 func (o *SnaplockLogCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

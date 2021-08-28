@@ -41,5 +41,3 @@ func (m NameServers) Validate(formats strfmt.Registry) error {
 func (m NameServers) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

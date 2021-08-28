@@ -68,12 +68,6 @@ type PlexCollectionGetParams struct {
 
 	/* AggregateUUID.
 
-	   Filter by aggregate.uuid
-	*/
-	AggregateUUIDQueryParameter *string
-
-	/* AggregateUUID.
-
 	   Aggregate UUID
 	*/
 	AggregateUUIDPathParameter string
@@ -82,13 +76,13 @@ type PlexCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -106,7 +100,7 @@ type PlexCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* Pool.
 
@@ -162,6 +156,12 @@ type PlexCollectionGetParams struct {
 	*/
 	RaIDGroupsNameQueryParameter *string
 
+	/* RaidGroupsRaidType.
+
+	   Filter by raid_groups.raid_type
+	*/
+	RaIDGroupsRaIDTypeQueryParameter *string
+
 	/* RaidGroupsRecomputingParityActive.
 
 	   Filter by raid_groups.recomputing_parity.active
@@ -210,7 +210,7 @@ type PlexCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -218,7 +218,7 @@ type PlexCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* State.
 
@@ -244,14 +244,14 @@ func (o *PlexCollectionGetParams) WithDefaults() *PlexCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *PlexCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := PlexCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -304,17 +304,6 @@ func (o *PlexCollectionGetParams) SetAggregateNameQueryParameter(aggregateName *
 	o.AggregateNameQueryParameter = aggregateName
 }
 
-// WithAggregateUUIDQueryParameter adds the aggregateUUID to the plex collection get params
-func (o *PlexCollectionGetParams) WithAggregateUUIDQueryParameter(aggregateUUID *string) *PlexCollectionGetParams {
-	o.SetAggregateUUIDQueryParameter(aggregateUUID)
-	return o
-}
-
-// SetAggregateUUIDQueryParameter adds the aggregateUuid to the plex collection get params
-func (o *PlexCollectionGetParams) SetAggregateUUIDQueryParameter(aggregateUUID *string) {
-	o.AggregateUUIDQueryParameter = aggregateUUID
-}
-
 // WithAggregateUUIDPathParameter adds the aggregateUUID to the plex collection get params
 func (o *PlexCollectionGetParams) WithAggregateUUIDPathParameter(aggregateUUID string) *PlexCollectionGetParams {
 	o.SetAggregateUUIDPathParameter(aggregateUUID)
@@ -326,26 +315,26 @@ func (o *PlexCollectionGetParams) SetAggregateUUIDPathParameter(aggregateUUID st
 	o.AggregateUUIDPathParameter = aggregateUUID
 }
 
-// WithFields adds the fields to the plex collection get params
-func (o *PlexCollectionGetParams) WithFields(fields []string) *PlexCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the plex collection get params
+func (o *PlexCollectionGetParams) WithFieldsQueryParameter(fields []string) *PlexCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the plex collection get params
-func (o *PlexCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the plex collection get params
+func (o *PlexCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithMaxRecords adds the maxRecords to the plex collection get params
-func (o *PlexCollectionGetParams) WithMaxRecords(maxRecords *int64) *PlexCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the plex collection get params
+func (o *PlexCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *PlexCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the plex collection get params
-func (o *PlexCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the plex collection get params
+func (o *PlexCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the plex collection get params
@@ -370,15 +359,15 @@ func (o *PlexCollectionGetParams) SetOnlineQueryParameter(online *bool) {
 	o.OnlineQueryParameter = online
 }
 
-// WithOrderBy adds the orderBy to the plex collection get params
-func (o *PlexCollectionGetParams) WithOrderBy(orderBy []string) *PlexCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the plex collection get params
+func (o *PlexCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *PlexCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the plex collection get params
-func (o *PlexCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the plex collection get params
+func (o *PlexCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPoolQueryParameter adds the pool to the plex collection get params
@@ -480,6 +469,17 @@ func (o *PlexCollectionGetParams) SetRaIDGroupsNameQueryParameter(raidGroupsName
 	o.RaIDGroupsNameQueryParameter = raidGroupsName
 }
 
+// WithRaIDGroupsRaIDTypeQueryParameter adds the raidGroupsRaidType to the plex collection get params
+func (o *PlexCollectionGetParams) WithRaIDGroupsRaIDTypeQueryParameter(raidGroupsRaidType *string) *PlexCollectionGetParams {
+	o.SetRaIDGroupsRaIDTypeQueryParameter(raidGroupsRaidType)
+	return o
+}
+
+// SetRaIDGroupsRaIDTypeQueryParameter adds the raidGroupsRaidType to the plex collection get params
+func (o *PlexCollectionGetParams) SetRaIDGroupsRaIDTypeQueryParameter(raidGroupsRaidType *string) {
+	o.RaIDGroupsRaIDTypeQueryParameter = raidGroupsRaidType
+}
+
 // WithRaIDGroupsRecomputingParityActiveQueryParameter adds the raidGroupsRecomputingParityActive to the plex collection get params
 func (o *PlexCollectionGetParams) WithRaIDGroupsRecomputingParityActiveQueryParameter(raidGroupsRecomputingParityActive *bool) *PlexCollectionGetParams {
 	o.SetRaIDGroupsRecomputingParityActiveQueryParameter(raidGroupsRecomputingParityActive)
@@ -557,26 +557,26 @@ func (o *PlexCollectionGetParams) SetResyncPercentQueryParameter(resyncPercent *
 	o.ResyncPercentQueryParameter = resyncPercent
 }
 
-// WithReturnRecords adds the returnRecords to the plex collection get params
-func (o *PlexCollectionGetParams) WithReturnRecords(returnRecords *bool) *PlexCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the plex collection get params
+func (o *PlexCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *PlexCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the plex collection get params
-func (o *PlexCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the plex collection get params
+func (o *PlexCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the plex collection get params
-func (o *PlexCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *PlexCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the plex collection get params
+func (o *PlexCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *PlexCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the plex collection get params
-func (o *PlexCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the plex collection get params
+func (o *PlexCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithStateQueryParameter adds the state to the plex collection get params
@@ -615,29 +615,12 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.AggregateUUIDQueryParameter != nil {
-
-		// query param aggregate.uuid
-		var qrAggregateUUID string
-
-		if o.AggregateUUIDQueryParameter != nil {
-			qrAggregateUUID = *o.AggregateUUIDQueryParameter
-		}
-		qAggregateUUID := qrAggregateUUID
-		if qAggregateUUID != "" {
-
-			if err := r.SetQueryParam("aggregate.uuid", qAggregateUUID); err != nil {
-				return err
-			}
-		}
-	}
-
 	// path param aggregate.uuid
 	if err := r.SetPathParam("aggregate.uuid", o.AggregateUUIDPathParameter); err != nil {
 		return err
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -648,13 +631,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -699,7 +682,7 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -863,6 +846,23 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.RaIDGroupsRaIDTypeQueryParameter != nil {
+
+		// query param raid_groups.raid_type
+		var qrRaidGroupsRaidType string
+
+		if o.RaIDGroupsRaIDTypeQueryParameter != nil {
+			qrRaidGroupsRaidType = *o.RaIDGroupsRaIDTypeQueryParameter
+		}
+		qRaidGroupsRaidType := qrRaidGroupsRaidType
+		if qRaidGroupsRaidType != "" {
+
+			if err := r.SetQueryParam("raid_groups.raid_type", qRaidGroupsRaidType); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.RaIDGroupsRecomputingParityActiveQueryParameter != nil {
 
 		// query param raid_groups.recomputing_parity.active
@@ -982,13 +982,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -999,13 +999,13 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1041,7 +1041,7 @@ func (o *PlexCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamPlexCollectionGet binds the parameter fields
 func (o *PlexCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1058,7 +1058,7 @@ func (o *PlexCollectionGetParams) bindParamFields(formats strfmt.Registry) []str
 
 // bindParamPlexCollectionGet binds the parameter order_by
 func (o *PlexCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

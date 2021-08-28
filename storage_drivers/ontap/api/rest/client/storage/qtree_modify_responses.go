@@ -88,9 +88,10 @@ func NewQtreeModifyDefault(code int) *QtreeModifyDefault {
 | 918235 | A volume with UUID was not found. |
 | 5242951 | Export policy supplied does not belong to the specified export policy ID. |
 | 5242955 | The UUID of the volume is required. |
-| 5242956 | Failed to obtain qtree with ID. |
-| 5242958 | Failed to rename qtree in volume in SVM with ID. |
-| 5242959 | Successfully renamed qtree but modify failed. |
+| 5242956 | Failed to obtain a qtree with ID. |
+| 5242958 | Failed to rename the qtree with ID in the volume and SVM. |
+| 5242959 | Successfully renamed qtree but the modify operation failed. |
+| 5242967 | UNIX user or group ID must be 32-bit unsigned integer. |
 
 */
 type QtreeModifyDefault struct {

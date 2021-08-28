@@ -64,7 +64,7 @@ type SnapshotGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -131,15 +131,15 @@ func (o *SnapshotGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snapshot get params
-func (o *SnapshotGetParams) WithFields(fields []string) *SnapshotGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snapshot get params
+func (o *SnapshotGetParams) WithFieldsQueryParameter(fields []string) *SnapshotGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snapshot get params
-func (o *SnapshotGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snapshot get params
+func (o *SnapshotGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the snapshot get params
@@ -172,7 +172,7 @@ func (o *SnapshotGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *SnapshotGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 
 // bindParamSnapshotGet binds the parameter fields
 func (o *SnapshotGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

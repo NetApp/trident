@@ -60,47 +60,23 @@ func NewSecurityKeyManagerKeyServersCollectionGetParamsWithHTTPClient(client *ht
 */
 type SecurityKeyManagerKeyServersCollectionGetParams struct {
 
-	/* ConnectivityClusterAvailability.
-
-	   Filter by connectivity.cluster_availability
-	*/
-	ConnectivityClusterAvailabilityQueryParameter *bool
-
-	/* ConnectivityRecordsNodeName.
-
-	   Filter by connectivity.records.node.name
-	*/
-	ConnectivityRecordsNodeNameQueryParameter *string
-
-	/* ConnectivityRecordsNodeUUID.
-
-	   Filter by connectivity.records.node.uuid
-	*/
-	ConnectivityRecordsNodeUUIDQueryParameter *string
-
-	/* ConnectivityRecordsState.
-
-	   Filter by connectivity.records.state
-	*/
-	ConnectivityRecordsStateQueryParameter *string
-
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -108,7 +84,7 @@ type SecurityKeyManagerKeyServersCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -116,7 +92,13 @@ type SecurityKeyManagerKeyServersCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
+
+	/* SecondaryKeyServers.
+
+	   Filter by secondary_key_servers
+	*/
+	SecondaryKeyServersQueryParameter *string
 
 	/* Server.
 
@@ -160,14 +142,14 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithDefaults() *Securi
 // All values with no default are reset to their zero value.
 func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SecurityKeyManagerKeyServersCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.requestTimeout = o.requestTimeout
@@ -209,103 +191,70 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetHTTPClient(client *
 	o.HTTPClient = client
 }
 
-// WithConnectivityClusterAvailabilityQueryParameter adds the connectivityClusterAvailability to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithConnectivityClusterAvailabilityQueryParameter(connectivityClusterAvailability *bool) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetConnectivityClusterAvailabilityQueryParameter(connectivityClusterAvailability)
+// WithFieldsQueryParameter adds the fields to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithFieldsQueryParameter(fields []string) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetConnectivityClusterAvailabilityQueryParameter adds the connectivityClusterAvailability to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetConnectivityClusterAvailabilityQueryParameter(connectivityClusterAvailability *bool) {
-	o.ConnectivityClusterAvailabilityQueryParameter = connectivityClusterAvailability
+// SetFieldsQueryParameter adds the fields to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithConnectivityRecordsNodeNameQueryParameter adds the connectivityRecordsNodeName to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithConnectivityRecordsNodeNameQueryParameter(connectivityRecordsNodeName *string) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetConnectivityRecordsNodeNameQueryParameter(connectivityRecordsNodeName)
+// WithMaxRecordsQueryParameter adds the maxRecords to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetConnectivityRecordsNodeNameQueryParameter adds the connectivityRecordsNodeName to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetConnectivityRecordsNodeNameQueryParameter(connectivityRecordsNodeName *string) {
-	o.ConnectivityRecordsNodeNameQueryParameter = connectivityRecordsNodeName
+// SetMaxRecordsQueryParameter adds the maxRecords to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
-// WithConnectivityRecordsNodeUUIDQueryParameter adds the connectivityRecordsNodeUUID to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithConnectivityRecordsNodeUUIDQueryParameter(connectivityRecordsNodeUUID *string) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetConnectivityRecordsNodeUUIDQueryParameter(connectivityRecordsNodeUUID)
+// WithOrderByQueryParameter adds the orderBy to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetConnectivityRecordsNodeUUIDQueryParameter adds the connectivityRecordsNodeUuid to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetConnectivityRecordsNodeUUIDQueryParameter(connectivityRecordsNodeUUID *string) {
-	o.ConnectivityRecordsNodeUUIDQueryParameter = connectivityRecordsNodeUUID
+// SetOrderByQueryParameter adds the orderBy to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithConnectivityRecordsStateQueryParameter adds the connectivityRecordsState to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithConnectivityRecordsStateQueryParameter(connectivityRecordsState *string) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetConnectivityRecordsStateQueryParameter(connectivityRecordsState)
+// WithReturnRecordsQueryParameter adds the returnRecords to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetConnectivityRecordsStateQueryParameter adds the connectivityRecordsState to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetConnectivityRecordsStateQueryParameter(connectivityRecordsState *string) {
-	o.ConnectivityRecordsStateQueryParameter = connectivityRecordsState
+// SetReturnRecordsQueryParameter adds the returnRecords to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithFields adds the fields to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithFields(fields []string) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetFields(fields)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetFields adds the fields to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
-// WithMaxRecords adds the maxRecords to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithMaxRecords(maxRecords *int64) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithSecondaryKeyServersQueryParameter adds the secondaryKeyServers to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithSecondaryKeyServersQueryParameter(secondaryKeyServers *string) *SecurityKeyManagerKeyServersCollectionGetParams {
+	o.SetSecondaryKeyServersQueryParameter(secondaryKeyServers)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
-}
-
-// WithOrderBy adds the orderBy to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithOrderBy(orderBy []string) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetOrderBy(orderBy)
-	return o
-}
-
-// SetOrderBy adds the orderBy to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
-}
-
-// WithReturnRecords adds the returnRecords to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithReturnRecords(returnRecords *bool) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
-	return o
-}
-
-// SetReturnRecords adds the returnRecords to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
-}
-
-// WithReturnTimeout adds the returnTimeout to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SecurityKeyManagerKeyServersCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
-	return o
-}
-
-// SetReturnTimeout adds the returnTimeout to the security key manager key servers collection get params
-func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetSecondaryKeyServersQueryParameter adds the secondaryKeyServers to the security key manager key servers collection get params
+func (o *SecurityKeyManagerKeyServersCollectionGetParams) SetSecondaryKeyServersQueryParameter(secondaryKeyServers *string) {
+	o.SecondaryKeyServersQueryParameter = secondaryKeyServers
 }
 
 // WithServerQueryParameter adds the server to the security key manager key servers collection get params
@@ -360,75 +309,7 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 	}
 	var res []error
 
-	if o.ConnectivityClusterAvailabilityQueryParameter != nil {
-
-		// query param connectivity.cluster_availability
-		var qrConnectivityClusterAvailability bool
-
-		if o.ConnectivityClusterAvailabilityQueryParameter != nil {
-			qrConnectivityClusterAvailability = *o.ConnectivityClusterAvailabilityQueryParameter
-		}
-		qConnectivityClusterAvailability := swag.FormatBool(qrConnectivityClusterAvailability)
-		if qConnectivityClusterAvailability != "" {
-
-			if err := r.SetQueryParam("connectivity.cluster_availability", qConnectivityClusterAvailability); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ConnectivityRecordsNodeNameQueryParameter != nil {
-
-		// query param connectivity.records.node.name
-		var qrConnectivityRecordsNodeName string
-
-		if o.ConnectivityRecordsNodeNameQueryParameter != nil {
-			qrConnectivityRecordsNodeName = *o.ConnectivityRecordsNodeNameQueryParameter
-		}
-		qConnectivityRecordsNodeName := qrConnectivityRecordsNodeName
-		if qConnectivityRecordsNodeName != "" {
-
-			if err := r.SetQueryParam("connectivity.records.node.name", qConnectivityRecordsNodeName); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ConnectivityRecordsNodeUUIDQueryParameter != nil {
-
-		// query param connectivity.records.node.uuid
-		var qrConnectivityRecordsNodeUUID string
-
-		if o.ConnectivityRecordsNodeUUIDQueryParameter != nil {
-			qrConnectivityRecordsNodeUUID = *o.ConnectivityRecordsNodeUUIDQueryParameter
-		}
-		qConnectivityRecordsNodeUUID := qrConnectivityRecordsNodeUUID
-		if qConnectivityRecordsNodeUUID != "" {
-
-			if err := r.SetQueryParam("connectivity.records.node.uuid", qConnectivityRecordsNodeUUID); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ConnectivityRecordsStateQueryParameter != nil {
-
-		// query param connectivity.records.state
-		var qrConnectivityRecordsState string
-
-		if o.ConnectivityRecordsStateQueryParameter != nil {
-			qrConnectivityRecordsState = *o.ConnectivityRecordsStateQueryParameter
-		}
-		qConnectivityRecordsState := qrConnectivityRecordsState
-		if qConnectivityRecordsState != "" {
-
-			if err := r.SetQueryParam("connectivity.records.state", qConnectivityRecordsState); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -439,13 +320,13 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -456,7 +337,7 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -467,13 +348,13 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -484,18 +365,35 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecondaryKeyServersQueryParameter != nil {
+
+		// query param secondary_key_servers
+		var qrSecondaryKeyServers string
+
+		if o.SecondaryKeyServersQueryParameter != nil {
+			qrSecondaryKeyServers = *o.SecondaryKeyServersQueryParameter
+		}
+		qSecondaryKeyServers := qrSecondaryKeyServers
+		if qSecondaryKeyServers != "" {
+
+			if err := r.SetQueryParam("secondary_key_servers", qSecondaryKeyServers); err != nil {
 				return err
 			}
 		}
@@ -565,7 +463,7 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) WriteToRequest(r runti
 
 // bindParamSecurityKeyManagerKeyServersCollectionGet binds the parameter fields
 func (o *SecurityKeyManagerKeyServersCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -582,7 +480,7 @@ func (o *SecurityKeyManagerKeyServersCollectionGetParams) bindParamFields(format
 
 // bindParamSecurityKeyManagerKeyServersCollectionGet binds the parameter order_by
 func (o *SecurityKeyManagerKeyServersCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

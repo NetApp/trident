@@ -371,6 +371,8 @@ type VscanOnDemandScope struct {
 
 	// List of file extensions to be scanned.
 	// Example: ["vmdk","mp*"]
+	// Max Items: 16
+	// Min Items: 1
 	IncludeExtensions []string `json:"include_extensions,omitempty"`
 
 	// Maximum file size, in bytes, allowed for scanning.
@@ -387,6 +389,10 @@ type VscanOnDemandScope struct {
 func (m *VscanOnDemandScope) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateIncludeExtensions(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateMaxFileSize(formats); err != nil {
 		res = append(res, err)
 	}
@@ -394,6 +400,24 @@ func (m *VscanOnDemandScope) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VscanOnDemandScope) validateIncludeExtensions(formats strfmt.Registry) error {
+	if swag.IsZero(m.IncludeExtensions) { // not required
+		return nil
+	}
+
+	iIncludeExtensionsSize := int64(len(m.IncludeExtensions))
+
+	if err := validate.MinItems("scope"+"."+"include_extensions", "body", iIncludeExtensionsSize, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("scope"+"."+"include_extensions", "body", iIncludeExtensionsSize, 16); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -435,5 +459,3 @@ func (m *VscanOnDemandScope) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

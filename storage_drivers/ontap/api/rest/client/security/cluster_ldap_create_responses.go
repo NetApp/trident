@@ -95,6 +95,7 @@ func NewClusterLdapCreateDefault(code int) *ClusterLdapCreateDefault {
 | 4915251    | STARTTLS and LDAPS cannot be used together. |
 | 4915257    | The LDAP configuration is invalid. Verify that bind-dn and bind password are correct. |
 | 4915258    | The LDAP configuration is invalid. Verify that the servers are reachable and that the network configuration is correct. |
+| 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces. |
 
 */

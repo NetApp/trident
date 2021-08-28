@@ -114,33 +114,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// fpolicy_event
 	// FpolicyEvent
 	// protocol
 	// Protocol
 	// cifs
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FpolicyEventProtocolCifs captures enum value "cifs"
 	FpolicyEventProtocolCifs string = "cifs"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// fpolicy_event
 	// FpolicyEvent
 	// protocol
 	// Protocol
 	// nfsv3
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FpolicyEventProtocolNfsv3 captures enum value "nfsv3"
 	FpolicyEventProtocolNfsv3 string = "nfsv3"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// fpolicy_event
 	// FpolicyEvent
 	// protocol
 	// Protocol
 	// nfsv4
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FpolicyEventProtocolNfsv4 captures enum value "nfsv4"
 	FpolicyEventProtocolNfsv4 string = "nfsv4"
 )
@@ -409,5 +409,3 @@ func (m *FpolicyEventFilters) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

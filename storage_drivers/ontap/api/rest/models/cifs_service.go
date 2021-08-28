@@ -522,14 +522,14 @@ type CifsServiceMetric struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *CifsServiceMetricThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -604,63 +604,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricDurationPT15S captures enum value "PT15S"
 	CifsServiceMetricDurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricDurationPT4M captures enum value "PT4M"
 	CifsServiceMetricDurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricDurationPT30M captures enum value "PT30M"
 	CifsServiceMetricDurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricDurationPT2H captures enum value "PT2H"
 	CifsServiceMetricDurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricDurationP1D captures enum value "P1D"
 	CifsServiceMetricDurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricDurationPT5M captures enum value "PT5M"
 	CifsServiceMetricDurationPT5M string = "PT5M"
 )
@@ -724,7 +724,7 @@ var cifsServiceMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -734,105 +734,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricStatusOk captures enum value "ok"
 	CifsServiceMetricStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricStatusError captures enum value "error"
 	CifsServiceMetricStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricStatusPartialNoData captures enum value "partial_no_data"
 	CifsServiceMetricStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// CifsServiceMetric
-	// CifsServiceMetric
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// CifsServiceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	CifsServiceMetricStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricStatusPartialNoResponse captures enum value "partial_no_response"
 	CifsServiceMetricStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricStatusPartialOtherError captures enum value "partial_other_error"
 	CifsServiceMetricStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricStatusNegativeDelta captures enum value "negative_delta"
 	CifsServiceMetricStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// CifsServiceMetric
+	// CifsServiceMetric
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// CifsServiceMetricStatusNotFound captures enum value "not_found"
+	CifsServiceMetricStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricStatusBackfilledData captures enum value "backfilled_data"
 	CifsServiceMetricStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	CifsServiceMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceMetric
 	// CifsServiceMetric
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	CifsServiceMetricStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// CifsServiceMetric
+	// CifsServiceMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// CifsServiceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	CifsServiceMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -1283,14 +1293,14 @@ type CifsServiceStatistics struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *CifsServiceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1364,7 +1374,7 @@ var cifsServiceStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1374,105 +1384,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceStatistics
 	// CifsServiceStatistics
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceStatisticsStatusOk captures enum value "ok"
 	CifsServiceStatisticsStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceStatistics
 	// CifsServiceStatistics
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceStatisticsStatusError captures enum value "error"
 	CifsServiceStatisticsStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceStatistics
 	// CifsServiceStatistics
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceStatisticsStatusPartialNoData captures enum value "partial_no_data"
 	CifsServiceStatisticsStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// CifsServiceStatistics
-	// CifsServiceStatistics
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// CifsServiceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	CifsServiceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceStatistics
 	// CifsServiceStatistics
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
 	CifsServiceStatisticsStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceStatistics
 	// CifsServiceStatistics
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceStatisticsStatusPartialOtherError captures enum value "partial_other_error"
 	CifsServiceStatisticsStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceStatistics
 	// CifsServiceStatistics
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceStatisticsStatusNegativeDelta captures enum value "negative_delta"
 	CifsServiceStatisticsStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// CifsServiceStatistics
+	// CifsServiceStatistics
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// CifsServiceStatisticsStatusNotFound captures enum value "not_found"
+	CifsServiceStatisticsStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// CifsServiceStatistics
 	// CifsServiceStatistics
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceStatisticsStatusBackfilledData captures enum value "backfilled_data"
 	CifsServiceStatisticsStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceStatistics
 	// CifsServiceStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	CifsServiceStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// CifsServiceStatistics
 	// CifsServiceStatistics
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	CifsServiceStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// CifsServiceStatistics
+	// CifsServiceStatistics
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// CifsServiceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	CifsServiceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -1973,5 +1993,3 @@ func (m *CifsServiceSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

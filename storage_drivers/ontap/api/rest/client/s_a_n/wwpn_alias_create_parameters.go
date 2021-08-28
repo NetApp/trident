@@ -73,7 +73,7 @@ type WwpnAliasCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -93,11 +93,11 @@ func (o *WwpnAliasCreateParams) WithDefaults() *WwpnAliasCreateParams {
 // All values with no default are reset to their zero value.
 func (o *WwpnAliasCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := WwpnAliasCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -150,15 +150,15 @@ func (o *WwpnAliasCreateParams) SetInfo(info *models.WwpnAlias) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the wwpn alias create params
-func (o *WwpnAliasCreateParams) WithReturnRecords(returnRecords *bool) *WwpnAliasCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the wwpn alias create params
+func (o *WwpnAliasCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *WwpnAliasCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the wwpn alias create params
-func (o *WwpnAliasCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the wwpn alias create params
+func (o *WwpnAliasCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,13 +174,13 @@ func (o *WwpnAliasCreateParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

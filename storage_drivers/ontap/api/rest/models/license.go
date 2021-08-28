@@ -35,10 +35,20 @@ type License struct {
 	Evaluation *bool `json:"evaluation,omitempty"`
 
 	// Date and time when the license expires.
-	// Example: 2019-03-02 19:00:00
+	// Example: 2019-03-02T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
+
+	// A string that associates the license with a node or cluster.
+	// Example: 456-44-1234
+	// Read Only: true
+	HostID string `json:"host_id,omitempty"`
+
+	// Name of license that enabled the feature.
+	// Example: Core Bundle
+	// Read Only: true
+	InstalledLicense string `json:"installed_license,omitempty"`
 
 	// Cluster, node or license manager that owns the license.
 	// Example: cluster1
@@ -51,7 +61,7 @@ type License struct {
 	SerialNumber string `json:"serial_number,omitempty"`
 
 	// Date and time when the license starts.
-	// Example: 2019-02-02 19:00:00
+	// Example: 2019-02-02T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -165,6 +175,14 @@ func (m *License) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateHostID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstalledLicense(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateOwner(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -232,6 +250,24 @@ func (m *License) contextValidateEvaluation(ctx context.Context, formats strfmt.
 func (m *License) contextValidateExpiryTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "expiry_time", "body", m.ExpiryTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *License) contextValidateHostID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "host_id", "body", string(m.HostID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *License) contextValidateInstalledLicense(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "installed_license", "body", string(m.InstalledLicense)); err != nil {
 		return err
 	}
 
@@ -396,43 +432,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicenseCompliance
 	// LicenseCompliance
 	// state
 	// State
 	// compliant
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicenseComplianceStateCompliant captures enum value "compliant"
 	LicenseComplianceStateCompliant string = "compliant"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicenseCompliance
 	// LicenseCompliance
 	// state
 	// State
 	// noncompliant
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicenseComplianceStateNoncompliant captures enum value "noncompliant"
 	LicenseComplianceStateNoncompliant string = "noncompliant"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicenseCompliance
 	// LicenseCompliance
 	// state
 	// State
 	// unlicensed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicenseComplianceStateUnlicensed captures enum value "unlicensed"
 	LicenseComplianceStateUnlicensed string = "unlicensed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// LicenseCompliance
 	// LicenseCompliance
 	// state
 	// State
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LicenseComplianceStateUnknown captures enum value "unknown"
 	LicenseComplianceStateUnknown string = "unknown"
 )
@@ -498,5 +534,3 @@ func (m *LicenseCompliance) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

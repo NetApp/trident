@@ -26,5 +26,3 @@ func (m IPAddress) Validate(formats strfmt.Registry) error {
 func (m IPAddress) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

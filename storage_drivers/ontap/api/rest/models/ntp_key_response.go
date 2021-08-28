@@ -284,5 +284,3 @@ func (m *NtpKeyResponseLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

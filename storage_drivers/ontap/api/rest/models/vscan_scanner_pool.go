@@ -115,33 +115,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vscan_scanner_pool
 	// VscanScannerPool
 	// role
 	// Role
 	// primary
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VscanScannerPoolRolePrimary captures enum value "primary"
 	VscanScannerPoolRolePrimary string = "primary"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vscan_scanner_pool
 	// VscanScannerPool
 	// role
 	// Role
 	// secondary
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VscanScannerPoolRoleSecondary captures enum value "secondary"
 	VscanScannerPoolRoleSecondary string = "secondary"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vscan_scanner_pool
 	// VscanScannerPool
 	// role
 	// Role
 	// idle
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VscanScannerPoolRoleIdle captures enum value "idle"
 	VscanScannerPoolRoleIdle string = "idle"
 )
@@ -212,5 +212,3 @@ func (m *VscanScannerPool) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

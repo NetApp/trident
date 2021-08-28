@@ -194,5 +194,3 @@ func (m *LunReferenceLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

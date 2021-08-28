@@ -55,7 +55,7 @@ type QosPolicyGetOK struct {
 }
 
 func (o *QosPolicyGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/qos/policies/{policy.uuid}][%d] qosPolicyGetOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /storage/qos/policies/{uuid}][%d] qosPolicyGetOK  %+v", 200, o.Payload)
 }
 func (o *QosPolicyGetOK) GetPayload() *models.QosPolicy {
 	return o.Payload
@@ -96,7 +96,7 @@ func (o *QosPolicyGetDefault) Code() int {
 }
 
 func (o *QosPolicyGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/qos/policies/{policy.uuid}][%d] qos_policy_get default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[GET /storage/qos/policies/{uuid}][%d] qos_policy_get default  %+v", o._statusCode, o.Payload)
 }
 func (o *QosPolicyGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

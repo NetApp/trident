@@ -87,43 +87,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// layout_requirement
 	// LayoutRequirement
 	// raid_type
 	// RaidType
 	// raid_dp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LayoutRequirementRaidTypeRaidDp captures enum value "raid_dp"
 	LayoutRequirementRaidTypeRaidDp string = "raid_dp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// layout_requirement
 	// LayoutRequirement
 	// raid_type
 	// RaidType
 	// raid_tec
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LayoutRequirementRaidTypeRaidTec captures enum value "raid_tec"
 	LayoutRequirementRaidTypeRaidTec string = "raid_tec"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// layout_requirement
 	// LayoutRequirement
 	// raid_type
 	// RaidType
 	// raid4
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LayoutRequirementRaidTypeRaid4 captures enum value "raid4"
 	LayoutRequirementRaidTypeRaid4 string = "raid4"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// layout_requirement
 	// LayoutRequirement
 	// raid_type
 	// RaidType
 	// raid0
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LayoutRequirementRaidTypeRaid0 captures enum value "raid0"
 	LayoutRequirementRaidTypeRaid0 string = "raid0"
 )
@@ -326,5 +326,3 @@ func (m *LayoutRequirementRaidGroup) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

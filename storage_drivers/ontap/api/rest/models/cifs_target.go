@@ -94,23 +94,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cifs_target
 	// CifsTarget
 	// locality
 	// Locality
 	// local
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsTargetLocalityLocal captures enum value "local"
 	CifsTargetLocalityLocal string = "local"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cifs_target
 	// CifsTarget
 	// locality
 	// Locality
 	// widelink
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsTargetLocalityWidelink captures enum value "widelink"
 	CifsTargetLocalityWidelink string = "widelink"
 )
@@ -194,5 +194,3 @@ func (m *CifsTarget) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

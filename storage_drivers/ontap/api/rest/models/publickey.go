@@ -165,23 +165,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// publickey
 	// Publickey
 	// scope
 	// Scope
 	// cluster
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PublickeyScopeCluster captures enum value "cluster"
 	PublickeyScopeCluster string = "cluster"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// publickey
 	// Publickey
 	// scope
 	// Scope
 	// svm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PublickeyScopeSvm captures enum value "svm"
 	PublickeyScopeSvm string = "svm"
 )
@@ -595,5 +595,3 @@ func (m *PublickeyOwnerLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

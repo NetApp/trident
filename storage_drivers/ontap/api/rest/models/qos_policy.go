@@ -324,6 +324,9 @@ type QosPolicyFixed struct {
 
 	// Minimum throughput defined by this policy.  It is specified in terms of IOPS. 0 means no minimum throughput is enforced. These floors are not guaranteed on non-AFF platforms or when FabricPool tiering policies are set.
 	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
+
+	// Minimum throughput defined by this policy.  It is specified in terms of Mbps. 0 means no minimum throughput is enforced.
+	MinThroughputMbps int64 `json:"min_throughput_mbps,omitempty"`
 }
 
 // Validate validates this qos policy fixed
@@ -621,5 +624,3 @@ func (m *QosPolicySvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

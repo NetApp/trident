@@ -24,6 +24,13 @@ type IPInterface struct {
 	// links
 	Links *IPInterfaceLinks `json:"_links,omitempty"`
 
+	// Indicates whether or not dynamic DNS updates are enabled. Defaults to true if the interface supports "data_nfs" or "data_cifs" services, otherwise false.
+	DdnsEnabled bool `json:"ddns_enabled,omitempty"`
+
+	// Fully qualified DNS zone name
+	// Example: storage.company.com
+	DNSZone string `json:"dns_zone,omitempty"`
+
 	// The administrative state of the interface.
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -35,6 +42,9 @@ type IPInterface struct {
 
 	// location
 	Location *IPInterfaceLocation `json:"location,omitempty"`
+
+	// metric
+	Metric *IPInterfaceMetric `json:"metric,omitempty"`
 
 	// Interface name
 	// Example: dataLif1
@@ -55,6 +65,9 @@ type IPInterface struct {
 	// Read Only: true
 	// Enum: [up down]
 	State string `json:"state,omitempty"`
+
+	// statistics
+	Statistics *IPInterfaceStatistics `json:"statistics,omitempty"`
 
 	// svm
 	Svm *IPInterfaceSvmType `json:"svm,omitempty"`
@@ -88,6 +101,10 @@ func (m *IPInterface) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateMetric(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateScope(formats); err != nil {
 		res = append(res, err)
 	}
@@ -101,6 +118,10 @@ func (m *IPInterface) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatistics(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -182,6 +203,23 @@ func (m *IPInterface) validateLocation(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *IPInterface) validateMetric(formats strfmt.Registry) error {
+	if swag.IsZero(m.Metric) { // not required
+		return nil
+	}
+
+	if m.Metric != nil {
+		if err := m.Metric.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 var ipInterfaceTypeScopePropEnum []interface{}
 
 func init() {
@@ -196,23 +234,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ip_interface
 	// IPInterface
 	// scope
 	// Scope
 	// svm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IPInterfaceScopeSvm captures enum value "svm"
 	IPInterfaceScopeSvm string = "svm"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ip_interface
 	// IPInterface
 	// scope
 	// Scope
 	// cluster
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IPInterfaceScopeCluster captures enum value "cluster"
 	IPInterfaceScopeCluster string = "cluster"
 )
@@ -288,23 +326,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ip_interface
 	// IPInterface
 	// state
 	// State
 	// up
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IPInterfaceStateUp captures enum value "up"
 	IPInterfaceStateUp string = "up"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ip_interface
 	// IPInterface
 	// state
 	// State
 	// down
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IPInterfaceStateDown captures enum value "down"
 	IPInterfaceStateDown string = "down"
 )
@@ -325,6 +363,23 @@ func (m *IPInterface) validateState(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateStateEnum("state", "body", m.State); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *IPInterface) validateStatistics(formats strfmt.Registry) error {
+	if swag.IsZero(m.Statistics) { // not required
+		return nil
+	}
+
+	if m.Statistics != nil {
+		if err := m.Statistics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -367,6 +422,10 @@ func (m *IPInterface) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateMetric(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateServicePolicy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -376,6 +435,10 @@ func (m *IPInterface) ContextValidate(ctx context.Context, formats strfmt.Regist
 	}
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatistics(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -449,6 +512,20 @@ func (m *IPInterface) contextValidateLocation(ctx context.Context, formats strfm
 	return nil
 }
 
+func (m *IPInterface) contextValidateMetric(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Metric != nil {
+		if err := m.Metric.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *IPInterface) contextValidateServicePolicy(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ServicePolicy != nil {
@@ -487,6 +564,20 @@ func (m *IPInterface) contextValidateState(ctx context.Context, formats strfmt.R
 
 	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *IPInterface) contextValidateStatistics(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Statistics != nil {
+		if err := m.Statistics.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -799,7 +890,7 @@ func (m *IPInterfaceLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPInterfaceLocation Current or home location can be modified. Specifying a port implies a node. Specifying a node allows an appropriate port to be automatically selected. Ports are not valid and not shown for VIP interfaces. For POST, broadcast_domain can be specified alone or with home_node.
+// IPInterfaceLocation Current or home location can be modified. Specifying a port implies a node. Specifying a node allows an appropriate port to be automatically selected. Ports are not valid and not shown for VIP interfaces. For POST, broadcast_domain can be specified alone or with home_node.  For PATCH, set is_home to true to revert a LIF back to its home port.
 //
 // swagger:model IPInterfaceLocation
 type IPInterfaceLocation struct {
@@ -820,8 +911,7 @@ type IPInterfaceLocation struct {
 	HomePort *IPInterfaceLocationHomePort `json:"home_port,omitempty"`
 
 	// is home
-	// Read Only: true
-	IsHome *bool `json:"is_home,omitempty"`
+	IsHome bool `json:"is_home,omitempty"`
 
 	// node
 	Node *IPInterfaceLocationNode `json:"node,omitempty"`
@@ -984,10 +1074,6 @@ func (m *IPInterfaceLocation) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateIsHome(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateNode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1051,15 +1137,6 @@ func (m *IPInterfaceLocation) contextValidateHomePort(ctx context.Context, forma
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *IPInterfaceLocation) contextValidateIsHome(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "location"+"."+"is_home", "body", m.IsHome); err != nil {
-		return err
 	}
 
 	return nil
@@ -2171,6 +2248,538 @@ func (m *IPInterfaceLocationPortNode) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// IPInterfaceMetric The most recent sample of I/O metrics for the interface.
+//
+// swagger:model IPInterfaceMetric
+type IPInterfaceMetric struct {
+
+	// links
+	Links *IPInterfaceMetricLinks `json:"_links,omitempty"`
+
+	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
+	//
+	// Example: PT15S
+	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	Duration string `json:"duration,omitempty"`
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	Status string `json:"status,omitempty"`
+
+	// throughput
+	Throughput *IPInterfaceMetricThroughput `json:"throughput,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this IP interface metric
+func (m *IPInterfaceMetric) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughput(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IPInterfaceMetric) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var ipInterfaceMetricTypeDurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ipInterfaceMetricTypeDurationPropEnum = append(ipInterfaceMetricTypeDurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// duration
+	// Duration
+	// PT15S
+	// END DEBUGGING
+	// IPInterfaceMetricDurationPT15S captures enum value "PT15S"
+	IPInterfaceMetricDurationPT15S string = "PT15S"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// duration
+	// Duration
+	// PT4M
+	// END DEBUGGING
+	// IPInterfaceMetricDurationPT4M captures enum value "PT4M"
+	IPInterfaceMetricDurationPT4M string = "PT4M"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// duration
+	// Duration
+	// PT30M
+	// END DEBUGGING
+	// IPInterfaceMetricDurationPT30M captures enum value "PT30M"
+	IPInterfaceMetricDurationPT30M string = "PT30M"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// duration
+	// Duration
+	// PT2H
+	// END DEBUGGING
+	// IPInterfaceMetricDurationPT2H captures enum value "PT2H"
+	IPInterfaceMetricDurationPT2H string = "PT2H"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// duration
+	// Duration
+	// P1D
+	// END DEBUGGING
+	// IPInterfaceMetricDurationP1D captures enum value "P1D"
+	IPInterfaceMetricDurationP1D string = "P1D"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// duration
+	// Duration
+	// PT5M
+	// END DEBUGGING
+	// IPInterfaceMetricDurationPT5M captures enum value "PT5M"
+	IPInterfaceMetricDurationPT5M string = "PT5M"
+)
+
+// prop value enum
+func (m *IPInterfaceMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ipInterfaceMetricTypeDurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *IPInterfaceMetric) validateDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Duration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var ipInterfaceMetricTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ipInterfaceMetricTypeStatusPropEnum = append(ipInterfaceMetricTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// IPInterfaceMetricStatusOk captures enum value "ok"
+	IPInterfaceMetricStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// IPInterfaceMetricStatusError captures enum value "error"
+	IPInterfaceMetricStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// IPInterfaceMetricStatusPartialNoData captures enum value "partial_no_data"
+	IPInterfaceMetricStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// IPInterfaceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	IPInterfaceMetricStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// IPInterfaceMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	IPInterfaceMetricStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// IPInterfaceMetricStatusPartialOtherError captures enum value "partial_other_error"
+	IPInterfaceMetricStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// IPInterfaceMetricStatusNegativeDelta captures enum value "negative_delta"
+	IPInterfaceMetricStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// IPInterfaceMetricStatusBackfilledData captures enum value "backfilled_data"
+	IPInterfaceMetricStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// IPInterfaceMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	IPInterfaceMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceMetric
+	// IPInterfaceMetric
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// IPInterfaceMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	IPInterfaceMetricStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *IPInterfaceMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ipInterfaceMetricTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *IPInterfaceMetric) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *IPInterfaceMetric) validateThroughput(formats strfmt.Registry) error {
+	if swag.IsZero(m.Throughput) { // not required
+		return nil
+	}
+
+	if m.Throughput != nil {
+		if err := m.Throughput.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "throughput")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IPInterfaceMetric) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("metric"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this IP interface metric based on the context it is used
+func (m *IPInterfaceMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughput(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IPInterfaceMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IPInterfaceMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Throughput != nil {
+		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "throughput")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IPInterfaceMetric) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IPInterfaceMetric) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceMetric
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IPInterfaceMetricLinks IP interface metric links
+//
+// swagger:model IPInterfaceMetricLinks
+type IPInterfaceMetricLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this IP interface metric links
+func (m *IPInterfaceMetricLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IPInterfaceMetricLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this IP interface metric links based on the context it is used
+func (m *IPInterfaceMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IPInterfaceMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IPInterfaceMetricLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IPInterfaceMetricLinks) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceMetricLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IPInterfaceMetricThroughput The rate of throughput bytes per second observed at the interface.
+//
+// swagger:model IPInterfaceMetricThroughput
+type IPInterfaceMetricThroughput struct {
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this IP interface metric throughput
+func (m *IPInterfaceMetricThroughput) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this IP interface metric throughput based on context it is used
+func (m *IPInterfaceMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IPInterfaceMetricThroughput) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IPInterfaceMetricThroughput) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceMetricThroughput
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // IPInterfaceServicePolicy IP interface service policy
 //
 // swagger:model IPInterfaceServicePolicy
@@ -2344,6 +2953,304 @@ func (m *IPInterfaceServicePolicyLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *IPInterfaceServicePolicyLinks) UnmarshalBinary(b []byte) error {
 	var res IPInterfaceServicePolicyLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IPInterfaceStatistics The real time I/O statistics for the interface.
+//
+// swagger:model IPInterfaceStatistics
+type IPInterfaceStatistics struct {
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	Status string `json:"status,omitempty"`
+
+	// throughput raw
+	ThroughputRaw *IPInterfaceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this IP interface statistics
+func (m *IPInterfaceStatistics) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughputRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var ipInterfaceStatisticsTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ipInterfaceStatisticsTypeStatusPropEnum = append(ipInterfaceStatisticsTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// IPInterfaceStatistics
+	// IPInterfaceStatistics
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// IPInterfaceStatisticsStatusOk captures enum value "ok"
+	IPInterfaceStatisticsStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceStatistics
+	// IPInterfaceStatistics
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// IPInterfaceStatisticsStatusError captures enum value "error"
+	IPInterfaceStatisticsStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceStatistics
+	// IPInterfaceStatistics
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// IPInterfaceStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	IPInterfaceStatisticsStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceStatistics
+	// IPInterfaceStatistics
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// IPInterfaceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	IPInterfaceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceStatistics
+	// IPInterfaceStatistics
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// IPInterfaceStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	IPInterfaceStatisticsStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceStatistics
+	// IPInterfaceStatistics
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// IPInterfaceStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	IPInterfaceStatisticsStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceStatistics
+	// IPInterfaceStatistics
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// IPInterfaceStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	IPInterfaceStatisticsStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceStatistics
+	// IPInterfaceStatistics
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// IPInterfaceStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	IPInterfaceStatisticsStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceStatistics
+	// IPInterfaceStatistics
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// IPInterfaceStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	IPInterfaceStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// IPInterfaceStatistics
+	// IPInterfaceStatistics
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// IPInterfaceStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	IPInterfaceStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *IPInterfaceStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ipInterfaceStatisticsTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *IPInterfaceStatistics) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *IPInterfaceStatistics) validateThroughputRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.ThroughputRaw) { // not required
+		return nil
+	}
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IPInterfaceStatistics) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("statistics"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this IP interface statistics based on the context it is used
+func (m *IPInterfaceStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateThroughputRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IPInterfaceStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IPInterfaceStatistics) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IPInterfaceStatistics) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceStatistics
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IPInterfaceStatisticsThroughputRaw Throughput bytes observed at the interface. This can be used along with delta time to calculate the rate of throughput bytes per unit of time.
+//
+// swagger:model IPInterfaceStatisticsThroughputRaw
+type IPInterfaceStatisticsThroughputRaw struct {
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this IP interface statistics throughput raw
+func (m *IPInterfaceStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this IP interface statistics throughput raw based on context it is used
+func (m *IPInterfaceStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IPInterfaceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IPInterfaceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res IPInterfaceStatisticsThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2532,5 +3439,3 @@ func (m *IPInterfaceSvmLinksType) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

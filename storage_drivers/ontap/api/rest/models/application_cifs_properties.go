@@ -324,13 +324,13 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationCifsPropertiesBackingStorage
 	// ApplicationCifsPropertiesBackingStorage
 	// type
 	// Type
 	// volume
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationCifsPropertiesBackingStorageTypeVolume captures enum value "volume"
 	ApplicationCifsPropertiesBackingStorageTypeVolume string = "volume"
 )
@@ -594,5 +594,3 @@ func (m *ApplicationCifsPropertiesShare) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

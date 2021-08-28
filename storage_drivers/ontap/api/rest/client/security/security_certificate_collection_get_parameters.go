@@ -60,9 +60,15 @@ func NewSecurityCertificateCollectionGetParamsWithHTTPClient(client *http.Client
 */
 type SecurityCertificateCollectionGetParams struct {
 
+	/* AuthorityKeyIdentifier.
+
+	   Filter by authority_key_identifier
+	*/
+	AuthorityKeyIDentifierQueryParameter *string
+
 	/* Ca.
 
-	   Filter by CA
+	   Filter by ca
 	*/
 	CaQueryParameter *string
 
@@ -82,7 +88,7 @@ type SecurityCertificateCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* HashFunction.
 
@@ -90,23 +96,47 @@ type SecurityCertificateCollectionGetParams struct {
 	*/
 	HashFunctionQueryParameter *string
 
+	/* IntermediateCertificates.
+
+	   Filter by intermediate_certificates
+	*/
+	IntermediateCertificatesQueryParameter *string
+
 	/* KeySize.
 
 	   Filter by key_size
 	*/
-	KeySizeQueryParameter *string
+	KeySizeQueryParameter *int64
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
+
+	/* Name.
+
+	   Filter by name
+	*/
+	NameQueryParameter *string
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
+
+	/* PrivateKey.
+
+	   Filter by private_key
+	*/
+	PrivateKeyQueryParameter *string
+
+	/* PublicCertificate.
+
+	   Filter by public_certificate
+	*/
+	PublicCertificateQueryParameter *string
 
 	/* ReturnRecords.
 
@@ -114,7 +144,7 @@ type SecurityCertificateCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -122,7 +152,7 @@ type SecurityCertificateCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Scope.
 
@@ -135,6 +165,12 @@ type SecurityCertificateCollectionGetParams struct {
 	   Filter by serial_number
 	*/
 	SerialNumberQueryParameter *string
+
+	/* SubjectKeyIdentifier.
+
+	   Filter by subject_key_identifier
+	*/
+	SubjectKeyIDentifierQueryParameter *string
 
 	/* SvmName.
 
@@ -150,9 +186,15 @@ type SecurityCertificateCollectionGetParams struct {
 
 	/* Type.
 
-	   Filter by certificate type
+	   Filter by type
 	*/
 	TypeQueryParameter *string
+
+	/* UUID.
+
+	   Filter by uuid
+	*/
+	UUIDQueryParameter *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -172,14 +214,14 @@ func (o *SecurityCertificateCollectionGetParams) WithDefaults() *SecurityCertifi
 // All values with no default are reset to their zero value.
 func (o *SecurityCertificateCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SecurityCertificateCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -221,6 +263,17 @@ func (o *SecurityCertificateCollectionGetParams) SetHTTPClient(client *http.Clie
 	o.HTTPClient = client
 }
 
+// WithAuthorityKeyIDentifierQueryParameter adds the authorityKeyIdentifier to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithAuthorityKeyIDentifierQueryParameter(authorityKeyIdentifier *string) *SecurityCertificateCollectionGetParams {
+	o.SetAuthorityKeyIDentifierQueryParameter(authorityKeyIdentifier)
+	return o
+}
+
+// SetAuthorityKeyIDentifierQueryParameter adds the authorityKeyIdentifier to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetAuthorityKeyIDentifierQueryParameter(authorityKeyIdentifier *string) {
+	o.AuthorityKeyIDentifierQueryParameter = authorityKeyIdentifier
+}
+
 // WithCaQueryParameter adds the ca to the security certificate collection get params
 func (o *SecurityCertificateCollectionGetParams) WithCaQueryParameter(ca *string) *SecurityCertificateCollectionGetParams {
 	o.SetCaQueryParameter(ca)
@@ -254,15 +307,15 @@ func (o *SecurityCertificateCollectionGetParams) SetExpiryTimeQueryParameter(exp
 	o.ExpiryTimeQueryParameter = expiryTime
 }
 
-// WithFields adds the fields to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) WithFields(fields []string) *SecurityCertificateCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithFieldsQueryParameter(fields []string) *SecurityCertificateCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithHashFunctionQueryParameter adds the hashFunction to the security certificate collection get params
@@ -276,59 +329,103 @@ func (o *SecurityCertificateCollectionGetParams) SetHashFunctionQueryParameter(h
 	o.HashFunctionQueryParameter = hashFunction
 }
 
+// WithIntermediateCertificatesQueryParameter adds the intermediateCertificates to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithIntermediateCertificatesQueryParameter(intermediateCertificates *string) *SecurityCertificateCollectionGetParams {
+	o.SetIntermediateCertificatesQueryParameter(intermediateCertificates)
+	return o
+}
+
+// SetIntermediateCertificatesQueryParameter adds the intermediateCertificates to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetIntermediateCertificatesQueryParameter(intermediateCertificates *string) {
+	o.IntermediateCertificatesQueryParameter = intermediateCertificates
+}
+
 // WithKeySizeQueryParameter adds the keySize to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) WithKeySizeQueryParameter(keySize *string) *SecurityCertificateCollectionGetParams {
+func (o *SecurityCertificateCollectionGetParams) WithKeySizeQueryParameter(keySize *int64) *SecurityCertificateCollectionGetParams {
 	o.SetKeySizeQueryParameter(keySize)
 	return o
 }
 
 // SetKeySizeQueryParameter adds the keySize to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) SetKeySizeQueryParameter(keySize *string) {
+func (o *SecurityCertificateCollectionGetParams) SetKeySizeQueryParameter(keySize *int64) {
 	o.KeySizeQueryParameter = keySize
 }
 
-// WithMaxRecords adds the maxRecords to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) WithMaxRecords(maxRecords *int64) *SecurityCertificateCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SecurityCertificateCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
-// WithOrderBy adds the orderBy to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) WithOrderBy(orderBy []string) *SecurityCertificateCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithNameQueryParameter adds the name to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithNameQueryParameter(name *string) *SecurityCertificateCollectionGetParams {
+	o.SetNameQueryParameter(name)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetNameQueryParameter adds the name to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetNameQueryParameter(name *string) {
+	o.NameQueryParameter = name
 }
 
-// WithReturnRecords adds the returnRecords to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) WithReturnRecords(returnRecords *bool) *SecurityCertificateCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithOrderByQueryParameter adds the orderBy to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SecurityCertificateCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetOrderByQueryParameter adds the orderBy to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnTimeout adds the returnTimeout to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SecurityCertificateCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithPrivateKeyQueryParameter adds the privateKey to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithPrivateKeyQueryParameter(privateKey *string) *SecurityCertificateCollectionGetParams {
+	o.SetPrivateKeyQueryParameter(privateKey)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the security certificate collection get params
-func (o *SecurityCertificateCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetPrivateKeyQueryParameter adds the privateKey to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetPrivateKeyQueryParameter(privateKey *string) {
+	o.PrivateKeyQueryParameter = privateKey
+}
+
+// WithPublicCertificateQueryParameter adds the publicCertificate to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithPublicCertificateQueryParameter(publicCertificate *string) *SecurityCertificateCollectionGetParams {
+	o.SetPublicCertificateQueryParameter(publicCertificate)
+	return o
+}
+
+// SetPublicCertificateQueryParameter adds the publicCertificate to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetPublicCertificateQueryParameter(publicCertificate *string) {
+	o.PublicCertificateQueryParameter = publicCertificate
+}
+
+// WithReturnRecordsQueryParameter adds the returnRecords to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecurityCertificateCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
+	return o
+}
+
+// SetReturnRecordsQueryParameter adds the returnRecords to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
+}
+
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SecurityCertificateCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
+	return o
+}
+
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithScopeQueryParameter adds the scope to the security certificate collection get params
@@ -351,6 +448,17 @@ func (o *SecurityCertificateCollectionGetParams) WithSerialNumberQueryParameter(
 // SetSerialNumberQueryParameter adds the serialNumber to the security certificate collection get params
 func (o *SecurityCertificateCollectionGetParams) SetSerialNumberQueryParameter(serialNumber *string) {
 	o.SerialNumberQueryParameter = serialNumber
+}
+
+// WithSubjectKeyIDentifierQueryParameter adds the subjectKeyIdentifier to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithSubjectKeyIDentifierQueryParameter(subjectKeyIdentifier *string) *SecurityCertificateCollectionGetParams {
+	o.SetSubjectKeyIDentifierQueryParameter(subjectKeyIdentifier)
+	return o
+}
+
+// SetSubjectKeyIDentifierQueryParameter adds the subjectKeyIdentifier to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetSubjectKeyIDentifierQueryParameter(subjectKeyIdentifier *string) {
+	o.SubjectKeyIDentifierQueryParameter = subjectKeyIdentifier
 }
 
 // WithSVMNameQueryParameter adds the svmName to the security certificate collection get params
@@ -386,6 +494,17 @@ func (o *SecurityCertificateCollectionGetParams) SetTypeQueryParameter(typeVar *
 	o.TypeQueryParameter = typeVar
 }
 
+// WithUUIDQueryParameter adds the uuid to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) WithUUIDQueryParameter(uuid *string) *SecurityCertificateCollectionGetParams {
+	o.SetUUIDQueryParameter(uuid)
+	return o
+}
+
+// SetUUIDQueryParameter adds the uuid to the security certificate collection get params
+func (o *SecurityCertificateCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
+	o.UUIDQueryParameter = uuid
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -393,6 +512,23 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 		return err
 	}
 	var res []error
+
+	if o.AuthorityKeyIDentifierQueryParameter != nil {
+
+		// query param authority_key_identifier
+		var qrAuthorityKeyIdentifier string
+
+		if o.AuthorityKeyIDentifierQueryParameter != nil {
+			qrAuthorityKeyIdentifier = *o.AuthorityKeyIDentifierQueryParameter
+		}
+		qAuthorityKeyIdentifier := qrAuthorityKeyIdentifier
+		if qAuthorityKeyIdentifier != "" {
+
+			if err := r.SetQueryParam("authority_key_identifier", qAuthorityKeyIdentifier); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.CaQueryParameter != nil {
 
@@ -445,7 +581,7 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -473,15 +609,32 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
+	if o.IntermediateCertificatesQueryParameter != nil {
+
+		// query param intermediate_certificates
+		var qrIntermediateCertificates string
+
+		if o.IntermediateCertificatesQueryParameter != nil {
+			qrIntermediateCertificates = *o.IntermediateCertificatesQueryParameter
+		}
+		qIntermediateCertificates := qrIntermediateCertificates
+		if qIntermediateCertificates != "" {
+
+			if err := r.SetQueryParam("intermediate_certificates", qIntermediateCertificates); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.KeySizeQueryParameter != nil {
 
 		// query param key_size
-		var qrKeySize string
+		var qrKeySize int64
 
 		if o.KeySizeQueryParameter != nil {
 			qrKeySize = *o.KeySizeQueryParameter
 		}
-		qKeySize := qrKeySize
+		qKeySize := swag.FormatInt64(qrKeySize)
 		if qKeySize != "" {
 
 			if err := r.SetQueryParam("key_size", qKeySize); err != nil {
@@ -490,13 +643,13 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -507,7 +660,24 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.NameQueryParameter != nil {
+
+		// query param name
+		var qrName string
+
+		if o.NameQueryParameter != nil {
+			qrName = *o.NameQueryParameter
+		}
+		qName := qrName
+		if qName != "" {
+
+			if err := r.SetQueryParam("name", qName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -518,13 +688,47 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.PrivateKeyQueryParameter != nil {
+
+		// query param private_key
+		var qrPrivateKey string
+
+		if o.PrivateKeyQueryParameter != nil {
+			qrPrivateKey = *o.PrivateKeyQueryParameter
+		}
+		qPrivateKey := qrPrivateKey
+		if qPrivateKey != "" {
+
+			if err := r.SetQueryParam("private_key", qPrivateKey); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PublicCertificateQueryParameter != nil {
+
+		// query param public_certificate
+		var qrPublicCertificate string
+
+		if o.PublicCertificateQueryParameter != nil {
+			qrPublicCertificate = *o.PublicCertificateQueryParameter
+		}
+		qPublicCertificate := qrPublicCertificate
+		if qPublicCertificate != "" {
+
+			if err := r.SetQueryParam("public_certificate", qPublicCertificate); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -535,13 +739,13 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -581,6 +785,23 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 		if qSerialNumber != "" {
 
 			if err := r.SetQueryParam("serial_number", qSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubjectKeyIDentifierQueryParameter != nil {
+
+		// query param subject_key_identifier
+		var qrSubjectKeyIdentifier string
+
+		if o.SubjectKeyIDentifierQueryParameter != nil {
+			qrSubjectKeyIdentifier = *o.SubjectKeyIDentifierQueryParameter
+		}
+		qSubjectKeyIdentifier := qrSubjectKeyIdentifier
+		if qSubjectKeyIdentifier != "" {
+
+			if err := r.SetQueryParam("subject_key_identifier", qSubjectKeyIdentifier); err != nil {
 				return err
 			}
 		}
@@ -637,6 +858,23 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
+	if o.UUIDQueryParameter != nil {
+
+		// query param uuid
+		var qrUUID string
+
+		if o.UUIDQueryParameter != nil {
+			qrUUID = *o.UUIDQueryParameter
+		}
+		qUUID := qrUUID
+		if qUUID != "" {
+
+			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -645,7 +883,7 @@ func (o *SecurityCertificateCollectionGetParams) WriteToRequest(r runtime.Client
 
 // bindParamSecurityCertificateCollectionGet binds the parameter fields
 func (o *SecurityCertificateCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -662,7 +900,7 @@ func (o *SecurityCertificateCollectionGetParams) bindParamFields(formats strfmt.
 
 // bindParamSecurityCertificateCollectionGet binds the parameter order_by
 func (o *SecurityCertificateCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -76,7 +76,19 @@ type QtreeCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
+
+	/* GroupID.
+
+	   Filter by group.id
+	*/
+	GroupIDQueryParameter *string
+
+	/* GroupName.
+
+	   Filter by group.name
+	*/
+	GroupNameQueryParameter *string
 
 	/* ID.
 
@@ -88,7 +100,7 @@ type QtreeCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -96,11 +108,17 @@ type QtreeCollectionGetParams struct {
 	*/
 	NameQueryParameter *string
 
+	/* NasPath.
+
+	   Filter by nas.path
+	*/
+	NasPathQueryParameter *string
+
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* Path.
 
@@ -108,13 +126,43 @@ type QtreeCollectionGetParams struct {
 	*/
 	PathQueryParameter *string
 
+	/* QosPolicyMaxThroughputIops.
+
+	   Filter by qos_policy.max_throughput_iops
+	*/
+	QosPolicyMaxThroughputIopsQueryParameter *int64
+
+	/* QosPolicyMaxThroughputMbps.
+
+	   Filter by qos_policy.max_throughput_mbps
+	*/
+	QosPolicyMaxThroughputMbpsQueryParameter *int64
+
+	/* QosPolicyMinThroughputIops.
+
+	   Filter by qos_policy.min_throughput_iops
+	*/
+	QosPolicyMinThroughputIopsQueryParameter *int64
+
+	/* QosPolicyName.
+
+	   Filter by qos_policy.name
+	*/
+	QosPolicyNameQueryParameter *string
+
+	/* QosPolicyUUID.
+
+	   Filter by qos_policy.uuid
+	*/
+	QosPolicyUUIDQueryParameter *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -122,13 +170,73 @@ type QtreeCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SecurityStyle.
 
 	   Filter by security_style
 	*/
 	SecurityStyleQueryParameter *string
+
+	/* StatisticsIopsRawOther.
+
+	   Filter by statistics.iops_raw.other
+	*/
+	StatisticsIopsRawOtherQueryParameter *int64
+
+	/* StatisticsIopsRawRead.
+
+	   Filter by statistics.iops_raw.read
+	*/
+	StatisticsIopsRawReadQueryParameter *int64
+
+	/* StatisticsIopsRawTotal.
+
+	   Filter by statistics.iops_raw.total
+	*/
+	StatisticsIopsRawTotalQueryParameter *int64
+
+	/* StatisticsIopsRawWrite.
+
+	   Filter by statistics.iops_raw.write
+	*/
+	StatisticsIopsRawWriteQueryParameter *int64
+
+	/* StatisticsStatus.
+
+	   Filter by statistics.status
+	*/
+	StatisticsStatusQueryParameter *string
+
+	/* StatisticsThroughputRawOther.
+
+	   Filter by statistics.throughput_raw.other
+	*/
+	StatisticsThroughputRawOtherQueryParameter *int64
+
+	/* StatisticsThroughputRawRead.
+
+	   Filter by statistics.throughput_raw.read
+	*/
+	StatisticsThroughputRawReadQueryParameter *int64
+
+	/* StatisticsThroughputRawTotal.
+
+	   Filter by statistics.throughput_raw.total
+	*/
+	StatisticsThroughputRawTotalQueryParameter *int64
+
+	/* StatisticsThroughputRawWrite.
+
+	   Filter by statistics.throughput_raw.write
+	*/
+	StatisticsThroughputRawWriteQueryParameter *int64
+
+	/* StatisticsTimestamp.
+
+	   Filter by statistics.timestamp
+	*/
+	StatisticsTimestampQueryParameter *string
 
 	/* SvmName.
 
@@ -147,6 +255,18 @@ type QtreeCollectionGetParams struct {
 	   Filter by unix_permissions
 	*/
 	UnixPermissionsQueryParameter *int64
+
+	/* UserID.
+
+	   Filter by user.id
+	*/
+	UserIDQueryParameter *string
+
+	/* UserName.
+
+	   Filter by user.name
+	*/
+	UserNameQueryParameter *string
 
 	/* VolumeName.
 
@@ -178,14 +298,14 @@ func (o *QtreeCollectionGetParams) WithDefaults() *QtreeCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *QtreeCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := QtreeCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -249,15 +369,37 @@ func (o *QtreeCollectionGetParams) SetExportPolicyNameQueryParameter(exportPolic
 	o.ExportPolicyNameQueryParameter = exportPolicyName
 }
 
-// WithFields adds the fields to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithFields(fields []string) *QtreeCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithFieldsQueryParameter(fields []string) *QtreeCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
+}
+
+// WithGroupIDQueryParameter adds the groupID to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithGroupIDQueryParameter(groupID *string) *QtreeCollectionGetParams {
+	o.SetGroupIDQueryParameter(groupID)
+	return o
+}
+
+// SetGroupIDQueryParameter adds the groupId to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetGroupIDQueryParameter(groupID *string) {
+	o.GroupIDQueryParameter = groupID
+}
+
+// WithGroupNameQueryParameter adds the groupName to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithGroupNameQueryParameter(groupName *string) *QtreeCollectionGetParams {
+	o.SetGroupNameQueryParameter(groupName)
+	return o
+}
+
+// SetGroupNameQueryParameter adds the groupName to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetGroupNameQueryParameter(groupName *string) {
+	o.GroupNameQueryParameter = groupName
 }
 
 // WithIDQueryParameter adds the id to the qtree collection get params
@@ -271,15 +413,15 @@ func (o *QtreeCollectionGetParams) SetIDQueryParameter(id *int64) {
 	o.IDQueryParameter = id
 }
 
-// WithMaxRecords adds the maxRecords to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithMaxRecords(maxRecords *int64) *QtreeCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *QtreeCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the qtree collection get params
@@ -293,15 +435,26 @@ func (o *QtreeCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithOrderBy(orderBy []string) *QtreeCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithNasPathQueryParameter adds the nasPath to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithNasPathQueryParameter(nasPath *string) *QtreeCollectionGetParams {
+	o.SetNasPathQueryParameter(nasPath)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetNasPathQueryParameter adds the nasPath to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetNasPathQueryParameter(nasPath *string) {
+	o.NasPathQueryParameter = nasPath
+}
+
+// WithOrderByQueryParameter adds the orderBy to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *QtreeCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
+	return o
+}
+
+// SetOrderByQueryParameter adds the orderBy to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPathQueryParameter adds the path to the qtree collection get params
@@ -315,26 +468,81 @@ func (o *QtreeCollectionGetParams) SetPathQueryParameter(path *string) {
 	o.PathQueryParameter = path
 }
 
-// WithReturnRecords adds the returnRecords to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithReturnRecords(returnRecords *bool) *QtreeCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithQosPolicyMaxThroughputIopsQueryParameter adds the qosPolicyMaxThroughputIops to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops *int64) *QtreeCollectionGetParams {
+	o.SetQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetQosPolicyMaxThroughputIopsQueryParameter adds the qosPolicyMaxThroughputIops to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops *int64) {
+	o.QosPolicyMaxThroughputIopsQueryParameter = qosPolicyMaxThroughputIops
 }
 
-// WithReturnTimeout adds the returnTimeout to the qtree collection get params
-func (o *QtreeCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *QtreeCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithQosPolicyMaxThroughputMbpsQueryParameter adds the qosPolicyMaxThroughputMbps to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps *int64) *QtreeCollectionGetParams {
+	o.SetQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the qtree collection get params
-func (o *QtreeCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetQosPolicyMaxThroughputMbpsQueryParameter adds the qosPolicyMaxThroughputMbps to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps *int64) {
+	o.QosPolicyMaxThroughputMbpsQueryParameter = qosPolicyMaxThroughputMbps
+}
+
+// WithQosPolicyMinThroughputIopsQueryParameter adds the qosPolicyMinThroughputIops to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops *int64) *QtreeCollectionGetParams {
+	o.SetQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops)
+	return o
+}
+
+// SetQosPolicyMinThroughputIopsQueryParameter adds the qosPolicyMinThroughputIops to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops *int64) {
+	o.QosPolicyMinThroughputIopsQueryParameter = qosPolicyMinThroughputIops
+}
+
+// WithQosPolicyNameQueryParameter adds the qosPolicyName to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyNameQueryParameter(qosPolicyName *string) *QtreeCollectionGetParams {
+	o.SetQosPolicyNameQueryParameter(qosPolicyName)
+	return o
+}
+
+// SetQosPolicyNameQueryParameter adds the qosPolicyName to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyNameQueryParameter(qosPolicyName *string) {
+	o.QosPolicyNameQueryParameter = qosPolicyName
+}
+
+// WithQosPolicyUUIDQueryParameter adds the qosPolicyUUID to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyUUIDQueryParameter(qosPolicyUUID *string) *QtreeCollectionGetParams {
+	o.SetQosPolicyUUIDQueryParameter(qosPolicyUUID)
+	return o
+}
+
+// SetQosPolicyUUIDQueryParameter adds the qosPolicyUuid to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyUUIDQueryParameter(qosPolicyUUID *string) {
+	o.QosPolicyUUIDQueryParameter = qosPolicyUUID
+}
+
+// WithReturnRecordsQueryParameter adds the returnRecords to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *QtreeCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
+	return o
+}
+
+// SetReturnRecordsQueryParameter adds the returnRecords to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
+}
+
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *QtreeCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
+	return o
+}
+
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSecurityStyleQueryParameter adds the securityStyle to the qtree collection get params
@@ -346,6 +554,116 @@ func (o *QtreeCollectionGetParams) WithSecurityStyleQueryParameter(securityStyle
 // SetSecurityStyleQueryParameter adds the securityStyle to the qtree collection get params
 func (o *QtreeCollectionGetParams) SetSecurityStyleQueryParameter(securityStyle *string) {
 	o.SecurityStyleQueryParameter = securityStyle
+}
+
+// WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther)
+	return o
+}
+
+// SetStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) {
+	o.StatisticsIopsRawOtherQueryParameter = statisticsIopsRawOther
+}
+
+// WithStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead)
+	return o
+}
+
+// SetStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) {
+	o.StatisticsIopsRawReadQueryParameter = statisticsIopsRawRead
+}
+
+// WithStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal)
+	return o
+}
+
+// SetStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) {
+	o.StatisticsIopsRawTotalQueryParameter = statisticsIopsRawTotal
+}
+
+// WithStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite)
+	return o
+}
+
+// SetStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) {
+	o.StatisticsIopsRawWriteQueryParameter = statisticsIopsRawWrite
+}
+
+// WithStatisticsStatusQueryParameter adds the statisticsStatus to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *QtreeCollectionGetParams {
+	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+	return o
+}
+
+// SetStatisticsStatusQueryParameter adds the statisticsStatus to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
+	o.StatisticsStatusQueryParameter = statisticsStatus
+}
+
+// WithStatisticsThroughputRawOtherQueryParameter adds the statisticsThroughputRawOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsThroughputRawOtherQueryParameter(statisticsThroughputRawOther *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsThroughputRawOtherQueryParameter(statisticsThroughputRawOther)
+	return o
+}
+
+// SetStatisticsThroughputRawOtherQueryParameter adds the statisticsThroughputRawOther to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsThroughputRawOtherQueryParameter(statisticsThroughputRawOther *int64) {
+	o.StatisticsThroughputRawOtherQueryParameter = statisticsThroughputRawOther
+}
+
+// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+	return o
+}
+
+// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+}
+
+// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+	return o
+}
+
+// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+}
+
+// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *QtreeCollectionGetParams {
+	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+	return o
+}
+
+// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+}
+
+// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *QtreeCollectionGetParams {
+	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+	return o
+}
+
+// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
+	o.StatisticsTimestampQueryParameter = statisticsTimestamp
 }
 
 // WithSVMNameQueryParameter adds the svmName to the qtree collection get params
@@ -379,6 +697,28 @@ func (o *QtreeCollectionGetParams) WithUnixPermissionsQueryParameter(unixPermiss
 // SetUnixPermissionsQueryParameter adds the unixPermissions to the qtree collection get params
 func (o *QtreeCollectionGetParams) SetUnixPermissionsQueryParameter(unixPermissions *int64) {
 	o.UnixPermissionsQueryParameter = unixPermissions
+}
+
+// WithUserIDQueryParameter adds the userID to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithUserIDQueryParameter(userID *string) *QtreeCollectionGetParams {
+	o.SetUserIDQueryParameter(userID)
+	return o
+}
+
+// SetUserIDQueryParameter adds the userId to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetUserIDQueryParameter(userID *string) {
+	o.UserIDQueryParameter = userID
+}
+
+// WithUserNameQueryParameter adds the userName to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithUserNameQueryParameter(userName *string) *QtreeCollectionGetParams {
+	o.SetUserNameQueryParameter(userName)
+	return o
+}
+
+// SetUserNameQueryParameter adds the userName to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetUserNameQueryParameter(userName *string) {
+	o.UserNameQueryParameter = userName
 }
 
 // WithVolumeNameQueryParameter adds the volumeName to the qtree collection get params
@@ -445,7 +785,7 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -453,6 +793,40 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.GroupIDQueryParameter != nil {
+
+		// query param group.id
+		var qrGroupID string
+
+		if o.GroupIDQueryParameter != nil {
+			qrGroupID = *o.GroupIDQueryParameter
+		}
+		qGroupID := qrGroupID
+		if qGroupID != "" {
+
+			if err := r.SetQueryParam("group.id", qGroupID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.GroupNameQueryParameter != nil {
+
+		// query param group.name
+		var qrGroupName string
+
+		if o.GroupNameQueryParameter != nil {
+			qrGroupName = *o.GroupNameQueryParameter
+		}
+		qGroupName := qrGroupName
+		if qGroupName != "" {
+
+			if err := r.SetQueryParam("group.name", qGroupName); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -473,13 +847,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -507,7 +881,24 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.NasPathQueryParameter != nil {
+
+		// query param nas.path
+		var qrNasPath string
+
+		if o.NasPathQueryParameter != nil {
+			qrNasPath = *o.NasPathQueryParameter
+		}
+		qNasPath := qrNasPath
+		if qNasPath != "" {
+
+			if err := r.SetQueryParam("nas.path", qNasPath); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -535,13 +926,98 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.QosPolicyMaxThroughputIopsQueryParameter != nil {
+
+		// query param qos_policy.max_throughput_iops
+		var qrQosPolicyMaxThroughputIops int64
+
+		if o.QosPolicyMaxThroughputIopsQueryParameter != nil {
+			qrQosPolicyMaxThroughputIops = *o.QosPolicyMaxThroughputIopsQueryParameter
+		}
+		qQosPolicyMaxThroughputIops := swag.FormatInt64(qrQosPolicyMaxThroughputIops)
+		if qQosPolicyMaxThroughputIops != "" {
+
+			if err := r.SetQueryParam("qos_policy.max_throughput_iops", qQosPolicyMaxThroughputIops); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyMaxThroughputMbpsQueryParameter != nil {
+
+		// query param qos_policy.max_throughput_mbps
+		var qrQosPolicyMaxThroughputMbps int64
+
+		if o.QosPolicyMaxThroughputMbpsQueryParameter != nil {
+			qrQosPolicyMaxThroughputMbps = *o.QosPolicyMaxThroughputMbpsQueryParameter
+		}
+		qQosPolicyMaxThroughputMbps := swag.FormatInt64(qrQosPolicyMaxThroughputMbps)
+		if qQosPolicyMaxThroughputMbps != "" {
+
+			if err := r.SetQueryParam("qos_policy.max_throughput_mbps", qQosPolicyMaxThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyMinThroughputIopsQueryParameter != nil {
+
+		// query param qos_policy.min_throughput_iops
+		var qrQosPolicyMinThroughputIops int64
+
+		if o.QosPolicyMinThroughputIopsQueryParameter != nil {
+			qrQosPolicyMinThroughputIops = *o.QosPolicyMinThroughputIopsQueryParameter
+		}
+		qQosPolicyMinThroughputIops := swag.FormatInt64(qrQosPolicyMinThroughputIops)
+		if qQosPolicyMinThroughputIops != "" {
+
+			if err := r.SetQueryParam("qos_policy.min_throughput_iops", qQosPolicyMinThroughputIops); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyNameQueryParameter != nil {
+
+		// query param qos_policy.name
+		var qrQosPolicyName string
+
+		if o.QosPolicyNameQueryParameter != nil {
+			qrQosPolicyName = *o.QosPolicyNameQueryParameter
+		}
+		qQosPolicyName := qrQosPolicyName
+		if qQosPolicyName != "" {
+
+			if err := r.SetQueryParam("qos_policy.name", qQosPolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyUUIDQueryParameter != nil {
+
+		// query param qos_policy.uuid
+		var qrQosPolicyUUID string
+
+		if o.QosPolicyUUIDQueryParameter != nil {
+			qrQosPolicyUUID = *o.QosPolicyUUIDQueryParameter
+		}
+		qQosPolicyUUID := qrQosPolicyUUID
+		if qQosPolicyUUID != "" {
+
+			if err := r.SetQueryParam("qos_policy.uuid", qQosPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -552,13 +1028,13 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -581,6 +1057,176 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		if qSecurityStyle != "" {
 
 			if err := r.SetQueryParam("security_style", qSecurityStyle); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawOtherQueryParameter != nil {
+
+		// query param statistics.iops_raw.other
+		var qrStatisticsIopsRawOther int64
+
+		if o.StatisticsIopsRawOtherQueryParameter != nil {
+			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOtherQueryParameter
+		}
+		qStatisticsIopsRawOther := swag.FormatInt64(qrStatisticsIopsRawOther)
+		if qStatisticsIopsRawOther != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.other", qStatisticsIopsRawOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawReadQueryParameter != nil {
+
+		// query param statistics.iops_raw.read
+		var qrStatisticsIopsRawRead int64
+
+		if o.StatisticsIopsRawReadQueryParameter != nil {
+			qrStatisticsIopsRawRead = *o.StatisticsIopsRawReadQueryParameter
+		}
+		qStatisticsIopsRawRead := swag.FormatInt64(qrStatisticsIopsRawRead)
+		if qStatisticsIopsRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.read", qStatisticsIopsRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawTotalQueryParameter != nil {
+
+		// query param statistics.iops_raw.total
+		var qrStatisticsIopsRawTotal int64
+
+		if o.StatisticsIopsRawTotalQueryParameter != nil {
+			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotalQueryParameter
+		}
+		qStatisticsIopsRawTotal := swag.FormatInt64(qrStatisticsIopsRawTotal)
+		if qStatisticsIopsRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.total", qStatisticsIopsRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawWriteQueryParameter != nil {
+
+		// query param statistics.iops_raw.write
+		var qrStatisticsIopsRawWrite int64
+
+		if o.StatisticsIopsRawWriteQueryParameter != nil {
+			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWriteQueryParameter
+		}
+		qStatisticsIopsRawWrite := swag.FormatInt64(qrStatisticsIopsRawWrite)
+		if qStatisticsIopsRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.write", qStatisticsIopsRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsStatusQueryParameter != nil {
+
+		// query param statistics.status
+		var qrStatisticsStatus string
+
+		if o.StatisticsStatusQueryParameter != nil {
+			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		}
+		qStatisticsStatus := qrStatisticsStatus
+		if qStatisticsStatus != "" {
+
+			if err := r.SetQueryParam("statistics.status", qStatisticsStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawOtherQueryParameter != nil {
+
+		// query param statistics.throughput_raw.other
+		var qrStatisticsThroughputRawOther int64
+
+		if o.StatisticsThroughputRawOtherQueryParameter != nil {
+			qrStatisticsThroughputRawOther = *o.StatisticsThroughputRawOtherQueryParameter
+		}
+		qStatisticsThroughputRawOther := swag.FormatInt64(qrStatisticsThroughputRawOther)
+		if qStatisticsThroughputRawOther != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.other", qStatisticsThroughputRawOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawReadQueryParameter != nil {
+
+		// query param statistics.throughput_raw.read
+		var qrStatisticsThroughputRawRead int64
+
+		if o.StatisticsThroughputRawReadQueryParameter != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		}
+		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
+		if qStatisticsThroughputRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.read", qStatisticsThroughputRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+
+		// query param statistics.throughput_raw.total
+		var qrStatisticsThroughputRawTotal int64
+
+		if o.StatisticsThroughputRawTotalQueryParameter != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		}
+		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
+		if qStatisticsThroughputRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.total", qStatisticsThroughputRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+
+		// query param statistics.throughput_raw.write
+		var qrStatisticsThroughputRawWrite int64
+
+		if o.StatisticsThroughputRawWriteQueryParameter != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		}
+		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
+		if qStatisticsThroughputRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.write", qStatisticsThroughputRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsTimestampQueryParameter != nil {
+
+		// query param statistics.timestamp
+		var qrStatisticsTimestamp string
+
+		if o.StatisticsTimestampQueryParameter != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		}
+		qStatisticsTimestamp := qrStatisticsTimestamp
+		if qStatisticsTimestamp != "" {
+
+			if err := r.SetQueryParam("statistics.timestamp", qStatisticsTimestamp); err != nil {
 				return err
 			}
 		}
@@ -637,6 +1283,40 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
+	if o.UserIDQueryParameter != nil {
+
+		// query param user.id
+		var qrUserID string
+
+		if o.UserIDQueryParameter != nil {
+			qrUserID = *o.UserIDQueryParameter
+		}
+		qUserID := qrUserID
+		if qUserID != "" {
+
+			if err := r.SetQueryParam("user.id", qUserID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UserNameQueryParameter != nil {
+
+		// query param user.name
+		var qrUserName string
+
+		if o.UserNameQueryParameter != nil {
+			qrUserName = *o.UserNameQueryParameter
+		}
+		qUserName := qrUserName
+		if qUserName != "" {
+
+			if err := r.SetQueryParam("user.name", qUserName); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.VolumeNameQueryParameter != nil {
 
 		// query param volume.name
@@ -679,7 +1359,7 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamQtreeCollectionGet binds the parameter fields
 func (o *QtreeCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -696,7 +1376,7 @@ func (o *QtreeCollectionGetParams) bindParamFields(formats strfmt.Registry) []st
 
 // bindParamQtreeCollectionGet binds the parameter order_by
 func (o *QtreeCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

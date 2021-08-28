@@ -72,7 +72,7 @@ type SecuritySamlSpModifyParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -92,11 +92,11 @@ func (o *SecuritySamlSpModifyParams) WithDefaults() *SecuritySamlSpModifyParams 
 // All values with no default are reset to their zero value.
 func (o *SecuritySamlSpModifyParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := SecuritySamlSpModifyParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -149,15 +149,15 @@ func (o *SecuritySamlSpModifyParams) SetInfo(info *models.SecuritySamlSp) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the security saml sp modify params
-func (o *SecuritySamlSpModifyParams) WithReturnRecords(returnRecords *bool) *SecuritySamlSpModifyParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the security saml sp modify params
+func (o *SecuritySamlSpModifyParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecuritySamlSpModifyParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the security saml sp modify params
-func (o *SecuritySamlSpModifyParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the security saml sp modify params
+func (o *SecuritySamlSpModifyParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -173,13 +173,13 @@ func (o *SecuritySamlSpModifyParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

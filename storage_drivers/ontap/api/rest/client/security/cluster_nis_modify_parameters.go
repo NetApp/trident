@@ -72,7 +72,7 @@ type ClusterNisModifyParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -92,11 +92,11 @@ func (o *ClusterNisModifyParams) WithDefaults() *ClusterNisModifyParams {
 // All values with no default are reset to their zero value.
 func (o *ClusterNisModifyParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := ClusterNisModifyParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -149,15 +149,15 @@ func (o *ClusterNisModifyParams) SetInfo(info *models.ClusterNisService) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the cluster nis modify params
-func (o *ClusterNisModifyParams) WithReturnRecords(returnRecords *bool) *ClusterNisModifyParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the cluster nis modify params
+func (o *ClusterNisModifyParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ClusterNisModifyParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the cluster nis modify params
-func (o *ClusterNisModifyParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the cluster nis modify params
+func (o *ClusterNisModifyParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -173,13 +173,13 @@ func (o *ClusterNisModifyParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

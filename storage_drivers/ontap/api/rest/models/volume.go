@@ -24,8 +24,14 @@ type Volume struct {
 	// links
 	Links *VolumeLinks `json:"_links,omitempty"`
 
+	// Indicates whether or not access time updates are enabled on the volume.
+	AccessTimeEnabled bool `json:"access_time_enabled,omitempty"`
+
 	// Aggregate hosting the volume. Required on POST.
 	Aggregates []*VolumeAggregatesItems0 `json:"aggregates,omitempty"`
+
+	// analytics
+	Analytics *VolumeAnalytics `json:"analytics,omitempty"`
 
 	// application
 	Application *VolumeApplication `json:"application,omitempty"`
@@ -36,6 +42,15 @@ type Volume struct {
 	// clone
 	Clone *VolumeClone `json:"clone,omitempty"`
 
+	// This parameter specifies the cloud retrieval policy for the volume. This policy determines which tiered out blocks to retrieve from the capacity tier to the performance tier. The available cloud retrieval policies are
+	// "default" policy retrieves tiered data based on the underlying tiering policy. If the tiering policy is 'auto', tiered data is retrieved only for random client driven data reads. If the tiering policy is 'none' or 'snapshot_only', tiered data is retrieved for random and sequential client driven data reads. If the tiering policy is 'all', tiered data is not retrieved.
+	// "on_read" policy retrieves tiered data for all client driven data reads.
+	// "never" policy never retrieves tiered data.
+	// "promote" policy retrieves all eligible tiered data automatically during the next scheduled scan. It is only supported when the tiering policy is 'none' or 'snapshot_only'. If the tiering policy is 'snapshot_only', the only data brought back is the data in the AFS. Data that is only in a snapshot copy stays in the cloud and if tiering policy is 'none' then all data is retrieved.
+	//
+	// Enum: [default on_read never promote]
+	CloudRetrievalPolicy string `json:"cloud_retrieval_policy,omitempty"`
+
 	// A comment for the volume. Valid in POST or PATCH.
 	// Max Length: 1023
 	// Min Length: 0
@@ -44,19 +59,22 @@ type Volume struct {
 	// consistency group
 	ConsistencyGroup *VolumeConsistencyGroup `json:"consistency_group,omitempty"`
 
+	// constituents
+	Constituents []*VolumeConstituentsItems0 `json:"constituents,omitempty"`
+
 	// Specifies the number of times to iterate over the aggregates listed with the "aggregates.name" or "aggregates.uuid" when creating or expanding a FlexGroup. If a volume is being created on a single aggregate, the system will create a flexible volume if the "constituents_per_aggregate" field is not specified, and a FlexGroup if it is specified.  If a volume is being created on multiple aggregates, the system will always create a FlexGroup.
 	// Maximum: 1000
 	// Minimum: 1
 	ConstituentsPerAggregate int64 `json:"constituents_per_aggregate,omitempty"`
 
 	// Creation time of the volume. This field is generated when the volume is created.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
 
 	// efficiency
-	Efficiency *VolumeEfficiency `json:"efficiency,omitempty"`
+	Efficiency *VolumeEfficiencyType `json:"efficiency,omitempty"`
 
 	// encryption
 	Encryption *VolumeEncryption `json:"encryption,omitempty"`
@@ -74,6 +92,10 @@ type Volume struct {
 
 	// guarantee
 	Guarantee *VolumeGuarantee `json:"guarantee,omitempty"`
+
+	// Specifies whether the volume is provisioned for an object store server.
+	// Read Only: true
+	IsObjectStore *bool `json:"is_object_store,omitempty"`
 
 	// Specifies whether the volume is a root volume of the SVM it belongs to.
 	// Read Only: true
@@ -101,6 +123,9 @@ type Volume struct {
 	// qos
 	Qos *VolumeQos `json:"qos,omitempty"`
 
+	// Specifies whether the volume is queued for encryption.
+	QueueForEncryption bool `json:"queue_for_encryption,omitempty"`
+
 	// quota
 	Quota *VolumeQuota `json:"quota,omitempty"`
 
@@ -126,6 +151,10 @@ type Volume struct {
 	// statistics
 	Statistics *VolumeStatistics `json:"statistics,omitempty"`
 
+	// Describes the current status of a volume.
+	// Read Only: true
+	Status []string `json:"status,omitempty"`
+
 	// The style of the volume. If "style" is not specified, the volume type is determined based on the specified aggregates. Specifying a single aggregate, without "constituents_per_aggregate", creates a flexible volume. Specifying multiple aggregates, or a single aggregate with "constituents_per_aggregate", creates a FlexGroup. Specifying a volume "style" creates a volume of that type. For example, if the style is "flexvol" you must specify a single aggregate. If the style is "flexgroup", the system either uses the specified aggregates or automatically provisions aggregates if there are no specified aggregates.<br>flexvol &dash; flexible volumes and FlexClone volumes<br>flexgroup &dash; FlexGroups.
 	// Enum: [flexvol flexgroup]
 	Style string `json:"style,omitempty"`
@@ -141,7 +170,7 @@ type Volume struct {
 	Type *string `json:"type,omitempty"`
 
 	// Specifies whether mirrored aggregates are selected when provisioning a FlexGroup without specifying "aggregates.name" or "aggregates.uuid". Only mirrored aggregates are used if this parameter is set to 'true' and only unmirrored aggregates are used if this parameter is set to 'false'. Aggregate level mirroring for a FlexGroup can be changed by moving all of the constituents to the required aggregates. The default value is 'true' for a MetroCluster configuration and is 'false' for a non-MetroCluster configuration.
-	UseMirroredAggregates *bool `json:"use_mirrored_aggregates,omitempty"`
+	UseMirroredAggregates bool `json:"use_mirrored_aggregates,omitempty"`
 
 	// Unique identifier for the volume. This corresponds to the instance-uuid that is exposed in the CLI and ONTAPI. It does not change due to a volume move.
 	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
@@ -161,6 +190,10 @@ func (m *Volume) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAnalytics(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateApplication(formats); err != nil {
 		res = append(res, err)
 	}
@@ -173,11 +206,19 @@ func (m *Volume) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateCloudRetrievalPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateComment(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateConsistencyGroup(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConstituents(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -328,6 +369,23 @@ func (m *Volume) validateAggregates(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Volume) validateAnalytics(formats strfmt.Registry) error {
+	if swag.IsZero(m.Analytics) { // not required
+		return nil
+	}
+
+	if m.Analytics != nil {
+		if err := m.Analytics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Volume) validateApplication(formats strfmt.Registry) error {
 	if swag.IsZero(m.Application) { // not required
 		return nil
@@ -379,6 +437,82 @@ func (m *Volume) validateClone(formats strfmt.Registry) error {
 	return nil
 }
 
+var volumeTypeCloudRetrievalPolicyPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["default","on_read","never","promote"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeTypeCloudRetrievalPolicyPropEnum = append(volumeTypeCloudRetrievalPolicyPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// cloud_retrieval_policy
+	// CloudRetrievalPolicy
+	// default
+	// END DEBUGGING
+	// VolumeCloudRetrievalPolicyDefault captures enum value "default"
+	VolumeCloudRetrievalPolicyDefault string = "default"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// cloud_retrieval_policy
+	// CloudRetrievalPolicy
+	// on_read
+	// END DEBUGGING
+	// VolumeCloudRetrievalPolicyOnRead captures enum value "on_read"
+	VolumeCloudRetrievalPolicyOnRead string = "on_read"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// cloud_retrieval_policy
+	// CloudRetrievalPolicy
+	// never
+	// END DEBUGGING
+	// VolumeCloudRetrievalPolicyNever captures enum value "never"
+	VolumeCloudRetrievalPolicyNever string = "never"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// cloud_retrieval_policy
+	// CloudRetrievalPolicy
+	// promote
+	// END DEBUGGING
+	// VolumeCloudRetrievalPolicyPromote captures enum value "promote"
+	VolumeCloudRetrievalPolicyPromote string = "promote"
+)
+
+// prop value enum
+func (m *Volume) validateCloudRetrievalPolicyEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeTypeCloudRetrievalPolicyPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Volume) validateCloudRetrievalPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.CloudRetrievalPolicy) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateCloudRetrievalPolicyEnum("cloud_retrieval_policy", "body", m.CloudRetrievalPolicy); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Volume) validateComment(formats strfmt.Registry) error {
 	if swag.IsZero(m.Comment) { // not required
 		return nil
@@ -407,6 +541,30 @@ func (m *Volume) validateConsistencyGroup(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Volume) validateConstituents(formats strfmt.Registry) error {
+	if swag.IsZero(m.Constituents) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Constituents); i++ {
+		if swag.IsZero(m.Constituents[i]) { // not required
+			continue
+		}
+
+		if m.Constituents[i] != nil {
+			if err := m.Constituents[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("constituents" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -522,33 +680,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// flexcache_endpoint_type
 	// FlexcacheEndpointType
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeFlexcacheEndpointTypeNone captures enum value "none"
 	VolumeFlexcacheEndpointTypeNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// flexcache_endpoint_type
 	// FlexcacheEndpointType
 	// cache
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeFlexcacheEndpointTypeCache captures enum value "cache"
 	VolumeFlexcacheEndpointTypeCache string = "cache"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// flexcache_endpoint_type
 	// FlexcacheEndpointType
 	// origin
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeFlexcacheEndpointTypeOrigin captures enum value "origin"
 	VolumeFlexcacheEndpointTypeOrigin string = "origin"
 )
@@ -605,693 +763,693 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ar
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageAr captures enum value "ar"
 	VolumeLanguageAr string = "ar"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ar.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageArDotUTF8 captures enum value "ar.utf_8"
 	VolumeLanguageArDotUTF8 string = "ar.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// c
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageC captures enum value "c"
 	VolumeLanguageC string = "c"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// c.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageCDotUTF8 captures enum value "c.utf_8"
 	VolumeLanguageCDotUTF8 string = "c.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// cs
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageCs captures enum value "cs"
 	VolumeLanguageCs string = "cs"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// cs.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageCsDotUTF8 captures enum value "cs.utf_8"
 	VolumeLanguageCsDotUTF8 string = "cs.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// da
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageDa captures enum value "da"
 	VolumeLanguageDa string = "da"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// da.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageDaDotUTF8 captures enum value "da.utf_8"
 	VolumeLanguageDaDotUTF8 string = "da.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// de
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageDe captures enum value "de"
 	VolumeLanguageDe string = "de"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// de.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageDeDotUTF8 captures enum value "de.utf_8"
 	VolumeLanguageDeDotUTF8 string = "de.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// en
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageEn captures enum value "en"
 	VolumeLanguageEn string = "en"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// en.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageEnDotUTF8 captures enum value "en.utf_8"
 	VolumeLanguageEnDotUTF8 string = "en.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// en_us
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageEnUs captures enum value "en_us"
 	VolumeLanguageEnUs string = "en_us"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// en_us.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageEnUsDotUTF8 captures enum value "en_us.utf_8"
 	VolumeLanguageEnUsDotUTF8 string = "en_us.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// es
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageEs captures enum value "es"
 	VolumeLanguageEs string = "es"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// es.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageEsDotUTF8 captures enum value "es.utf_8"
 	VolumeLanguageEsDotUTF8 string = "es.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// fi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageFi captures enum value "fi"
 	VolumeLanguageFi string = "fi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// fi.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageFiDotUTF8 captures enum value "fi.utf_8"
 	VolumeLanguageFiDotUTF8 string = "fi.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// fr
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageFr captures enum value "fr"
 	VolumeLanguageFr string = "fr"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// fr.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageFrDotUTF8 captures enum value "fr.utf_8"
 	VolumeLanguageFrDotUTF8 string = "fr.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// he
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageHe captures enum value "he"
 	VolumeLanguageHe string = "he"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// he.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageHeDotUTF8 captures enum value "he.utf_8"
 	VolumeLanguageHeDotUTF8 string = "he.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// hr
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageHr captures enum value "hr"
 	VolumeLanguageHr string = "hr"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// hr.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageHrDotUTF8 captures enum value "hr.utf_8"
 	VolumeLanguageHrDotUTF8 string = "hr.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// hu
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageHu captures enum value "hu"
 	VolumeLanguageHu string = "hu"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// hu.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageHuDotUTF8 captures enum value "hu.utf_8"
 	VolumeLanguageHuDotUTF8 string = "hu.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// it
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageIt captures enum value "it"
 	VolumeLanguageIt string = "it"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// it.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageItDotUTF8 captures enum value "it.utf_8"
 	VolumeLanguageItDotUTF8 string = "it.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ja
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageJa captures enum value "ja"
 	VolumeLanguageJa string = "ja"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ja.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageJaDotUTF8 captures enum value "ja.utf_8"
 	VolumeLanguageJaDotUTF8 string = "ja.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ja_jp.932
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageJaJpDot932 captures enum value "ja_jp.932"
 	VolumeLanguageJaJpDot932 string = "ja_jp.932"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ja_jp.932.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageJaJpDot932DotUTF8 captures enum value "ja_jp.932.utf_8"
 	VolumeLanguageJaJpDot932DotUTF8 string = "ja_jp.932.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ja_jp.pck
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageJaJpDotPck captures enum value "ja_jp.pck"
 	VolumeLanguageJaJpDotPck string = "ja_jp.pck"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ja_jp.pck.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageJaJpDotPckDotUTF8 captures enum value "ja_jp.pck.utf_8"
 	VolumeLanguageJaJpDotPckDotUTF8 string = "ja_jp.pck.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ja_jp.pck_v2
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageJaJpDotPckV2 captures enum value "ja_jp.pck_v2"
 	VolumeLanguageJaJpDotPckV2 string = "ja_jp.pck_v2"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ja_jp.pck_v2.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageJaJpDotPckV2DotUTF8 captures enum value "ja_jp.pck_v2.utf_8"
 	VolumeLanguageJaJpDotPckV2DotUTF8 string = "ja_jp.pck_v2.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ja_v1
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageJaV1 captures enum value "ja_v1"
 	VolumeLanguageJaV1 string = "ja_v1"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ja_v1.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageJaV1DotUTF8 captures enum value "ja_v1.utf_8"
 	VolumeLanguageJaV1DotUTF8 string = "ja_v1.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ko
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageKo captures enum value "ko"
 	VolumeLanguageKo string = "ko"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ko.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageKoDotUTF8 captures enum value "ko.utf_8"
 	VolumeLanguageKoDotUTF8 string = "ko.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// nl
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageNl captures enum value "nl"
 	VolumeLanguageNl string = "nl"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// nl.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageNlDotUTF8 captures enum value "nl.utf_8"
 	VolumeLanguageNlDotUTF8 string = "nl.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// no
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageNo captures enum value "no"
 	VolumeLanguageNo string = "no"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// no.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageNoDotUTF8 captures enum value "no.utf_8"
 	VolumeLanguageNoDotUTF8 string = "no.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// pl
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguagePl captures enum value "pl"
 	VolumeLanguagePl string = "pl"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// pl.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguagePlDotUTF8 captures enum value "pl.utf_8"
 	VolumeLanguagePlDotUTF8 string = "pl.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// pt
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguagePt captures enum value "pt"
 	VolumeLanguagePt string = "pt"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// pt.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguagePtDotUTF8 captures enum value "pt.utf_8"
 	VolumeLanguagePtDotUTF8 string = "pt.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ro
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageRo captures enum value "ro"
 	VolumeLanguageRo string = "ro"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ro.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageRoDotUTF8 captures enum value "ro.utf_8"
 	VolumeLanguageRoDotUTF8 string = "ro.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ru
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageRu captures enum value "ru"
 	VolumeLanguageRu string = "ru"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// ru.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageRuDotUTF8 captures enum value "ru.utf_8"
 	VolumeLanguageRuDotUTF8 string = "ru.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// sk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageSk captures enum value "sk"
 	VolumeLanguageSk string = "sk"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// sk.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageSkDotUTF8 captures enum value "sk.utf_8"
 	VolumeLanguageSkDotUTF8 string = "sk.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// sl
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageSl captures enum value "sl"
 	VolumeLanguageSl string = "sl"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// sl.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageSlDotUTF8 captures enum value "sl.utf_8"
 	VolumeLanguageSlDotUTF8 string = "sl.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// sv
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageSv captures enum value "sv"
 	VolumeLanguageSv string = "sv"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// sv.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageSvDotUTF8 captures enum value "sv.utf_8"
 	VolumeLanguageSvDotUTF8 string = "sv.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// tr
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageTr captures enum value "tr"
 	VolumeLanguageTr string = "tr"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// tr.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageTrDotUTF8 captures enum value "tr.utf_8"
 	VolumeLanguageTrDotUTF8 string = "tr.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// utf8mb4
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageUtf8mb4 captures enum value "utf8mb4"
 	VolumeLanguageUtf8mb4 string = "utf8mb4"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// zh
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageZh captures enum value "zh"
 	VolumeLanguageZh string = "zh"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// zh.gbk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageZhDotGbk captures enum value "zh.gbk"
 	VolumeLanguageZhDotGbk string = "zh.gbk"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// zh.gbk.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageZhDotGbkDotUTF8 captures enum value "zh.gbk.utf_8"
 	VolumeLanguageZhDotGbkDotUTF8 string = "zh.gbk.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// zh.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageZhDotUTF8 captures enum value "zh.utf_8"
 	VolumeLanguageZhDotUTF8 string = "zh.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// zh_tw
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageZhTw captures enum value "zh_tw"
 	VolumeLanguageZhTw string = "zh_tw"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// zh_tw.big5
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageZhTwDotBig5 captures enum value "zh_tw.big5"
 	VolumeLanguageZhTwDotBig5 string = "zh_tw.big5"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// zh_tw.big5.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageZhTwDotBig5DotUTF8 captures enum value "zh_tw.big5.utf_8"
 	VolumeLanguageZhTwDotBig5DotUTF8 string = "zh_tw.big5.utf_8"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// language
 	// Language
 	// zh_tw.utf_8
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeLanguageZhTwDotUTF8 captures enum value "zh_tw.utf_8"
 	VolumeLanguageZhTwDotUTF8 string = "zh_tw.utf_8"
 )
@@ -1500,43 +1658,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStateError captures enum value "error"
 	VolumeStateError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// state
 	// State
 	// mixed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStateMixed captures enum value "mixed"
 	VolumeStateMixed string = "mixed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// state
 	// State
 	// offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStateOffline captures enum value "offline"
 	VolumeStateOffline string = "offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// state
 	// State
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStateOnline captures enum value "online"
 	VolumeStateOnline string = "online"
 )
@@ -1593,23 +1751,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// style
 	// Style
 	// flexvol
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStyleFlexvol captures enum value "flexvol"
 	VolumeStyleFlexvol string = "flexvol"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// style
 	// Style
 	// flexgroup
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStyleFlexgroup captures enum value "flexgroup"
 	VolumeStyleFlexgroup string = "flexgroup"
 )
@@ -1683,33 +1841,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// type
 	// Type
 	// rw
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeTypeRw captures enum value "rw"
 	VolumeTypeRw string = "rw"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// type
 	// Type
 	// dp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeTypeDp captures enum value "dp"
 	VolumeTypeDp string = "dp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume
 	// Volume
 	// type
 	// Type
 	// ls
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeTypeLs captures enum value "ls"
 	VolumeTypeLs string = "ls"
 )
@@ -1747,6 +1905,10 @@ func (m *Volume) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAnalytics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateApplication(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1760,6 +1922,10 @@ func (m *Volume) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 	}
 
 	if err := m.contextValidateConsistencyGroup(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateConstituents(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1788,6 +1954,10 @@ func (m *Volume) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 	}
 
 	if err := m.contextValidateGuarantee(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsObjectStore(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1832,6 +2002,10 @@ func (m *Volume) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 	}
 
 	if err := m.contextValidateStatistics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1880,6 +2054,20 @@ func (m *Volume) contextValidateAggregates(ctx context.Context, formats strfmt.R
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *Volume) contextValidateAnalytics(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Analytics != nil {
+		if err := m.Analytics.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1936,6 +2124,24 @@ func (m *Volume) contextValidateConsistencyGroup(ctx context.Context, formats st
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Volume) contextValidateConstituents(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Constituents); i++ {
+
+		if m.Constituents[i] != nil {
+			if err := m.Constituents[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("constituents" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -2024,6 +2230,15 @@ func (m *Volume) contextValidateGuarantee(ctx context.Context, formats strfmt.Re
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Volume) contextValidateIsObjectStore(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_object_store", "body", m.IsObjectStore); err != nil {
+		return err
 	}
 
 	return nil
@@ -2173,6 +2388,15 @@ func (m *Volume) contextValidateStatistics(ctx context.Context, formats strfmt.R
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Volume) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "status", "body", []string(m.Status)); err != nil {
+		return err
 	}
 
 	return nil
@@ -2413,6 +2637,286 @@ func (m *VolumeAggregatesItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// VolumeAnalytics volume analytics
+//
+// swagger:model VolumeAnalytics
+type VolumeAnalytics struct {
+
+	// Percentage of files in the volume that the file system analytics initialization scan has processed. Only returned when the state is `initializing`.
+	// Example: 17
+	// Read Only: true
+	ScanProgress int64 `json:"scan_progress,omitempty"`
+
+	// File system analytics state of the volume. If this value is "on", ONTAP collects extra file system analytics information for all directories on the volume.  There will be a slight impact to I/O performance to collect this information. If this value is "off", file system analytics information is not collected and not available to be viewed. If this value is "initializing", that means file system analytics was recently turned on, and the initialization scan to gather information all all existing files and directories is currently running. If this value is 'unknown' that means there was an internal error when determining the file system analytics state for the volume.
+	// Enum: [unknown initializing off on]
+	State string `json:"state,omitempty"`
+
+	// This field indicates whether or not file system analytics is supported on the volume. If file system analytics is not supported, the reason will be specified in the "analytics.unsupported_reason" field.
+	// Read Only: true
+	Supported *bool `json:"supported,omitempty"`
+
+	// unsupported reason
+	UnsupportedReason *VolumeAnalyticsUnsupportedReason `json:"unsupported_reason,omitempty"`
+}
+
+// Validate validates this volume analytics
+func (m *VolumeAnalytics) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUnsupportedReason(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var volumeAnalyticsTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["unknown","initializing","off","on"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeAnalyticsTypeStatePropEnum = append(volumeAnalyticsTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeAnalytics
+	// VolumeAnalytics
+	// state
+	// State
+	// unknown
+	// END DEBUGGING
+	// VolumeAnalyticsStateUnknown captures enum value "unknown"
+	VolumeAnalyticsStateUnknown string = "unknown"
+
+	// BEGIN DEBUGGING
+	// VolumeAnalytics
+	// VolumeAnalytics
+	// state
+	// State
+	// initializing
+	// END DEBUGGING
+	// VolumeAnalyticsStateInitializing captures enum value "initializing"
+	VolumeAnalyticsStateInitializing string = "initializing"
+
+	// BEGIN DEBUGGING
+	// VolumeAnalytics
+	// VolumeAnalytics
+	// state
+	// State
+	// off
+	// END DEBUGGING
+	// VolumeAnalyticsStateOff captures enum value "off"
+	VolumeAnalyticsStateOff string = "off"
+
+	// BEGIN DEBUGGING
+	// VolumeAnalytics
+	// VolumeAnalytics
+	// state
+	// State
+	// on
+	// END DEBUGGING
+	// VolumeAnalyticsStateOn captures enum value "on"
+	VolumeAnalyticsStateOn string = "on"
+)
+
+// prop value enum
+func (m *VolumeAnalytics) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeAnalyticsTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeAnalytics) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("analytics"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAnalytics) validateUnsupportedReason(formats strfmt.Registry) error {
+	if swag.IsZero(m.UnsupportedReason) { // not required
+		return nil
+	}
+
+	if m.UnsupportedReason != nil {
+		if err := m.UnsupportedReason.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "unsupported_reason")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume analytics based on the context it is used
+func (m *VolumeAnalytics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanProgress(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSupported(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUnsupportedReason(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeAnalytics) contextValidateScanProgress(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "analytics"+"."+"scan_progress", "body", int64(m.ScanProgress)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAnalytics) contextValidateSupported(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "analytics"+"."+"supported", "body", m.Supported); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAnalytics) contextValidateUnsupportedReason(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.UnsupportedReason != nil {
+		if err := m.UnsupportedReason.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "unsupported_reason")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeAnalytics) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeAnalytics) UnmarshalBinary(b []byte) error {
+	var res VolumeAnalytics
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeAnalyticsUnsupportedReason volume analytics unsupported reason
+//
+// swagger:model VolumeAnalyticsUnsupportedReason
+type VolumeAnalyticsUnsupportedReason struct {
+
+	// If file system analytics is not supported on the volume, this field provides the error code explaining why.
+	// Example: 111411207
+	// Read Only: true
+	Code string `json:"code,omitempty"`
+
+	// If file system analytics is not supported on the volume, this field provides the error message explaining why.
+	// Example: File system analytics cannot be enabled on volumes that contain LUNs.
+	// Read Only: true
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this volume analytics unsupported reason
+func (m *VolumeAnalyticsUnsupportedReason) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this volume analytics unsupported reason based on the context it is used
+func (m *VolumeAnalyticsUnsupportedReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeAnalyticsUnsupportedReason) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "analytics"+"."+"unsupported_reason"+"."+"code", "body", string(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAnalyticsUnsupportedReason) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "analytics"+"."+"unsupported_reason"+"."+"message", "body", string(m.Message)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeAnalyticsUnsupportedReason) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeAnalyticsUnsupportedReason) UnmarshalBinary(b []byte) error {
+	var res VolumeAnalyticsUnsupportedReason
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // VolumeApplication volume application
 //
 // swagger:model VolumeApplication
@@ -2537,33 +3041,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeAutosize
 	// VolumeAutosize
 	// mode
 	// Mode
 	// grow
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeAutosizeModeGrow captures enum value "grow"
 	VolumeAutosizeModeGrow string = "grow"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeAutosize
 	// VolumeAutosize
 	// mode
 	// Mode
 	// grow_shrink
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeAutosizeModeGrowShrink captures enum value "grow_shrink"
 	VolumeAutosizeModeGrowShrink string = "grow_shrink"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeAutosize
 	// VolumeAutosize
 	// mode
 	// Mode
 	// off
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeAutosizeModeOff captures enum value "off"
 	VolumeAutosizeModeOff string = "off"
 )
@@ -3222,10 +3726,1242 @@ func (m *VolumeConsistencyGroup) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeEfficiency volume efficiency
+// VolumeConstituentsItems0 volume constituents items0
 //
-// swagger:model VolumeEfficiency
-type VolumeEfficiency struct {
+// swagger:model VolumeConstituentsItems0
+type VolumeConstituentsItems0 struct {
+
+	// aggregates
+	Aggregates *VolumeConstituentsItems0Aggregates `json:"aggregates,omitempty"`
+
+	// movement
+	Movement *VolumeConstituentsItems0Movement `json:"movement,omitempty"`
+
+	// FlexGroup Constituents name
+	// Read Only: true
+	Name string `json:"name,omitempty"`
+
+	// space
+	Space *VolumeConstituentsItems0Space `json:"space,omitempty"`
+}
+
+// Validate validates this volume constituents items0
+func (m *VolumeConstituentsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAggregates(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMovement(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSpace(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0) validateAggregates(formats strfmt.Registry) error {
+	if swag.IsZero(m.Aggregates) { // not required
+		return nil
+	}
+
+	if m.Aggregates != nil {
+		if err := m.Aggregates.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregates")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0) validateMovement(formats strfmt.Registry) error {
+	if swag.IsZero(m.Movement) { // not required
+		return nil
+	}
+
+	if m.Movement != nil {
+		if err := m.Movement.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("movement")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0) validateSpace(formats strfmt.Registry) error {
+	if swag.IsZero(m.Space) { // not required
+		return nil
+	}
+
+	if m.Space != nil {
+		if err := m.Space.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume constituents items0 based on the context it is used
+func (m *VolumeConstituentsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMovement(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSpace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0) contextValidateAggregates(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Aggregates != nil {
+		if err := m.Aggregates.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregates")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0) contextValidateMovement(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Movement != nil {
+		if err := m.Movement.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("movement")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0) contextValidateSpace(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Space != nil {
+		if err := m.Space.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeConstituentsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeConstituentsItems0) UnmarshalBinary(b []byte) error {
+	var res VolumeConstituentsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeConstituentsItems0Aggregates volume constituents items0 aggregates
+//
+// swagger:model VolumeConstituentsItems0Aggregates
+type VolumeConstituentsItems0Aggregates struct {
+
+	// Name of the aggregate hosting the FlexGroup Constituent.
+	// Read Only: true
+	Name string `json:"name,omitempty"`
+
+	// Unique identifier for the aggregate.
+	// Example: 028baa66-41bd-11e9-81d5-00a0986138f7
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this volume constituents items0 aggregates
+func (m *VolumeConstituentsItems0Aggregates) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this volume constituents items0 aggregates based on the context it is used
+func (m *VolumeConstituentsItems0Aggregates) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Aggregates) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "aggregates"+"."+"name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Aggregates) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "aggregates"+"."+"uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeConstituentsItems0Aggregates) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeConstituentsItems0Aggregates) UnmarshalBinary(b []byte) error {
+	var res VolumeConstituentsItems0Aggregates
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeConstituentsItems0Movement Volume movement. All attributes are modify, that is, not writable through POST. Set PATCH state to destination_aggregate to initiate a volume move operation. Volume movement on FlexGroup constituents are not supported.
+//
+// swagger:model VolumeConstituentsItems0Movement
+type VolumeConstituentsItems0Movement struct {
+
+	// Time window in seconds for cutover. The allowed range is between 30 to 300 seconds.
+	// Example: 30
+	CutoverWindow *int64 `json:"cutover_window,omitempty"`
+
+	// destination aggregate
+	DestinationAggregate *VolumeConstituentsItems0MovementDestinationAggregate `json:"destination_aggregate,omitempty"`
+
+	// Completion percentage
+	// Read Only: true
+	PercentComplete int64 `json:"percent_complete,omitempty"`
+
+	// State of volume move operation. PATCH the state to "aborted" to abort the move operation. PATCH the state to "cutover" to trigger cutover. PATCH the state to "paused" to pause the volume move operation in progress. PATCH the state to "replicating" to resume the paused volume move operation. PATCH the state to "cutover_wait" to go into cutover manually. When volume move operation is waiting to go into "cutover" state, this is indicated by the "cutover_pending" state. A change of state is only supported if volume movement is in progress.
+	// Example: replicating
+	// Enum: [aborted cutover cutover_wait cutover_pending failed paused queued replicating success]
+	State string `json:"state,omitempty"`
+
+	// Tiering policy for FabricPool
+	// Enum: [all auto backup none snapshot_only]
+	TieringPolicy string `json:"tiering_policy,omitempty"`
+}
+
+// Validate validates this volume constituents items0 movement
+func (m *VolumeConstituentsItems0Movement) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDestinationAggregate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTieringPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Movement) validateDestinationAggregate(formats strfmt.Registry) error {
+	if swag.IsZero(m.DestinationAggregate) { // not required
+		return nil
+	}
+
+	if m.DestinationAggregate != nil {
+		if err := m.DestinationAggregate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("movement" + "." + "destination_aggregate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var volumeConstituentsItems0MovementTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["aborted","cutover","cutover_wait","cutover_pending","failed","paused","queued","replicating","success"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeConstituentsItems0MovementTypeStatePropEnum = append(volumeConstituentsItems0MovementTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// state
+	// State
+	// aborted
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementStateAborted captures enum value "aborted"
+	VolumeConstituentsItems0MovementStateAborted string = "aborted"
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// state
+	// State
+	// cutover
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementStateCutover captures enum value "cutover"
+	VolumeConstituentsItems0MovementStateCutover string = "cutover"
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// state
+	// State
+	// cutover_wait
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementStateCutoverWait captures enum value "cutover_wait"
+	VolumeConstituentsItems0MovementStateCutoverWait string = "cutover_wait"
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// state
+	// State
+	// cutover_pending
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementStateCutoverPending captures enum value "cutover_pending"
+	VolumeConstituentsItems0MovementStateCutoverPending string = "cutover_pending"
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// state
+	// State
+	// failed
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementStateFailed captures enum value "failed"
+	VolumeConstituentsItems0MovementStateFailed string = "failed"
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// state
+	// State
+	// paused
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementStatePaused captures enum value "paused"
+	VolumeConstituentsItems0MovementStatePaused string = "paused"
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// state
+	// State
+	// queued
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementStateQueued captures enum value "queued"
+	VolumeConstituentsItems0MovementStateQueued string = "queued"
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// state
+	// State
+	// replicating
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementStateReplicating captures enum value "replicating"
+	VolumeConstituentsItems0MovementStateReplicating string = "replicating"
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// state
+	// State
+	// success
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementStateSuccess captures enum value "success"
+	VolumeConstituentsItems0MovementStateSuccess string = "success"
+)
+
+// prop value enum
+func (m *VolumeConstituentsItems0Movement) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeConstituentsItems0MovementTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Movement) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("movement"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var volumeConstituentsItems0MovementTypeTieringPolicyPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["all","auto","backup","none","snapshot_only"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeConstituentsItems0MovementTypeTieringPolicyPropEnum = append(volumeConstituentsItems0MovementTypeTieringPolicyPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// tiering_policy
+	// TieringPolicy
+	// all
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementTieringPolicyAll captures enum value "all"
+	VolumeConstituentsItems0MovementTieringPolicyAll string = "all"
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// tiering_policy
+	// TieringPolicy
+	// auto
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementTieringPolicyAuto captures enum value "auto"
+	VolumeConstituentsItems0MovementTieringPolicyAuto string = "auto"
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// tiering_policy
+	// TieringPolicy
+	// backup
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementTieringPolicyBackup captures enum value "backup"
+	VolumeConstituentsItems0MovementTieringPolicyBackup string = "backup"
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// tiering_policy
+	// TieringPolicy
+	// none
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementTieringPolicyNone captures enum value "none"
+	VolumeConstituentsItems0MovementTieringPolicyNone string = "none"
+
+	// BEGIN DEBUGGING
+	// VolumeConstituentsItems0Movement
+	// VolumeConstituentsItems0Movement
+	// tiering_policy
+	// TieringPolicy
+	// snapshot_only
+	// END DEBUGGING
+	// VolumeConstituentsItems0MovementTieringPolicySnapshotOnly captures enum value "snapshot_only"
+	VolumeConstituentsItems0MovementTieringPolicySnapshotOnly string = "snapshot_only"
+)
+
+// prop value enum
+func (m *VolumeConstituentsItems0Movement) validateTieringPolicyEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeConstituentsItems0MovementTypeTieringPolicyPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Movement) validateTieringPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.TieringPolicy) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTieringPolicyEnum("movement"+"."+"tiering_policy", "body", m.TieringPolicy); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume constituents items0 movement based on the context it is used
+func (m *VolumeConstituentsItems0Movement) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDestinationAggregate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePercentComplete(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Movement) contextValidateDestinationAggregate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.DestinationAggregate != nil {
+		if err := m.DestinationAggregate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("movement" + "." + "destination_aggregate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Movement) contextValidatePercentComplete(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "movement"+"."+"percent_complete", "body", int64(m.PercentComplete)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeConstituentsItems0Movement) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeConstituentsItems0Movement) UnmarshalBinary(b []byte) error {
+	var res VolumeConstituentsItems0Movement
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeConstituentsItems0MovementDestinationAggregate Aggregate
+//
+// swagger:model VolumeConstituentsItems0MovementDestinationAggregate
+type VolumeConstituentsItems0MovementDestinationAggregate struct {
+
+	// links
+	Links *VolumeConstituentsItems0MovementDestinationAggregateLinks `json:"_links,omitempty"`
+
+	// name
+	// Example: aggr1
+	Name string `json:"name,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this volume constituents items0 movement destination aggregate
+func (m *VolumeConstituentsItems0MovementDestinationAggregate) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0MovementDestinationAggregate) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("movement" + "." + "destination_aggregate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume constituents items0 movement destination aggregate based on the context it is used
+func (m *VolumeConstituentsItems0MovementDestinationAggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0MovementDestinationAggregate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("movement" + "." + "destination_aggregate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeConstituentsItems0MovementDestinationAggregate) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeConstituentsItems0MovementDestinationAggregate) UnmarshalBinary(b []byte) error {
+	var res VolumeConstituentsItems0MovementDestinationAggregate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeConstituentsItems0MovementDestinationAggregateLinks volume constituents items0 movement destination aggregate links
+//
+// swagger:model VolumeConstituentsItems0MovementDestinationAggregateLinks
+type VolumeConstituentsItems0MovementDestinationAggregateLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this volume constituents items0 movement destination aggregate links
+func (m *VolumeConstituentsItems0MovementDestinationAggregateLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0MovementDestinationAggregateLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("movement" + "." + "destination_aggregate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume constituents items0 movement destination aggregate links based on the context it is used
+func (m *VolumeConstituentsItems0MovementDestinationAggregateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0MovementDestinationAggregateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("movement" + "." + "destination_aggregate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeConstituentsItems0MovementDestinationAggregateLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeConstituentsItems0MovementDestinationAggregateLinks) UnmarshalBinary(b []byte) error {
+	var res VolumeConstituentsItems0MovementDestinationAggregateLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeConstituentsItems0Space volume constituents items0 space
+//
+// swagger:model VolumeConstituentsItems0Space
+type VolumeConstituentsItems0Space struct {
+
+	// Total size of AFS, excluding snap-reserve, in bytes.
+	AfsTotal int64 `json:"afs_total,omitempty"`
+
+	// The available space, in bytes.
+	// Read Only: true
+	Available int64 `json:"available,omitempty"`
+
+	// The space available, as a percent.
+	AvailablePercent int64 `json:"available_percent,omitempty"`
+
+	// The size that is physically used in the block storage of the volume and has a cold temperature. In bytes. This parameter is only supported if the volume is in an aggregate that is either attached to a cloud store or could be attached to a cloud store.
+	// Read Only: true
+	BlockStorageInactiveUserData int64 `json:"block_storage_inactive_user_data,omitempty"`
+
+	// Space used by capacity tier for this volume in the FabricPool aggregate, in bytes.
+	// Read Only: true
+	CapacityTierFootprint int64 `json:"capacity_tier_footprint,omitempty"`
+
+	// Data used for this volume in the aggregate, in bytes.
+	// Read Only: true
+	Footprint int64 `json:"footprint,omitempty"`
+
+	// Space used by the local tier for this volume in the aggregate, in bytes.
+	// Read Only: true
+	LocalTierFootprint int64 `json:"local_tier_footprint,omitempty"`
+
+	// logical space
+	LogicalSpace *VolumeConstituentsItems0SpaceLogicalSpace `json:"logical_space,omitempty"`
+
+	// Space used by the volume metadata in the aggregate, in bytes.
+	// Read Only: true
+	Metadata int64 `json:"metadata,omitempty"`
+
+	// The amount of space not available for this volume in the aggregate, in bytes.
+	// Read Only: true
+	OverProvisioned int64 `json:"over_provisioned,omitempty"`
+
+	// Space used by the performance tier for this volume in the FabricPool aggregate, in bytes.
+	// Read Only: true
+	PerformanceTierFootprint int64 `json:"performance_tier_footprint,omitempty"`
+
+	// Total provisioned size. The default size is equal to the minimum size of 20MB, in bytes.
+	Size int64 `json:"size,omitempty"`
+
+	// snapshot
+	Snapshot *VolumeConstituentsItems0SpaceSnapshot `json:"snapshot,omitempty"`
+
+	// Data and metadata used for this volume in the aggregate, in bytes.
+	// Read Only: true
+	TotalFootprint int64 `json:"total_footprint,omitempty"`
+
+	// The virtual space used (includes volume reserves) before storage efficiency, in bytes.
+	// Read Only: true
+	Used int64 `json:"used,omitempty"`
+
+	// The space used by Active Filesystem, in bytes.
+	UsedByAfs int64 `json:"used_by_afs,omitempty"`
+}
+
+// Validate validates this volume constituents items0 space
+func (m *VolumeConstituentsItems0Space) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLogicalSpace(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapshot(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) validateLogicalSpace(formats strfmt.Registry) error {
+	if swag.IsZero(m.LogicalSpace) { // not required
+		return nil
+	}
+
+	if m.LogicalSpace != nil {
+		if err := m.LogicalSpace.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "logical_space")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) validateSnapshot(formats strfmt.Registry) error {
+	if swag.IsZero(m.Snapshot) { // not required
+		return nil
+	}
+
+	if m.Snapshot != nil {
+		if err := m.Snapshot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume constituents items0 space based on the context it is used
+func (m *VolumeConstituentsItems0Space) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAvailable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBlockStorageInactiveUserData(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCapacityTierFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLocalTierFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLogicalSpace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMetadata(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateOverProvisioned(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePerformanceTierFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapshot(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTotalFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"available", "body", int64(m.Available)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) contextValidateBlockStorageInactiveUserData(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage_inactive_user_data", "body", int64(m.BlockStorageInactiveUserData)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) contextValidateCapacityTierFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"capacity_tier_footprint", "body", int64(m.CapacityTierFootprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) contextValidateFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"footprint", "body", int64(m.Footprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) contextValidateLocalTierFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"local_tier_footprint", "body", int64(m.LocalTierFootprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) contextValidateLogicalSpace(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.LogicalSpace != nil {
+		if err := m.LogicalSpace.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "logical_space")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) contextValidateMetadata(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"metadata", "body", int64(m.Metadata)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) contextValidateOverProvisioned(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"over_provisioned", "body", int64(m.OverProvisioned)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) contextValidatePerformanceTierFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"performance_tier_footprint", "body", int64(m.PerformanceTierFootprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Snapshot != nil {
+		if err := m.Snapshot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) contextValidateTotalFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"total_footprint", "body", int64(m.TotalFootprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0Space) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"used", "body", int64(m.Used)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeConstituentsItems0Space) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeConstituentsItems0Space) UnmarshalBinary(b []byte) error {
+	var res VolumeConstituentsItems0Space
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeConstituentsItems0SpaceLogicalSpace volume constituents items0 space logical space
+//
+// swagger:model VolumeConstituentsItems0SpaceLogicalSpace
+type VolumeConstituentsItems0SpaceLogicalSpace struct {
+
+	// The amount of space available in this volume with storage efficiency space considered used, in bytes.
+	// Read Only: true
+	Available int64 `json:"available,omitempty"`
+
+	// Specifies whether space accounting for operations on the volume is done along with storage efficiency.
+	Enforcement *bool `json:"enforcement,omitempty"`
+
+	// Specifies whether space reporting on the volume is done along with storage efficiency.
+	Reporting *bool `json:"reporting,omitempty"`
+
+	// The virtual space used by AFS alone (includes volume reserves) and along with storage efficiency, in bytes.
+	// Read Only: true
+	UsedByAfs int64 `json:"used_by_afs,omitempty"`
+}
+
+// Validate validates this volume constituents items0 space logical space
+func (m *VolumeConstituentsItems0SpaceLogicalSpace) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this volume constituents items0 space logical space based on the context it is used
+func (m *VolumeConstituentsItems0SpaceLogicalSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAvailable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsedByAfs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0SpaceLogicalSpace) contextValidateAvailable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"logical_space"+"."+"available", "body", int64(m.Available)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeConstituentsItems0SpaceLogicalSpace) contextValidateUsedByAfs(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"logical_space"+"."+"used_by_afs", "body", int64(m.UsedByAfs)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeConstituentsItems0SpaceLogicalSpace) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeConstituentsItems0SpaceLogicalSpace) UnmarshalBinary(b []byte) error {
+	var res VolumeConstituentsItems0SpaceLogicalSpace
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeConstituentsItems0SpaceSnapshot volume constituents items0 space snapshot
+//
+// swagger:model VolumeConstituentsItems0SpaceSnapshot
+type VolumeConstituentsItems0SpaceSnapshot struct {
+
+	// Specifies whether Snapshot copy autodelete is currently enabled on this volume.
+	AutodeleteEnabled *bool `json:"autodelete_enabled,omitempty"`
+
+	// The space that has been set aside as a reserve for Snapshot copy usage, in percent.
+	ReservePercent *int64 `json:"reserve_percent,omitempty"`
+
+	// The total space used by Snapshot copies in the volume, in bytes.
+	// Read Only: true
+	Used int64 `json:"used,omitempty"`
+}
+
+// Validate validates this volume constituents items0 space snapshot
+func (m *VolumeConstituentsItems0SpaceSnapshot) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this volume constituents items0 space snapshot based on the context it is used
+func (m *VolumeConstituentsItems0SpaceSnapshot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConstituentsItems0SpaceSnapshot) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"used", "body", int64(m.Used)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeConstituentsItems0SpaceSnapshot) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeConstituentsItems0SpaceSnapshot) UnmarshalBinary(b []byte) error {
+	var res VolumeConstituentsItems0SpaceSnapshot
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeEfficiencyType volume efficiency type
+//
+// swagger:model VolumeEfficiencyType
+type VolumeEfficiencyType struct {
+
+	// Block size to use by compression. Valid for POST.
+	// Enum: [8k auto]
+	ApplicationIoSize string `json:"application_io_size,omitempty"`
 
 	// The system can be enabled/disabled compaction.<br>inline &dash; Data will be compacted first and written to the volume.<br>none &dash; None<br>mixed &dash; Read only field for FlexGroups, where some of the constituent volumes are compaction enabled and some are disabled.
 	// Enum: [inline none mixed]
@@ -3243,13 +4979,54 @@ type VolumeEfficiency struct {
 	// Enum: [inline background both none mixed]
 	Dedupe string `json:"dedupe,omitempty"`
 
+	// Last sis operation begin timestamp.
+	LastOpBegin string `json:"last_op_begin,omitempty"`
+
+	// Last sis operation end timestamp.
+	LastOpEnd string `json:"last_op_end,omitempty"`
+
+	// Last sis operation error text.
+	LastOpErr string `json:"last_op_err,omitempty"`
+
+	// Last sis operation size.
+	LastOpSize int64 `json:"last_op_size,omitempty"`
+
+	// Last sis operation state.
+	LastOpState string `json:"last_op_state,omitempty"`
+
+	// Sis status of the volume.
+	// Enum: [idle initializing active undoing pending downgrading disabled]
+	OpState string `json:"op_state,omitempty"`
+
+	// Absolute volume path of the volume.
+	Path string `json:"path,omitempty"`
+
 	// policy
-	Policy *VolumeEfficiencyPolicy `json:"policy,omitempty"`
+	Policy *VolumeEfficiencyTypePolicyType `json:"policy,omitempty"`
+
+	// Sis progress of the volume.
+	Progress string `json:"progress,omitempty"`
+
+	// Schedule associated with volume.
+	// Read Only: true
+	Schedule string `json:"schedule,omitempty"`
+
+	// Sis state of the volume.
+	// Enum: [disabled enabled mixed]
+	State string `json:"state,omitempty"`
+
+	// Sis Type of the volume.
+	// Enum: [regular snapvault]
+	Type string `json:"type,omitempty"`
 }
 
-// Validate validates this volume efficiency
-func (m *VolumeEfficiency) Validate(formats strfmt.Registry) error {
+// Validate validates this volume efficiency type
+func (m *VolumeEfficiencyType) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateApplicationIoSize(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateCompaction(formats); err != nil {
 		res = append(res, err)
@@ -3267,7 +5044,19 @@ func (m *VolumeEfficiency) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateOpState(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validatePolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3277,7 +5066,63 @@ func (m *VolumeEfficiency) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var volumeEfficiencyTypeCompactionPropEnum []interface{}
+var volumeEfficiencyTypeTypeApplicationIoSizePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["8k","auto"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeEfficiencyTypeTypeApplicationIoSizePropEnum = append(volumeEfficiencyTypeTypeApplicationIoSizePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// application_io_size
+	// ApplicationIoSize
+	// 8k
+	// END DEBUGGING
+	// VolumeEfficiencyTypeApplicationIoSizeNr8k captures enum value "8k"
+	VolumeEfficiencyTypeApplicationIoSizeNr8k string = "8k"
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// application_io_size
+	// ApplicationIoSize
+	// auto
+	// END DEBUGGING
+	// VolumeEfficiencyTypeApplicationIoSizeAuto captures enum value "auto"
+	VolumeEfficiencyTypeApplicationIoSizeAuto string = "auto"
+)
+
+// prop value enum
+func (m *VolumeEfficiencyType) validateApplicationIoSizeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeTypeApplicationIoSizePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeEfficiencyType) validateApplicationIoSize(formats strfmt.Registry) error {
+	if swag.IsZero(m.ApplicationIoSize) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateApplicationIoSizeEnum("efficiency"+"."+"application_io_size", "body", m.ApplicationIoSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var volumeEfficiencyTypeTypeCompactionPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3285,52 +5130,52 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		volumeEfficiencyTypeCompactionPropEnum = append(volumeEfficiencyTypeCompactionPropEnum, v)
+		volumeEfficiencyTypeTypeCompactionPropEnum = append(volumeEfficiencyTypeTypeCompactionPropEnum, v)
 	}
 }
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// compaction
 	// Compaction
 	// inline
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCompactionInline captures enum value "inline"
-	VolumeEfficiencyCompactionInline string = "inline"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCompactionInline captures enum value "inline"
+	VolumeEfficiencyTypeCompactionInline string = "inline"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// compaction
 	// Compaction
 	// none
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCompactionNone captures enum value "none"
-	VolumeEfficiencyCompactionNone string = "none"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCompactionNone captures enum value "none"
+	VolumeEfficiencyTypeCompactionNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// compaction
 	// Compaction
 	// mixed
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCompactionMixed captures enum value "mixed"
-	VolumeEfficiencyCompactionMixed string = "mixed"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCompactionMixed captures enum value "mixed"
+	VolumeEfficiencyTypeCompactionMixed string = "mixed"
 )
 
 // prop value enum
-func (m *VolumeEfficiency) validateCompactionEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeCompactionPropEnum, true); err != nil {
+func (m *VolumeEfficiencyType) validateCompactionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeTypeCompactionPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VolumeEfficiency) validateCompaction(formats strfmt.Registry) error {
+func (m *VolumeEfficiencyType) validateCompaction(formats strfmt.Registry) error {
 	if swag.IsZero(m.Compaction) { // not required
 		return nil
 	}
@@ -3343,7 +5188,7 @@ func (m *VolumeEfficiency) validateCompaction(formats strfmt.Registry) error {
 	return nil
 }
 
-var volumeEfficiencyTypeCompressionPropEnum []interface{}
+var volumeEfficiencyTypeTypeCompressionPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3351,72 +5196,72 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		volumeEfficiencyTypeCompressionPropEnum = append(volumeEfficiencyTypeCompressionPropEnum, v)
+		volumeEfficiencyTypeTypeCompressionPropEnum = append(volumeEfficiencyTypeTypeCompressionPropEnum, v)
 	}
 }
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// compression
 	// Compression
 	// inline
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCompressionInline captures enum value "inline"
-	VolumeEfficiencyCompressionInline string = "inline"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCompressionInline captures enum value "inline"
+	VolumeEfficiencyTypeCompressionInline string = "inline"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// compression
 	// Compression
 	// background
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCompressionBackground captures enum value "background"
-	VolumeEfficiencyCompressionBackground string = "background"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCompressionBackground captures enum value "background"
+	VolumeEfficiencyTypeCompressionBackground string = "background"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// compression
 	// Compression
 	// both
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCompressionBoth captures enum value "both"
-	VolumeEfficiencyCompressionBoth string = "both"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCompressionBoth captures enum value "both"
+	VolumeEfficiencyTypeCompressionBoth string = "both"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// compression
 	// Compression
 	// none
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCompressionNone captures enum value "none"
-	VolumeEfficiencyCompressionNone string = "none"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCompressionNone captures enum value "none"
+	VolumeEfficiencyTypeCompressionNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// compression
 	// Compression
 	// mixed
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCompressionMixed captures enum value "mixed"
-	VolumeEfficiencyCompressionMixed string = "mixed"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCompressionMixed captures enum value "mixed"
+	VolumeEfficiencyTypeCompressionMixed string = "mixed"
 )
 
 // prop value enum
-func (m *VolumeEfficiency) validateCompressionEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeCompressionPropEnum, true); err != nil {
+func (m *VolumeEfficiencyType) validateCompressionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeTypeCompressionPropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VolumeEfficiency) validateCompression(formats strfmt.Registry) error {
+func (m *VolumeEfficiencyType) validateCompression(formats strfmt.Registry) error {
 	if swag.IsZero(m.Compression) { // not required
 		return nil
 	}
@@ -3429,7 +5274,7 @@ func (m *VolumeEfficiency) validateCompression(formats strfmt.Registry) error {
 	return nil
 }
 
-var volumeEfficiencyTypeCrossVolumeDedupePropEnum []interface{}
+var volumeEfficiencyTypeTypeCrossVolumeDedupePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3437,72 +5282,72 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		volumeEfficiencyTypeCrossVolumeDedupePropEnum = append(volumeEfficiencyTypeCrossVolumeDedupePropEnum, v)
+		volumeEfficiencyTypeTypeCrossVolumeDedupePropEnum = append(volumeEfficiencyTypeTypeCrossVolumeDedupePropEnum, v)
 	}
 }
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// cross_volume_dedupe
 	// CrossVolumeDedupe
 	// inline
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCrossVolumeDedupeInline captures enum value "inline"
-	VolumeEfficiencyCrossVolumeDedupeInline string = "inline"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCrossVolumeDedupeInline captures enum value "inline"
+	VolumeEfficiencyTypeCrossVolumeDedupeInline string = "inline"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// cross_volume_dedupe
 	// CrossVolumeDedupe
 	// background
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCrossVolumeDedupeBackground captures enum value "background"
-	VolumeEfficiencyCrossVolumeDedupeBackground string = "background"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCrossVolumeDedupeBackground captures enum value "background"
+	VolumeEfficiencyTypeCrossVolumeDedupeBackground string = "background"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// cross_volume_dedupe
 	// CrossVolumeDedupe
 	// both
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCrossVolumeDedupeBoth captures enum value "both"
-	VolumeEfficiencyCrossVolumeDedupeBoth string = "both"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCrossVolumeDedupeBoth captures enum value "both"
+	VolumeEfficiencyTypeCrossVolumeDedupeBoth string = "both"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// cross_volume_dedupe
 	// CrossVolumeDedupe
 	// none
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCrossVolumeDedupeNone captures enum value "none"
-	VolumeEfficiencyCrossVolumeDedupeNone string = "none"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCrossVolumeDedupeNone captures enum value "none"
+	VolumeEfficiencyTypeCrossVolumeDedupeNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// cross_volume_dedupe
 	// CrossVolumeDedupe
 	// mixed
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyCrossVolumeDedupeMixed captures enum value "mixed"
-	VolumeEfficiencyCrossVolumeDedupeMixed string = "mixed"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeCrossVolumeDedupeMixed captures enum value "mixed"
+	VolumeEfficiencyTypeCrossVolumeDedupeMixed string = "mixed"
 )
 
 // prop value enum
-func (m *VolumeEfficiency) validateCrossVolumeDedupeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeCrossVolumeDedupePropEnum, true); err != nil {
+func (m *VolumeEfficiencyType) validateCrossVolumeDedupeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeTypeCrossVolumeDedupePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VolumeEfficiency) validateCrossVolumeDedupe(formats strfmt.Registry) error {
+func (m *VolumeEfficiencyType) validateCrossVolumeDedupe(formats strfmt.Registry) error {
 	if swag.IsZero(m.CrossVolumeDedupe) { // not required
 		return nil
 	}
@@ -3515,7 +5360,7 @@ func (m *VolumeEfficiency) validateCrossVolumeDedupe(formats strfmt.Registry) er
 	return nil
 }
 
-var volumeEfficiencyTypeDedupePropEnum []interface{}
+var volumeEfficiencyTypeTypeDedupePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -3523,72 +5368,72 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		volumeEfficiencyTypeDedupePropEnum = append(volumeEfficiencyTypeDedupePropEnum, v)
+		volumeEfficiencyTypeTypeDedupePropEnum = append(volumeEfficiencyTypeTypeDedupePropEnum, v)
 	}
 }
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// dedupe
 	// Dedupe
 	// inline
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyDedupeInline captures enum value "inline"
-	VolumeEfficiencyDedupeInline string = "inline"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeDedupeInline captures enum value "inline"
+	VolumeEfficiencyTypeDedupeInline string = "inline"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// dedupe
 	// Dedupe
 	// background
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyDedupeBackground captures enum value "background"
-	VolumeEfficiencyDedupeBackground string = "background"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeDedupeBackground captures enum value "background"
+	VolumeEfficiencyTypeDedupeBackground string = "background"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// dedupe
 	// Dedupe
 	// both
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyDedupeBoth captures enum value "both"
-	VolumeEfficiencyDedupeBoth string = "both"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeDedupeBoth captures enum value "both"
+	VolumeEfficiencyTypeDedupeBoth string = "both"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// dedupe
 	// Dedupe
 	// none
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyDedupeNone captures enum value "none"
-	VolumeEfficiencyDedupeNone string = "none"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeDedupeNone captures enum value "none"
+	VolumeEfficiencyTypeDedupeNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
-	// VolumeEfficiency
-	// VolumeEfficiency
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
 	// dedupe
 	// Dedupe
 	// mixed
-	// END RIPPY DEBUGGING
-	// VolumeEfficiencyDedupeMixed captures enum value "mixed"
-	VolumeEfficiencyDedupeMixed string = "mixed"
+	// END DEBUGGING
+	// VolumeEfficiencyTypeDedupeMixed captures enum value "mixed"
+	VolumeEfficiencyTypeDedupeMixed string = "mixed"
 )
 
 // prop value enum
-func (m *VolumeEfficiency) validateDedupeEnum(path, location string, value string) error {
-	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeDedupePropEnum, true); err != nil {
+func (m *VolumeEfficiencyType) validateDedupeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeTypeDedupePropEnum, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VolumeEfficiency) validateDedupe(formats strfmt.Registry) error {
+func (m *VolumeEfficiencyType) validateDedupe(formats strfmt.Registry) error {
 	if swag.IsZero(m.Dedupe) { // not required
 		return nil
 	}
@@ -3601,7 +5446,113 @@ func (m *VolumeEfficiency) validateDedupe(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VolumeEfficiency) validatePolicy(formats strfmt.Registry) error {
+var volumeEfficiencyTypeTypeOpStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["idle","initializing","active","undoing","pending","downgrading","disabled"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeEfficiencyTypeTypeOpStatePropEnum = append(volumeEfficiencyTypeTypeOpStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// op_state
+	// OpState
+	// idle
+	// END DEBUGGING
+	// VolumeEfficiencyTypeOpStateIdle captures enum value "idle"
+	VolumeEfficiencyTypeOpStateIdle string = "idle"
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// op_state
+	// OpState
+	// initializing
+	// END DEBUGGING
+	// VolumeEfficiencyTypeOpStateInitializing captures enum value "initializing"
+	VolumeEfficiencyTypeOpStateInitializing string = "initializing"
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// op_state
+	// OpState
+	// active
+	// END DEBUGGING
+	// VolumeEfficiencyTypeOpStateActive captures enum value "active"
+	VolumeEfficiencyTypeOpStateActive string = "active"
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// op_state
+	// OpState
+	// undoing
+	// END DEBUGGING
+	// VolumeEfficiencyTypeOpStateUndoing captures enum value "undoing"
+	VolumeEfficiencyTypeOpStateUndoing string = "undoing"
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// op_state
+	// OpState
+	// pending
+	// END DEBUGGING
+	// VolumeEfficiencyTypeOpStatePending captures enum value "pending"
+	VolumeEfficiencyTypeOpStatePending string = "pending"
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// op_state
+	// OpState
+	// downgrading
+	// END DEBUGGING
+	// VolumeEfficiencyTypeOpStateDowngrading captures enum value "downgrading"
+	VolumeEfficiencyTypeOpStateDowngrading string = "downgrading"
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// op_state
+	// OpState
+	// disabled
+	// END DEBUGGING
+	// VolumeEfficiencyTypeOpStateDisabled captures enum value "disabled"
+	VolumeEfficiencyTypeOpStateDisabled string = "disabled"
+)
+
+// prop value enum
+func (m *VolumeEfficiencyType) validateOpStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeTypeOpStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeEfficiencyType) validateOpState(formats strfmt.Registry) error {
+	if swag.IsZero(m.OpState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateOpStateEnum("efficiency"+"."+"op_state", "body", m.OpState); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeEfficiencyType) validatePolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.Policy) { // not required
 		return nil
 	}
@@ -3618,11 +5569,137 @@ func (m *VolumeEfficiency) validatePolicy(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this volume efficiency based on the context it is used
-func (m *VolumeEfficiency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+var volumeEfficiencyTypeTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["disabled","enabled","mixed"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeEfficiencyTypeTypeStatePropEnum = append(volumeEfficiencyTypeTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// state
+	// State
+	// disabled
+	// END DEBUGGING
+	// VolumeEfficiencyTypeStateDisabled captures enum value "disabled"
+	VolumeEfficiencyTypeStateDisabled string = "disabled"
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// state
+	// State
+	// enabled
+	// END DEBUGGING
+	// VolumeEfficiencyTypeStateEnabled captures enum value "enabled"
+	VolumeEfficiencyTypeStateEnabled string = "enabled"
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// state
+	// State
+	// mixed
+	// END DEBUGGING
+	// VolumeEfficiencyTypeStateMixed captures enum value "mixed"
+	VolumeEfficiencyTypeStateMixed string = "mixed"
+)
+
+// prop value enum
+func (m *VolumeEfficiencyType) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeEfficiencyType) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("efficiency"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var volumeEfficiencyTypeTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["regular","snapvault"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeEfficiencyTypeTypeTypePropEnum = append(volumeEfficiencyTypeTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// type
+	// Type
+	// regular
+	// END DEBUGGING
+	// VolumeEfficiencyTypeTypeRegular captures enum value "regular"
+	VolumeEfficiencyTypeTypeRegular string = "regular"
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// type
+	// Type
+	// snapvault
+	// END DEBUGGING
+	// VolumeEfficiencyTypeTypeSnapvault captures enum value "snapvault"
+	VolumeEfficiencyTypeTypeSnapvault string = "snapvault"
+)
+
+// prop value enum
+func (m *VolumeEfficiencyType) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeEfficiencyType) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("efficiency"+"."+"type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume efficiency type based on the context it is used
+func (m *VolumeEfficiencyType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSchedule(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3632,7 +5709,7 @@ func (m *VolumeEfficiency) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *VolumeEfficiency) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
+func (m *VolumeEfficiencyType) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Policy != nil {
 		if err := m.Policy.ContextValidate(ctx, formats); err != nil {
@@ -3646,8 +5723,17 @@ func (m *VolumeEfficiency) contextValidatePolicy(ctx context.Context, formats st
 	return nil
 }
 
+func (m *VolumeEfficiencyType) contextValidateSchedule(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"schedule", "body", string(m.Schedule)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
-func (m *VolumeEfficiency) MarshalBinary() ([]byte, error) {
+func (m *VolumeEfficiencyType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3655,8 +5741,8 @@ func (m *VolumeEfficiency) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeEfficiency) UnmarshalBinary(b []byte) error {
-	var res VolumeEfficiency
+func (m *VolumeEfficiencyType) UnmarshalBinary(b []byte) error {
+	var res VolumeEfficiencyType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3664,27 +5750,27 @@ func (m *VolumeEfficiency) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeEfficiencyPolicy volume efficiency policy
+// VolumeEfficiencyTypePolicyType volume efficiency type policy type
 //
-// swagger:model VolumeEfficiencyPolicy
-type VolumeEfficiencyPolicy struct {
+// swagger:model VolumeEfficiencyTypePolicyType
+type VolumeEfficiencyTypePolicyType struct {
 
 	// Specifies the name of the efficiency policy.
 	Name string `json:"name,omitempty"`
 }
 
-// Validate validates this volume efficiency policy
-func (m *VolumeEfficiencyPolicy) Validate(formats strfmt.Registry) error {
+// Validate validates this volume efficiency type policy type
+func (m *VolumeEfficiencyTypePolicyType) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume efficiency policy based on context it is used
-func (m *VolumeEfficiencyPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this volume efficiency type policy type based on context it is used
+func (m *VolumeEfficiencyTypePolicyType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicy) MarshalBinary() ([]byte, error) {
+func (m *VolumeEfficiencyTypePolicyType) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -3692,8 +5778,8 @@ func (m *VolumeEfficiencyPolicy) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VolumeEfficiencyPolicy) UnmarshalBinary(b []byte) error {
-	var res VolumeEfficiencyPolicy
+func (m *VolumeEfficiencyTypePolicyType) UnmarshalBinary(b []byte) error {
+	var res VolumeEfficiencyTypePolicyType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3706,12 +5792,16 @@ func (m *VolumeEfficiencyPolicy) UnmarshalBinary(b []byte) error {
 // swagger:model VolumeEncryption
 type VolumeEncryption struct {
 
-	// Encrypts an unencrypted volume. When set to 'true', a new key is generated and used to encrypt the given volume. The underlying SVM must be configured with the key manager.
+	// Creates an encrypted or an unencrypted volume. For POST, when set to 'true', a new key is generated and used to encrypt the given volume. In that case, the underlying SVM must be configured with the key manager. When set to 'false', the volume created will be unencrypted. For PATCH, when set to 'true', it encrypts an unencrypted volume. Specifying the parameter as 'false' in a PATCH operation for an encrypted volume is only supported when moving the volume to another aggregate.
 	Enabled bool `json:"enabled,omitempty"`
 
 	// The key ID used for creating encrypted volume. A new key-id is generated for creating an encrypted volume. This key-id is associated with the generated key.
 	// Read Only: true
 	KeyID string `json:"key_id,omitempty"`
+
+	// Specifies an additional key manager attribute that is an identifier-value pair, separated by '='. For example, CRN=unique-value. This parameter is required when using the POST method and an IBM Key Lore key manager is configured on the SVM.
+	// Example: CRN=v1:bluemix:public:containers-kubernetes:us-south:a/asdfghjkl1234:asdfghjkl1234:worker:kubernetes-asdfghjkl-worker1
+	KeyManagerAttribute string `json:"key_manager_attribute,omitempty"`
 
 	// If set to 'true', re-encrypts the volume with a new key. Valid in PATCH.
 	Rekey bool `json:"rekey,omitempty"`
@@ -3766,53 +5856,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeEncryption
 	// VolumeEncryption
 	// state
 	// State
 	// encrypted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeEncryptionStateEncrypted captures enum value "encrypted"
 	VolumeEncryptionStateEncrypted string = "encrypted"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeEncryption
 	// VolumeEncryption
 	// state
 	// State
 	// encrypting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeEncryptionStateEncrypting captures enum value "encrypting"
 	VolumeEncryptionStateEncrypting string = "encrypting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeEncryption
 	// VolumeEncryption
 	// state
 	// State
 	// partial
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeEncryptionStatePartial captures enum value "partial"
 	VolumeEncryptionStatePartial string = "partial"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeEncryption
 	// VolumeEncryption
 	// state
 	// State
 	// rekeying
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeEncryptionStateRekeying captures enum value "rekeying"
 	VolumeEncryptionStateRekeying string = "rekeying"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeEncryption
 	// VolumeEncryption
 	// state
 	// State
 	// unencrypted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeEncryptionStateUnencrypted captures enum value "unencrypted"
 	VolumeEncryptionStateUnencrypted string = "unencrypted"
 )
@@ -3869,33 +5959,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeEncryption
 	// VolumeEncryption
 	// type
 	// Type
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeEncryptionTypeNone captures enum value "none"
 	VolumeEncryptionTypeNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeEncryption
 	// VolumeEncryption
 	// type
 	// Type
 	// volume
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeEncryptionTypeVolume captures enum value "volume"
 	VolumeEncryptionTypeVolume string = "volume"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeEncryption
 	// VolumeEncryption
 	// type
 	// Type
 	// aggregate
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeEncryptionTypeAggregate captures enum value "aggregate"
 	VolumeEncryptionTypeAggregate string = "aggregate"
 )
@@ -4253,23 +6343,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeGuarantee
 	// VolumeGuarantee
 	// type
 	// Type
 	// volume
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeGuaranteeTypeVolume captures enum value "volume"
 	VolumeGuaranteeTypeVolume string = "volume"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeGuarantee
 	// VolumeGuarantee
 	// type
 	// Type
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeGuaranteeTypeNone captures enum value "none"
 	VolumeGuaranteeTypeNone string = "none"
 )
@@ -4440,6 +6530,9 @@ type VolumeMetric struct {
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
 	Duration string `json:"duration,omitempty"`
 
+	// flexcache
+	Flexcache *VolumeMetricFlexcache `json:"flexcache,omitempty"`
+
 	// iops
 	Iops *VolumeMetricIops `json:"iops,omitempty"`
 
@@ -4456,7 +6549,7 @@ type VolumeMetric struct {
 	Throughput *VolumeMetricThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -4475,6 +6568,10 @@ func (m *VolumeMetric) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFlexcache(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4552,63 +6649,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricDurationPT15S captures enum value "PT15S"
 	VolumeMetricDurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricDurationPT4M captures enum value "PT4M"
 	VolumeMetricDurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricDurationPT30M captures enum value "PT30M"
 	VolumeMetricDurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricDurationPT2H captures enum value "PT2H"
 	VolumeMetricDurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricDurationP1D captures enum value "P1D"
 	VolumeMetricDurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricDurationPT5M captures enum value "PT5M"
 	VolumeMetricDurationPT5M string = "PT5M"
 )
@@ -4629,6 +6726,23 @@ func (m *VolumeMetric) validateDuration(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeMetric) validateFlexcache(formats strfmt.Registry) error {
+	if swag.IsZero(m.Flexcache) { // not required
+		return nil
+	}
+
+	if m.Flexcache != nil {
+		if err := m.Flexcache.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "flexcache")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -4682,103 +6796,103 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricStatusOk captures enum value "ok"
 	VolumeMetricStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricStatusError captures enum value "error"
 	VolumeMetricStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricStatusPartialNoData captures enum value "partial_no_data"
 	VolumeMetricStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// status
 	// Status
 	// partial_no_uuid
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
 	VolumeMetricStatusPartialNoUUID string = "partial_no_uuid"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricStatusPartialNoResponse captures enum value "partial_no_response"
 	VolumeMetricStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricStatusPartialOtherError captures enum value "partial_other_error"
 	VolumeMetricStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricStatusNegativeDelta captures enum value "negative_delta"
 	VolumeMetricStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricStatusBackfilledData captures enum value "backfilled_data"
 	VolumeMetricStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	VolumeMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetric
 	// VolumeMetric
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	VolumeMetricStatusInconsistentOldData string = "inconsistent_old_data"
 )
@@ -4849,6 +6963,10 @@ func (m *VolumeMetric) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateFlexcache(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIops(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -4907,6 +7025,20 @@ func (m *VolumeMetric) contextValidateDuration(ctx context.Context, formats strf
 
 	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", string(m.Duration)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeMetric) contextValidateFlexcache(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Flexcache != nil {
+		if err := m.Flexcache.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "flexcache")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -5015,7 +7147,7 @@ type VolumeMetricCloud struct {
 	Status string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -5065,63 +7197,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudDurationPT15S captures enum value "PT15S"
 	VolumeMetricCloudDurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudDurationPT4M captures enum value "PT4M"
 	VolumeMetricCloudDurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudDurationPT30M captures enum value "PT30M"
 	VolumeMetricCloudDurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudDurationPT2H captures enum value "PT2H"
 	VolumeMetricCloudDurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudDurationP1D captures enum value "P1D"
 	VolumeMetricCloudDurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudDurationPT5M captures enum value "PT5M"
 	VolumeMetricCloudDurationPT5M string = "PT5M"
 )
@@ -5195,103 +7327,103 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudStatusOk captures enum value "ok"
 	VolumeMetricCloudStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudStatusError captures enum value "error"
 	VolumeMetricCloudStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudStatusPartialNoData captures enum value "partial_no_data"
 	VolumeMetricCloudStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// status
 	// Status
 	// partial_no_uuid
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudStatusPartialNoUUID captures enum value "partial_no_uuid"
 	VolumeMetricCloudStatusPartialNoUUID string = "partial_no_uuid"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudStatusPartialNoResponse captures enum value "partial_no_response"
 	VolumeMetricCloudStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudStatusPartialOtherError captures enum value "partial_other_error"
 	VolumeMetricCloudStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudStatusNegativeDelta captures enum value "negative_delta"
 	VolumeMetricCloudStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudStatusBackfilledData captures enum value "backfilled_data"
 	VolumeMetricCloudStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	VolumeMetricCloudStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricCloud
 	// VolumeMetricCloud
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricCloudStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	VolumeMetricCloudStatusInconsistentOldData string = "inconsistent_old_data"
 )
@@ -5533,6 +7665,362 @@ func (m *VolumeMetricCloudLatency) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *VolumeMetricCloudLatency) UnmarshalBinary(b []byte) error {
 	var res VolumeMetricCloudLatency
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeMetricFlexcache Performance number for FlexCache used to measure cache effectiveness.
+//
+// swagger:model VolumeMetricFlexcache
+type VolumeMetricFlexcache struct {
+
+	// Bandwidth savings denoting the amount of data served locally by the cache, in bytes.
+	// Example: 4096
+	BandwidthSavings int64 `json:"bandwidth_savings,omitempty"`
+
+	// Cache miss percentage.
+	// Example: 20
+	CacheMissPercent int64 `json:"cache_miss_percent,omitempty"`
+
+	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
+	//
+	// Example: PT1D
+	// Read Only: true
+	// Enum: [PT15S PT5M PT30M PT2H PT1D]
+	Duration string `json:"duration,omitempty"`
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	Status string `json:"status,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this volume metric flexcache
+func (m *VolumeMetricFlexcache) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var volumeMetricFlexcacheTypeDurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["PT15S","PT5M","PT30M","PT2H","PT1D"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeMetricFlexcacheTypeDurationPropEnum = append(volumeMetricFlexcacheTypeDurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// duration
+	// Duration
+	// PT15S
+	// END DEBUGGING
+	// VolumeMetricFlexcacheDurationPT15S captures enum value "PT15S"
+	VolumeMetricFlexcacheDurationPT15S string = "PT15S"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// duration
+	// Duration
+	// PT5M
+	// END DEBUGGING
+	// VolumeMetricFlexcacheDurationPT5M captures enum value "PT5M"
+	VolumeMetricFlexcacheDurationPT5M string = "PT5M"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// duration
+	// Duration
+	// PT30M
+	// END DEBUGGING
+	// VolumeMetricFlexcacheDurationPT30M captures enum value "PT30M"
+	VolumeMetricFlexcacheDurationPT30M string = "PT30M"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// duration
+	// Duration
+	// PT2H
+	// END DEBUGGING
+	// VolumeMetricFlexcacheDurationPT2H captures enum value "PT2H"
+	VolumeMetricFlexcacheDurationPT2H string = "PT2H"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// duration
+	// Duration
+	// PT1D
+	// END DEBUGGING
+	// VolumeMetricFlexcacheDurationPT1D captures enum value "PT1D"
+	VolumeMetricFlexcacheDurationPT1D string = "PT1D"
+)
+
+// prop value enum
+func (m *VolumeMetricFlexcache) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeMetricFlexcacheTypeDurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeMetricFlexcache) validateDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Duration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDurationEnum("metric"+"."+"flexcache"+"."+"duration", "body", m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var volumeMetricFlexcacheTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeMetricFlexcacheTypeStatusPropEnum = append(volumeMetricFlexcacheTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// VolumeMetricFlexcacheStatusOk captures enum value "ok"
+	VolumeMetricFlexcacheStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// VolumeMetricFlexcacheStatusError captures enum value "error"
+	VolumeMetricFlexcacheStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// VolumeMetricFlexcacheStatusPartialNoData captures enum value "partial_no_data"
+	VolumeMetricFlexcacheStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// VolumeMetricFlexcacheStatusPartialNoUUID captures enum value "partial_no_uuid"
+	VolumeMetricFlexcacheStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// VolumeMetricFlexcacheStatusPartialNoResponse captures enum value "partial_no_response"
+	VolumeMetricFlexcacheStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// VolumeMetricFlexcacheStatusPartialOtherError captures enum value "partial_other_error"
+	VolumeMetricFlexcacheStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// VolumeMetricFlexcacheStatusNegativeDelta captures enum value "negative_delta"
+	VolumeMetricFlexcacheStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// VolumeMetricFlexcacheStatusBackfilledData captures enum value "backfilled_data"
+	VolumeMetricFlexcacheStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// VolumeMetricFlexcacheStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	VolumeMetricFlexcacheStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricFlexcache
+	// VolumeMetricFlexcache
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// VolumeMetricFlexcacheStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	VolumeMetricFlexcacheStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *VolumeMetricFlexcache) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeMetricFlexcacheTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeMetricFlexcache) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("metric"+"."+"flexcache"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeMetricFlexcache) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("metric"+"."+"flexcache"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume metric flexcache based on the context it is used
+func (m *VolumeMetricFlexcache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDuration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeMetricFlexcache) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"flexcache"+"."+"duration", "body", string(m.Duration)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeMetricFlexcache) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"flexcache"+"."+"status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeMetricFlexcache) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"flexcache"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeMetricFlexcache) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeMetricFlexcache) UnmarshalBinary(b []byte) error {
+	var res VolumeMetricFlexcache
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5804,6 +8292,12 @@ type VolumeMovement struct {
 	// Read Only: true
 	PercentComplete int64 `json:"percent_complete,omitempty"`
 
+	// Start time of volume move.
+	// Example: 2020-12-07T03:45:12-05:00
+	// Read Only: true
+	// Format: date-time
+	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
+
 	// State of volume move operation. PATCH the state to "aborted" to abort the move operation. PATCH the state to "cutover" to trigger cutover. PATCH the state to "paused" to pause the volume move operation in progress. PATCH the state to "replicating" to resume the paused volume move operation. PATCH the state to "cutover_wait" to go into cutover manually. When volume move operation is waiting to go into "cutover" state, this is indicated by the "cutover_pending" state. A change of state is only supported if volume movement is in progress.
 	// Example: replicating
 	// Enum: [aborted cutover cutover_wait cutover_pending failed paused queued replicating success]
@@ -5819,6 +8313,10 @@ func (m *VolumeMovement) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDestinationAggregate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStartTime(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -5853,6 +8351,18 @@ func (m *VolumeMovement) validateDestinationAggregate(formats strfmt.Registry) e
 	return nil
 }
 
+func (m *VolumeMovement) validateStartTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.StartTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("movement"+"."+"start_time", "body", "date-time", m.StartTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 var volumeMovementTypeStatePropEnum []interface{}
 
 func init() {
@@ -5867,93 +8377,93 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// state
 	// State
 	// aborted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementStateAborted captures enum value "aborted"
 	VolumeMovementStateAborted string = "aborted"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// state
 	// State
 	// cutover
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementStateCutover captures enum value "cutover"
 	VolumeMovementStateCutover string = "cutover"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// state
 	// State
 	// cutover_wait
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementStateCutoverWait captures enum value "cutover_wait"
 	VolumeMovementStateCutoverWait string = "cutover_wait"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// state
 	// State
 	// cutover_pending
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementStateCutoverPending captures enum value "cutover_pending"
 	VolumeMovementStateCutoverPending string = "cutover_pending"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementStateFailed captures enum value "failed"
 	VolumeMovementStateFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// state
 	// State
 	// paused
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementStatePaused captures enum value "paused"
 	VolumeMovementStatePaused string = "paused"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// state
 	// State
 	// queued
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementStateQueued captures enum value "queued"
 	VolumeMovementStateQueued string = "queued"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// state
 	// State
 	// replicating
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementStateReplicating captures enum value "replicating"
 	VolumeMovementStateReplicating string = "replicating"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// state
 	// State
 	// success
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementStateSuccess captures enum value "success"
 	VolumeMovementStateSuccess string = "success"
 )
@@ -5993,53 +8503,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// tiering_policy
 	// TieringPolicy
 	// all
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementTieringPolicyAll captures enum value "all"
 	VolumeMovementTieringPolicyAll string = "all"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// tiering_policy
 	// TieringPolicy
 	// auto
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementTieringPolicyAuto captures enum value "auto"
 	VolumeMovementTieringPolicyAuto string = "auto"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// tiering_policy
 	// TieringPolicy
 	// backup
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementTieringPolicyBackup captures enum value "backup"
 	VolumeMovementTieringPolicyBackup string = "backup"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// tiering_policy
 	// TieringPolicy
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementTieringPolicyNone captures enum value "none"
 	VolumeMovementTieringPolicyNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMovement
 	// VolumeMovement
 	// tiering_policy
 	// TieringPolicy
 	// snapshot_only
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMovementTieringPolicySnapshotOnly captures enum value "snapshot_only"
 	VolumeMovementTieringPolicySnapshotOnly string = "snapshot_only"
 )
@@ -6077,6 +8587,10 @@ func (m *VolumeMovement) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateStartTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -6100,6 +8614,15 @@ func (m *VolumeMovement) contextValidateDestinationAggregate(ctx context.Context
 func (m *VolumeMovement) contextValidatePercentComplete(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "movement"+"."+"percent_complete", "body", int64(m.PercentComplete)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeMovement) contextValidateStartTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "movement"+"."+"start_time", "body", m.StartTime); err != nil {
 		return err
 	}
 
@@ -6315,9 +8838,12 @@ type VolumeNas struct {
 	// The UNIX group ID of the volume. Valid in POST or PATCH.
 	Gid int64 `json:"gid,omitempty"`
 
+	// junction parent
+	JunctionParent *VolumeNasJunctionParent `json:"junction_parent,omitempty"`
+
 	// The fully-qualified path in the owning SVM's namespace at which the volume is mounted. The path is case insensitive and must be unique within a SVM's namespace. Path must begin with '/' and must not end with '/'. Only one volume can be mounted at any given junction path. An empty path in POST creates an unmounted volume. An empty path in PATCH deactivates and unmounts the volume. Taking a volume offline removes its junction path. This attribute is reported in GET only when the volume is mounted.
 	// Example: /user/my_volume
-	Path string `json:"path,omitempty"`
+	Path *string `json:"path,omitempty"`
 
 	// Security style associated with the volume. Valid in POST or PATCH.<br>mixed &dash; Mixed-style security<br>ntfs &dash; NTFS/WIndows-style security<br>unified &dash; Unified-style security, unified UNIX, NFS and CIFS permissions<br>unix &dash; Unix-style security.
 	// Enum: [mixed ntfs unified unix]
@@ -6327,7 +8853,7 @@ type VolumeNas struct {
 	UID int64 `json:"uid,omitempty"`
 
 	// UNIX permissions to be viewed as an octal number. It consists of 4 digits derived by adding up bits 4 (read), 2 (write) and 1 (execute). First digit selects the set user ID(4), set group ID (2) and sticky (1) attributes. The second digit selects permission for the owner of the file; the third selects permissions for other users in the same group; the fourth for other users not in the group. Valid in POST or PATCH. For security style "mixed" or "unix", the default setting is 0755 in octal (493 in decimal) and for security style "ntfs", the default setting is 0000. In cases where only owner, group and other permissions are given (as in 755, representing the second, third and fourth dight), first digit is assumed to be zero.
-	// Example: 493
+	// Example: 755
 	UnixPermissions int64 `json:"unix_permissions,omitempty"`
 }
 
@@ -6336,6 +8862,10 @@ func (m *VolumeNas) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateExportPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateJunctionParent(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -6366,6 +8896,23 @@ func (m *VolumeNas) validateExportPolicy(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *VolumeNas) validateJunctionParent(formats strfmt.Registry) error {
+	if swag.IsZero(m.JunctionParent) { // not required
+		return nil
+	}
+
+	if m.JunctionParent != nil {
+		if err := m.JunctionParent.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "junction_parent")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 var volumeNasTypeSecurityStylePropEnum []interface{}
 
 func init() {
@@ -6380,43 +8927,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeNas
 	// VolumeNas
 	// security_style
 	// SecurityStyle
 	// mixed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeNasSecurityStyleMixed captures enum value "mixed"
 	VolumeNasSecurityStyleMixed string = "mixed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeNas
 	// VolumeNas
 	// security_style
 	// SecurityStyle
 	// ntfs
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeNasSecurityStyleNtfs captures enum value "ntfs"
 	VolumeNasSecurityStyleNtfs string = "ntfs"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeNas
 	// VolumeNas
 	// security_style
 	// SecurityStyle
 	// unified
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeNasSecurityStyleUnified captures enum value "unified"
 	VolumeNasSecurityStyleUnified string = "unified"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeNas
 	// VolumeNas
 	// security_style
 	// SecurityStyle
 	// unix
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeNasSecurityStyleUnix captures enum value "unix"
 	VolumeNasSecurityStyleUnix string = "unix"
 )
@@ -6450,6 +8997,10 @@ func (m *VolumeNas) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateJunctionParent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -6462,6 +9013,20 @@ func (m *VolumeNas) contextValidateExportPolicy(ctx context.Context, formats str
 		if err := m.ExportPolicy.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("nas" + "." + "export_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeNas) contextValidateJunctionParent(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.JunctionParent != nil {
+		if err := m.JunctionParent.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "junction_parent")
 			}
 			return err
 		}
@@ -6668,6 +9233,186 @@ func (m *VolumeNasExportPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// VolumeNasJunctionParent volume nas junction parent
+//
+// swagger:model VolumeNasJunctionParent
+type VolumeNasJunctionParent struct {
+
+	// links
+	Links *VolumeNasJunctionParentLinks `json:"_links,omitempty"`
+
+	// The name of the parent volume that contains the junction inode of this volume. The junction parent volume must belong to the same SVM that owns this volume.
+	// Example: vs1_root
+	Name string `json:"name,omitempty"`
+
+	// Unique identifier for the parent volume.
+	// Example: 75c9cfb0-3eb4-11eb-9fb4-005056bb088a
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this volume nas junction parent
+func (m *VolumeNasJunctionParent) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeNasJunctionParent) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "junction_parent" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume nas junction parent based on the context it is used
+func (m *VolumeNasJunctionParent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeNasJunctionParent) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "junction_parent" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeNasJunctionParent) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeNasJunctionParent) UnmarshalBinary(b []byte) error {
+	var res VolumeNasJunctionParent
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeNasJunctionParentLinks volume nas junction parent links
+//
+// swagger:model VolumeNasJunctionParentLinks
+type VolumeNasJunctionParentLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this volume nas junction parent links
+func (m *VolumeNasJunctionParentLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeNasJunctionParentLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "junction_parent" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume nas junction parent links based on the context it is used
+func (m *VolumeNasJunctionParentLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeNasJunctionParentLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas" + "." + "junction_parent" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeNasJunctionParentLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeNasJunctionParentLinks) UnmarshalBinary(b []byte) error {
+	var res VolumeNasJunctionParentLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // VolumeQos QoS information
 //
 // swagger:model VolumeQos
@@ -6754,7 +9499,7 @@ func (m *VolumeQos) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeQosPolicy When "min_throughput_iops", "max_throughput_iops" or "max_throughput_mbps" attributes are specified, the storage object is assigned to an auto-generated QoS policy group. If the attributes are later modified, the auto-generated QoS policy-group attributes are modified. Attributes can be removed by specifying "0" and policy group by specifying "none". Upon deletion of the storage object or if the attributes are removed, then the QoS policy-group is also removed.
+// VolumeQosPolicy When "min_throughput_iops", "min_throughput_mbps", "max_throughput_iops" or "max_throughput_mbps" attributes are specified, the storage object is assigned to an auto-generated QoS policy group. If the attributes are later modified, the auto-generated QoS policy-group attributes are modified. Attributes can be removed by specifying "0" and policy group by specifying "none". Upon deletion of the storage object or if the attributes are removed, then the QoS policy-group is also removed.
 //
 // swagger:model VolumeQosPolicy
 type VolumeQosPolicy struct {
@@ -6766,13 +9511,17 @@ type VolumeQosPolicy struct {
 	// Example: 10000
 	MaxThroughputIops int64 `json:"max_throughput_iops,omitempty"`
 
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name, UUID and "min_throughput_iops" during POST and PATCH.
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 500
 	MaxThroughputMbps int64 `json:"max_throughput_mbps,omitempty"`
 
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name, UUID and" max_throughput_mbps" during POST and PATCH.
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 2000
 	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
+
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 500
+	MinThroughputMbps int64 `json:"min_throughput_mbps,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
 	// Example: performance
@@ -6988,63 +9737,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeQuota
 	// VolumeQuota
 	// state
 	// State
 	// corrupt
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeQuotaStateCorrupt captures enum value "corrupt"
 	VolumeQuotaStateCorrupt string = "corrupt"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeQuota
 	// VolumeQuota
 	// state
 	// State
 	// initializing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeQuotaStateInitializing captures enum value "initializing"
 	VolumeQuotaStateInitializing string = "initializing"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeQuota
 	// VolumeQuota
 	// state
 	// State
 	// mixed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeQuotaStateMixed captures enum value "mixed"
 	VolumeQuotaStateMixed string = "mixed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeQuota
 	// VolumeQuota
 	// state
 	// State
 	// off
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeQuotaStateOff captures enum value "off"
 	VolumeQuotaStateOff string = "off"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeQuota
 	// VolumeQuota
 	// state
 	// State
 	// on
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeQuotaStateOn captures enum value "on"
 	VolumeQuotaStateOn string = "on"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeQuota
 	// VolumeQuota
 	// state
 	// State
 	// resizing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeQuotaStateResizing captures enum value "resizing"
 	VolumeQuotaStateResizing string = "resizing"
 )
@@ -7125,7 +9874,7 @@ type VolumeSnaplock struct {
 	AutocommitPeriod *string `json:"autocommit_period,omitempty"`
 
 	// This is the volume compliance clock time which is used to manage the SnapLock objects in the volume.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	ComplianceClockTime *strfmt.DateTime `json:"compliance_clock_time,omitempty"`
@@ -7159,6 +9908,11 @@ type VolumeSnaplock struct {
 	// Read Only: true
 	// Enum: [compliance enterprise non_snaplock]
 	Type string `json:"type,omitempty"`
+
+	// Indicates the number of files with an unspecified retention time in the volume.
+	// Example: 10
+	// Read Only: true
+	UnspecifiedRetentionFileCount int64 `json:"unspecified_retention_file_count,omitempty"`
 }
 
 // Validate validates this volume snaplock
@@ -7229,33 +9983,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeSnaplock
 	// VolumeSnaplock
 	// privileged_delete
 	// PrivilegedDelete
 	// disabled
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeSnaplockPrivilegedDeleteDisabled captures enum value "disabled"
 	VolumeSnaplockPrivilegedDeleteDisabled string = "disabled"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeSnaplock
 	// VolumeSnaplock
 	// privileged_delete
 	// PrivilegedDelete
 	// enabled
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeSnaplockPrivilegedDeleteEnabled captures enum value "enabled"
 	VolumeSnaplockPrivilegedDeleteEnabled string = "enabled"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeSnaplock
 	// VolumeSnaplock
 	// privileged_delete
 	// PrivilegedDelete
 	// permanently_disabled
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeSnaplockPrivilegedDeletePermanentlyDisabled captures enum value "permanently_disabled"
 	VolumeSnaplockPrivilegedDeletePermanentlyDisabled string = "permanently_disabled"
 )
@@ -7312,33 +10066,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeSnaplock
 	// VolumeSnaplock
 	// type
 	// Type
 	// compliance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeSnaplockTypeCompliance captures enum value "compliance"
 	VolumeSnaplockTypeCompliance string = "compliance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeSnaplock
 	// VolumeSnaplock
 	// type
 	// Type
 	// enterprise
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeSnaplockTypeEnterprise captures enum value "enterprise"
 	VolumeSnaplockTypeEnterprise string = "enterprise"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeSnaplock
 	// VolumeSnaplock
 	// type
 	// Type
 	// non_snaplock
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeSnaplockTypeNonSnaplock captures enum value "non_snaplock"
 	VolumeSnaplockTypeNonSnaplock string = "non_snaplock"
 )
@@ -7389,6 +10143,10 @@ func (m *VolumeSnaplock) ContextValidate(ctx context.Context, formats strfmt.Reg
 	}
 
 	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUnspecifiedRetentionFileCount(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -7457,6 +10215,15 @@ func (m *VolumeSnaplock) contextValidateType(ctx context.Context, formats strfmt
 	return nil
 }
 
+func (m *VolumeSnaplock) contextValidateUnspecifiedRetentionFileCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "snaplock"+"."+"unspecified_retention_file_count", "body", int64(m.UnspecifiedRetentionFileCount)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *VolumeSnaplock) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -7480,7 +10247,7 @@ func (m *VolumeSnaplock) UnmarshalBinary(b []byte) error {
 // swagger:model VolumeSnaplockRetention
 type VolumeSnaplockRetention struct {
 
-	// Specifies the default retention period that is applied to files while committing them to the WORM state without an associated retention period. The retention value represents a duration and must be specified in the ISO-8601 duration format. The retention period can be in years, months, days, hours, and minutes. A duration specified for years, months, and days is represented in the ISO-8601 format as "P<num>Y", "P<num>M", "P<num>D" respectively, for example "P10Y" represents a duration of 10 years. A duration in hours and minutes is represented by "PT<num>H" and "PT<num>M" respectively. The retention string must contain only a single time element that is, either years, months, days, hours, or minutes. A duration which combines different periods is not supported, for example "P1Y10M" is not supported. Apart from the duration specified in the ISO-8601 format, the duration field also accepts the string "infinite" to set an infinite retention period.
+	// Specifies the default retention period that is applied to files while committing them to the WORM state without an associated retention period. The retention value represents a duration and must be specified in the ISO-8601 duration format. The retention period can be in years, months, days, hours, and minutes. A duration specified for years, months, and days is represented in the ISO-8601 format as "P<num>Y", "P<num>M", "P<num>D" respectively, for example "P10Y" represents a duration of 10 years. A duration in hours and minutes is represented by "PT<num>H" and "PT<num>M" respectively. The retention string must contain only a single time element that is, either years, months, days, hours, or minutes. A duration which combines different periods is not supported, for example "P1Y10M" is not supported. Apart from the duration specified in the ISO-8601 format, the duration field also accepts the string "infinite" to set an infinite retention period and the string "unspecified" to set an unspecified retention period.
 	// Example: P30Y
 	Default string `json:"default,omitempty"`
 
@@ -7526,6 +10293,9 @@ func (m *VolumeSnaplockRetention) UnmarshalBinary(b []byte) error {
 // swagger:model VolumeSnapmirror
 type VolumeSnapmirror struct {
 
+	// destinations
+	Destinations *VolumeSnapmirrorDestinations `json:"destinations,omitempty"`
+
 	// Specifies whether a volume is a SnapMirror source volume, using SnapMirror to protect its data.
 	// Read Only: true
 	IsProtected *bool `json:"is_protected,omitempty"`
@@ -7533,12 +10303,42 @@ type VolumeSnapmirror struct {
 
 // Validate validates this volume snapmirror
 func (m *VolumeSnapmirror) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDestinations(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeSnapmirror) validateDestinations(formats strfmt.Registry) error {
+	if swag.IsZero(m.Destinations) { // not required
+		return nil
+	}
+
+	if m.Destinations != nil {
+		if err := m.Destinations.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snapmirror" + "." + "destinations")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
 // ContextValidate validate this volume snapmirror based on the context it is used
 func (m *VolumeSnapmirror) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateDestinations(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateIsProtected(ctx, formats); err != nil {
 		res = append(res, err)
@@ -7547,6 +10347,20 @@ func (m *VolumeSnapmirror) ContextValidate(ctx context.Context, formats strfmt.R
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VolumeSnapmirror) contextValidateDestinations(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Destinations != nil {
+		if err := m.Destinations.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snapmirror" + "." + "destinations")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -7570,6 +10384,79 @@ func (m *VolumeSnapmirror) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *VolumeSnapmirror) UnmarshalBinary(b []byte) error {
 	var res VolumeSnapmirror
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeSnapmirrorDestinations volume snapmirror destinations
+//
+// swagger:model VolumeSnapmirrorDestinations
+type VolumeSnapmirrorDestinations struct {
+
+	// Specifies whether a volume is a SnapMirror source volume, using SnapMirror to protect its data to a cloud destination.
+	// Read Only: true
+	IsCloud *bool `json:"is_cloud,omitempty"`
+
+	// Specifies whether a volume is a SnapMirror source volume, using SnapMirror to protect its data to an ONTAP destination.
+	// Read Only: true
+	IsOntap *bool `json:"is_ontap,omitempty"`
+}
+
+// Validate validates this volume snapmirror destinations
+func (m *VolumeSnapmirrorDestinations) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this volume snapmirror destinations based on the context it is used
+func (m *VolumeSnapmirrorDestinations) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIsCloud(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsOntap(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeSnapmirrorDestinations) contextValidateIsCloud(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "snapmirror"+"."+"destinations"+"."+"is_cloud", "body", m.IsCloud); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSnapmirrorDestinations) contextValidateIsOntap(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "snapmirror"+"."+"destinations"+"."+"is_ontap", "body", m.IsOntap); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeSnapmirrorDestinations) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeSnapmirrorDestinations) UnmarshalBinary(b []byte) error {
+	var res VolumeSnapmirrorDestinations
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -7762,42 +10649,92 @@ func (m *VolumeSnapshotPolicyLinks) UnmarshalBinary(b []byte) error {
 // swagger:model VolumeSpace
 type VolumeSpace struct {
 
+	// Total size of AFS, excluding snap-reserve, in bytes.
+	AfsTotal int64 `json:"afs_total,omitempty"`
+
 	// The available space, in bytes.
 	// Read Only: true
 	Available int64 `json:"available,omitempty"`
+
+	// The space available, as a percent.
+	AvailablePercent int64 `json:"available_percent,omitempty"`
 
 	// The size that is physically used in the block storage of the volume and has a cold temperature. In bytes. This parameter is only supported if the volume is in an aggregate that is either attached to a cloud store or could be attached to a cloud store.
 	// Read Only: true
 	BlockStorageInactiveUserData int64 `json:"block_storage_inactive_user_data,omitempty"`
 
-	// The space used by capacity tier for this volume in the aggregate, in bytes.
+	// Percentage of size that is physically used in the performance tier of the volume.
+	// Read Only: true
+	BlockStorageInactiveUserDataPercent int64 `json:"block_storage_inactive_user_data_percent,omitempty"`
+
+	// Space used by capacity tier for this volume in the FabricPool aggregate, in bytes.
 	// Read Only: true
 	CapacityTierFootprint int64 `json:"capacity_tier_footprint,omitempty"`
 
-	// Data and metadata used for this volume in the aggregate, in bytes.
+	// Data used for this volume in the aggregate, in bytes.
 	// Read Only: true
 	Footprint int64 `json:"footprint,omitempty"`
+
+	// Used to change the amount of space reserved for overwrites of reserved objects in a volume.
+	FractionalReserve int64 `json:"fractional_reserve,omitempty"`
+
+	// Volume full threshold percentage at which EMS warnings can be sent.
+	FullThresholdPercent int64 `json:"full_threshold_percent,omitempty"`
+
+	// Space used by the local tier for this volume in the aggregate, in bytes.
+	// Read Only: true
+	LocalTierFootprint int64 `json:"local_tier_footprint,omitempty"`
 
 	// logical space
 	LogicalSpace *VolumeSpaceLogicalSpace `json:"logical_space,omitempty"`
 
-	// The space used by the total metadata in the volume, in bytes.
+	// Space used by the volume metadata in the aggregate, in bytes.
 	// Read Only: true
 	Metadata int64 `json:"metadata,omitempty"`
+
+	// Volume nearly full threshold percentage at which EMS warnings can be sent.
+	NearlyFullThresholdPercent int64 `json:"nearly_full_threshold_percent,omitempty"`
 
 	// The amount of space not available for this volume in the aggregate, in bytes.
 	// Read Only: true
 	OverProvisioned int64 `json:"over_provisioned,omitempty"`
 
+	// Reserved space for overwrites, in bytes.
+	// Read Only: true
+	OverwriteReserve int64 `json:"overwrite_reserve,omitempty"`
+
+	// Overwrite logical reserve space used, in bytes.
+	// Read Only: true
+	OverwriteReserveUsed int64 `json:"overwrite_reserve_used,omitempty"`
+
+	// Percentage of the volume size that is used.
+	// Read Only: true
+	PercentUsed int64 `json:"percent_used,omitempty"`
+
+	// Space used by the performance tier for this volume in the FabricPool aggregate, in bytes.
+	// Read Only: true
+	PerformanceTierFootprint int64 `json:"performance_tier_footprint,omitempty"`
+
 	// Total provisioned size. The default size is equal to the minimum size of 20MB, in bytes.
 	Size int64 `json:"size,omitempty"`
+
+	// Available space for Snapshot copies from snap-reserve, in bytes.
+	// Read Only: true
+	SizeAvailableForSnapshots int64 `json:"size_available_for_snapshots,omitempty"`
 
 	// snapshot
 	Snapshot *VolumeSpaceSnapshot `json:"snapshot,omitempty"`
 
+	// Data and metadata used for this volume in the aggregate, in bytes.
+	// Read Only: true
+	TotalFootprint int64 `json:"total_footprint,omitempty"`
+
 	// The virtual space used (includes volume reserves) before storage efficiency, in bytes.
 	// Read Only: true
 	Used int64 `json:"used,omitempty"`
+
+	// The space used by Active Filesystem, in bytes.
+	UsedByAfs int64 `json:"used_by_afs,omitempty"`
 }
 
 // Validate validates this volume space
@@ -7864,11 +10801,19 @@ func (m *VolumeSpace) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateBlockStorageInactiveUserDataPercent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateCapacityTierFootprint(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLocalTierFootprint(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -7884,7 +10829,31 @@ func (m *VolumeSpace) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateOverwriteReserve(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateOverwriteReserveUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePercentUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePerformanceTierFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSizeAvailableForSnapshots(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSnapshot(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTotalFootprint(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -7916,6 +10885,15 @@ func (m *VolumeSpace) contextValidateBlockStorageInactiveUserData(ctx context.Co
 	return nil
 }
 
+func (m *VolumeSpace) contextValidateBlockStorageInactiveUserDataPercent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"block_storage_inactive_user_data_percent", "body", int64(m.BlockStorageInactiveUserDataPercent)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *VolumeSpace) contextValidateCapacityTierFootprint(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"capacity_tier_footprint", "body", int64(m.CapacityTierFootprint)); err != nil {
@@ -7928,6 +10906,15 @@ func (m *VolumeSpace) contextValidateCapacityTierFootprint(ctx context.Context, 
 func (m *VolumeSpace) contextValidateFootprint(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"footprint", "body", int64(m.Footprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateLocalTierFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"local_tier_footprint", "body", int64(m.LocalTierFootprint)); err != nil {
 		return err
 	}
 
@@ -7966,6 +10953,51 @@ func (m *VolumeSpace) contextValidateOverProvisioned(ctx context.Context, format
 	return nil
 }
 
+func (m *VolumeSpace) contextValidateOverwriteReserve(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"overwrite_reserve", "body", int64(m.OverwriteReserve)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateOverwriteReserveUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"overwrite_reserve_used", "body", int64(m.OverwriteReserveUsed)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidatePercentUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"percent_used", "body", int64(m.PercentUsed)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidatePerformanceTierFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"performance_tier_footprint", "body", int64(m.PerformanceTierFootprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateSizeAvailableForSnapshots(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"size_available_for_snapshots", "body", int64(m.SizeAvailableForSnapshots)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *VolumeSpace) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Snapshot != nil {
@@ -7975,6 +11007,15 @@ func (m *VolumeSpace) contextValidateSnapshot(ctx context.Context, formats strfm
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateTotalFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"total_footprint", "body", int64(m.TotalFootprint)); err != nil {
+		return err
 	}
 
 	return nil
@@ -8022,9 +11063,17 @@ type VolumeSpaceLogicalSpace struct {
 	// Specifies whether space reporting on the volume is done along with storage efficiency.
 	Reporting *bool `json:"reporting,omitempty"`
 
+	// SUM of (physical-used, shared_refs, compression_saved_in_plane0, vbn_zero, future_blk_cnt), in bytes.
+	// Read Only: true
+	Used int64 `json:"used,omitempty"`
+
 	// The virtual space used by AFS alone (includes volume reserves) and along with storage efficiency, in bytes.
 	// Read Only: true
 	UsedByAfs int64 `json:"used_by_afs,omitempty"`
+
+	// SUM of (physical-used, shared_refs, compression_saved_in_plane0, vbn_zero, future_blk_cnt), as a percentage.
+	// Read Only: true
+	UsedPercent int64 `json:"used_percent,omitempty"`
 }
 
 // Validate validates this volume space logical space
@@ -8040,7 +11089,15 @@ func (m *VolumeSpaceLogicalSpace) ContextValidate(ctx context.Context, formats s
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateUsedByAfs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsedPercent(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -8059,9 +11116,27 @@ func (m *VolumeSpaceLogicalSpace) contextValidateAvailable(ctx context.Context, 
 	return nil
 }
 
+func (m *VolumeSpaceLogicalSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"logical_space"+"."+"used", "body", int64(m.Used)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *VolumeSpaceLogicalSpace) contextValidateUsedByAfs(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"logical_space"+"."+"used_by_afs", "body", int64(m.UsedByAfs)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpaceLogicalSpace) contextValidateUsedPercent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"logical_space"+"."+"used_percent", "body", int64(m.UsedPercent)); err != nil {
 		return err
 	}
 
@@ -8097,6 +11172,14 @@ type VolumeSpaceSnapshot struct {
 	// The space that has been set aside as a reserve for Snapshot copy usage, in percent.
 	ReservePercent *int64 `json:"reserve_percent,omitempty"`
 
+	// Size in the volume that has been set aside as a reserve for Snapshot copy usage, in bytes.
+	// Read Only: true
+	ReserveSize int64 `json:"reserve_size,omitempty"`
+
+	// Percentage of snapshot reserve size that has been used.
+	// Read Only: true
+	SpaceUsedPercent int64 `json:"space_used_percent,omitempty"`
+
 	// The total space used by Snapshot copies in the volume, in bytes.
 	// Read Only: true
 	Used int64 `json:"used,omitempty"`
@@ -8111,6 +11194,14 @@ func (m *VolumeSpaceSnapshot) Validate(formats strfmt.Registry) error {
 func (m *VolumeSpaceSnapshot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateReserveSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSpaceUsedPercent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateUsed(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -8118,6 +11209,24 @@ func (m *VolumeSpaceSnapshot) ContextValidate(ctx context.Context, formats strfm
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VolumeSpaceSnapshot) contextValidateReserveSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"reserve_size", "body", int64(m.ReserveSize)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpaceSnapshot) contextValidateSpaceUsedPercent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"space_used_percent", "body", int64(m.SpaceUsedPercent)); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -8156,6 +11265,9 @@ type VolumeStatistics struct {
 	// cloud
 	Cloud *VolumeStatisticsCloud `json:"cloud,omitempty"`
 
+	// flexcache raw
+	FlexcacheRaw *VolumeStatisticsFlexcacheRaw `json:"flexcache_raw,omitempty"`
+
 	// iops raw
 	IopsRaw *VolumeStatisticsIopsRaw `json:"iops_raw,omitempty"`
 
@@ -8172,7 +11284,7 @@ type VolumeStatistics struct {
 	ThroughputRaw *VolumeStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -8183,6 +11295,10 @@ func (m *VolumeStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCloud(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFlexcacheRaw(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -8221,6 +11337,23 @@ func (m *VolumeStatistics) validateCloud(formats strfmt.Registry) error {
 		if err := m.Cloud.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("statistics" + "." + "cloud")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeStatistics) validateFlexcacheRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.FlexcacheRaw) { // not required
+		return nil
+	}
+
+	if m.FlexcacheRaw != nil {
+		if err := m.FlexcacheRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "flexcache_raw")
 			}
 			return err
 		}
@@ -8277,103 +11410,103 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatistics
 	// VolumeStatistics
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsStatusOk captures enum value "ok"
 	VolumeStatisticsStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatistics
 	// VolumeStatistics
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsStatusError captures enum value "error"
 	VolumeStatisticsStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatistics
 	// VolumeStatistics
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsStatusPartialNoData captures enum value "partial_no_data"
 	VolumeStatisticsStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatistics
 	// VolumeStatistics
 	// status
 	// Status
 	// partial_no_uuid
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
 	VolumeStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatistics
 	// VolumeStatistics
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
 	VolumeStatisticsStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatistics
 	// VolumeStatistics
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsStatusPartialOtherError captures enum value "partial_other_error"
 	VolumeStatisticsStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatistics
 	// VolumeStatistics
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsStatusNegativeDelta captures enum value "negative_delta"
 	VolumeStatisticsStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatistics
 	// VolumeStatistics
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsStatusBackfilledData captures enum value "backfilled_data"
 	VolumeStatisticsStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatistics
 	// VolumeStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	VolumeStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatistics
 	// VolumeStatistics
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	VolumeStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
 )
@@ -8436,6 +11569,10 @@ func (m *VolumeStatistics) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateFlexcacheRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -8468,6 +11605,20 @@ func (m *VolumeStatistics) contextValidateCloud(ctx context.Context, formats str
 		if err := m.Cloud.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("statistics" + "." + "cloud")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeStatistics) contextValidateFlexcacheRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.FlexcacheRaw != nil {
+		if err := m.FlexcacheRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "flexcache_raw")
 			}
 			return err
 		}
@@ -8572,7 +11723,7 @@ type VolumeStatisticsCloud struct {
 	Status string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -8652,103 +11803,103 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatisticsCloud
 	// VolumeStatisticsCloud
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsCloudStatusOk captures enum value "ok"
 	VolumeStatisticsCloudStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatisticsCloud
 	// VolumeStatisticsCloud
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsCloudStatusError captures enum value "error"
 	VolumeStatisticsCloudStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatisticsCloud
 	// VolumeStatisticsCloud
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsCloudStatusPartialNoData captures enum value "partial_no_data"
 	VolumeStatisticsCloudStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatisticsCloud
 	// VolumeStatisticsCloud
 	// status
 	// Status
 	// partial_no_uuid
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsCloudStatusPartialNoUUID captures enum value "partial_no_uuid"
 	VolumeStatisticsCloudStatusPartialNoUUID string = "partial_no_uuid"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatisticsCloud
 	// VolumeStatisticsCloud
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsCloudStatusPartialNoResponse captures enum value "partial_no_response"
 	VolumeStatisticsCloudStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatisticsCloud
 	// VolumeStatisticsCloud
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsCloudStatusPartialOtherError captures enum value "partial_other_error"
 	VolumeStatisticsCloudStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatisticsCloud
 	// VolumeStatisticsCloud
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsCloudStatusNegativeDelta captures enum value "negative_delta"
 	VolumeStatisticsCloudStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatisticsCloud
 	// VolumeStatisticsCloud
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsCloudStatusBackfilledData captures enum value "backfilled_data"
 	VolumeStatisticsCloudStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatisticsCloud
 	// VolumeStatisticsCloud
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsCloudStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	VolumeStatisticsCloudStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeStatisticsCloud
 	// VolumeStatisticsCloud
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeStatisticsCloudStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	VolumeStatisticsCloudStatusInconsistentOldData string = "inconsistent_old_data"
 )
@@ -8977,6 +12128,252 @@ func (m *VolumeStatisticsCloudLatencyRaw) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *VolumeStatisticsCloudLatencyRaw) UnmarshalBinary(b []byte) error {
 	var res VolumeStatisticsCloudLatencyRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeStatisticsFlexcacheRaw Performance numbers for FlexCache used to measure cache effectiveness.
+//
+// swagger:model VolumeStatisticsFlexcacheRaw
+type VolumeStatisticsFlexcacheRaw struct {
+
+	// Blocks retrieved from origin in case of a cache miss. This can be divided by the raw client_requested_blocks and multiplied by 100 to calculate the cache miss percentage.
+	// Example: 10
+	CacheMissBlocks int64 `json:"cache_miss_blocks,omitempty"`
+
+	// Total blocks requested by the client.
+	// Example: 500
+	ClientRequestedBlocks int64 `json:"client_requested_blocks,omitempty"`
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	Status string `json:"status,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this volume statistics flexcache raw
+func (m *VolumeStatisticsFlexcacheRaw) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var volumeStatisticsFlexcacheRawTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeStatisticsFlexcacheRawTypeStatusPropEnum = append(volumeStatisticsFlexcacheRawTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeStatisticsFlexcacheRaw
+	// VolumeStatisticsFlexcacheRaw
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// VolumeStatisticsFlexcacheRawStatusOk captures enum value "ok"
+	VolumeStatisticsFlexcacheRawStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// VolumeStatisticsFlexcacheRaw
+	// VolumeStatisticsFlexcacheRaw
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// VolumeStatisticsFlexcacheRawStatusError captures enum value "error"
+	VolumeStatisticsFlexcacheRawStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// VolumeStatisticsFlexcacheRaw
+	// VolumeStatisticsFlexcacheRaw
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// VolumeStatisticsFlexcacheRawStatusPartialNoData captures enum value "partial_no_data"
+	VolumeStatisticsFlexcacheRawStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// VolumeStatisticsFlexcacheRaw
+	// VolumeStatisticsFlexcacheRaw
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// VolumeStatisticsFlexcacheRawStatusPartialNoUUID captures enum value "partial_no_uuid"
+	VolumeStatisticsFlexcacheRawStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// VolumeStatisticsFlexcacheRaw
+	// VolumeStatisticsFlexcacheRaw
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// VolumeStatisticsFlexcacheRawStatusPartialNoResponse captures enum value "partial_no_response"
+	VolumeStatisticsFlexcacheRawStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// VolumeStatisticsFlexcacheRaw
+	// VolumeStatisticsFlexcacheRaw
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// VolumeStatisticsFlexcacheRawStatusPartialOtherError captures enum value "partial_other_error"
+	VolumeStatisticsFlexcacheRawStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// VolumeStatisticsFlexcacheRaw
+	// VolumeStatisticsFlexcacheRaw
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// VolumeStatisticsFlexcacheRawStatusNegativeDelta captures enum value "negative_delta"
+	VolumeStatisticsFlexcacheRawStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// VolumeStatisticsFlexcacheRaw
+	// VolumeStatisticsFlexcacheRaw
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// VolumeStatisticsFlexcacheRawStatusBackfilledData captures enum value "backfilled_data"
+	VolumeStatisticsFlexcacheRawStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// VolumeStatisticsFlexcacheRaw
+	// VolumeStatisticsFlexcacheRaw
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// VolumeStatisticsFlexcacheRawStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	VolumeStatisticsFlexcacheRawStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// VolumeStatisticsFlexcacheRaw
+	// VolumeStatisticsFlexcacheRaw
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// VolumeStatisticsFlexcacheRawStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	VolumeStatisticsFlexcacheRawStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *VolumeStatisticsFlexcacheRaw) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeStatisticsFlexcacheRawTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeStatisticsFlexcacheRaw) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("statistics"+"."+"flexcache_raw"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsFlexcacheRaw) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("statistics"+"."+"flexcache_raw"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume statistics flexcache raw based on the context it is used
+func (m *VolumeStatisticsFlexcacheRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeStatisticsFlexcacheRaw) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"flexcache_raw"+"."+"status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeStatisticsFlexcacheRaw) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"flexcache_raw"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeStatisticsFlexcacheRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeStatisticsFlexcacheRaw) UnmarshalBinary(b []byte) error {
+	var res VolumeStatisticsFlexcacheRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -9333,7 +12730,18 @@ func (m *VolumeSvmLinks) UnmarshalBinary(b []byte) error {
 // swagger:model VolumeTiering
 type VolumeTiering struct {
 
-	// Policy that determines whether the user data blocks of a volume in a FabricPool will be tiered to the cloud store when they become cold. FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of a volume block increases if it is accessed frequently and decreases when it is not. Valid in POST or PATCH.<br>all &dash; This policy allows tiering of both Snapshot copies and active file system user data to the cloud store as soon as possible by ignoring the temperature on the volume blocks.<br>auto &dash; This policy allows tiering of both snapshot and active file system user data to the cloud store<br>none &dash; Volume blocks will not be tiered to the cloud store.<br>snapshot_only &dash; This policy allows tiering of only the volume Snapshot copies not associated with the active file system. The default tiering policy is "snapshot-only" for a FlexVol and "none" for a FlexGroup.
+	// This parameter specifies the minimum number of days that user data blocks of the volume must be cooled before they can be considered cold and tiered out to the cloud tier. Note that this parameter is only used for tiering purposes and does not affect the reporting of inactive data. The value specified should be greater than the frequency with which applications in the volume shift between different sets of data. This parameter cannot be set when volume tiering policy is either "none" or "all". The default value of this parameter depends on the volume's tiering policy. See the tiering policy section of this documentation for corresponding default values. If the tiering policy on the volume gets changed, then this parameter will be reset to the default value corresponding to the new tiering policy.
+	// Maximum: 183
+	// Minimum: 2
+	MinCoolingDays int64 `json:"min_cooling_days,omitempty"`
+
+	// This parameter specifies tags of a volume for objects stored on a FabricPool-enabled aggregate. Each tag is a key,value pair and should be in the format "key=value".
+	// Max Items: 4
+	// Min Items: 0
+	// Unique: true
+	ObjectTags []string `json:"object_tags,omitempty"`
+
+	// Policy that determines whether the user data blocks of a volume in a FabricPool will be tiered to the cloud store when they become cold. FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of a volume block increases if it is accessed frequently and decreases when it is not. Valid in POST or PATCH.<br>all &dash; This policy allows tiering of both Snapshot copies and active file system user data to the cloud store as soon as possible by ignoring the temperature on the volume blocks.<br>auto &dash; This policy allows tiering of both snapshot and active file system user data to the cloud store<br>none &dash; Volume blocks will not be tiered to the cloud store.<br>snapshot_only &dash; This policy allows tiering of only the volume Snapshot copies not associated with the active file system. The default tiering policy is "snapshot-only" for a FlexVol and "none" for a FlexGroup. The default minimum cooling period for the "snapshot-only" tiering policy is 2 days and for the "auto" tiering policy is 31 days.
 	// Enum: [all auto backup none snapshot_only]
 	Policy string `json:"policy,omitempty"`
 
@@ -9345,6 +12753,14 @@ type VolumeTiering struct {
 func (m *VolumeTiering) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateMinCoolingDays(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateObjectTags(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validatePolicy(formats); err != nil {
 		res = append(res, err)
 	}
@@ -9352,6 +12768,56 @@ func (m *VolumeTiering) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VolumeTiering) validateMinCoolingDays(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinCoolingDays) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("tiering"+"."+"min_cooling_days", "body", m.MinCoolingDays, 2, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("tiering"+"."+"min_cooling_days", "body", m.MinCoolingDays, 183, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeTiering) validateObjectTags(formats strfmt.Registry) error {
+	if swag.IsZero(m.ObjectTags) { // not required
+		return nil
+	}
+
+	iObjectTagsSize := int64(len(m.ObjectTags))
+
+	if err := validate.MinItems("tiering"+"."+"object_tags", "body", iObjectTagsSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("tiering"+"."+"object_tags", "body", iObjectTagsSize, 4); err != nil {
+		return err
+	}
+
+	if err := validate.UniqueItems("tiering"+"."+"object_tags", "body", m.ObjectTags); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ObjectTags); i++ {
+
+		if err := validate.MaxLength("tiering"+"."+"object_tags"+"."+strconv.Itoa(i), "body", m.ObjectTags[i], 257); err != nil {
+			return err
+		}
+
+		if err := validate.Pattern("tiering"+"."+"object_tags"+"."+strconv.Itoa(i), "body", m.ObjectTags[i], `[_a-zA-Z][_a-zA-Z0-9]{0,126}=[_a-zA-Z0-9]{1,127}`); err != nil {
+			return err
+		}
+
+	}
+
 	return nil
 }
 
@@ -9369,53 +12835,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeTiering
 	// VolumeTiering
 	// policy
 	// Policy
 	// all
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeTieringPolicyAll captures enum value "all"
 	VolumeTieringPolicyAll string = "all"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeTiering
 	// VolumeTiering
 	// policy
 	// Policy
 	// auto
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeTieringPolicyAuto captures enum value "auto"
 	VolumeTieringPolicyAuto string = "auto"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeTiering
 	// VolumeTiering
 	// policy
 	// Policy
 	// backup
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeTieringPolicyBackup captures enum value "backup"
 	VolumeTieringPolicyBackup string = "backup"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeTiering
 	// VolumeTiering
 	// policy
 	// Policy
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeTieringPolicyNone captures enum value "none"
 	VolumeTieringPolicyNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeTiering
 	// VolumeTiering
 	// policy
 	// Policy
 	// snapshot_only
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeTieringPolicySnapshotOnly captures enum value "snapshot_only"
 	VolumeTieringPolicySnapshotOnly string = "snapshot_only"
 )
@@ -9463,5 +12929,3 @@ func (m *VolumeTiering) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

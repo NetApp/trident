@@ -55,7 +55,7 @@ type SnapshotPolicyScheduleCollectionGetOK struct {
 }
 
 func (o *SnapshotPolicyScheduleCollectionGetOK) Error() string {
-	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot-policy.uuid}/schedules][%d] snapshotPolicyScheduleCollectionGetOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshotPolicyScheduleCollectionGetOK  %+v", 200, o.Payload)
 }
 func (o *SnapshotPolicyScheduleCollectionGetOK) GetPayload() *models.SnapshotPolicyScheduleResponse {
 	return o.Payload
@@ -96,7 +96,7 @@ func (o *SnapshotPolicyScheduleCollectionGetDefault) Code() int {
 }
 
 func (o *SnapshotPolicyScheduleCollectionGetDefault) Error() string {
-	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot-policy.uuid}/schedules][%d] snapshot_policy_schedule_collection_get default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[GET /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshot_policy_schedule_collection_get default  %+v", o._statusCode, o.Payload)
 }
 func (o *SnapshotPolicyScheduleCollectionGetDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

@@ -73,5 +73,3 @@ func (m NsswitchSource) Validate(formats strfmt.Registry) error {
 func (m NsswitchSource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

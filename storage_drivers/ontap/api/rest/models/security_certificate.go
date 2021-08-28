@@ -23,6 +23,11 @@ type SecurityCertificate struct {
 	// links
 	Links *SecurityCertificateLinks `json:"_links,omitempty"`
 
+	// Provides the key identifier of the issuing CA certificate that signed the SSL certificate.
+	// Example: 26:1F:C5:53:5B:D7:9E:E2:37:74:F4:F4:06:09:03:3D:EB:41:75:D7
+	// Read Only: true
+	AuthorityKeyIdentifier string `json:"authority_key_identifier,omitempty"`
+
 	// Certificate authority
 	// Read Only: true
 	// Max Length: 256
@@ -46,6 +51,10 @@ type SecurityCertificate struct {
 	// Key size of requested Certificate in bits. One of 512, 1024, 1536, 2048, 3072. Can be provided on POST if creating self-signed certificate. Key size of 512 is not allowed on POST.
 	KeySize *int64 `json:"key_size,omitempty"`
 
+	// Certificate name. If not provided in POST, a unique name specific to the SVM is automatically generated.
+	// Example: cert1
+	Name string `json:"name,omitempty"`
+
 	// Private key Certificate in PEM format. Only valid for create when installing a CA-signed certificate. This is not audited.
 	// Example: -----BEGIN PRIVATE KEY----- MIIBVAIBADANBgkqhkiG9w0BAQEFAASCAT4wggE6AgEAAkEAu1/a8f3G47cZ6pel Hd3aONMNkGJ8vSCH5QjicuDm92VtVwkAACEjIoZSLYlJvPD+odL+lFzVQSmkneW7 VCGqYQIDAQABAkAcfNpg6GCQxoneLOghvlUrRotNZGvqpUOEAvHK3X7AJhz5SU4V an36qvsAt5ghFMVM2iGvGaXbj0dAd+Jg64pxAiEA32Eh9mPtFSmZhTIUMeGcPmPk qIYCEuP8a/ZLmI9s4TsCIQDWvLQuvjSVfwPhi0TFAb5wqAET8X5LBFqtGX5QlUep EwIgFnqM02Gc4wtLoqa2d4qPkYu13+uUW9hLd4XSd6i/OS8CIQDT3elU+Rt+qIwW u0cFrVvNYSV3HNzDfS9N/IoxTagfewIgPvXADe5c2EWbhCUkhN+ZCf38AKewK9TW lQcDy4L+f14= -----END PRIVATE KEY-----
 	PrivateKey string `json:"private_key,omitempty"`
@@ -62,6 +71,11 @@ type SecurityCertificate struct {
 	// Max Length: 40
 	// Min Length: 1
 	SerialNumber string `json:"serial_number,omitempty"`
+
+	// Provides the key identifier used to identify the public key in the SSL certificate.
+	// Example: 26:1F:C5:53:5B:D7:9E:E2:37:74:F4:F4:06:09:03:3D:EB:41:75:D8
+	// Read Only: true
+	SubjectKeyIdentifier string `json:"subject_key_identifier,omitempty"`
 
 	// svm
 	Svm *SecurityCertificateSvm `json:"svm,omitempty"`
@@ -166,63 +180,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate
 	// SecurityCertificate
 	// hash_function
 	// HashFunction
 	// sha1
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateHashFunctionSha1 captures enum value "sha1"
 	SecurityCertificateHashFunctionSha1 string = "sha1"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate
 	// SecurityCertificate
 	// hash_function
 	// HashFunction
 	// sha256
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateHashFunctionSha256 captures enum value "sha256"
 	SecurityCertificateHashFunctionSha256 string = "sha256"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate
 	// SecurityCertificate
 	// hash_function
 	// HashFunction
 	// md5
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateHashFunctionMd5 captures enum value "md5"
 	SecurityCertificateHashFunctionMd5 string = "md5"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate
 	// SecurityCertificate
 	// hash_function
 	// HashFunction
 	// sha224
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateHashFunctionSha224 captures enum value "sha224"
 	SecurityCertificateHashFunctionSha224 string = "sha224"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate
 	// SecurityCertificate
 	// hash_function
 	// HashFunction
 	// sha384
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateHashFunctionSha384 captures enum value "sha384"
 	SecurityCertificateHashFunctionSha384 string = "sha384"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate
 	// SecurityCertificate
 	// hash_function
 	// HashFunction
 	// sha512
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateHashFunctionSha512 captures enum value "sha512"
 	SecurityCertificateHashFunctionSha512 string = "sha512"
 )
@@ -310,53 +324,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate
 	// SecurityCertificate
 	// type
 	// Type
 	// client
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateTypeClient captures enum value "client"
 	SecurityCertificateTypeClient string = "client"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate
 	// SecurityCertificate
 	// type
 	// Type
 	// server
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateTypeServer captures enum value "server"
 	SecurityCertificateTypeServer string = "server"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate
 	// SecurityCertificate
 	// type
 	// Type
 	// client_ca
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateTypeClientCa captures enum value "client_ca"
 	SecurityCertificateTypeClientCa string = "client_ca"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate
 	// SecurityCertificate
 	// type
 	// Type
 	// server_ca
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateTypeServerCa captures enum value "server_ca"
 	SecurityCertificateTypeServerCa string = "server_ca"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate
 	// SecurityCertificate
 	// type
 	// Type
 	// root_ca
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateTypeRootCa captures enum value "root_ca"
 	SecurityCertificateTypeRootCa string = "root_ca"
 )
@@ -390,6 +404,10 @@ func (m *SecurityCertificate) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAuthorityKeyIdentifier(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateCa(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -399,6 +417,10 @@ func (m *SecurityCertificate) ContextValidate(ctx context.Context, formats strfm
 	}
 
 	if err := m.contextValidateSerialNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSubjectKeyIdentifier(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -430,6 +452,15 @@ func (m *SecurityCertificate) contextValidateLinks(ctx context.Context, formats 
 	return nil
 }
 
+func (m *SecurityCertificate) contextValidateAuthorityKeyIdentifier(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "authority_key_identifier", "body", string(m.AuthorityKeyIdentifier)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *SecurityCertificate) contextValidateCa(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "ca", "body", string(m.Ca)); err != nil {
@@ -454,6 +485,15 @@ func (m *SecurityCertificate) contextValidateScope(ctx context.Context, formats 
 func (m *SecurityCertificate) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SecurityCertificate) contextValidateSubjectKeyIdentifier(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "subject_key_identifier", "body", string(m.SubjectKeyIdentifier)); err != nil {
 		return err
 	}
 
@@ -768,5 +808,3 @@ func (m *SecurityCertificateSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

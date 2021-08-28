@@ -100,7 +100,7 @@ type ApplicationSnapshotCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* IsPartial.
 
@@ -112,7 +112,7 @@ type ApplicationSnapshotCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -124,7 +124,7 @@ type ApplicationSnapshotCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -132,7 +132,7 @@ type ApplicationSnapshotCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -140,7 +140,7 @@ type ApplicationSnapshotCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* UUID.
 
@@ -166,14 +166,14 @@ func (o *ApplicationSnapshotCollectionGetParams) WithDefaults() *ApplicationSnap
 // All values with no default are reset to their zero value.
 func (o *ApplicationSnapshotCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := ApplicationSnapshotCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -281,15 +281,15 @@ func (o *ApplicationSnapshotCollectionGetParams) SetCreateTimeQueryParameter(cre
 	o.CreateTimeQueryParameter = createTime
 }
 
-// WithFields adds the fields to the application snapshot collection get params
-func (o *ApplicationSnapshotCollectionGetParams) WithFields(fields []string) *ApplicationSnapshotCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the application snapshot collection get params
+func (o *ApplicationSnapshotCollectionGetParams) WithFieldsQueryParameter(fields []string) *ApplicationSnapshotCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the application snapshot collection get params
-func (o *ApplicationSnapshotCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the application snapshot collection get params
+func (o *ApplicationSnapshotCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIsPartialQueryParameter adds the isPartial to the application snapshot collection get params
@@ -303,15 +303,15 @@ func (o *ApplicationSnapshotCollectionGetParams) SetIsPartialQueryParameter(isPa
 	o.IsPartialQueryParameter = isPartial
 }
 
-// WithMaxRecords adds the maxRecords to the application snapshot collection get params
-func (o *ApplicationSnapshotCollectionGetParams) WithMaxRecords(maxRecords *int64) *ApplicationSnapshotCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the application snapshot collection get params
+func (o *ApplicationSnapshotCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ApplicationSnapshotCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the application snapshot collection get params
-func (o *ApplicationSnapshotCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the application snapshot collection get params
+func (o *ApplicationSnapshotCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the application snapshot collection get params
@@ -325,37 +325,37 @@ func (o *ApplicationSnapshotCollectionGetParams) SetNameQueryParameter(name *str
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the application snapshot collection get params
-func (o *ApplicationSnapshotCollectionGetParams) WithOrderBy(orderBy []string) *ApplicationSnapshotCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the application snapshot collection get params
+func (o *ApplicationSnapshotCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ApplicationSnapshotCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the application snapshot collection get params
-func (o *ApplicationSnapshotCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the application snapshot collection get params
+func (o *ApplicationSnapshotCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the application snapshot collection get params
-func (o *ApplicationSnapshotCollectionGetParams) WithReturnRecords(returnRecords *bool) *ApplicationSnapshotCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the application snapshot collection get params
+func (o *ApplicationSnapshotCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ApplicationSnapshotCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the application snapshot collection get params
-func (o *ApplicationSnapshotCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the application snapshot collection get params
+func (o *ApplicationSnapshotCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the application snapshot collection get params
-func (o *ApplicationSnapshotCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ApplicationSnapshotCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the application snapshot collection get params
+func (o *ApplicationSnapshotCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ApplicationSnapshotCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the application snapshot collection get params
-func (o *ApplicationSnapshotCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the application snapshot collection get params
+func (o *ApplicationSnapshotCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithUUIDQueryParameter adds the uuid to the application snapshot collection get params
@@ -467,7 +467,7 @@ func (o *ApplicationSnapshotCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -495,13 +495,13 @@ func (o *ApplicationSnapshotCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -529,7 +529,7 @@ func (o *ApplicationSnapshotCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -540,13 +540,13 @@ func (o *ApplicationSnapshotCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -557,13 +557,13 @@ func (o *ApplicationSnapshotCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -599,7 +599,7 @@ func (o *ApplicationSnapshotCollectionGetParams) WriteToRequest(r runtime.Client
 
 // bindParamApplicationSnapshotCollectionGet binds the parameter fields
 func (o *ApplicationSnapshotCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -616,7 +616,7 @@ func (o *ApplicationSnapshotCollectionGetParams) bindParamFields(formats strfmt.
 
 // bindParamApplicationSnapshotCollectionGet binds the parameter order_by
 func (o *ApplicationSnapshotCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

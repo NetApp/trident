@@ -74,6 +74,7 @@ func NewNvmeSubsystemDeleteDefault(code int) *NvmeSubsystemDeleteDefault {
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
+| 72090001 | The NVMe subsystem does not exist. |
 | 72090023 | The NVMe subsystem contains one or more mapped namespaces. Use the `allow_delete_while_mapped` query parameter to delete an NVMe subsystem with mapped NVMe namespaces. |
 | 72090024 | The NVMe subsystem contains one or more NVMe hosts. Use the `allow_delete_with_hosts` query parameter to delete an NVMe subsystem with NVMe hosts. |
 

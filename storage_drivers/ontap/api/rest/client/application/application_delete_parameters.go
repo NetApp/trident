@@ -60,11 +60,20 @@ func NewApplicationDeleteParamsWithHTTPClient(client *http.Client) *ApplicationD
 */
 type ApplicationDeleteParams struct {
 
+	/* DeleteData.
+
+	   By default, deleting an application deletes all of the application's data. By setting this parameter to "false", the application's data is preserved, but can no longer be managed through application APIs.
+
+
+	   Default: true
+	*/
+	DeleteDataQueryParameter *bool
+
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* UUID.
 
@@ -90,11 +99,14 @@ func (o *ApplicationDeleteParams) WithDefaults() *ApplicationDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *ApplicationDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutDefault = int64(0)
+		deleteDataQueryParameterDefault = bool(true)
+
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := ApplicationDeleteParams{
-		ReturnTimeout: &returnTimeoutDefault,
+		DeleteDataQueryParameter:    &deleteDataQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -136,15 +148,26 @@ func (o *ApplicationDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithReturnTimeout adds the returnTimeout to the application delete params
-func (o *ApplicationDeleteParams) WithReturnTimeout(returnTimeout *int64) *ApplicationDeleteParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithDeleteDataQueryParameter adds the deleteData to the application delete params
+func (o *ApplicationDeleteParams) WithDeleteDataQueryParameter(deleteData *bool) *ApplicationDeleteParams {
+	o.SetDeleteDataQueryParameter(deleteData)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the application delete params
-func (o *ApplicationDeleteParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetDeleteDataQueryParameter adds the deleteData to the application delete params
+func (o *ApplicationDeleteParams) SetDeleteDataQueryParameter(deleteData *bool) {
+	o.DeleteDataQueryParameter = deleteData
+}
+
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the application delete params
+func (o *ApplicationDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ApplicationDeleteParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
+	return o
+}
+
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the application delete params
+func (o *ApplicationDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithUUIDPathParameter adds the uuid to the application delete params
@@ -166,13 +189,30 @@ func (o *ApplicationDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.ReturnTimeout != nil {
+	if o.DeleteDataQueryParameter != nil {
+
+		// query param delete_data
+		var qrDeleteData bool
+
+		if o.DeleteDataQueryParameter != nil {
+			qrDeleteData = *o.DeleteDataQueryParameter
+		}
+		qDeleteData := swag.FormatBool(qrDeleteData)
+		if qDeleteData != "" {
+
+			if err := r.SetQueryParam("delete_data", qDeleteData); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

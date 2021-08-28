@@ -65,6 +65,9 @@ type NdmpSession struct {
 	// Indicates the NDMP tape device mode of operation.
 	// Example: write
 	TapeMode NdmpMoverMode `json:"tape_mode,omitempty"`
+
+	// The NDMP node or SVM UUID based on whether NDMP is operating in node-scope or SVM-scope mode.
+	UUID string `json:"uuid,omitempty"`
 }
 
 // Validate validates this ndmp session
@@ -140,23 +143,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ndmp_session
 	// NdmpSession
 	// backup_engine
 	// BackupEngine
 	// dump
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NdmpSessionBackupEngineDump captures enum value "dump"
 	NdmpSessionBackupEngineDump string = "dump"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ndmp_session
 	// NdmpSession
 	// backup_engine
 	// BackupEngine
 	// smtape
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NdmpSessionBackupEngineSmtape captures enum value "smtape"
 	NdmpSessionBackupEngineSmtape string = "smtape"
 )
@@ -881,5 +884,3 @@ func (m *NdmpSessionSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

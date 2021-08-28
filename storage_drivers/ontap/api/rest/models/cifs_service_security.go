@@ -20,6 +20,9 @@ import (
 // swagger:model cifs_service_security
 type CifsServiceSecurity struct {
 
+	// Specifies whether encryption is required for domain controller connections.
+	EncryptDcConnection *bool `json:"encrypt_dc_connection,omitempty"`
+
 	// Specifies whether AES-128 and AES-256 encryption is enabled for all Kerberos-based communication with the Active Directory KDC.
 	// To take advantage of the strongest security with Kerberos-based communication, AES-256 and AES-128 encryption can be enabled on the CIFS server.
 	// Kerberos-related communication for CIFS is used during CIFS server creation on the SVM, as well
@@ -37,6 +40,16 @@ type CifsServiceSecurity struct {
 	// renegotiated when a machine account password is reset.
 	//
 	KdcEncryption *bool `json:"kdc_encryption,omitempty"`
+
+	// It is CIFS server minimum security level, also known as the LMCompatibilityLevel. The minimum security level is the minimum level of the security tokens that        the CIFS server accepts from SMB clients.
+	// The available values are:
+	// * lm_ntlm_ntlmv2_krb          Accepts LM, NTLM, NTLMv2 and Kerberos
+	// * ntlm_ntlmv2_krb             Accepts NTLM, NTLMv2 and Kerberos
+	// * ntlmv2_krb                  Accepts NTLMv2 and Kerberos
+	// * krb                         Accepts Kerberos only
+	//
+	// Enum: [lm_ntlm_ntlmv2_krb ntlm_ntlmv2_krb ntlmv2_krb krb]
+	LmCompatibilityLevel *string `json:"lm_compatibility_level,omitempty"`
 
 	// Specifies what level of access an anonymous user is granted. An anonymous user (also known as a "null user") can list or enumerate certain types of system information from Windows hosts on the network, including user names and details, account policies, and share names. Access for the anonymous user can be controlled by specifying one of three access restriction settings.
 	//  The available values are:
@@ -59,6 +72,10 @@ type CifsServiceSecurity struct {
 func (m *CifsServiceSecurity) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateLmCompatibilityLevel(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateRestrictAnonymous(formats); err != nil {
 		res = append(res, err)
 	}
@@ -66,6 +83,82 @@ func (m *CifsServiceSecurity) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var cifsServiceSecurityTypeLmCompatibilityLevelPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["lm_ntlm_ntlmv2_krb","ntlm_ntlmv2_krb","ntlmv2_krb","krb"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cifsServiceSecurityTypeLmCompatibilityLevelPropEnum = append(cifsServiceSecurityTypeLmCompatibilityLevelPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cifs_service_security
+	// CifsServiceSecurity
+	// lm_compatibility_level
+	// LmCompatibilityLevel
+	// lm_ntlm_ntlmv2_krb
+	// END DEBUGGING
+	// CifsServiceSecurityLmCompatibilityLevelLmNtlmNtlmv2Krb captures enum value "lm_ntlm_ntlmv2_krb"
+	CifsServiceSecurityLmCompatibilityLevelLmNtlmNtlmv2Krb string = "lm_ntlm_ntlmv2_krb"
+
+	// BEGIN DEBUGGING
+	// cifs_service_security
+	// CifsServiceSecurity
+	// lm_compatibility_level
+	// LmCompatibilityLevel
+	// ntlm_ntlmv2_krb
+	// END DEBUGGING
+	// CifsServiceSecurityLmCompatibilityLevelNtlmNtlmv2Krb captures enum value "ntlm_ntlmv2_krb"
+	CifsServiceSecurityLmCompatibilityLevelNtlmNtlmv2Krb string = "ntlm_ntlmv2_krb"
+
+	// BEGIN DEBUGGING
+	// cifs_service_security
+	// CifsServiceSecurity
+	// lm_compatibility_level
+	// LmCompatibilityLevel
+	// ntlmv2_krb
+	// END DEBUGGING
+	// CifsServiceSecurityLmCompatibilityLevelNtlmv2Krb captures enum value "ntlmv2_krb"
+	CifsServiceSecurityLmCompatibilityLevelNtlmv2Krb string = "ntlmv2_krb"
+
+	// BEGIN DEBUGGING
+	// cifs_service_security
+	// CifsServiceSecurity
+	// lm_compatibility_level
+	// LmCompatibilityLevel
+	// krb
+	// END DEBUGGING
+	// CifsServiceSecurityLmCompatibilityLevelKrb captures enum value "krb"
+	CifsServiceSecurityLmCompatibilityLevelKrb string = "krb"
+)
+
+// prop value enum
+func (m *CifsServiceSecurity) validateLmCompatibilityLevelEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsServiceSecurityTypeLmCompatibilityLevelPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CifsServiceSecurity) validateLmCompatibilityLevel(formats strfmt.Registry) error {
+	if swag.IsZero(m.LmCompatibilityLevel) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateLmCompatibilityLevelEnum("lm_compatibility_level", "body", *m.LmCompatibilityLevel); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -83,33 +176,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cifs_service_security
 	// CifsServiceSecurity
 	// restrict_anonymous
 	// RestrictAnonymous
 	// no_restriction
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceSecurityRestrictAnonymousNoRestriction captures enum value "no_restriction"
 	CifsServiceSecurityRestrictAnonymousNoRestriction string = "no_restriction"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cifs_service_security
 	// CifsServiceSecurity
 	// restrict_anonymous
 	// RestrictAnonymous
 	// no_enumeration
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceSecurityRestrictAnonymousNoEnumeration captures enum value "no_enumeration"
 	CifsServiceSecurityRestrictAnonymousNoEnumeration string = "no_enumeration"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cifs_service_security
 	// CifsServiceSecurity
 	// restrict_anonymous
 	// RestrictAnonymous
 	// no_access
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CifsServiceSecurityRestrictAnonymousNoAccess captures enum value "no_access"
 	CifsServiceSecurityRestrictAnonymousNoAccess string = "no_access"
 )
@@ -157,5 +250,3 @@ func (m *CifsServiceSecurity) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

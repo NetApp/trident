@@ -85,7 +85,21 @@ func NewSecurityKeyManagerMigrateDefault(code int) *SecurityKeyManagerMigrateDef
 
 /* SecurityKeyManagerMigrateDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Codes
+| Error Code | Description |
+| ---------- | ----------- |
+| 65536886 | The specified migration option is not supported in this release. |
+| 65536959 | The source-uuid and UUID must be different values. |
+| 65536968 | Check that all nodes of the cluster are healthy and retry the operation. |
+| 65537117 | The migrate operation cannot be started because a UUID cannot be converted to an SVM name. |
+| 65537117 | Cannot start migration because a key manager referenced by a provided UUID does not exist. |
+| 65537551 | Top-level internal key protection key (KEK) is unavailable on one or more nodes. |
+| 65537552 | Embedded KMIP server status is not available. |
+| 65537564 | Check that the Azure Key Vault Service is healthy and retry the operation. |
+| 65537720 | Failed to configure the Google Cloud Key Management Service for an SVM because a key manager is already configured. |
+| 65537736 | Check that the Google Cloud Key Management Service is healthy and retry the operation. |
+| 65538107 | Key migration to an IBM Key Lore key manager is not supported. |
+
 */
 type SecurityKeyManagerMigrateDefault struct {
 	_statusCode int

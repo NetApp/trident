@@ -76,13 +76,13 @@ type ApplicationComponentSnapshotRestoreParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* UUID.
 
@@ -108,14 +108,14 @@ func (o *ApplicationComponentSnapshotRestoreParams) WithDefaults() *ApplicationC
 // All values with no default are reset to their zero value.
 func (o *ApplicationComponentSnapshotRestoreParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := ApplicationComponentSnapshotRestoreParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -179,26 +179,26 @@ func (o *ApplicationComponentSnapshotRestoreParams) SetComponentUUIDPathParamete
 	o.ComponentUUIDPathParameter = componentUUID
 }
 
-// WithReturnRecords adds the returnRecords to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) WithReturnRecords(returnRecords *bool) *ApplicationComponentSnapshotRestoreParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ApplicationComponentSnapshotRestoreParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) WithReturnTimeout(returnTimeout *int64) *ApplicationComponentSnapshotRestoreParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ApplicationComponentSnapshotRestoreParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the application component snapshot restore params
-func (o *ApplicationComponentSnapshotRestoreParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the application component snapshot restore params
+func (o *ApplicationComponentSnapshotRestoreParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithUUIDPathParameter adds the uuid to the application component snapshot restore params
@@ -230,13 +230,13 @@ func (o *ApplicationComponentSnapshotRestoreParams) WriteToRequest(r runtime.Cli
 		return err
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -247,13 +247,13 @@ func (o *ApplicationComponentSnapshotRestoreParams) WriteToRequest(r runtime.Cli
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

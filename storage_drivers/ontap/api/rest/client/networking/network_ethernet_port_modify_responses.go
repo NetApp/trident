@@ -86,6 +86,11 @@ func NewNetworkEthernetPortModifyDefault(code int) *NetworkEthernetPortModifyDef
 | 1967097 | The specified LAG member ports UUID, name, and node name do not match. |
 | 1967148 | Failure to remove port from broadcast domain. |
 | 1967149 | Failure to add port to broadcast domain. |
+| 1967184 | The reachability parameter cannot be patched in the same request as other parameters that might affect the target port's reachability status. |
+| 1967185 | The port cannot be repaired because the port is deemed as non-repairable. |
+| 1967186 | Invalid value for the reachability parameter. |
+| 1967580 | This command is not supported as the effective cluster version is earlier than 9.8. |
+| 1967582 | The reachability parameter is not supported on this cluster. |
 
 */
 type NetworkEthernetPortModifyDefault struct {

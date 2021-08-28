@@ -31,7 +31,7 @@ type SnaplockLogFile struct {
 	BaseName string `json:"base_name,omitempty"`
 
 	// Expiry time of the log file in date-time format. Value '9999-12-31T00:00:00Z' indicates infinite expiry time.
-	// Example: 2058-06-04 19:00:00
+	// Example: 2058-06-04T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
@@ -100,33 +100,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_log_file
 	// SnaplockLogFile
 	// base_name
 	// BaseName
 	// legal_hold
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockLogFileBaseNameLegalHold captures enum value "legal_hold"
 	SnaplockLogFileBaseNameLegalHold string = "legal_hold"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_log_file
 	// SnaplockLogFile
 	// base_name
 	// BaseName
 	// privileged_delete
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockLogFileBaseNamePrivilegedDelete captures enum value "privileged_delete"
 	SnaplockLogFileBaseNamePrivilegedDelete string = "privileged_delete"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_log_file
 	// SnaplockLogFile
 	// base_name
 	// BaseName
 	// system
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockLogFileBaseNameSystem captures enum value "system"
 	SnaplockLogFileBaseNameSystem string = "system"
 )
@@ -334,5 +334,3 @@ func (m *SnaplockLogFileLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

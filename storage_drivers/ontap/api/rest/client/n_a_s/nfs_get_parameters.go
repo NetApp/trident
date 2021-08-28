@@ -64,7 +64,7 @@ type NfsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	// SvmUUID.
 	SVMUUIDPathParameter string
@@ -122,15 +122,15 @@ func (o *NfsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the nfs get params
-func (o *NfsGetParams) WithFields(fields []string) *NfsGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the nfs get params
+func (o *NfsGetParams) WithFieldsQueryParameter(fields []string) *NfsGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the nfs get params
-func (o *NfsGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the nfs get params
+func (o *NfsGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithSVMUUIDPathParameter adds the svmUUID to the nfs get params
@@ -152,7 +152,7 @@ func (o *NfsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -176,7 +176,7 @@ func (o *NfsGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regist
 
 // bindParamNfsGet binds the parameter fields
 func (o *NfsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

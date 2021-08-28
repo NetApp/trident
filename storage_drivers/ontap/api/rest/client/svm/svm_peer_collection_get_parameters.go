@@ -70,13 +70,13 @@ type SvmPeerCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -88,7 +88,7 @@ type SvmPeerCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* PeerClusterName.
 
@@ -120,7 +120,7 @@ type SvmPeerCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -128,7 +128,7 @@ type SvmPeerCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* State.
 
@@ -172,14 +172,14 @@ func (o *SvmPeerCollectionGetParams) WithDefaults() *SvmPeerCollectionGetParams 
 // All values with no default are reset to their zero value.
 func (o *SvmPeerCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SvmPeerCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -232,26 +232,26 @@ func (o *SvmPeerCollectionGetParams) SetApplicationsQueryParameter(applications 
 	o.ApplicationsQueryParameter = applications
 }
 
-// WithFields adds the fields to the svm peer collection get params
-func (o *SvmPeerCollectionGetParams) WithFields(fields []string) *SvmPeerCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the svm peer collection get params
+func (o *SvmPeerCollectionGetParams) WithFieldsQueryParameter(fields []string) *SvmPeerCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the svm peer collection get params
-func (o *SvmPeerCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the svm peer collection get params
+func (o *SvmPeerCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithMaxRecords adds the maxRecords to the svm peer collection get params
-func (o *SvmPeerCollectionGetParams) WithMaxRecords(maxRecords *int64) *SvmPeerCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the svm peer collection get params
+func (o *SvmPeerCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SvmPeerCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the svm peer collection get params
-func (o *SvmPeerCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the svm peer collection get params
+func (o *SvmPeerCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the svm peer collection get params
@@ -265,15 +265,15 @@ func (o *SvmPeerCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the svm peer collection get params
-func (o *SvmPeerCollectionGetParams) WithOrderBy(orderBy []string) *SvmPeerCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the svm peer collection get params
+func (o *SvmPeerCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SvmPeerCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the svm peer collection get params
-func (o *SvmPeerCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the svm peer collection get params
+func (o *SvmPeerCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPeerClusterNameQueryParameter adds the peerClusterName to the svm peer collection get params
@@ -320,26 +320,26 @@ func (o *SvmPeerCollectionGetParams) SetPeerSVMUUIDQueryParameter(peerSvmUUID *s
 	o.PeerSVMUUIDQueryParameter = peerSvmUUID
 }
 
-// WithReturnRecords adds the returnRecords to the svm peer collection get params
-func (o *SvmPeerCollectionGetParams) WithReturnRecords(returnRecords *bool) *SvmPeerCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the svm peer collection get params
+func (o *SvmPeerCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SvmPeerCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the svm peer collection get params
-func (o *SvmPeerCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the svm peer collection get params
+func (o *SvmPeerCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the svm peer collection get params
-func (o *SvmPeerCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SvmPeerCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm peer collection get params
+func (o *SvmPeerCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmPeerCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the svm peer collection get params
-func (o *SvmPeerCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm peer collection get params
+func (o *SvmPeerCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithStateQueryParameter adds the state to the svm peer collection get params
@@ -411,7 +411,7 @@ func (o *SvmPeerCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -422,13 +422,13 @@ func (o *SvmPeerCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -456,7 +456,7 @@ func (o *SvmPeerCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -535,13 +535,13 @@ func (o *SvmPeerCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -552,13 +552,13 @@ func (o *SvmPeerCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -645,7 +645,7 @@ func (o *SvmPeerCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamSvmPeerCollectionGet binds the parameter fields
 func (o *SvmPeerCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -662,7 +662,7 @@ func (o *SvmPeerCollectionGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamSvmPeerCollectionGet binds the parameter order_by
 func (o *SvmPeerCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

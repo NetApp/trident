@@ -64,7 +64,7 @@ type NetworkIPBgpPeerGroupsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* IpspaceName.
 
@@ -118,7 +118,7 @@ type NetworkIPBgpPeerGroupsGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -130,7 +130,7 @@ type NetworkIPBgpPeerGroupsGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* PeerAddress.
 
@@ -144,13 +144,19 @@ type NetworkIPBgpPeerGroupsGetParams struct {
 	*/
 	PeerAsnQueryParameter *int64
 
+	/* PeerIsNextHop.
+
+	   Filter by peer.is_next_hop
+	*/
+	PeerIsNextHopQueryParameter *bool
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -158,7 +164,7 @@ type NetworkIPBgpPeerGroupsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* State.
 
@@ -190,14 +196,14 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WithDefaults() *NetworkIPBgpPeerGroups
 // All values with no default are reset to their zero value.
 func (o *NetworkIPBgpPeerGroupsGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := NetworkIPBgpPeerGroupsGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -239,15 +245,15 @@ func (o *NetworkIPBgpPeerGroupsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithFields(fields []string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithFieldsQueryParameter(fields []string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIpspaceNameQueryParameter adds the ipspaceName to the network ip bgp peer groups get params
@@ -338,15 +344,15 @@ func (o *NetworkIPBgpPeerGroupsGetParams) SetLocalPortUUIDQueryParameter(localPo
 	o.LocalPortUUIDQueryParameter = localPortUUID
 }
 
-// WithMaxRecords adds the maxRecords to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithMaxRecords(maxRecords *int64) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the network ip bgp peer groups get params
@@ -360,15 +366,15 @@ func (o *NetworkIPBgpPeerGroupsGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithOrderBy(orderBy []string) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithOrderByQueryParameter(orderBy []string) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPeerAddressQueryParameter adds the peerAddress to the network ip bgp peer groups get params
@@ -393,26 +399,37 @@ func (o *NetworkIPBgpPeerGroupsGetParams) SetPeerAsnQueryParameter(peerAsn *int6
 	o.PeerAsnQueryParameter = peerAsn
 }
 
-// WithReturnRecords adds the returnRecords to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithReturnRecords(returnRecords *bool) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithPeerIsNextHopQueryParameter adds the peerIsNextHop to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithPeerIsNextHopQueryParameter(peerIsNextHop *bool) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetPeerIsNextHopQueryParameter(peerIsNextHop)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetPeerIsNextHopQueryParameter adds the peerIsNextHop to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetPeerIsNextHopQueryParameter(peerIsNextHop *bool) {
+	o.PeerIsNextHopQueryParameter = peerIsNextHop
 }
 
-// WithReturnTimeout adds the returnTimeout to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) WithReturnTimeout(returnTimeout *int64) *NetworkIPBgpPeerGroupsGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnRecordsQueryParameter adds the returnRecords to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the network ip bgp peer groups get params
-func (o *NetworkIPBgpPeerGroupsGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnRecordsQueryParameter adds the returnRecords to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
+}
+
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NetworkIPBgpPeerGroupsGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
+	return o
+}
+
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the network ip bgp peer groups get params
+func (o *NetworkIPBgpPeerGroupsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithStateQueryParameter adds the state to the network ip bgp peer groups get params
@@ -445,7 +462,7 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -592,13 +609,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -626,7 +643,7 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -671,13 +688,30 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.PeerIsNextHopQueryParameter != nil {
+
+		// query param peer.is_next_hop
+		var qrPeerIsNextHop bool
+
+		if o.PeerIsNextHopQueryParameter != nil {
+			qrPeerIsNextHop = *o.PeerIsNextHopQueryParameter
+		}
+		qPeerIsNextHop := swag.FormatBool(qrPeerIsNextHop)
+		if qPeerIsNextHop != "" {
+
+			if err := r.SetQueryParam("peer.is_next_hop", qPeerIsNextHop); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -688,13 +722,13 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -747,7 +781,7 @@ func (o *NetworkIPBgpPeerGroupsGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamNetworkIPBgpPeerGroupsGet binds the parameter fields
 func (o *NetworkIPBgpPeerGroupsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -764,7 +798,7 @@ func (o *NetworkIPBgpPeerGroupsGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamNetworkIPBgpPeerGroupsGet binds the parameter order_by
 func (o *NetworkIPBgpPeerGroupsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -44,6 +44,8 @@ type ClientService interface {
 
 	NdmpNodeSessionsCollectionGet(params *NdmpNodeSessionsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpNodeSessionsCollectionGetOK, error)
 
+	NdmpPasswordGet(params *NdmpPasswordGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpPasswordGetOK, error)
+
 	NdmpSvmCollectionGet(params *NdmpSvmCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpSvmCollectionGetOK, error)
 
 	NdmpSvmGet(params *NdmpSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpSvmGetOK, error)
@@ -397,6 +399,49 @@ func (a *Client) NdmpNodeSessionsCollectionGet(params *NdmpNodeSessionsCollectio
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NdmpNodeSessionsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  NdmpPasswordGet Generates and retrieves the password for the specified NDMP user.
+### Related ONTAP commands
+* `vserver services ndmp generate-password`
+### Learn more
+* [`DOC /protocols/ndmp/svms/{svm.uuid}/passwords/{user}`](#docs-ndmp-protocols_ndmp_svms_{svm.uuid}_passwords_{user})
+
+*/
+func (a *Client) NdmpPasswordGet(params *NdmpPasswordGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NdmpPasswordGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNdmpPasswordGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ndmp_password_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/ndmp/svms/{svm.uuid}/passwords/{user}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NdmpPasswordGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NdmpPasswordGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NdmpPasswordGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

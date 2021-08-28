@@ -64,7 +64,7 @@ type EmsFilterRuleGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Index.
 
@@ -131,15 +131,15 @@ func (o *EmsFilterRuleGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the ems filter rule get params
-func (o *EmsFilterRuleGetParams) WithFields(fields []string) *EmsFilterRuleGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the ems filter rule get params
+func (o *EmsFilterRuleGetParams) WithFieldsQueryParameter(fields []string) *EmsFilterRuleGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the ems filter rule get params
-func (o *EmsFilterRuleGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the ems filter rule get params
+func (o *EmsFilterRuleGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIndexPathParameter adds the index to the ems filter rule get params
@@ -172,7 +172,7 @@ func (o *EmsFilterRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *EmsFilterRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamEmsFilterRuleGet binds the parameter fields
 func (o *EmsFilterRuleGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

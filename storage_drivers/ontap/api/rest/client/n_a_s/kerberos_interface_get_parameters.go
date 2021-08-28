@@ -64,7 +64,7 @@ type KerberosInterfaceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* InterfaceUUID.
 
@@ -125,15 +125,15 @@ func (o *KerberosInterfaceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the kerberos interface get params
-func (o *KerberosInterfaceGetParams) WithFields(fields []string) *KerberosInterfaceGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the kerberos interface get params
+func (o *KerberosInterfaceGetParams) WithFieldsQueryParameter(fields []string) *KerberosInterfaceGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the kerberos interface get params
-func (o *KerberosInterfaceGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the kerberos interface get params
+func (o *KerberosInterfaceGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithInterfaceUUIDPathParameter adds the interfaceUUID to the kerberos interface get params
@@ -155,7 +155,7 @@ func (o *KerberosInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *KerberosInterfaceGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamKerberosInterfaceGet binds the parameter fields
 func (o *KerberosInterfaceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

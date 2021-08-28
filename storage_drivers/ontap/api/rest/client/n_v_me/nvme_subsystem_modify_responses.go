@@ -71,7 +71,11 @@ func NewNvmeSubsystemModifyDefault(code int) *NvmeSubsystemModifyDefault {
 
 /* NvmeSubsystemModifyDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Codes
+| Error Code | Description |
+| ---------- | ----------- |
+| 72090001 | The NVMe subsystem does not exist. |
+
 */
 type NvmeSubsystemModifyDefault struct {
 	_statusCode int

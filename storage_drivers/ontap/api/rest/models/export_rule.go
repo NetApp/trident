@@ -24,8 +24,18 @@ type ExportRule struct {
 	// links
 	Links *ExportRuleLinks `json:"_links,omitempty"`
 
+	// Specifies whether or not device creation is allowed.
+	AllowDeviceCreation *bool `json:"allow_device_creation,omitempty"`
+
+	// Specifies whether or not SetUID bits in SETATTR Op is to be honored.
+	AllowSuid *bool `json:"allow_suid,omitempty"`
+
 	// User ID To Which Anonymous Users Are Mapped.
 	AnonymousUser *string `json:"anonymous_user,omitempty"`
+
+	// Specifies who is authorized to change the ownership mode of a file.
+	// Enum: [restricted unrestricted]
+	ChownMode *string `json:"chown_mode,omitempty"`
 
 	// Array of client matches
 	Clients []*ExportClient `json:"clients,omitempty"`
@@ -34,6 +44,10 @@ type ExportRule struct {
 	//
 	// Read Only: true
 	Index int64 `json:"index,omitempty"`
+
+	// NTFS export UNIX security options.
+	// Enum: [fail ignore]
+	NtfsUnixSecurity *string `json:"ntfs_unix_security,omitempty"`
 
 	// protocols
 	Protocols []*string `json:"protocols,omitempty"`
@@ -59,7 +73,15 @@ func (m *ExportRule) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateChownMode(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateClients(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNtfsUnixSecurity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -102,6 +124,62 @@ func (m *ExportRule) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+var exportRuleTypeChownModePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["restricted","unrestricted"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		exportRuleTypeChownModePropEnum = append(exportRuleTypeChownModePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// export_rule
+	// ExportRule
+	// chown_mode
+	// ChownMode
+	// restricted
+	// END DEBUGGING
+	// ExportRuleChownModeRestricted captures enum value "restricted"
+	ExportRuleChownModeRestricted string = "restricted"
+
+	// BEGIN DEBUGGING
+	// export_rule
+	// ExportRule
+	// chown_mode
+	// ChownMode
+	// unrestricted
+	// END DEBUGGING
+	// ExportRuleChownModeUnrestricted captures enum value "unrestricted"
+	ExportRuleChownModeUnrestricted string = "unrestricted"
+)
+
+// prop value enum
+func (m *ExportRule) validateChownModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, exportRuleTypeChownModePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ExportRule) validateChownMode(formats strfmt.Registry) error {
+	if swag.IsZero(m.ChownMode) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateChownModeEnum("chown_mode", "body", *m.ChownMode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *ExportRule) validateClients(formats strfmt.Registry) error {
 	if swag.IsZero(m.Clients) { // not required
 		return nil
@@ -121,6 +199,62 @@ func (m *ExportRule) validateClients(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+var exportRuleTypeNtfsUnixSecurityPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["fail","ignore"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		exportRuleTypeNtfsUnixSecurityPropEnum = append(exportRuleTypeNtfsUnixSecurityPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// export_rule
+	// ExportRule
+	// ntfs_unix_security
+	// NtfsUnixSecurity
+	// fail
+	// END DEBUGGING
+	// ExportRuleNtfsUnixSecurityFail captures enum value "fail"
+	ExportRuleNtfsUnixSecurityFail string = "fail"
+
+	// BEGIN DEBUGGING
+	// export_rule
+	// ExportRule
+	// ntfs_unix_security
+	// NtfsUnixSecurity
+	// ignore
+	// END DEBUGGING
+	// ExportRuleNtfsUnixSecurityIgnore captures enum value "ignore"
+	ExportRuleNtfsUnixSecurityIgnore string = "ignore"
+)
+
+// prop value enum
+func (m *ExportRule) validateNtfsUnixSecurityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, exportRuleTypeNtfsUnixSecurityPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ExportRule) validateNtfsUnixSecurity(formats strfmt.Registry) error {
+	if swag.IsZero(m.NtfsUnixSecurity) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateNtfsUnixSecurityEnum("ntfs_unix_security", "body", *m.NtfsUnixSecurity); err != nil {
+		return err
 	}
 
 	return nil
@@ -448,5 +582,3 @@ func (m *ExportRuleLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

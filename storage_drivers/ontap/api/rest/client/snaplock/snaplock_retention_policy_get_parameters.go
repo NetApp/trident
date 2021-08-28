@@ -64,7 +64,7 @@ type SnaplockRetentionPolicyGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* PolicyName.
 
@@ -125,15 +125,15 @@ func (o *SnaplockRetentionPolicyGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snaplock retention policy get params
-func (o *SnaplockRetentionPolicyGetParams) WithFields(fields []string) *SnaplockRetentionPolicyGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snaplock retention policy get params
+func (o *SnaplockRetentionPolicyGetParams) WithFieldsQueryParameter(fields []string) *SnaplockRetentionPolicyGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snaplock retention policy get params
-func (o *SnaplockRetentionPolicyGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snaplock retention policy get params
+func (o *SnaplockRetentionPolicyGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithPolicyNamePathParameter adds the policyName to the snaplock retention policy get params
@@ -155,7 +155,7 @@ func (o *SnaplockRetentionPolicyGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *SnaplockRetentionPolicyGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamSnaplockRetentionPolicyGet binds the parameter fields
 func (o *SnaplockRetentionPolicyGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

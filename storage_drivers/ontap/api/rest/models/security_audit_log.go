@@ -26,7 +26,7 @@ type SecurityAuditLog struct {
 	// This identifies the "application" by which the request was processed.
 	//
 	// Read Only: true
-	// Enum: [internal console rsh telnet ssh ontapi http]
+	// Enum: [internal console rsh telnet ssh ontapi http system]
 	Application string `json:"application,omitempty"`
 
 	// This is the command ID for this request.
@@ -74,7 +74,8 @@ type SecurityAuditLog struct {
 
 	// Log entry timestamp. Valid in URL
 	// Read Only: true
-	Timestamp string `json:"timestamp,omitempty"`
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 
 	// Username of the remote user.
 	// Read Only: true
@@ -109,6 +110,10 @@ func (m *SecurityAuditLog) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -136,7 +141,7 @@ var securityAuditLogTypeApplicationPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["internal","console","rsh","telnet","ssh","ontapi","http"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["internal","console","rsh","telnet","ssh","ontapi","http","system"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -146,75 +151,85 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log
 	// SecurityAuditLog
 	// application
 	// Application
 	// internal
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogApplicationInternal captures enum value "internal"
 	SecurityAuditLogApplicationInternal string = "internal"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log
 	// SecurityAuditLog
 	// application
 	// Application
 	// console
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogApplicationConsole captures enum value "console"
 	SecurityAuditLogApplicationConsole string = "console"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log
 	// SecurityAuditLog
 	// application
 	// Application
 	// rsh
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogApplicationRsh captures enum value "rsh"
 	SecurityAuditLogApplicationRsh string = "rsh"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log
 	// SecurityAuditLog
 	// application
 	// Application
 	// telnet
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogApplicationTelnet captures enum value "telnet"
 	SecurityAuditLogApplicationTelnet string = "telnet"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log
 	// SecurityAuditLog
 	// application
 	// Application
 	// ssh
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogApplicationSSH captures enum value "ssh"
 	SecurityAuditLogApplicationSSH string = "ssh"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log
 	// SecurityAuditLog
 	// application
 	// Application
 	// ontapi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogApplicationOntapi captures enum value "ontapi"
 	SecurityAuditLogApplicationOntapi string = "ontapi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log
 	// SecurityAuditLog
 	// application
 	// Application
 	// http
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogApplicationHTTP captures enum value "http"
 	SecurityAuditLogApplicationHTTP string = "http"
+
+	// BEGIN DEBUGGING
+	// security_audit_log
+	// SecurityAuditLog
+	// application
+	// Application
+	// system
+	// END DEBUGGING
+	// SecurityAuditLogApplicationSystem captures enum value "system"
+	SecurityAuditLogApplicationSystem string = "system"
 )
 
 // prop value enum
@@ -269,23 +284,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log
 	// SecurityAuditLog
 	// scope
 	// Scope
 	// svm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogScopeSvm captures enum value "svm"
 	SecurityAuditLogScopeSvm string = "svm"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log
 	// SecurityAuditLog
 	// scope
 	// Scope
 	// cluster
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogScopeCluster captures enum value "cluster"
 	SecurityAuditLogScopeCluster string = "cluster"
 )
@@ -325,33 +340,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log
 	// SecurityAuditLog
 	// state
 	// State
 	// pending
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogStatePending captures enum value "pending"
 	SecurityAuditLogStatePending string = "pending"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log
 	// SecurityAuditLog
 	// state
 	// State
 	// success
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogStateSuccess captures enum value "success"
 	SecurityAuditLogStateSuccess string = "success"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log
 	// SecurityAuditLog
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogStateError captures enum value "error"
 	SecurityAuditLogStateError string = "error"
 )
@@ -389,6 +404,18 @@ func (m *SecurityAuditLog) validateSvm(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SecurityAuditLog) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
 	}
 
 	return nil
@@ -572,7 +599,7 @@ func (m *SecurityAuditLog) contextValidateSvm(ctx context.Context, formats strfm
 
 func (m *SecurityAuditLog) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "timestamp", "body", string(m.Timestamp)); err != nil {
+	if err := validate.ReadOnly(ctx, "timestamp", "body", m.Timestamp); err != nil {
 		return err
 	}
 
@@ -913,5 +940,3 @@ func (m *SecurityAuditLogSvm) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

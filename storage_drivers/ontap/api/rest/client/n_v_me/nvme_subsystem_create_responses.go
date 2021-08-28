@@ -88,7 +88,11 @@ func NewNvmeSubsystemCreateDefault(code int) *NvmeSubsystemCreateDefault {
 | 2621462 | The supplied SVM does not exist. |
 | 2621706 | The specified `svm.uuid` and `svm.name` do not refer to the same SVM. |
 | 2621707 | The svm.uuid or svm.name must be provided. |
+| 72089635 | Setting vendor-specific UUIDs on NVMe subsystems is not supported until the effective cluster version is 9.9 or later. |
 | 72089709 | The NVMe subsystem name contains an invalid character. |
+| 72089711 | An invalid vendor-specific UUID was specified. |
+| 72089712 | A duplicate vendor-specific UUID was specific. |
+| 72089713 | Too many vendor UUIDs were supplied. |
 | 72089771 | The NQN is invalid. A non-empty qualifier is required after the prefix. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089772 | The NQN is invalid. Add the prefix _'nqn'_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089773 | The NQN is invalid. The date field must be formatted _yyyy-mm_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |

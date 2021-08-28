@@ -90,6 +90,7 @@ func NewS3BucketSvmDeleteDefault(code int) *S3BucketSvmDeleteDefault {
 | 92405861   | "The specified SVM UUID or bucket UUID does not exist.";
 | 92405779   | "Failed to remove bucket \\\"{bucket name}\\\" for SVM \\\"{svm.name}\\\". Reason: {Reason for failure}. ";
 | 92405813   | "Failed to delete the object store volume. Reason: {Reason for failure}.";
+| 92405864   | "An error occurred when deleting an access policy. The reason for failure is detailed in the error message.";
 
 */
 type S3BucketSvmDeleteDefault struct {

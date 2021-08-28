@@ -90,7 +90,7 @@ type NameMappingModifyParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -189,15 +189,15 @@ func (o *NameMappingModifyParams) SetNewIndexQueryParameter(newIndex *int64) {
 	o.NewIndexQueryParameter = newIndex
 }
 
-// WithSvmUUID adds the svmUUID to the name mapping modify params
-func (o *NameMappingModifyParams) WithSvmUUID(svmUUID string) *NameMappingModifyParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the name mapping modify params
+func (o *NameMappingModifyParams) WithSVMUUIDPathParameter(svmUUID string) *NameMappingModifyParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the name mapping modify params
-func (o *NameMappingModifyParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the name mapping modify params
+func (o *NameMappingModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -241,7 +241,7 @@ func (o *NameMappingModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

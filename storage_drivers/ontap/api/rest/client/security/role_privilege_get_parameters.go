@@ -64,7 +64,7 @@ type RolePrivilegeGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Name.
 
@@ -137,15 +137,15 @@ func (o *RolePrivilegeGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the role privilege get params
-func (o *RolePrivilegeGetParams) WithFields(fields []string) *RolePrivilegeGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the role privilege get params
+func (o *RolePrivilegeGetParams) WithFieldsQueryParameter(fields []string) *RolePrivilegeGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the role privilege get params
-func (o *RolePrivilegeGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the role privilege get params
+func (o *RolePrivilegeGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithNamePathParameter adds the name to the role privilege get params
@@ -189,7 +189,7 @@ func (o *RolePrivilegeGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -223,7 +223,7 @@ func (o *RolePrivilegeGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamRolePrivilegeGet binds the parameter fields
 func (o *RolePrivilegeGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

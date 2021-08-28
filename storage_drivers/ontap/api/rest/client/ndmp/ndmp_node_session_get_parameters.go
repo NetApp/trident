@@ -64,7 +64,7 @@ type NdmpNodeSessionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* OwnerUUID.
 
@@ -131,15 +131,15 @@ func (o *NdmpNodeSessionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the ndmp node session get params
-func (o *NdmpNodeSessionGetParams) WithFields(fields []string) *NdmpNodeSessionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the ndmp node session get params
+func (o *NdmpNodeSessionGetParams) WithFieldsQueryParameter(fields []string) *NdmpNodeSessionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the ndmp node session get params
-func (o *NdmpNodeSessionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the ndmp node session get params
+func (o *NdmpNodeSessionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithOwnerUUIDPathParameter adds the ownerUUID to the ndmp node session get params
@@ -172,7 +172,7 @@ func (o *NdmpNodeSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *NdmpNodeSessionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamNdmpNodeSessionGet binds the parameter fields
 func (o *NdmpNodeSessionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

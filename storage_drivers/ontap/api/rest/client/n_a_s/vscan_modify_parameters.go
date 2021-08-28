@@ -71,7 +71,7 @@ type VscanModifyParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -137,15 +137,15 @@ func (o *VscanModifyParams) SetInfo(info *models.Vscan) {
 	o.Info = info
 }
 
-// WithSvmUUID adds the svmUUID to the vscan modify params
-func (o *VscanModifyParams) WithSvmUUID(svmUUID string) *VscanModifyParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the vscan modify params
+func (o *VscanModifyParams) WithSVMUUIDPathParameter(svmUUID string) *VscanModifyParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the vscan modify params
-func (o *VscanModifyParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the vscan modify params
+func (o *VscanModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -162,7 +162,7 @@ func (o *VscanModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

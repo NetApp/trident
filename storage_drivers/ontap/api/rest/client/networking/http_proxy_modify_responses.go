@@ -76,6 +76,8 @@ func NewHTTPProxyModifyDefault(code int) *HTTPProxyModifyDefault {
 | ---------- | ----------- |
 | 26214473   | The HTTP proxy configuration is not valid. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 interfaces. |
+| 26214481   | Username and password cannot be empty when HTTP proxy authentication is enabled. |
+| 26214482   | Username and password cannot be specified when HTTP proxy authentication is disabled. |
 
 */
 type HTTPProxyModifyDefault struct {

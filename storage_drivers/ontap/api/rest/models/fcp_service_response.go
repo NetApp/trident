@@ -283,5 +283,3 @@ func (m *FcpServiceResponseLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

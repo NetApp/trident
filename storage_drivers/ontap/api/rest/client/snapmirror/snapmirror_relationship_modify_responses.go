@@ -120,6 +120,7 @@ func NewSnapmirrorRelationshipModifyDefault(code int) *SnapmirrorRelationshipMod
 | 13303866    | Cannot use the specified policy to modify the policy of the relationship. |
 | 13303867    | Modifying the policy of an async-mirror or a vault relationship is not supported. |
 | 13303884    | LIF and protocols details are configured incorrectly for SVM. |
+| 13303996    | The source and destination clusters both have a policy with the same name, but they have different properties. |
 
 */
 type SnapmirrorRelationshipModifyDefault struct {

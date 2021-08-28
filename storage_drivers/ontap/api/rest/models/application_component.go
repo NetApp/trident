@@ -216,33 +216,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application_component
 	// ApplicationComponent
 	// file_system
 	// FileSystem
 	// m1fs
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationComponentFileSystemM1fs captures enum value "m1fs"
 	ApplicationComponentFileSystemM1fs string = "m1fs"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application_component
 	// ApplicationComponent
 	// file_system
 	// FileSystem
 	// xfs
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationComponentFileSystemXfs captures enum value "xfs"
 	ApplicationComponentFileSystemXfs string = "xfs"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application_component
 	// ApplicationComponent
 	// file_system
 	// FileSystem
 	// generic
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationComponentFileSystemGeneric captures enum value "generic"
 	ApplicationComponentFileSystemGeneric string = "generic"
 )
@@ -1142,5 +1142,3 @@ func (m *ApplicationComponentSvm) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -64,7 +64,7 @@ type KerberosRealmGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Name.
 
@@ -131,15 +131,15 @@ func (o *KerberosRealmGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the kerberos realm get params
-func (o *KerberosRealmGetParams) WithFields(fields []string) *KerberosRealmGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the kerberos realm get params
+func (o *KerberosRealmGetParams) WithFieldsQueryParameter(fields []string) *KerberosRealmGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the kerberos realm get params
-func (o *KerberosRealmGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the kerberos realm get params
+func (o *KerberosRealmGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithNamePathParameter adds the name to the kerberos realm get params
@@ -172,7 +172,7 @@ func (o *KerberosRealmGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *KerberosRealmGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamKerberosRealmGet binds the parameter fields
 func (o *KerberosRealmGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

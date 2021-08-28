@@ -282,13 +282,13 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationNfsPropertiesBackingStorage
 	// ApplicationNfsPropertiesBackingStorage
 	// type
 	// Type
 	// volume
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationNfsPropertiesBackingStorageTypeVolume captures enum value "volume"
 	ApplicationNfsPropertiesBackingStorageTypeVolume string = "volume"
 )
@@ -496,5 +496,3 @@ func (m *ApplicationNfsPropertiesPermissionsItems0) UnmarshalBinary(b []byte) er
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

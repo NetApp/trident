@@ -82,7 +82,7 @@ type FpolicyPolicyCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Mandatory.
 
@@ -94,7 +94,7 @@ type FpolicyPolicyCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -106,7 +106,7 @@ type FpolicyPolicyCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* Priority.
 
@@ -120,7 +120,7 @@ type FpolicyPolicyCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -128,7 +128,7 @@ type FpolicyPolicyCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* ScopeExcludeExportPolicies.
 
@@ -182,7 +182,7 @@ type FpolicyPolicyCollectionGetParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -202,14 +202,14 @@ func (o *FpolicyPolicyCollectionGetParams) WithDefaults() *FpolicyPolicyCollecti
 // All values with no default are reset to their zero value.
 func (o *FpolicyPolicyCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := FpolicyPolicyCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -284,15 +284,15 @@ func (o *FpolicyPolicyCollectionGetParams) SetEventsNameQueryParameter(eventsNam
 	o.EventsNameQueryParameter = eventsName
 }
 
-// WithFields adds the fields to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithFields(fields []string) *FpolicyPolicyCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithFieldsQueryParameter(fields []string) *FpolicyPolicyCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithMandatoryQueryParameter adds the mandatory to the fpolicy policy collection get params
@@ -306,15 +306,15 @@ func (o *FpolicyPolicyCollectionGetParams) SetMandatoryQueryParameter(mandatory 
 	o.MandatoryQueryParameter = mandatory
 }
 
-// WithMaxRecords adds the maxRecords to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithMaxRecords(maxRecords *int64) *FpolicyPolicyCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FpolicyPolicyCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the fpolicy policy collection get params
@@ -328,15 +328,15 @@ func (o *FpolicyPolicyCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithOrderBy(orderBy []string) *FpolicyPolicyCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FpolicyPolicyCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPriorityQueryParameter adds the priority to the fpolicy policy collection get params
@@ -350,26 +350,26 @@ func (o *FpolicyPolicyCollectionGetParams) SetPriorityQueryParameter(priority *i
 	o.PriorityQueryParameter = priority
 }
 
-// WithReturnRecords adds the returnRecords to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithReturnRecords(returnRecords *bool) *FpolicyPolicyCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FpolicyPolicyCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FpolicyPolicyCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FpolicyPolicyCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithScopeExcludeExportPoliciesQueryParameter adds the scopeExcludeExportPolicies to the fpolicy policy collection get params
@@ -460,15 +460,15 @@ func (o *FpolicyPolicyCollectionGetParams) SetScopeIncludeVolumesQueryParameter(
 	o.ScopeIncludeVolumesQueryParameter = scopeIncludeVolumes
 }
 
-// WithSvmUUID adds the svmUUID to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) WithSvmUUID(svmUUID string) *FpolicyPolicyCollectionGetParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *FpolicyPolicyCollectionGetParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the fpolicy policy collection get params
-func (o *FpolicyPolicyCollectionGetParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -530,7 +530,7 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -558,13 +558,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -592,7 +592,7 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -620,13 +620,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -637,13 +637,13 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -791,7 +791,7 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 
@@ -803,7 +803,7 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamFpolicyPolicyCollectionGet binds the parameter fields
 func (o *FpolicyPolicyCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -820,7 +820,7 @@ func (o *FpolicyPolicyCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamFpolicyPolicyCollectionGet binds the parameter order_by
 func (o *FpolicyPolicyCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

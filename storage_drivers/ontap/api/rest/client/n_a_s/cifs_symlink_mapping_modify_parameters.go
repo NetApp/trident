@@ -71,7 +71,7 @@ type CifsSymlinkMappingModifyParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	/* UnixPath.
 
@@ -143,15 +143,15 @@ func (o *CifsSymlinkMappingModifyParams) SetInfo(info *models.CifsSymlinkMapping
 	o.Info = info
 }
 
-// WithSvmUUID adds the svmUUID to the cifs symlink mapping modify params
-func (o *CifsSymlinkMappingModifyParams) WithSvmUUID(svmUUID string) *CifsSymlinkMappingModifyParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the cifs symlink mapping modify params
+func (o *CifsSymlinkMappingModifyParams) WithSVMUUIDPathParameter(svmUUID string) *CifsSymlinkMappingModifyParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the cifs symlink mapping modify params
-func (o *CifsSymlinkMappingModifyParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the cifs symlink mapping modify params
+func (o *CifsSymlinkMappingModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WithUnixPathPathParameter adds the unixPath to the cifs symlink mapping modify params
@@ -179,7 +179,7 @@ func (o *CifsSymlinkMappingModifyParams) WriteToRequest(r runtime.ClientRequest,
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

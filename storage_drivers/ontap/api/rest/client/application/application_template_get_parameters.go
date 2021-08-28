@@ -64,7 +64,7 @@ type ApplicationTemplateGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Name.
 
@@ -125,15 +125,15 @@ func (o *ApplicationTemplateGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the application template get params
-func (o *ApplicationTemplateGetParams) WithFields(fields []string) *ApplicationTemplateGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the application template get params
+func (o *ApplicationTemplateGetParams) WithFieldsQueryParameter(fields []string) *ApplicationTemplateGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the application template get params
-func (o *ApplicationTemplateGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the application template get params
+func (o *ApplicationTemplateGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithNamePathParameter adds the name to the application template get params
@@ -155,7 +155,7 @@ func (o *ApplicationTemplateGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *ApplicationTemplateGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamApplicationTemplateGet binds the parameter fields
 func (o *ApplicationTemplateGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

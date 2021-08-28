@@ -64,7 +64,7 @@ type IpspaceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *IpspaceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the ipspace get params
-func (o *IpspaceGetParams) WithFields(fields []string) *IpspaceGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the ipspace get params
+func (o *IpspaceGetParams) WithFieldsQueryParameter(fields []string) *IpspaceGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the ipspace get params
-func (o *IpspaceGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the ipspace get params
+func (o *IpspaceGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the ipspace get params
@@ -155,7 +155,7 @@ func (o *IpspaceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *IpspaceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamIpspaceGet binds the parameter fields
 func (o *IpspaceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

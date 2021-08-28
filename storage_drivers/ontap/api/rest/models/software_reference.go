@@ -42,7 +42,7 @@ type SoftwareReference struct {
 	// metrocluster
 	Metrocluster *SoftwareReferenceMetrocluster `json:"metrocluster,omitempty"`
 
-	// List of nodes and active versions.
+	// List of nodes, active versions, and firmware update progressions.
 	// Read Only: true
 	Nodes []*SoftwareNodeReference `json:"nodes,omitempty"`
 
@@ -50,6 +50,10 @@ type SoftwareReference struct {
 	// Example: ONTAP_X_1
 	// Read Only: true
 	PendingVersion string `json:"pending_version,omitempty"`
+
+	// List of failed post-update checks' warnings, errors, and advice.
+	// Read Only: true
+	PostUpdateChecks []*SoftwareValidationReference `json:"post_update_checks,omitempty"`
 
 	// Operational state of the upgrade
 	// Example: completed
@@ -91,6 +95,10 @@ func (m *SoftwareReference) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNodes(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePostUpdateChecks(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -147,33 +155,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_reference
 	// SoftwareReference
 	// action
 	// Action
 	// pause
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareReferenceActionPause captures enum value "pause"
 	SoftwareReferenceActionPause string = "pause"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_reference
 	// SoftwareReference
 	// action
 	// Action
 	// cancel
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareReferenceActionCancel captures enum value "cancel"
 	SoftwareReferenceActionCancel string = "cancel"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_reference
 	// SoftwareReference
 	// action
 	// Action
 	// resume
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareReferenceActionResume captures enum value "resume"
 	SoftwareReferenceActionResume string = "resume"
 )
@@ -240,6 +248,30 @@ func (m *SoftwareReference) validateNodes(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SoftwareReference) validatePostUpdateChecks(formats strfmt.Registry) error {
+	if swag.IsZero(m.PostUpdateChecks) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PostUpdateChecks); i++ {
+		if swag.IsZero(m.PostUpdateChecks[i]) { // not required
+			continue
+		}
+
+		if m.PostUpdateChecks[i] != nil {
+			if err := m.PostUpdateChecks[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("post_update_checks" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 var softwareReferenceTypeStatePropEnum []interface{}
 
 func init() {
@@ -254,93 +286,93 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_reference
 	// SoftwareReference
 	// state
 	// State
 	// in_progress
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareReferenceStateInProgress captures enum value "in_progress"
 	SoftwareReferenceStateInProgress string = "in_progress"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_reference
 	// SoftwareReference
 	// state
 	// State
 	// waiting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareReferenceStateWaiting captures enum value "waiting"
 	SoftwareReferenceStateWaiting string = "waiting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_reference
 	// SoftwareReference
 	// state
 	// State
 	// paused_by_user
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareReferenceStatePausedByUser captures enum value "paused_by_user"
 	SoftwareReferenceStatePausedByUser string = "paused_by_user"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_reference
 	// SoftwareReference
 	// state
 	// State
 	// paused_on_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareReferenceStatePausedOnError captures enum value "paused_on_error"
 	SoftwareReferenceStatePausedOnError string = "paused_on_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_reference
 	// SoftwareReference
 	// state
 	// State
 	// completed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareReferenceStateCompleted captures enum value "completed"
 	SoftwareReferenceStateCompleted string = "completed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_reference
 	// SoftwareReference
 	// state
 	// State
 	// canceled
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareReferenceStateCanceled captures enum value "canceled"
 	SoftwareReferenceStateCanceled string = "canceled"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_reference
 	// SoftwareReference
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareReferenceStateFailed captures enum value "failed"
 	SoftwareReferenceStateFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_reference
 	// SoftwareReference
 	// state
 	// State
 	// pause_pending
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareReferenceStatePausePending captures enum value "pause_pending"
 	SoftwareReferenceStatePausePending string = "pause_pending"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_reference
 	// SoftwareReference
 	// state
 	// State
 	// cancel_pending
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareReferenceStateCancelPending captures enum value "cancel_pending"
 	SoftwareReferenceStateCancelPending string = "cancel_pending"
 )
@@ -466,6 +498,10 @@ func (m *SoftwareReference) ContextValidate(ctx context.Context, formats strfmt.
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePostUpdateChecks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -560,6 +596,28 @@ func (m *SoftwareReference) contextValidatePendingVersion(ctx context.Context, f
 
 	if err := validate.ReadOnly(ctx, "pending_version", "body", string(m.PendingVersion)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *SoftwareReference) contextValidatePostUpdateChecks(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "post_update_checks", "body", []*SoftwareValidationReference(m.PostUpdateChecks)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.PostUpdateChecks); i++ {
+
+		if m.PostUpdateChecks[i] != nil {
+			if err := m.PostUpdateChecks[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("post_update_checks" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -1015,5 +1073,3 @@ func (m *SoftwareReferenceMetroclusterProgressSummary) UnmarshalBinary(b []byte)
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

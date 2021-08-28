@@ -64,7 +64,7 @@ type VolumeGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *VolumeGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the volume get params
-func (o *VolumeGetParams) WithFields(fields []string) *VolumeGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the volume get params
+func (o *VolumeGetParams) WithFieldsQueryParameter(fields []string) *VolumeGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the volume get params
-func (o *VolumeGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the volume get params
+func (o *VolumeGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the volume get params
@@ -155,7 +155,7 @@ func (o *VolumeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *VolumeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 
 // bindParamVolumeGet binds the parameter fields
 func (o *VolumeGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

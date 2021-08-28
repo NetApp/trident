@@ -28,7 +28,7 @@ type OracleOnNfs struct {
 	// Required: true
 	Db *OracleOnNfsDb `json:"db"`
 
-	// The list of NFS access controls.
+	// The list of NFS access controls. You must provide either 'host' or 'access' to enable NFS access.
 	NfsAccess []*AppNfsAccess `json:"nfs_access,omitempty"`
 
 	// ora home
@@ -454,33 +454,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsArchiveLogStorageService
 	// OracleOnNfsArchiveLogStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsArchiveLogStorageServiceNameExtreme captures enum value "extreme"
 	OracleOnNfsArchiveLogStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsArchiveLogStorageService
 	// OracleOnNfsArchiveLogStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsArchiveLogStorageServiceNamePerformance captures enum value "performance"
 	OracleOnNfsArchiveLogStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsArchiveLogStorageService
 	// OracleOnNfsArchiveLogStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsArchiveLogStorageServiceNameValue captures enum value "value"
 	OracleOnNfsArchiveLogStorageServiceNameValue string = "value"
 )
@@ -670,33 +670,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsDbStorageService
 	// OracleOnNfsDbStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsDbStorageServiceNameExtreme captures enum value "extreme"
 	OracleOnNfsDbStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsDbStorageService
 	// OracleOnNfsDbStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsDbStorageServiceNamePerformance captures enum value "performance"
 	OracleOnNfsDbStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsDbStorageService
 	// OracleOnNfsDbStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsDbStorageServiceNameValue captures enum value "value"
 	OracleOnNfsDbStorageServiceNameValue string = "value"
 )
@@ -872,33 +872,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsOraHomeStorageService
 	// OracleOnNfsOraHomeStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsOraHomeStorageServiceNameExtreme captures enum value "extreme"
 	OracleOnNfsOraHomeStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsOraHomeStorageService
 	// OracleOnNfsOraHomeStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsOraHomeStorageServiceNamePerformance captures enum value "performance"
 	OracleOnNfsOraHomeStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsOraHomeStorageService
 	// OracleOnNfsOraHomeStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsOraHomeStorageServiceNameValue captures enum value "value"
 	OracleOnNfsOraHomeStorageServiceNameValue string = "value"
 )
@@ -952,11 +952,11 @@ func (m *OracleOnNfsOraHomeStorageService) UnmarshalBinary(b []byte) error {
 // swagger:model OracleOnNfsProtectionType
 type OracleOnNfsProtectionType struct {
 
-	// The local rpo of the application.
+	// The local RPO of the application.
 	// Enum: [hourly none]
 	LocalRpo string `json:"local_rpo,omitempty"`
 
-	// The remote rpo of the application.
+	// The remote RPO of the application.
 	// Enum: [none zero]
 	RemoteRpo string `json:"remote_rpo,omitempty"`
 }
@@ -993,23 +993,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsProtectionType
 	// OracleOnNfsProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsProtectionTypeLocalRpoHourly captures enum value "hourly"
 	OracleOnNfsProtectionTypeLocalRpoHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsProtectionType
 	// OracleOnNfsProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsProtectionTypeLocalRpoNone captures enum value "none"
 	OracleOnNfsProtectionTypeLocalRpoNone string = "none"
 )
@@ -1049,23 +1049,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsProtectionType
 	// OracleOnNfsProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsProtectionTypeRemoteRpoNone captures enum value "none"
 	OracleOnNfsProtectionTypeRemoteRpoNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsProtectionType
 	// OracleOnNfsProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsProtectionTypeRemoteRpoZero captures enum value "zero"
 	OracleOnNfsProtectionTypeRemoteRpoZero string = "zero"
 )
@@ -1296,33 +1296,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsRedoLogStorageService
 	// OracleOnNfsRedoLogStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsRedoLogStorageServiceNameExtreme captures enum value "extreme"
 	OracleOnNfsRedoLogStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsRedoLogStorageService
 	// OracleOnNfsRedoLogStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsRedoLogStorageServiceNamePerformance captures enum value "performance"
 	OracleOnNfsRedoLogStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// OracleOnNfsRedoLogStorageService
 	// OracleOnNfsRedoLogStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// OracleOnNfsRedoLogStorageServiceNameValue captures enum value "value"
 	OracleOnNfsRedoLogStorageServiceNameValue string = "value"
 )
@@ -1370,5 +1370,3 @@ func (m *OracleOnNfsRedoLogStorageService) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

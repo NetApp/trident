@@ -55,7 +55,7 @@ type QosPolicyDeleteAccepted struct {
 }
 
 func (o *QosPolicyDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /storage/qos/policies/{policy.uuid}][%d] qosPolicyDeleteAccepted  %+v", 202, o.Payload)
+	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qosPolicyDeleteAccepted  %+v", 202, o.Payload)
 }
 func (o *QosPolicyDeleteAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
@@ -96,7 +96,7 @@ func (o *QosPolicyDeleteDefault) Code() int {
 }
 
 func (o *QosPolicyDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/qos/policies/{policy.uuid}][%d] qos_policy_delete default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[DELETE /storage/qos/policies/{uuid}][%d] qos_policy_delete default  %+v", o._statusCode, o.Payload)
 }
 func (o *QosPolicyDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

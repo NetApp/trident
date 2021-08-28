@@ -64,7 +64,7 @@ type QuotaReportCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* FilesHardLimit.
 
@@ -118,13 +118,13 @@ type QuotaReportCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* QtreeID.
 
@@ -144,7 +144,7 @@ type QuotaReportCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -152,7 +152,7 @@ type QuotaReportCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* ShowDefaultRecords.
 
@@ -258,16 +258,16 @@ func (o *QuotaReportCollectionGetParams) WithDefaults() *QuotaReportCollectionGe
 // All values with no default are reset to their zero value.
 func (o *QuotaReportCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 
 		showDefaultRecordsQueryParameterDefault = bool(true)
 	)
 
 	val := QuotaReportCollectionGetParams{
-		ReturnRecords:                    &returnRecordsDefault,
-		ReturnTimeout:                    &returnTimeoutDefault,
+		ReturnRecordsQueryParameter:      &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter:      &returnTimeoutQueryParameterDefault,
 		ShowDefaultRecordsQueryParameter: &showDefaultRecordsQueryParameterDefault,
 	}
 
@@ -310,15 +310,15 @@ func (o *QuotaReportCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithFields(fields []string) *QuotaReportCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithFieldsQueryParameter(fields []string) *QuotaReportCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithFilesHardLimitQueryParameter adds the filesHardLimit to the quota report collection get params
@@ -409,26 +409,26 @@ func (o *QuotaReportCollectionGetParams) SetIndexQueryParameter(index *int64) {
 	o.IndexQueryParameter = index
 }
 
-// WithMaxRecords adds the maxRecords to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithMaxRecords(maxRecords *int64) *QuotaReportCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *QuotaReportCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
-// WithOrderBy adds the orderBy to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithOrderBy(orderBy []string) *QuotaReportCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *QuotaReportCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithQtreeIDQueryParameter adds the qtreeID to the quota report collection get params
@@ -453,26 +453,26 @@ func (o *QuotaReportCollectionGetParams) SetQtreeNameQueryParameter(qtreeName *s
 	o.QtreeNameQueryParameter = qtreeName
 }
 
-// WithReturnRecords adds the returnRecords to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithReturnRecords(returnRecords *bool) *QuotaReportCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *QuotaReportCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *QuotaReportCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *QuotaReportCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the quota report collection get params
-func (o *QuotaReportCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the quota report collection get params
+func (o *QuotaReportCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithShowDefaultRecordsQueryParameter adds the showDefaultRecords to the quota report collection get params
@@ -637,7 +637,7 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -784,13 +784,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -801,7 +801,7 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -846,13 +846,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -863,13 +863,13 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1126,7 +1126,7 @@ func (o *QuotaReportCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamQuotaReportCollectionGet binds the parameter fields
 func (o *QuotaReportCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1143,7 +1143,7 @@ func (o *QuotaReportCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamQuotaReportCollectionGet binds the parameter order_by
 func (o *QuotaReportCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

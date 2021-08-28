@@ -157,23 +157,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vscan_server_status
 	// VscanServerStatus
 	// type
 	// Type
 	// primary
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VscanServerStatusTypePrimary captures enum value "primary"
 	VscanServerStatusTypePrimary string = "primary"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vscan_server_status
 	// VscanServerStatus
 	// type
 	// Type
 	// backup
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VscanServerStatusTypeBackup captures enum value "backup"
 	VscanServerStatusTypeBackup string = "backup"
 )
@@ -636,5 +636,3 @@ func (m *VscanServerStatusSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

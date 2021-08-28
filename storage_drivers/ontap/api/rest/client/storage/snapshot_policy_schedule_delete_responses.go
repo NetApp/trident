@@ -54,7 +54,7 @@ type SnapshotPolicyScheduleDeleteOK struct {
 }
 
 func (o *SnapshotPolicyScheduleDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot-policy.uuid}/schedules/{uuid}][%d] snapshotPolicyScheduleDeleteOK ", 200)
+	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleDeleteOK ", 200)
 }
 
 func (o *SnapshotPolicyScheduleDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -74,7 +74,7 @@ func NewSnapshotPolicyScheduleDeleteDefault(code int) *SnapshotPolicyScheduleDel
  ONTAP Error Response Code
 | Error Code | Description |
 | ---------- | ----------- |
-| 1638412    | Schedule does not exist in snapshot policy. |
+| 1638412    | Schedule does not exist in Snapshot policy. |
 
 */
 type SnapshotPolicyScheduleDeleteDefault struct {
@@ -89,7 +89,7 @@ func (o *SnapshotPolicyScheduleDeleteDefault) Code() int {
 }
 
 func (o *SnapshotPolicyScheduleDeleteDefault) Error() string {
-	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot-policy.uuid}/schedules/{uuid}][%d] snapshot_policy_schedule_delete default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[DELETE /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_delete default  %+v", o._statusCode, o.Payload)
 }
 func (o *SnapshotPolicyScheduleDeleteDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

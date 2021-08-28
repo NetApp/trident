@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -38,6 +39,9 @@ type Job struct {
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
 
+	// error
+	Error *JobError `json:"error,omitempty"`
+
 	// A message corresponding to the state of the job providing additional details about the current state.
 	// Example: Complete: Successful
 	// Read Only: true
@@ -52,6 +56,9 @@ type Job struct {
 	// Read Only: true
 	// Enum: [queued running paused success failure]
 	State string `json:"state,omitempty"`
+
+	// svm
+	Svm *JobSvm `json:"svm,omitempty"`
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
@@ -72,11 +79,19 @@ func (m *Job) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateStartTime(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -119,6 +134,23 @@ func (m *Job) validateEndTime(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Job) validateError(formats strfmt.Registry) error {
+	if swag.IsZero(m.Error) { // not required
+		return nil
+	}
+
+	if m.Error != nil {
+		if err := m.Error.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Job) validateStartTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.StartTime) { // not required
 		return nil
@@ -145,53 +177,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// job
 	// Job
 	// state
 	// State
 	// queued
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// JobStateQueued captures enum value "queued"
 	JobStateQueued string = "queued"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// job
 	// Job
 	// state
 	// State
 	// running
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// JobStateRunning captures enum value "running"
 	JobStateRunning string = "running"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// job
 	// Job
 	// state
 	// State
 	// paused
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// JobStatePaused captures enum value "paused"
 	JobStatePaused string = "paused"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// job
 	// Job
 	// state
 	// State
 	// success
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// JobStateSuccess captures enum value "success"
 	JobStateSuccess string = "success"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// job
 	// Job
 	// state
 	// State
 	// failure
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// JobStateFailure captures enum value "failure"
 	JobStateFailure string = "failure"
 )
@@ -212,6 +244,23 @@ func (m *Job) validateState(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateStateEnum("state", "body", m.State); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Job) validateSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.Svm) { // not required
+		return nil
+	}
+
+	if m.Svm != nil {
+		if err := m.Svm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -249,6 +298,10 @@ func (m *Job) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateError(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateMessage(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -258,6 +311,10 @@ func (m *Job) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 	}
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -312,6 +369,20 @@ func (m *Job) contextValidateEndTime(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
+func (m *Job) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Error != nil {
+		if err := m.Error.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Job) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "message", "body", string(m.Message)); err != nil {
@@ -339,6 +410,20 @@ func (m *Job) contextValidateState(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
+func (m *Job) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Svm != nil {
+		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Job) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "uuid", "body", strfmt.UUID(m.UUID)); err != nil {
@@ -359,6 +444,162 @@ func (m *Job) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Job) UnmarshalBinary(b []byte) error {
 	var res Job
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// JobError The error that caused the job to fail. This property is only populated when the job fails and it matches the API response error structure used by all APIs. The message and code match the dedicated message and code properties once the job has failed.
+//
+// swagger:model JobError
+type JobError struct {
+
+	// Message arguments
+	// Read Only: true
+	Arguments []*ErrorArguments `json:"arguments,omitempty"`
+
+	// Error code
+	// Example: 4
+	// Read Only: true
+	Code string `json:"code,omitempty"`
+
+	// Error message
+	// Example: entry doesn't exist
+	// Read Only: true
+	Message string `json:"message,omitempty"`
+
+	// The target parameter that caused the error.
+	// Example: uuid
+	// Read Only: true
+	Target string `json:"target,omitempty"`
+}
+
+// Validate validates this job error
+func (m *JobError) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateArguments(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *JobError) validateArguments(formats strfmt.Registry) error {
+	if swag.IsZero(m.Arguments) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Arguments); i++ {
+		if swag.IsZero(m.Arguments[i]) { // not required
+			continue
+		}
+
+		if m.Arguments[i] != nil {
+			if err := m.Arguments[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("error" + "." + "arguments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this job error based on the context it is used
+func (m *JobError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateArguments(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTarget(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *JobError) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "error"+"."+"arguments", "body", []*ErrorArguments(m.Arguments)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Arguments); i++ {
+
+		if m.Arguments[i] != nil {
+			if err := m.Arguments[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("error" + "." + "arguments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *JobError) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "error"+"."+"code", "body", string(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *JobError) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "error"+"."+"message", "body", string(m.Message)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *JobError) contextValidateTarget(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "error"+"."+"target", "body", string(m.Target)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *JobError) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *JobError) UnmarshalBinary(b []byte) error {
+	var res JobError
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -452,4 +693,184 @@ func (m *JobLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HELLO RIPPY
+// JobSvm job svm
+//
+// swagger:model JobSvm
+type JobSvm struct {
+
+	// links
+	Links *JobSvmLinks `json:"_links,omitempty"`
+
+	// The name of the SVM.
+	//
+	// Example: svm1
+	Name string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM.
+	//
+	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this job svm
+func (m *JobSvm) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *JobSvm) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this job svm based on the context it is used
+func (m *JobSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *JobSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *JobSvm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *JobSvm) UnmarshalBinary(b []byte) error {
+	var res JobSvm
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// JobSvmLinks job svm links
+//
+// swagger:model JobSvmLinks
+type JobSvmLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this job svm links
+func (m *JobSvmLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *JobSvmLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this job svm links based on the context it is used
+func (m *JobSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *JobSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *JobSvmLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *JobSvmLinks) UnmarshalBinary(b []byte) error {
+	var res JobSvmLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

@@ -99,6 +99,8 @@ func NewLdapCreateDefault(code int) *LdapCreateDefault {
 | 4915257    | The LDAP configuration is invalid. Verify that bind-dn and bind password are correct |
 | 4915258    | The LDAP configuration is invalid. Verify that the Active Directory domain or servers are reachable and that the network configuration is correct |
 | 4915259    | LDAP configurations with Active Directory domains are not supported on admin SVM. |
+| 4915265    | The specified bind password or bind DN is invalid |
+| 4915264    | Certificate verification failed. Verify that a valid certificate is installed |
 | 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
 

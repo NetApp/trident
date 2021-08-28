@@ -102,5 +102,3 @@ func (m *NdmpConnect) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -60,6 +60,12 @@ func NewIgroupCollectionGetParamsWithHTTPClient(client *http.Client) *IgroupColl
 */
 type IgroupCollectionGetParams struct {
 
+	/* Comment.
+
+	   Filter by comment
+	*/
+	CommentQueryParameter *string
+
 	/* DeleteOnUnmap.
 
 	   Filter by delete_on_unmap
@@ -70,7 +76,37 @@ type IgroupCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
+
+	/* IgroupsComment.
+
+	   Filter by igroups.comment
+	*/
+	IgroupsCommentQueryParameter *string
+
+	/* IgroupsName.
+
+	   Filter by igroups.name
+	*/
+	IgroupsNameQueryParameter *string
+
+	/* IgroupsUUID.
+
+	   Filter by igroups.uuid
+	*/
+	IgroupsUUIDQueryParameter *string
+
+	/* InitiatorsComment.
+
+	   Filter by initiators.comment
+	*/
+	InitiatorsCommentQueryParameter *string
+
+	/* InitiatorsIgroupName.
+
+	   Filter by initiators.igroup.name
+	*/
+	InitiatorsIgroupNameQueryParameter *string
 
 	/* InitiatorsIgroupUUID.
 
@@ -118,7 +154,7 @@ type IgroupCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -130,13 +166,43 @@ type IgroupCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* OsType.
 
 	   Filter by os_type
 	*/
 	OsTypeQueryParameter *string
+
+	/* ParentIgroupsComment.
+
+	   Filter by parent_igroups.comment
+	*/
+	ParentIgroupsCommentQueryParameter *string
+
+	/* ParentIgroupsName.
+
+	   Filter by parent_igroups.name
+	*/
+	ParentIgroupsNameQueryParameter *string
+
+	/* ParentIgroupsUUID.
+
+	   Filter by parent_igroups.uuid
+	*/
+	ParentIgroupsUUIDQueryParameter *string
+
+	/* PortsetName.
+
+	   Filter by portset.name
+	*/
+	PortsetNameQueryParameter *string
+
+	/* PortsetUUID.
+
+	   Filter by portset.uuid
+	*/
+	PortsetUUIDQueryParameter *string
 
 	/* Protocol.
 
@@ -150,7 +216,7 @@ type IgroupCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -158,7 +224,13 @@ type IgroupCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
+
+	/* SupportsIgroups.
+
+	   Filter by supports_igroups
+	*/
+	SupportsIgroupsQueryParameter *bool
 
 	/* SvmName.
 
@@ -196,14 +268,14 @@ func (o *IgroupCollectionGetParams) WithDefaults() *IgroupCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *IgroupCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := IgroupCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -245,6 +317,17 @@ func (o *IgroupCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithCommentQueryParameter adds the comment to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithCommentQueryParameter(comment *string) *IgroupCollectionGetParams {
+	o.SetCommentQueryParameter(comment)
+	return o
+}
+
+// SetCommentQueryParameter adds the comment to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetCommentQueryParameter(comment *string) {
+	o.CommentQueryParameter = comment
+}
+
 // WithDeleteOnUnmapQueryParameter adds the deleteOnUnmap to the igroup collection get params
 func (o *IgroupCollectionGetParams) WithDeleteOnUnmapQueryParameter(deleteOnUnmap *bool) *IgroupCollectionGetParams {
 	o.SetDeleteOnUnmapQueryParameter(deleteOnUnmap)
@@ -256,15 +339,70 @@ func (o *IgroupCollectionGetParams) SetDeleteOnUnmapQueryParameter(deleteOnUnmap
 	o.DeleteOnUnmapQueryParameter = deleteOnUnmap
 }
 
-// WithFields adds the fields to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithFields(fields []string) *IgroupCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithFieldsQueryParameter(fields []string) *IgroupCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
+}
+
+// WithIgroupsCommentQueryParameter adds the igroupsComment to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithIgroupsCommentQueryParameter(igroupsComment *string) *IgroupCollectionGetParams {
+	o.SetIgroupsCommentQueryParameter(igroupsComment)
+	return o
+}
+
+// SetIgroupsCommentQueryParameter adds the igroupsComment to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetIgroupsCommentQueryParameter(igroupsComment *string) {
+	o.IgroupsCommentQueryParameter = igroupsComment
+}
+
+// WithIgroupsNameQueryParameter adds the igroupsName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithIgroupsNameQueryParameter(igroupsName *string) *IgroupCollectionGetParams {
+	o.SetIgroupsNameQueryParameter(igroupsName)
+	return o
+}
+
+// SetIgroupsNameQueryParameter adds the igroupsName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetIgroupsNameQueryParameter(igroupsName *string) {
+	o.IgroupsNameQueryParameter = igroupsName
+}
+
+// WithIgroupsUUIDQueryParameter adds the igroupsUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithIgroupsUUIDQueryParameter(igroupsUUID *string) *IgroupCollectionGetParams {
+	o.SetIgroupsUUIDQueryParameter(igroupsUUID)
+	return o
+}
+
+// SetIgroupsUUIDQueryParameter adds the igroupsUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetIgroupsUUIDQueryParameter(igroupsUUID *string) {
+	o.IgroupsUUIDQueryParameter = igroupsUUID
+}
+
+// WithInitiatorsCommentQueryParameter adds the initiatorsComment to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithInitiatorsCommentQueryParameter(initiatorsComment *string) *IgroupCollectionGetParams {
+	o.SetInitiatorsCommentQueryParameter(initiatorsComment)
+	return o
+}
+
+// SetInitiatorsCommentQueryParameter adds the initiatorsComment to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetInitiatorsCommentQueryParameter(initiatorsComment *string) {
+	o.InitiatorsCommentQueryParameter = initiatorsComment
+}
+
+// WithInitiatorsIgroupNameQueryParameter adds the initiatorsIgroupName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithInitiatorsIgroupNameQueryParameter(initiatorsIgroupName *string) *IgroupCollectionGetParams {
+	o.SetInitiatorsIgroupNameQueryParameter(initiatorsIgroupName)
+	return o
+}
+
+// SetInitiatorsIgroupNameQueryParameter adds the initiatorsIgroupName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetInitiatorsIgroupNameQueryParameter(initiatorsIgroupName *string) {
+	o.InitiatorsIgroupNameQueryParameter = initiatorsIgroupName
 }
 
 // WithInitiatorsIgroupUUIDQueryParameter adds the initiatorsIgroupUUID to the igroup collection get params
@@ -344,15 +482,15 @@ func (o *IgroupCollectionGetParams) SetLunMapsLunUUIDQueryParameter(lunMapsLunUU
 	o.LunMapsLunUUIDQueryParameter = lunMapsLunUUID
 }
 
-// WithMaxRecords adds the maxRecords to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithMaxRecords(maxRecords *int64) *IgroupCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *IgroupCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the igroup collection get params
@@ -366,15 +504,15 @@ func (o *IgroupCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithOrderBy(orderBy []string) *IgroupCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *IgroupCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithOsTypeQueryParameter adds the osType to the igroup collection get params
@@ -388,6 +526,61 @@ func (o *IgroupCollectionGetParams) SetOsTypeQueryParameter(osType *string) {
 	o.OsTypeQueryParameter = osType
 }
 
+// WithParentIgroupsCommentQueryParameter adds the parentIgroupsComment to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithParentIgroupsCommentQueryParameter(parentIgroupsComment *string) *IgroupCollectionGetParams {
+	o.SetParentIgroupsCommentQueryParameter(parentIgroupsComment)
+	return o
+}
+
+// SetParentIgroupsCommentQueryParameter adds the parentIgroupsComment to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetParentIgroupsCommentQueryParameter(parentIgroupsComment *string) {
+	o.ParentIgroupsCommentQueryParameter = parentIgroupsComment
+}
+
+// WithParentIgroupsNameQueryParameter adds the parentIgroupsName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithParentIgroupsNameQueryParameter(parentIgroupsName *string) *IgroupCollectionGetParams {
+	o.SetParentIgroupsNameQueryParameter(parentIgroupsName)
+	return o
+}
+
+// SetParentIgroupsNameQueryParameter adds the parentIgroupsName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetParentIgroupsNameQueryParameter(parentIgroupsName *string) {
+	o.ParentIgroupsNameQueryParameter = parentIgroupsName
+}
+
+// WithParentIgroupsUUIDQueryParameter adds the parentIgroupsUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithParentIgroupsUUIDQueryParameter(parentIgroupsUUID *string) *IgroupCollectionGetParams {
+	o.SetParentIgroupsUUIDQueryParameter(parentIgroupsUUID)
+	return o
+}
+
+// SetParentIgroupsUUIDQueryParameter adds the parentIgroupsUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetParentIgroupsUUIDQueryParameter(parentIgroupsUUID *string) {
+	o.ParentIgroupsUUIDQueryParameter = parentIgroupsUUID
+}
+
+// WithPortsetNameQueryParameter adds the portsetName to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithPortsetNameQueryParameter(portsetName *string) *IgroupCollectionGetParams {
+	o.SetPortsetNameQueryParameter(portsetName)
+	return o
+}
+
+// SetPortsetNameQueryParameter adds the portsetName to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetPortsetNameQueryParameter(portsetName *string) {
+	o.PortsetNameQueryParameter = portsetName
+}
+
+// WithPortsetUUIDQueryParameter adds the portsetUUID to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithPortsetUUIDQueryParameter(portsetUUID *string) *IgroupCollectionGetParams {
+	o.SetPortsetUUIDQueryParameter(portsetUUID)
+	return o
+}
+
+// SetPortsetUUIDQueryParameter adds the portsetUuid to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetPortsetUUIDQueryParameter(portsetUUID *string) {
+	o.PortsetUUIDQueryParameter = portsetUUID
+}
+
 // WithProtocolQueryParameter adds the protocol to the igroup collection get params
 func (o *IgroupCollectionGetParams) WithProtocolQueryParameter(protocol *string) *IgroupCollectionGetParams {
 	o.SetProtocolQueryParameter(protocol)
@@ -399,26 +592,37 @@ func (o *IgroupCollectionGetParams) SetProtocolQueryParameter(protocol *string) 
 	o.ProtocolQueryParameter = protocol
 }
 
-// WithReturnRecords adds the returnRecords to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithReturnRecords(returnRecords *bool) *IgroupCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *IgroupCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the igroup collection get params
-func (o *IgroupCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *IgroupCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *IgroupCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the igroup collection get params
-func (o *IgroupCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
+}
+
+// WithSupportsIgroupsQueryParameter adds the supportsIgroups to the igroup collection get params
+func (o *IgroupCollectionGetParams) WithSupportsIgroupsQueryParameter(supportsIgroups *bool) *IgroupCollectionGetParams {
+	o.SetSupportsIgroupsQueryParameter(supportsIgroups)
+	return o
+}
+
+// SetSupportsIgroupsQueryParameter adds the supportsIgroups to the igroup collection get params
+func (o *IgroupCollectionGetParams) SetSupportsIgroupsQueryParameter(supportsIgroups *bool) {
+	o.SupportsIgroupsQueryParameter = supportsIgroups
 }
 
 // WithSVMNameQueryParameter adds the svmName to the igroup collection get params
@@ -462,6 +666,23 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
+	if o.CommentQueryParameter != nil {
+
+		// query param comment
+		var qrComment string
+
+		if o.CommentQueryParameter != nil {
+			qrComment = *o.CommentQueryParameter
+		}
+		qComment := qrComment
+		if qComment != "" {
+
+			if err := r.SetQueryParam("comment", qComment); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.DeleteOnUnmapQueryParameter != nil {
 
 		// query param delete_on_unmap
@@ -479,7 +700,7 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -487,6 +708,91 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.IgroupsCommentQueryParameter != nil {
+
+		// query param igroups.comment
+		var qrIgroupsComment string
+
+		if o.IgroupsCommentQueryParameter != nil {
+			qrIgroupsComment = *o.IgroupsCommentQueryParameter
+		}
+		qIgroupsComment := qrIgroupsComment
+		if qIgroupsComment != "" {
+
+			if err := r.SetQueryParam("igroups.comment", qIgroupsComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IgroupsNameQueryParameter != nil {
+
+		// query param igroups.name
+		var qrIgroupsName string
+
+		if o.IgroupsNameQueryParameter != nil {
+			qrIgroupsName = *o.IgroupsNameQueryParameter
+		}
+		qIgroupsName := qrIgroupsName
+		if qIgroupsName != "" {
+
+			if err := r.SetQueryParam("igroups.name", qIgroupsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IgroupsUUIDQueryParameter != nil {
+
+		// query param igroups.uuid
+		var qrIgroupsUUID string
+
+		if o.IgroupsUUIDQueryParameter != nil {
+			qrIgroupsUUID = *o.IgroupsUUIDQueryParameter
+		}
+		qIgroupsUUID := qrIgroupsUUID
+		if qIgroupsUUID != "" {
+
+			if err := r.SetQueryParam("igroups.uuid", qIgroupsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.InitiatorsCommentQueryParameter != nil {
+
+		// query param initiators.comment
+		var qrInitiatorsComment string
+
+		if o.InitiatorsCommentQueryParameter != nil {
+			qrInitiatorsComment = *o.InitiatorsCommentQueryParameter
+		}
+		qInitiatorsComment := qrInitiatorsComment
+		if qInitiatorsComment != "" {
+
+			if err := r.SetQueryParam("initiators.comment", qInitiatorsComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.InitiatorsIgroupNameQueryParameter != nil {
+
+		// query param initiators.igroup.name
+		var qrInitiatorsIgroupName string
+
+		if o.InitiatorsIgroupNameQueryParameter != nil {
+			qrInitiatorsIgroupName = *o.InitiatorsIgroupNameQueryParameter
+		}
+		qInitiatorsIgroupName := qrInitiatorsIgroupName
+		if qInitiatorsIgroupName != "" {
+
+			if err := r.SetQueryParam("initiators.igroup.name", qInitiatorsIgroupName); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -609,13 +915,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -643,7 +949,7 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -671,6 +977,91 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.ParentIgroupsCommentQueryParameter != nil {
+
+		// query param parent_igroups.comment
+		var qrParentIgroupsComment string
+
+		if o.ParentIgroupsCommentQueryParameter != nil {
+			qrParentIgroupsComment = *o.ParentIgroupsCommentQueryParameter
+		}
+		qParentIgroupsComment := qrParentIgroupsComment
+		if qParentIgroupsComment != "" {
+
+			if err := r.SetQueryParam("parent_igroups.comment", qParentIgroupsComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ParentIgroupsNameQueryParameter != nil {
+
+		// query param parent_igroups.name
+		var qrParentIgroupsName string
+
+		if o.ParentIgroupsNameQueryParameter != nil {
+			qrParentIgroupsName = *o.ParentIgroupsNameQueryParameter
+		}
+		qParentIgroupsName := qrParentIgroupsName
+		if qParentIgroupsName != "" {
+
+			if err := r.SetQueryParam("parent_igroups.name", qParentIgroupsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ParentIgroupsUUIDQueryParameter != nil {
+
+		// query param parent_igroups.uuid
+		var qrParentIgroupsUUID string
+
+		if o.ParentIgroupsUUIDQueryParameter != nil {
+			qrParentIgroupsUUID = *o.ParentIgroupsUUIDQueryParameter
+		}
+		qParentIgroupsUUID := qrParentIgroupsUUID
+		if qParentIgroupsUUID != "" {
+
+			if err := r.SetQueryParam("parent_igroups.uuid", qParentIgroupsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PortsetNameQueryParameter != nil {
+
+		// query param portset.name
+		var qrPortsetName string
+
+		if o.PortsetNameQueryParameter != nil {
+			qrPortsetName = *o.PortsetNameQueryParameter
+		}
+		qPortsetName := qrPortsetName
+		if qPortsetName != "" {
+
+			if err := r.SetQueryParam("portset.name", qPortsetName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PortsetUUIDQueryParameter != nil {
+
+		// query param portset.uuid
+		var qrPortsetUUID string
+
+		if o.PortsetUUIDQueryParameter != nil {
+			qrPortsetUUID = *o.PortsetUUIDQueryParameter
+		}
+		qPortsetUUID := qrPortsetUUID
+		if qPortsetUUID != "" {
+
+			if err := r.SetQueryParam("portset.uuid", qPortsetUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ProtocolQueryParameter != nil {
 
 		// query param protocol
@@ -688,13 +1079,13 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -705,18 +1096,35 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SupportsIgroupsQueryParameter != nil {
+
+		// query param supports_igroups
+		var qrSupportsIgroups bool
+
+		if o.SupportsIgroupsQueryParameter != nil {
+			qrSupportsIgroups = *o.SupportsIgroupsQueryParameter
+		}
+		qSupportsIgroups := swag.FormatBool(qrSupportsIgroups)
+		if qSupportsIgroups != "" {
+
+			if err := r.SetQueryParam("supports_igroups", qSupportsIgroups); err != nil {
 				return err
 			}
 		}
@@ -781,7 +1189,7 @@ func (o *IgroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 // bindParamIgroupCollectionGet binds the parameter fields
 func (o *IgroupCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -798,7 +1206,7 @@ func (o *IgroupCollectionGetParams) bindParamFields(formats strfmt.Registry) []s
 
 // bindParamIgroupCollectionGet binds the parameter order_by
 func (o *IgroupCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

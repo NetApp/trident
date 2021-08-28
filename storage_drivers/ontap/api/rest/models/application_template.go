@@ -62,8 +62,11 @@ type ApplicationTemplate struct {
 
 	// Access protocol.
 	// Read Only: true
-	// Enum: [nas nvme san]
+	// Enum: [nas nvme s3 san]
 	Protocol string `json:"protocol,omitempty"`
+
+	// s3 bucket
+	S3Bucket *ZappS3Bucket `json:"s3_bucket,omitempty"`
 
 	// san
 	San *San `json:"san,omitempty"`
@@ -132,6 +135,10 @@ func (m *ApplicationTemplate) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateProtocol(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateS3Bucket(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -335,7 +342,7 @@ var applicationTemplateTypeProtocolPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["nas","nvme","san"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["nas","nvme","s3","san"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -345,33 +352,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application_template
 	// ApplicationTemplate
 	// protocol
 	// Protocol
 	// nas
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationTemplateProtocolNas captures enum value "nas"
 	ApplicationTemplateProtocolNas string = "nas"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// application_template
 	// ApplicationTemplate
 	// protocol
 	// Protocol
 	// nvme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationTemplateProtocolNvme captures enum value "nvme"
 	ApplicationTemplateProtocolNvme string = "nvme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// application_template
+	// ApplicationTemplate
+	// protocol
+	// Protocol
+	// s3
+	// END DEBUGGING
+	// ApplicationTemplateProtocolS3 captures enum value "s3"
+	ApplicationTemplateProtocolS3 string = "s3"
+
+	// BEGIN DEBUGGING
 	// application_template
 	// ApplicationTemplate
 	// protocol
 	// Protocol
 	// san
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationTemplateProtocolSan captures enum value "san"
 	ApplicationTemplateProtocolSan string = "san"
 )
@@ -392,6 +409,23 @@ func (m *ApplicationTemplate) validateProtocol(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateProtocolEnum("protocol", "body", m.Protocol); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *ApplicationTemplate) validateS3Bucket(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3Bucket) { // not required
+		return nil
+	}
+
+	if m.S3Bucket != nil {
+		if err := m.S3Bucket.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("s3_bucket")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -569,6 +603,10 @@ func (m *ApplicationTemplate) ContextValidate(ctx context.Context, formats strfm
 	}
 
 	if err := m.contextValidateProtocol(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateS3Bucket(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -768,6 +806,20 @@ func (m *ApplicationTemplate) contextValidateProtocol(ctx context.Context, forma
 	return nil
 }
 
+func (m *ApplicationTemplate) contextValidateS3Bucket(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.S3Bucket != nil {
+		if err := m.S3Bucket.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("s3_bucket")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ApplicationTemplate) contextValidateSan(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.San != nil {
@@ -883,5 +935,3 @@ func (m *ApplicationTemplate) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -100,8 +100,7 @@ func NewIgroupInitiatorCreateDefault(code int) *IgroupInitiatorCreateDefault {
 | 5374039 | An invalid iSCSI initiator name was supplied. |
 | 5374734 | An initiator is already in another initiator group with a conflicting operating system type. |
 | 5374852 | The initiator group specified in the URI does not exist. |
-| 5374853 | You can add initiators to an initiator group using the `records` property, or the `name` property, but you cannot use both in the same request. |
-| 5374854 | Only `records` property elements should be populated with the `name` property values. |
+| 5374917 | Multiple matching initiators have been supplied with conflicting comments. |
 
 */
 type IgroupInitiatorCreateDefault struct {

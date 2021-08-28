@@ -48,5 +48,3 @@ func (m *LicenseKeys) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -77,23 +77,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cluster_ndmp_properties
 	// ClusterNdmpProperties
 	// mode
 	// Mode
 	// svm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNdmpPropertiesModeSvm captures enum value "svm"
 	ClusterNdmpPropertiesModeSvm string = "svm"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cluster_ndmp_properties
 	// ClusterNdmpProperties
 	// mode
 	// Mode
 	// node
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNdmpPropertiesModeNode captures enum value "node"
 	ClusterNdmpPropertiesModeNode string = "node"
 )
@@ -250,5 +250,3 @@ func (m *ClusterNdmpPropertiesLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

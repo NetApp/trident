@@ -90,6 +90,12 @@ type SvmCollectionGetParams struct {
 	*/
 	CifsAdDomainOrganizationalUnitQueryParameter *string
 
+	/* CifsAllowed.
+
+	   Filter by cifs.allowed
+	*/
+	CifsAllowedQueryParameter *bool
+
 	/* CifsEnabled.
 
 	   Filter by cifs.enabled
@@ -132,6 +138,12 @@ type SvmCollectionGetParams struct {
 	*/
 	FcInterfacesNameQueryParameter *string
 
+	/* FcpAllowed.
+
+	   Filter by fcp.allowed
+	*/
+	FcpAllowedQueryParameter *bool
+
 	/* FcpEnabled.
 
 	   Filter by fcp.enabled
@@ -142,7 +154,7 @@ type SvmCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* IpspaceName.
 
@@ -155,6 +167,12 @@ type SvmCollectionGetParams struct {
 	   Filter by ipspace.uuid
 	*/
 	IpspaceUUIDQueryParameter *string
+
+	/* IscsiAllowed.
+
+	   Filter by iscsi.allowed
+	*/
+	IscsiAllowedQueryParameter *bool
 
 	/* IscsiEnabled.
 
@@ -202,13 +220,25 @@ type SvmCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
+
+	/* MaxVolumes.
+
+	   Filter max_volumes
+	*/
+	MaxVolumesQueryParameter *string
 
 	/* Name.
 
 	   Filter by name
 	*/
 	NameQueryParameter *string
+
+	/* NfsAllowed.
+
+	   Filter by nfs.allowed
+	*/
+	NfsAllowedQueryParameter *bool
 
 	/* NfsEnabled.
 
@@ -264,6 +294,12 @@ type SvmCollectionGetParams struct {
 	*/
 	NsswitchPasswdQueryParameter *string
 
+	/* NvmeAllowed.
+
+	   Filter by nvme.allowed
+	*/
+	NvmeAllowedQueryParameter *bool
+
 	/* NvmeEnabled.
 
 	   Filter by nvme.enabled
@@ -274,7 +310,19 @@ type SvmCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
+
+	/* QosPolicyName.
+
+	   Filter qos_policy.name
+	*/
+	QosPolicyNameQueryParameter *string
+
+	/* QosPolicyUUID.
+
+	   Filter qos_policy.uuid
+	*/
+	QosPolicyUUIDQueryParameter *string
 
 	/* ReturnRecords.
 
@@ -282,7 +330,7 @@ type SvmCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -290,7 +338,7 @@ type SvmCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* S3Enabled.
 
@@ -352,14 +400,14 @@ func (o *SvmCollectionGetParams) WithDefaults() *SvmCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *SvmCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SvmCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -456,6 +504,17 @@ func (o *SvmCollectionGetParams) SetCifsAdDomainOrganizationalUnitQueryParameter
 	o.CifsAdDomainOrganizationalUnitQueryParameter = cifsAdDomainOrganizationalUnit
 }
 
+// WithCifsAllowedQueryParameter adds the cifsAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithCifsAllowedQueryParameter(cifsAllowed *bool) *SvmCollectionGetParams {
+	o.SetCifsAllowedQueryParameter(cifsAllowed)
+	return o
+}
+
+// SetCifsAllowedQueryParameter adds the cifsAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetCifsAllowedQueryParameter(cifsAllowed *bool) {
+	o.CifsAllowedQueryParameter = cifsAllowed
+}
+
 // WithCifsEnabledQueryParameter adds the cifsEnabled to the svm collection get params
 func (o *SvmCollectionGetParams) WithCifsEnabledQueryParameter(cifsEnabled *bool) *SvmCollectionGetParams {
 	o.SetCifsEnabledQueryParameter(cifsEnabled)
@@ -533,6 +592,17 @@ func (o *SvmCollectionGetParams) SetFcInterfacesNameQueryParameter(fcInterfacesN
 	o.FcInterfacesNameQueryParameter = fcInterfacesName
 }
 
+// WithFcpAllowedQueryParameter adds the fcpAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithFcpAllowedQueryParameter(fcpAllowed *bool) *SvmCollectionGetParams {
+	o.SetFcpAllowedQueryParameter(fcpAllowed)
+	return o
+}
+
+// SetFcpAllowedQueryParameter adds the fcpAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetFcpAllowedQueryParameter(fcpAllowed *bool) {
+	o.FcpAllowedQueryParameter = fcpAllowed
+}
+
 // WithFcpEnabledQueryParameter adds the fcpEnabled to the svm collection get params
 func (o *SvmCollectionGetParams) WithFcpEnabledQueryParameter(fcpEnabled *bool) *SvmCollectionGetParams {
 	o.SetFcpEnabledQueryParameter(fcpEnabled)
@@ -544,15 +614,15 @@ func (o *SvmCollectionGetParams) SetFcpEnabledQueryParameter(fcpEnabled *bool) {
 	o.FcpEnabledQueryParameter = fcpEnabled
 }
 
-// WithFields adds the fields to the svm collection get params
-func (o *SvmCollectionGetParams) WithFields(fields []string) *SvmCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the svm collection get params
+func (o *SvmCollectionGetParams) WithFieldsQueryParameter(fields []string) *SvmCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the svm collection get params
-func (o *SvmCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the svm collection get params
+func (o *SvmCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIpspaceNameQueryParameter adds the ipspaceName to the svm collection get params
@@ -575,6 +645,17 @@ func (o *SvmCollectionGetParams) WithIpspaceUUIDQueryParameter(ipspaceUUID *stri
 // SetIpspaceUUIDQueryParameter adds the ipspaceUuid to the svm collection get params
 func (o *SvmCollectionGetParams) SetIpspaceUUIDQueryParameter(ipspaceUUID *string) {
 	o.IpspaceUUIDQueryParameter = ipspaceUUID
+}
+
+// WithIscsiAllowedQueryParameter adds the iscsiAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithIscsiAllowedQueryParameter(iscsiAllowed *bool) *SvmCollectionGetParams {
+	o.SetIscsiAllowedQueryParameter(iscsiAllowed)
+	return o
+}
+
+// SetIscsiAllowedQueryParameter adds the iscsiAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetIscsiAllowedQueryParameter(iscsiAllowed *bool) {
+	o.IscsiAllowedQueryParameter = iscsiAllowed
 }
 
 // WithIscsiEnabledQueryParameter adds the iscsiEnabled to the svm collection get params
@@ -654,15 +735,26 @@ func (o *SvmCollectionGetParams) SetLdapServersQueryParameter(ldapServers *strin
 	o.LdapServersQueryParameter = ldapServers
 }
 
-// WithMaxRecords adds the maxRecords to the svm collection get params
-func (o *SvmCollectionGetParams) WithMaxRecords(maxRecords *int64) *SvmCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the svm collection get params
+func (o *SvmCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SvmCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the svm collection get params
-func (o *SvmCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the svm collection get params
+func (o *SvmCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
+}
+
+// WithMaxVolumesQueryParameter adds the maxVolumes to the svm collection get params
+func (o *SvmCollectionGetParams) WithMaxVolumesQueryParameter(maxVolumes *string) *SvmCollectionGetParams {
+	o.SetMaxVolumesQueryParameter(maxVolumes)
+	return o
+}
+
+// SetMaxVolumesQueryParameter adds the maxVolumes to the svm collection get params
+func (o *SvmCollectionGetParams) SetMaxVolumesQueryParameter(maxVolumes *string) {
+	o.MaxVolumesQueryParameter = maxVolumes
 }
 
 // WithNameQueryParameter adds the name to the svm collection get params
@@ -674,6 +766,17 @@ func (o *SvmCollectionGetParams) WithNameQueryParameter(name *string) *SvmCollec
 // SetNameQueryParameter adds the name to the svm collection get params
 func (o *SvmCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
+}
+
+// WithNfsAllowedQueryParameter adds the nfsAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithNfsAllowedQueryParameter(nfsAllowed *bool) *SvmCollectionGetParams {
+	o.SetNfsAllowedQueryParameter(nfsAllowed)
+	return o
+}
+
+// SetNfsAllowedQueryParameter adds the nfsAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetNfsAllowedQueryParameter(nfsAllowed *bool) {
+	o.NfsAllowedQueryParameter = nfsAllowed
 }
 
 // WithNfsEnabledQueryParameter adds the nfsEnabled to the svm collection get params
@@ -775,6 +878,17 @@ func (o *SvmCollectionGetParams) SetNsswitchPasswdQueryParameter(nsswitchPasswd 
 	o.NsswitchPasswdQueryParameter = nsswitchPasswd
 }
 
+// WithNvmeAllowedQueryParameter adds the nvmeAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithNvmeAllowedQueryParameter(nvmeAllowed *bool) *SvmCollectionGetParams {
+	o.SetNvmeAllowedQueryParameter(nvmeAllowed)
+	return o
+}
+
+// SetNvmeAllowedQueryParameter adds the nvmeAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetNvmeAllowedQueryParameter(nvmeAllowed *bool) {
+	o.NvmeAllowedQueryParameter = nvmeAllowed
+}
+
 // WithNvmeEnabledQueryParameter adds the nvmeEnabled to the svm collection get params
 func (o *SvmCollectionGetParams) WithNvmeEnabledQueryParameter(nvmeEnabled *bool) *SvmCollectionGetParams {
 	o.SetNvmeEnabledQueryParameter(nvmeEnabled)
@@ -786,37 +900,59 @@ func (o *SvmCollectionGetParams) SetNvmeEnabledQueryParameter(nvmeEnabled *bool)
 	o.NvmeEnabledQueryParameter = nvmeEnabled
 }
 
-// WithOrderBy adds the orderBy to the svm collection get params
-func (o *SvmCollectionGetParams) WithOrderBy(orderBy []string) *SvmCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the svm collection get params
+func (o *SvmCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SvmCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the svm collection get params
-func (o *SvmCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the svm collection get params
+func (o *SvmCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the svm collection get params
-func (o *SvmCollectionGetParams) WithReturnRecords(returnRecords *bool) *SvmCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithQosPolicyNameQueryParameter adds the qosPolicyName to the svm collection get params
+func (o *SvmCollectionGetParams) WithQosPolicyNameQueryParameter(qosPolicyName *string) *SvmCollectionGetParams {
+	o.SetQosPolicyNameQueryParameter(qosPolicyName)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the svm collection get params
-func (o *SvmCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetQosPolicyNameQueryParameter adds the qosPolicyName to the svm collection get params
+func (o *SvmCollectionGetParams) SetQosPolicyNameQueryParameter(qosPolicyName *string) {
+	o.QosPolicyNameQueryParameter = qosPolicyName
 }
 
-// WithReturnTimeout adds the returnTimeout to the svm collection get params
-func (o *SvmCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SvmCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithQosPolicyUUIDQueryParameter adds the qosPolicyUUID to the svm collection get params
+func (o *SvmCollectionGetParams) WithQosPolicyUUIDQueryParameter(qosPolicyUUID *string) *SvmCollectionGetParams {
+	o.SetQosPolicyUUIDQueryParameter(qosPolicyUUID)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the svm collection get params
-func (o *SvmCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetQosPolicyUUIDQueryParameter adds the qosPolicyUuid to the svm collection get params
+func (o *SvmCollectionGetParams) SetQosPolicyUUIDQueryParameter(qosPolicyUUID *string) {
+	o.QosPolicyUUIDQueryParameter = qosPolicyUUID
+}
+
+// WithReturnRecordsQueryParameter adds the returnRecords to the svm collection get params
+func (o *SvmCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SvmCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
+	return o
+}
+
+// SetReturnRecordsQueryParameter adds the returnRecords to the svm collection get params
+func (o *SvmCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
+}
+
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm collection get params
+func (o *SvmCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
+	return o
+}
+
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm collection get params
+func (o *SvmCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithS3EnabledQueryParameter adds the s3Enabled to the svm collection get params
@@ -989,6 +1125,23 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.CifsAllowedQueryParameter != nil {
+
+		// query param cifs.allowed
+		var qrCifsAllowed bool
+
+		if o.CifsAllowedQueryParameter != nil {
+			qrCifsAllowed = *o.CifsAllowedQueryParameter
+		}
+		qCifsAllowed := swag.FormatBool(qrCifsAllowed)
+		if qCifsAllowed != "" {
+
+			if err := r.SetQueryParam("cifs.allowed", qCifsAllowed); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CifsEnabledQueryParameter != nil {
 
 		// query param cifs.enabled
@@ -1108,6 +1261,23 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.FcpAllowedQueryParameter != nil {
+
+		// query param fcp.allowed
+		var qrFcpAllowed bool
+
+		if o.FcpAllowedQueryParameter != nil {
+			qrFcpAllowed = *o.FcpAllowedQueryParameter
+		}
+		qFcpAllowed := swag.FormatBool(qrFcpAllowed)
+		if qFcpAllowed != "" {
+
+			if err := r.SetQueryParam("fcp.allowed", qFcpAllowed); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.FcpEnabledQueryParameter != nil {
 
 		// query param fcp.enabled
@@ -1125,7 +1295,7 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1165,6 +1335,23 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qIpspaceUUID != "" {
 
 			if err := r.SetQueryParam("ipspace.uuid", qIpspaceUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IscsiAllowedQueryParameter != nil {
+
+		// query param iscsi.allowed
+		var qrIscsiAllowed bool
+
+		if o.IscsiAllowedQueryParameter != nil {
+			qrIscsiAllowed = *o.IscsiAllowedQueryParameter
+		}
+		qIscsiAllowed := swag.FormatBool(qrIscsiAllowed)
+		if qIscsiAllowed != "" {
+
+			if err := r.SetQueryParam("iscsi.allowed", qIscsiAllowed); err != nil {
 				return err
 			}
 		}
@@ -1289,18 +1476,35 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxVolumesQueryParameter != nil {
+
+		// query param max_volumes
+		var qrMaxVolumes string
+
+		if o.MaxVolumesQueryParameter != nil {
+			qrMaxVolumes = *o.MaxVolumesQueryParameter
+		}
+		qMaxVolumes := qrMaxVolumes
+		if qMaxVolumes != "" {
+
+			if err := r.SetQueryParam("max_volumes", qMaxVolumes); err != nil {
 				return err
 			}
 		}
@@ -1318,6 +1522,23 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qName != "" {
 
 			if err := r.SetQueryParam("name", qName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NfsAllowedQueryParameter != nil {
+
+		// query param nfs.allowed
+		var qrNfsAllowed bool
+
+		if o.NfsAllowedQueryParameter != nil {
+			qrNfsAllowed = *o.NfsAllowedQueryParameter
+		}
+		qNfsAllowed := swag.FormatBool(qrNfsAllowed)
+		if qNfsAllowed != "" {
+
+			if err := r.SetQueryParam("nfs.allowed", qNfsAllowed); err != nil {
 				return err
 			}
 		}
@@ -1476,6 +1697,23 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.NvmeAllowedQueryParameter != nil {
+
+		// query param nvme.allowed
+		var qrNvmeAllowed bool
+
+		if o.NvmeAllowedQueryParameter != nil {
+			qrNvmeAllowed = *o.NvmeAllowedQueryParameter
+		}
+		qNvmeAllowed := swag.FormatBool(qrNvmeAllowed)
+		if qNvmeAllowed != "" {
+
+			if err := r.SetQueryParam("nvme.allowed", qNvmeAllowed); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.NvmeEnabledQueryParameter != nil {
 
 		// query param nvme.enabled
@@ -1493,7 +1731,7 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1504,13 +1742,47 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.QosPolicyNameQueryParameter != nil {
+
+		// query param qos_policy.name
+		var qrQosPolicyName string
+
+		if o.QosPolicyNameQueryParameter != nil {
+			qrQosPolicyName = *o.QosPolicyNameQueryParameter
+		}
+		qQosPolicyName := qrQosPolicyName
+		if qQosPolicyName != "" {
+
+			if err := r.SetQueryParam("qos_policy.name", qQosPolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyUUIDQueryParameter != nil {
+
+		// query param qos_policy.uuid
+		var qrQosPolicyUUID string
+
+		if o.QosPolicyUUIDQueryParameter != nil {
+			qrQosPolicyUUID = *o.QosPolicyUUIDQueryParameter
+		}
+		qQosPolicyUUID := qrQosPolicyUUID
+		if qQosPolicyUUID != "" {
+
+			if err := r.SetQueryParam("qos_policy.uuid", qQosPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1521,13 +1793,13 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1665,7 +1937,7 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 
 // bindParamSvmCollectionGet binds the parameter fields
 func (o *SvmCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1682,7 +1954,7 @@ func (o *SvmCollectionGetParams) bindParamFields(formats strfmt.Registry) []stri
 
 // bindParamSvmCollectionGet binds the parameter order_by
 func (o *SvmCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -64,13 +64,13 @@ type CifsSymlinkMappingGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	/* UnixPath.
 
@@ -131,26 +131,26 @@ func (o *CifsSymlinkMappingGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the cifs symlink mapping get params
-func (o *CifsSymlinkMappingGetParams) WithFields(fields []string) *CifsSymlinkMappingGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the cifs symlink mapping get params
+func (o *CifsSymlinkMappingGetParams) WithFieldsQueryParameter(fields []string) *CifsSymlinkMappingGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the cifs symlink mapping get params
-func (o *CifsSymlinkMappingGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the cifs symlink mapping get params
+func (o *CifsSymlinkMappingGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithSvmUUID adds the svmUUID to the cifs symlink mapping get params
-func (o *CifsSymlinkMappingGetParams) WithSvmUUID(svmUUID string) *CifsSymlinkMappingGetParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the cifs symlink mapping get params
+func (o *CifsSymlinkMappingGetParams) WithSVMUUIDPathParameter(svmUUID string) *CifsSymlinkMappingGetParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the cifs symlink mapping get params
-func (o *CifsSymlinkMappingGetParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the cifs symlink mapping get params
+func (o *CifsSymlinkMappingGetParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WithUnixPathPathParameter adds the unixPath to the cifs symlink mapping get params
@@ -172,7 +172,7 @@ func (o *CifsSymlinkMappingGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -184,7 +184,7 @@ func (o *CifsSymlinkMappingGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 
@@ -201,7 +201,7 @@ func (o *CifsSymlinkMappingGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamCifsSymlinkMappingGet binds the parameter fields
 func (o *CifsSymlinkMappingGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

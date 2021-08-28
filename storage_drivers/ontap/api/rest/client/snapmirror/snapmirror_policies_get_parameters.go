@@ -70,7 +70,7 @@ type SnapmirrorPoliciesGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* IdentityPreservation.
 
@@ -82,7 +82,7 @@ type SnapmirrorPoliciesGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -100,7 +100,7 @@ type SnapmirrorPoliciesGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* RetentionCount.
 
@@ -138,7 +138,7 @@ type SnapmirrorPoliciesGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -146,7 +146,7 @@ type SnapmirrorPoliciesGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Scope.
 
@@ -232,14 +232,14 @@ func (o *SnapmirrorPoliciesGetParams) WithDefaults() *SnapmirrorPoliciesGetParam
 // All values with no default are reset to their zero value.
 func (o *SnapmirrorPoliciesGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SnapmirrorPoliciesGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -292,15 +292,15 @@ func (o *SnapmirrorPoliciesGetParams) SetCommentQueryParameter(comment *string) 
 	o.CommentQueryParameter = comment
 }
 
-// WithFields adds the fields to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithFields(fields []string) *SnapmirrorPoliciesGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithFieldsQueryParameter(fields []string) *SnapmirrorPoliciesGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIdentityPreservationQueryParameter adds the identityPreservation to the snapmirror policies get params
@@ -314,15 +314,15 @@ func (o *SnapmirrorPoliciesGetParams) SetIdentityPreservationQueryParameter(iden
 	o.IdentityPreservationQueryParameter = identityPreservation
 }
 
-// WithMaxRecords adds the maxRecords to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithMaxRecords(maxRecords *int64) *SnapmirrorPoliciesGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnapmirrorPoliciesGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the snapmirror policies get params
@@ -347,15 +347,15 @@ func (o *SnapmirrorPoliciesGetParams) SetNetworkCompressionEnabledQueryParameter
 	o.NetworkCompressionEnabledQueryParameter = networkCompressionEnabled
 }
 
-// WithOrderBy adds the orderBy to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithOrderBy(orderBy []string) *SnapmirrorPoliciesGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithOrderByQueryParameter(orderBy []string) *SnapmirrorPoliciesGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithRetentionCountQueryParameter adds the retentionCount to the snapmirror policies get params
@@ -413,26 +413,26 @@ func (o *SnapmirrorPoliciesGetParams) SetRetentionPrefixQueryParameter(retention
 	o.RetentionPrefixQueryParameter = retentionPrefix
 }
 
-// WithReturnRecords adds the returnRecords to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithReturnRecords(returnRecords *bool) *SnapmirrorPoliciesGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnapmirrorPoliciesGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithReturnTimeout(returnTimeout *int64) *SnapmirrorPoliciesGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnapmirrorPoliciesGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithScopeQueryParameter adds the scope to the snapmirror policies get params
@@ -581,7 +581,7 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -609,13 +609,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -660,7 +660,7 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -756,13 +756,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -773,13 +773,13 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -985,7 +985,7 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamSnapmirrorPoliciesGet binds the parameter fields
 func (o *SnapmirrorPoliciesGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1002,7 +1002,7 @@ func (o *SnapmirrorPoliciesGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamSnapmirrorPoliciesGet binds the parameter order_by
 func (o *SnapmirrorPoliciesGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

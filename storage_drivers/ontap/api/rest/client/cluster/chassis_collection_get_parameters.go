@@ -64,7 +64,7 @@ type ChassisCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* FrusID.
 
@@ -94,13 +94,55 @@ type ChassisCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* NodesName.
 
 	   Filter by nodes.name
 	*/
 	NodesNameQueryParameter *string
+
+	/* NodesPcisCardsDevice.
+
+	   Filter by nodes.pcis.cards.device
+	*/
+	NodesPcisCardsDeviceQueryParameter *string
+
+	/* NodesPcisCardsInfo.
+
+	   Filter by nodes.pcis.cards.info
+	*/
+	NodesPcisCardsInfoQueryParameter *string
+
+	/* NodesPcisCardsSlot.
+
+	   Filter by nodes.pcis.cards.slot
+	*/
+	NodesPcisCardsSlotQueryParameter *string
+
+	/* NodesPosition.
+
+	   Filter by nodes.position
+	*/
+	NodesPositionQueryParameter *string
+
+	/* NodesUsbsEnabled.
+
+	   Filter by nodes.usbs.enabled
+	*/
+	NodesUsbsEnabledQueryParameter *bool
+
+	/* NodesUsbsPortsConnected.
+
+	   Filter by nodes.usbs.ports.connected
+	*/
+	NodesUsbsPortsConnectedQueryParameter *bool
+
+	/* NodesUsbsSupported.
+
+	   Filter by nodes.usbs.supported
+	*/
+	NodesUsbsSupportedQueryParameter *bool
 
 	/* NodesUUID.
 
@@ -112,7 +154,7 @@ type ChassisCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -120,7 +162,7 @@ type ChassisCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -128,7 +170,7 @@ type ChassisCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* ShelvesUID.
 
@@ -160,14 +202,14 @@ func (o *ChassisCollectionGetParams) WithDefaults() *ChassisCollectionGetParams 
 // All values with no default are reset to their zero value.
 func (o *ChassisCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := ChassisCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -209,15 +251,15 @@ func (o *ChassisCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the chassis collection get params
-func (o *ChassisCollectionGetParams) WithFields(fields []string) *ChassisCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the chassis collection get params
+func (o *ChassisCollectionGetParams) WithFieldsQueryParameter(fields []string) *ChassisCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the chassis collection get params
-func (o *ChassisCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the chassis collection get params
+func (o *ChassisCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithFrusIDQueryParameter adds the frusID to the chassis collection get params
@@ -264,15 +306,15 @@ func (o *ChassisCollectionGetParams) SetIDQueryParameter(id *string) {
 	o.IDQueryParameter = id
 }
 
-// WithMaxRecords adds the maxRecords to the chassis collection get params
-func (o *ChassisCollectionGetParams) WithMaxRecords(maxRecords *int64) *ChassisCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the chassis collection get params
+func (o *ChassisCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ChassisCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the chassis collection get params
-func (o *ChassisCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the chassis collection get params
+func (o *ChassisCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNodesNameQueryParameter adds the nodesName to the chassis collection get params
@@ -286,6 +328,83 @@ func (o *ChassisCollectionGetParams) SetNodesNameQueryParameter(nodesName *strin
 	o.NodesNameQueryParameter = nodesName
 }
 
+// WithNodesPcisCardsDeviceQueryParameter adds the nodesPcisCardsDevice to the chassis collection get params
+func (o *ChassisCollectionGetParams) WithNodesPcisCardsDeviceQueryParameter(nodesPcisCardsDevice *string) *ChassisCollectionGetParams {
+	o.SetNodesPcisCardsDeviceQueryParameter(nodesPcisCardsDevice)
+	return o
+}
+
+// SetNodesPcisCardsDeviceQueryParameter adds the nodesPcisCardsDevice to the chassis collection get params
+func (o *ChassisCollectionGetParams) SetNodesPcisCardsDeviceQueryParameter(nodesPcisCardsDevice *string) {
+	o.NodesPcisCardsDeviceQueryParameter = nodesPcisCardsDevice
+}
+
+// WithNodesPcisCardsInfoQueryParameter adds the nodesPcisCardsInfo to the chassis collection get params
+func (o *ChassisCollectionGetParams) WithNodesPcisCardsInfoQueryParameter(nodesPcisCardsInfo *string) *ChassisCollectionGetParams {
+	o.SetNodesPcisCardsInfoQueryParameter(nodesPcisCardsInfo)
+	return o
+}
+
+// SetNodesPcisCardsInfoQueryParameter adds the nodesPcisCardsInfo to the chassis collection get params
+func (o *ChassisCollectionGetParams) SetNodesPcisCardsInfoQueryParameter(nodesPcisCardsInfo *string) {
+	o.NodesPcisCardsInfoQueryParameter = nodesPcisCardsInfo
+}
+
+// WithNodesPcisCardsSlotQueryParameter adds the nodesPcisCardsSlot to the chassis collection get params
+func (o *ChassisCollectionGetParams) WithNodesPcisCardsSlotQueryParameter(nodesPcisCardsSlot *string) *ChassisCollectionGetParams {
+	o.SetNodesPcisCardsSlotQueryParameter(nodesPcisCardsSlot)
+	return o
+}
+
+// SetNodesPcisCardsSlotQueryParameter adds the nodesPcisCardsSlot to the chassis collection get params
+func (o *ChassisCollectionGetParams) SetNodesPcisCardsSlotQueryParameter(nodesPcisCardsSlot *string) {
+	o.NodesPcisCardsSlotQueryParameter = nodesPcisCardsSlot
+}
+
+// WithNodesPositionQueryParameter adds the nodesPosition to the chassis collection get params
+func (o *ChassisCollectionGetParams) WithNodesPositionQueryParameter(nodesPosition *string) *ChassisCollectionGetParams {
+	o.SetNodesPositionQueryParameter(nodesPosition)
+	return o
+}
+
+// SetNodesPositionQueryParameter adds the nodesPosition to the chassis collection get params
+func (o *ChassisCollectionGetParams) SetNodesPositionQueryParameter(nodesPosition *string) {
+	o.NodesPositionQueryParameter = nodesPosition
+}
+
+// WithNodesUsbsEnabledQueryParameter adds the nodesUsbsEnabled to the chassis collection get params
+func (o *ChassisCollectionGetParams) WithNodesUsbsEnabledQueryParameter(nodesUsbsEnabled *bool) *ChassisCollectionGetParams {
+	o.SetNodesUsbsEnabledQueryParameter(nodesUsbsEnabled)
+	return o
+}
+
+// SetNodesUsbsEnabledQueryParameter adds the nodesUsbsEnabled to the chassis collection get params
+func (o *ChassisCollectionGetParams) SetNodesUsbsEnabledQueryParameter(nodesUsbsEnabled *bool) {
+	o.NodesUsbsEnabledQueryParameter = nodesUsbsEnabled
+}
+
+// WithNodesUsbsPortsConnectedQueryParameter adds the nodesUsbsPortsConnected to the chassis collection get params
+func (o *ChassisCollectionGetParams) WithNodesUsbsPortsConnectedQueryParameter(nodesUsbsPortsConnected *bool) *ChassisCollectionGetParams {
+	o.SetNodesUsbsPortsConnectedQueryParameter(nodesUsbsPortsConnected)
+	return o
+}
+
+// SetNodesUsbsPortsConnectedQueryParameter adds the nodesUsbsPortsConnected to the chassis collection get params
+func (o *ChassisCollectionGetParams) SetNodesUsbsPortsConnectedQueryParameter(nodesUsbsPortsConnected *bool) {
+	o.NodesUsbsPortsConnectedQueryParameter = nodesUsbsPortsConnected
+}
+
+// WithNodesUsbsSupportedQueryParameter adds the nodesUsbsSupported to the chassis collection get params
+func (o *ChassisCollectionGetParams) WithNodesUsbsSupportedQueryParameter(nodesUsbsSupported *bool) *ChassisCollectionGetParams {
+	o.SetNodesUsbsSupportedQueryParameter(nodesUsbsSupported)
+	return o
+}
+
+// SetNodesUsbsSupportedQueryParameter adds the nodesUsbsSupported to the chassis collection get params
+func (o *ChassisCollectionGetParams) SetNodesUsbsSupportedQueryParameter(nodesUsbsSupported *bool) {
+	o.NodesUsbsSupportedQueryParameter = nodesUsbsSupported
+}
+
 // WithNodesUUIDQueryParameter adds the nodesUUID to the chassis collection get params
 func (o *ChassisCollectionGetParams) WithNodesUUIDQueryParameter(nodesUUID *string) *ChassisCollectionGetParams {
 	o.SetNodesUUIDQueryParameter(nodesUUID)
@@ -297,37 +416,37 @@ func (o *ChassisCollectionGetParams) SetNodesUUIDQueryParameter(nodesUUID *strin
 	o.NodesUUIDQueryParameter = nodesUUID
 }
 
-// WithOrderBy adds the orderBy to the chassis collection get params
-func (o *ChassisCollectionGetParams) WithOrderBy(orderBy []string) *ChassisCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the chassis collection get params
+func (o *ChassisCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ChassisCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the chassis collection get params
-func (o *ChassisCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the chassis collection get params
+func (o *ChassisCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the chassis collection get params
-func (o *ChassisCollectionGetParams) WithReturnRecords(returnRecords *bool) *ChassisCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the chassis collection get params
+func (o *ChassisCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ChassisCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the chassis collection get params
-func (o *ChassisCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the chassis collection get params
+func (o *ChassisCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the chassis collection get params
-func (o *ChassisCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ChassisCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the chassis collection get params
+func (o *ChassisCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ChassisCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the chassis collection get params
-func (o *ChassisCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the chassis collection get params
+func (o *ChassisCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithShelvesUIDQueryParameter adds the shelvesUID to the chassis collection get params
@@ -360,7 +479,7 @@ func (o *ChassisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -439,13 +558,13 @@ func (o *ChassisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -473,6 +592,125 @@ func (o *ChassisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.NodesPcisCardsDeviceQueryParameter != nil {
+
+		// query param nodes.pcis.cards.device
+		var qrNodesPcisCardsDevice string
+
+		if o.NodesPcisCardsDeviceQueryParameter != nil {
+			qrNodesPcisCardsDevice = *o.NodesPcisCardsDeviceQueryParameter
+		}
+		qNodesPcisCardsDevice := qrNodesPcisCardsDevice
+		if qNodesPcisCardsDevice != "" {
+
+			if err := r.SetQueryParam("nodes.pcis.cards.device", qNodesPcisCardsDevice); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NodesPcisCardsInfoQueryParameter != nil {
+
+		// query param nodes.pcis.cards.info
+		var qrNodesPcisCardsInfo string
+
+		if o.NodesPcisCardsInfoQueryParameter != nil {
+			qrNodesPcisCardsInfo = *o.NodesPcisCardsInfoQueryParameter
+		}
+		qNodesPcisCardsInfo := qrNodesPcisCardsInfo
+		if qNodesPcisCardsInfo != "" {
+
+			if err := r.SetQueryParam("nodes.pcis.cards.info", qNodesPcisCardsInfo); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NodesPcisCardsSlotQueryParameter != nil {
+
+		// query param nodes.pcis.cards.slot
+		var qrNodesPcisCardsSlot string
+
+		if o.NodesPcisCardsSlotQueryParameter != nil {
+			qrNodesPcisCardsSlot = *o.NodesPcisCardsSlotQueryParameter
+		}
+		qNodesPcisCardsSlot := qrNodesPcisCardsSlot
+		if qNodesPcisCardsSlot != "" {
+
+			if err := r.SetQueryParam("nodes.pcis.cards.slot", qNodesPcisCardsSlot); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NodesPositionQueryParameter != nil {
+
+		// query param nodes.position
+		var qrNodesPosition string
+
+		if o.NodesPositionQueryParameter != nil {
+			qrNodesPosition = *o.NodesPositionQueryParameter
+		}
+		qNodesPosition := qrNodesPosition
+		if qNodesPosition != "" {
+
+			if err := r.SetQueryParam("nodes.position", qNodesPosition); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NodesUsbsEnabledQueryParameter != nil {
+
+		// query param nodes.usbs.enabled
+		var qrNodesUsbsEnabled bool
+
+		if o.NodesUsbsEnabledQueryParameter != nil {
+			qrNodesUsbsEnabled = *o.NodesUsbsEnabledQueryParameter
+		}
+		qNodesUsbsEnabled := swag.FormatBool(qrNodesUsbsEnabled)
+		if qNodesUsbsEnabled != "" {
+
+			if err := r.SetQueryParam("nodes.usbs.enabled", qNodesUsbsEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NodesUsbsPortsConnectedQueryParameter != nil {
+
+		// query param nodes.usbs.ports.connected
+		var qrNodesUsbsPortsConnected bool
+
+		if o.NodesUsbsPortsConnectedQueryParameter != nil {
+			qrNodesUsbsPortsConnected = *o.NodesUsbsPortsConnectedQueryParameter
+		}
+		qNodesUsbsPortsConnected := swag.FormatBool(qrNodesUsbsPortsConnected)
+		if qNodesUsbsPortsConnected != "" {
+
+			if err := r.SetQueryParam("nodes.usbs.ports.connected", qNodesUsbsPortsConnected); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NodesUsbsSupportedQueryParameter != nil {
+
+		// query param nodes.usbs.supported
+		var qrNodesUsbsSupported bool
+
+		if o.NodesUsbsSupportedQueryParameter != nil {
+			qrNodesUsbsSupported = *o.NodesUsbsSupportedQueryParameter
+		}
+		qNodesUsbsSupported := swag.FormatBool(qrNodesUsbsSupported)
+		if qNodesUsbsSupported != "" {
+
+			if err := r.SetQueryParam("nodes.usbs.supported", qNodesUsbsSupported); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.NodesUUIDQueryParameter != nil {
 
 		// query param nodes.uuid
@@ -490,7 +728,7 @@ func (o *ChassisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -501,13 +739,13 @@ func (o *ChassisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -518,13 +756,13 @@ func (o *ChassisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -577,7 +815,7 @@ func (o *ChassisCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamChassisCollectionGet binds the parameter fields
 func (o *ChassisCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -594,7 +832,7 @@ func (o *ChassisCollectionGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamChassisCollectionGet binds the parameter order_by
 func (o *ChassisCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

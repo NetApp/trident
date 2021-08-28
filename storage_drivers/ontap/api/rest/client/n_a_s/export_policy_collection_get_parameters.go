@@ -64,7 +64,7 @@ type ExportPolicyCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* ID.
 
@@ -76,7 +76,7 @@ type ExportPolicyCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -88,7 +88,7 @@ type ExportPolicyCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -96,7 +96,7 @@ type ExportPolicyCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -104,13 +104,31 @@ type ExportPolicyCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
+
+	/* RulesAllowDeviceCreation.
+
+	   Filter by rules.allow_device_creation
+	*/
+	RulesAllowDeviceCreationQueryParameter *bool
+
+	/* RulesAllowSuid.
+
+	   Filter by rules.allow_suid
+	*/
+	RulesAllowSUIDQueryParameter *bool
 
 	/* RulesAnonymousUser.
 
 	   Filter by rules.anonymous_user
 	*/
 	RulesAnonymousUserQueryParameter *string
+
+	/* RulesChownMode.
+
+	   Filter by rules.chown_mode
+	*/
+	RulesChownModeQueryParameter *string
 
 	/* RulesClientsMatch.
 
@@ -123,6 +141,12 @@ type ExportPolicyCollectionGetParams struct {
 	   Filter by rules.index
 	*/
 	RulesIndexQueryParameter *int64
+
+	/* RulesNtfsUnixSecurity.
+
+	   Filter by rules.ntfs_unix_security
+	*/
+	RulesNtfsUnixSecurityQueryParameter *string
 
 	/* RulesProtocols.
 
@@ -178,14 +202,14 @@ func (o *ExportPolicyCollectionGetParams) WithDefaults() *ExportPolicyCollection
 // All values with no default are reset to their zero value.
 func (o *ExportPolicyCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := ExportPolicyCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -227,15 +251,15 @@ func (o *ExportPolicyCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the export policy collection get params
-func (o *ExportPolicyCollectionGetParams) WithFields(fields []string) *ExportPolicyCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) WithFieldsQueryParameter(fields []string) *ExportPolicyCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the export policy collection get params
-func (o *ExportPolicyCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIDQueryParameter adds the id to the export policy collection get params
@@ -249,15 +273,15 @@ func (o *ExportPolicyCollectionGetParams) SetIDQueryParameter(id *int64) {
 	o.IDQueryParameter = id
 }
 
-// WithMaxRecords adds the maxRecords to the export policy collection get params
-func (o *ExportPolicyCollectionGetParams) WithMaxRecords(maxRecords *int64) *ExportPolicyCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ExportPolicyCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the export policy collection get params
-func (o *ExportPolicyCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the export policy collection get params
@@ -271,37 +295,59 @@ func (o *ExportPolicyCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the export policy collection get params
-func (o *ExportPolicyCollectionGetParams) WithOrderBy(orderBy []string) *ExportPolicyCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ExportPolicyCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the export policy collection get params
-func (o *ExportPolicyCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the export policy collection get params
-func (o *ExportPolicyCollectionGetParams) WithReturnRecords(returnRecords *bool) *ExportPolicyCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ExportPolicyCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the export policy collection get params
-func (o *ExportPolicyCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the export policy collection get params
-func (o *ExportPolicyCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ExportPolicyCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ExportPolicyCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the export policy collection get params
-func (o *ExportPolicyCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
+}
+
+// WithRulesAllowDeviceCreationQueryParameter adds the rulesAllowDeviceCreation to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) WithRulesAllowDeviceCreationQueryParameter(rulesAllowDeviceCreation *bool) *ExportPolicyCollectionGetParams {
+	o.SetRulesAllowDeviceCreationQueryParameter(rulesAllowDeviceCreation)
+	return o
+}
+
+// SetRulesAllowDeviceCreationQueryParameter adds the rulesAllowDeviceCreation to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) SetRulesAllowDeviceCreationQueryParameter(rulesAllowDeviceCreation *bool) {
+	o.RulesAllowDeviceCreationQueryParameter = rulesAllowDeviceCreation
+}
+
+// WithRulesAllowSUIDQueryParameter adds the rulesAllowSuid to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) WithRulesAllowSUIDQueryParameter(rulesAllowSuid *bool) *ExportPolicyCollectionGetParams {
+	o.SetRulesAllowSUIDQueryParameter(rulesAllowSuid)
+	return o
+}
+
+// SetRulesAllowSUIDQueryParameter adds the rulesAllowSuid to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) SetRulesAllowSUIDQueryParameter(rulesAllowSuid *bool) {
+	o.RulesAllowSUIDQueryParameter = rulesAllowSuid
 }
 
 // WithRulesAnonymousUserQueryParameter adds the rulesAnonymousUser to the export policy collection get params
@@ -313,6 +359,17 @@ func (o *ExportPolicyCollectionGetParams) WithRulesAnonymousUserQueryParameter(r
 // SetRulesAnonymousUserQueryParameter adds the rulesAnonymousUser to the export policy collection get params
 func (o *ExportPolicyCollectionGetParams) SetRulesAnonymousUserQueryParameter(rulesAnonymousUser *string) {
 	o.RulesAnonymousUserQueryParameter = rulesAnonymousUser
+}
+
+// WithRulesChownModeQueryParameter adds the rulesChownMode to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) WithRulesChownModeQueryParameter(rulesChownMode *string) *ExportPolicyCollectionGetParams {
+	o.SetRulesChownModeQueryParameter(rulesChownMode)
+	return o
+}
+
+// SetRulesChownModeQueryParameter adds the rulesChownMode to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) SetRulesChownModeQueryParameter(rulesChownMode *string) {
+	o.RulesChownModeQueryParameter = rulesChownMode
 }
 
 // WithRulesClientsMatchQueryParameter adds the rulesClientsMatch to the export policy collection get params
@@ -335,6 +392,17 @@ func (o *ExportPolicyCollectionGetParams) WithRulesIndexQueryParameter(rulesInde
 // SetRulesIndexQueryParameter adds the rulesIndex to the export policy collection get params
 func (o *ExportPolicyCollectionGetParams) SetRulesIndexQueryParameter(rulesIndex *int64) {
 	o.RulesIndexQueryParameter = rulesIndex
+}
+
+// WithRulesNtfsUnixSecurityQueryParameter adds the rulesNtfsUnixSecurity to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) WithRulesNtfsUnixSecurityQueryParameter(rulesNtfsUnixSecurity *string) *ExportPolicyCollectionGetParams {
+	o.SetRulesNtfsUnixSecurityQueryParameter(rulesNtfsUnixSecurity)
+	return o
+}
+
+// SetRulesNtfsUnixSecurityQueryParameter adds the rulesNtfsUnixSecurity to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) SetRulesNtfsUnixSecurityQueryParameter(rulesNtfsUnixSecurity *string) {
+	o.RulesNtfsUnixSecurityQueryParameter = rulesNtfsUnixSecurity
 }
 
 // WithRulesProtocolsQueryParameter adds the rulesProtocols to the export policy collection get params
@@ -411,7 +479,7 @@ func (o *ExportPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -439,13 +507,13 @@ func (o *ExportPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -473,7 +541,7 @@ func (o *ExportPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -484,13 +552,13 @@ func (o *ExportPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -501,18 +569,52 @@ func (o *ExportPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RulesAllowDeviceCreationQueryParameter != nil {
+
+		// query param rules.allow_device_creation
+		var qrRulesAllowDeviceCreation bool
+
+		if o.RulesAllowDeviceCreationQueryParameter != nil {
+			qrRulesAllowDeviceCreation = *o.RulesAllowDeviceCreationQueryParameter
+		}
+		qRulesAllowDeviceCreation := swag.FormatBool(qrRulesAllowDeviceCreation)
+		if qRulesAllowDeviceCreation != "" {
+
+			if err := r.SetQueryParam("rules.allow_device_creation", qRulesAllowDeviceCreation); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RulesAllowSUIDQueryParameter != nil {
+
+		// query param rules.allow_suid
+		var qrRulesAllowSuid bool
+
+		if o.RulesAllowSUIDQueryParameter != nil {
+			qrRulesAllowSuid = *o.RulesAllowSUIDQueryParameter
+		}
+		qRulesAllowSuid := swag.FormatBool(qrRulesAllowSuid)
+		if qRulesAllowSuid != "" {
+
+			if err := r.SetQueryParam("rules.allow_suid", qRulesAllowSuid); err != nil {
 				return err
 			}
 		}
@@ -530,6 +632,23 @@ func (o *ExportPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		if qRulesAnonymousUser != "" {
 
 			if err := r.SetQueryParam("rules.anonymous_user", qRulesAnonymousUser); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RulesChownModeQueryParameter != nil {
+
+		// query param rules.chown_mode
+		var qrRulesChownMode string
+
+		if o.RulesChownModeQueryParameter != nil {
+			qrRulesChownMode = *o.RulesChownModeQueryParameter
+		}
+		qRulesChownMode := qrRulesChownMode
+		if qRulesChownMode != "" {
+
+			if err := r.SetQueryParam("rules.chown_mode", qRulesChownMode); err != nil {
 				return err
 			}
 		}
@@ -564,6 +683,23 @@ func (o *ExportPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		if qRulesIndex != "" {
 
 			if err := r.SetQueryParam("rules.index", qRulesIndex); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RulesNtfsUnixSecurityQueryParameter != nil {
+
+		// query param rules.ntfs_unix_security
+		var qrRulesNtfsUnixSecurity string
+
+		if o.RulesNtfsUnixSecurityQueryParameter != nil {
+			qrRulesNtfsUnixSecurity = *o.RulesNtfsUnixSecurityQueryParameter
+		}
+		qRulesNtfsUnixSecurity := qrRulesNtfsUnixSecurity
+		if qRulesNtfsUnixSecurity != "" {
+
+			if err := r.SetQueryParam("rules.ntfs_unix_security", qRulesNtfsUnixSecurity); err != nil {
 				return err
 			}
 		}
@@ -679,7 +815,7 @@ func (o *ExportPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamExportPolicyCollectionGet binds the parameter fields
 func (o *ExportPolicyCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -696,7 +832,7 @@ func (o *ExportPolicyCollectionGetParams) bindParamFields(formats strfmt.Registr
 
 // bindParamExportPolicyCollectionGet binds the parameter order_by
 func (o *ExportPolicyCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

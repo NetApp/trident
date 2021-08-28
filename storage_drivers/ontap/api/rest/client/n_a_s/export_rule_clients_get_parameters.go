@@ -64,7 +64,7 @@ type ExportRuleClientsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Index.
 
@@ -76,13 +76,13 @@ type ExportRuleClientsGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* PolicyID.
 
@@ -96,7 +96,7 @@ type ExportRuleClientsGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -104,7 +104,7 @@ type ExportRuleClientsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -124,14 +124,14 @@ func (o *ExportRuleClientsGetParams) WithDefaults() *ExportRuleClientsGetParams 
 // All values with no default are reset to their zero value.
 func (o *ExportRuleClientsGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := ExportRuleClientsGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -173,15 +173,15 @@ func (o *ExportRuleClientsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the export rule clients get params
-func (o *ExportRuleClientsGetParams) WithFields(fields []string) *ExportRuleClientsGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the export rule clients get params
+func (o *ExportRuleClientsGetParams) WithFieldsQueryParameter(fields []string) *ExportRuleClientsGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the export rule clients get params
-func (o *ExportRuleClientsGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the export rule clients get params
+func (o *ExportRuleClientsGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIndexPathParameter adds the index to the export rule clients get params
@@ -195,26 +195,26 @@ func (o *ExportRuleClientsGetParams) SetIndexPathParameter(index int64) {
 	o.IndexPathParameter = index
 }
 
-// WithMaxRecords adds the maxRecords to the export rule clients get params
-func (o *ExportRuleClientsGetParams) WithMaxRecords(maxRecords *int64) *ExportRuleClientsGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the export rule clients get params
+func (o *ExportRuleClientsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ExportRuleClientsGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the export rule clients get params
-func (o *ExportRuleClientsGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the export rule clients get params
+func (o *ExportRuleClientsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
-// WithOrderBy adds the orderBy to the export rule clients get params
-func (o *ExportRuleClientsGetParams) WithOrderBy(orderBy []string) *ExportRuleClientsGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the export rule clients get params
+func (o *ExportRuleClientsGetParams) WithOrderByQueryParameter(orderBy []string) *ExportRuleClientsGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the export rule clients get params
-func (o *ExportRuleClientsGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the export rule clients get params
+func (o *ExportRuleClientsGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPolicyIDPathParameter adds the policyID to the export rule clients get params
@@ -228,26 +228,26 @@ func (o *ExportRuleClientsGetParams) SetPolicyIDPathParameter(policyID int64) {
 	o.PolicyIDPathParameter = policyID
 }
 
-// WithReturnRecords adds the returnRecords to the export rule clients get params
-func (o *ExportRuleClientsGetParams) WithReturnRecords(returnRecords *bool) *ExportRuleClientsGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the export rule clients get params
+func (o *ExportRuleClientsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ExportRuleClientsGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the export rule clients get params
-func (o *ExportRuleClientsGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the export rule clients get params
+func (o *ExportRuleClientsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the export rule clients get params
-func (o *ExportRuleClientsGetParams) WithReturnTimeout(returnTimeout *int64) *ExportRuleClientsGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the export rule clients get params
+func (o *ExportRuleClientsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ExportRuleClientsGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the export rule clients get params
-func (o *ExportRuleClientsGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the export rule clients get params
+func (o *ExportRuleClientsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -258,7 +258,7 @@ func (o *ExportRuleClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -274,13 +274,13 @@ func (o *ExportRuleClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		return err
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -291,7 +291,7 @@ func (o *ExportRuleClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -307,13 +307,13 @@ func (o *ExportRuleClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		return err
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -324,13 +324,13 @@ func (o *ExportRuleClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -349,7 +349,7 @@ func (o *ExportRuleClientsGetParams) WriteToRequest(r runtime.ClientRequest, reg
 
 // bindParamExportRuleClientsGet binds the parameter fields
 func (o *ExportRuleClientsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -366,7 +366,7 @@ func (o *ExportRuleClientsGetParams) bindParamFields(formats strfmt.Registry) []
 
 // bindParamExportRuleClientsGet binds the parameter order_by
 func (o *ExportRuleClientsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

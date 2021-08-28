@@ -76,7 +76,7 @@ type AllSvmBucketsCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* LogicalUsedSize.
 
@@ -88,7 +88,7 @@ type AllSvmBucketsCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -100,7 +100,109 @@ type AllSvmBucketsCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
+
+	/* PolicyStatementsActions.
+
+	   Filter by policy.statements.actions
+	*/
+	PolicyStatementsActionsQueryParameter *string
+
+	/* PolicyStatementsConditionsDelimiters.
+
+	   Filter by policy.statements.conditions.delimiters
+	*/
+	PolicyStatementsConditionsDelimitersQueryParameter *string
+
+	/* PolicyStatementsConditionsMaxKeys.
+
+	   Filter by policy.statements.conditions.max_keys
+	*/
+	PolicyStatementsConditionsMaxKeysQueryParameter *int64
+
+	/* PolicyStatementsConditionsOperator.
+
+	   Filter by policy.statements.conditions.operator
+	*/
+	PolicyStatementsConditionsOperatorQueryParameter *string
+
+	/* PolicyStatementsConditionsPrefixes.
+
+	   Filter by policy.statements.conditions.prefixes
+	*/
+	PolicyStatementsConditionsPrefixesQueryParameter *string
+
+	/* PolicyStatementsConditionsSourceIps.
+
+	   Filter by policy.statements.conditions.source_ips
+	*/
+	PolicyStatementsConditionsSourceIPsQueryParameter *string
+
+	/* PolicyStatementsConditionsUsernames.
+
+	   Filter by policy.statements.conditions.usernames
+	*/
+	PolicyStatementsConditionsUsernamesQueryParameter *string
+
+	/* PolicyStatementsEffect.
+
+	   Filter by policy.statements.effect
+	*/
+	PolicyStatementsEffectQueryParameter *string
+
+	/* PolicyStatementsPrincipals.
+
+	   Filter by policy.statements.principals
+	*/
+	PolicyStatementsPrincipalsQueryParameter *string
+
+	/* PolicyStatementsResources.
+
+	   Filter by policy.statements.resources
+	*/
+	PolicyStatementsResourcesQueryParameter *string
+
+	/* PolicyStatementsSid.
+
+	   Filter by policy.statements.sid
+	*/
+	PolicyStatementsSIDQueryParameter *string
+
+	/* QosPolicyMaxThroughputIops.
+
+	   Filter by qos_policy.max_throughput_iops
+	*/
+	QosPolicyMaxThroughputIopsQueryParameter *int64
+
+	/* QosPolicyMaxThroughputMbps.
+
+	   Filter by qos_policy.max_throughput_mbps
+	*/
+	QosPolicyMaxThroughputMbpsQueryParameter *int64
+
+	/* QosPolicyMinThroughputIops.
+
+	   Filter by qos_policy.min_throughput_iops
+	*/
+	QosPolicyMinThroughputIopsQueryParameter *int64
+
+	/* QosPolicyMinThroughputMbps.
+
+	   Filter by qos_policy.min_throughput_mbps
+	*/
+	QosPolicyMinThroughputMbpsQueryParameter *int64
+
+	/* QosPolicyName.
+
+	   Filter by qos_policy.name
+	*/
+	QosPolicyNameQueryParameter *string
+
+	/* QosPolicyUUID.
+
+	   Filter by qos_policy.uuid
+	*/
+	QosPolicyUUIDQueryParameter *string
 
 	/* ReturnRecords.
 
@@ -108,7 +210,7 @@ type AllSvmBucketsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -116,7 +218,7 @@ type AllSvmBucketsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Size.
 
@@ -172,14 +274,14 @@ func (o *AllSvmBucketsCollectionGetParams) WithDefaults() *AllSvmBucketsCollecti
 // All values with no default are reset to their zero value.
 func (o *AllSvmBucketsCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := AllSvmBucketsCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -243,15 +345,15 @@ func (o *AllSvmBucketsCollectionGetParams) SetEncryptionEnabledQueryParameter(en
 	o.EncryptionEnabledQueryParameter = encryptionEnabled
 }
 
-// WithFields adds the fields to the all svm buckets collection get params
-func (o *AllSvmBucketsCollectionGetParams) WithFields(fields []string) *AllSvmBucketsCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithFieldsQueryParameter(fields []string) *AllSvmBucketsCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the all svm buckets collection get params
-func (o *AllSvmBucketsCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithLogicalUsedSizeQueryParameter adds the logicalUsedSize to the all svm buckets collection get params
@@ -265,15 +367,15 @@ func (o *AllSvmBucketsCollectionGetParams) SetLogicalUsedSizeQueryParameter(logi
 	o.LogicalUsedSizeQueryParameter = logicalUsedSize
 }
 
-// WithMaxRecords adds the maxRecords to the all svm buckets collection get params
-func (o *AllSvmBucketsCollectionGetParams) WithMaxRecords(maxRecords *int64) *AllSvmBucketsCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the all svm buckets collection get params
-func (o *AllSvmBucketsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the all svm buckets collection get params
@@ -287,37 +389,224 @@ func (o *AllSvmBucketsCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the all svm buckets collection get params
-func (o *AllSvmBucketsCollectionGetParams) WithOrderBy(orderBy []string) *AllSvmBucketsCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *AllSvmBucketsCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the all svm buckets collection get params
-func (o *AllSvmBucketsCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the all svm buckets collection get params
-func (o *AllSvmBucketsCollectionGetParams) WithReturnRecords(returnRecords *bool) *AllSvmBucketsCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithPolicyStatementsActionsQueryParameter adds the policyStatementsActions to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithPolicyStatementsActionsQueryParameter(policyStatementsActions *string) *AllSvmBucketsCollectionGetParams {
+	o.SetPolicyStatementsActionsQueryParameter(policyStatementsActions)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the all svm buckets collection get params
-func (o *AllSvmBucketsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetPolicyStatementsActionsQueryParameter adds the policyStatementsActions to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetPolicyStatementsActionsQueryParameter(policyStatementsActions *string) {
+	o.PolicyStatementsActionsQueryParameter = policyStatementsActions
 }
 
-// WithReturnTimeout adds the returnTimeout to the all svm buckets collection get params
-func (o *AllSvmBucketsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *AllSvmBucketsCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithPolicyStatementsConditionsDelimitersQueryParameter adds the policyStatementsConditionsDelimiters to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithPolicyStatementsConditionsDelimitersQueryParameter(policyStatementsConditionsDelimiters *string) *AllSvmBucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsDelimitersQueryParameter(policyStatementsConditionsDelimiters)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the all svm buckets collection get params
-func (o *AllSvmBucketsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetPolicyStatementsConditionsDelimitersQueryParameter adds the policyStatementsConditionsDelimiters to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetPolicyStatementsConditionsDelimitersQueryParameter(policyStatementsConditionsDelimiters *string) {
+	o.PolicyStatementsConditionsDelimitersQueryParameter = policyStatementsConditionsDelimiters
+}
+
+// WithPolicyStatementsConditionsMaxKeysQueryParameter adds the policyStatementsConditionsMaxKeys to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithPolicyStatementsConditionsMaxKeysQueryParameter(policyStatementsConditionsMaxKeys *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsMaxKeysQueryParameter(policyStatementsConditionsMaxKeys)
+	return o
+}
+
+// SetPolicyStatementsConditionsMaxKeysQueryParameter adds the policyStatementsConditionsMaxKeys to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetPolicyStatementsConditionsMaxKeysQueryParameter(policyStatementsConditionsMaxKeys *int64) {
+	o.PolicyStatementsConditionsMaxKeysQueryParameter = policyStatementsConditionsMaxKeys
+}
+
+// WithPolicyStatementsConditionsOperatorQueryParameter adds the policyStatementsConditionsOperator to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithPolicyStatementsConditionsOperatorQueryParameter(policyStatementsConditionsOperator *string) *AllSvmBucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsOperatorQueryParameter(policyStatementsConditionsOperator)
+	return o
+}
+
+// SetPolicyStatementsConditionsOperatorQueryParameter adds the policyStatementsConditionsOperator to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetPolicyStatementsConditionsOperatorQueryParameter(policyStatementsConditionsOperator *string) {
+	o.PolicyStatementsConditionsOperatorQueryParameter = policyStatementsConditionsOperator
+}
+
+// WithPolicyStatementsConditionsPrefixesQueryParameter adds the policyStatementsConditionsPrefixes to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithPolicyStatementsConditionsPrefixesQueryParameter(policyStatementsConditionsPrefixes *string) *AllSvmBucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsPrefixesQueryParameter(policyStatementsConditionsPrefixes)
+	return o
+}
+
+// SetPolicyStatementsConditionsPrefixesQueryParameter adds the policyStatementsConditionsPrefixes to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetPolicyStatementsConditionsPrefixesQueryParameter(policyStatementsConditionsPrefixes *string) {
+	o.PolicyStatementsConditionsPrefixesQueryParameter = policyStatementsConditionsPrefixes
+}
+
+// WithPolicyStatementsConditionsSourceIPsQueryParameter adds the policyStatementsConditionsSourceIps to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithPolicyStatementsConditionsSourceIPsQueryParameter(policyStatementsConditionsSourceIps *string) *AllSvmBucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsSourceIPsQueryParameter(policyStatementsConditionsSourceIps)
+	return o
+}
+
+// SetPolicyStatementsConditionsSourceIPsQueryParameter adds the policyStatementsConditionsSourceIps to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetPolicyStatementsConditionsSourceIPsQueryParameter(policyStatementsConditionsSourceIps *string) {
+	o.PolicyStatementsConditionsSourceIPsQueryParameter = policyStatementsConditionsSourceIps
+}
+
+// WithPolicyStatementsConditionsUsernamesQueryParameter adds the policyStatementsConditionsUsernames to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithPolicyStatementsConditionsUsernamesQueryParameter(policyStatementsConditionsUsernames *string) *AllSvmBucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsUsernamesQueryParameter(policyStatementsConditionsUsernames)
+	return o
+}
+
+// SetPolicyStatementsConditionsUsernamesQueryParameter adds the policyStatementsConditionsUsernames to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetPolicyStatementsConditionsUsernamesQueryParameter(policyStatementsConditionsUsernames *string) {
+	o.PolicyStatementsConditionsUsernamesQueryParameter = policyStatementsConditionsUsernames
+}
+
+// WithPolicyStatementsEffectQueryParameter adds the policyStatementsEffect to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithPolicyStatementsEffectQueryParameter(policyStatementsEffect *string) *AllSvmBucketsCollectionGetParams {
+	o.SetPolicyStatementsEffectQueryParameter(policyStatementsEffect)
+	return o
+}
+
+// SetPolicyStatementsEffectQueryParameter adds the policyStatementsEffect to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetPolicyStatementsEffectQueryParameter(policyStatementsEffect *string) {
+	o.PolicyStatementsEffectQueryParameter = policyStatementsEffect
+}
+
+// WithPolicyStatementsPrincipalsQueryParameter adds the policyStatementsPrincipals to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithPolicyStatementsPrincipalsQueryParameter(policyStatementsPrincipals *string) *AllSvmBucketsCollectionGetParams {
+	o.SetPolicyStatementsPrincipalsQueryParameter(policyStatementsPrincipals)
+	return o
+}
+
+// SetPolicyStatementsPrincipalsQueryParameter adds the policyStatementsPrincipals to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetPolicyStatementsPrincipalsQueryParameter(policyStatementsPrincipals *string) {
+	o.PolicyStatementsPrincipalsQueryParameter = policyStatementsPrincipals
+}
+
+// WithPolicyStatementsResourcesQueryParameter adds the policyStatementsResources to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithPolicyStatementsResourcesQueryParameter(policyStatementsResources *string) *AllSvmBucketsCollectionGetParams {
+	o.SetPolicyStatementsResourcesQueryParameter(policyStatementsResources)
+	return o
+}
+
+// SetPolicyStatementsResourcesQueryParameter adds the policyStatementsResources to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetPolicyStatementsResourcesQueryParameter(policyStatementsResources *string) {
+	o.PolicyStatementsResourcesQueryParameter = policyStatementsResources
+}
+
+// WithPolicyStatementsSIDQueryParameter adds the policyStatementsSid to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithPolicyStatementsSIDQueryParameter(policyStatementsSid *string) *AllSvmBucketsCollectionGetParams {
+	o.SetPolicyStatementsSIDQueryParameter(policyStatementsSid)
+	return o
+}
+
+// SetPolicyStatementsSIDQueryParameter adds the policyStatementsSid to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetPolicyStatementsSIDQueryParameter(policyStatementsSid *string) {
+	o.PolicyStatementsSIDQueryParameter = policyStatementsSid
+}
+
+// WithQosPolicyMaxThroughputIopsQueryParameter adds the qosPolicyMaxThroughputIops to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops)
+	return o
+}
+
+// SetQosPolicyMaxThroughputIopsQueryParameter adds the qosPolicyMaxThroughputIops to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops *int64) {
+	o.QosPolicyMaxThroughputIopsQueryParameter = qosPolicyMaxThroughputIops
+}
+
+// WithQosPolicyMaxThroughputMbpsQueryParameter adds the qosPolicyMaxThroughputMbps to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps)
+	return o
+}
+
+// SetQosPolicyMaxThroughputMbpsQueryParameter adds the qosPolicyMaxThroughputMbps to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetQosPolicyMaxThroughputMbpsQueryParameter(qosPolicyMaxThroughputMbps *int64) {
+	o.QosPolicyMaxThroughputMbpsQueryParameter = qosPolicyMaxThroughputMbps
+}
+
+// WithQosPolicyMinThroughputIopsQueryParameter adds the qosPolicyMinThroughputIops to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops)
+	return o
+}
+
+// SetQosPolicyMinThroughputIopsQueryParameter adds the qosPolicyMinThroughputIops to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops *int64) {
+	o.QosPolicyMinThroughputIopsQueryParameter = qosPolicyMinThroughputIops
+}
+
+// WithQosPolicyMinThroughputMbpsQueryParameter adds the qosPolicyMinThroughputMbps to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps)
+	return o
+}
+
+// SetQosPolicyMinThroughputMbpsQueryParameter adds the qosPolicyMinThroughputMbps to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps *int64) {
+	o.QosPolicyMinThroughputMbpsQueryParameter = qosPolicyMinThroughputMbps
+}
+
+// WithQosPolicyNameQueryParameter adds the qosPolicyName to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithQosPolicyNameQueryParameter(qosPolicyName *string) *AllSvmBucketsCollectionGetParams {
+	o.SetQosPolicyNameQueryParameter(qosPolicyName)
+	return o
+}
+
+// SetQosPolicyNameQueryParameter adds the qosPolicyName to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetQosPolicyNameQueryParameter(qosPolicyName *string) {
+	o.QosPolicyNameQueryParameter = qosPolicyName
+}
+
+// WithQosPolicyUUIDQueryParameter adds the qosPolicyUUID to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithQosPolicyUUIDQueryParameter(qosPolicyUUID *string) *AllSvmBucketsCollectionGetParams {
+	o.SetQosPolicyUUIDQueryParameter(qosPolicyUUID)
+	return o
+}
+
+// SetQosPolicyUUIDQueryParameter adds the qosPolicyUuid to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetQosPolicyUUIDQueryParameter(qosPolicyUUID *string) {
+	o.QosPolicyUUIDQueryParameter = qosPolicyUUID
+}
+
+// WithReturnRecordsQueryParameter adds the returnRecords to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AllSvmBucketsCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
+	return o
+}
+
+// SetReturnRecordsQueryParameter adds the returnRecords to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
+}
+
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AllSvmBucketsCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
+	return o
+}
+
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSizeQueryParameter adds the size to the all svm buckets collection get params
@@ -428,7 +717,7 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -456,13 +745,13 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -490,7 +779,7 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -501,13 +790,302 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.PolicyStatementsActionsQueryParameter != nil {
+
+		// query param policy.statements.actions
+		var qrPolicyStatementsActions string
+
+		if o.PolicyStatementsActionsQueryParameter != nil {
+			qrPolicyStatementsActions = *o.PolicyStatementsActionsQueryParameter
+		}
+		qPolicyStatementsActions := qrPolicyStatementsActions
+		if qPolicyStatementsActions != "" {
+
+			if err := r.SetQueryParam("policy.statements.actions", qPolicyStatementsActions); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsConditionsDelimitersQueryParameter != nil {
+
+		// query param policy.statements.conditions.delimiters
+		var qrPolicyStatementsConditionsDelimiters string
+
+		if o.PolicyStatementsConditionsDelimitersQueryParameter != nil {
+			qrPolicyStatementsConditionsDelimiters = *o.PolicyStatementsConditionsDelimitersQueryParameter
+		}
+		qPolicyStatementsConditionsDelimiters := qrPolicyStatementsConditionsDelimiters
+		if qPolicyStatementsConditionsDelimiters != "" {
+
+			if err := r.SetQueryParam("policy.statements.conditions.delimiters", qPolicyStatementsConditionsDelimiters); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsConditionsMaxKeysQueryParameter != nil {
+
+		// query param policy.statements.conditions.max_keys
+		var qrPolicyStatementsConditionsMaxKeys int64
+
+		if o.PolicyStatementsConditionsMaxKeysQueryParameter != nil {
+			qrPolicyStatementsConditionsMaxKeys = *o.PolicyStatementsConditionsMaxKeysQueryParameter
+		}
+		qPolicyStatementsConditionsMaxKeys := swag.FormatInt64(qrPolicyStatementsConditionsMaxKeys)
+		if qPolicyStatementsConditionsMaxKeys != "" {
+
+			if err := r.SetQueryParam("policy.statements.conditions.max_keys", qPolicyStatementsConditionsMaxKeys); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsConditionsOperatorQueryParameter != nil {
+
+		// query param policy.statements.conditions.operator
+		var qrPolicyStatementsConditionsOperator string
+
+		if o.PolicyStatementsConditionsOperatorQueryParameter != nil {
+			qrPolicyStatementsConditionsOperator = *o.PolicyStatementsConditionsOperatorQueryParameter
+		}
+		qPolicyStatementsConditionsOperator := qrPolicyStatementsConditionsOperator
+		if qPolicyStatementsConditionsOperator != "" {
+
+			if err := r.SetQueryParam("policy.statements.conditions.operator", qPolicyStatementsConditionsOperator); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsConditionsPrefixesQueryParameter != nil {
+
+		// query param policy.statements.conditions.prefixes
+		var qrPolicyStatementsConditionsPrefixes string
+
+		if o.PolicyStatementsConditionsPrefixesQueryParameter != nil {
+			qrPolicyStatementsConditionsPrefixes = *o.PolicyStatementsConditionsPrefixesQueryParameter
+		}
+		qPolicyStatementsConditionsPrefixes := qrPolicyStatementsConditionsPrefixes
+		if qPolicyStatementsConditionsPrefixes != "" {
+
+			if err := r.SetQueryParam("policy.statements.conditions.prefixes", qPolicyStatementsConditionsPrefixes); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsConditionsSourceIPsQueryParameter != nil {
+
+		// query param policy.statements.conditions.source_ips
+		var qrPolicyStatementsConditionsSourceIps string
+
+		if o.PolicyStatementsConditionsSourceIPsQueryParameter != nil {
+			qrPolicyStatementsConditionsSourceIps = *o.PolicyStatementsConditionsSourceIPsQueryParameter
+		}
+		qPolicyStatementsConditionsSourceIps := qrPolicyStatementsConditionsSourceIps
+		if qPolicyStatementsConditionsSourceIps != "" {
+
+			if err := r.SetQueryParam("policy.statements.conditions.source_ips", qPolicyStatementsConditionsSourceIps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsConditionsUsernamesQueryParameter != nil {
+
+		// query param policy.statements.conditions.usernames
+		var qrPolicyStatementsConditionsUsernames string
+
+		if o.PolicyStatementsConditionsUsernamesQueryParameter != nil {
+			qrPolicyStatementsConditionsUsernames = *o.PolicyStatementsConditionsUsernamesQueryParameter
+		}
+		qPolicyStatementsConditionsUsernames := qrPolicyStatementsConditionsUsernames
+		if qPolicyStatementsConditionsUsernames != "" {
+
+			if err := r.SetQueryParam("policy.statements.conditions.usernames", qPolicyStatementsConditionsUsernames); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsEffectQueryParameter != nil {
+
+		// query param policy.statements.effect
+		var qrPolicyStatementsEffect string
+
+		if o.PolicyStatementsEffectQueryParameter != nil {
+			qrPolicyStatementsEffect = *o.PolicyStatementsEffectQueryParameter
+		}
+		qPolicyStatementsEffect := qrPolicyStatementsEffect
+		if qPolicyStatementsEffect != "" {
+
+			if err := r.SetQueryParam("policy.statements.effect", qPolicyStatementsEffect); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsPrincipalsQueryParameter != nil {
+
+		// query param policy.statements.principals
+		var qrPolicyStatementsPrincipals string
+
+		if o.PolicyStatementsPrincipalsQueryParameter != nil {
+			qrPolicyStatementsPrincipals = *o.PolicyStatementsPrincipalsQueryParameter
+		}
+		qPolicyStatementsPrincipals := qrPolicyStatementsPrincipals
+		if qPolicyStatementsPrincipals != "" {
+
+			if err := r.SetQueryParam("policy.statements.principals", qPolicyStatementsPrincipals); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsResourcesQueryParameter != nil {
+
+		// query param policy.statements.resources
+		var qrPolicyStatementsResources string
+
+		if o.PolicyStatementsResourcesQueryParameter != nil {
+			qrPolicyStatementsResources = *o.PolicyStatementsResourcesQueryParameter
+		}
+		qPolicyStatementsResources := qrPolicyStatementsResources
+		if qPolicyStatementsResources != "" {
+
+			if err := r.SetQueryParam("policy.statements.resources", qPolicyStatementsResources); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsSIDQueryParameter != nil {
+
+		// query param policy.statements.sid
+		var qrPolicyStatementsSid string
+
+		if o.PolicyStatementsSIDQueryParameter != nil {
+			qrPolicyStatementsSid = *o.PolicyStatementsSIDQueryParameter
+		}
+		qPolicyStatementsSid := qrPolicyStatementsSid
+		if qPolicyStatementsSid != "" {
+
+			if err := r.SetQueryParam("policy.statements.sid", qPolicyStatementsSid); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyMaxThroughputIopsQueryParameter != nil {
+
+		// query param qos_policy.max_throughput_iops
+		var qrQosPolicyMaxThroughputIops int64
+
+		if o.QosPolicyMaxThroughputIopsQueryParameter != nil {
+			qrQosPolicyMaxThroughputIops = *o.QosPolicyMaxThroughputIopsQueryParameter
+		}
+		qQosPolicyMaxThroughputIops := swag.FormatInt64(qrQosPolicyMaxThroughputIops)
+		if qQosPolicyMaxThroughputIops != "" {
+
+			if err := r.SetQueryParam("qos_policy.max_throughput_iops", qQosPolicyMaxThroughputIops); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyMaxThroughputMbpsQueryParameter != nil {
+
+		// query param qos_policy.max_throughput_mbps
+		var qrQosPolicyMaxThroughputMbps int64
+
+		if o.QosPolicyMaxThroughputMbpsQueryParameter != nil {
+			qrQosPolicyMaxThroughputMbps = *o.QosPolicyMaxThroughputMbpsQueryParameter
+		}
+		qQosPolicyMaxThroughputMbps := swag.FormatInt64(qrQosPolicyMaxThroughputMbps)
+		if qQosPolicyMaxThroughputMbps != "" {
+
+			if err := r.SetQueryParam("qos_policy.max_throughput_mbps", qQosPolicyMaxThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyMinThroughputIopsQueryParameter != nil {
+
+		// query param qos_policy.min_throughput_iops
+		var qrQosPolicyMinThroughputIops int64
+
+		if o.QosPolicyMinThroughputIopsQueryParameter != nil {
+			qrQosPolicyMinThroughputIops = *o.QosPolicyMinThroughputIopsQueryParameter
+		}
+		qQosPolicyMinThroughputIops := swag.FormatInt64(qrQosPolicyMinThroughputIops)
+		if qQosPolicyMinThroughputIops != "" {
+
+			if err := r.SetQueryParam("qos_policy.min_throughput_iops", qQosPolicyMinThroughputIops); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyMinThroughputMbpsQueryParameter != nil {
+
+		// query param qos_policy.min_throughput_mbps
+		var qrQosPolicyMinThroughputMbps int64
+
+		if o.QosPolicyMinThroughputMbpsQueryParameter != nil {
+			qrQosPolicyMinThroughputMbps = *o.QosPolicyMinThroughputMbpsQueryParameter
+		}
+		qQosPolicyMinThroughputMbps := swag.FormatInt64(qrQosPolicyMinThroughputMbps)
+		if qQosPolicyMinThroughputMbps != "" {
+
+			if err := r.SetQueryParam("qos_policy.min_throughput_mbps", qQosPolicyMinThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyNameQueryParameter != nil {
+
+		// query param qos_policy.name
+		var qrQosPolicyName string
+
+		if o.QosPolicyNameQueryParameter != nil {
+			qrQosPolicyName = *o.QosPolicyNameQueryParameter
+		}
+		qQosPolicyName := qrQosPolicyName
+		if qQosPolicyName != "" {
+
+			if err := r.SetQueryParam("qos_policy.name", qQosPolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyUUIDQueryParameter != nil {
+
+		// query param qos_policy.uuid
+		var qrQosPolicyUUID string
+
+		if o.QosPolicyUUIDQueryParameter != nil {
+			qrQosPolicyUUID = *o.QosPolicyUUIDQueryParameter
+		}
+		qQosPolicyUUID := qrQosPolicyUUID
+		if qQosPolicyUUID != "" {
+
+			if err := r.SetQueryParam("qos_policy.uuid", qQosPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -518,13 +1096,13 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -645,7 +1223,7 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamAllSvmBucketsCollectionGet binds the parameter fields
 func (o *AllSvmBucketsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -662,7 +1240,7 @@ func (o *AllSvmBucketsCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamAllSvmBucketsCollectionGet binds the parameter order_by
 func (o *AllSvmBucketsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

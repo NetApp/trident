@@ -41,7 +41,7 @@ type MaxdataOnSanApplicationComponents struct {
 
 	// The number of LUNs in the application component.
 	// Required: true
-	// Maximum: 100
+	// Maximum: 32
 	// Minimum: 1
 	LunCount *int64 `json:"lun_count"`
 
@@ -59,6 +59,9 @@ type MaxdataOnSanApplicationComponents struct {
 
 	// storage service
 	StorageService *MaxdataOnSanApplicationComponentsStorageService `json:"storage_service,omitempty"`
+
+	// tiering
+	Tiering *MaxdataOnSanApplicationComponentsTiering `json:"tiering,omitempty"`
 
 	// The total size of the application component, split across the member LUNs. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
 	// Required: true
@@ -101,6 +104,10 @@ func (m *MaxdataOnSanApplicationComponents) Validate(formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
+	if err := m.validateTiering(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateTotalSize(formats); err != nil {
 		res = append(res, err)
 	}
@@ -125,33 +132,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_application_components
 	// MaxdataOnSanApplicationComponents
 	// file_system
 	// FileSystem
 	// generic
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsFileSystemGeneric captures enum value "generic"
 	MaxdataOnSanApplicationComponentsFileSystemGeneric string = "generic"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_application_components
 	// MaxdataOnSanApplicationComponents
 	// file_system
 	// FileSystem
 	// m1fs
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsFileSystemM1fs captures enum value "m1fs"
 	MaxdataOnSanApplicationComponentsFileSystemM1fs string = "m1fs"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_application_components
 	// MaxdataOnSanApplicationComponents
 	// file_system
 	// FileSystem
 	// xfs
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsFileSystemXfs captures enum value "xfs"
 	MaxdataOnSanApplicationComponentsFileSystemXfs string = "xfs"
 )
@@ -213,7 +220,7 @@ func (m *MaxdataOnSanApplicationComponents) validateLunCount(formats strfmt.Regi
 		return err
 	}
 
-	if err := validate.MaximumInt("lun_count", "body", *m.LunCount, 100, false); err != nil {
+	if err := validate.MaximumInt("lun_count", "body", *m.LunCount, 32, false); err != nil {
 		return err
 	}
 
@@ -295,6 +302,23 @@ func (m *MaxdataOnSanApplicationComponents) validateStorageService(formats strfm
 	return nil
 }
 
+func (m *MaxdataOnSanApplicationComponents) validateTiering(formats strfmt.Registry) error {
+	if swag.IsZero(m.Tiering) { // not required
+		return nil
+	}
+
+	if m.Tiering != nil {
+		if err := m.Tiering.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tiering")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *MaxdataOnSanApplicationComponents) validateTotalSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("total_size", "body", m.TotalSize); err != nil {
@@ -321,6 +345,10 @@ func (m *MaxdataOnSanApplicationComponents) ContextValidate(ctx context.Context,
 	}
 
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTiering(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -377,6 +405,20 @@ func (m *MaxdataOnSanApplicationComponents) contextValidateStorageService(ctx co
 		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("storage_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *MaxdataOnSanApplicationComponents) contextValidateTiering(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Tiering != nil {
+		if err := m.Tiering.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tiering")
 			}
 			return err
 		}
@@ -489,43 +531,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// local_rpo
 	// LocalRpo
 	// 6_hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionTypeLocalRpoNr6Hourly captures enum value "6_hourly"
 	MaxdataOnSanApplicationComponentsProtectionTypeLocalRpoNr6Hourly string = "6_hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// local_rpo
 	// LocalRpo
 	// 15_minutely
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionTypeLocalRpoNr15Minutely captures enum value "15_minutely"
 	MaxdataOnSanApplicationComponentsProtectionTypeLocalRpoNr15Minutely string = "15_minutely"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionTypeLocalRpoHourly captures enum value "hourly"
 	MaxdataOnSanApplicationComponentsProtectionTypeLocalRpoHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionTypeLocalRpoNone captures enum value "none"
 	MaxdataOnSanApplicationComponentsProtectionTypeLocalRpoNone string = "none"
 )
@@ -565,43 +607,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// 6_hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionTypeRemoteRpoNr6Hourly captures enum value "6_hourly"
 	MaxdataOnSanApplicationComponentsProtectionTypeRemoteRpoNr6Hourly string = "6_hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// 15_minutely
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionTypeRemoteRpoNr15Minutely captures enum value "15_minutely"
 	MaxdataOnSanApplicationComponentsProtectionTypeRemoteRpoNr15Minutely string = "15_minutely"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionTypeRemoteRpoHourly captures enum value "hourly"
 	MaxdataOnSanApplicationComponentsProtectionTypeRemoteRpoHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// MaxdataOnSanApplicationComponentsProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsProtectionTypeRemoteRpoNone captures enum value "none"
 	MaxdataOnSanApplicationComponentsProtectionTypeRemoteRpoNone string = "none"
 )
@@ -688,43 +730,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MaxdataOnSanApplicationComponentsStorageService
 	// MaxdataOnSanApplicationComponentsStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsStorageServiceNameExtreme captures enum value "extreme"
 	MaxdataOnSanApplicationComponentsStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MaxdataOnSanApplicationComponentsStorageService
 	// MaxdataOnSanApplicationComponentsStorageService
 	// name
 	// Name
 	// maxdata
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsStorageServiceNameMaxdata captures enum value "maxdata"
 	MaxdataOnSanApplicationComponentsStorageServiceNameMaxdata string = "maxdata"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MaxdataOnSanApplicationComponentsStorageService
 	// MaxdataOnSanApplicationComponentsStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsStorageServiceNamePerformance captures enum value "performance"
 	MaxdataOnSanApplicationComponentsStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MaxdataOnSanApplicationComponentsStorageService
 	// MaxdataOnSanApplicationComponentsStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanApplicationComponentsStorageServiceNameValue captures enum value "value"
 	MaxdataOnSanApplicationComponentsStorageServiceNameValue string = "value"
 )
@@ -772,5 +814,3 @@ func (m *MaxdataOnSanApplicationComponentsStorageService) UnmarshalBinary(b []by
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

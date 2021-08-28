@@ -98,7 +98,6 @@ func NewSecurityKeyManagerKeyServersCreateDefault(code int) *SecurityKeyManagerK
 | 66060338 | Unable to establish secure connection to KMIP server due to incorrect server_ca certificates. |
 | 66060339 | Unable to establish secure connection to KMIP server due to incorrect client certificates. |
 | 66060340 | Unable to establish secure connection to KMIP server due to Cryptsoft error. |
-| 66060341 | Unable to establish secure connection to KMIP server due to network configuration issues. |
 
 */
 type SecurityKeyManagerKeyServersCreateDefault struct {

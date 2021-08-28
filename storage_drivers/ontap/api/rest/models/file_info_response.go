@@ -22,6 +22,9 @@ type FileInfoResponse struct {
 	// links
 	Links *FileInfoResponseLinks `json:"_links,omitempty"`
 
+	// analytics
+	Analytics *FileInfoResponseAnalytics `json:"analytics,omitempty"`
+
 	// Number of records.
 	NumRecords int64 `json:"num_records,omitempty"`
 
@@ -34,6 +37,10 @@ func (m *FileInfoResponse) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAnalytics(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -56,6 +63,23 @@ func (m *FileInfoResponse) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FileInfoResponse) validateAnalytics(formats strfmt.Registry) error {
+	if swag.IsZero(m.Analytics) { // not required
+		return nil
+	}
+
+	if m.Analytics != nil {
+		if err := m.Analytics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics")
 			}
 			return err
 		}
@@ -96,6 +120,10 @@ func (m *FileInfoResponse) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAnalytics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -112,6 +140,20 @@ func (m *FileInfoResponse) contextValidateLinks(ctx context.Context, formats str
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FileInfoResponse) contextValidateAnalytics(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Analytics != nil {
+		if err := m.Analytics.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics")
 			}
 			return err
 		}
@@ -149,6 +191,472 @@ func (m *FileInfoResponse) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *FileInfoResponse) UnmarshalBinary(b []byte) error {
 	var res FileInfoResponse
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FileInfoResponseAnalytics Additional file system analytics information that is invariant amongst all elements in the collection. <br/>
+// This property is only populated if file system analytics is enabled on the containing volume. <br/>
+// This analytics object captures properties that are invariant amongst all elements included in the `records` array. The invariant properties are included here, rather than within the information for each element, to avoid returning an excessive amount of duplicated information when the collection is large.
+//
+// swagger:model FileInfoResponseAnalytics
+type FileInfoResponseAnalytics struct {
+
+	// by accessed time
+	ByAccessedTime *FileInfoResponseAnalyticsByAccessedTime `json:"by_accessed_time,omitempty"`
+
+	// by modified time
+	ByModifiedTime *FileInfoResponseAnalyticsByModifiedTime `json:"by_modified_time,omitempty"`
+}
+
+// Validate validates this file info response analytics
+func (m *FileInfoResponseAnalytics) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateByAccessedTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateByModifiedTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FileInfoResponseAnalytics) validateByAccessedTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.ByAccessedTime) { // not required
+		return nil
+	}
+
+	if m.ByAccessedTime != nil {
+		if err := m.ByAccessedTime.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FileInfoResponseAnalytics) validateByModifiedTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.ByModifiedTime) { // not required
+		return nil
+	}
+
+	if m.ByModifiedTime != nil {
+		if err := m.ByModifiedTime.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this file info response analytics based on the context it is used
+func (m *FileInfoResponseAnalytics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateByAccessedTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateByModifiedTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FileInfoResponseAnalytics) contextValidateByAccessedTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ByAccessedTime != nil {
+		if err := m.ByAccessedTime.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FileInfoResponseAnalytics) contextValidateByModifiedTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ByModifiedTime != nil {
+		if err := m.ByModifiedTime.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FileInfoResponseAnalytics) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FileInfoResponseAnalytics) UnmarshalBinary(b []byte) error {
+	var res FileInfoResponseAnalytics
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FileInfoResponseAnalyticsByAccessedTime File system analytics information, broken down by date of last access.
+//
+// swagger:model FileInfoResponseAnalyticsByAccessedTime
+type FileInfoResponseAnalyticsByAccessedTime struct {
+
+	// bytes used
+	BytesUsed *FileInfoResponseAnalyticsByAccessedTimeBytesUsed `json:"bytes_used,omitempty"`
+}
+
+// Validate validates this file info response analytics by accessed time
+func (m *FileInfoResponseAnalyticsByAccessedTime) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBytesUsed(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FileInfoResponseAnalyticsByAccessedTime) validateBytesUsed(formats strfmt.Registry) error {
+	if swag.IsZero(m.BytesUsed) { // not required
+		return nil
+	}
+
+	if m.BytesUsed != nil {
+		if err := m.BytesUsed.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this file info response analytics by accessed time based on the context it is used
+func (m *FileInfoResponseAnalyticsByAccessedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBytesUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FileInfoResponseAnalyticsByAccessedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.BytesUsed != nil {
+		if err := m.BytesUsed.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FileInfoResponseAnalyticsByAccessedTime) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FileInfoResponseAnalyticsByAccessedTime) UnmarshalBinary(b []byte) error {
+	var res FileInfoResponseAnalyticsByAccessedTime
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FileInfoResponseAnalyticsByAccessedTimeBytesUsed Number of bytes used on-disk, broken down by date of last access.
+//
+// swagger:model FileInfoResponseAnalyticsByAccessedTimeBytesUsed
+type FileInfoResponseAnalyticsByAccessedTimeBytesUsed struct {
+
+	// labels
+	Labels AnalyticsHistogramByTimeLabels `json:"labels,omitempty"`
+}
+
+// Validate validates this file info response analytics by accessed time bytes used
+func (m *FileInfoResponseAnalyticsByAccessedTimeBytesUsed) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLabels(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FileInfoResponseAnalyticsByAccessedTimeBytesUsed) validateLabels(formats strfmt.Registry) error {
+	if swag.IsZero(m.Labels) { // not required
+		return nil
+	}
+
+	if err := m.Labels.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "labels")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this file info response analytics by accessed time bytes used based on the context it is used
+func (m *FileInfoResponseAnalyticsByAccessedTimeBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FileInfoResponseAnalyticsByAccessedTimeBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Labels.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "labels")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FileInfoResponseAnalyticsByAccessedTimeBytesUsed) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FileInfoResponseAnalyticsByAccessedTimeBytesUsed) UnmarshalBinary(b []byte) error {
+	var res FileInfoResponseAnalyticsByAccessedTimeBytesUsed
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FileInfoResponseAnalyticsByModifiedTime File system analytics information, broken down by date of last modification.
+//
+// swagger:model FileInfoResponseAnalyticsByModifiedTime
+type FileInfoResponseAnalyticsByModifiedTime struct {
+
+	// bytes used
+	BytesUsed *FileInfoResponseAnalyticsByModifiedTimeBytesUsed `json:"bytes_used,omitempty"`
+}
+
+// Validate validates this file info response analytics by modified time
+func (m *FileInfoResponseAnalyticsByModifiedTime) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBytesUsed(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FileInfoResponseAnalyticsByModifiedTime) validateBytesUsed(formats strfmt.Registry) error {
+	if swag.IsZero(m.BytesUsed) { // not required
+		return nil
+	}
+
+	if m.BytesUsed != nil {
+		if err := m.BytesUsed.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this file info response analytics by modified time based on the context it is used
+func (m *FileInfoResponseAnalyticsByModifiedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBytesUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FileInfoResponseAnalyticsByModifiedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.BytesUsed != nil {
+		if err := m.BytesUsed.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FileInfoResponseAnalyticsByModifiedTime) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FileInfoResponseAnalyticsByModifiedTime) UnmarshalBinary(b []byte) error {
+	var res FileInfoResponseAnalyticsByModifiedTime
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FileInfoResponseAnalyticsByModifiedTimeBytesUsed Number of bytes used on-disk, broken down by date of last modification.
+//
+// swagger:model FileInfoResponseAnalyticsByModifiedTimeBytesUsed
+type FileInfoResponseAnalyticsByModifiedTimeBytesUsed struct {
+
+	// labels
+	Labels AnalyticsHistogramByTimeLabels `json:"labels,omitempty"`
+}
+
+// Validate validates this file info response analytics by modified time bytes used
+func (m *FileInfoResponseAnalyticsByModifiedTimeBytesUsed) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLabels(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FileInfoResponseAnalyticsByModifiedTimeBytesUsed) validateLabels(formats strfmt.Registry) error {
+	if swag.IsZero(m.Labels) { // not required
+		return nil
+	}
+
+	if err := m.Labels.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "labels")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this file info response analytics by modified time bytes used based on the context it is used
+func (m *FileInfoResponseAnalyticsByModifiedTimeBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FileInfoResponseAnalyticsByModifiedTimeBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Labels.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "labels")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FileInfoResponseAnalyticsByModifiedTimeBytesUsed) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FileInfoResponseAnalyticsByModifiedTimeBytesUsed) UnmarshalBinary(b []byte) error {
+	var res FileInfoResponseAnalyticsByModifiedTimeBytesUsed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -283,5 +791,3 @@ func (m *FileInfoResponseLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

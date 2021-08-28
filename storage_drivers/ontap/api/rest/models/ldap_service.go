@@ -40,11 +40,43 @@ type LdapService struct {
 	// Enum: [base onelevel subtree]
 	BaseScope *string `json:"base_scope,omitempty"`
 
+	// Specifies whether or not CIFS server's credentials are used to bind to the LDAP server.
+	//
+	BindAsCifsServer bool `json:"bind_as_cifs_server,omitempty"`
+
 	// Specifies the user that binds to the LDAP servers.
 	BindDn string `json:"bind_dn,omitempty"`
 
 	// Specifies the bind password for the LDAP servers.
 	BindPassword string `json:"bind_password,omitempty"`
+
+	// Specifies the group Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for group lookups.
+	GroupDn string `json:"group_dn,omitempty"`
+
+	// Specifies the custom filter used for group membership lookups from an LDAP server.
+	//
+	GroupMembershipFilter string `json:"group_membership_filter,omitempty"`
+
+	// Specifies the default search scope for LDAP for group lookups:
+	// * base - search the named entry only
+	// * onelevel - search all entries immediately below the DN
+	// * subtree - search the named DN entry and the entire subtree below the DN
+	//
+	// Enum: [base onelevel subtree]
+	GroupScope *string `json:"group_scope,omitempty"`
+
+	// Specifies whether or not netgroup by host querying is enabled.
+	//
+	IsNetgroupByhostEnabled *bool `json:"is_netgroup_byhost_enabled,omitempty"`
+
+	// Specifies whether or not the SVM owns the LDAP client configuration.
+	//
+	// Read Only: true
+	IsOwner *bool `json:"is_owner,omitempty"`
+
+	// Specifies whether or not LDAPS is enabled.
+	//
+	LdapsEnabled *bool `json:"ldaps_enabled,omitempty"`
 
 	// The minimum bind authentication level. Possible values are:
 	// * anonymous - anonymous bind
@@ -54,6 +86,28 @@ type LdapService struct {
 	// Enum: [anonymous simple sasl]
 	MinBindLevel *string `json:"min_bind_level,omitempty"`
 
+	// Specifies the netgroup Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for netgroup by host lookups.
+	NetgroupByhostDn string `json:"netgroup_byhost_dn,omitempty"`
+
+	// Specifies the default search scope for LDAP for netgroup by host lookups:
+	// * base - search the named entry only
+	// * onelevel - search all entries immediately below the DN
+	// * subtree - search the named DN entry and the entire subtree below the DN
+	//
+	// Enum: [base onelevel subtree]
+	NetgroupByhostScope *string `json:"netgroup_byhost_scope,omitempty"`
+
+	// Specifies the netgroup Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for netgroup lookups.
+	NetgroupDn string `json:"netgroup_dn,omitempty"`
+
+	// Specifies the default search scope for LDAP for netgroup lookups:
+	// * base - search the named entry only
+	// * onelevel - search all entries immediately below the DN
+	// * subtree - search the named DN entry and the entire subtree below the DN
+	//
+	// Enum: [base onelevel subtree]
+	NetgroupScope *string `json:"netgroup_scope,omitempty"`
+
 	// The port used to connect to the LDAP Servers.
 	// Example: 389
 	// Maximum: 65535
@@ -62,6 +116,14 @@ type LdapService struct {
 
 	// preferred ad servers
 	PreferredAdServers []string `json:"preferred_ad_servers,omitempty"`
+
+	// Specifies the maximum time to wait for a query response from the LDAP server, in seconds.
+	//
+	QueryTimeout *int64 `json:"query_timeout,omitempty"`
+
+	// Specifies whether or not LDAP referral is enabled.
+	//
+	ReferralEnabled *bool `json:"referral_enabled,omitempty"`
 
 	// The name of the schema template used by the SVM.
 	// * AD-IDMU - Active Directory Identity Management for UNIX
@@ -83,12 +145,30 @@ type LdapService struct {
 	// Enum: [none sign seal]
 	SessionSecurity *string `json:"session_security,omitempty"`
 
+	// Indicates whether or not the validation for the specified LDAP configuration is disabled.
+	//
+	SkipConfigValidation *bool `json:"skip_config_validation,omitempty"`
+
+	// status
+	Status *LdapServiceStatus `json:"status,omitempty"`
+
 	// svm
 	Svm *LdapServiceSvm `json:"svm,omitempty"`
 
 	// Specifies whether or not to use Start TLS over LDAP connections.
 	//
 	UseStartTLS *bool `json:"use_start_tls,omitempty"`
+
+	// Specifies the user Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for user lookups.
+	UserDn string `json:"user_dn,omitempty"`
+
+	// Specifies the default search scope for LDAP for user lookups:
+	// * base - search the named entry only
+	// * onelevel - search all entries immediately below the DN
+	// * subtree - search the named DN entry and the entire subtree below the DN
+	//
+	// Enum: [base onelevel subtree]
+	UserScope *string `json:"user_scope,omitempty"`
 }
 
 // Validate validates this ldap service
@@ -103,7 +183,19 @@ func (m *LdapService) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateGroupScope(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateMinBindLevel(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNetgroupByhostScope(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNetgroupScope(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -115,7 +207,15 @@ func (m *LdapService) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUserScope(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -156,33 +256,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ldap_service
 	// LdapService
 	// base_scope
 	// BaseScope
 	// base
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LdapServiceBaseScopeBase captures enum value "base"
 	LdapServiceBaseScopeBase string = "base"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ldap_service
 	// LdapService
 	// base_scope
 	// BaseScope
 	// onelevel
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LdapServiceBaseScopeOnelevel captures enum value "onelevel"
 	LdapServiceBaseScopeOnelevel string = "onelevel"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ldap_service
 	// LdapService
 	// base_scope
 	// BaseScope
 	// subtree
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LdapServiceBaseScopeSubtree captures enum value "subtree"
 	LdapServiceBaseScopeSubtree string = "subtree"
 )
@@ -208,6 +308,72 @@ func (m *LdapService) validateBaseScope(formats strfmt.Registry) error {
 	return nil
 }
 
+var ldapServiceTypeGroupScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["base","onelevel","subtree"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ldapServiceTypeGroupScopePropEnum = append(ldapServiceTypeGroupScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ldap_service
+	// LdapService
+	// group_scope
+	// GroupScope
+	// base
+	// END DEBUGGING
+	// LdapServiceGroupScopeBase captures enum value "base"
+	LdapServiceGroupScopeBase string = "base"
+
+	// BEGIN DEBUGGING
+	// ldap_service
+	// LdapService
+	// group_scope
+	// GroupScope
+	// onelevel
+	// END DEBUGGING
+	// LdapServiceGroupScopeOnelevel captures enum value "onelevel"
+	LdapServiceGroupScopeOnelevel string = "onelevel"
+
+	// BEGIN DEBUGGING
+	// ldap_service
+	// LdapService
+	// group_scope
+	// GroupScope
+	// subtree
+	// END DEBUGGING
+	// LdapServiceGroupScopeSubtree captures enum value "subtree"
+	LdapServiceGroupScopeSubtree string = "subtree"
+)
+
+// prop value enum
+func (m *LdapService) validateGroupScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ldapServiceTypeGroupScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LdapService) validateGroupScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.GroupScope) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateGroupScopeEnum("group_scope", "body", *m.GroupScope); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 var ldapServiceTypeMinBindLevelPropEnum []interface{}
 
 func init() {
@@ -222,33 +388,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ldap_service
 	// LdapService
 	// min_bind_level
 	// MinBindLevel
 	// anonymous
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LdapServiceMinBindLevelAnonymous captures enum value "anonymous"
 	LdapServiceMinBindLevelAnonymous string = "anonymous"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ldap_service
 	// LdapService
 	// min_bind_level
 	// MinBindLevel
 	// simple
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LdapServiceMinBindLevelSimple captures enum value "simple"
 	LdapServiceMinBindLevelSimple string = "simple"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ldap_service
 	// LdapService
 	// min_bind_level
 	// MinBindLevel
 	// sasl
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LdapServiceMinBindLevelSasl captures enum value "sasl"
 	LdapServiceMinBindLevelSasl string = "sasl"
 )
@@ -268,6 +434,138 @@ func (m *LdapService) validateMinBindLevel(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateMinBindLevelEnum("min_bind_level", "body", *m.MinBindLevel); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var ldapServiceTypeNetgroupByhostScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["base","onelevel","subtree"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ldapServiceTypeNetgroupByhostScopePropEnum = append(ldapServiceTypeNetgroupByhostScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ldap_service
+	// LdapService
+	// netgroup_byhost_scope
+	// NetgroupByhostScope
+	// base
+	// END DEBUGGING
+	// LdapServiceNetgroupByhostScopeBase captures enum value "base"
+	LdapServiceNetgroupByhostScopeBase string = "base"
+
+	// BEGIN DEBUGGING
+	// ldap_service
+	// LdapService
+	// netgroup_byhost_scope
+	// NetgroupByhostScope
+	// onelevel
+	// END DEBUGGING
+	// LdapServiceNetgroupByhostScopeOnelevel captures enum value "onelevel"
+	LdapServiceNetgroupByhostScopeOnelevel string = "onelevel"
+
+	// BEGIN DEBUGGING
+	// ldap_service
+	// LdapService
+	// netgroup_byhost_scope
+	// NetgroupByhostScope
+	// subtree
+	// END DEBUGGING
+	// LdapServiceNetgroupByhostScopeSubtree captures enum value "subtree"
+	LdapServiceNetgroupByhostScopeSubtree string = "subtree"
+)
+
+// prop value enum
+func (m *LdapService) validateNetgroupByhostScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ldapServiceTypeNetgroupByhostScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LdapService) validateNetgroupByhostScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.NetgroupByhostScope) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateNetgroupByhostScopeEnum("netgroup_byhost_scope", "body", *m.NetgroupByhostScope); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var ldapServiceTypeNetgroupScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["base","onelevel","subtree"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ldapServiceTypeNetgroupScopePropEnum = append(ldapServiceTypeNetgroupScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ldap_service
+	// LdapService
+	// netgroup_scope
+	// NetgroupScope
+	// base
+	// END DEBUGGING
+	// LdapServiceNetgroupScopeBase captures enum value "base"
+	LdapServiceNetgroupScopeBase string = "base"
+
+	// BEGIN DEBUGGING
+	// ldap_service
+	// LdapService
+	// netgroup_scope
+	// NetgroupScope
+	// onelevel
+	// END DEBUGGING
+	// LdapServiceNetgroupScopeOnelevel captures enum value "onelevel"
+	LdapServiceNetgroupScopeOnelevel string = "onelevel"
+
+	// BEGIN DEBUGGING
+	// ldap_service
+	// LdapService
+	// netgroup_scope
+	// NetgroupScope
+	// subtree
+	// END DEBUGGING
+	// LdapServiceNetgroupScopeSubtree captures enum value "subtree"
+	LdapServiceNetgroupScopeSubtree string = "subtree"
+)
+
+// prop value enum
+func (m *LdapService) validateNetgroupScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ldapServiceTypeNetgroupScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LdapService) validateNetgroupScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.NetgroupScope) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateNetgroupScopeEnum("netgroup_scope", "body", *m.NetgroupScope); err != nil {
 		return err
 	}
 
@@ -304,33 +602,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ldap_service
 	// LdapService
 	// session_security
 	// SessionSecurity
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LdapServiceSessionSecurityNone captures enum value "none"
 	LdapServiceSessionSecurityNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ldap_service
 	// LdapService
 	// session_security
 	// SessionSecurity
 	// sign
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LdapServiceSessionSecuritySign captures enum value "sign"
 	LdapServiceSessionSecuritySign string = "sign"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ldap_service
 	// LdapService
 	// session_security
 	// SessionSecurity
 	// seal
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// LdapServiceSessionSecuritySeal captures enum value "seal"
 	LdapServiceSessionSecuritySeal string = "seal"
 )
@@ -356,6 +654,23 @@ func (m *LdapService) validateSessionSecurity(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *LdapService) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	if m.Status != nil {
+		if err := m.Status.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *LdapService) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -373,11 +688,85 @@ func (m *LdapService) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
+var ldapServiceTypeUserScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["base","onelevel","subtree"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ldapServiceTypeUserScopePropEnum = append(ldapServiceTypeUserScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ldap_service
+	// LdapService
+	// user_scope
+	// UserScope
+	// base
+	// END DEBUGGING
+	// LdapServiceUserScopeBase captures enum value "base"
+	LdapServiceUserScopeBase string = "base"
+
+	// BEGIN DEBUGGING
+	// ldap_service
+	// LdapService
+	// user_scope
+	// UserScope
+	// onelevel
+	// END DEBUGGING
+	// LdapServiceUserScopeOnelevel captures enum value "onelevel"
+	LdapServiceUserScopeOnelevel string = "onelevel"
+
+	// BEGIN DEBUGGING
+	// ldap_service
+	// LdapService
+	// user_scope
+	// UserScope
+	// subtree
+	// END DEBUGGING
+	// LdapServiceUserScopeSubtree captures enum value "subtree"
+	LdapServiceUserScopeSubtree string = "subtree"
+)
+
+// prop value enum
+func (m *LdapService) validateUserScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ldapServiceTypeUserScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LdapService) validateUserScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.UserScope) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateUserScopeEnum("user_scope", "body", *m.UserScope); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this ldap service based on the context it is used
 func (m *LdapService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsOwner(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -397,6 +786,29 @@ func (m *LdapService) contextValidateLinks(ctx context.Context, formats strfmt.R
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LdapService) contextValidateIsOwner(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_owner", "body", m.IsOwner); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LdapService) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Status != nil {
+		if err := m.Status.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status")
 			}
 			return err
 		}
@@ -516,6 +928,127 @@ func (m *LdapServiceLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *LdapServiceLinks) UnmarshalBinary(b []byte) error {
 	var res LdapServiceLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LdapServiceStatus ldap service status
+//
+// swagger:model LdapServiceStatus
+type LdapServiceStatus struct {
+
+	// Code corresponding to the status message.
+	//
+	// Example: 65537300
+	Code int64 `json:"code,omitempty"`
+
+	// dn message
+	DnMessage []string `json:"dn_message,omitempty"`
+
+	// Provides additional details on the status of the LDAP service.
+	//
+	Message string `json:"message,omitempty"`
+
+	// Specifies the status of the LDAP service.
+	//
+	// Enum: [up down]
+	State string `json:"state,omitempty"`
+}
+
+// Validate validates this ldap service status
+func (m *LdapServiceStatus) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var ldapServiceStatusTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["up","down"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ldapServiceStatusTypeStatePropEnum = append(ldapServiceStatusTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// LdapServiceStatus
+	// LdapServiceStatus
+	// state
+	// State
+	// up
+	// END DEBUGGING
+	// LdapServiceStatusStateUp captures enum value "up"
+	LdapServiceStatusStateUp string = "up"
+
+	// BEGIN DEBUGGING
+	// LdapServiceStatus
+	// LdapServiceStatus
+	// state
+	// State
+	// down
+	// END DEBUGGING
+	// LdapServiceStatusStateDown captures enum value "down"
+	LdapServiceStatusStateDown string = "down"
+)
+
+// prop value enum
+func (m *LdapServiceStatus) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ldapServiceStatusTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LdapServiceStatus) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("status"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ldap service status based on the context it is used
+func (m *LdapServiceStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LdapServiceStatus) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LdapServiceStatus) UnmarshalBinary(b []byte) error {
+	var res LdapServiceStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -704,5 +1237,3 @@ func (m *LdapServiceSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

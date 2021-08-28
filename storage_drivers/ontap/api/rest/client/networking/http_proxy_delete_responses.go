@@ -71,7 +71,11 @@ func NewHTTPProxyDeleteDefault(code int) *HTTPProxyDeleteDefault {
 
 /* HTTPProxyDeleteDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Codes
+| Error Code | Description |
+| ---------- | ----------- |
+| 138281013 | The HTTP proxy cannot be deleted while in use by a cloud agent connection. |
+
 */
 type HTTPProxyDeleteDefault struct {
 	_statusCode int

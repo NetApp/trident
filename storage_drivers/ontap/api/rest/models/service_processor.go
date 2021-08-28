@@ -122,43 +122,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// service_processor
 	// ServiceProcessor
 	// link_status
 	// LinkStatus
 	// up
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ServiceProcessorLinkStatusUp captures enum value "up"
 	ServiceProcessorLinkStatusUp string = "up"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// service_processor
 	// ServiceProcessor
 	// link_status
 	// LinkStatus
 	// down
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ServiceProcessorLinkStatusDown captures enum value "down"
 	ServiceProcessorLinkStatusDown string = "down"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// service_processor
 	// ServiceProcessor
 	// link_status
 	// LinkStatus
 	// disabled
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ServiceProcessorLinkStatusDisabled captures enum value "disabled"
 	ServiceProcessorLinkStatusDisabled string = "disabled"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// service_processor
 	// ServiceProcessor
 	// link_status
 	// LinkStatus
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ServiceProcessorLinkStatusUnknown captures enum value "unknown"
 	ServiceProcessorLinkStatusUnknown string = "unknown"
 )
@@ -198,83 +198,83 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// service_processor
 	// ServiceProcessor
 	// state
 	// State
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ServiceProcessorStateOnline captures enum value "online"
 	ServiceProcessorStateOnline string = "online"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// service_processor
 	// ServiceProcessor
 	// state
 	// State
 	// offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ServiceProcessorStateOffline captures enum value "offline"
 	ServiceProcessorStateOffline string = "offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// service_processor
 	// ServiceProcessor
 	// state
 	// State
 	// degraded
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ServiceProcessorStateDegraded captures enum value "degraded"
 	ServiceProcessorStateDegraded string = "degraded"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// service_processor
 	// ServiceProcessor
 	// state
 	// State
 	// rebooting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ServiceProcessorStateRebooting captures enum value "rebooting"
 	ServiceProcessorStateRebooting string = "rebooting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// service_processor
 	// ServiceProcessor
 	// state
 	// State
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ServiceProcessorStateUnknown captures enum value "unknown"
 	ServiceProcessorStateUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// service_processor
 	// ServiceProcessor
 	// state
 	// State
 	// updating
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ServiceProcessorStateUpdating captures enum value "updating"
 	ServiceProcessorStateUpdating string = "updating"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// service_processor
 	// ServiceProcessor
 	// state
 	// State
 	// node_offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ServiceProcessorStateNodeOffline captures enum value "node_offline"
 	ServiceProcessorStateNodeOffline string = "node_offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// service_processor
 	// ServiceProcessor
 	// state
 	// State
 	// sp_daemon_offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ServiceProcessorStateSpDaemonOffline captures enum value "sp_daemon_offline"
 	ServiceProcessorStateSpDaemonOffline string = "sp_daemon_offline"
 )
@@ -511,70 +511,26 @@ func (m *ServiceProcessorIPV4Interface) UnmarshalBinary(b []byte) error {
 // swagger:model ServiceProcessorIPV6Interface
 type ServiceProcessorIPV6Interface struct {
 
-	// IPv4 or IPv6 address
-	// Example: 10.10.10.7
+	// IPv6 address
+	// Example: fd20:8b1e:b255:5011:10:141:4:97
 	Address string `json:"address,omitempty"`
 
-	// The IPv4 or IPv6 address of the default router.
-	// Example: 10.1.1.1
+	// The IPv6 address of the default router.
+	// Example: fd20:8b1e:b255:5011:10::1
 	Gateway string `json:"gateway,omitempty"`
 
-	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	// The IPv6 netmask/prefix length. The default value is 64 with a valid range of 1 to 127.
+	// Example: 64
+	Netmask int64 `json:"netmask,omitempty"`
 }
 
 // Validate validates this service processor IP v6 interface
 func (m *ServiceProcessorIPV6Interface) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateNetmask(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
-func (m *ServiceProcessorIPV6Interface) validateNetmask(formats strfmt.Registry) error {
-	if swag.IsZero(m.Netmask) { // not required
-		return nil
-	}
-
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ipv6_interface" + "." + "netmask")
-		}
-		return err
-	}
-
-	return nil
-}
-
-// ContextValidate validate this service processor IP v6 interface based on the context it is used
+// ContextValidate validates this service processor IP v6 interface based on context it is used
 func (m *ServiceProcessorIPV6Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateNetmask(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *ServiceProcessorIPV6Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("ipv6_interface" + "." + "netmask")
-		}
-		return err
-	}
-
 	return nil
 }
 
@@ -595,5 +551,3 @@ func (m *ServiceProcessorIPV6Interface) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

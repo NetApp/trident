@@ -64,7 +64,7 @@ type SnapshotPolicyGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *SnapshotPolicyGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snapshot policy get params
-func (o *SnapshotPolicyGetParams) WithFields(fields []string) *SnapshotPolicyGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snapshot policy get params
+func (o *SnapshotPolicyGetParams) WithFieldsQueryParameter(fields []string) *SnapshotPolicyGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snapshot policy get params
-func (o *SnapshotPolicyGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snapshot policy get params
+func (o *SnapshotPolicyGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the snapshot policy get params
@@ -155,7 +155,7 @@ func (o *SnapshotPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *SnapshotPolicyGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamSnapshotPolicyGet binds the parameter fields
 func (o *SnapshotPolicyGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

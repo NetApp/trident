@@ -72,7 +72,7 @@ type SvmModifyParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* UUID.
 
@@ -98,11 +98,11 @@ func (o *SvmModifyParams) WithDefaults() *SvmModifyParams {
 // All values with no default are reset to their zero value.
 func (o *SvmModifyParams) SetDefaults() {
 	var (
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := SvmModifyParams{
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -155,15 +155,15 @@ func (o *SvmModifyParams) SetInfo(info *models.Svm) {
 	o.Info = info
 }
 
-// WithReturnTimeout adds the returnTimeout to the svm modify params
-func (o *SvmModifyParams) WithReturnTimeout(returnTimeout *int64) *SvmModifyParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm modify params
+func (o *SvmModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmModifyParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the svm modify params
-func (o *SvmModifyParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm modify params
+func (o *SvmModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithUUIDPathParameter adds the uuid to the svm modify params
@@ -190,13 +190,13 @@ func (o *SvmModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

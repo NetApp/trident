@@ -73,103 +73,103 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// facility
 	// Facility
 	// kern
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardFacilityKern captures enum value "kern"
 	SecurityAuditLogForwardFacilityKern string = "kern"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// facility
 	// Facility
 	// user
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardFacilityUser captures enum value "user"
 	SecurityAuditLogForwardFacilityUser string = "user"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// facility
 	// Facility
 	// local0
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardFacilityLocal0 captures enum value "local0"
 	SecurityAuditLogForwardFacilityLocal0 string = "local0"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// facility
 	// Facility
 	// local1
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardFacilityLocal1 captures enum value "local1"
 	SecurityAuditLogForwardFacilityLocal1 string = "local1"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// facility
 	// Facility
 	// local2
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardFacilityLocal2 captures enum value "local2"
 	SecurityAuditLogForwardFacilityLocal2 string = "local2"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// facility
 	// Facility
 	// local3
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardFacilityLocal3 captures enum value "local3"
 	SecurityAuditLogForwardFacilityLocal3 string = "local3"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// facility
 	// Facility
 	// local4
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardFacilityLocal4 captures enum value "local4"
 	SecurityAuditLogForwardFacilityLocal4 string = "local4"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// facility
 	// Facility
 	// local5
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardFacilityLocal5 captures enum value "local5"
 	SecurityAuditLogForwardFacilityLocal5 string = "local5"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// facility
 	// Facility
 	// local6
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardFacilityLocal6 captures enum value "local6"
 	SecurityAuditLogForwardFacilityLocal6 string = "local6"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// facility
 	// Facility
 	// local7
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardFacilityLocal7 captures enum value "local7"
 	SecurityAuditLogForwardFacilityLocal7 string = "local7"
 )
@@ -209,33 +209,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// protocol
 	// Protocol
 	// udp_unencrypted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardProtocolUDPUnencrypted captures enum value "udp_unencrypted"
 	SecurityAuditLogForwardProtocolUDPUnencrypted string = "udp_unencrypted"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// protocol
 	// Protocol
 	// tcp_unencrypted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardProtocolTCPUnencrypted captures enum value "tcp_unencrypted"
 	SecurityAuditLogForwardProtocolTCPUnencrypted string = "tcp_unencrypted"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_audit_log_forward
 	// SecurityAuditLogForward
 	// protocol
 	// Protocol
 	// tcp_encrypted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityAuditLogForwardProtocolTCPEncrypted captures enum value "tcp_encrypted"
 	SecurityAuditLogForwardProtocolTCPEncrypted string = "tcp_encrypted"
 )
@@ -283,5 +283,3 @@ func (m *SecurityAuditLogForward) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

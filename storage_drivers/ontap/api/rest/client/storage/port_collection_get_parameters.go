@@ -96,6 +96,12 @@ type PortCollectionGetParams struct {
 	*/
 	DescriptionQueryParameter *string
 
+	/* Enabled.
+
+	   Filter by enabled
+	*/
+	EnabledQueryParameter *bool
+
 	/* ErrorCorrectiveAction.
 
 	   Filter by error.corrective_action
@@ -112,7 +118,19 @@ type PortCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
+
+	/* FirmwareVersion.
+
+	   Filter by firmware_version
+	*/
+	FirmwareVersionQueryParameter *string
+
+	/* InUse.
+
+	   Filter by in_use
+	*/
+	InUseQueryParameter *bool
 
 	/* MacAddress.
 
@@ -124,7 +142,13 @@ type PortCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
+
+	/* Mode.
+
+	   Filter by mode
+	*/
+	ModeQueryParameter *string
 
 	/* Name.
 
@@ -148,7 +172,7 @@ type PortCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* PartNumber.
 
@@ -156,13 +180,19 @@ type PortCollectionGetParams struct {
 	*/
 	PartNumberQueryParameter *string
 
+	/* Redundant.
+
+	   Filter by redundant
+	*/
+	RedundantQueryParameter *bool
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -170,7 +200,7 @@ type PortCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SerialNumber.
 
@@ -190,11 +220,23 @@ type PortCollectionGetParams struct {
 	*/
 	StateQueryParameter *string
 
+	/* Type.
+
+	   Filter by type
+	*/
+	TypeQueryParameter *string
+
 	/* Wwn.
 
 	   Filter by wwn
 	*/
 	WwnQueryParameter *string
+
+	/* Wwpn.
+
+	   Filter by wwpn
+	*/
+	WwpnQueryParameter *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -214,14 +256,14 @@ func (o *PortCollectionGetParams) WithDefaults() *PortCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *PortCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := PortCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -329,6 +371,17 @@ func (o *PortCollectionGetParams) SetDescriptionQueryParameter(description *stri
 	o.DescriptionQueryParameter = description
 }
 
+// WithEnabledQueryParameter adds the enabled to the port collection get params
+func (o *PortCollectionGetParams) WithEnabledQueryParameter(enabled *bool) *PortCollectionGetParams {
+	o.SetEnabledQueryParameter(enabled)
+	return o
+}
+
+// SetEnabledQueryParameter adds the enabled to the port collection get params
+func (o *PortCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
+	o.EnabledQueryParameter = enabled
+}
+
 // WithErrorCorrectiveActionQueryParameter adds the errorCorrectiveAction to the port collection get params
 func (o *PortCollectionGetParams) WithErrorCorrectiveActionQueryParameter(errorCorrectiveAction *string) *PortCollectionGetParams {
 	o.SetErrorCorrectiveActionQueryParameter(errorCorrectiveAction)
@@ -351,15 +404,37 @@ func (o *PortCollectionGetParams) SetErrorMessageQueryParameter(errorMessage *st
 	o.ErrorMessageQueryParameter = errorMessage
 }
 
-// WithFields adds the fields to the port collection get params
-func (o *PortCollectionGetParams) WithFields(fields []string) *PortCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the port collection get params
+func (o *PortCollectionGetParams) WithFieldsQueryParameter(fields []string) *PortCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the port collection get params
-func (o *PortCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the port collection get params
+func (o *PortCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
+}
+
+// WithFirmwareVersionQueryParameter adds the firmwareVersion to the port collection get params
+func (o *PortCollectionGetParams) WithFirmwareVersionQueryParameter(firmwareVersion *string) *PortCollectionGetParams {
+	o.SetFirmwareVersionQueryParameter(firmwareVersion)
+	return o
+}
+
+// SetFirmwareVersionQueryParameter adds the firmwareVersion to the port collection get params
+func (o *PortCollectionGetParams) SetFirmwareVersionQueryParameter(firmwareVersion *string) {
+	o.FirmwareVersionQueryParameter = firmwareVersion
+}
+
+// WithInUseQueryParameter adds the inUse to the port collection get params
+func (o *PortCollectionGetParams) WithInUseQueryParameter(inUse *bool) *PortCollectionGetParams {
+	o.SetInUseQueryParameter(inUse)
+	return o
+}
+
+// SetInUseQueryParameter adds the inUse to the port collection get params
+func (o *PortCollectionGetParams) SetInUseQueryParameter(inUse *bool) {
+	o.InUseQueryParameter = inUse
 }
 
 // WithMacAddressQueryParameter adds the macAddress to the port collection get params
@@ -373,15 +448,26 @@ func (o *PortCollectionGetParams) SetMacAddressQueryParameter(macAddress *string
 	o.MacAddressQueryParameter = macAddress
 }
 
-// WithMaxRecords adds the maxRecords to the port collection get params
-func (o *PortCollectionGetParams) WithMaxRecords(maxRecords *int64) *PortCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the port collection get params
+func (o *PortCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *PortCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the port collection get params
-func (o *PortCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the port collection get params
+func (o *PortCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
+}
+
+// WithModeQueryParameter adds the mode to the port collection get params
+func (o *PortCollectionGetParams) WithModeQueryParameter(mode *string) *PortCollectionGetParams {
+	o.SetModeQueryParameter(mode)
+	return o
+}
+
+// SetModeQueryParameter adds the mode to the port collection get params
+func (o *PortCollectionGetParams) SetModeQueryParameter(mode *string) {
+	o.ModeQueryParameter = mode
 }
 
 // WithNameQueryParameter adds the name to the port collection get params
@@ -417,15 +503,15 @@ func (o *PortCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *string) {
 	o.NodeUUIDQueryParameter = nodeUUID
 }
 
-// WithOrderBy adds the orderBy to the port collection get params
-func (o *PortCollectionGetParams) WithOrderBy(orderBy []string) *PortCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the port collection get params
+func (o *PortCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *PortCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the port collection get params
-func (o *PortCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the port collection get params
+func (o *PortCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPartNumberQueryParameter adds the partNumber to the port collection get params
@@ -439,26 +525,37 @@ func (o *PortCollectionGetParams) SetPartNumberQueryParameter(partNumber *string
 	o.PartNumberQueryParameter = partNumber
 }
 
-// WithReturnRecords adds the returnRecords to the port collection get params
-func (o *PortCollectionGetParams) WithReturnRecords(returnRecords *bool) *PortCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithRedundantQueryParameter adds the redundant to the port collection get params
+func (o *PortCollectionGetParams) WithRedundantQueryParameter(redundant *bool) *PortCollectionGetParams {
+	o.SetRedundantQueryParameter(redundant)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the port collection get params
-func (o *PortCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetRedundantQueryParameter adds the redundant to the port collection get params
+func (o *PortCollectionGetParams) SetRedundantQueryParameter(redundant *bool) {
+	o.RedundantQueryParameter = redundant
 }
 
-// WithReturnTimeout adds the returnTimeout to the port collection get params
-func (o *PortCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *PortCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnRecordsQueryParameter adds the returnRecords to the port collection get params
+func (o *PortCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *PortCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the port collection get params
-func (o *PortCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnRecordsQueryParameter adds the returnRecords to the port collection get params
+func (o *PortCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
+}
+
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the port collection get params
+func (o *PortCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *PortCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
+	return o
+}
+
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the port collection get params
+func (o *PortCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSerialNumberQueryParameter adds the serialNumber to the port collection get params
@@ -494,6 +591,17 @@ func (o *PortCollectionGetParams) SetStateQueryParameter(state *string) {
 	o.StateQueryParameter = state
 }
 
+// WithTypeQueryParameter adds the typeVar to the port collection get params
+func (o *PortCollectionGetParams) WithTypeQueryParameter(typeVar *string) *PortCollectionGetParams {
+	o.SetTypeQueryParameter(typeVar)
+	return o
+}
+
+// SetTypeQueryParameter adds the type to the port collection get params
+func (o *PortCollectionGetParams) SetTypeQueryParameter(typeVar *string) {
+	o.TypeQueryParameter = typeVar
+}
+
 // WithWwnQueryParameter adds the wwn to the port collection get params
 func (o *PortCollectionGetParams) WithWwnQueryParameter(wwn *string) *PortCollectionGetParams {
 	o.SetWwnQueryParameter(wwn)
@@ -503,6 +611,17 @@ func (o *PortCollectionGetParams) WithWwnQueryParameter(wwn *string) *PortCollec
 // SetWwnQueryParameter adds the wwn to the port collection get params
 func (o *PortCollectionGetParams) SetWwnQueryParameter(wwn *string) {
 	o.WwnQueryParameter = wwn
+}
+
+// WithWwpnQueryParameter adds the wwpn to the port collection get params
+func (o *PortCollectionGetParams) WithWwpnQueryParameter(wwpn *string) *PortCollectionGetParams {
+	o.SetWwpnQueryParameter(wwpn)
+	return o
+}
+
+// SetWwpnQueryParameter adds the wwpn to the port collection get params
+func (o *PortCollectionGetParams) SetWwpnQueryParameter(wwpn *string) {
+	o.WwpnQueryParameter = wwpn
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -615,6 +734,23 @@ func (o *PortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.EnabledQueryParameter != nil {
+
+		// query param enabled
+		var qrEnabled bool
+
+		if o.EnabledQueryParameter != nil {
+			qrEnabled = *o.EnabledQueryParameter
+		}
+		qEnabled := swag.FormatBool(qrEnabled)
+		if qEnabled != "" {
+
+			if err := r.SetQueryParam("enabled", qEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ErrorCorrectiveActionQueryParameter != nil {
 
 		// query param error.corrective_action
@@ -649,7 +785,7 @@ func (o *PortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -657,6 +793,40 @@ func (o *PortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.FirmwareVersionQueryParameter != nil {
+
+		// query param firmware_version
+		var qrFirmwareVersion string
+
+		if o.FirmwareVersionQueryParameter != nil {
+			qrFirmwareVersion = *o.FirmwareVersionQueryParameter
+		}
+		qFirmwareVersion := qrFirmwareVersion
+		if qFirmwareVersion != "" {
+
+			if err := r.SetQueryParam("firmware_version", qFirmwareVersion); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.InUseQueryParameter != nil {
+
+		// query param in_use
+		var qrInUse bool
+
+		if o.InUseQueryParameter != nil {
+			qrInUse = *o.InUseQueryParameter
+		}
+		qInUse := swag.FormatBool(qrInUse)
+		if qInUse != "" {
+
+			if err := r.SetQueryParam("in_use", qInUse); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -677,18 +847,35 @@ func (o *PortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ModeQueryParameter != nil {
+
+		// query param mode
+		var qrMode string
+
+		if o.ModeQueryParameter != nil {
+			qrMode = *o.ModeQueryParameter
+		}
+		qMode := qrMode
+		if qMode != "" {
+
+			if err := r.SetQueryParam("mode", qMode); err != nil {
 				return err
 			}
 		}
@@ -745,7 +932,7 @@ func (o *PortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -773,13 +960,30 @@ func (o *PortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.RedundantQueryParameter != nil {
+
+		// query param redundant
+		var qrRedundant bool
+
+		if o.RedundantQueryParameter != nil {
+			qrRedundant = *o.RedundantQueryParameter
+		}
+		qRedundant := swag.FormatBool(qrRedundant)
+		if qRedundant != "" {
+
+			if err := r.SetQueryParam("redundant", qRedundant); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -790,13 +994,13 @@ func (o *PortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -858,6 +1062,23 @@ func (o *PortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.TypeQueryParameter != nil {
+
+		// query param type
+		var qrType string
+
+		if o.TypeQueryParameter != nil {
+			qrType = *o.TypeQueryParameter
+		}
+		qType := qrType
+		if qType != "" {
+
+			if err := r.SetQueryParam("type", qType); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.WwnQueryParameter != nil {
 
 		// query param wwn
@@ -875,6 +1096,23 @@ func (o *PortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.WwpnQueryParameter != nil {
+
+		// query param wwpn
+		var qrWwpn string
+
+		if o.WwpnQueryParameter != nil {
+			qrWwpn = *o.WwpnQueryParameter
+		}
+		qWwpn := qrWwpn
+		if qWwpn != "" {
+
+			if err := r.SetQueryParam("wwpn", qWwpn); err != nil {
+				return err
+			}
+		}
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -883,7 +1121,7 @@ func (o *PortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamPortCollectionGet binds the parameter fields
 func (o *PortCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -900,7 +1138,7 @@ func (o *PortCollectionGetParams) bindParamFields(formats strfmt.Registry) []str
 
 // bindParamPortCollectionGet binds the parameter order_by
 func (o *PortCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

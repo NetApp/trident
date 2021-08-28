@@ -169,23 +169,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// fc_login
 	// FcLogin
 	// protocol
 	// Protocol
 	// fc_nvme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FcLoginProtocolFcNvme captures enum value "fc_nvme"
 	FcLoginProtocolFcNvme string = "fc_nvme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// fc_login
 	// FcLogin
 	// protocol
 	// Protocol
 	// fcp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FcLoginProtocolFcp captures enum value "fcp"
 	FcLoginProtocolFcp string = "fcp"
 )
@@ -582,6 +582,12 @@ type FcLoginInitiator struct {
 	// Read Only: true
 	Aliases []string `json:"aliases,omitempty"`
 
+	// A comment available for use by the administrator. This is modifiable from the initiator REST endpoint directly. See [`PATCH /protocols/san/igroups/{igroup.uuid}/initiators/{name}`](#/SAN/igroup_initiator_modify).
+	//
+	// Example: This is an FC initiator for host 5
+	// Read Only: true
+	Comment string `json:"comment,omitempty"`
+
 	// The port address of the initiator's FC port.<br/>
 	// Each port in an FC switched fabric has its own unique port address for routing purposes. The port address is assigned by a switch in the fabric when that port logs in to the fabric. This property refers to the address given by a switch to the initiator port.<br/>
 	// This is useful for obtaining statistics and diagnostic information from FC switches.<br/>
@@ -617,6 +623,10 @@ func (m *FcLoginInitiator) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateComment(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidatePortAddress(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -647,6 +657,15 @@ func (m *FcLoginInitiator) contextValidateAliases(ctx context.Context, formats s
 			return err
 		}
 
+	}
+
+	return nil
+}
+
+func (m *FcLoginInitiator) contextValidateComment(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "initiator"+"."+"comment", "body", string(m.Comment)); err != nil {
+		return err
 	}
 
 	return nil
@@ -708,13 +727,12 @@ type FcLoginInterface struct {
 
 	// The name of the FC interface.
 	//
-	// Example: lif1
+	// Example: fc_lif1
 	Name string `json:"name,omitempty"`
 
 	// The unique identifier of the FC interface.
 	//
-	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
-	// Read Only: true
+	// Example: 3a09ab42-4da1-32cf-9d35-3385a6101a0b
 	UUID string `json:"uuid,omitempty"`
 
 	// The WWPN of the FC interface.
@@ -763,10 +781,6 @@ func (m *FcLoginInterface) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateUUID(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateWwpn(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -786,15 +800,6 @@ func (m *FcLoginInterface) contextValidateLinks(ctx context.Context, formats str
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *FcLoginInterface) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "interface"+"."+"uuid", "body", string(m.UUID)); err != nil {
-		return err
 	}
 
 	return nil
@@ -1222,5 +1227,3 @@ func (m *FcLoginSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -29,14 +29,14 @@ type PerformanceMetricRawReference struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *PerformanceMetricRawReferenceThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -110,7 +110,7 @@ var performanceMetricRawReferenceTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -120,105 +120,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_metric_raw_reference
 	// PerformanceMetricRawReference
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceMetricRawReferenceStatusOk captures enum value "ok"
 	PerformanceMetricRawReferenceStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_metric_raw_reference
 	// PerformanceMetricRawReference
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceMetricRawReferenceStatusError captures enum value "error"
 	PerformanceMetricRawReferenceStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_metric_raw_reference
 	// PerformanceMetricRawReference
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceMetricRawReferenceStatusPartialNoData captures enum value "partial_no_data"
 	PerformanceMetricRawReferenceStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// performance_metric_raw_reference
-	// PerformanceMetricRawReference
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// PerformanceMetricRawReferenceStatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceMetricRawReferenceStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_metric_raw_reference
 	// PerformanceMetricRawReference
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceMetricRawReferenceStatusPartialNoResponse captures enum value "partial_no_response"
 	PerformanceMetricRawReferenceStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_metric_raw_reference
 	// PerformanceMetricRawReference
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceMetricRawReferenceStatusPartialOtherError captures enum value "partial_other_error"
 	PerformanceMetricRawReferenceStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_metric_raw_reference
 	// PerformanceMetricRawReference
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceMetricRawReferenceStatusNegativeDelta captures enum value "negative_delta"
 	PerformanceMetricRawReferenceStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// performance_metric_raw_reference
+	// PerformanceMetricRawReference
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// PerformanceMetricRawReferenceStatusNotFound captures enum value "not_found"
+	PerformanceMetricRawReferenceStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// performance_metric_raw_reference
 	// PerformanceMetricRawReference
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceMetricRawReferenceStatusBackfilledData captures enum value "backfilled_data"
 	PerformanceMetricRawReferenceStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_metric_raw_reference
 	// PerformanceMetricRawReference
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceMetricRawReferenceStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	PerformanceMetricRawReferenceStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_metric_raw_reference
 	// PerformanceMetricRawReference
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceMetricRawReferenceStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	PerformanceMetricRawReferenceStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// performance_metric_raw_reference
+	// PerformanceMetricRawReference
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// PerformanceMetricRawReferenceStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceMetricRawReferenceStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -540,5 +550,3 @@ func (m *PerformanceMetricRawReferenceThroughputRaw) UnmarshalBinary(b []byte) e
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

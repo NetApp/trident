@@ -30,11 +30,26 @@ type StoragePort struct {
 	// Example: SAS Host Adapter 2a (PMC-Sierra PM8072 rev. C)
 	Description string `json:"description,omitempty"`
 
+	// enabled
+	Enabled bool `json:"enabled,omitempty"`
+
 	// error
 	Error *StoragePortError `json:"error,omitempty"`
 
+	// firmware version
+	// Example: 03.08.09.00
+	FirmwareVersion string `json:"firmware_version,omitempty"`
+
+	// Specifies whether any devices are connected through this port
+	InUse bool `json:"in_use,omitempty"`
+
 	// mac address
 	MacAddress string `json:"mac_address,omitempty"`
+
+	// Operational mode of a non-dedicated Ethernet port
+	// Example: storage
+	// Enum: [network storage]
+	Mode string `json:"mode,omitempty"`
 
 	// name
 	// Example: 2a
@@ -46,6 +61,9 @@ type StoragePort struct {
 	// part number
 	// Example: 111-03801
 	PartNumber string `json:"part_number,omitempty"`
+
+	// Specifies whether all devices connected through this port have a redundant path from another port
+	Redundant bool `json:"redundant,omitempty"`
 
 	// serial number
 	// Example: 7A2463CC45B
@@ -60,9 +78,17 @@ type StoragePort struct {
 	// Enum: [online offline error]
 	State string `json:"state,omitempty"`
 
+	// type
+	// Example: sas
+	// Enum: [sas fc enet]
+	Type string `json:"type,omitempty"`
+
 	// World Wide Name
 	// Example: 50000d1703544b80
 	Wwn string `json:"wwn,omitempty"`
+
+	// World Wide Port Name
+	Wwpn string `json:"wwpn,omitempty"`
 }
 
 // Validate validates this storage port
@@ -77,11 +103,19 @@ func (m *StoragePort) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateMode(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateNode(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -125,6 +159,62 @@ func (m *StoragePort) validateError(formats strfmt.Registry) error {
 	return nil
 }
 
+var storagePortTypeModePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["network","storage"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		storagePortTypeModePropEnum = append(storagePortTypeModePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// storage_port
+	// StoragePort
+	// mode
+	// Mode
+	// network
+	// END DEBUGGING
+	// StoragePortModeNetwork captures enum value "network"
+	StoragePortModeNetwork string = "network"
+
+	// BEGIN DEBUGGING
+	// storage_port
+	// StoragePort
+	// mode
+	// Mode
+	// storage
+	// END DEBUGGING
+	// StoragePortModeStorage captures enum value "storage"
+	StoragePortModeStorage string = "storage"
+)
+
+// prop value enum
+func (m *StoragePort) validateModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storagePortTypeModePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *StoragePort) validateMode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Mode) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateModeEnum("mode", "body", m.Mode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *StoragePort) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
@@ -156,33 +246,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// storage_port
 	// StoragePort
 	// state
 	// State
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// StoragePortStateOnline captures enum value "online"
 	StoragePortStateOnline string = "online"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// storage_port
 	// StoragePort
 	// state
 	// State
 	// offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// StoragePortStateOffline captures enum value "offline"
 	StoragePortStateOffline string = "offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// storage_port
 	// StoragePort
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// StoragePortStateError captures enum value "error"
 	StoragePortStateError string = "error"
 )
@@ -202,6 +292,72 @@ func (m *StoragePort) validateState(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var storagePortTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["sas","fc","enet"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		storagePortTypeTypePropEnum = append(storagePortTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// storage_port
+	// StoragePort
+	// type
+	// Type
+	// sas
+	// END DEBUGGING
+	// StoragePortTypeSas captures enum value "sas"
+	StoragePortTypeSas string = "sas"
+
+	// BEGIN DEBUGGING
+	// storage_port
+	// StoragePort
+	// type
+	// Type
+	// fc
+	// END DEBUGGING
+	// StoragePortTypeFc captures enum value "fc"
+	StoragePortTypeFc string = "fc"
+
+	// BEGIN DEBUGGING
+	// storage_port
+	// StoragePort
+	// type
+	// Type
+	// enet
+	// END DEBUGGING
+	// StoragePortTypeEnet captures enum value "enet"
+	StoragePortTypeEnet string = "enet"
+)
+
+// prop value enum
+func (m *StoragePort) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, storagePortTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *StoragePort) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
 		return err
 	}
 
@@ -559,5 +715,3 @@ func (m *StoragePortNodeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -21,8 +21,14 @@ type SecurityConfig struct {
 	// links
 	Links *SecurityConfigLinks `json:"_links,omitempty"`
 
+	// fips
+	Fips *SecurityConfigFips `json:"fips,omitempty"`
+
 	// onboard key manager configurable status
 	OnboardKeyManagerConfigurableStatus *SecurityConfigOnboardKeyManagerConfigurableStatus `json:"onboard_key_manager_configurable_status,omitempty"`
+
+	// software data encryption
+	SoftwareDataEncryption *SecurityConfigSoftwareDataEncryption `json:"software_data_encryption,omitempty"`
 }
 
 // Validate validates this security config
@@ -33,7 +39,15 @@ func (m *SecurityConfig) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateFips(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateOnboardKeyManagerConfigurableStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSoftwareDataEncryption(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -60,6 +74,23 @@ func (m *SecurityConfig) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SecurityConfig) validateFips(formats strfmt.Registry) error {
+	if swag.IsZero(m.Fips) { // not required
+		return nil
+	}
+
+	if m.Fips != nil {
+		if err := m.Fips.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("fips")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *SecurityConfig) validateOnboardKeyManagerConfigurableStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.OnboardKeyManagerConfigurableStatus) { // not required
 		return nil
@@ -77,6 +108,23 @@ func (m *SecurityConfig) validateOnboardKeyManagerConfigurableStatus(formats str
 	return nil
 }
 
+func (m *SecurityConfig) validateSoftwareDataEncryption(formats strfmt.Registry) error {
+	if swag.IsZero(m.SoftwareDataEncryption) { // not required
+		return nil
+	}
+
+	if m.SoftwareDataEncryption != nil {
+		if err := m.SoftwareDataEncryption.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("software_data_encryption")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this security config based on the context it is used
 func (m *SecurityConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -85,7 +133,15 @@ func (m *SecurityConfig) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateFips(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateOnboardKeyManagerConfigurableStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSoftwareDataEncryption(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -109,12 +165,40 @@ func (m *SecurityConfig) contextValidateLinks(ctx context.Context, formats strfm
 	return nil
 }
 
+func (m *SecurityConfig) contextValidateFips(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Fips != nil {
+		if err := m.Fips.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("fips")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *SecurityConfig) contextValidateOnboardKeyManagerConfigurableStatus(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.OnboardKeyManagerConfigurableStatus != nil {
 		if err := m.OnboardKeyManagerConfigurableStatus.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("onboard_key_manager_configurable_status")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SecurityConfig) contextValidateSoftwareDataEncryption(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SoftwareDataEncryption != nil {
+		if err := m.SoftwareDataEncryption.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("software_data_encryption")
 			}
 			return err
 		}
@@ -134,6 +218,44 @@ func (m *SecurityConfig) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SecurityConfig) UnmarshalBinary(b []byte) error {
 	var res SecurityConfig
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SecurityConfigFips Cluster-wide Federal Information Processing Standards (FIPS) mode information.
+//
+//
+// swagger:model SecurityConfigFips
+type SecurityConfigFips struct {
+
+	// Indicates whether or not the software FIPS mode is enabled on the cluster. Our FIPS compliance involves configuring the use of only approved algorithms in applicable contexts (for example TLS), as well as the use of formally validated cryptographic module software implementations, where applicable. The US government documents concerning FIPS 140-2 outline the relevant security policies in detail.
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+// Validate validates this security config fips
+func (m *SecurityConfigFips) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this security config fips based on context it is used
+func (m *SecurityConfigFips) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityConfigFips) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityConfigFips) UnmarshalBinary(b []byte) error {
+	var res SecurityConfigFips
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -250,13 +372,8 @@ func (m *SecurityConfigOnboardKeyManagerConfigurableStatus) Validate(formats str
 	return nil
 }
 
-// ContextValidate validate this security config onboard key manager configurable status based on the context it is used
+// ContextValidate validates this security config onboard key manager configurable status based on context it is used
 func (m *SecurityConfigOnboardKeyManagerConfigurableStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
@@ -278,4 +395,43 @@ func (m *SecurityConfigOnboardKeyManagerConfigurableStatus) UnmarshalBinary(b []
 	return nil
 }
 
-// HELLO RIPPY
+// SecurityConfigSoftwareDataEncryption Cluster-wide software data encryption related information.
+//
+//
+// swagger:model SecurityConfigSoftwareDataEncryption
+type SecurityConfigSoftwareDataEncryption struct {
+
+	// Indicates whether or not software encryption conversion is enabled on the cluster. A PATCH request initiates the conversion of all non-encrypted metadata volumes in the cluster to encrypted metadata volumes and all non-NAE aggregates to NAE aggregates. For the PATCH request to start, the cluster must have either an Onboard or an external key manager set up and the aggregates should either be empty or have only metadata volumes. No data volumes should be present in any of the aggregates in the cluster. For MetroCluster configurations, a PATCH request enables conversion on all the aggregates and metadata volumes of both local and remote clusters and is not allowed when the MetroCluster is in switchover state.
+	ConversionEnabled bool `json:"conversion_enabled,omitempty"`
+
+	// Indicates whether or not default software data at rest encryption is disabled on the cluster.
+	DisabledByDefault bool `json:"disabled_by_default,omitempty"`
+}
+
+// Validate validates this security config software data encryption
+func (m *SecurityConfigSoftwareDataEncryption) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this security config software data encryption based on context it is used
+func (m *SecurityConfigSoftwareDataEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityConfigSoftwareDataEncryption) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityConfigSoftwareDataEncryption) UnmarshalBinary(b []byte) error {
+	var res SecurityConfigSoftwareDataEncryption
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

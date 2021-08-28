@@ -718,6 +718,10 @@ type ClusterCertificate struct {
 	// links
 	Links *ClusterCertificateLinks `json:"_links,omitempty"`
 
+	// Certificate name
+	// Example: cert1
+	Name string `json:"name,omitempty"`
+
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID string `json:"uuid,omitempty"`
@@ -1584,14 +1588,14 @@ type ClusterMetric struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *ClusterMetricThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1666,63 +1670,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricDurationPT15S captures enum value "PT15S"
 	ClusterMetricDurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricDurationPT4M captures enum value "PT4M"
 	ClusterMetricDurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricDurationPT30M captures enum value "PT30M"
 	ClusterMetricDurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricDurationPT2H captures enum value "PT2H"
 	ClusterMetricDurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricDurationP1D captures enum value "P1D"
 	ClusterMetricDurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricDurationPT5M captures enum value "PT5M"
 	ClusterMetricDurationPT5M string = "PT5M"
 )
@@ -1786,7 +1790,7 @@ var clusterMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1796,105 +1800,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricStatusOk captures enum value "ok"
 	ClusterMetricStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricStatusError captures enum value "error"
 	ClusterMetricStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricStatusPartialNoData captures enum value "partial_no_data"
 	ClusterMetricStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// ClusterMetric
-	// ClusterMetric
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// ClusterMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	ClusterMetricStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricStatusPartialNoResponse captures enum value "partial_no_response"
 	ClusterMetricStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricStatusPartialOtherError captures enum value "partial_other_error"
 	ClusterMetricStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricStatusNegativeDelta captures enum value "negative_delta"
 	ClusterMetricStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// ClusterMetric
+	// ClusterMetric
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// ClusterMetricStatusNotFound captures enum value "not_found"
+	ClusterMetricStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricStatusBackfilledData captures enum value "backfilled_data"
 	ClusterMetricStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	ClusterMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterMetric
 	// ClusterMetric
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	ClusterMetricStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// ClusterMetric
+	// ClusterMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// ClusterMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	ClusterMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -2355,7 +2369,7 @@ type ClusterNodesItems0 struct {
 	// The current or "wall clock" time of the node in ISO-8601 date, time, and time zone format.
 	// The ISO-8601 date and time are localized based on the ONTAP cluster's timezone setting.
 	//
-	// Example: 2019-04-17 15:49:26
+	// Example: 2019-04-17T11:49:26-04:00
 	// Read Only: true
 	// Format: date-time
 	Date *strfmt.DateTime `json:"date,omitempty"`
@@ -2383,6 +2397,12 @@ type ClusterNodesItems0 struct {
 	// Enum: [available joining member]
 	Membership string `json:"membership,omitempty"`
 
+	// metric
+	Metric *ClusterNodesItems0Metric `json:"metric,omitempty"`
+
+	// metrocluster
+	Metrocluster *ClusterNodesItems0Metrocluster `json:"metrocluster,omitempty"`
+
 	// model
 	// Example: FAS3070
 	// Read Only: true
@@ -2391,6 +2411,13 @@ type ClusterNodesItems0 struct {
 	// name
 	// Example: node-01
 	Name string `json:"name,omitempty"`
+
+	// nvram
+	Nvram *ClusterNodesItems0Nvram `json:"nvram,omitempty"`
+
+	// Owner of the node.
+	// Example: Example Corp
+	Owner string `json:"owner,omitempty"`
 
 	// serial number
 	// Example: 4048820-60-9
@@ -2413,8 +2440,26 @@ type ClusterNodesItems0 struct {
 	// Enum: [up booting down taken_over waiting_for_giveback degraded unknown]
 	State string `json:"state,omitempty"`
 
+	// statistics
+	Statistics *ClusterNodesItems0Statistics `json:"statistics,omitempty"`
+
+	// The storage configuration in the system. Possible values:
+	// * <i>mixed_path</i>
+	// * <i>single_path</i>
+	// * <i>multi_path</i>
+	// * <i>quad_path</i>
+	// * <i>mixed_path_ha</i>
+	// * <i>single_path_ha</i>
+	// * <i>multi_path_ha</i>
+	// * <i>quad_path_ha</i>
+	// * <i>unknown</i>
+	//
+	// Read Only: true
+	// Enum: [unknown single_path multi_path mixed_path quad_path single_path_ha multi_path_ha mixed_path_ha quad_path_ha]
+	StorageConfiguration string `json:"storage_configuration,omitempty"`
+
 	// system id
-	// Example: 537035403
+	// Example: 0537035403
 	// Read Only: true
 	SystemID string `json:"system_id,omitempty"`
 
@@ -2486,11 +2531,31 @@ func (m *ClusterNodesItems0) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateMetric(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMetrocluster(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNvram(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateServiceProcessor(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatistics(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageConfiguration(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2671,33 +2736,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0
 	// ClusterNodesItems0
 	// membership
 	// Membership
 	// available
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0MembershipAvailable captures enum value "available"
 	ClusterNodesItems0MembershipAvailable string = "available"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0
 	// ClusterNodesItems0
 	// membership
 	// Membership
 	// joining
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0MembershipJoining captures enum value "joining"
 	ClusterNodesItems0MembershipJoining string = "joining"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0
 	// ClusterNodesItems0
 	// membership
 	// Membership
 	// member
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0MembershipMember captures enum value "member"
 	ClusterNodesItems0MembershipMember string = "member"
 )
@@ -2718,6 +2783,57 @@ func (m *ClusterNodesItems0) validateMembership(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateMembershipEnum("membership", "body", m.Membership); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0) validateMetric(formats strfmt.Registry) error {
+	if swag.IsZero(m.Metric) { // not required
+		return nil
+	}
+
+	if m.Metric != nil {
+		if err := m.Metric.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0) validateMetrocluster(formats strfmt.Registry) error {
+	if swag.IsZero(m.Metrocluster) { // not required
+		return nil
+	}
+
+	if m.Metrocluster != nil {
+		if err := m.Metrocluster.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metrocluster")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0) validateNvram(formats strfmt.Registry) error {
+	if swag.IsZero(m.Nvram) { // not required
+		return nil
+	}
+
+	if m.Nvram != nil {
+		if err := m.Nvram.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nvram")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -2754,73 +2870,73 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0
 	// ClusterNodesItems0
 	// state
 	// State
 	// up
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0StateUp captures enum value "up"
 	ClusterNodesItems0StateUp string = "up"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0
 	// ClusterNodesItems0
 	// state
 	// State
 	// booting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0StateBooting captures enum value "booting"
 	ClusterNodesItems0StateBooting string = "booting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0
 	// ClusterNodesItems0
 	// state
 	// State
 	// down
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0StateDown captures enum value "down"
 	ClusterNodesItems0StateDown string = "down"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0
 	// ClusterNodesItems0
 	// state
 	// State
 	// taken_over
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0StateTakenOver captures enum value "taken_over"
 	ClusterNodesItems0StateTakenOver string = "taken_over"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0
 	// ClusterNodesItems0
 	// state
 	// State
 	// waiting_for_giveback
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0StateWaitingForGiveback captures enum value "waiting_for_giveback"
 	ClusterNodesItems0StateWaitingForGiveback string = "waiting_for_giveback"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0
 	// ClusterNodesItems0
 	// state
 	// State
 	// degraded
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0StateDegraded captures enum value "degraded"
 	ClusterNodesItems0StateDegraded string = "degraded"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0
 	// ClusterNodesItems0
 	// state
 	// State
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0StateUnknown captures enum value "unknown"
 	ClusterNodesItems0StateUnknown string = "unknown"
 )
@@ -2840,6 +2956,149 @@ func (m *ClusterNodesItems0) validateState(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0) validateStatistics(formats strfmt.Registry) error {
+	if swag.IsZero(m.Statistics) { // not required
+		return nil
+	}
+
+	if m.Statistics != nil {
+		if err := m.Statistics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var clusterNodesItems0TypeStorageConfigurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["unknown","single_path","multi_path","mixed_path","quad_path","single_path_ha","multi_path_ha","mixed_path_ha","quad_path_ha"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0TypeStorageConfigurationPropEnum = append(clusterNodesItems0TypeStorageConfigurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0
+	// ClusterNodesItems0
+	// storage_configuration
+	// StorageConfiguration
+	// unknown
+	// END DEBUGGING
+	// ClusterNodesItems0StorageConfigurationUnknown captures enum value "unknown"
+	ClusterNodesItems0StorageConfigurationUnknown string = "unknown"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0
+	// ClusterNodesItems0
+	// storage_configuration
+	// StorageConfiguration
+	// single_path
+	// END DEBUGGING
+	// ClusterNodesItems0StorageConfigurationSinglePath captures enum value "single_path"
+	ClusterNodesItems0StorageConfigurationSinglePath string = "single_path"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0
+	// ClusterNodesItems0
+	// storage_configuration
+	// StorageConfiguration
+	// multi_path
+	// END DEBUGGING
+	// ClusterNodesItems0StorageConfigurationMultiPath captures enum value "multi_path"
+	ClusterNodesItems0StorageConfigurationMultiPath string = "multi_path"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0
+	// ClusterNodesItems0
+	// storage_configuration
+	// StorageConfiguration
+	// mixed_path
+	// END DEBUGGING
+	// ClusterNodesItems0StorageConfigurationMixedPath captures enum value "mixed_path"
+	ClusterNodesItems0StorageConfigurationMixedPath string = "mixed_path"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0
+	// ClusterNodesItems0
+	// storage_configuration
+	// StorageConfiguration
+	// quad_path
+	// END DEBUGGING
+	// ClusterNodesItems0StorageConfigurationQuadPath captures enum value "quad_path"
+	ClusterNodesItems0StorageConfigurationQuadPath string = "quad_path"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0
+	// ClusterNodesItems0
+	// storage_configuration
+	// StorageConfiguration
+	// single_path_ha
+	// END DEBUGGING
+	// ClusterNodesItems0StorageConfigurationSinglePathHa captures enum value "single_path_ha"
+	ClusterNodesItems0StorageConfigurationSinglePathHa string = "single_path_ha"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0
+	// ClusterNodesItems0
+	// storage_configuration
+	// StorageConfiguration
+	// multi_path_ha
+	// END DEBUGGING
+	// ClusterNodesItems0StorageConfigurationMultiPathHa captures enum value "multi_path_ha"
+	ClusterNodesItems0StorageConfigurationMultiPathHa string = "multi_path_ha"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0
+	// ClusterNodesItems0
+	// storage_configuration
+	// StorageConfiguration
+	// mixed_path_ha
+	// END DEBUGGING
+	// ClusterNodesItems0StorageConfigurationMixedPathHa captures enum value "mixed_path_ha"
+	ClusterNodesItems0StorageConfigurationMixedPathHa string = "mixed_path_ha"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0
+	// ClusterNodesItems0
+	// storage_configuration
+	// StorageConfiguration
+	// quad_path_ha
+	// END DEBUGGING
+	// ClusterNodesItems0StorageConfigurationQuadPathHa captures enum value "quad_path_ha"
+	ClusterNodesItems0StorageConfigurationQuadPathHa string = "quad_path_ha"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0) validateStorageConfigurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0TypeStorageConfigurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0) validateStorageConfiguration(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageConfiguration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStorageConfigurationEnum("storage_configuration", "body", m.StorageConfiguration); err != nil {
 		return err
 	}
 
@@ -2932,7 +3191,19 @@ func (m *ClusterNodesItems0) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateMetric(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMetrocluster(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateModel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNvram(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2945,6 +3216,14 @@ func (m *ClusterNodesItems0) ContextValidate(ctx context.Context, formats strfmt
 	}
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatistics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStorageConfiguration(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3114,10 +3393,52 @@ func (m *ClusterNodesItems0) contextValidateMembership(ctx context.Context, form
 	return nil
 }
 
+func (m *ClusterNodesItems0) contextValidateMetric(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Metric != nil {
+		if err := m.Metric.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0) contextValidateMetrocluster(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Metrocluster != nil {
+		if err := m.Metrocluster.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metrocluster")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ClusterNodesItems0) contextValidateModel(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "model", "body", string(m.Model)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0) contextValidateNvram(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Nvram != nil {
+		if err := m.Nvram.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nvram")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -3149,6 +3470,29 @@ func (m *ClusterNodesItems0) contextValidateServiceProcessor(ctx context.Context
 func (m *ClusterNodesItems0) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0) contextValidateStatistics(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Statistics != nil {
+		if err := m.Statistics.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0) contextValidateStorageConfiguration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "storage_configuration", "body", string(m.StorageConfiguration)); err != nil {
 		return err
 	}
 
@@ -3641,12 +3985,31 @@ func (m *ClusterNodesItems0ClusterInterfacesItems0Links) UnmarshalBinary(b []byt
 // swagger:model ClusterNodesItems0Controller
 type ClusterNodesItems0Controller struct {
 
+	// Type of the system board. This is defined by vendor.
+	// Example: System Board XXVIII
+	// Read Only: true
+	Board string `json:"board,omitempty"`
+
+	// cpu
+	CPU *ClusterNodesItems0ControllerCPU `json:"cpu,omitempty"`
+
+	// failed fan
+	FailedFan *ClusterNodesItems0ControllerFailedFan `json:"failed_fan,omitempty"`
+
+	// failed power supply
+	FailedPowerSupply *ClusterNodesItems0ControllerFailedPowerSupply `json:"failed_power_supply,omitempty"`
+
 	// A list of Flash-Cache devices. Only returned when requested by name.
 	// Read Only: true
 	FlashCache []*ClusterNodesItems0ControllerFlashCacheItems0 `json:"flash_cache,omitempty"`
 
 	// List of FRUs on the node. Only returned when requested by name.
 	Frus []*ClusterNodesItems0ControllerFrusItems0 `json:"frus,omitempty"`
+
+	// Memory available on the node, in bytes.
+	// Example: 1024000000
+	// Read Only: true
+	MemorySize int64 `json:"memory_size,omitempty"`
 
 	// Specifies whether the hardware is currently operating outside of its recommended temperature range. The hardware shuts down if the temperature exceeds critical thresholds.
 	// Read Only: true
@@ -3657,6 +4020,18 @@ type ClusterNodesItems0Controller struct {
 // Validate validates this cluster nodes items0 controller
 func (m *ClusterNodesItems0Controller) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateCPU(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFailedFan(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFailedPowerSupply(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateFlashCache(formats); err != nil {
 		res = append(res, err)
@@ -3673,6 +4048,57 @@ func (m *ClusterNodesItems0Controller) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterNodesItems0Controller) validateCPU(formats strfmt.Registry) error {
+	if swag.IsZero(m.CPU) { // not required
+		return nil
+	}
+
+	if m.CPU != nil {
+		if err := m.CPU.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "cpu")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0Controller) validateFailedFan(formats strfmt.Registry) error {
+	if swag.IsZero(m.FailedFan) { // not required
+		return nil
+	}
+
+	if m.FailedFan != nil {
+		if err := m.FailedFan.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_fan")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0Controller) validateFailedPowerSupply(formats strfmt.Registry) error {
+	if swag.IsZero(m.FailedPowerSupply) { // not required
+		return nil
+	}
+
+	if m.FailedPowerSupply != nil {
+		if err := m.FailedPowerSupply.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_power_supply")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -3738,23 +4164,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0Controller
 	// ClusterNodesItems0Controller
 	// over_temperature
 	// OverTemperature
 	// over
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerOverTemperatureOver captures enum value "over"
 	ClusterNodesItems0ControllerOverTemperatureOver string = "over"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0Controller
 	// ClusterNodesItems0Controller
 	// over_temperature
 	// OverTemperature
 	// normal
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerOverTemperatureNormal captures enum value "normal"
 	ClusterNodesItems0ControllerOverTemperatureNormal string = "normal"
 )
@@ -3784,11 +4210,31 @@ func (m *ClusterNodesItems0Controller) validateOverTemperature(formats strfmt.Re
 func (m *ClusterNodesItems0Controller) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateBoard(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCPU(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFailedFan(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFailedPowerSupply(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFlashCache(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateFrus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMemorySize(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3799,6 +4245,57 @@ func (m *ClusterNodesItems0Controller) ContextValidate(ctx context.Context, form
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterNodesItems0Controller) contextValidateBoard(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"board", "body", string(m.Board)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0Controller) contextValidateCPU(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.CPU != nil {
+		if err := m.CPU.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "cpu")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0Controller) contextValidateFailedFan(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.FailedFan != nil {
+		if err := m.FailedFan.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_fan")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0Controller) contextValidateFailedPowerSupply(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.FailedPowerSupply != nil {
+		if err := m.FailedPowerSupply.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_power_supply")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -3842,6 +4339,15 @@ func (m *ClusterNodesItems0Controller) contextValidateFrus(ctx context.Context, 
 	return nil
 }
 
+func (m *ClusterNodesItems0Controller) contextValidateMemorySize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"memory_size", "body", int64(m.MemorySize)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *ClusterNodesItems0Controller) contextValidateOverTemperature(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "controller"+"."+"over_temperature", "body", string(m.OverTemperature)); err != nil {
@@ -3869,6 +4375,455 @@ func (m *ClusterNodesItems0Controller) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// ClusterNodesItems0ControllerCPU CPU information.
+//
+// swagger:model ClusterNodesItems0ControllerCPU
+type ClusterNodesItems0ControllerCPU struct {
+
+	// Number of CPUs on the node.
+	// Example: 20
+	// Read Only: true
+	Count int64 `json:"count,omitempty"`
+
+	// Firmware release number. Defined by the CPU manufacturer.
+	// Read Only: true
+	FirmwareRelease string `json:"firmware_release,omitempty"`
+
+	// CPU type on the node.
+	// Read Only: true
+	Processor string `json:"processor,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 controller CPU
+func (m *ClusterNodesItems0ControllerCPU) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 controller CPU based on the context it is used
+func (m *ClusterNodesItems0ControllerCPU) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFirmwareRelease(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProcessor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerCPU) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"cpu"+"."+"count", "body", int64(m.Count)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerCPU) contextValidateFirmwareRelease(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"cpu"+"."+"firmware_release", "body", string(m.FirmwareRelease)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerCPU) contextValidateProcessor(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"cpu"+"."+"processor", "body", string(m.Processor)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0ControllerCPU) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0ControllerCPU) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0ControllerCPU
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0ControllerFailedFan cluster nodes items0 controller failed fan
+//
+// swagger:model ClusterNodesItems0ControllerFailedFan
+type ClusterNodesItems0ControllerFailedFan struct {
+
+	// Specifies a count of the number of chassis fans that are not operating within the recommended RPM range.
+	// Example: 1
+	// Read Only: true
+	Count int64 `json:"count,omitempty"`
+
+	// message
+	Message *ClusterNodesItems0ControllerFailedFanMessage `json:"message,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 controller failed fan
+func (m *ClusterNodesItems0ControllerFailedFan) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMessage(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerFailedFan) validateMessage(formats strfmt.Registry) error {
+	if swag.IsZero(m.Message) { // not required
+		return nil
+	}
+
+	if m.Message != nil {
+		if err := m.Message.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_fan" + "." + "message")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 controller failed fan based on the context it is used
+func (m *ClusterNodesItems0ControllerFailedFan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerFailedFan) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_fan"+"."+"count", "body", int64(m.Count)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerFailedFan) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Message != nil {
+		if err := m.Message.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_fan" + "." + "message")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0ControllerFailedFan) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0ControllerFailedFan) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0ControllerFailedFan
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0ControllerFailedFanMessage cluster nodes items0 controller failed fan message
+//
+// swagger:model ClusterNodesItems0ControllerFailedFanMessage
+type ClusterNodesItems0ControllerFailedFanMessage struct {
+
+	// Error code describing the current condition of chassis fans.
+	// Example: 111411207
+	// Read Only: true
+	Code string `json:"code,omitempty"`
+
+	// Message describing the current condition of chassis fans. It is only of use when `failed_fan.count` is not zero.
+	// Example: There are no failed fans.
+	// Read Only: true
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 controller failed fan message
+func (m *ClusterNodesItems0ControllerFailedFanMessage) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 controller failed fan message based on the context it is used
+func (m *ClusterNodesItems0ControllerFailedFanMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerFailedFanMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_fan"+"."+"message"+"."+"code", "body", string(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerFailedFanMessage) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_fan"+"."+"message"+"."+"message", "body", string(m.Message)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0ControllerFailedFanMessage) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0ControllerFailedFanMessage) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0ControllerFailedFanMessage
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0ControllerFailedPowerSupply cluster nodes items0 controller failed power supply
+//
+// swagger:model ClusterNodesItems0ControllerFailedPowerSupply
+type ClusterNodesItems0ControllerFailedPowerSupply struct {
+
+	// Number of failed power supply units.
+	// Example: 1
+	// Read Only: true
+	Count int64 `json:"count,omitempty"`
+
+	// message
+	Message *ClusterNodesItems0ControllerFailedPowerSupplyMessage `json:"message,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 controller failed power supply
+func (m *ClusterNodesItems0ControllerFailedPowerSupply) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMessage(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerFailedPowerSupply) validateMessage(formats strfmt.Registry) error {
+	if swag.IsZero(m.Message) { // not required
+		return nil
+	}
+
+	if m.Message != nil {
+		if err := m.Message.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_power_supply" + "." + "message")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 controller failed power supply based on the context it is used
+func (m *ClusterNodesItems0ControllerFailedPowerSupply) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerFailedPowerSupply) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_power_supply"+"."+"count", "body", int64(m.Count)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerFailedPowerSupply) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Message != nil {
+		if err := m.Message.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_power_supply" + "." + "message")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0ControllerFailedPowerSupply) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0ControllerFailedPowerSupply) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0ControllerFailedPowerSupply
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0ControllerFailedPowerSupplyMessage cluster nodes items0 controller failed power supply message
+//
+// swagger:model ClusterNodesItems0ControllerFailedPowerSupplyMessage
+type ClusterNodesItems0ControllerFailedPowerSupplyMessage struct {
+
+	// Error code describing the current condition of power supply.
+	// Example: 111411208
+	// Read Only: true
+	Code string `json:"code,omitempty"`
+
+	// Message describing the state of any power supplies that are currently degraded. It is only of use when `failed_power_supply.count` is not zero.
+	// Example: There are no failed power supplies.
+	// Read Only: true
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 controller failed power supply message
+func (m *ClusterNodesItems0ControllerFailedPowerSupplyMessage) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 controller failed power supply message based on the context it is used
+func (m *ClusterNodesItems0ControllerFailedPowerSupplyMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerFailedPowerSupplyMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_power_supply"+"."+"message"+"."+"code", "body", string(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerFailedPowerSupplyMessage) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_power_supply"+"."+"message"+"."+"message", "body", string(m.Message)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0ControllerFailedPowerSupplyMessage) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0ControllerFailedPowerSupplyMessage) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0ControllerFailedPowerSupplyMessage
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // ClusterNodesItems0ControllerFlashCacheItems0 cluster nodes items0 controller flash cache items0
 //
 // swagger:model ClusterNodesItems0ControllerFlashCacheItems0
@@ -3878,6 +4833,16 @@ type ClusterNodesItems0ControllerFlashCacheItems0 struct {
 	// Example: 1024000000000
 	// Read Only: true
 	Capacity int64 `json:"capacity,omitempty"`
+
+	// device id
+	// Example: 0
+	// Read Only: true
+	DeviceID int64 `json:"device_id,omitempty"`
+
+	// firmware file
+	// Example: X9170_O000Z6300NVM
+	// Read Only: true
+	FirmwareFile string `json:"firmware_file,omitempty"`
 
 	// firmware version
 	// Example: NA05
@@ -3943,53 +4908,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFlashCacheItems0
 	// ClusterNodesItems0ControllerFlashCacheItems0
 	// state
 	// State
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFlashCacheItems0StateOk captures enum value "ok"
 	ClusterNodesItems0ControllerFlashCacheItems0StateOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFlashCacheItems0
 	// ClusterNodesItems0ControllerFlashCacheItems0
 	// state
 	// State
 	// erasing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFlashCacheItems0StateErasing captures enum value "erasing"
 	ClusterNodesItems0ControllerFlashCacheItems0StateErasing string = "erasing"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFlashCacheItems0
 	// ClusterNodesItems0ControllerFlashCacheItems0
 	// state
 	// State
 	// erased
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFlashCacheItems0StateErased captures enum value "erased"
 	ClusterNodesItems0ControllerFlashCacheItems0StateErased string = "erased"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFlashCacheItems0
 	// ClusterNodesItems0ControllerFlashCacheItems0
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFlashCacheItems0StateFailed captures enum value "failed"
 	ClusterNodesItems0ControllerFlashCacheItems0StateFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFlashCacheItems0
 	// ClusterNodesItems0ControllerFlashCacheItems0
 	// state
 	// State
 	// removed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFlashCacheItems0StateRemoved captures enum value "removed"
 	ClusterNodesItems0ControllerFlashCacheItems0StateRemoved string = "removed"
 )
@@ -4020,6 +4985,14 @@ func (m *ClusterNodesItems0ControllerFlashCacheItems0) ContextValidate(ctx conte
 	var res []error
 
 	if err := m.contextValidateCapacity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFirmwareFile(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4060,6 +5033,24 @@ func (m *ClusterNodesItems0ControllerFlashCacheItems0) ContextValidate(ctx conte
 func (m *ClusterNodesItems0ControllerFlashCacheItems0) contextValidateCapacity(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "capacity", "body", int64(m.Capacity)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerFlashCacheItems0) contextValidateDeviceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "device_id", "body", int64(m.DeviceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ControllerFlashCacheItems0) contextValidateFirmwareFile(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "firmware_file", "body", string(m.FirmwareFile)); err != nil {
 		return err
 	}
 
@@ -4154,7 +5145,7 @@ type ClusterNodesItems0ControllerFrusItems0 struct {
 
 	// id
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 
 	// state
 	// Read Only: true
@@ -4199,23 +5190,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0
 	// ClusterNodesItems0ControllerFrusItems0
 	// state
 	// State
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0StateOk captures enum value "ok"
 	ClusterNodesItems0ControllerFrusItems0StateOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0
 	// ClusterNodesItems0ControllerFrusItems0
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0StateError captures enum value "error"
 	ClusterNodesItems0ControllerFrusItems0StateError string = "error"
 )
@@ -4255,73 +5246,73 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0
 	// ClusterNodesItems0ControllerFrusItems0
 	// type
 	// Type
 	// fan
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0TypeFan captures enum value "fan"
 	ClusterNodesItems0ControllerFrusItems0TypeFan string = "fan"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0
 	// ClusterNodesItems0ControllerFrusItems0
 	// type
 	// Type
 	// psu
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0TypePsu captures enum value "psu"
 	ClusterNodesItems0ControllerFrusItems0TypePsu string = "psu"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0
 	// ClusterNodesItems0ControllerFrusItems0
 	// type
 	// Type
 	// pcie
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0TypePcie captures enum value "pcie"
 	ClusterNodesItems0ControllerFrusItems0TypePcie string = "pcie"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0
 	// ClusterNodesItems0ControllerFrusItems0
 	// type
 	// Type
 	// disk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0TypeDisk captures enum value "disk"
 	ClusterNodesItems0ControllerFrusItems0TypeDisk string = "disk"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0
 	// ClusterNodesItems0ControllerFrusItems0
 	// type
 	// Type
 	// nvs
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0TypeNvs captures enum value "nvs"
 	ClusterNodesItems0ControllerFrusItems0TypeNvs string = "nvs"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0
 	// ClusterNodesItems0ControllerFrusItems0
 	// type
 	// Type
 	// dimm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0TypeDimm captures enum value "dimm"
 	ClusterNodesItems0ControllerFrusItems0TypeDimm string = "dimm"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0
 	// ClusterNodesItems0ControllerFrusItems0
 	// type
 	// Type
 	// controller
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ControllerFrusItems0TypeController captures enum value "controller"
 	ClusterNodesItems0ControllerFrusItems0TypeController string = "controller"
 )
@@ -4371,7 +5362,7 @@ func (m *ClusterNodesItems0ControllerFrusItems0) ContextValidate(ctx context.Con
 
 func (m *ClusterNodesItems0ControllerFrusItems0) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
 		return err
 	}
 
@@ -4755,43 +5746,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaGiveback
 	// ClusterNodesItems0HaGiveback
 	// state
 	// State
 	// nothing_to_giveback
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaGivebackStateNothingToGiveback captures enum value "nothing_to_giveback"
 	ClusterNodesItems0HaGivebackStateNothingToGiveback string = "nothing_to_giveback"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaGiveback
 	// ClusterNodesItems0HaGiveback
 	// state
 	// State
 	// not_attempted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaGivebackStateNotAttempted captures enum value "not_attempted"
 	ClusterNodesItems0HaGivebackStateNotAttempted string = "not_attempted"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaGiveback
 	// ClusterNodesItems0HaGiveback
 	// state
 	// State
 	// in_progress
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaGivebackStateInProgress captures enum value "in_progress"
 	ClusterNodesItems0HaGivebackStateInProgress string = "in_progress"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaGiveback
 	// ClusterNodesItems0HaGiveback
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaGivebackStateFailed captures enum value "failed"
 	ClusterNodesItems0HaGivebackStateFailed string = "failed"
 )
@@ -5141,53 +6132,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaPortsItems0
 	// ClusterNodesItems0HaPortsItems0
 	// state
 	// State
 	// down
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaPortsItems0StateDown captures enum value "down"
 	ClusterNodesItems0HaPortsItems0StateDown string = "down"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaPortsItems0
 	// ClusterNodesItems0HaPortsItems0
 	// state
 	// State
 	// initialized
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaPortsItems0StateInitialized captures enum value "initialized"
 	ClusterNodesItems0HaPortsItems0StateInitialized string = "initialized"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaPortsItems0
 	// ClusterNodesItems0HaPortsItems0
 	// state
 	// State
 	// armed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaPortsItems0StateArmed captures enum value "armed"
 	ClusterNodesItems0HaPortsItems0StateArmed string = "armed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaPortsItems0
 	// ClusterNodesItems0HaPortsItems0
 	// state
 	// State
 	// active
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaPortsItems0StateActive captures enum value "active"
 	ClusterNodesItems0HaPortsItems0StateActive string = "active"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaPortsItems0
 	// ClusterNodesItems0HaPortsItems0
 	// state
 	// State
 	// reserved
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaPortsItems0StateReserved captures enum value "reserved"
 	ClusterNodesItems0HaPortsItems0StateReserved string = "reserved"
 )
@@ -5330,53 +6321,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaTakeover
 	// ClusterNodesItems0HaTakeover
 	// state
 	// State
 	// not_possible
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaTakeoverStateNotPossible captures enum value "not_possible"
 	ClusterNodesItems0HaTakeoverStateNotPossible string = "not_possible"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaTakeover
 	// ClusterNodesItems0HaTakeover
 	// state
 	// State
 	// not_attempted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaTakeoverStateNotAttempted captures enum value "not_attempted"
 	ClusterNodesItems0HaTakeoverStateNotAttempted string = "not_attempted"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaTakeover
 	// ClusterNodesItems0HaTakeover
 	// state
 	// State
 	// in_takeover
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaTakeoverStateInTakeover captures enum value "in_takeover"
 	ClusterNodesItems0HaTakeoverStateInTakeover string = "in_takeover"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaTakeover
 	// ClusterNodesItems0HaTakeover
 	// state
 	// State
 	// in_progress
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaTakeoverStateInProgress captures enum value "in_progress"
 	ClusterNodesItems0HaTakeoverStateInProgress string = "in_progress"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0HaTakeover
 	// ClusterNodesItems0HaTakeover
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0HaTakeoverStateFailed captures enum value "failed"
 	ClusterNodesItems0HaTakeoverStateFailed string = "failed"
 )
@@ -5971,6 +6962,908 @@ func (m *ClusterNodesItems0ManagementInterfacesItems0Links) UnmarshalBinary(b []
 	return nil
 }
 
+// ClusterNodesItems0Metric CPU performance for the nodes.
+//
+// swagger:model ClusterNodesItems0Metric
+type ClusterNodesItems0Metric struct {
+
+	// links
+	Links *ClusterNodesItems0MetricLinks `json:"_links,omitempty"`
+
+	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
+	//
+	// Example: PT15S
+	// Enum: [PT15S PT5M PT30M PT2H P1D]
+	Duration string `json:"duration,omitempty"`
+
+	// Average CPU Utilization for the node
+	// Example: 13
+	ProcessorUtilization int64 `json:"processor_utilization,omitempty"`
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	Status string `json:"status,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 metric
+func (m *ClusterNodesItems0Metric) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0Metric) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var clusterNodesItems0MetricTypeDurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["PT15S","PT5M","PT30M","PT2H","P1D"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0MetricTypeDurationPropEnum = append(clusterNodesItems0MetricTypeDurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// duration
+	// Duration
+	// PT15S
+	// END DEBUGGING
+	// ClusterNodesItems0MetricDurationPT15S captures enum value "PT15S"
+	ClusterNodesItems0MetricDurationPT15S string = "PT15S"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// duration
+	// Duration
+	// PT5M
+	// END DEBUGGING
+	// ClusterNodesItems0MetricDurationPT5M captures enum value "PT5M"
+	ClusterNodesItems0MetricDurationPT5M string = "PT5M"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// duration
+	// Duration
+	// PT30M
+	// END DEBUGGING
+	// ClusterNodesItems0MetricDurationPT30M captures enum value "PT30M"
+	ClusterNodesItems0MetricDurationPT30M string = "PT30M"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// duration
+	// Duration
+	// PT2H
+	// END DEBUGGING
+	// ClusterNodesItems0MetricDurationPT2H captures enum value "PT2H"
+	ClusterNodesItems0MetricDurationPT2H string = "PT2H"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// duration
+	// Duration
+	// P1D
+	// END DEBUGGING
+	// ClusterNodesItems0MetricDurationP1D captures enum value "P1D"
+	ClusterNodesItems0MetricDurationP1D string = "P1D"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0Metric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0MetricTypeDurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0Metric) validateDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Duration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var clusterNodesItems0MetricTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0MetricTypeStatusPropEnum = append(clusterNodesItems0MetricTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// ClusterNodesItems0MetricStatusOk captures enum value "ok"
+	ClusterNodesItems0MetricStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// ClusterNodesItems0MetricStatusError captures enum value "error"
+	ClusterNodesItems0MetricStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// ClusterNodesItems0MetricStatusPartialNoData captures enum value "partial_no_data"
+	ClusterNodesItems0MetricStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// ClusterNodesItems0MetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	ClusterNodesItems0MetricStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// ClusterNodesItems0MetricStatusPartialNoResponse captures enum value "partial_no_response"
+	ClusterNodesItems0MetricStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// ClusterNodesItems0MetricStatusPartialOtherError captures enum value "partial_other_error"
+	ClusterNodesItems0MetricStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// ClusterNodesItems0MetricStatusNegativeDelta captures enum value "negative_delta"
+	ClusterNodesItems0MetricStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// ClusterNodesItems0MetricStatusBackfilledData captures enum value "backfilled_data"
+	ClusterNodesItems0MetricStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// ClusterNodesItems0MetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	ClusterNodesItems0MetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metric
+	// ClusterNodesItems0Metric
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// ClusterNodesItems0MetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	ClusterNodesItems0MetricStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0Metric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0MetricTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0Metric) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0Metric) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("metric"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 metric based on the context it is used
+func (m *ClusterNodesItems0Metric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0Metric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0Metric) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0Metric) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0Metric
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0MetricLinks cluster nodes items0 metric links
+//
+// swagger:model ClusterNodesItems0MetricLinks
+type ClusterNodesItems0MetricLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 metric links
+func (m *ClusterNodesItems0MetricLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0MetricLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 metric links based on the context it is used
+func (m *ClusterNodesItems0MetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0MetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0MetricLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0MetricLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0MetricLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0Metrocluster Metrocluster
+//
+// swagger:model ClusterNodesItems0Metrocluster
+type ClusterNodesItems0Metrocluster struct {
+
+	// Indicates whether the MetroCluster over IP platform supports custom VLAN IDs.
+	// Read Only: true
+	CustomVlanCapable *bool `json:"custom_vlan_capable,omitempty"`
+
+	// MetroCluster over IP ports.
+	// Read Only: true
+	Ports []*ClusterNodesItems0MetroclusterPortsItems0 `json:"ports,omitempty"`
+
+	// The Metrocluster configuration type
+	// Read Only: true
+	// Enum: [fc fc_2_node ip]
+	Type string `json:"type,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 metrocluster
+func (m *ClusterNodesItems0Metrocluster) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePorts(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0Metrocluster) validatePorts(formats strfmt.Registry) error {
+	if swag.IsZero(m.Ports) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Ports); i++ {
+		if swag.IsZero(m.Ports[i]) { // not required
+			continue
+		}
+
+		if m.Ports[i] != nil {
+			if err := m.Ports[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("metrocluster" + "." + "ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+var clusterNodesItems0MetroclusterTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["fc","fc_2_node","ip"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0MetroclusterTypeTypePropEnum = append(clusterNodesItems0MetroclusterTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metrocluster
+	// ClusterNodesItems0Metrocluster
+	// type
+	// Type
+	// fc
+	// END DEBUGGING
+	// ClusterNodesItems0MetroclusterTypeFc captures enum value "fc"
+	ClusterNodesItems0MetroclusterTypeFc string = "fc"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metrocluster
+	// ClusterNodesItems0Metrocluster
+	// type
+	// Type
+	// fc_2_node
+	// END DEBUGGING
+	// ClusterNodesItems0MetroclusterTypeFc2Node captures enum value "fc_2_node"
+	ClusterNodesItems0MetroclusterTypeFc2Node string = "fc_2_node"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Metrocluster
+	// ClusterNodesItems0Metrocluster
+	// type
+	// Type
+	// ip
+	// END DEBUGGING
+	// ClusterNodesItems0MetroclusterTypeIP captures enum value "ip"
+	ClusterNodesItems0MetroclusterTypeIP string = "ip"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0Metrocluster) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0MetroclusterTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0Metrocluster) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("metrocluster"+"."+"type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 metrocluster based on the context it is used
+func (m *ClusterNodesItems0Metrocluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCustomVlanCapable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePorts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0Metrocluster) contextValidateCustomVlanCapable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metrocluster"+"."+"custom_vlan_capable", "body", m.CustomVlanCapable); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0Metrocluster) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metrocluster"+"."+"ports", "body", []*ClusterNodesItems0MetroclusterPortsItems0(m.Ports)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Ports); i++ {
+
+		if m.Ports[i] != nil {
+			if err := m.Ports[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("metrocluster" + "." + "ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0Metrocluster) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metrocluster"+"."+"type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0Metrocluster) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0Metrocluster) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0Metrocluster
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0MetroclusterPortsItems0 cluster nodes items0 metrocluster ports items0
+//
+// swagger:model ClusterNodesItems0MetroclusterPortsItems0
+type ClusterNodesItems0MetroclusterPortsItems0 struct {
+
+	// name
+	// Example: e1b
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 metrocluster ports items0
+func (m *ClusterNodesItems0MetroclusterPortsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this cluster nodes items0 metrocluster ports items0 based on context it is used
+func (m *ClusterNodesItems0MetroclusterPortsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0MetroclusterPortsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0MetroclusterPortsItems0) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0MetroclusterPortsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0Nvram cluster nodes items0 nvram
+//
+// swagger:model ClusterNodesItems0Nvram
+type ClusterNodesItems0Nvram struct {
+
+	// Specifies status of the NVRAM battery. Possible values:
+	// * <i>battery_ok</i>
+	// * <i>battery_partially_discharged</i>
+	// * <i>battery_fully_discharged</i>
+	// * <i>battery_not_present</i>
+	// * <i>battery_near_end_of_life</i>
+	// * <i>battery_at_end_of_life</i>
+	// * <i>battery_unknown</i>
+	// * <i>battery_over_charged</i>
+	// * <i>battery_fully_charged</i>
+	//
+	// Read Only: true
+	// Enum: [battery_ok battery_partially_discharged battery_fully_discharged battery_not_present battery_near_end_of_life battery_at_end_of_life battery_unknown battery_over_charged battery_fully_charged]
+	BatteryState string `json:"battery_state,omitempty"`
+
+	// Vendor specific NVRAM ID of the node.
+	// Read Only: true
+	ID int64 `json:"id,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 nvram
+func (m *ClusterNodesItems0Nvram) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBatteryState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var clusterNodesItems0NvramTypeBatteryStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["battery_ok","battery_partially_discharged","battery_fully_discharged","battery_not_present","battery_near_end_of_life","battery_at_end_of_life","battery_unknown","battery_over_charged","battery_fully_charged"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0NvramTypeBatteryStatePropEnum = append(clusterNodesItems0NvramTypeBatteryStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Nvram
+	// ClusterNodesItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_ok
+	// END DEBUGGING
+	// ClusterNodesItems0NvramBatteryStateBatteryOk captures enum value "battery_ok"
+	ClusterNodesItems0NvramBatteryStateBatteryOk string = "battery_ok"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Nvram
+	// ClusterNodesItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_partially_discharged
+	// END DEBUGGING
+	// ClusterNodesItems0NvramBatteryStateBatteryPartiallyDischarged captures enum value "battery_partially_discharged"
+	ClusterNodesItems0NvramBatteryStateBatteryPartiallyDischarged string = "battery_partially_discharged"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Nvram
+	// ClusterNodesItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_fully_discharged
+	// END DEBUGGING
+	// ClusterNodesItems0NvramBatteryStateBatteryFullyDischarged captures enum value "battery_fully_discharged"
+	ClusterNodesItems0NvramBatteryStateBatteryFullyDischarged string = "battery_fully_discharged"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Nvram
+	// ClusterNodesItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_not_present
+	// END DEBUGGING
+	// ClusterNodesItems0NvramBatteryStateBatteryNotPresent captures enum value "battery_not_present"
+	ClusterNodesItems0NvramBatteryStateBatteryNotPresent string = "battery_not_present"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Nvram
+	// ClusterNodesItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_near_end_of_life
+	// END DEBUGGING
+	// ClusterNodesItems0NvramBatteryStateBatteryNearEndOfLife captures enum value "battery_near_end_of_life"
+	ClusterNodesItems0NvramBatteryStateBatteryNearEndOfLife string = "battery_near_end_of_life"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Nvram
+	// ClusterNodesItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_at_end_of_life
+	// END DEBUGGING
+	// ClusterNodesItems0NvramBatteryStateBatteryAtEndOfLife captures enum value "battery_at_end_of_life"
+	ClusterNodesItems0NvramBatteryStateBatteryAtEndOfLife string = "battery_at_end_of_life"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Nvram
+	// ClusterNodesItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_unknown
+	// END DEBUGGING
+	// ClusterNodesItems0NvramBatteryStateBatteryUnknown captures enum value "battery_unknown"
+	ClusterNodesItems0NvramBatteryStateBatteryUnknown string = "battery_unknown"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Nvram
+	// ClusterNodesItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_over_charged
+	// END DEBUGGING
+	// ClusterNodesItems0NvramBatteryStateBatteryOverCharged captures enum value "battery_over_charged"
+	ClusterNodesItems0NvramBatteryStateBatteryOverCharged string = "battery_over_charged"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Nvram
+	// ClusterNodesItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_fully_charged
+	// END DEBUGGING
+	// ClusterNodesItems0NvramBatteryStateBatteryFullyCharged captures enum value "battery_fully_charged"
+	ClusterNodesItems0NvramBatteryStateBatteryFullyCharged string = "battery_fully_charged"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0Nvram) validateBatteryStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0NvramTypeBatteryStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0Nvram) validateBatteryState(formats strfmt.Registry) error {
+	if swag.IsZero(m.BatteryState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateBatteryStateEnum("nvram"+"."+"battery_state", "body", m.BatteryState); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 nvram based on the context it is used
+func (m *ClusterNodesItems0Nvram) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBatteryState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0Nvram) contextValidateBatteryState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nvram"+"."+"battery_state", "body", string(m.BatteryState)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0Nvram) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nvram"+"."+"id", "body", int64(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0Nvram) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0Nvram) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0Nvram
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // ClusterNodesItems0ServiceProcessor cluster nodes items0 service processor
 //
 // swagger:model ClusterNodesItems0ServiceProcessor
@@ -6078,43 +7971,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ServiceProcessor
 	// ClusterNodesItems0ServiceProcessor
 	// link_status
 	// LinkStatus
 	// up
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ServiceProcessorLinkStatusUp captures enum value "up"
 	ClusterNodesItems0ServiceProcessorLinkStatusUp string = "up"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ServiceProcessor
 	// ClusterNodesItems0ServiceProcessor
 	// link_status
 	// LinkStatus
 	// down
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ServiceProcessorLinkStatusDown captures enum value "down"
 	ClusterNodesItems0ServiceProcessorLinkStatusDown string = "down"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ServiceProcessor
 	// ClusterNodesItems0ServiceProcessor
 	// link_status
 	// LinkStatus
 	// disabled
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ServiceProcessorLinkStatusDisabled captures enum value "disabled"
 	ClusterNodesItems0ServiceProcessorLinkStatusDisabled string = "disabled"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ServiceProcessor
 	// ClusterNodesItems0ServiceProcessor
 	// link_status
 	// LinkStatus
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ServiceProcessorLinkStatusUnknown captures enum value "unknown"
 	ClusterNodesItems0ServiceProcessorLinkStatusUnknown string = "unknown"
 )
@@ -6154,83 +8047,83 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ServiceProcessor
 	// ClusterNodesItems0ServiceProcessor
 	// state
 	// State
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ServiceProcessorStateOnline captures enum value "online"
 	ClusterNodesItems0ServiceProcessorStateOnline string = "online"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ServiceProcessor
 	// ClusterNodesItems0ServiceProcessor
 	// state
 	// State
 	// offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ServiceProcessorStateOffline captures enum value "offline"
 	ClusterNodesItems0ServiceProcessorStateOffline string = "offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ServiceProcessor
 	// ClusterNodesItems0ServiceProcessor
 	// state
 	// State
 	// degraded
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ServiceProcessorStateDegraded captures enum value "degraded"
 	ClusterNodesItems0ServiceProcessorStateDegraded string = "degraded"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ServiceProcessor
 	// ClusterNodesItems0ServiceProcessor
 	// state
 	// State
 	// rebooting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ServiceProcessorStateRebooting captures enum value "rebooting"
 	ClusterNodesItems0ServiceProcessorStateRebooting string = "rebooting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ServiceProcessor
 	// ClusterNodesItems0ServiceProcessor
 	// state
 	// State
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ServiceProcessorStateUnknown captures enum value "unknown"
 	ClusterNodesItems0ServiceProcessorStateUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ServiceProcessor
 	// ClusterNodesItems0ServiceProcessor
 	// state
 	// State
 	// updating
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ServiceProcessorStateUpdating captures enum value "updating"
 	ClusterNodesItems0ServiceProcessorStateUpdating string = "updating"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ServiceProcessor
 	// ClusterNodesItems0ServiceProcessor
 	// state
 	// State
 	// node_offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ServiceProcessorStateNodeOffline captures enum value "node_offline"
 	ClusterNodesItems0ServiceProcessorStateNodeOffline string = "node_offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0ServiceProcessor
 	// ClusterNodesItems0ServiceProcessor
 	// state
 	// State
 	// sp_daemon_offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0ServiceProcessorStateSpDaemonOffline captures enum value "sp_daemon_offline"
 	ClusterNodesItems0ServiceProcessorStateSpDaemonOffline string = "sp_daemon_offline"
 )
@@ -6467,70 +8360,26 @@ func (m *ClusterNodesItems0ServiceProcessorIPV4Interface) UnmarshalBinary(b []by
 // swagger:model ClusterNodesItems0ServiceProcessorIPV6Interface
 type ClusterNodesItems0ServiceProcessorIPV6Interface struct {
 
-	// IPv4 or IPv6 address
-	// Example: 10.10.10.7
+	// IPv6 address
+	// Example: fd20:8b1e:b255:5011:10:141:4:97
 	Address string `json:"address,omitempty"`
 
-	// The IPv4 or IPv6 address of the default router.
-	// Example: 10.1.1.1
+	// The IPv6 address of the default router.
+	// Example: fd20:8b1e:b255:5011:10::1
 	Gateway string `json:"gateway,omitempty"`
 
-	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	// The IPv6 netmask/prefix length. The default value is 64 with a valid range of 1 to 127.
+	// Example: 64
+	Netmask int64 `json:"netmask,omitempty"`
 }
 
 // Validate validates this cluster nodes items0 service processor IP v6 interface
 func (m *ClusterNodesItems0ServiceProcessorIPV6Interface) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateNetmask(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
-func (m *ClusterNodesItems0ServiceProcessorIPV6Interface) validateNetmask(formats strfmt.Registry) error {
-	if swag.IsZero(m.Netmask) { // not required
-		return nil
-	}
-
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("service_processor" + "." + "ipv6_interface" + "." + "netmask")
-		}
-		return err
-	}
-
-	return nil
-}
-
-// ContextValidate validate this cluster nodes items0 service processor IP v6 interface based on the context it is used
+// ContextValidate validates this cluster nodes items0 service processor IP v6 interface based on context it is used
 func (m *ClusterNodesItems0ServiceProcessorIPV6Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateNetmask(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *ClusterNodesItems0ServiceProcessorIPV6Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("service_processor" + "." + "ipv6_interface" + "." + "netmask")
-		}
-		return err
-	}
-
 	return nil
 }
 
@@ -6545,6 +8394,219 @@ func (m *ClusterNodesItems0ServiceProcessorIPV6Interface) MarshalBinary() ([]byt
 // UnmarshalBinary interface implementation
 func (m *ClusterNodesItems0ServiceProcessorIPV6Interface) UnmarshalBinary(b []byte) error {
 	var res ClusterNodesItems0ServiceProcessorIPV6Interface
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0Statistics Raw CPU performance for the nodes.
+//
+// swagger:model ClusterNodesItems0Statistics
+type ClusterNodesItems0Statistics struct {
+
+	// Base counter for CPU Utilization.
+	// Example: 12345123
+	ProcessorUtilizationBase int64 `json:"processor_utilization_base,omitempty"`
+
+	// Raw CPU Utilization for the node. This should be divided by the processor_utilization_base to calculate the percentage CPU utilization for the node.
+	// Example: 13
+	ProcessorUtilizationRaw int64 `json:"processor_utilization_raw,omitempty"`
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	Status string `json:"status,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 statistics
+func (m *ClusterNodesItems0Statistics) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var clusterNodesItems0StatisticsTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0StatisticsTypeStatusPropEnum = append(clusterNodesItems0StatisticsTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Statistics
+	// ClusterNodesItems0Statistics
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// ClusterNodesItems0StatisticsStatusOk captures enum value "ok"
+	ClusterNodesItems0StatisticsStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Statistics
+	// ClusterNodesItems0Statistics
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// ClusterNodesItems0StatisticsStatusError captures enum value "error"
+	ClusterNodesItems0StatisticsStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Statistics
+	// ClusterNodesItems0Statistics
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// ClusterNodesItems0StatisticsStatusPartialNoData captures enum value "partial_no_data"
+	ClusterNodesItems0StatisticsStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Statistics
+	// ClusterNodesItems0Statistics
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// ClusterNodesItems0StatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	ClusterNodesItems0StatisticsStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Statistics
+	// ClusterNodesItems0Statistics
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// ClusterNodesItems0StatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	ClusterNodesItems0StatisticsStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Statistics
+	// ClusterNodesItems0Statistics
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// ClusterNodesItems0StatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	ClusterNodesItems0StatisticsStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Statistics
+	// ClusterNodesItems0Statistics
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// ClusterNodesItems0StatisticsStatusNegativeDelta captures enum value "negative_delta"
+	ClusterNodesItems0StatisticsStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Statistics
+	// ClusterNodesItems0Statistics
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// ClusterNodesItems0StatisticsStatusBackfilledData captures enum value "backfilled_data"
+	ClusterNodesItems0StatisticsStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Statistics
+	// ClusterNodesItems0Statistics
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// ClusterNodesItems0StatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	ClusterNodesItems0StatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0Statistics
+	// ClusterNodesItems0Statistics
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// ClusterNodesItems0StatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	ClusterNodesItems0StatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0Statistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0StatisticsTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0Statistics) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0Statistics) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("statistics"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this cluster nodes items0 statistics based on context it is used
+func (m *ClusterNodesItems0Statistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0Statistics) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0Statistics) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0Statistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -6591,33 +8653,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0VM
 	// ClusterNodesItems0VM
 	// provider_type
 	// ProviderType
 	// GoogleCloud
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0VMProviderTypeGoogleCloud captures enum value "GoogleCloud"
 	ClusterNodesItems0VMProviderTypeGoogleCloud string = "GoogleCloud"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0VM
 	// ClusterNodesItems0VM
 	// provider_type
 	// ProviderType
 	// AWS_S3
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0VMProviderTypeAWSS3 captures enum value "AWS_S3"
 	ClusterNodesItems0VMProviderTypeAWSS3 string = "AWS_S3"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterNodesItems0VM
 	// ClusterNodesItems0VM
 	// provider_type
 	// ProviderType
 	// Azure_Cloud
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterNodesItems0VMProviderTypeAzureCloud captures enum value "Azure_Cloud"
 	ClusterNodesItems0VMProviderTypeAzureCloud string = "Azure_Cloud"
 )
@@ -6809,14 +8871,14 @@ type ClusterStatistics struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *ClusterStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -6890,7 +8952,7 @@ var clusterStatisticsTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -6900,105 +8962,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterStatistics
 	// ClusterStatistics
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterStatisticsStatusOk captures enum value "ok"
 	ClusterStatisticsStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterStatistics
 	// ClusterStatistics
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterStatisticsStatusError captures enum value "error"
 	ClusterStatisticsStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterStatistics
 	// ClusterStatistics
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterStatisticsStatusPartialNoData captures enum value "partial_no_data"
 	ClusterStatisticsStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// ClusterStatistics
-	// ClusterStatistics
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// ClusterStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
-	ClusterStatisticsStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterStatistics
 	// ClusterStatistics
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
 	ClusterStatisticsStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterStatistics
 	// ClusterStatistics
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterStatisticsStatusPartialOtherError captures enum value "partial_other_error"
 	ClusterStatisticsStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterStatistics
 	// ClusterStatistics
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterStatisticsStatusNegativeDelta captures enum value "negative_delta"
 	ClusterStatisticsStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// ClusterStatistics
+	// ClusterStatistics
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// ClusterStatisticsStatusNotFound captures enum value "not_found"
+	ClusterStatisticsStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// ClusterStatistics
 	// ClusterStatistics
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterStatisticsStatusBackfilledData captures enum value "backfilled_data"
 	ClusterStatisticsStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterStatistics
 	// ClusterStatistics
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	ClusterStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterStatistics
 	// ClusterStatistics
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	ClusterStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// ClusterStatistics
+	// ClusterStatistics
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// ClusterStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	ClusterStatisticsStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -7489,5 +9561,3 @@ func (m *ClusterVersion) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

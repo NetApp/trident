@@ -21,7 +21,7 @@ import (
 type SecurityCertificateSign struct {
 
 	// Certificate expiration time. The allowed expiration time range is between 1 day to 10 years.
-	ExpiryTime string `json:"expiry_time,omitempty"`
+	ExpiryTime *string `json:"expiry_time,omitempty"`
 
 	// Hashing function
 	// Enum: [sha256 sha224 sha384 sha512]
@@ -60,43 +60,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate_sign
 	// SecurityCertificateSign
 	// hash_function
 	// HashFunction
 	// sha256
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateSignHashFunctionSha256 captures enum value "sha256"
 	SecurityCertificateSignHashFunctionSha256 string = "sha256"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate_sign
 	// SecurityCertificateSign
 	// hash_function
 	// HashFunction
 	// sha224
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateSignHashFunctionSha224 captures enum value "sha224"
 	SecurityCertificateSignHashFunctionSha224 string = "sha224"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate_sign
 	// SecurityCertificateSign
 	// hash_function
 	// HashFunction
 	// sha384
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateSignHashFunctionSha384 captures enum value "sha384"
 	SecurityCertificateSignHashFunctionSha384 string = "sha384"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// security_certificate_sign
 	// SecurityCertificateSign
 	// hash_function
 	// HashFunction
 	// sha512
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SecurityCertificateSignHashFunctionSha512 captures enum value "sha512"
 	SecurityCertificateSignHashFunctionSha512 string = "sha512"
 )
@@ -144,5 +144,3 @@ func (m *SecurityCertificateSign) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -24,7 +24,7 @@ type FlexcacheRelationship struct {
 	Cluster *FlexcacheRelationshipCluster `json:"cluster,omitempty"`
 
 	// Creation time of the relationship.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -123,43 +123,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// flexcache_relationship
 	// FlexcacheRelationship
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FlexcacheRelationshipStateError captures enum value "error"
 	FlexcacheRelationshipStateError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// flexcache_relationship
 	// FlexcacheRelationship
 	// state
 	// State
 	// mixed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FlexcacheRelationshipStateMixed captures enum value "mixed"
 	FlexcacheRelationshipStateMixed string = "mixed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// flexcache_relationship
 	// FlexcacheRelationship
 	// state
 	// State
 	// offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FlexcacheRelationshipStateOffline captures enum value "offline"
 	FlexcacheRelationshipStateOffline string = "offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// flexcache_relationship
 	// FlexcacheRelationship
 	// state
 	// State
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FlexcacheRelationshipStateOnline captures enum value "online"
 	FlexcacheRelationshipStateOnline string = "online"
 )
@@ -911,5 +911,3 @@ func (m *FlexcacheRelationshipVolumeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

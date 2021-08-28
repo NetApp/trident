@@ -64,7 +64,7 @@ type SnaplockLogGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* SvmUUID.
 
@@ -125,15 +125,15 @@ func (o *SnaplockLogGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snaplock log get params
-func (o *SnaplockLogGetParams) WithFields(fields []string) *SnaplockLogGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snaplock log get params
+func (o *SnaplockLogGetParams) WithFieldsQueryParameter(fields []string) *SnaplockLogGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snaplock log get params
-func (o *SnaplockLogGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snaplock log get params
+func (o *SnaplockLogGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithSVMUUIDPathParameter adds the svmUUID to the snaplock log get params
@@ -155,7 +155,7 @@ func (o *SnaplockLogGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *SnaplockLogGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamSnaplockLogGet binds the parameter fields
 func (o *SnaplockLogGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

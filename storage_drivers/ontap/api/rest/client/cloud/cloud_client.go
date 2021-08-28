@@ -46,8 +46,6 @@ type ClientService interface {
 ### Related ONTAP commands
 * `storage aggregate object-store config show`
 
-### Learn more
-* [`DOC /cloud/targets`](#docs-cloud-cloud_targets)
 */
 func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -100,7 +98,7 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
 * `svm.name` or `svm.uuid` - Name or UUID of SVM if `owner` is _snapmirror_.
 * `snapmirror_use` - Use of the cloud target if `owner` is _snapmirror_: data, metadata.
 ### Recommended optional properties
-* `authentication_type` - Authentication used to access the target: _key_, _cap_, _ec2_iam_, _gcp_sa_.
+* `authentication_type` - Authentication used to access the target: _key_, _cap_, _ec2_iam_, _gcp_sa_, _azure_msi_.
 * `ssl_enabled` - SSL/HTTPS enabled or disabled.
 * `port` - Port number of the object store that ONTAP uses when establishing a connection.
 * `ipspace` - IPspace to use in order to reach the cloud target.
@@ -109,6 +107,7 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
 * `authentication_type`
   - _ec2_iam_ - if running in Cloud Volumes ONTAP in AWS
   - _gcp_sa_ - if running in Cloud Volumes ONTAP in GCP
+  - _azure_msi_ - if running in Cloud Volumes ONTAP in Azure
   - _key_  - in all other cases.
 * `server`
   - _s3.amazonaws.com_ - if `provider_type` is _AWS_S3_
@@ -128,11 +127,12 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
 * `server_side_encryption`
   - _none_ - if `provider_type` is _ONTAP_S3_
   - _sse_s3_ - if `provider_type` is not _ONTAP_S3_
+* `url_style`
+  - _path_style_ - if `provider_type` is neither _AWS_S3_ nor _AliCloud_
+  - _virtual_hosted_style_ - if `provider_type` is either _AWS_S3 or _AliCloud__
 ### Related ONTAP commands
 * `storage aggregate object-store config create`
 
-### Learn more
-* [`DOC /cloud/targets`](#docs-cloud-cloud_targets)
 */
 func (a *Client) CloudTargetCreate(params *CloudTargetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -174,8 +174,6 @@ func (a *Client) CloudTargetCreate(params *CloudTargetCreateParams, authInfo run
 ### Related ONTAP commands
 * `storage aggregate object-store config delete`
 
-### Learn more
-* [`DOC /cloud/targets`](#docs-cloud-cloud_targets)
 */
 func (a *Client) CloudTargetDelete(params *CloudTargetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -217,8 +215,6 @@ func (a *Client) CloudTargetDelete(params *CloudTargetDeleteParams, authInfo run
 ### Related ONTAP commands
 * `storage aggregate object-store config show`
 
-### Learn more
-* [`DOC /cloud/targets`](#docs-cloud-cloud_targets)
 */
 func (a *Client) CloudTargetGet(params *CloudTargetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetGetOK, error) {
 	// TODO: Validate the params before sending
@@ -260,8 +256,6 @@ func (a *Client) CloudTargetGet(params *CloudTargetGetParams, authInfo runtime.C
 ### Related ONTAP commands
 * `storage aggregate object-store config modify`
 
-### Learn more
-* [`DOC /cloud/targets`](#docs-cloud-cloud_targets)
 */
 func (a *Client) CloudTargetModify(params *CloudTargetModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CloudTargetModifyAccepted, error) {
 	// TODO: Validate the params before sending

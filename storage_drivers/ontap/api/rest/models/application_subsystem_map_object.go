@@ -673,5 +673,3 @@ func (m *ApplicationSubsystemMapObjectSubsystemLinks) UnmarshalBinary(b []byte) 
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

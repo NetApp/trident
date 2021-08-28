@@ -93,23 +93,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// fc_interface_svm
 	// FcInterfaceSvm
 	// data_protocol
 	// DataProtocol
 	// fcp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FcInterfaceSvmDataProtocolFcp captures enum value "fcp"
 	FcInterfaceSvmDataProtocolFcp string = "fcp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// fc_interface_svm
 	// FcInterfaceSvm
 	// data_protocol
 	// DataProtocol
 	// fc_nvme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FcInterfaceSvmDataProtocolFcNvme captures enum value "fc_nvme"
 	FcInterfaceSvmDataProtocolFcNvme string = "fc_nvme"
 )
@@ -400,5 +400,3 @@ func (m *FcInterfaceSvmLocation) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

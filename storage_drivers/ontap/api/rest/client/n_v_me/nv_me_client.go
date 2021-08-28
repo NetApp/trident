@@ -84,6 +84,8 @@ type ClientService interface {
 
 	NvmeSubsystemModify(params *NvmeSubsystemModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemModifyOK, error)
 
+	PerformanceNamespaceMetricCollectionGet(params *PerformanceNamespaceMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceNamespaceMetricCollectionGetOK, error)
+
 	SetTransport(transport runtime.ClientTransport)
 }
 
@@ -214,10 +216,12 @@ func (a *Client) NvmeInterfaceGet(params *NvmeInterfaceGetParams, authInfo runti
 /*
   NvmeNamespaceCollectionGet Retrieves NVMe namespaces.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `auto_delete`
 * `subsystem_map.*`
 * `status.mapped`
+* `statistics.*`
+* `metric.*`
 ### Related ONTAP commands
 * `vserver nvme namespace show`
 * `vserver nvme subsystem map show`
@@ -271,7 +275,7 @@ func (a *Client) NvmeNamespaceCollectionGet(params *NvmeNamespaceCollectionGetPa
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `auto_delete` - _false_
-* `space.block_size` - _4096_
+* `space.block_size` - _4096_ ( _512_ when 'os_type' is _vmware_ )
 ### Related ONTAP commands
 * `volume file clone autodelete`
 * `volume file clone create`
@@ -361,10 +365,12 @@ func (a *Client) NvmeNamespaceDelete(params *NvmeNamespaceDeleteParams, authInfo
 /*
   NvmeNamespaceGet Retrieves an NVMe namespace.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `auto_delete`
 * `subsystem_map.*`
 * `status.mapped`
+* `statistics.*`
+* `metric.*`
 ### Related ONTAP commands
 * `vserver nvme namespace show`
 * `vserver nvme subsystem map show`
@@ -454,7 +460,7 @@ func (a *Client) NvmeNamespaceModify(params *NvmeNamespaceModifyParams, authInfo
 /*
   NvmeServiceCollectionGet Retrieves NVMe services.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands
@@ -896,7 +902,7 @@ func (a *Client) NvmeSubsystemDelete(params *NvmeSubsystemDeleteParams, authInfo
 /*
   NvmeSubsystemGet Retrieves an NVMe subsystem.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `subsystem_maps.*`
 ### Related ONTAP commands
 * `vserver nvme subsystem host show`
@@ -944,7 +950,7 @@ func (a *Client) NvmeSubsystemGet(params *NvmeSubsystemGetParams, authInfo runti
 /*
   NvmeSubsystemHostCollectionGet Retrieves the NVMe subsystem hosts of an NVMe subsystem.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `subsystem_maps.*`
 ### Related ONTAP commands
 * `vserver nvme subsystem map show`
@@ -1122,7 +1128,7 @@ func (a *Client) NvmeSubsystemHostGet(params *NvmeSubsystemHostGetParams, authIn
 /*
   NvmeSubsystemMapCollectionGet Retrieves NVMe subsystem maps.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `anagrpid`
 ### Related ONTAP commands
 * `vserver nvme subsystem map show`
@@ -1258,7 +1264,7 @@ func (a *Client) NvmeSubsystemMapDelete(params *NvmeSubsystemMapDeleteParams, au
 /*
   NvmeSubsystemMapGet Retrieves an NVMe subsystem map.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `anagrpid`
 ### Related ONTAP commands
 * `vserver nvme subsystem map show`
@@ -1341,6 +1347,44 @@ func (a *Client) NvmeSubsystemModify(params *NvmeSubsystemModifyParams, authInfo
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NvmeSubsystemModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  PerformanceNamespaceMetricCollectionGet Retrieves historical performance metrics for an NVMe namespace.
+*/
+func (a *Client) PerformanceNamespaceMetricCollectionGet(params *PerformanceNamespaceMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceNamespaceMetricCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceNamespaceMetricCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_namespace_metric_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/namespaces/{uuid}/metrics",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceNamespaceMetricCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceNamespaceMetricCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceNamespaceMetricCollectionGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

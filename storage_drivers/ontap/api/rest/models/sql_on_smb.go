@@ -510,33 +510,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbDbStorageService
 	// SQLOnSmbDbStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbDbStorageServiceNameExtreme captures enum value "extreme"
 	SQLOnSmbDbStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbDbStorageService
 	// SQLOnSmbDbStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbDbStorageServiceNamePerformance captures enum value "performance"
 	SQLOnSmbDbStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbDbStorageService
 	// SQLOnSmbDbStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbDbStorageServiceNameValue captures enum value "value"
 	SQLOnSmbDbStorageServiceNameValue string = "value"
 )
@@ -726,33 +726,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbLogStorageService
 	// SQLOnSmbLogStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbLogStorageServiceNameExtreme captures enum value "extreme"
 	SQLOnSmbLogStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbLogStorageService
 	// SQLOnSmbLogStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbLogStorageServiceNamePerformance captures enum value "performance"
 	SQLOnSmbLogStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbLogStorageService
 	// SQLOnSmbLogStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbLogStorageServiceNameValue captures enum value "value"
 	SQLOnSmbLogStorageServiceNameValue string = "value"
 )
@@ -806,11 +806,11 @@ func (m *SQLOnSmbLogStorageService) UnmarshalBinary(b []byte) error {
 // swagger:model SQLOnSmbProtectionType
 type SQLOnSmbProtectionType struct {
 
-	// The local rpo of the application.
+	// The local RPO of the application.
 	// Enum: [hourly none]
 	LocalRpo string `json:"local_rpo,omitempty"`
 
-	// The remote rpo of the application.
+	// The remote RPO of the application.
 	// Enum: [none zero]
 	RemoteRpo string `json:"remote_rpo,omitempty"`
 }
@@ -847,23 +847,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbProtectionType
 	// SQLOnSmbProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbProtectionTypeLocalRpoHourly captures enum value "hourly"
 	SQLOnSmbProtectionTypeLocalRpoHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbProtectionType
 	// SQLOnSmbProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbProtectionTypeLocalRpoNone captures enum value "none"
 	SQLOnSmbProtectionTypeLocalRpoNone string = "none"
 )
@@ -903,23 +903,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbProtectionType
 	// SQLOnSmbProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbProtectionTypeRemoteRpoNone captures enum value "none"
 	SQLOnSmbProtectionTypeRemoteRpoNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbProtectionType
 	// SQLOnSmbProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbProtectionTypeRemoteRpoZero captures enum value "zero"
 	SQLOnSmbProtectionTypeRemoteRpoZero string = "zero"
 )
@@ -1095,33 +1095,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbTempDbStorageService
 	// SQLOnSmbTempDbStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbTempDbStorageServiceNameExtreme captures enum value "extreme"
 	SQLOnSmbTempDbStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbTempDbStorageService
 	// SQLOnSmbTempDbStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbTempDbStorageServiceNamePerformance captures enum value "performance"
 	SQLOnSmbTempDbStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSmbTempDbStorageService
 	// SQLOnSmbTempDbStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSmbTempDbStorageServiceNameValue captures enum value "value"
 	SQLOnSmbTempDbStorageServiceNameValue string = "value"
 )
@@ -1169,5 +1169,3 @@ func (m *SQLOnSmbTempDbStorageService) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -72,13 +72,13 @@ type SecuritySamlSpCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* VerifyMetadataServer.
 
@@ -106,16 +106,16 @@ func (o *SecuritySamlSpCreateParams) WithDefaults() *SecuritySamlSpCreateParams 
 // All values with no default are reset to their zero value.
 func (o *SecuritySamlSpCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 
 		verifyMetadataServerQueryParameterDefault = bool(true)
 	)
 
 	val := SecuritySamlSpCreateParams{
-		ReturnRecords:                      &returnRecordsDefault,
-		ReturnTimeout:                      &returnTimeoutDefault,
+		ReturnRecordsQueryParameter:        &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter:        &returnTimeoutQueryParameterDefault,
 		VerifyMetadataServerQueryParameter: &verifyMetadataServerQueryParameterDefault,
 	}
 
@@ -169,26 +169,26 @@ func (o *SecuritySamlSpCreateParams) SetInfo(info *models.SecuritySamlSp) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the security saml sp create params
-func (o *SecuritySamlSpCreateParams) WithReturnRecords(returnRecords *bool) *SecuritySamlSpCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the security saml sp create params
+func (o *SecuritySamlSpCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecuritySamlSpCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the security saml sp create params
-func (o *SecuritySamlSpCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the security saml sp create params
+func (o *SecuritySamlSpCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the security saml sp create params
-func (o *SecuritySamlSpCreateParams) WithReturnTimeout(returnTimeout *int64) *SecuritySamlSpCreateParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the security saml sp create params
+func (o *SecuritySamlSpCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SecuritySamlSpCreateParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the security saml sp create params
-func (o *SecuritySamlSpCreateParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the security saml sp create params
+func (o *SecuritySamlSpCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithVerifyMetadataServerQueryParameter adds the verifyMetadataServer to the security saml sp create params
@@ -215,13 +215,13 @@ func (o *SecuritySamlSpCreateParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -232,13 +232,13 @@ func (o *SecuritySamlSpCreateParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

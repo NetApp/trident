@@ -75,9 +75,16 @@ func NewNetworkIPInterfacesCreateDefault(code int) *NetworkIPInterfacesCreateDef
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376656 | Cluster interfaces must be in the same subnet. Verify the address and netmask are set to the correct values. |
+| 1376663 | All LIFs from a single DNS zone must be in the same SVM. |
 | 1376963 | Duplicate IP address. |
 | 1966138 | The same IP address may not be used for both a mgmt interface and a gateway address. |
 | 1966140 | An interface with the same name already exists. |
+| 1966141 | Invalid DNS zone name. |
+| 1966142 | Only data LIFs can be assigned a DNS zone. |
+| 1966267 | IPv6 addresses must have a prefix length between 1 and 127. |
+| 1966269 | IPv4 addresses must have a prefix length between 1 and 32. |
+| 1966476 | DNS Update is supported only on data LIFs. |
+| 1966477 | DNS Update is supported only on LIFs configured with the NFS or CIFS protocol. |
 | 1966987 | The Vserver Broadcast-Domain Home-Node and Home-Port combination is not valid. |
 | 1967081 | The specified SVM must exist in the specified IPspace. |
 | 1967082 | The specified ipspace.name does not match the IPspace name of ipspace.uuid. |
@@ -113,8 +120,11 @@ func NewNetworkIPInterfacesCreateDefault(code int) *NetworkIPInterfacesCreateDef
 | 1967384 | Failed to create VIP interface because the home node does not have active BGP sessions to support Virtual IP (VIP) traffic. |
 | 1967385 | VIP interfaces with an IPv4 address must use ip.netmask=32. VIP interfaces with an IPv6 address must use ip.netmask=128. |
 | 1967387 | The specified IP address is in use by a subnet in this IPspace. |
+| 1967391 | Setting the DNS zone requires an effective cluster version of 9.9.1 or later. |
+| 1967392 | Setting the DDNS enable parameter requires an effective cluster version of 9.9.1 or later. |
 | 5373966 | An iSCSI interface cannot be created in an SVM configured for NVMe. |
 | 53281065 | The service_policy does not exist in the SVM. |
+| 53281086 | LIF would exceed the maximum number of supported intercluster LIFs in IPspace. |
 
 */
 type NetworkIPInterfacesCreateDefault struct {

@@ -70,7 +70,7 @@ type CloudStoreGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* TargetUUID.
 
@@ -142,15 +142,15 @@ func (o *CloudStoreGetParams) SetAggregateUUIDPathParameter(aggregateUUID string
 	o.AggregateUUIDPathParameter = aggregateUUID
 }
 
-// WithFields adds the fields to the cloud store get params
-func (o *CloudStoreGetParams) WithFields(fields []string) *CloudStoreGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the cloud store get params
+func (o *CloudStoreGetParams) WithFieldsQueryParameter(fields []string) *CloudStoreGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the cloud store get params
-func (o *CloudStoreGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the cloud store get params
+func (o *CloudStoreGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithTargetUUIDPathParameter adds the targetUUID to the cloud store get params
@@ -177,7 +177,7 @@ func (o *CloudStoreGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		return err
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *CloudStoreGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamCloudStoreGet binds the parameter fields
 func (o *CloudStoreGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

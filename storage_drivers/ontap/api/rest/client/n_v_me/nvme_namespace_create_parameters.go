@@ -73,7 +73,7 @@ type NvmeNamespaceCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -93,11 +93,11 @@ func (o *NvmeNamespaceCreateParams) WithDefaults() *NvmeNamespaceCreateParams {
 // All values with no default are reset to their zero value.
 func (o *NvmeNamespaceCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := NvmeNamespaceCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -150,15 +150,15 @@ func (o *NvmeNamespaceCreateParams) SetInfo(info *models.NvmeNamespace) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the nvme namespace create params
-func (o *NvmeNamespaceCreateParams) WithReturnRecords(returnRecords *bool) *NvmeNamespaceCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the nvme namespace create params
+func (o *NvmeNamespaceCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NvmeNamespaceCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the nvme namespace create params
-func (o *NvmeNamespaceCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the nvme namespace create params
+func (o *NvmeNamespaceCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,13 +174,13 @@ func (o *NvmeNamespaceCreateParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

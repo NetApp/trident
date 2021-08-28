@@ -63,7 +63,7 @@ type CifsSymlinkMappingDeleteParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	/* UnixPath.
 
@@ -124,15 +124,15 @@ func (o *CifsSymlinkMappingDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithSvmUUID adds the svmUUID to the cifs symlink mapping delete params
-func (o *CifsSymlinkMappingDeleteParams) WithSvmUUID(svmUUID string) *CifsSymlinkMappingDeleteParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the cifs symlink mapping delete params
+func (o *CifsSymlinkMappingDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *CifsSymlinkMappingDeleteParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the cifs symlink mapping delete params
-func (o *CifsSymlinkMappingDeleteParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the cifs symlink mapping delete params
+func (o *CifsSymlinkMappingDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WithUnixPathPathParameter adds the unixPath to the cifs symlink mapping delete params
@@ -155,7 +155,7 @@ func (o *CifsSymlinkMappingDeleteParams) WriteToRequest(r runtime.ClientRequest,
 	var res []error
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

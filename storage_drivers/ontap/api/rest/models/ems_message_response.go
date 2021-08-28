@@ -379,63 +379,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsMessageResponseRecordsItems0
 	// EmsMessageResponseRecordsItems0
 	// severity
 	// Severity
 	// emergency
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsMessageResponseRecordsItems0SeverityEmergency captures enum value "emergency"
 	EmsMessageResponseRecordsItems0SeverityEmergency string = "emergency"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsMessageResponseRecordsItems0
 	// EmsMessageResponseRecordsItems0
 	// severity
 	// Severity
 	// alert
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsMessageResponseRecordsItems0SeverityAlert captures enum value "alert"
 	EmsMessageResponseRecordsItems0SeverityAlert string = "alert"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsMessageResponseRecordsItems0
 	// EmsMessageResponseRecordsItems0
 	// severity
 	// Severity
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsMessageResponseRecordsItems0SeverityError captures enum value "error"
 	EmsMessageResponseRecordsItems0SeverityError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsMessageResponseRecordsItems0
 	// EmsMessageResponseRecordsItems0
 	// severity
 	// Severity
 	// notice
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsMessageResponseRecordsItems0SeverityNotice captures enum value "notice"
 	EmsMessageResponseRecordsItems0SeverityNotice string = "notice"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsMessageResponseRecordsItems0
 	// EmsMessageResponseRecordsItems0
 	// severity
 	// Severity
 	// informational
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsMessageResponseRecordsItems0SeverityInformational captures enum value "informational"
 	EmsMessageResponseRecordsItems0SeverityInformational string = "informational"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsMessageResponseRecordsItems0
 	// EmsMessageResponseRecordsItems0
 	// severity
 	// Severity
 	// debug
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsMessageResponseRecordsItems0SeverityDebug captures enum value "debug"
 	EmsMessageResponseRecordsItems0SeverityDebug string = "debug"
 )
@@ -475,33 +475,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsMessageResponseRecordsItems0
 	// EmsMessageResponseRecordsItems0
 	// snmp_trap_type
 	// SnmpTrapType
 	// standard
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsMessageResponseRecordsItems0SnmpTrapTypeStandard captures enum value "standard"
 	EmsMessageResponseRecordsItems0SnmpTrapTypeStandard string = "standard"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsMessageResponseRecordsItems0
 	// EmsMessageResponseRecordsItems0
 	// snmp_trap_type
 	// SnmpTrapType
 	// built_in
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsMessageResponseRecordsItems0SnmpTrapTypeBuiltIn captures enum value "built_in"
 	EmsMessageResponseRecordsItems0SnmpTrapTypeBuiltIn string = "built_in"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsMessageResponseRecordsItems0
 	// EmsMessageResponseRecordsItems0
 	// snmp_trap_type
 	// SnmpTrapType
 	// severity_based
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsMessageResponseRecordsItems0SnmpTrapTypeSeverityBased captures enum value "severity_based"
 	EmsMessageResponseRecordsItems0SnmpTrapTypeSeverityBased string = "severity_based"
 )
@@ -736,5 +736,3 @@ func (m *EmsMessageResponseRecordsItems0Links) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

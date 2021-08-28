@@ -64,7 +64,7 @@ type NetworkIPBgpPeerGroupGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *NetworkIPBgpPeerGroupGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the network ip bgp peer group get params
-func (o *NetworkIPBgpPeerGroupGetParams) WithFields(fields []string) *NetworkIPBgpPeerGroupGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the network ip bgp peer group get params
+func (o *NetworkIPBgpPeerGroupGetParams) WithFieldsQueryParameter(fields []string) *NetworkIPBgpPeerGroupGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the network ip bgp peer group get params
-func (o *NetworkIPBgpPeerGroupGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the network ip bgp peer group get params
+func (o *NetworkIPBgpPeerGroupGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the network ip bgp peer group get params
@@ -155,7 +155,7 @@ func (o *NetworkIPBgpPeerGroupGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *NetworkIPBgpPeerGroupGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamNetworkIPBgpPeerGroupGet binds the parameter fields
 func (o *NetworkIPBgpPeerGroupGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

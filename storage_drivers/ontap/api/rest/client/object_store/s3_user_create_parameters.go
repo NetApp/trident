@@ -72,13 +72,13 @@ type S3UserCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *S3UserCreateParams) WithDefaults() *S3UserCreateParams {
 // All values with no default are reset to their zero value.
 func (o *S3UserCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := S3UserCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -155,26 +155,26 @@ func (o *S3UserCreateParams) SetInfo(info *models.S3User) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the s3 user create params
-func (o *S3UserCreateParams) WithReturnRecords(returnRecords *bool) *S3UserCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the s3 user create params
+func (o *S3UserCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *S3UserCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the s3 user create params
-func (o *S3UserCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the s3 user create params
+func (o *S3UserCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithSvmUUID adds the svmUUID to the s3 user create params
-func (o *S3UserCreateParams) WithSvmUUID(svmUUID string) *S3UserCreateParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the s3 user create params
+func (o *S3UserCreateParams) WithSVMUUIDPathParameter(svmUUID string) *S3UserCreateParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the s3 user create params
-func (o *S3UserCreateParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the s3 user create params
+func (o *S3UserCreateParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -190,13 +190,13 @@ func (o *S3UserCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -208,7 +208,7 @@ func (o *S3UserCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

@@ -82,7 +82,43 @@ type FcInterfaceCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
+
+	/* LocationHomeNodeName.
+
+	   Filter by location.home_node.name
+	*/
+	LocationHomeNodeNameQueryParameter *string
+
+	/* LocationHomeNodeUUID.
+
+	   Filter by location.home_node.uuid
+	*/
+	LocationHomeNodeUUIDQueryParameter *string
+
+	/* LocationHomePortName.
+
+	   Filter by location.home_port.name
+	*/
+	LocationHomePortNameQueryParameter *string
+
+	/* LocationHomePortNodeName.
+
+	   Filter by location.home_port.node.name
+	*/
+	LocationHomePortNodeNameQueryParameter *string
+
+	/* LocationHomePortUUID.
+
+	   Filter by location.home_port.uuid
+	*/
+	LocationHomePortUUIDQueryParameter *string
+
+	/* LocationIsHome.
+
+	   Filter by location.is_home
+	*/
+	LocationIsHomeQueryParameter *bool
 
 	/* LocationNodeName.
 
@@ -118,7 +154,91 @@ type FcInterfaceCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
+
+	/* MetricDuration.
+
+	   Filter by metric.duration
+	*/
+	MetricDurationQueryParameter *string
+
+	/* MetricIopsOther.
+
+	   Filter by metric.iops.other
+	*/
+	MetricIopsOtherQueryParameter *int64
+
+	/* MetricIopsRead.
+
+	   Filter by metric.iops.read
+	*/
+	MetricIopsReadQueryParameter *int64
+
+	/* MetricIopsTotal.
+
+	   Filter by metric.iops.total
+	*/
+	MetricIopsTotalQueryParameter *int64
+
+	/* MetricIopsWrite.
+
+	   Filter by metric.iops.write
+	*/
+	MetricIopsWriteQueryParameter *int64
+
+	/* MetricLatencyOther.
+
+	   Filter by metric.latency.other
+	*/
+	MetricLatencyOtherQueryParameter *int64
+
+	/* MetricLatencyRead.
+
+	   Filter by metric.latency.read
+	*/
+	MetricLatencyReadQueryParameter *int64
+
+	/* MetricLatencyTotal.
+
+	   Filter by metric.latency.total
+	*/
+	MetricLatencyTotalQueryParameter *int64
+
+	/* MetricLatencyWrite.
+
+	   Filter by metric.latency.write
+	*/
+	MetricLatencyWriteQueryParameter *int64
+
+	/* MetricStatus.
+
+	   Filter by metric.status
+	*/
+	MetricStatusQueryParameter *string
+
+	/* MetricThroughputRead.
+
+	   Filter by metric.throughput.read
+	*/
+	MetricThroughputReadQueryParameter *int64
+
+	/* MetricThroughputTotal.
+
+	   Filter by metric.throughput.total
+	*/
+	MetricThroughputTotalQueryParameter *int64
+
+	/* MetricThroughputWrite.
+
+	   Filter by metric.throughput.write
+	*/
+	MetricThroughputWriteQueryParameter *int64
+
+	/* MetricTimestamp.
+
+	   Filter by metric.timestamp
+	*/
+	MetricTimestampQueryParameter *string
 
 	/* Name.
 
@@ -130,7 +250,7 @@ type FcInterfaceCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* PortAddress.
 
@@ -144,7 +264,7 @@ type FcInterfaceCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -152,13 +272,91 @@ type FcInterfaceCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* State.
 
 	   Filter by state
 	*/
 	StateQueryParameter *string
+
+	/* StatisticsIopsRawOther.
+
+	   Filter by statistics.iops_raw.other
+	*/
+	StatisticsIopsRawOtherQueryParameter *int64
+
+	/* StatisticsIopsRawRead.
+
+	   Filter by statistics.iops_raw.read
+	*/
+	StatisticsIopsRawReadQueryParameter *int64
+
+	/* StatisticsIopsRawTotal.
+
+	   Filter by statistics.iops_raw.total
+	*/
+	StatisticsIopsRawTotalQueryParameter *int64
+
+	/* StatisticsIopsRawWrite.
+
+	   Filter by statistics.iops_raw.write
+	*/
+	StatisticsIopsRawWriteQueryParameter *int64
+
+	/* StatisticsLatencyRawOther.
+
+	   Filter by statistics.latency_raw.other
+	*/
+	StatisticsLatencyRawOtherQueryParameter *int64
+
+	/* StatisticsLatencyRawRead.
+
+	   Filter by statistics.latency_raw.read
+	*/
+	StatisticsLatencyRawReadQueryParameter *int64
+
+	/* StatisticsLatencyRawTotal.
+
+	   Filter by statistics.latency_raw.total
+	*/
+	StatisticsLatencyRawTotalQueryParameter *int64
+
+	/* StatisticsLatencyRawWrite.
+
+	   Filter by statistics.latency_raw.write
+	*/
+	StatisticsLatencyRawWriteQueryParameter *int64
+
+	/* StatisticsStatus.
+
+	   Filter by statistics.status
+	*/
+	StatisticsStatusQueryParameter *string
+
+	/* StatisticsThroughputRawRead.
+
+	   Filter by statistics.throughput_raw.read
+	*/
+	StatisticsThroughputRawReadQueryParameter *int64
+
+	/* StatisticsThroughputRawTotal.
+
+	   Filter by statistics.throughput_raw.total
+	*/
+	StatisticsThroughputRawTotalQueryParameter *int64
+
+	/* StatisticsThroughputRawWrite.
+
+	   Filter by statistics.throughput_raw.write
+	*/
+	StatisticsThroughputRawWriteQueryParameter *int64
+
+	/* StatisticsTimestamp.
+
+	   Filter by statistics.timestamp
+	*/
+	StatisticsTimestampQueryParameter *string
 
 	/* SvmName.
 
@@ -208,14 +406,14 @@ func (o *FcInterfaceCollectionGetParams) WithDefaults() *FcInterfaceCollectionGe
 // All values with no default are reset to their zero value.
 func (o *FcInterfaceCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := FcInterfaceCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -290,15 +488,81 @@ func (o *FcInterfaceCollectionGetParams) SetEnabledQueryParameter(enabled *bool)
 	o.EnabledQueryParameter = enabled
 }
 
-// WithFields adds the fields to the fc interface collection get params
-func (o *FcInterfaceCollectionGetParams) WithFields(fields []string) *FcInterfaceCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithFieldsQueryParameter(fields []string) *FcInterfaceCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the fc interface collection get params
-func (o *FcInterfaceCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
+}
+
+// WithLocationHomeNodeNameQueryParameter adds the locationHomeNodeName to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithLocationHomeNodeNameQueryParameter(locationHomeNodeName *string) *FcInterfaceCollectionGetParams {
+	o.SetLocationHomeNodeNameQueryParameter(locationHomeNodeName)
+	return o
+}
+
+// SetLocationHomeNodeNameQueryParameter adds the locationHomeNodeName to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetLocationHomeNodeNameQueryParameter(locationHomeNodeName *string) {
+	o.LocationHomeNodeNameQueryParameter = locationHomeNodeName
+}
+
+// WithLocationHomeNodeUUIDQueryParameter adds the locationHomeNodeUUID to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithLocationHomeNodeUUIDQueryParameter(locationHomeNodeUUID *string) *FcInterfaceCollectionGetParams {
+	o.SetLocationHomeNodeUUIDQueryParameter(locationHomeNodeUUID)
+	return o
+}
+
+// SetLocationHomeNodeUUIDQueryParameter adds the locationHomeNodeUuid to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetLocationHomeNodeUUIDQueryParameter(locationHomeNodeUUID *string) {
+	o.LocationHomeNodeUUIDQueryParameter = locationHomeNodeUUID
+}
+
+// WithLocationHomePortNameQueryParameter adds the locationHomePortName to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithLocationHomePortNameQueryParameter(locationHomePortName *string) *FcInterfaceCollectionGetParams {
+	o.SetLocationHomePortNameQueryParameter(locationHomePortName)
+	return o
+}
+
+// SetLocationHomePortNameQueryParameter adds the locationHomePortName to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetLocationHomePortNameQueryParameter(locationHomePortName *string) {
+	o.LocationHomePortNameQueryParameter = locationHomePortName
+}
+
+// WithLocationHomePortNodeNameQueryParameter adds the locationHomePortNodeName to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithLocationHomePortNodeNameQueryParameter(locationHomePortNodeName *string) *FcInterfaceCollectionGetParams {
+	o.SetLocationHomePortNodeNameQueryParameter(locationHomePortNodeName)
+	return o
+}
+
+// SetLocationHomePortNodeNameQueryParameter adds the locationHomePortNodeName to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetLocationHomePortNodeNameQueryParameter(locationHomePortNodeName *string) {
+	o.LocationHomePortNodeNameQueryParameter = locationHomePortNodeName
+}
+
+// WithLocationHomePortUUIDQueryParameter adds the locationHomePortUUID to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithLocationHomePortUUIDQueryParameter(locationHomePortUUID *string) *FcInterfaceCollectionGetParams {
+	o.SetLocationHomePortUUIDQueryParameter(locationHomePortUUID)
+	return o
+}
+
+// SetLocationHomePortUUIDQueryParameter adds the locationHomePortUuid to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetLocationHomePortUUIDQueryParameter(locationHomePortUUID *string) {
+	o.LocationHomePortUUIDQueryParameter = locationHomePortUUID
+}
+
+// WithLocationIsHomeQueryParameter adds the locationIsHome to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithLocationIsHomeQueryParameter(locationIsHome *bool) *FcInterfaceCollectionGetParams {
+	o.SetLocationIsHomeQueryParameter(locationIsHome)
+	return o
+}
+
+// SetLocationIsHomeQueryParameter adds the locationIsHome to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetLocationIsHomeQueryParameter(locationIsHome *bool) {
+	o.LocationIsHomeQueryParameter = locationIsHome
 }
 
 // WithLocationNodeNameQueryParameter adds the locationNodeName to the fc interface collection get params
@@ -356,15 +620,169 @@ func (o *FcInterfaceCollectionGetParams) SetLocationPortUUIDQueryParameter(locat
 	o.LocationPortUUIDQueryParameter = locationPortUUID
 }
 
-// WithMaxRecords adds the maxRecords to the fc interface collection get params
-func (o *FcInterfaceCollectionGetParams) WithMaxRecords(maxRecords *int64) *FcInterfaceCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *FcInterfaceCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the fc interface collection get params
-func (o *FcInterfaceCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
+}
+
+// WithMetricDurationQueryParameter adds the metricDuration to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricDurationQueryParameter(metricDuration *string) *FcInterfaceCollectionGetParams {
+	o.SetMetricDurationQueryParameter(metricDuration)
+	return o
+}
+
+// SetMetricDurationQueryParameter adds the metricDuration to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
+	o.MetricDurationQueryParameter = metricDuration
+}
+
+// WithMetricIopsOtherQueryParameter adds the metricIopsOther to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricIopsOtherQueryParameter(metricIopsOther *int64) *FcInterfaceCollectionGetParams {
+	o.SetMetricIopsOtherQueryParameter(metricIopsOther)
+	return o
+}
+
+// SetMetricIopsOtherQueryParameter adds the metricIopsOther to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricIopsOtherQueryParameter(metricIopsOther *int64) {
+	o.MetricIopsOtherQueryParameter = metricIopsOther
+}
+
+// WithMetricIopsReadQueryParameter adds the metricIopsRead to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricIopsReadQueryParameter(metricIopsRead *int64) *FcInterfaceCollectionGetParams {
+	o.SetMetricIopsReadQueryParameter(metricIopsRead)
+	return o
+}
+
+// SetMetricIopsReadQueryParameter adds the metricIopsRead to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricIopsReadQueryParameter(metricIopsRead *int64) {
+	o.MetricIopsReadQueryParameter = metricIopsRead
+}
+
+// WithMetricIopsTotalQueryParameter adds the metricIopsTotal to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricIopsTotalQueryParameter(metricIopsTotal *int64) *FcInterfaceCollectionGetParams {
+	o.SetMetricIopsTotalQueryParameter(metricIopsTotal)
+	return o
+}
+
+// SetMetricIopsTotalQueryParameter adds the metricIopsTotal to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricIopsTotalQueryParameter(metricIopsTotal *int64) {
+	o.MetricIopsTotalQueryParameter = metricIopsTotal
+}
+
+// WithMetricIopsWriteQueryParameter adds the metricIopsWrite to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricIopsWriteQueryParameter(metricIopsWrite *int64) *FcInterfaceCollectionGetParams {
+	o.SetMetricIopsWriteQueryParameter(metricIopsWrite)
+	return o
+}
+
+// SetMetricIopsWriteQueryParameter adds the metricIopsWrite to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricIopsWriteQueryParameter(metricIopsWrite *int64) {
+	o.MetricIopsWriteQueryParameter = metricIopsWrite
+}
+
+// WithMetricLatencyOtherQueryParameter adds the metricLatencyOther to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricLatencyOtherQueryParameter(metricLatencyOther *int64) *FcInterfaceCollectionGetParams {
+	o.SetMetricLatencyOtherQueryParameter(metricLatencyOther)
+	return o
+}
+
+// SetMetricLatencyOtherQueryParameter adds the metricLatencyOther to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricLatencyOtherQueryParameter(metricLatencyOther *int64) {
+	o.MetricLatencyOtherQueryParameter = metricLatencyOther
+}
+
+// WithMetricLatencyReadQueryParameter adds the metricLatencyRead to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricLatencyReadQueryParameter(metricLatencyRead *int64) *FcInterfaceCollectionGetParams {
+	o.SetMetricLatencyReadQueryParameter(metricLatencyRead)
+	return o
+}
+
+// SetMetricLatencyReadQueryParameter adds the metricLatencyRead to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricLatencyReadQueryParameter(metricLatencyRead *int64) {
+	o.MetricLatencyReadQueryParameter = metricLatencyRead
+}
+
+// WithMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) *FcInterfaceCollectionGetParams {
+	o.SetMetricLatencyTotalQueryParameter(metricLatencyTotal)
+	return o
+}
+
+// SetMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) {
+	o.MetricLatencyTotalQueryParameter = metricLatencyTotal
+}
+
+// WithMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) *FcInterfaceCollectionGetParams {
+	o.SetMetricLatencyWriteQueryParameter(metricLatencyWrite)
+	return o
+}
+
+// SetMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) {
+	o.MetricLatencyWriteQueryParameter = metricLatencyWrite
+}
+
+// WithMetricStatusQueryParameter adds the metricStatus to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricStatusQueryParameter(metricStatus *string) *FcInterfaceCollectionGetParams {
+	o.SetMetricStatusQueryParameter(metricStatus)
+	return o
+}
+
+// SetMetricStatusQueryParameter adds the metricStatus to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
+	o.MetricStatusQueryParameter = metricStatus
+}
+
+// WithMetricThroughputReadQueryParameter adds the metricThroughputRead to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricThroughputReadQueryParameter(metricThroughputRead *int64) *FcInterfaceCollectionGetParams {
+	o.SetMetricThroughputReadQueryParameter(metricThroughputRead)
+	return o
+}
+
+// SetMetricThroughputReadQueryParameter adds the metricThroughputRead to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricThroughputReadQueryParameter(metricThroughputRead *int64) {
+	o.MetricThroughputReadQueryParameter = metricThroughputRead
+}
+
+// WithMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) *FcInterfaceCollectionGetParams {
+	o.SetMetricThroughputTotalQueryParameter(metricThroughputTotal)
+	return o
+}
+
+// SetMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) {
+	o.MetricThroughputTotalQueryParameter = metricThroughputTotal
+}
+
+// WithMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) *FcInterfaceCollectionGetParams {
+	o.SetMetricThroughputWriteQueryParameter(metricThroughputWrite)
+	return o
+}
+
+// SetMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) {
+	o.MetricThroughputWriteQueryParameter = metricThroughputWrite
+}
+
+// WithMetricTimestampQueryParameter adds the metricTimestamp to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *FcInterfaceCollectionGetParams {
+	o.SetMetricTimestampQueryParameter(metricTimestamp)
+	return o
+}
+
+// SetMetricTimestampQueryParameter adds the metricTimestamp to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
+	o.MetricTimestampQueryParameter = metricTimestamp
 }
 
 // WithNameQueryParameter adds the name to the fc interface collection get params
@@ -378,15 +796,15 @@ func (o *FcInterfaceCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the fc interface collection get params
-func (o *FcInterfaceCollectionGetParams) WithOrderBy(orderBy []string) *FcInterfaceCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *FcInterfaceCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the fc interface collection get params
-func (o *FcInterfaceCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPortAddressQueryParameter adds the portAddress to the fc interface collection get params
@@ -400,26 +818,26 @@ func (o *FcInterfaceCollectionGetParams) SetPortAddressQueryParameter(portAddres
 	o.PortAddressQueryParameter = portAddress
 }
 
-// WithReturnRecords adds the returnRecords to the fc interface collection get params
-func (o *FcInterfaceCollectionGetParams) WithReturnRecords(returnRecords *bool) *FcInterfaceCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FcInterfaceCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the fc interface collection get params
-func (o *FcInterfaceCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the fc interface collection get params
-func (o *FcInterfaceCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *FcInterfaceCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *FcInterfaceCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the fc interface collection get params
-func (o *FcInterfaceCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithStateQueryParameter adds the state to the fc interface collection get params
@@ -431,6 +849,149 @@ func (o *FcInterfaceCollectionGetParams) WithStateQueryParameter(state *string) 
 // SetStateQueryParameter adds the state to the fc interface collection get params
 func (o *FcInterfaceCollectionGetParams) SetStateQueryParameter(state *string) {
 	o.StateQueryParameter = state
+}
+
+// WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther)
+	return o
+}
+
+// SetStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) {
+	o.StatisticsIopsRawOtherQueryParameter = statisticsIopsRawOther
+}
+
+// WithStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead)
+	return o
+}
+
+// SetStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) {
+	o.StatisticsIopsRawReadQueryParameter = statisticsIopsRawRead
+}
+
+// WithStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal)
+	return o
+}
+
+// SetStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) {
+	o.StatisticsIopsRawTotalQueryParameter = statisticsIopsRawTotal
+}
+
+// WithStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite)
+	return o
+}
+
+// SetStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) {
+	o.StatisticsIopsRawWriteQueryParameter = statisticsIopsRawWrite
+}
+
+// WithStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther)
+	return o
+}
+
+// SetStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) {
+	o.StatisticsLatencyRawOtherQueryParameter = statisticsLatencyRawOther
+}
+
+// WithStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead)
+	return o
+}
+
+// SetStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) {
+	o.StatisticsLatencyRawReadQueryParameter = statisticsLatencyRawRead
+}
+
+// WithStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal)
+	return o
+}
+
+// SetStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) {
+	o.StatisticsLatencyRawTotalQueryParameter = statisticsLatencyRawTotal
+}
+
+// WithStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite)
+	return o
+}
+
+// SetStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) {
+	o.StatisticsLatencyRawWriteQueryParameter = statisticsLatencyRawWrite
+}
+
+// WithStatisticsStatusQueryParameter adds the statisticsStatus to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+	return o
+}
+
+// SetStatisticsStatusQueryParameter adds the statisticsStatus to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
+	o.StatisticsStatusQueryParameter = statisticsStatus
+}
+
+// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+	return o
+}
+
+// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+}
+
+// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+	return o
+}
+
+// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+}
+
+// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+	return o
+}
+
+// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+}
+
+// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *FcInterfaceCollectionGetParams {
+	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+	return o
+}
+
+// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the fc interface collection get params
+func (o *FcInterfaceCollectionGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
+	o.StatisticsTimestampQueryParameter = statisticsTimestamp
 }
 
 // WithSVMNameQueryParameter adds the svmName to the fc interface collection get params
@@ -547,7 +1108,7 @@ func (o *FcInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -555,6 +1116,108 @@ func (o *FcInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.LocationHomeNodeNameQueryParameter != nil {
+
+		// query param location.home_node.name
+		var qrLocationHomeNodeName string
+
+		if o.LocationHomeNodeNameQueryParameter != nil {
+			qrLocationHomeNodeName = *o.LocationHomeNodeNameQueryParameter
+		}
+		qLocationHomeNodeName := qrLocationHomeNodeName
+		if qLocationHomeNodeName != "" {
+
+			if err := r.SetQueryParam("location.home_node.name", qLocationHomeNodeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationHomeNodeUUIDQueryParameter != nil {
+
+		// query param location.home_node.uuid
+		var qrLocationHomeNodeUUID string
+
+		if o.LocationHomeNodeUUIDQueryParameter != nil {
+			qrLocationHomeNodeUUID = *o.LocationHomeNodeUUIDQueryParameter
+		}
+		qLocationHomeNodeUUID := qrLocationHomeNodeUUID
+		if qLocationHomeNodeUUID != "" {
+
+			if err := r.SetQueryParam("location.home_node.uuid", qLocationHomeNodeUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationHomePortNameQueryParameter != nil {
+
+		// query param location.home_port.name
+		var qrLocationHomePortName string
+
+		if o.LocationHomePortNameQueryParameter != nil {
+			qrLocationHomePortName = *o.LocationHomePortNameQueryParameter
+		}
+		qLocationHomePortName := qrLocationHomePortName
+		if qLocationHomePortName != "" {
+
+			if err := r.SetQueryParam("location.home_port.name", qLocationHomePortName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationHomePortNodeNameQueryParameter != nil {
+
+		// query param location.home_port.node.name
+		var qrLocationHomePortNodeName string
+
+		if o.LocationHomePortNodeNameQueryParameter != nil {
+			qrLocationHomePortNodeName = *o.LocationHomePortNodeNameQueryParameter
+		}
+		qLocationHomePortNodeName := qrLocationHomePortNodeName
+		if qLocationHomePortNodeName != "" {
+
+			if err := r.SetQueryParam("location.home_port.node.name", qLocationHomePortNodeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationHomePortUUIDQueryParameter != nil {
+
+		// query param location.home_port.uuid
+		var qrLocationHomePortUUID string
+
+		if o.LocationHomePortUUIDQueryParameter != nil {
+			qrLocationHomePortUUID = *o.LocationHomePortUUIDQueryParameter
+		}
+		qLocationHomePortUUID := qrLocationHomePortUUID
+		if qLocationHomePortUUID != "" {
+
+			if err := r.SetQueryParam("location.home_port.uuid", qLocationHomePortUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationIsHomeQueryParameter != nil {
+
+		// query param location.is_home
+		var qrLocationIsHome bool
+
+		if o.LocationIsHomeQueryParameter != nil {
+			qrLocationIsHome = *o.LocationIsHomeQueryParameter
+		}
+		qLocationIsHome := swag.FormatBool(qrLocationIsHome)
+		if qLocationIsHome != "" {
+
+			if err := r.SetQueryParam("location.is_home", qLocationIsHome); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -643,18 +1306,256 @@ func (o *FcInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricDurationQueryParameter != nil {
+
+		// query param metric.duration
+		var qrMetricDuration string
+
+		if o.MetricDurationQueryParameter != nil {
+			qrMetricDuration = *o.MetricDurationQueryParameter
+		}
+		qMetricDuration := qrMetricDuration
+		if qMetricDuration != "" {
+
+			if err := r.SetQueryParam("metric.duration", qMetricDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsOtherQueryParameter != nil {
+
+		// query param metric.iops.other
+		var qrMetricIopsOther int64
+
+		if o.MetricIopsOtherQueryParameter != nil {
+			qrMetricIopsOther = *o.MetricIopsOtherQueryParameter
+		}
+		qMetricIopsOther := swag.FormatInt64(qrMetricIopsOther)
+		if qMetricIopsOther != "" {
+
+			if err := r.SetQueryParam("metric.iops.other", qMetricIopsOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsReadQueryParameter != nil {
+
+		// query param metric.iops.read
+		var qrMetricIopsRead int64
+
+		if o.MetricIopsReadQueryParameter != nil {
+			qrMetricIopsRead = *o.MetricIopsReadQueryParameter
+		}
+		qMetricIopsRead := swag.FormatInt64(qrMetricIopsRead)
+		if qMetricIopsRead != "" {
+
+			if err := r.SetQueryParam("metric.iops.read", qMetricIopsRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsTotalQueryParameter != nil {
+
+		// query param metric.iops.total
+		var qrMetricIopsTotal int64
+
+		if o.MetricIopsTotalQueryParameter != nil {
+			qrMetricIopsTotal = *o.MetricIopsTotalQueryParameter
+		}
+		qMetricIopsTotal := swag.FormatInt64(qrMetricIopsTotal)
+		if qMetricIopsTotal != "" {
+
+			if err := r.SetQueryParam("metric.iops.total", qMetricIopsTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsWriteQueryParameter != nil {
+
+		// query param metric.iops.write
+		var qrMetricIopsWrite int64
+
+		if o.MetricIopsWriteQueryParameter != nil {
+			qrMetricIopsWrite = *o.MetricIopsWriteQueryParameter
+		}
+		qMetricIopsWrite := swag.FormatInt64(qrMetricIopsWrite)
+		if qMetricIopsWrite != "" {
+
+			if err := r.SetQueryParam("metric.iops.write", qMetricIopsWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyOtherQueryParameter != nil {
+
+		// query param metric.latency.other
+		var qrMetricLatencyOther int64
+
+		if o.MetricLatencyOtherQueryParameter != nil {
+			qrMetricLatencyOther = *o.MetricLatencyOtherQueryParameter
+		}
+		qMetricLatencyOther := swag.FormatInt64(qrMetricLatencyOther)
+		if qMetricLatencyOther != "" {
+
+			if err := r.SetQueryParam("metric.latency.other", qMetricLatencyOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyReadQueryParameter != nil {
+
+		// query param metric.latency.read
+		var qrMetricLatencyRead int64
+
+		if o.MetricLatencyReadQueryParameter != nil {
+			qrMetricLatencyRead = *o.MetricLatencyReadQueryParameter
+		}
+		qMetricLatencyRead := swag.FormatInt64(qrMetricLatencyRead)
+		if qMetricLatencyRead != "" {
+
+			if err := r.SetQueryParam("metric.latency.read", qMetricLatencyRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyTotalQueryParameter != nil {
+
+		// query param metric.latency.total
+		var qrMetricLatencyTotal int64
+
+		if o.MetricLatencyTotalQueryParameter != nil {
+			qrMetricLatencyTotal = *o.MetricLatencyTotalQueryParameter
+		}
+		qMetricLatencyTotal := swag.FormatInt64(qrMetricLatencyTotal)
+		if qMetricLatencyTotal != "" {
+
+			if err := r.SetQueryParam("metric.latency.total", qMetricLatencyTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyWriteQueryParameter != nil {
+
+		// query param metric.latency.write
+		var qrMetricLatencyWrite int64
+
+		if o.MetricLatencyWriteQueryParameter != nil {
+			qrMetricLatencyWrite = *o.MetricLatencyWriteQueryParameter
+		}
+		qMetricLatencyWrite := swag.FormatInt64(qrMetricLatencyWrite)
+		if qMetricLatencyWrite != "" {
+
+			if err := r.SetQueryParam("metric.latency.write", qMetricLatencyWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricStatusQueryParameter != nil {
+
+		// query param metric.status
+		var qrMetricStatus string
+
+		if o.MetricStatusQueryParameter != nil {
+			qrMetricStatus = *o.MetricStatusQueryParameter
+		}
+		qMetricStatus := qrMetricStatus
+		if qMetricStatus != "" {
+
+			if err := r.SetQueryParam("metric.status", qMetricStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputReadQueryParameter != nil {
+
+		// query param metric.throughput.read
+		var qrMetricThroughputRead int64
+
+		if o.MetricThroughputReadQueryParameter != nil {
+			qrMetricThroughputRead = *o.MetricThroughputReadQueryParameter
+		}
+		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
+		if qMetricThroughputRead != "" {
+
+			if err := r.SetQueryParam("metric.throughput.read", qMetricThroughputRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputTotalQueryParameter != nil {
+
+		// query param metric.throughput.total
+		var qrMetricThroughputTotal int64
+
+		if o.MetricThroughputTotalQueryParameter != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotalQueryParameter
+		}
+		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
+		if qMetricThroughputTotal != "" {
+
+			if err := r.SetQueryParam("metric.throughput.total", qMetricThroughputTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputWriteQueryParameter != nil {
+
+		// query param metric.throughput.write
+		var qrMetricThroughputWrite int64
+
+		if o.MetricThroughputWriteQueryParameter != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWriteQueryParameter
+		}
+		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
+		if qMetricThroughputWrite != "" {
+
+			if err := r.SetQueryParam("metric.throughput.write", qMetricThroughputWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricTimestampQueryParameter != nil {
+
+		// query param metric.timestamp
+		var qrMetricTimestamp string
+
+		if o.MetricTimestampQueryParameter != nil {
+			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		}
+		qMetricTimestamp := qrMetricTimestamp
+		if qMetricTimestamp != "" {
+
+			if err := r.SetQueryParam("metric.timestamp", qMetricTimestamp); err != nil {
 				return err
 			}
 		}
@@ -677,7 +1578,7 @@ func (o *FcInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -705,13 +1606,13 @@ func (o *FcInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -722,13 +1623,13 @@ func (o *FcInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -751,6 +1652,227 @@ func (o *FcInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qState != "" {
 
 			if err := r.SetQueryParam("state", qState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawOtherQueryParameter != nil {
+
+		// query param statistics.iops_raw.other
+		var qrStatisticsIopsRawOther int64
+
+		if o.StatisticsIopsRawOtherQueryParameter != nil {
+			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOtherQueryParameter
+		}
+		qStatisticsIopsRawOther := swag.FormatInt64(qrStatisticsIopsRawOther)
+		if qStatisticsIopsRawOther != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.other", qStatisticsIopsRawOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawReadQueryParameter != nil {
+
+		// query param statistics.iops_raw.read
+		var qrStatisticsIopsRawRead int64
+
+		if o.StatisticsIopsRawReadQueryParameter != nil {
+			qrStatisticsIopsRawRead = *o.StatisticsIopsRawReadQueryParameter
+		}
+		qStatisticsIopsRawRead := swag.FormatInt64(qrStatisticsIopsRawRead)
+		if qStatisticsIopsRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.read", qStatisticsIopsRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawTotalQueryParameter != nil {
+
+		// query param statistics.iops_raw.total
+		var qrStatisticsIopsRawTotal int64
+
+		if o.StatisticsIopsRawTotalQueryParameter != nil {
+			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotalQueryParameter
+		}
+		qStatisticsIopsRawTotal := swag.FormatInt64(qrStatisticsIopsRawTotal)
+		if qStatisticsIopsRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.total", qStatisticsIopsRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawWriteQueryParameter != nil {
+
+		// query param statistics.iops_raw.write
+		var qrStatisticsIopsRawWrite int64
+
+		if o.StatisticsIopsRawWriteQueryParameter != nil {
+			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWriteQueryParameter
+		}
+		qStatisticsIopsRawWrite := swag.FormatInt64(qrStatisticsIopsRawWrite)
+		if qStatisticsIopsRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.write", qStatisticsIopsRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawOtherQueryParameter != nil {
+
+		// query param statistics.latency_raw.other
+		var qrStatisticsLatencyRawOther int64
+
+		if o.StatisticsLatencyRawOtherQueryParameter != nil {
+			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOtherQueryParameter
+		}
+		qStatisticsLatencyRawOther := swag.FormatInt64(qrStatisticsLatencyRawOther)
+		if qStatisticsLatencyRawOther != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.other", qStatisticsLatencyRawOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawReadQueryParameter != nil {
+
+		// query param statistics.latency_raw.read
+		var qrStatisticsLatencyRawRead int64
+
+		if o.StatisticsLatencyRawReadQueryParameter != nil {
+			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawReadQueryParameter
+		}
+		qStatisticsLatencyRawRead := swag.FormatInt64(qrStatisticsLatencyRawRead)
+		if qStatisticsLatencyRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.read", qStatisticsLatencyRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawTotalQueryParameter != nil {
+
+		// query param statistics.latency_raw.total
+		var qrStatisticsLatencyRawTotal int64
+
+		if o.StatisticsLatencyRawTotalQueryParameter != nil {
+			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotalQueryParameter
+		}
+		qStatisticsLatencyRawTotal := swag.FormatInt64(qrStatisticsLatencyRawTotal)
+		if qStatisticsLatencyRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.total", qStatisticsLatencyRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawWriteQueryParameter != nil {
+
+		// query param statistics.latency_raw.write
+		var qrStatisticsLatencyRawWrite int64
+
+		if o.StatisticsLatencyRawWriteQueryParameter != nil {
+			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWriteQueryParameter
+		}
+		qStatisticsLatencyRawWrite := swag.FormatInt64(qrStatisticsLatencyRawWrite)
+		if qStatisticsLatencyRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.write", qStatisticsLatencyRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsStatusQueryParameter != nil {
+
+		// query param statistics.status
+		var qrStatisticsStatus string
+
+		if o.StatisticsStatusQueryParameter != nil {
+			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		}
+		qStatisticsStatus := qrStatisticsStatus
+		if qStatisticsStatus != "" {
+
+			if err := r.SetQueryParam("statistics.status", qStatisticsStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawReadQueryParameter != nil {
+
+		// query param statistics.throughput_raw.read
+		var qrStatisticsThroughputRawRead int64
+
+		if o.StatisticsThroughputRawReadQueryParameter != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		}
+		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
+		if qStatisticsThroughputRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.read", qStatisticsThroughputRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+
+		// query param statistics.throughput_raw.total
+		var qrStatisticsThroughputRawTotal int64
+
+		if o.StatisticsThroughputRawTotalQueryParameter != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		}
+		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
+		if qStatisticsThroughputRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.total", qStatisticsThroughputRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+
+		// query param statistics.throughput_raw.write
+		var qrStatisticsThroughputRawWrite int64
+
+		if o.StatisticsThroughputRawWriteQueryParameter != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		}
+		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
+		if qStatisticsThroughputRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.write", qStatisticsThroughputRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsTimestampQueryParameter != nil {
+
+		// query param statistics.timestamp
+		var qrStatisticsTimestamp string
+
+		if o.StatisticsTimestampQueryParameter != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		}
+		qStatisticsTimestamp := qrStatisticsTimestamp
+		if qStatisticsTimestamp != "" {
+
+			if err := r.SetQueryParam("statistics.timestamp", qStatisticsTimestamp); err != nil {
 				return err
 			}
 		}
@@ -849,7 +1971,7 @@ func (o *FcInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamFcInterfaceCollectionGet binds the parameter fields
 func (o *FcInterfaceCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -866,7 +1988,7 @@ func (o *FcInterfaceCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamFcInterfaceCollectionGet binds the parameter order_by
 func (o *FcInterfaceCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

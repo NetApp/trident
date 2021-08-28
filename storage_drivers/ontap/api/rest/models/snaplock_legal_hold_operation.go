@@ -117,43 +117,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_legal_hold_operation
 	// SnaplockLegalHoldOperation
 	// state
 	// State
 	// in_progress
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockLegalHoldOperationStateInProgress captures enum value "in_progress"
 	SnaplockLegalHoldOperationStateInProgress string = "in_progress"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_legal_hold_operation
 	// SnaplockLegalHoldOperation
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockLegalHoldOperationStateFailed captures enum value "failed"
 	SnaplockLegalHoldOperationStateFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_legal_hold_operation
 	// SnaplockLegalHoldOperation
 	// state
 	// State
 	// aborting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockLegalHoldOperationStateAborting captures enum value "aborting"
 	SnaplockLegalHoldOperationStateAborting string = "aborting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_legal_hold_operation
 	// SnaplockLegalHoldOperation
 	// state
 	// State
 	// completed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockLegalHoldOperationStateCompleted captures enum value "completed"
 	SnaplockLegalHoldOperationStateCompleted string = "completed"
 )
@@ -193,23 +193,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_legal_hold_operation
 	// SnaplockLegalHoldOperation
 	// type
 	// Type
 	// begin
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockLegalHoldOperationTypeBegin captures enum value "begin"
 	SnaplockLegalHoldOperationTypeBegin string = "begin"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_legal_hold_operation
 	// SnaplockLegalHoldOperation
 	// type
 	// Type
 	// end
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockLegalHoldOperationTypeEnd captures enum value "end"
 	SnaplockLegalHoldOperationTypeEnd string = "end"
 )
@@ -444,5 +444,3 @@ func (m *SnaplockLegalHoldOperationLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -11,7 +11,6 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // SnaplockFileRetention snaplock file retention
@@ -22,10 +21,9 @@ type SnaplockFileRetention struct {
 	// links
 	Links *SnaplockFileRetentionLinks `json:"_links,omitempty"`
 
-	// Expiry time of the file in date-time format.
-	// Example: 2058-06-04 19:00:00
-	// Format: date-time
-	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
+	// Expiry time of the file in date-time format, "infinite", "indefinite", or "unspecified". An "infinite" retention time indicates that the file will be retained forever. An "unspecified" retention time indicates that the file will be retained forever; however, the retention time of the file can be changed to an absolute value. An "indefinite" retention time indicates that the file is under Legal-Hold.
+	// Example: 2058-06-04T19:00:00Z
+	ExpiryTime string `json:"expiry_time,omitempty"`
 
 	// Specifies the volume relative path of the file
 	// Example: /dir1/file
@@ -43,10 +41,6 @@ func (m *SnaplockFileRetention) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateExpiryTime(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -76,18 +70,6 @@ func (m *SnaplockFileRetention) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *SnaplockFileRetention) validateExpiryTime(formats strfmt.Registry) error {
-	if swag.IsZero(m.ExpiryTime) { // not required
-		return nil
-	}
-
-	if err := validate.FormatOf("expiry_time", "body", "date-time", m.ExpiryTime.String(), formats); err != nil {
-		return err
 	}
 
 	return nil
@@ -656,5 +638,3 @@ func (m *SnaplockFileRetentionVolumeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

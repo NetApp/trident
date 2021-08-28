@@ -310,17 +310,23 @@ type PerformanceLunMetricResponseRecordsItems0 struct {
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *PerformanceLunMetricResponseRecordsItems0Throughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+
+	// The unique identifier of the LUN.
+	//
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
 }
 
 // Validate validates this performance lun metric response records items0
@@ -392,63 +398,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0DurationPT15S captures enum value "PT15S"
 	PerformanceLunMetricResponseRecordsItems0DurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0DurationPT4M captures enum value "PT4M"
 	PerformanceLunMetricResponseRecordsItems0DurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0DurationPT30M captures enum value "PT30M"
 	PerformanceLunMetricResponseRecordsItems0DurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0DurationPT2H captures enum value "PT2H"
 	PerformanceLunMetricResponseRecordsItems0DurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0DurationP1D captures enum value "P1D"
 	PerformanceLunMetricResponseRecordsItems0DurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0DurationPT5M captures enum value "PT5M"
 	PerformanceLunMetricResponseRecordsItems0DurationPT5M string = "PT5M"
 )
@@ -512,7 +518,7 @@ var performanceLunMetricResponseRecordsItems0TypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -522,105 +528,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0StatusOk captures enum value "ok"
 	PerformanceLunMetricResponseRecordsItems0StatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0StatusError captures enum value "error"
 	PerformanceLunMetricResponseRecordsItems0StatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0StatusPartialNoData captures enum value "partial_no_data"
 	PerformanceLunMetricResponseRecordsItems0StatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0
-	// PerformanceLunMetricResponseRecordsItems0
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// PerformanceLunMetricResponseRecordsItems0StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceLunMetricResponseRecordsItems0StatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0StatusPartialNoResponse captures enum value "partial_no_response"
 	PerformanceLunMetricResponseRecordsItems0StatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0StatusPartialOtherError captures enum value "partial_other_error"
 	PerformanceLunMetricResponseRecordsItems0StatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0StatusNegativeDelta captures enum value "negative_delta"
 	PerformanceLunMetricResponseRecordsItems0StatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// PerformanceLunMetricResponseRecordsItems0
+	// PerformanceLunMetricResponseRecordsItems0
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// PerformanceLunMetricResponseRecordsItems0StatusNotFound captures enum value "not_found"
+	PerformanceLunMetricResponseRecordsItems0StatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0StatusBackfilledData captures enum value "backfilled_data"
 	PerformanceLunMetricResponseRecordsItems0StatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	PerformanceLunMetricResponseRecordsItems0StatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0
 	// PerformanceLunMetricResponseRecordsItems0
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceLunMetricResponseRecordsItems0StatusInconsistentOldData captures enum value "inconsistent_old_data"
 	PerformanceLunMetricResponseRecordsItems0StatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// PerformanceLunMetricResponseRecordsItems0
+	// PerformanceLunMetricResponseRecordsItems0
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// PerformanceLunMetricResponseRecordsItems0StatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceLunMetricResponseRecordsItems0StatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -702,6 +718,10 @@ func (m *PerformanceLunMetricResponseRecordsItems0) ContextValidate(ctx context.
 	}
 
 	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -788,6 +808,15 @@ func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateThroughput(ct
 func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PerformanceLunMetricResponseRecordsItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
 		return err
 	}
 
@@ -1059,5 +1088,3 @@ func (m *PerformanceLunMetricResponseRecordsItems0Throughput) UnmarshalBinary(b 
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

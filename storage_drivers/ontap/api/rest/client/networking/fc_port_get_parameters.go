@@ -64,7 +64,7 @@ type FcPortGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -126,15 +126,15 @@ func (o *FcPortGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the fc port get params
-func (o *FcPortGetParams) WithFields(fields []string) *FcPortGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the fc port get params
+func (o *FcPortGetParams) WithFieldsQueryParameter(fields []string) *FcPortGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the fc port get params
-func (o *FcPortGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the fc port get params
+func (o *FcPortGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the fc port get params
@@ -156,7 +156,7 @@ func (o *FcPortGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -180,7 +180,7 @@ func (o *FcPortGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 
 // bindParamFcPortGet binds the parameter fields
 func (o *FcPortGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

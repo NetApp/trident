@@ -26,7 +26,7 @@ type SnaplockComplianceClock struct {
 	Node *SnaplockComplianceClockNode `json:"node,omitempty"`
 
 	// Compliance clock time
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`
@@ -442,5 +442,3 @@ func (m *SnaplockComplianceClockNodeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

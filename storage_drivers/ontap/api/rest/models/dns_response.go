@@ -22,7 +22,7 @@ type DNSResponse struct {
 	// links
 	Links *DNSResponseLinks `json:"_links,omitempty"`
 
-	// Number of DNS domain records
+	// Number of DNS domain records.
 	NumRecords int64 `json:"num_records,omitempty"`
 
 	// records
@@ -283,5 +283,3 @@ func (m *DNSResponseLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

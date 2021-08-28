@@ -72,7 +72,7 @@ type ClientService interface {
 /*
   ApplicationCollectionGet Retrieves applications.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `<template>` the property corresponding to the `template.name` of the application
 ### Query examples
 Numerous queries are available for classifying and sorting applications:
@@ -430,7 +430,7 @@ Component Snapshot copies are essentially more granular application Snapshot cop
 * [`DOC /application/applications/{application.uuid}/snapshots`](#docs-application-application_applications_{application.uuid}_snapshots)
 * [`POST /application/applications/{application.uuid}/snapshots/{uuid}/restore`](#operations-application-application_snapshot_restore)
 * [`DOC /application`](#docs-application-overview)
-* [`DOC Asynchronous operations`](#docs-docs-Synchronous-and-asynchronous-operations)
+* [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
 
 */
 func (a *Client) ApplicationComponentSnapshotRestore(params *ApplicationComponentSnapshotRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationComponentSnapshotRestoreAccepted, error) {
@@ -478,7 +478,10 @@ The application APIs appear to be complex and long in this documentation because
 * `<template>` - Properties for one template must be provided. In general, the following properties are required, however the naming of these may vary slightly from template to template.
   * `name` - The generic templates require names for the components of the application. Other templates name the components automatically.
   * `size` - This generally refers to the size of an application component, which may be spread across multiple underlying storage objects (volumes, LUNs, etc...).
-  * Either `nfs_access`, `cifs_access`, or `igroup_name` must be specified
+  * One of the following must be specified:
+      * `nfs_access` or an identifier (name or id) of an existing `export-policy`.
+      * `cifs_access`
+      * `igroup_name`
   * `os_type` - All SAN applications require an os_type to be specified in some way. Some templates refer to this as the `hypervisor`.
 ### Recommended optional properties
 * `<template>` - The following properties are available in some templates.
@@ -552,7 +555,7 @@ A common pattern across many templates are objects that are optional, but once a
     ```
 ### Learn more
 * [`DOC /application`](#docs-application-overview)
-* [`DOC Asynchronous operations`](#docs-docs-Synchronous-and-asynchronous-operations)
+* [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
 
 */
 func (a *Client) ApplicationCreate(params *ApplicationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationCreateAccepted, error) {
@@ -596,7 +599,7 @@ func (a *Client) ApplicationCreate(params *ApplicationCreateParams, authInfo run
 This deletes everything created with the application, including any volumes, LUNs, NFS export policies, CIFS shares, and initiator groups. Initiator groups are only destroyed if they were created as part of an application and are no longer in use by other applications.
 ### Learn more
 * [`DOC /application`](#docs-application-overview)
-* [`DOC Asynchronous operations`](#docs-docs-Synchronous-and-asynchronous-operations)
+* [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
 
 */
 func (a *Client) ApplicationDelete(params *ApplicationDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationDeleteAccepted, error) {
@@ -637,7 +640,7 @@ func (a *Client) ApplicationDelete(params *ApplicationDeleteParams, authInfo run
 /*
   ApplicationGet Retrieves an application
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `<template>` the property corresponding to the `template.name` of the application
 ### Property overview
 An application includes three main groups or properties.
@@ -742,7 +745,7 @@ During a modification, the `state` property of the application updates to indica
     <br/>
 ### Learn more
 * [`DOC /application`](#docs-application-overview)
-* [`DOC Asynchronous operations`](#docs-docs-Synchronous-and-asynchronous-operations)
+* [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
 
 */
 func (a *Client) ApplicationModify(params *ApplicationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationModifyAccepted, error) {
@@ -886,8 +889,6 @@ The following query deletes all application Snapshot copies created before May 4
 DELETE /application/applications/{application.uuid}/snapshots?create_time=<2017-05-04T00:00:00-05:00
 ```
 
-### Learn more
-* [`DOC /application/applications/{application.uuid}/snapshots`](#docs-application-application_applications_{application.uuid}_snapshots)
 */
 func (a *Client) ApplicationSnapshotDelete(params *ApplicationSnapshotDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -974,7 +975,7 @@ func (a *Client) ApplicationSnapshotGet(params *ApplicationSnapshotGetParams, au
 Restoring an application Snapshot copy reverts all storage elements in the Snapshot copy to the state in which the Snapshot copy was in when the Snapshot copy was taken. This restoration does not apply to access settings that might have changed since the Snapshot copy was created.
 ### Learn more
 * [`DOC /application`](#docs-application-overview)
-* [`DOC Asynchronous operations`](#docs-docs-Synchronous-and-asynchronous-operations)
+* [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
 
 */
 func (a *Client) ApplicationSnapshotRestore(params *ApplicationSnapshotRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ApplicationSnapshotRestoreAccepted, error) {

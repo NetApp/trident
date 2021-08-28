@@ -90,6 +90,12 @@ func NewS3BucketSvmModifyDefault(code int) *S3BucketSvmModifyDefault {
 | 92405811   | "Failed to modify bucket \\\"{bucket name}\\\" for SVM \\\"{svm.name}\\\". Wait a few minutes and try the operation again.";
 | 92405858   | "Failed to \\\"modify\\\" the \\\"bucket\\\" because the operation is only supported on data SVMs.";
 | 92405861   | "The specified SVM UUID or bucket UUID does not exist.";
+| 92405863   | "An error occurs when creating an access policy. The reason for failure is detailed in the error message.";
+| 92405864   | "An error occurs when deleting an access policy. The reason for failure is detailed in the error message.";
+| 92405891   | "The resources specified in the access policy are not valid. Valid ways to specify a resource are \\\"*\\\", \\\"<bucket-name>\\\", \\\"<bucket-name>/.../...\\\". Valid characters for a resource are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\",\\\", \\\";\\\", \\\":\\\", \\\";\\\", \\\"=\\\", \\\".\\\", \\\"&\\\", \\\"@\\\", \\\"?\\\", \\\"(\\\", \\\")\\\", \\\"'\\\", \\\"*\\\", \\\"!\\\", \\\"-\\\" and \\\"\\$\\\".";
+| 92405894   | "Statements, principals and resources list can have a maximum of 10 entries.";
+| 92405897   | "The principals specified in the access policy are not in the correct format. User name must be in between 1 and 64 characters. Valid characters for a user name are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\"=\\\", \\\",\\\", \\\".\\\", \\\"@\\\", and \\\"-\\\". ";
+| 92405898   | "The SID specified in the access policy is not valid. Valid characters for a SID are 0-9, A-Z and a-z.";
 
 */
 type S3BucketSvmModifyDefault struct {

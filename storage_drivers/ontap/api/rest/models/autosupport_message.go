@@ -30,7 +30,7 @@ type AutosupportMessage struct {
 	Error *AutosupportMessageError `json:"error,omitempty"`
 
 	// Date and Time of AutoSupport generation in ISO-8601 format
-	// Example: 2019-03-25 21:30:04
+	// Example: 2019-03-25T17:30:04-04:00
 	// Read Only: true
 	// Format: date-time
 	GeneratedOn *strfmt.DateTime `json:"generated_on,omitempty"`
@@ -121,43 +121,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// destination
 	// Destination
 	// smtp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageDestinationSMTP captures enum value "smtp"
 	AutosupportMessageDestinationSMTP string = "smtp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// destination
 	// Destination
 	// http
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageDestinationHTTP captures enum value "http"
 	AutosupportMessageDestinationHTTP string = "http"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// destination
 	// Destination
 	// noteto
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageDestinationNoteto captures enum value "noteto"
 	AutosupportMessageDestinationNoteto string = "noteto"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// destination
 	// Destination
 	// retransmit
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageDestinationRetransmit captures enum value "retransmit"
 	AutosupportMessageDestinationRetransmit string = "retransmit"
 )
@@ -243,113 +243,113 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// state
 	// State
 	// initializing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageStateInitializing captures enum value "initializing"
 	AutosupportMessageStateInitializing string = "initializing"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// state
 	// State
 	// collection_failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageStateCollectionFailed captures enum value "collection_failed"
 	AutosupportMessageStateCollectionFailed string = "collection_failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// state
 	// State
 	// collection_in_progress
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageStateCollectionInProgress captures enum value "collection_in_progress"
 	AutosupportMessageStateCollectionInProgress string = "collection_in_progress"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// state
 	// State
 	// queued
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageStateQueued captures enum value "queued"
 	AutosupportMessageStateQueued string = "queued"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// state
 	// State
 	// transmitting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageStateTransmitting captures enum value "transmitting"
 	AutosupportMessageStateTransmitting string = "transmitting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// state
 	// State
 	// sent_successful
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageStateSentSuccessful captures enum value "sent_successful"
 	AutosupportMessageStateSentSuccessful string = "sent_successful"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// state
 	// State
 	// ignore
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageStateIgnore captures enum value "ignore"
 	AutosupportMessageStateIgnore string = "ignore"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// state
 	// State
 	// re_queued
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageStateReQueued captures enum value "re_queued"
 	AutosupportMessageStateReQueued string = "re_queued"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// state
 	// State
 	// transmission_failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageStateTransmissionFailed captures enum value "transmission_failed"
 	AutosupportMessageStateTransmissionFailed string = "transmission_failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// state
 	// State
 	// ondemand_ignore
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageStateOndemandIgnore captures enum value "ondemand_ignore"
 	AutosupportMessageStateOndemandIgnore string = "ondemand_ignore"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// state
 	// State
 	// cancelled
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageStateCancelled captures enum value "cancelled"
 	AutosupportMessageStateCancelled string = "cancelled"
 )
@@ -389,33 +389,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// type
 	// Type
 	// test
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageTypeTest captures enum value "test"
 	AutosupportMessageTypeTest string = "test"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// type
 	// Type
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageTypePerformance captures enum value "performance"
 	AutosupportMessageTypePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport_message
 	// AutosupportMessage
 	// type
 	// Type
 	// all
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportMessageTypeAll captures enum value "all"
 	AutosupportMessageTypeAll string = "all"
 )
@@ -836,5 +836,3 @@ func (m *AutosupportMessageNodeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

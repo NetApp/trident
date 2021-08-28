@@ -88,7 +88,7 @@ type NvmeNamespaceCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* LocationNamespace.
 
@@ -124,7 +124,91 @@ type NvmeNamespaceCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
+
+	/* MetricDuration.
+
+	   Filter by metric.duration
+	*/
+	MetricDurationQueryParameter *string
+
+	/* MetricIopsOther.
+
+	   Filter by metric.iops.other
+	*/
+	MetricIopsOtherQueryParameter *int64
+
+	/* MetricIopsRead.
+
+	   Filter by metric.iops.read
+	*/
+	MetricIopsReadQueryParameter *int64
+
+	/* MetricIopsTotal.
+
+	   Filter by metric.iops.total
+	*/
+	MetricIopsTotalQueryParameter *int64
+
+	/* MetricIopsWrite.
+
+	   Filter by metric.iops.write
+	*/
+	MetricIopsWriteQueryParameter *int64
+
+	/* MetricLatencyOther.
+
+	   Filter by metric.latency.other
+	*/
+	MetricLatencyOtherQueryParameter *int64
+
+	/* MetricLatencyRead.
+
+	   Filter by metric.latency.read
+	*/
+	MetricLatencyReadQueryParameter *int64
+
+	/* MetricLatencyTotal.
+
+	   Filter by metric.latency.total
+	*/
+	MetricLatencyTotalQueryParameter *int64
+
+	/* MetricLatencyWrite.
+
+	   Filter by metric.latency.write
+	*/
+	MetricLatencyWriteQueryParameter *int64
+
+	/* MetricStatus.
+
+	   Filter by metric.status
+	*/
+	MetricStatusQueryParameter *string
+
+	/* MetricThroughputRead.
+
+	   Filter by metric.throughput.read
+	*/
+	MetricThroughputReadQueryParameter *int64
+
+	/* MetricThroughputTotal.
+
+	   Filter by metric.throughput.total
+	*/
+	MetricThroughputTotalQueryParameter *int64
+
+	/* MetricThroughputWrite.
+
+	   Filter by metric.throughput.write
+	*/
+	MetricThroughputWriteQueryParameter *int64
+
+	/* MetricTimestamp.
+
+	   Filter by metric.timestamp
+	*/
+	MetricTimestampQueryParameter *string
 
 	/* Name.
 
@@ -136,7 +220,7 @@ type NvmeNamespaceCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* OsType.
 
@@ -150,7 +234,7 @@ type NvmeNamespaceCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -158,7 +242,7 @@ type NvmeNamespaceCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SpaceBlockSize.
 
@@ -189,6 +273,84 @@ type NvmeNamespaceCollectionGetParams struct {
 	   Filter by space.used
 	*/
 	SpaceUsedQueryParameter *int64
+
+	/* StatisticsIopsRawOther.
+
+	   Filter by statistics.iops_raw.other
+	*/
+	StatisticsIopsRawOtherQueryParameter *int64
+
+	/* StatisticsIopsRawRead.
+
+	   Filter by statistics.iops_raw.read
+	*/
+	StatisticsIopsRawReadQueryParameter *int64
+
+	/* StatisticsIopsRawTotal.
+
+	   Filter by statistics.iops_raw.total
+	*/
+	StatisticsIopsRawTotalQueryParameter *int64
+
+	/* StatisticsIopsRawWrite.
+
+	   Filter by statistics.iops_raw.write
+	*/
+	StatisticsIopsRawWriteQueryParameter *int64
+
+	/* StatisticsLatencyRawOther.
+
+	   Filter by statistics.latency_raw.other
+	*/
+	StatisticsLatencyRawOtherQueryParameter *int64
+
+	/* StatisticsLatencyRawRead.
+
+	   Filter by statistics.latency_raw.read
+	*/
+	StatisticsLatencyRawReadQueryParameter *int64
+
+	/* StatisticsLatencyRawTotal.
+
+	   Filter by statistics.latency_raw.total
+	*/
+	StatisticsLatencyRawTotalQueryParameter *int64
+
+	/* StatisticsLatencyRawWrite.
+
+	   Filter by statistics.latency_raw.write
+	*/
+	StatisticsLatencyRawWriteQueryParameter *int64
+
+	/* StatisticsStatus.
+
+	   Filter by statistics.status
+	*/
+	StatisticsStatusQueryParameter *string
+
+	/* StatisticsThroughputRawRead.
+
+	   Filter by statistics.throughput_raw.read
+	*/
+	StatisticsThroughputRawReadQueryParameter *int64
+
+	/* StatisticsThroughputRawTotal.
+
+	   Filter by statistics.throughput_raw.total
+	*/
+	StatisticsThroughputRawTotalQueryParameter *int64
+
+	/* StatisticsThroughputRawWrite.
+
+	   Filter by statistics.throughput_raw.write
+	*/
+	StatisticsThroughputRawWriteQueryParameter *int64
+
+	/* StatisticsTimestamp.
+
+	   Filter by statistics.timestamp
+	*/
+	StatisticsTimestampQueryParameter *string
 
 	/* StatusContainerState.
 
@@ -274,14 +436,14 @@ func (o *NvmeNamespaceCollectionGetParams) WithDefaults() *NvmeNamespaceCollecti
 // All values with no default are reset to their zero value.
 func (o *NvmeNamespaceCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := NvmeNamespaceCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -367,15 +529,15 @@ func (o *NvmeNamespaceCollectionGetParams) SetEnabledQueryParameter(enabled *boo
 	o.EnabledQueryParameter = enabled
 }
 
-// WithFields adds the fields to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithFields(fields []string) *NvmeNamespaceCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithFieldsQueryParameter(fields []string) *NvmeNamespaceCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithLocationNamespaceQueryParameter adds the locationNamespace to the nvme namespace collection get params
@@ -433,15 +595,169 @@ func (o *NvmeNamespaceCollectionGetParams) SetLocationVolumeUUIDQueryParameter(l
 	o.LocationVolumeUUIDQueryParameter = locationVolumeUUID
 }
 
-// WithMaxRecords adds the maxRecords to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithMaxRecords(maxRecords *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
+}
+
+// WithMetricDurationQueryParameter adds the metricDuration to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricDurationQueryParameter(metricDuration *string) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricDurationQueryParameter(metricDuration)
+	return o
+}
+
+// SetMetricDurationQueryParameter adds the metricDuration to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
+	o.MetricDurationQueryParameter = metricDuration
+}
+
+// WithMetricIopsOtherQueryParameter adds the metricIopsOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricIopsOtherQueryParameter(metricIopsOther *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricIopsOtherQueryParameter(metricIopsOther)
+	return o
+}
+
+// SetMetricIopsOtherQueryParameter adds the metricIopsOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricIopsOtherQueryParameter(metricIopsOther *int64) {
+	o.MetricIopsOtherQueryParameter = metricIopsOther
+}
+
+// WithMetricIopsReadQueryParameter adds the metricIopsRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricIopsReadQueryParameter(metricIopsRead *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricIopsReadQueryParameter(metricIopsRead)
+	return o
+}
+
+// SetMetricIopsReadQueryParameter adds the metricIopsRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricIopsReadQueryParameter(metricIopsRead *int64) {
+	o.MetricIopsReadQueryParameter = metricIopsRead
+}
+
+// WithMetricIopsTotalQueryParameter adds the metricIopsTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricIopsTotalQueryParameter(metricIopsTotal *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricIopsTotalQueryParameter(metricIopsTotal)
+	return o
+}
+
+// SetMetricIopsTotalQueryParameter adds the metricIopsTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricIopsTotalQueryParameter(metricIopsTotal *int64) {
+	o.MetricIopsTotalQueryParameter = metricIopsTotal
+}
+
+// WithMetricIopsWriteQueryParameter adds the metricIopsWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricIopsWriteQueryParameter(metricIopsWrite *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricIopsWriteQueryParameter(metricIopsWrite)
+	return o
+}
+
+// SetMetricIopsWriteQueryParameter adds the metricIopsWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricIopsWriteQueryParameter(metricIopsWrite *int64) {
+	o.MetricIopsWriteQueryParameter = metricIopsWrite
+}
+
+// WithMetricLatencyOtherQueryParameter adds the metricLatencyOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricLatencyOtherQueryParameter(metricLatencyOther *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricLatencyOtherQueryParameter(metricLatencyOther)
+	return o
+}
+
+// SetMetricLatencyOtherQueryParameter adds the metricLatencyOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricLatencyOtherQueryParameter(metricLatencyOther *int64) {
+	o.MetricLatencyOtherQueryParameter = metricLatencyOther
+}
+
+// WithMetricLatencyReadQueryParameter adds the metricLatencyRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricLatencyReadQueryParameter(metricLatencyRead *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricLatencyReadQueryParameter(metricLatencyRead)
+	return o
+}
+
+// SetMetricLatencyReadQueryParameter adds the metricLatencyRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricLatencyReadQueryParameter(metricLatencyRead *int64) {
+	o.MetricLatencyReadQueryParameter = metricLatencyRead
+}
+
+// WithMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricLatencyTotalQueryParameter(metricLatencyTotal)
+	return o
+}
+
+// SetMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) {
+	o.MetricLatencyTotalQueryParameter = metricLatencyTotal
+}
+
+// WithMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricLatencyWriteQueryParameter(metricLatencyWrite)
+	return o
+}
+
+// SetMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) {
+	o.MetricLatencyWriteQueryParameter = metricLatencyWrite
+}
+
+// WithMetricStatusQueryParameter adds the metricStatus to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricStatusQueryParameter(metricStatus *string) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricStatusQueryParameter(metricStatus)
+	return o
+}
+
+// SetMetricStatusQueryParameter adds the metricStatus to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
+	o.MetricStatusQueryParameter = metricStatus
+}
+
+// WithMetricThroughputReadQueryParameter adds the metricThroughputRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricThroughputReadQueryParameter(metricThroughputRead *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricThroughputReadQueryParameter(metricThroughputRead)
+	return o
+}
+
+// SetMetricThroughputReadQueryParameter adds the metricThroughputRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricThroughputReadQueryParameter(metricThroughputRead *int64) {
+	o.MetricThroughputReadQueryParameter = metricThroughputRead
+}
+
+// WithMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricThroughputTotalQueryParameter(metricThroughputTotal)
+	return o
+}
+
+// SetMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) {
+	o.MetricThroughputTotalQueryParameter = metricThroughputTotal
+}
+
+// WithMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricThroughputWriteQueryParameter(metricThroughputWrite)
+	return o
+}
+
+// SetMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) {
+	o.MetricThroughputWriteQueryParameter = metricThroughputWrite
+}
+
+// WithMetricTimestampQueryParameter adds the metricTimestamp to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *NvmeNamespaceCollectionGetParams {
+	o.SetMetricTimestampQueryParameter(metricTimestamp)
+	return o
+}
+
+// SetMetricTimestampQueryParameter adds the metricTimestamp to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
+	o.MetricTimestampQueryParameter = metricTimestamp
 }
 
 // WithNameQueryParameter adds the name to the nvme namespace collection get params
@@ -455,15 +771,15 @@ func (o *NvmeNamespaceCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithOrderBy(orderBy []string) *NvmeNamespaceCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NvmeNamespaceCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithOsTypeQueryParameter adds the osType to the nvme namespace collection get params
@@ -477,26 +793,26 @@ func (o *NvmeNamespaceCollectionGetParams) SetOsTypeQueryParameter(osType *strin
 	o.OsTypeQueryParameter = osType
 }
 
-// WithReturnRecords adds the returnRecords to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithReturnRecords(returnRecords *bool) *NvmeNamespaceCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NvmeNamespaceCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NvmeNamespaceCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the nvme namespace collection get params
-func (o *NvmeNamespaceCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSpaceBlockSizeQueryParameter adds the spaceBlockSize to the nvme namespace collection get params
@@ -552,6 +868,149 @@ func (o *NvmeNamespaceCollectionGetParams) WithSpaceUsedQueryParameter(spaceUsed
 // SetSpaceUsedQueryParameter adds the spaceUsed to the nvme namespace collection get params
 func (o *NvmeNamespaceCollectionGetParams) SetSpaceUsedQueryParameter(spaceUsed *int64) {
 	o.SpaceUsedQueryParameter = spaceUsed
+}
+
+// WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther)
+	return o
+}
+
+// SetStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) {
+	o.StatisticsIopsRawOtherQueryParameter = statisticsIopsRawOther
+}
+
+// WithStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead)
+	return o
+}
+
+// SetStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) {
+	o.StatisticsIopsRawReadQueryParameter = statisticsIopsRawRead
+}
+
+// WithStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal)
+	return o
+}
+
+// SetStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) {
+	o.StatisticsIopsRawTotalQueryParameter = statisticsIopsRawTotal
+}
+
+// WithStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite)
+	return o
+}
+
+// SetStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) {
+	o.StatisticsIopsRawWriteQueryParameter = statisticsIopsRawWrite
+}
+
+// WithStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther)
+	return o
+}
+
+// SetStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) {
+	o.StatisticsLatencyRawOtherQueryParameter = statisticsLatencyRawOther
+}
+
+// WithStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead)
+	return o
+}
+
+// SetStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) {
+	o.StatisticsLatencyRawReadQueryParameter = statisticsLatencyRawRead
+}
+
+// WithStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal)
+	return o
+}
+
+// SetStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) {
+	o.StatisticsLatencyRawTotalQueryParameter = statisticsLatencyRawTotal
+}
+
+// WithStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite)
+	return o
+}
+
+// SetStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) {
+	o.StatisticsLatencyRawWriteQueryParameter = statisticsLatencyRawWrite
+}
+
+// WithStatisticsStatusQueryParameter adds the statisticsStatus to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+	return o
+}
+
+// SetStatisticsStatusQueryParameter adds the statisticsStatus to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
+	o.StatisticsStatusQueryParameter = statisticsStatus
+}
+
+// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+	return o
+}
+
+// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+}
+
+// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+	return o
+}
+
+// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+}
+
+// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+	return o
+}
+
+// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+}
+
+// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *NvmeNamespaceCollectionGetParams {
+	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+	return o
+}
+
+// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
+	o.StatisticsTimestampQueryParameter = statisticsTimestamp
 }
 
 // WithStatusContainerStateQueryParameter adds the statusContainerState to the nvme namespace collection get params
@@ -751,7 +1210,7 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -847,18 +1306,256 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricDurationQueryParameter != nil {
+
+		// query param metric.duration
+		var qrMetricDuration string
+
+		if o.MetricDurationQueryParameter != nil {
+			qrMetricDuration = *o.MetricDurationQueryParameter
+		}
+		qMetricDuration := qrMetricDuration
+		if qMetricDuration != "" {
+
+			if err := r.SetQueryParam("metric.duration", qMetricDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsOtherQueryParameter != nil {
+
+		// query param metric.iops.other
+		var qrMetricIopsOther int64
+
+		if o.MetricIopsOtherQueryParameter != nil {
+			qrMetricIopsOther = *o.MetricIopsOtherQueryParameter
+		}
+		qMetricIopsOther := swag.FormatInt64(qrMetricIopsOther)
+		if qMetricIopsOther != "" {
+
+			if err := r.SetQueryParam("metric.iops.other", qMetricIopsOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsReadQueryParameter != nil {
+
+		// query param metric.iops.read
+		var qrMetricIopsRead int64
+
+		if o.MetricIopsReadQueryParameter != nil {
+			qrMetricIopsRead = *o.MetricIopsReadQueryParameter
+		}
+		qMetricIopsRead := swag.FormatInt64(qrMetricIopsRead)
+		if qMetricIopsRead != "" {
+
+			if err := r.SetQueryParam("metric.iops.read", qMetricIopsRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsTotalQueryParameter != nil {
+
+		// query param metric.iops.total
+		var qrMetricIopsTotal int64
+
+		if o.MetricIopsTotalQueryParameter != nil {
+			qrMetricIopsTotal = *o.MetricIopsTotalQueryParameter
+		}
+		qMetricIopsTotal := swag.FormatInt64(qrMetricIopsTotal)
+		if qMetricIopsTotal != "" {
+
+			if err := r.SetQueryParam("metric.iops.total", qMetricIopsTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsWriteQueryParameter != nil {
+
+		// query param metric.iops.write
+		var qrMetricIopsWrite int64
+
+		if o.MetricIopsWriteQueryParameter != nil {
+			qrMetricIopsWrite = *o.MetricIopsWriteQueryParameter
+		}
+		qMetricIopsWrite := swag.FormatInt64(qrMetricIopsWrite)
+		if qMetricIopsWrite != "" {
+
+			if err := r.SetQueryParam("metric.iops.write", qMetricIopsWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyOtherQueryParameter != nil {
+
+		// query param metric.latency.other
+		var qrMetricLatencyOther int64
+
+		if o.MetricLatencyOtherQueryParameter != nil {
+			qrMetricLatencyOther = *o.MetricLatencyOtherQueryParameter
+		}
+		qMetricLatencyOther := swag.FormatInt64(qrMetricLatencyOther)
+		if qMetricLatencyOther != "" {
+
+			if err := r.SetQueryParam("metric.latency.other", qMetricLatencyOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyReadQueryParameter != nil {
+
+		// query param metric.latency.read
+		var qrMetricLatencyRead int64
+
+		if o.MetricLatencyReadQueryParameter != nil {
+			qrMetricLatencyRead = *o.MetricLatencyReadQueryParameter
+		}
+		qMetricLatencyRead := swag.FormatInt64(qrMetricLatencyRead)
+		if qMetricLatencyRead != "" {
+
+			if err := r.SetQueryParam("metric.latency.read", qMetricLatencyRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyTotalQueryParameter != nil {
+
+		// query param metric.latency.total
+		var qrMetricLatencyTotal int64
+
+		if o.MetricLatencyTotalQueryParameter != nil {
+			qrMetricLatencyTotal = *o.MetricLatencyTotalQueryParameter
+		}
+		qMetricLatencyTotal := swag.FormatInt64(qrMetricLatencyTotal)
+		if qMetricLatencyTotal != "" {
+
+			if err := r.SetQueryParam("metric.latency.total", qMetricLatencyTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyWriteQueryParameter != nil {
+
+		// query param metric.latency.write
+		var qrMetricLatencyWrite int64
+
+		if o.MetricLatencyWriteQueryParameter != nil {
+			qrMetricLatencyWrite = *o.MetricLatencyWriteQueryParameter
+		}
+		qMetricLatencyWrite := swag.FormatInt64(qrMetricLatencyWrite)
+		if qMetricLatencyWrite != "" {
+
+			if err := r.SetQueryParam("metric.latency.write", qMetricLatencyWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricStatusQueryParameter != nil {
+
+		// query param metric.status
+		var qrMetricStatus string
+
+		if o.MetricStatusQueryParameter != nil {
+			qrMetricStatus = *o.MetricStatusQueryParameter
+		}
+		qMetricStatus := qrMetricStatus
+		if qMetricStatus != "" {
+
+			if err := r.SetQueryParam("metric.status", qMetricStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputReadQueryParameter != nil {
+
+		// query param metric.throughput.read
+		var qrMetricThroughputRead int64
+
+		if o.MetricThroughputReadQueryParameter != nil {
+			qrMetricThroughputRead = *o.MetricThroughputReadQueryParameter
+		}
+		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
+		if qMetricThroughputRead != "" {
+
+			if err := r.SetQueryParam("metric.throughput.read", qMetricThroughputRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputTotalQueryParameter != nil {
+
+		// query param metric.throughput.total
+		var qrMetricThroughputTotal int64
+
+		if o.MetricThroughputTotalQueryParameter != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotalQueryParameter
+		}
+		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
+		if qMetricThroughputTotal != "" {
+
+			if err := r.SetQueryParam("metric.throughput.total", qMetricThroughputTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputWriteQueryParameter != nil {
+
+		// query param metric.throughput.write
+		var qrMetricThroughputWrite int64
+
+		if o.MetricThroughputWriteQueryParameter != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWriteQueryParameter
+		}
+		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
+		if qMetricThroughputWrite != "" {
+
+			if err := r.SetQueryParam("metric.throughput.write", qMetricThroughputWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricTimestampQueryParameter != nil {
+
+		// query param metric.timestamp
+		var qrMetricTimestamp string
+
+		if o.MetricTimestampQueryParameter != nil {
+			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		}
+		qMetricTimestamp := qrMetricTimestamp
+		if qMetricTimestamp != "" {
+
+			if err := r.SetQueryParam("metric.timestamp", qMetricTimestamp); err != nil {
 				return err
 			}
 		}
@@ -881,7 +1578,7 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -909,13 +1606,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -926,13 +1623,13 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1023,6 +1720,227 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qSpaceUsed != "" {
 
 			if err := r.SetQueryParam("space.used", qSpaceUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawOtherQueryParameter != nil {
+
+		// query param statistics.iops_raw.other
+		var qrStatisticsIopsRawOther int64
+
+		if o.StatisticsIopsRawOtherQueryParameter != nil {
+			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOtherQueryParameter
+		}
+		qStatisticsIopsRawOther := swag.FormatInt64(qrStatisticsIopsRawOther)
+		if qStatisticsIopsRawOther != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.other", qStatisticsIopsRawOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawReadQueryParameter != nil {
+
+		// query param statistics.iops_raw.read
+		var qrStatisticsIopsRawRead int64
+
+		if o.StatisticsIopsRawReadQueryParameter != nil {
+			qrStatisticsIopsRawRead = *o.StatisticsIopsRawReadQueryParameter
+		}
+		qStatisticsIopsRawRead := swag.FormatInt64(qrStatisticsIopsRawRead)
+		if qStatisticsIopsRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.read", qStatisticsIopsRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawTotalQueryParameter != nil {
+
+		// query param statistics.iops_raw.total
+		var qrStatisticsIopsRawTotal int64
+
+		if o.StatisticsIopsRawTotalQueryParameter != nil {
+			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotalQueryParameter
+		}
+		qStatisticsIopsRawTotal := swag.FormatInt64(qrStatisticsIopsRawTotal)
+		if qStatisticsIopsRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.total", qStatisticsIopsRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawWriteQueryParameter != nil {
+
+		// query param statistics.iops_raw.write
+		var qrStatisticsIopsRawWrite int64
+
+		if o.StatisticsIopsRawWriteQueryParameter != nil {
+			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWriteQueryParameter
+		}
+		qStatisticsIopsRawWrite := swag.FormatInt64(qrStatisticsIopsRawWrite)
+		if qStatisticsIopsRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.write", qStatisticsIopsRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawOtherQueryParameter != nil {
+
+		// query param statistics.latency_raw.other
+		var qrStatisticsLatencyRawOther int64
+
+		if o.StatisticsLatencyRawOtherQueryParameter != nil {
+			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOtherQueryParameter
+		}
+		qStatisticsLatencyRawOther := swag.FormatInt64(qrStatisticsLatencyRawOther)
+		if qStatisticsLatencyRawOther != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.other", qStatisticsLatencyRawOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawReadQueryParameter != nil {
+
+		// query param statistics.latency_raw.read
+		var qrStatisticsLatencyRawRead int64
+
+		if o.StatisticsLatencyRawReadQueryParameter != nil {
+			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawReadQueryParameter
+		}
+		qStatisticsLatencyRawRead := swag.FormatInt64(qrStatisticsLatencyRawRead)
+		if qStatisticsLatencyRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.read", qStatisticsLatencyRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawTotalQueryParameter != nil {
+
+		// query param statistics.latency_raw.total
+		var qrStatisticsLatencyRawTotal int64
+
+		if o.StatisticsLatencyRawTotalQueryParameter != nil {
+			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotalQueryParameter
+		}
+		qStatisticsLatencyRawTotal := swag.FormatInt64(qrStatisticsLatencyRawTotal)
+		if qStatisticsLatencyRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.total", qStatisticsLatencyRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawWriteQueryParameter != nil {
+
+		// query param statistics.latency_raw.write
+		var qrStatisticsLatencyRawWrite int64
+
+		if o.StatisticsLatencyRawWriteQueryParameter != nil {
+			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWriteQueryParameter
+		}
+		qStatisticsLatencyRawWrite := swag.FormatInt64(qrStatisticsLatencyRawWrite)
+		if qStatisticsLatencyRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.write", qStatisticsLatencyRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsStatusQueryParameter != nil {
+
+		// query param statistics.status
+		var qrStatisticsStatus string
+
+		if o.StatisticsStatusQueryParameter != nil {
+			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		}
+		qStatisticsStatus := qrStatisticsStatus
+		if qStatisticsStatus != "" {
+
+			if err := r.SetQueryParam("statistics.status", qStatisticsStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawReadQueryParameter != nil {
+
+		// query param statistics.throughput_raw.read
+		var qrStatisticsThroughputRawRead int64
+
+		if o.StatisticsThroughputRawReadQueryParameter != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		}
+		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
+		if qStatisticsThroughputRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.read", qStatisticsThroughputRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+
+		// query param statistics.throughput_raw.total
+		var qrStatisticsThroughputRawTotal int64
+
+		if o.StatisticsThroughputRawTotalQueryParameter != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		}
+		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
+		if qStatisticsThroughputRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.total", qStatisticsThroughputRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+
+		// query param statistics.throughput_raw.write
+		var qrStatisticsThroughputRawWrite int64
+
+		if o.StatisticsThroughputRawWriteQueryParameter != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		}
+		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
+		if qStatisticsThroughputRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.write", qStatisticsThroughputRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsTimestampQueryParameter != nil {
+
+		// query param statistics.timestamp
+		var qrStatisticsTimestamp string
+
+		if o.StatisticsTimestampQueryParameter != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		}
+		qStatisticsTimestamp := qrStatisticsTimestamp
+		if qStatisticsTimestamp != "" {
+
+			if err := r.SetQueryParam("statistics.timestamp", qStatisticsTimestamp); err != nil {
 				return err
 			}
 		}
@@ -1223,7 +2141,7 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamNvmeNamespaceCollectionGet binds the parameter fields
 func (o *NvmeNamespaceCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1240,7 +2158,7 @@ func (o *NvmeNamespaceCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamNvmeNamespaceCollectionGet binds the parameter order_by
 func (o *NvmeNamespaceCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

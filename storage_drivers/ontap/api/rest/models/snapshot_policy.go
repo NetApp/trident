@@ -133,23 +133,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapshot_policy
 	// SnapshotPolicy
 	// scope
 	// Scope
 	// svm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapshotPolicyScopeSvm captures enum value "svm"
 	SnapshotPolicyScopeSvm string = "svm"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapshot_policy
 	// SnapshotPolicy
 	// scope
 	// Scope
 	// cluster
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapshotPolicyScopeCluster captures enum value "cluster"
 	SnapshotPolicyScopeCluster string = "cluster"
 )
@@ -704,5 +704,3 @@ func (m *SnapshotPolicySvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

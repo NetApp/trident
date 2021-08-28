@@ -117,33 +117,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// name_mapping
 	// NameMapping
 	// direction
 	// Direction
 	// win_unix
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NameMappingDirectionWinUnix captures enum value "win_unix"
 	NameMappingDirectionWinUnix string = "win_unix"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// name_mapping
 	// NameMapping
 	// direction
 	// Direction
 	// unix_win
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NameMappingDirectionUnixWin captures enum value "unix_win"
 	NameMappingDirectionUnixWin string = "unix_win"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// name_mapping
 	// NameMapping
 	// direction
 	// Direction
 	// krb_unix
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NameMappingDirectionKrbUnix captures enum value "krb_unix"
 	NameMappingDirectionKrbUnix string = "krb_unix"
 )
@@ -533,5 +533,3 @@ func (m *NameMappingSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

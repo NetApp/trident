@@ -79,6 +79,7 @@ func NewSnapmirrorRelationshipTransferCreateDefault(code int) *SnapmirrorRelatio
 | 13303844    | Update operation failed |
 | 13303846    | Empty source path file list |
 | 13303847    | Invalid arguments |
+| 13304040    | Throttle not supported for update of Synchronous SnapMirror relationships |
 | 6620237     | SnapMirror relationship database write failed |
 | 6620238     | SnapMirror relationship database read failed |
 

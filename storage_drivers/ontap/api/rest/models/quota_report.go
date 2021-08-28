@@ -221,33 +221,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// quota_report
 	// QuotaReport
 	// type
 	// Type
 	// tree
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// QuotaReportTypeTree captures enum value "tree"
 	QuotaReportTypeTree string = "tree"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// quota_report
 	// QuotaReport
 	// type
 	// Type
 	// user
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// QuotaReportTypeUser captures enum value "user"
 	QuotaReportTypeUser string = "user"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// quota_report
 	// QuotaReport
 	// type
 	// Type
 	// group
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// QuotaReportTypeGroup captures enum value "group"
 	QuotaReportTypeGroup string = "group"
 )
@@ -898,7 +898,7 @@ func (m *QuotaReportLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QuotaReportQtree This parameter specifies the target qtree to which the user/group/tree quota policy rule applies. For a user/group quota policy rule at qtree level, this parameter takes a qtree name and is valid in GET or POST. For a user/group quota policy rule at volume level, this parameter is not valid in GET or POST. For a tree quota policy rule, this parameter is mandatory and is valid in both POST and GET. For a default tree quota policy rule, this parameter needs to be specified as "". For a tree quota policy rule at qtree level, this parameter takes a qtree name and is valid in GET or POST.
+// QuotaReportQtree This parameter specifies the target qtree associated with the user, group, or tree record. For a user/group quota policy rule at volume level, this parameter is not valid. For a default tree quota policy rule, this parameter is specified as "" or "*". For a tree quota policy rule at qtree level, this parameter specifies a qtree name and a qtree identifier.
 //
 // swagger:model QuotaReportQtree
 type QuotaReportQtree struct {
@@ -1722,5 +1722,3 @@ func (m *QuotaReportVolumeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

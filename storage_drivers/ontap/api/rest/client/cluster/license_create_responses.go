@@ -105,6 +105,10 @@ func NewLicenseCreateDefault(code int) *LicenseCreateDefault {
 | 1115180    | FlexCache is not supported on cloud systems |
 | 1115407    | Capacity pool licenses cannot be installed directly |
 | 1115427    | License is incompatible with capacity pools licensing mode |
+| 1115562    | One or more errors occurred when installing a NLFv2 license |
+| 1115563    | Package details and serial number of license contained within the NLFv2 failure |
+| 1115616    | Package details and serial number of license included in the install conflict |
+| 1115617    | NLFv2 license install failed with summary of conflicting licenses |
 | 66846818   | Failed to interpret FlexCache license information |
 | 66846821   | FlexCache is not supported on cloud systems |
 | 66846822   | Invalid FlexCache capacity information provided |

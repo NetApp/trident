@@ -94,33 +94,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// app_type
 	// AppType
 	// mongodb
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanAppTypeMongodb captures enum value "mongodb"
 	MaxdataOnSanAppTypeMongodb string = "mongodb"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// app_type
 	// AppType
 	// oracle
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanAppTypeOracle captures enum value "oracle"
 	MaxdataOnSanAppTypeOracle string = "oracle"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// app_type
 	// AppType
 	// san
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanAppTypeSan captures enum value "san"
 	MaxdataOnSanAppTypeSan string = "san"
 )
@@ -254,133 +254,133 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// aix
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeAix captures enum value "aix"
 	MaxdataOnSanOsTypeAix string = "aix"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// hpux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeHpux captures enum value "hpux"
 	MaxdataOnSanOsTypeHpux string = "hpux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// hyper_v
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeHyperv captures enum value "hyper_v"
 	MaxdataOnSanOsTypeHyperv string = "hyper_v"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeLinux captures enum value "linux"
 	MaxdataOnSanOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// netware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeNetware captures enum value "netware"
 	MaxdataOnSanOsTypeNetware string = "netware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// openvms
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeOpenvms captures enum value "openvms"
 	MaxdataOnSanOsTypeOpenvms string = "openvms"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// solaris
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeSolaris captures enum value "solaris"
 	MaxdataOnSanOsTypeSolaris string = "solaris"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// solaris_efi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeSolarisEfi captures enum value "solaris_efi"
 	MaxdataOnSanOsTypeSolarisEfi string = "solaris_efi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeVmware captures enum value "vmware"
 	MaxdataOnSanOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeWindows captures enum value "windows"
 	MaxdataOnSanOsTypeWindows string = "windows"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// windows_2008
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeWindows2008 captures enum value "windows_2008"
 	MaxdataOnSanOsTypeWindows2008 string = "windows_2008"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// windows_gpt
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeWindowsGpt captures enum value "windows_gpt"
 	MaxdataOnSanOsTypeWindowsGpt string = "windows_gpt"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san
 	// MaxdataOnSan
 	// os_type
 	// OsType
 	// xen
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanOsTypeXen captures enum value "xen"
 	MaxdataOnSanOsTypeXen string = "xen"
 )
@@ -553,5 +553,3 @@ func (m *MaxdataOnSanMetadataItems0) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

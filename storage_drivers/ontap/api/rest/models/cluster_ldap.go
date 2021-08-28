@@ -34,11 +34,43 @@ type ClusterLdap struct {
 	// Enum: [base onelevel subtree]
 	BaseScope *string `json:"base_scope,omitempty"`
 
+	// Specifies whether or not CIFS server's credentials are used to bind to the LDAP server.
+	//
+	BindAsCifsServer bool `json:"bind_as_cifs_server,omitempty"`
+
 	// Specifies the user that binds to the LDAP servers.
 	BindDn string `json:"bind_dn,omitempty"`
 
 	// Specifies the bind password for the LDAP servers.
 	BindPassword string `json:"bind_password,omitempty"`
+
+	// Specifies the group Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for group lookups.
+	GroupDn string `json:"group_dn,omitempty"`
+
+	// Specifies the custom filter used for group membership lookups from an LDAP server.
+	//
+	GroupMembershipFilter string `json:"group_membership_filter,omitempty"`
+
+	// Specifies the default search scope for LDAP for group lookups:
+	// * base - search the named entry only
+	// * onelevel - search all entries immediately below the DN
+	// * subtree - search the named DN entry and the entire subtree below the DN
+	//
+	// Enum: [base onelevel subtree]
+	GroupScope *string `json:"group_scope,omitempty"`
+
+	// Specifies whether or not netgroup by host querying is enabled.
+	//
+	IsNetgroupByhostEnabled *bool `json:"is_netgroup_byhost_enabled,omitempty"`
+
+	// Specifies whether or not the SVM owns the LDAP client configuration.
+	//
+	// Read Only: true
+	IsOwner *bool `json:"is_owner,omitempty"`
+
+	// Specifies whether or not LDAPS is enabled.
+	//
+	LdapsEnabled *bool `json:"ldaps_enabled,omitempty"`
 
 	// The minimum bind authentication level. Possible values are:
 	// * anonymous - anonymous bind
@@ -48,11 +80,37 @@ type ClusterLdap struct {
 	// Enum: [anonymous simple sasl]
 	MinBindLevel *string `json:"min_bind_level,omitempty"`
 
+	// Specifies the netgroup Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for netgroup by host lookups.
+	NetgroupByhostDn string `json:"netgroup_byhost_dn,omitempty"`
+
+	// Specifies the default search scope for LDAP for netgroup by host lookups:
+	// * base - search the named entry only
+	// * onelevel - search all entries immediately below the DN
+	// * subtree - search the named DN entry and the entire subtree below the DN
+	//
+	// Enum: [base onelevel subtree]
+	NetgroupByhostScope *string `json:"netgroup_byhost_scope,omitempty"`
+
+	// Specifies the netgroup Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for netgroup lookups.
+	NetgroupDn string `json:"netgroup_dn,omitempty"`
+
+	// Specifies the default search scope for LDAP for netgroup lookups:
+	// * base - search the named entry only
+	// * onelevel - search all entries immediately below the DN
+	// * subtree - search the named DN entry and the entire subtree below the DN
+	//
+	// Enum: [base onelevel subtree]
+	NetgroupScope *string `json:"netgroup_scope,omitempty"`
+
 	// The port used to connect to the LDAP Servers.
 	// Example: 389
 	// Maximum: 65535
 	// Minimum: 1
 	Port int64 `json:"port,omitempty"`
+
+	// Specifies the maximum time to wait for a query response from the LDAP server, in seconds.
+	//
+	QueryTimeout *int64 `json:"query_timeout,omitempty"`
 
 	// The name of the schema template used by the SVM.
 	// * AD-IDMU - Active Directory Identity Management for UNIX
@@ -74,9 +132,27 @@ type ClusterLdap struct {
 	// Enum: [none sign seal]
 	SessionSecurity *string `json:"session_security,omitempty"`
 
+	// Indicates whether or not the validation for the specified LDAP configuration is disabled.
+	//
+	SkipConfigValidation *bool `json:"skip_config_validation,omitempty"`
+
+	// status
+	Status *ClusterLdapStatus `json:"status,omitempty"`
+
 	// Specifies whether or not to use Start TLS over LDAP connections.
 	//
 	UseStartTLS *bool `json:"use_start_tls,omitempty"`
+
+	// Specifies the user Distinguished Name (DN) that is used as the starting point in the LDAP directory tree for user lookups.
+	UserDn string `json:"user_dn,omitempty"`
+
+	// Specifies the default search scope for LDAP for user lookups:
+	// * base - search the named entry only
+	// * onelevel - search all entries immediately below the DN
+	// * subtree - search the named DN entry and the entire subtree below the DN
+	//
+	// Enum: [base onelevel subtree]
+	UserScope *string `json:"user_scope,omitempty"`
 }
 
 // Validate validates this cluster ldap
@@ -91,7 +167,19 @@ func (m *ClusterLdap) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateGroupScope(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateMinBindLevel(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNetgroupByhostScope(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNetgroupScope(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -100,6 +188,14 @@ func (m *ClusterLdap) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSessionSecurity(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUserScope(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -140,33 +236,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cluster_ldap
 	// ClusterLdap
 	// base_scope
 	// BaseScope
 	// base
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterLdapBaseScopeBase captures enum value "base"
 	ClusterLdapBaseScopeBase string = "base"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cluster_ldap
 	// ClusterLdap
 	// base_scope
 	// BaseScope
 	// onelevel
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterLdapBaseScopeOnelevel captures enum value "onelevel"
 	ClusterLdapBaseScopeOnelevel string = "onelevel"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cluster_ldap
 	// ClusterLdap
 	// base_scope
 	// BaseScope
 	// subtree
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterLdapBaseScopeSubtree captures enum value "subtree"
 	ClusterLdapBaseScopeSubtree string = "subtree"
 )
@@ -192,6 +288,72 @@ func (m *ClusterLdap) validateBaseScope(formats strfmt.Registry) error {
 	return nil
 }
 
+var clusterLdapTypeGroupScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["base","onelevel","subtree"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterLdapTypeGroupScopePropEnum = append(clusterLdapTypeGroupScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_ldap
+	// ClusterLdap
+	// group_scope
+	// GroupScope
+	// base
+	// END DEBUGGING
+	// ClusterLdapGroupScopeBase captures enum value "base"
+	ClusterLdapGroupScopeBase string = "base"
+
+	// BEGIN DEBUGGING
+	// cluster_ldap
+	// ClusterLdap
+	// group_scope
+	// GroupScope
+	// onelevel
+	// END DEBUGGING
+	// ClusterLdapGroupScopeOnelevel captures enum value "onelevel"
+	ClusterLdapGroupScopeOnelevel string = "onelevel"
+
+	// BEGIN DEBUGGING
+	// cluster_ldap
+	// ClusterLdap
+	// group_scope
+	// GroupScope
+	// subtree
+	// END DEBUGGING
+	// ClusterLdapGroupScopeSubtree captures enum value "subtree"
+	ClusterLdapGroupScopeSubtree string = "subtree"
+)
+
+// prop value enum
+func (m *ClusterLdap) validateGroupScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterLdapTypeGroupScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterLdap) validateGroupScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.GroupScope) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateGroupScopeEnum("group_scope", "body", *m.GroupScope); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 var clusterLdapTypeMinBindLevelPropEnum []interface{}
 
 func init() {
@@ -206,33 +368,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cluster_ldap
 	// ClusterLdap
 	// min_bind_level
 	// MinBindLevel
 	// anonymous
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterLdapMinBindLevelAnonymous captures enum value "anonymous"
 	ClusterLdapMinBindLevelAnonymous string = "anonymous"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cluster_ldap
 	// ClusterLdap
 	// min_bind_level
 	// MinBindLevel
 	// simple
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterLdapMinBindLevelSimple captures enum value "simple"
 	ClusterLdapMinBindLevelSimple string = "simple"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cluster_ldap
 	// ClusterLdap
 	// min_bind_level
 	// MinBindLevel
 	// sasl
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterLdapMinBindLevelSasl captures enum value "sasl"
 	ClusterLdapMinBindLevelSasl string = "sasl"
 )
@@ -252,6 +414,138 @@ func (m *ClusterLdap) validateMinBindLevel(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateMinBindLevelEnum("min_bind_level", "body", *m.MinBindLevel); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var clusterLdapTypeNetgroupByhostScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["base","onelevel","subtree"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterLdapTypeNetgroupByhostScopePropEnum = append(clusterLdapTypeNetgroupByhostScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_ldap
+	// ClusterLdap
+	// netgroup_byhost_scope
+	// NetgroupByhostScope
+	// base
+	// END DEBUGGING
+	// ClusterLdapNetgroupByhostScopeBase captures enum value "base"
+	ClusterLdapNetgroupByhostScopeBase string = "base"
+
+	// BEGIN DEBUGGING
+	// cluster_ldap
+	// ClusterLdap
+	// netgroup_byhost_scope
+	// NetgroupByhostScope
+	// onelevel
+	// END DEBUGGING
+	// ClusterLdapNetgroupByhostScopeOnelevel captures enum value "onelevel"
+	ClusterLdapNetgroupByhostScopeOnelevel string = "onelevel"
+
+	// BEGIN DEBUGGING
+	// cluster_ldap
+	// ClusterLdap
+	// netgroup_byhost_scope
+	// NetgroupByhostScope
+	// subtree
+	// END DEBUGGING
+	// ClusterLdapNetgroupByhostScopeSubtree captures enum value "subtree"
+	ClusterLdapNetgroupByhostScopeSubtree string = "subtree"
+)
+
+// prop value enum
+func (m *ClusterLdap) validateNetgroupByhostScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterLdapTypeNetgroupByhostScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterLdap) validateNetgroupByhostScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.NetgroupByhostScope) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateNetgroupByhostScopeEnum("netgroup_byhost_scope", "body", *m.NetgroupByhostScope); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var clusterLdapTypeNetgroupScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["base","onelevel","subtree"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterLdapTypeNetgroupScopePropEnum = append(clusterLdapTypeNetgroupScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_ldap
+	// ClusterLdap
+	// netgroup_scope
+	// NetgroupScope
+	// base
+	// END DEBUGGING
+	// ClusterLdapNetgroupScopeBase captures enum value "base"
+	ClusterLdapNetgroupScopeBase string = "base"
+
+	// BEGIN DEBUGGING
+	// cluster_ldap
+	// ClusterLdap
+	// netgroup_scope
+	// NetgroupScope
+	// onelevel
+	// END DEBUGGING
+	// ClusterLdapNetgroupScopeOnelevel captures enum value "onelevel"
+	ClusterLdapNetgroupScopeOnelevel string = "onelevel"
+
+	// BEGIN DEBUGGING
+	// cluster_ldap
+	// ClusterLdap
+	// netgroup_scope
+	// NetgroupScope
+	// subtree
+	// END DEBUGGING
+	// ClusterLdapNetgroupScopeSubtree captures enum value "subtree"
+	ClusterLdapNetgroupScopeSubtree string = "subtree"
+)
+
+// prop value enum
+func (m *ClusterLdap) validateNetgroupScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterLdapTypeNetgroupScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterLdap) validateNetgroupScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.NetgroupScope) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateNetgroupScopeEnum("netgroup_scope", "body", *m.NetgroupScope); err != nil {
 		return err
 	}
 
@@ -288,33 +582,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cluster_ldap
 	// ClusterLdap
 	// session_security
 	// SessionSecurity
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterLdapSessionSecurityNone captures enum value "none"
 	ClusterLdapSessionSecurityNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cluster_ldap
 	// ClusterLdap
 	// session_security
 	// SessionSecurity
 	// sign
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterLdapSessionSecuritySign captures enum value "sign"
 	ClusterLdapSessionSecuritySign string = "sign"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cluster_ldap
 	// ClusterLdap
 	// session_security
 	// SessionSecurity
 	// seal
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterLdapSessionSecuritySeal captures enum value "seal"
 	ClusterLdapSessionSecuritySeal string = "seal"
 )
@@ -340,11 +634,102 @@ func (m *ClusterLdap) validateSessionSecurity(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *ClusterLdap) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	if m.Status != nil {
+		if err := m.Status.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var clusterLdapTypeUserScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["base","onelevel","subtree"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterLdapTypeUserScopePropEnum = append(clusterLdapTypeUserScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_ldap
+	// ClusterLdap
+	// user_scope
+	// UserScope
+	// base
+	// END DEBUGGING
+	// ClusterLdapUserScopeBase captures enum value "base"
+	ClusterLdapUserScopeBase string = "base"
+
+	// BEGIN DEBUGGING
+	// cluster_ldap
+	// ClusterLdap
+	// user_scope
+	// UserScope
+	// onelevel
+	// END DEBUGGING
+	// ClusterLdapUserScopeOnelevel captures enum value "onelevel"
+	ClusterLdapUserScopeOnelevel string = "onelevel"
+
+	// BEGIN DEBUGGING
+	// cluster_ldap
+	// ClusterLdap
+	// user_scope
+	// UserScope
+	// subtree
+	// END DEBUGGING
+	// ClusterLdapUserScopeSubtree captures enum value "subtree"
+	ClusterLdapUserScopeSubtree string = "subtree"
+)
+
+// prop value enum
+func (m *ClusterLdap) validateUserScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterLdapTypeUserScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterLdap) validateUserScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.UserScope) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateUserScopeEnum("user_scope", "body", *m.UserScope); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this cluster ldap based on the context it is used
 func (m *ClusterLdap) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsOwner(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -360,6 +745,29 @@ func (m *ClusterLdap) contextValidateLinks(ctx context.Context, formats strfmt.R
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterLdap) contextValidateIsOwner(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_owner", "body", m.IsOwner); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterLdap) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Status != nil {
+		if err := m.Status.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status")
 			}
 			return err
 		}
@@ -472,4 +880,123 @@ func (m *ClusterLdapLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HELLO RIPPY
+// ClusterLdapStatus cluster ldap status
+//
+// swagger:model ClusterLdapStatus
+type ClusterLdapStatus struct {
+
+	// Code corresponding to the status message.
+	//
+	// Example: 65537300
+	Code int64 `json:"code,omitempty"`
+
+	// dn message
+	DnMessage []string `json:"dn_message,omitempty"`
+
+	// Provides additional details on the status of the LDAP service.
+	//
+	Message string `json:"message,omitempty"`
+
+	// Specifies the status of the LDAP service.
+	//
+	// Enum: [up down]
+	State string `json:"state,omitempty"`
+}
+
+// Validate validates this cluster ldap status
+func (m *ClusterLdapStatus) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var clusterLdapStatusTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["up","down"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterLdapStatusTypeStatePropEnum = append(clusterLdapStatusTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterLdapStatus
+	// ClusterLdapStatus
+	// state
+	// State
+	// up
+	// END DEBUGGING
+	// ClusterLdapStatusStateUp captures enum value "up"
+	ClusterLdapStatusStateUp string = "up"
+
+	// BEGIN DEBUGGING
+	// ClusterLdapStatus
+	// ClusterLdapStatus
+	// state
+	// State
+	// down
+	// END DEBUGGING
+	// ClusterLdapStatusStateDown captures enum value "down"
+	ClusterLdapStatusStateDown string = "down"
+)
+
+// prop value enum
+func (m *ClusterLdapStatus) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterLdapStatusTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterLdapStatus) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("status"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster ldap status based on the context it is used
+func (m *ClusterLdapStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterLdapStatus) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterLdapStatus) UnmarshalBinary(b []byte) error {
+	var res ClusterLdapStatus
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

@@ -87,6 +87,7 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | ---------- | ----------- |
 | 6620374 | Internal error. Failed to get SVM information. |
 | 6620478 | Internal error. Failed to check SnapMirror capability. |
+| 6621834 | Object store configuration does not exist for specified vserver. |
 | 13303819 | Could not retrieve SnapMirror policy information. |
 | 13303821 | Invalid SnapMirror policy UUID. |
 | 13303841 | This operation is not supported for SnapMirror relationships between these endpoints. |
@@ -129,7 +130,23 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 13303930 | The specified tiering policy is not supported for destination volumes of Synchronous relationships. |
 | 13303938 | Fetching information from the local cluster failed. |
 | 13303939 | Could not create an SVM peer relationship. |
-| 13303944 | An SVM-DR relationship is not supported because the source SVM has CIFS configured and the associated SnapMirror policy has either the identity_preservation property not set or set to exclude_network_and_protocol_config. |
+| 13303944 | An SVM-DR relationship is not supported because the source SVM has CIFS configured and the associated SnapMirror policy has either the "identity_preservation" property not set or set to "exclude_network_and_protocol_config". |
+| 13303966 | Consistency Group relationships require a policy of type \"sync\" with a sync_type of \"automated_failover\". |
+| 13303967 | Consistency Group volume is not a FlexVol volume. |
+| 13303968 | Unsupported volume type for the Consistency Group. |
+| 13303969 | SnapMirror relationships between SVM endpoints and object store endpoints are not supported. |
+| 13303970 | Unsupported policy type for the Consistency Group. |
+| 13303971 | SnapMirror relationships between Consistency Group endpoints and object store endpoints are not supported. |
+| 13303976 | Source or destination SVM is already part of an SVM-DR relation. |
+| 13303977 | Destination Consistency Group volume UUIDs are not expected while provisioning the destination volumes. |
+| 13303978 | Number of Consistency Group volume names and UUIDs does not match. |
+| 13303979 | Number of Consistency Group volumes exceeds the allowed limit. |
+| 13303980 | Number of source and destination Consistency Group volumes do not match. |
+| 13303981 | ISCSI or FCP protocol is not configured. |
+| 13303982 | SAN data interface is not configured on the SVM. |
+| 13304021 | No suitable storage can be found meeting the specified requirements. No FabricPool enabled aggregates are available on the destination. |
+| 13304022 | No suitable storage can be found meeting the specified requirements. No non-root, non-taken-over, non-SnapLock, non-composite aggregates are available on the destination. |
+| 13304032 | In an "All SAN Array", an SVM-DR relationship is not supported when the associated SnapMirror policy does not have the "identity_preservation" property set to "exclude_network_and_protocol_config". |
 
 */
 type SnapmirrorRelationshipCreateDefault struct {

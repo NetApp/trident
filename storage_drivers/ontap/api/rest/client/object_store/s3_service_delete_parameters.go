@@ -72,7 +72,7 @@ type S3ServiceDeleteParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -149,15 +149,15 @@ func (o *S3ServiceDeleteParams) SetDeleteAllQueryParameter(deleteAll *bool) {
 	o.DeleteAllQueryParameter = deleteAll
 }
 
-// WithSvmUUID adds the svmUUID to the s3 service delete params
-func (o *S3ServiceDeleteParams) WithSvmUUID(svmUUID string) *S3ServiceDeleteParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the s3 service delete params
+func (o *S3ServiceDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *S3ServiceDeleteParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the s3 service delete params
-func (o *S3ServiceDeleteParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the s3 service delete params
+func (o *S3ServiceDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -186,7 +186,7 @@ func (o *S3ServiceDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

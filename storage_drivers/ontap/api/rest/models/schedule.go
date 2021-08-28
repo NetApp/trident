@@ -166,23 +166,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// schedule
 	// Schedule
 	// type
 	// Type
 	// cron
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ScheduleTypeCron captures enum value "cron"
 	ScheduleTypeCron string = "cron"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// schedule
 	// Schedule
 	// type
 	// Type
 	// interval
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ScheduleTypeInterval captures enum value "interval"
 	ScheduleTypeInterval string = "interval"
 )
@@ -660,5 +660,3 @@ func (m *ScheduleLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

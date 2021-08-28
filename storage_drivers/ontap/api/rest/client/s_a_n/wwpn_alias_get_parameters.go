@@ -71,7 +71,7 @@ type WwpnAliasGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* SvmUUID.
 
@@ -144,15 +144,15 @@ func (o *WwpnAliasGetParams) SetAliasPathParameter(alias string) {
 	o.AliasPathParameter = alias
 }
 
-// WithFields adds the fields to the wwpn alias get params
-func (o *WwpnAliasGetParams) WithFields(fields []string) *WwpnAliasGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the wwpn alias get params
+func (o *WwpnAliasGetParams) WithFieldsQueryParameter(fields []string) *WwpnAliasGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the wwpn alias get params
-func (o *WwpnAliasGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the wwpn alias get params
+func (o *WwpnAliasGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithSVMUUIDPathParameter adds the svmUUID to the wwpn alias get params
@@ -179,7 +179,7 @@ func (o *WwpnAliasGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		return err
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -203,7 +203,7 @@ func (o *WwpnAliasGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamWwpnAliasGet binds the parameter fields
 func (o *WwpnAliasGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

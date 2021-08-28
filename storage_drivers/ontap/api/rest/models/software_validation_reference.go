@@ -26,13 +26,13 @@ type SoftwareValidationReference struct {
 	// issue
 	Issue *SoftwareValidationReferenceIssue `json:"issue,omitempty"`
 
-	// Status of this update check.
+	// Status of the update check.
 	// Example: warning
 	// Read Only: true
 	// Enum: [warning error]
 	Status string `json:"status,omitempty"`
 
-	// Name of the update check to be validated.
+	// Name of the update check.
 	// Example: nfs_mounts
 	// Read Only: true
 	UpdateCheck string `json:"update_check,omitempty"`
@@ -108,23 +108,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_validation_reference
 	// SoftwareValidationReference
 	// status
 	// Status
 	// warning
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareValidationReferenceStatusWarning captures enum value "warning"
 	SoftwareValidationReferenceStatusWarning string = "warning"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_validation_reference
 	// SoftwareValidationReference
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareValidationReferenceStatusError captures enum value "error"
 	SoftwareValidationReferenceStatusError string = "error"
 )
@@ -245,7 +245,8 @@ func (m *SoftwareValidationReference) UnmarshalBinary(b []byte) error {
 // swagger:model SoftwareValidationReferenceAction
 type SoftwareValidationReferenceAction struct {
 
-	// Specifies the corrective action to be taken to resolve a validation error
+	// Specifies the corrective action to take to resolve an error.
+	// Example: Use NFS hard mounts, if possible.
 	Message string `json:"message,omitempty"`
 }
 
@@ -287,8 +288,8 @@ func (m *SoftwareValidationReferenceAction) UnmarshalBinary(b []byte) error {
 // swagger:model SoftwareValidationReferenceIssue
 type SoftwareValidationReferenceIssue struct {
 
-	// Details of the error or warning encountered by the update checks
-	// Example: Validation error: Cluster HA is not configured in the cluster
+	// Details of the error or warning encountered by the update checks.
+	// Example: Cluster HA is not configured in the cluster.
 	Message string `json:"message,omitempty"`
 }
 
@@ -324,5 +325,3 @@ func (m *SoftwareValidationReferenceIssue) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

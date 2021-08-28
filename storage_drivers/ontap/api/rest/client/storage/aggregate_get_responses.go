@@ -86,7 +86,19 @@ func NewAggregateGetDefault(code int) *AggregateGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 787092 | The target field cannot be specified for this operation. |
-| 8586225 | Encountered unexpected error in retrieving metrics and statistics for an aggregate. |
+| 7209049 | Cannot perform the operation because the aggregate is currently expanding. |
+| 8586225 | Unexpected error encountered when retrieving metrics and statistics for this aggregate. |
+| 19726382 | Another provisioning operation is in progress on this cluster. Wait a few minutes, and try the operation again. |
+| 19726390 | Unable to provide a recommmendation to expand the aggregate. |
+| 19726391 | Too many unassigned disks visible to the node that owns this aggregate. |
+| 19726392 | Layout of this aggregate is not a supported configuration. |
+| 19726393 | Failed to expand the aggregate. Aggregate expansion is not supported on this system. |
+| 19726394 | Automatic aggregate expansion is not supported on systems with multiple data aggregates. |
+| 19726395 | Automatic aggregate expansion is not supported when MetroCluster is not configured |
+| 19726396 | Automatic aggregate expansion is not supported when the DR group is not in a normal state |
+| 19726397 | Aggregates must contain disks with identical disk-types and disk-sizes. |
+| 19726402 | Internal error. Unable to determine the MetroCluster configuration state. |
+| 19726538 | Cannot perform the operation because the aggregate is not in a healthy state. |
 
 */
 type AggregateGetDefault struct {

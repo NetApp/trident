@@ -194,5 +194,3 @@ func (m *SvmReferenceLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

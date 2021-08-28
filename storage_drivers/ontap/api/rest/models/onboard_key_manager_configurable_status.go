@@ -8,7 +8,6 @@ package models
 import (
 	"context"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -36,13 +35,8 @@ func (m *OnboardKeyManagerConfigurableStatus) Validate(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validate this onboard key manager configurable status based on the context it is used
+// ContextValidate validates this onboard key manager configurable status based on context it is used
 func (m *OnboardKeyManagerConfigurableStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
@@ -63,5 +57,3 @@ func (m *OnboardKeyManagerConfigurableStatus) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

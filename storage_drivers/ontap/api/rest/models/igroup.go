@@ -16,12 +16,14 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// Igroup An initiator group (igroup) is a collection of Fibre Channel (FC) world wide port names (WWPN), and/or iSCSI Qualified Names (IQNs), and/or iSCSI EUIs (Extended Unique Identifiers) that identify host initiators.<br/>
-// Initiator groups are used to control which hosts can access specific LUNs. To grant access to a LUN from one or more hosts, create an initiator group containing the hosts' initiator names, then create a LUN map that associates the initiator group with the LUN.<br/>
-// An initiator can appear in multiple initiator groups. An initiator group can be mapped to multiple LUNs. A specific initiator can be mapped to a specific LUN only once.<br/>
-// All initiators in an initiator group must be from the same operating system. The initiator group's operating system is specified when the initiator group is created.<br/>
-// When an initiator group is created, the `protocol` property is used to restrict member initiators to Fibre Channel (_fcp_), iSCSI (_iscsi_), or both (_mixed_).<br/>
-// Zero or more initiators can be supplied when the initiator group is created. After creation, initiators can be added or removed from the initiator group using the `/protocols/san/igroups/{igroup.uuid}/initiators` endpoint. See [`POST /protocols/san/igroups/{igroup.uuid}/initiators`](#/SAN/igroup_initiator_create) and [`DELETE /protocols/san/igroups/{igroup.uuid}/initiators/{name}`](#/SAN/igroup_initiator_delete) for more details.<br/>
+// Igroup An initiator group (igroup) is a collection of Fibre Channel (FC) world wide port names (WWPNs), and/or iSCSI Qualified Names (IQNs), and/or iSCSI EUIs (Extended Unique Identifiers) that identify host initiators.<br/>
+// Initiator groups are used to control which hosts can access specific LUNs. To grant access to a LUN from one or more hosts, create an initiator group containing the host initiator names, then create a LUN map that associates the initiator group with the LUN.<br/>
+// An initiator group may contain either initiators or other initiator groups, but not both simultaneously. When a parent initiator group is mapped, it inherits all of the initiators of any initiator groups nested below it. If any nested initiator group is modified to contain different initiators, the parent initiator groups inherit the change. A parent can have many nested initiator groups and an initiator group can be nested under multiple parents. Initiators can only be added or removed from the initiator group that directly contains them. The maximum supported depth of nesting is three layers.<br/>
+// Best practice when using nested initiator groups is to match host hierarchies. A single initiator group should correspond to a single host. If a LUN needs to be mapped to multiple hosts, the initiator groups representing those hosts should be aggregated into a parent initiator group and the LUN should be mapped to that initiator group. For multi-ported hosts, initiators have a comment property where the port corresponding to the initiator can be documented.<br/>
+// An initiator can appear in multiple initiator groups. An initiator group can be mapped to multiple LUNs. A specific initiator can be mapped to a specific LUN only once. With the introduction of nestable initiator groups, best practice is to use the hierarchy such that an initiator is only a direct member of a single initiator group, and that initiator group can then be referenced by other initiator groups.<br/>
+// All initiators or nested initiator groups in an initiator group must be from the same operating system. The initiator group's operating system is specified when the initiator group is created.<br/>
+// When an initiator group is created, the `protocol` property is used to restrict member initiators to Fibre Channel (_fcp_), iSCSI (_iscsi_), or both (_mixed_). Initiator groups within a nested hierarchy may not have conflicting protocols.<br/>
+// Zero or more initiators or nested initiator groups can be supplied when the initiator group is created. After creation, initiators can be added or removed from the initiator group using the `/protocols/san/igroups/{igroup.uuid}/initiators` endpoint. Initiator groups containing other initiator groups report the aggregated list of initiators from all nested initiator groups, but modifications of the initiator list must be performed on the initiator group that directly contains the initiators. See [`POST /protocols/san/igroups/{igroup.uuid}/initiators`](#/SAN/igroup_initiator_create) and [`DELETE /protocols/san/igroups/{igroup.uuid}/initiators/{name}`](#/SAN/igroup_initiator_delete) for more details.<br/>
 //
 //
 // swagger:model igroup
@@ -30,23 +32,39 @@ type Igroup struct {
 	// links
 	Links *IgroupLinks `json:"_links,omitempty"`
 
-	// An option that causes the initiator group to be deleted when the last LUN map associated with it is deleted. Optional in PATCH only; not available in POST. This property defaults to _false_ when the initiator group is created.
+	// A comment available for use by the administrator. Valid in POST and PATCH.
+	//
+	// Max Length: 254
+	// Min Length: 0
+	Comment *string `json:"comment,omitempty"`
+
+	// An option that causes the initiator group to be deleted when the last LUN map associated with it is deleted. Optional in POST and PATCH. This property defaults to _false_ when the initiator group is created.
 	//
 	DeleteOnUnmap *bool `json:"delete_on_unmap,omitempty"`
 
-	// The initiators that are members of the group. Optional in POST.<br/>
+	// The initiator groups that are members of the group. Optional in POST.<br/>
+	// This property is mutually exclusive with the _initiators_ property during POST.<br/>
+	// This array contains only the direct children of the initiator group. If the member initiator groups have further nested initiator groups, those are reported in the `igroups` property of the child initiator group.<br/>
+	// Zero or more nested initiator groups can be supplied when the initiator group is created. The initiator group will act as if it contains the aggregatation of all initiators in any nested initiator groups.<br/>
+	// After creation, nested initiator groups can be added or removed from the initiator group using the `/protocols/san/igroups/{igroup.uuid}/igroups` endpoint. See [`POST /protocols/san/igroups/{igroup.uuid}/igroups`](#/SAN/igroup_nested_create) and [`DELETE /protocols/san/igroups/{igroup.uuid}/igroups/{uuid}`](#/SAN/igroup_nested_delete) for more details.
+	//
+	Igroups []*IgroupChild `json:"igroups,omitempty"`
+
+	// The initiators that are members of the group or any group nested below this group. Optional in POST.<br/>
+	// This property is mutually exclusive with the _igroups_ property during POST.<br/>
+	// During GET, this array contains initiators that are members of this group or any nested initiator groups below this group. When initiators of nested groups are returned, they include links to the initiator group that directly contains the initiator.<br/>
 	// Zero or more initiators can be supplied when the initiator group is created. After creation, initiators can be added or removed from the initiator group using the `/protocols/san/igroups/{igroup.uuid}/initiators` endpoint. See [`POST /protocols/san/igroups/{igroup.uuid}/initiators`](#/SAN/igroup_initiator_create) and [`DELETE /protocols/san/igroups/{igroup.uuid}/initiators/{name}`](#/SAN/igroup_initiator_delete) for more details.
 	//
-	Initiators []*IgroupInitiatorNoRecords `json:"initiators,omitempty"`
+	Initiators []*IgroupInitiatorsItems0 `json:"initiators,omitempty"`
 
 	// All LUN maps with which the initiator is associated.<br/>
-	// There is an added cost to retrieving property values for `lun_maps`. They not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+	// If the requested igroup is part of a remote, non-local, MetroCluster SVM, the LUN maps are not retrieved.<br/>
+	// There is an added cost to retrieving property values for `lun_maps`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Read Only: true
 	LunMaps []*IgroupLunMapsItems0 `json:"lun_maps,omitempty"`
 
-	// The name of the initiator group. Required in POST; optional in PATCH.<br/>
-	// Note that renaming an initiator group must be done in a PATCH request separate from any other modifications.
+	// The name of the initiator group. Required in POST; optional in PATCH.
 	//
 	// Example: igroup1
 	// Max Length: 96
@@ -58,11 +76,24 @@ type Igroup struct {
 	// Enum: [aix hpux hyper_v linux netware openvms solaris vmware windows xen]
 	OsType string `json:"os_type,omitempty"`
 
+	// The initiator groups that contain this initiator group as as member.
+	//
+	// Read Only: true
+	ParentIgroups []*IgroupParent `json:"parent_igroups,omitempty"`
+
+	// portset
+	Portset *IgroupPortset `json:"portset,omitempty"`
+
 	// The protocols supported by the initiator group. This restricts the type of initiators that can be added to the initiator group. Optional in POST; if not supplied, this defaults to _mixed_.<br/>
 	// The protocol of an initiator group cannot be changed after creation of the group.
 	//
 	// Enum: [fcp iscsi mixed]
 	Protocol *string `json:"protocol,omitempty"`
+
+	// An initiator group may contain either initiators or other initiator groups, but not both simultaneously. This property is _true_ when initiator groups can be added to this initiator group. The `initiators.name` property cannot be used to determine this via a query because it reports initiators inherited from nested igroups.
+	//
+	// Read Only: true
+	SupportsIgroups *bool `json:"supports_igroups,omitempty"`
 
 	// svm
 	Svm *IgroupSvm `json:"svm,omitempty"`
@@ -82,6 +113,14 @@ func (m *Igroup) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateComment(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIgroups(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateInitiators(formats); err != nil {
 		res = append(res, err)
 	}
@@ -95,6 +134,14 @@ func (m *Igroup) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateOsType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateParentIgroups(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePortset(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -124,6 +171,46 @@ func (m *Igroup) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Igroup) validateComment(formats strfmt.Registry) error {
+	if swag.IsZero(m.Comment) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("comment", "body", *m.Comment, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("comment", "body", *m.Comment, 254); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Igroup) validateIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.Igroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Igroups); i++ {
+		if swag.IsZero(m.Igroups[i]) { // not required
+			continue
+		}
+
+		if m.Igroups[i] != nil {
+			if err := m.Igroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -207,103 +294,103 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// os_type
 	// OsType
 	// aix
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupOsTypeAix captures enum value "aix"
 	IgroupOsTypeAix string = "aix"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// os_type
 	// OsType
 	// hpux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupOsTypeHpux captures enum value "hpux"
 	IgroupOsTypeHpux string = "hpux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// os_type
 	// OsType
 	// hyper_v
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupOsTypeHyperv captures enum value "hyper_v"
 	IgroupOsTypeHyperv string = "hyper_v"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupOsTypeLinux captures enum value "linux"
 	IgroupOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// os_type
 	// OsType
 	// netware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupOsTypeNetware captures enum value "netware"
 	IgroupOsTypeNetware string = "netware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// os_type
 	// OsType
 	// openvms
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupOsTypeOpenvms captures enum value "openvms"
 	IgroupOsTypeOpenvms string = "openvms"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// os_type
 	// OsType
 	// solaris
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupOsTypeSolaris captures enum value "solaris"
 	IgroupOsTypeSolaris string = "solaris"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupOsTypeVmware captures enum value "vmware"
 	IgroupOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupOsTypeWindows captures enum value "windows"
 	IgroupOsTypeWindows string = "windows"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// os_type
 	// OsType
 	// xen
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupOsTypeXen captures enum value "xen"
 	IgroupOsTypeXen string = "xen"
 )
@@ -329,6 +416,47 @@ func (m *Igroup) validateOsType(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Igroup) validateParentIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.ParentIgroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ParentIgroups); i++ {
+		if swag.IsZero(m.ParentIgroups[i]) { // not required
+			continue
+		}
+
+		if m.ParentIgroups[i] != nil {
+			if err := m.ParentIgroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("parent_igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Igroup) validatePortset(formats strfmt.Registry) error {
+	if swag.IsZero(m.Portset) { // not required
+		return nil
+	}
+
+	if m.Portset != nil {
+		if err := m.Portset.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("portset")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 var igroupTypeProtocolPropEnum []interface{}
 
 func init() {
@@ -343,33 +471,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// protocol
 	// Protocol
 	// fcp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupProtocolFcp captures enum value "fcp"
 	IgroupProtocolFcp string = "fcp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// protocol
 	// Protocol
 	// iscsi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupProtocolIscsi captures enum value "iscsi"
 	IgroupProtocolIscsi string = "iscsi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// igroup
 	// Igroup
 	// protocol
 	// Protocol
 	// mixed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IgroupProtocolMixed captures enum value "mixed"
 	IgroupProtocolMixed string = "mixed"
 )
@@ -420,11 +548,27 @@ func (m *Igroup) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIgroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateInitiators(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateLunMaps(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateParentIgroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePortset(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSupportsIgroups(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -451,6 +595,24 @@ func (m *Igroup) contextValidateLinks(ctx context.Context, formats strfmt.Regist
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Igroup) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Igroups); i++ {
+
+		if m.Igroups[i] != nil {
+			if err := m.Igroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -496,6 +658,51 @@ func (m *Igroup) contextValidateLunMaps(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
+func (m *Igroup) contextValidateParentIgroups(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "parent_igroups", "body", []*IgroupParent(m.ParentIgroups)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ParentIgroups); i++ {
+
+		if m.ParentIgroups[i] != nil {
+			if err := m.ParentIgroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("parent_igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Igroup) contextValidatePortset(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Portset != nil {
+		if err := m.Portset.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("portset")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Igroup) contextValidateSupportsIgroups(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "supports_igroups", "body", m.SupportsIgroups); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Igroup) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
@@ -530,6 +737,479 @@ func (m *Igroup) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Igroup) UnmarshalBinary(b []byte) error {
 	var res Igroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorsItems0 igroup initiators items0
+//
+// swagger:model IgroupInitiatorsItems0
+type IgroupInitiatorsItems0 struct {
+
+	// links
+	Links *IgroupInitiatorsItems0Links `json:"_links,omitempty"`
+
+	// A comment available for use by the administrator. Valid in POST and PATCH.
+	//
+	// Max Length: 254
+	// Min Length: 0
+	Comment *string `json:"comment,omitempty"`
+
+	// igroup
+	Igroup *IgroupInitiatorsItems0Igroup `json:"igroup,omitempty"`
+
+	// The FC WWPN, iSCSI IQN, or iSCSI EUI that identifies the host initiator. Valid in POST only and not allowed when the `records` property is used.<br/>
+	// An FC WWPN consists of 16 hexadecimal digits grouped as 8 pairs separated by colons. The format for an iSCSI IQN is _iqn.yyyy-mm.reverse_domain_name:any_. The iSCSI EUI format consists of the _eui._ prefix followed by 16 hexadecimal characters.
+	//
+	// Example: iqn.1998-01.com.corp.iscsi:name1
+	// Max Length: 96
+	// Min Length: 1
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this igroup initiators items0
+func (m *IgroupInitiatorsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateComment(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIgroup(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0) validateComment(formats strfmt.Registry) error {
+	if swag.IsZero(m.Comment) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("comment", "body", *m.Comment, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("comment", "body", *m.Comment, 254); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0) validateIgroup(formats strfmt.Registry) error {
+	if swag.IsZero(m.Igroup) { // not required
+		return nil
+	}
+
+	if m.Igroup != nil {
+		if err := m.Igroup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("igroup")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("name", "body", m.Name, 96); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiators items0 based on the context it is used
+func (m *IgroupInitiatorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIgroup(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0) contextValidateIgroup(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Igroup != nil {
+		if err := m.Igroup.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("igroup")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorsItems0) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorsItems0Igroup The initiator group that directly owns the initiator, which is where modification of the initiator is supported. This property will only be populated when the initiator is a member of a nested initiator group.
+//
+//
+// swagger:model IgroupInitiatorsItems0Igroup
+type IgroupInitiatorsItems0Igroup struct {
+
+	// links
+	Links *IgroupInitiatorsItems0IgroupLinks `json:"_links,omitempty"`
+
+	// The name of the initiator group.
+	//
+	// Example: igroup1
+	// Max Length: 96
+	// Min Length: 1
+	Name string `json:"name,omitempty"`
+
+	// The unique identifier of the initiator group.
+	//
+	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this igroup initiators items0 igroup
+func (m *IgroupInitiatorsItems0Igroup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0Igroup) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("igroup" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0Igroup) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("igroup"+"."+"name", "body", m.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("igroup"+"."+"name", "body", m.Name, 96); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiators items0 igroup based on the context it is used
+func (m *IgroupInitiatorsItems0Igroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0Igroup) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("igroup" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorsItems0Igroup) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorsItems0Igroup) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorsItems0Igroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorsItems0IgroupLinks igroup initiators items0 igroup links
+//
+// swagger:model IgroupInitiatorsItems0IgroupLinks
+type IgroupInitiatorsItems0IgroupLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this igroup initiators items0 igroup links
+func (m *IgroupInitiatorsItems0IgroupLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0IgroupLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("igroup" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiators items0 igroup links based on the context it is used
+func (m *IgroupInitiatorsItems0IgroupLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0IgroupLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("igroup" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorsItems0IgroupLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorsItems0IgroupLinks) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorsItems0IgroupLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorsItems0Links igroup initiators items0 links
+//
+// swagger:model IgroupInitiatorsItems0Links
+type IgroupInitiatorsItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this igroup initiators items0 links
+func (m *IgroupInitiatorsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup initiators items0 links based on the context it is used
+func (m *IgroupInitiatorsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorsItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorsItems0Links) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorsItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1289,6 +1969,212 @@ func (m *IgroupLunMapsItems0LunNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// IgroupPortset The portset to which the initiator group is bound. Binding the initiator group to a portset restricts the initiators of the group to accessing mapped LUNs only through network interfaces in the portset.<br/>
+// Optional in POST and PATCH. PATCH `portset.name` to an empty string ("") to unbind a portset from the initiator group.
+//
+//
+// swagger:model IgroupPortset
+type IgroupPortset struct {
+
+	// links
+	Links *IgroupPortsetLinks `json:"_links,omitempty"`
+
+	// The name of the portset.
+	//
+	// Example: portset1
+	// Max Length: 96
+	// Min Length: 1
+	Name string `json:"name,omitempty"`
+
+	// The unique identifier of the portset.
+	//
+	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this igroup portset
+func (m *IgroupPortset) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupPortset) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("portset" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IgroupPortset) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("portset"+"."+"name", "body", m.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("portset"+"."+"name", "body", m.Name, 96); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup portset based on the context it is used
+func (m *IgroupPortset) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupPortset) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("portset" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupPortset) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupPortset) UnmarshalBinary(b []byte) error {
+	var res IgroupPortset
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupPortsetLinks igroup portset links
+//
+// swagger:model IgroupPortsetLinks
+type IgroupPortsetLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this igroup portset links
+func (m *IgroupPortsetLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupPortsetLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("portset" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this igroup portset links based on the context it is used
+func (m *IgroupPortsetLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupPortsetLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("portset" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupPortsetLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupPortsetLinks) UnmarshalBinary(b []byte) error {
+	var res IgroupPortsetLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // IgroupSvm igroup svm
 //
 // swagger:model IgroupSvm
@@ -1470,5 +2356,3 @@ func (m *IgroupSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -83,5 +83,3 @@ func (m LicenseState) ContextValidate(ctx context.Context, formats strfmt.Regist
 	}
 	return nil
 }
-
-// HELLO RIPPY

@@ -23,8 +23,16 @@ type NetworkHTTPProxy struct {
 	// links
 	Links *NetworkHTTPProxyLinks `json:"_links,omitempty"`
 
+	// Specifies whether or not authentication with the HTTP proxy server is enabled.
+	//
+	AuthenticationEnabled *bool `json:"authentication_enabled,omitempty"`
+
 	// ipspace
 	Ipspace *NetworkHTTPProxyIpspace `json:"ipspace,omitempty"`
+
+	// Password to authenticate with the HTTP proxy server when authentication_enabled is set to "true".
+	//
+	Password string `json:"password,omitempty"`
 
 	// The port number on which the HTTP proxy service is configured on the
 	// proxy server.
@@ -34,18 +42,22 @@ type NetworkHTTPProxy struct {
 	// Minimum: 1
 	Port int64 `json:"port,omitempty"`
 
-	// Set to “svm” for proxy owned by an SVM. Otherwise, set to "cluster".
+	// Set to “svm” for HTTP proxy owned by an SVM. Otherwise, set to "cluster".
 	//
 	// Read Only: true
 	// Enum: [svm cluster]
 	Scope string `json:"scope,omitempty"`
 
-	// The fully qualified domain name (FQDN) or IP address of the proxy server.
+	// Fully qualified domain name (FQDN) or IP address of the HTTP proxy server.
 	//
 	Server string `json:"server,omitempty"`
 
 	// svm
 	Svm *NetworkHTTPProxySvm `json:"svm,omitempty"`
+
+	// Username to authenticate with the HTTP proxy server when authentication_enabled is set to "true".
+	//
+	Username string `json:"username,omitempty"`
 
 	// The UUID that uniquely identifies the HTTP proxy.
 	//
@@ -147,23 +159,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// network_http_proxy
 	// NetworkHTTPProxy
 	// scope
 	// Scope
 	// svm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NetworkHTTPProxyScopeSvm captures enum value "svm"
 	NetworkHTTPProxyScopeSvm string = "svm"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// network_http_proxy
 	// NetworkHTTPProxy
 	// scope
 	// Scope
 	// cluster
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NetworkHTTPProxyScopeCluster captures enum value "cluster"
 	NetworkHTTPProxyScopeCluster string = "cluster"
 )
@@ -761,5 +773,3 @@ func (m *NetworkHTTPProxySvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

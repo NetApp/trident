@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// AppNfsAccess The list of NFS access controls.
+// AppNfsAccess The list of NFS access controls. You must provide either 'host' or 'access' to enable NFS access.
 //
 // swagger:model app_nfs_access
 type AppNfsAccess struct {
@@ -56,33 +56,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// app_nfs_access
 	// AppNfsAccess
 	// access
 	// Access
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AppNfsAccessAccessNone captures enum value "none"
 	AppNfsAccessAccessNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// app_nfs_access
 	// AppNfsAccess
 	// access
 	// Access
 	// ro
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AppNfsAccessAccessRo captures enum value "ro"
 	AppNfsAccessAccessRo string = "ro"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// app_nfs_access
 	// AppNfsAccess
 	// access
 	// Access
 	// rw
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AppNfsAccessAccessRw captures enum value "rw"
 	AppNfsAccessAccessRw string = "rw"
 )
@@ -130,5 +130,3 @@ func (m *AppNfsAccess) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

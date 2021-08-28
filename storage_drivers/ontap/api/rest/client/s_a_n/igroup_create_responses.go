@@ -98,9 +98,21 @@ func NewIgroupCreateDefault(code int) *IgroupCreateDefault {
 | 5373992 | A supplied initiator name was too long to be valid. |
 | 5373993 | A supplied initiator name did not match any valid format. |
 | 5374023 | An initiator group with the same name already exists. |
+| 5374027 | An attempt was made to bind a portset with no member network interfaces to the initiator group. |
+| 5374028 | An attempt was made to bind a portset with an incompatible protocol to the initiator group. |
 | 5374038 | An invalid Fibre Channel WWPN was supplied. |
 | 5374039 | An invalid iSCSI initiator name was supplied. |
+| 5374040 | Initiators and child initiator groups were both supplied, but only one option is allowed. |
 | 5374732 | An initiator is already in another initiator group with a conflicting operating system type. |
+| 5374735 | An attempt was made to add a child igroup that would exceed the maximum allowable depth. |
+| 5374737 | A supplied child initiator group already exists in another initiator group's hierarchy. |
+| 5374739 | A supplied child initiator group has an operating system type that differs from the parent initiator group. |
+| 5374740 | A supplied child initiator group has an protocol that differs from the parent initiator group. |
+| 5374741 | A supplied child initiator group is already owned by a different child in the initiator group's hierarchy. |
+| 5374742 | A supplied child initiator group contains an initiator that is already owned by another initiator group in the hierarchy. |
+| 5374746 | The cluster is currently running in a mixed version and nested initiator groups cannot be created until the effective cluster version reaches 9.9.1. |
+| 5374747 | The cluster is currently running in a mixed version and initiator group comments cannot be created until the effective cluster version reaches 9.9.1. |
+| 5374917 | Multiple matching initiators have been supplied with conflicting comments. |
 
 */
 type IgroupCreateDefault struct {

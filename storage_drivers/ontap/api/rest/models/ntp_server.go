@@ -110,33 +110,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ntp_server
 	// NtpServer
 	// version
 	// Version
 	// 3
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NtpServerVersionNr3 captures enum value "3"
 	NtpServerVersionNr3 string = "3"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ntp_server
 	// NtpServer
 	// version
 	// Version
 	// 4
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NtpServerVersionNr4 captures enum value "4"
 	NtpServerVersionNr4 string = "4"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ntp_server
 	// NtpServer
 	// version
 	// Version
 	// auto
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NtpServerVersionAuto captures enum value "auto"
 	NtpServerVersionAuto string = "auto"
 )
@@ -311,5 +311,3 @@ func (m *NtpServerLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

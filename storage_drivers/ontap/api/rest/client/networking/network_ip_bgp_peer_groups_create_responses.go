@@ -75,7 +75,7 @@ func NewNetworkIPBgpPeerGroupsCreateDefault(code int) *NetworkIPBgpPeerGroupsCre
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376963 | Duplicate IP address is specified. |
-| 1966133 | Netmask and address pair result in a network address. |
+| 1966133 | Since masking an address with a netmask represents an entire IP subnet, the masked and unmasked IP addresses cannot be the same. |
 | 1966267 | IPv6 addresses must have a prefix length of 64. |
 | 1966269 | IPv4 addresses must have a netmask length between 1 and 32. |
 | 1967082 | IPspace name and UUID must match if both are given. |
@@ -103,6 +103,9 @@ func NewNetworkIPBgpPeerGroupsCreateDefault(code int) *NetworkIPBgpPeerGroupsCre
 | 1967177 | Internal error. Failed to access the local interface. Retry the command, if necessary. |
 | 1967178 | The IPv6 address specified with local.ip.address is not supported because it is link-local, multicast, v4-compatible, v4-mapped, loopback or "::". |
 | 1967179 | The IPv4 address specified with local.ip.address is not supported because it is multicast, loopback or 0.0.0.0. |
+| 1967187 | Configuring 4 bytes peer.asn requires an effective cluster version of 9.9.1 or later. |
+| 1967188 | Configuring peer address as a next hop requires an effective cluster version of 9.9.1 or later. |
+| 1967189 | The parameter peer.asn can't be zero. |
 | 53281985 | Internal error. Failed to update BGP peer group because BGP LIF moved during the operation. Wait a few minutes and try the command again. |
 | 53282006 | BGP peer group could not be updated to use a peer address because the value provided is not a valid peer address. If necessary, try the command again with a routable host address. |
 | 53282007 | BGP peer group could not be updated to use a peer address because the address represents a different address family to the address of the associated BGP LIF. If necessary, try the command again with a matching address family. |

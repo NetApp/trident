@@ -637,5 +637,3 @@ func (m *SnapshotPolicyScheduleSnapshotPolicyLinks) UnmarshalBinary(b []byte) er
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

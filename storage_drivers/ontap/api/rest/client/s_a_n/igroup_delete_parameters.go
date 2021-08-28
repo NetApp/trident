@@ -62,8 +62,10 @@ type IgroupDeleteParams struct {
 
 	/* AllowDeleteWhileMapped.
 
-	     Allows deletion of a mapped initiator group.<br/>
-	Deleting a mapped initiator group makes the LUNs to which the initiator group is mapped no longer available. This might cause a disruption in the availability of data.<br/>
+	     Allows the deletion of a mapped initiator group.<br/>
+	Deleting a mapped initiator group means that the LUNs, to which the
+	initiator group is mapped, are no longer available to the initiators.
+	This might cause a disruption in the availability of data.<br/>
 	<b>This parameter should be used with caution.</b>
 
 	*/

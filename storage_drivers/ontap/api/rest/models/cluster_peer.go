@@ -575,33 +575,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerAuthentication
 	// ClusterPeerAuthentication
 	// in_use
 	// InUse
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerAuthenticationInUseOk captures enum value "ok"
 	ClusterPeerAuthenticationInUseOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerAuthentication
 	// ClusterPeerAuthentication
 	// in_use
 	// InUse
 	// absent
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerAuthenticationInUseAbsent captures enum value "absent"
 	ClusterPeerAuthenticationInUseAbsent string = "absent"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerAuthentication
 	// ClusterPeerAuthentication
 	// in_use
 	// InUse
 	// revoked
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerAuthenticationInUseRevoked captures enum value "revoked"
 	ClusterPeerAuthenticationInUseRevoked string = "revoked"
 )
@@ -641,43 +641,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerAuthentication
 	// ClusterPeerAuthentication
 	// state
 	// State
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerAuthenticationStateOk captures enum value "ok"
 	ClusterPeerAuthenticationStateOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerAuthentication
 	// ClusterPeerAuthentication
 	// state
 	// State
 	// absent
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerAuthenticationStateAbsent captures enum value "absent"
 	ClusterPeerAuthenticationStateAbsent string = "absent"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerAuthentication
 	// ClusterPeerAuthentication
 	// state
 	// State
 	// pending
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerAuthenticationStatePending captures enum value "pending"
 	ClusterPeerAuthenticationStatePending string = "pending"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerAuthentication
 	// ClusterPeerAuthentication
 	// state
 	// State
 	// problem
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerAuthenticationStateProblem captures enum value "problem"
 	ClusterPeerAuthenticationStateProblem string = "problem"
 )
@@ -791,23 +791,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerEncryption
 	// ClusterPeerEncryption
 	// proposed
 	// Proposed
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerEncryptionProposedNone captures enum value "none"
 	ClusterPeerEncryptionProposedNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerEncryption
 	// ClusterPeerEncryption
 	// proposed
 	// Proposed
 	// tls_psk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerEncryptionProposedTLSPsk captures enum value "tls_psk"
 	ClusterPeerEncryptionProposedTLSPsk string = "tls_psk"
 )
@@ -847,23 +847,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerEncryption
 	// ClusterPeerEncryption
 	// state
 	// State
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerEncryptionStateNone captures enum value "none"
 	ClusterPeerEncryptionStateNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerEncryption
 	// ClusterPeerEncryption
 	// state
 	// State
 	// tls_psk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerEncryptionStateTLSPsk captures enum value "tls_psk"
 	ClusterPeerEncryptionStateTLSPsk string = "tls_psk"
 )
@@ -1749,7 +1749,7 @@ type ClusterPeerStatus struct {
 	State string `json:"state,omitempty"`
 
 	// The last time the state was updated.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	UpdateTime *strfmt.DateTime `json:"update_time,omitempty"`
@@ -1787,53 +1787,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerStatus
 	// ClusterPeerStatus
 	// state
 	// State
 	// available
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerStatusStateAvailable captures enum value "available"
 	ClusterPeerStatusStateAvailable string = "available"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerStatus
 	// ClusterPeerStatus
 	// state
 	// State
 	// partial
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerStatusStatePartial captures enum value "partial"
 	ClusterPeerStatusStatePartial string = "partial"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerStatus
 	// ClusterPeerStatus
 	// state
 	// State
 	// unavailable
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerStatusStateUnavailable captures enum value "unavailable"
 	ClusterPeerStatusStateUnavailable string = "unavailable"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerStatus
 	// ClusterPeerStatus
 	// state
 	// State
 	// pending
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerStatusStatePending captures enum value "pending"
 	ClusterPeerStatusStatePending string = "pending"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ClusterPeerStatus
 	// ClusterPeerStatus
 	// state
 	// State
 	// unidentified
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ClusterPeerStatusStateUnidentified captures enum value "unidentified"
 	ClusterPeerStatusStateUnidentified string = "unidentified"
 )
@@ -2035,5 +2035,3 @@ func (m *ClusterPeerVersion) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

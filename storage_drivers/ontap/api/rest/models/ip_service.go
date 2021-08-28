@@ -37,11 +37,17 @@ const (
 	// IPServiceManagementBgp captures enum value "management_bgp"
 	IPServiceManagementBgp IPService = "management_bgp"
 
+	// IPServiceManagementEms captures enum value "management_ems"
+	IPServiceManagementEms IPService = "management_ems"
+
 	// IPServiceManagementHTTPS captures enum value "management_https"
 	IPServiceManagementHTTPS IPService = "management_https"
 
 	// IPServiceManagementSSH captures enum value "management_ssh"
 	IPServiceManagementSSH IPService = "management_ssh"
+
+	// IPServiceManagementPortmap captures enum value "management_portmap"
+	IPServiceManagementPortmap IPService = "management_portmap"
 
 	// IPServiceDataCore captures enum value "data_core"
 	IPServiceDataCore IPService = "data_core"
@@ -57,6 +63,9 @@ const (
 
 	// IPServiceDataIscsi captures enum value "data_iscsi"
 	IPServiceDataIscsi IPService = "data_iscsi"
+
+	// IPServiceDataS3Server captures enum value "data_s3_server"
+	IPServiceDataS3Server IPService = "data_s3_server"
 )
 
 // for schema
@@ -64,7 +73,7 @@ var ipServiceEnum []interface{}
 
 func init() {
 	var res []IPService
-	if err := json.Unmarshal([]byte(`["cluster_core","intercluster_core","management_core","management_autosupport","management_bgp","management_https","management_ssh","data_core","data_nfs","data_cifs","data_flexcache","data_iscsi"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["cluster_core","intercluster_core","management_core","management_autosupport","management_bgp","management_ems","management_https","management_ssh","management_portmap","data_core","data_nfs","data_cifs","data_flexcache","data_iscsi","data_s3_server"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -98,5 +107,3 @@ func (m IPService) Validate(formats strfmt.Registry) error {
 func (m IPService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

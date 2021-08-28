@@ -64,7 +64,7 @@ type FlexcacheOriginGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *FlexcacheOriginGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the flexcache origin get params
-func (o *FlexcacheOriginGetParams) WithFields(fields []string) *FlexcacheOriginGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the flexcache origin get params
+func (o *FlexcacheOriginGetParams) WithFieldsQueryParameter(fields []string) *FlexcacheOriginGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the flexcache origin get params
-func (o *FlexcacheOriginGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the flexcache origin get params
+func (o *FlexcacheOriginGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the flexcache origin get params
@@ -155,7 +155,7 @@ func (o *FlexcacheOriginGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *FlexcacheOriginGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamFlexcacheOriginGet binds the parameter fields
 func (o *FlexcacheOriginGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -74,6 +74,7 @@ func NewRoleCreateDefault(code int) *RoleCreateDefault {
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
+| 2621462 | The supplied SVM does not exist. |
 | 5636129 | Role with given name has not been defined. |
 | 5636143 | Vserver admin cannot use the API with this access level. |
 | 5636144 | Invalid value specified for access level. |
@@ -83,7 +84,6 @@ func NewRoleCreateDefault(code int) *RoleCreateDefault {
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434891 | UUID lookup failed for Vserver roles. |
 | 13434892 | Roles is a required field. |
-| 13434893 | SVM does not exist. |
 
 */
 type RoleCreateDefault struct {

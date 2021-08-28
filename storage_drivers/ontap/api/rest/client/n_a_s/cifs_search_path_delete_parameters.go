@@ -70,7 +70,7 @@ type CifsSearchPathDeleteParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -136,15 +136,15 @@ func (o *CifsSearchPathDeleteParams) SetIndexPathParameter(index int64) {
 	o.IndexPathParameter = index
 }
 
-// WithSvmUUID adds the svmUUID to the cifs search path delete params
-func (o *CifsSearchPathDeleteParams) WithSvmUUID(svmUUID string) *CifsSearchPathDeleteParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the cifs search path delete params
+func (o *CifsSearchPathDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *CifsSearchPathDeleteParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the cifs search path delete params
-func (o *CifsSearchPathDeleteParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the cifs search path delete params
+func (o *CifsSearchPathDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -161,7 +161,7 @@ func (o *CifsSearchPathDeleteParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

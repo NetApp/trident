@@ -234,33 +234,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport
 	// Autosupport
 	// transport
 	// Transport
 	// smtp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportTransportSMTP captures enum value "smtp"
 	AutosupportTransportSMTP string = "smtp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport
 	// Autosupport
 	// transport
 	// Transport
 	// http
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportTransportHTTP captures enum value "http"
 	AutosupportTransportHTTP string = "http"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// autosupport
 	// Autosupport
 	// transport
 	// Transport
 	// https
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AutosupportTransportHTTPS captures enum value "https"
 	AutosupportTransportHTTPS string = "https"
 )
@@ -339,5 +339,3 @@ func (m *Autosupport) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

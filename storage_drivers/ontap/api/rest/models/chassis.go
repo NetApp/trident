@@ -21,14 +21,14 @@ import (
 // swagger:model chassis
 type Chassis struct {
 
-	// List of FRUs in chassis.
+	// List of FRUs in the chassis.
 	Frus []*ChassisFrusItems0 `json:"frus,omitempty"`
 
 	// id
 	// Example: 21352005981
 	ID string `json:"id,omitempty"`
 
-	// List of nodes in chassis.
+	// List of nodes in the chassis.
 	Nodes []*ChassisNodesItems0 `json:"nodes,omitempty"`
 
 	// List of shelves in chassis.
@@ -151,23 +151,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// chassis
 	// Chassis
 	// state
 	// State
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ChassisStateOk captures enum value "ok"
 	ChassisStateOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// chassis
 	// Chassis
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ChassisStateError captures enum value "error"
 	ChassisStateError string = "error"
 )
@@ -336,23 +336,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ChassisFrusItems0
 	// ChassisFrusItems0
 	// state
 	// State
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ChassisFrusItems0StateOk captures enum value "ok"
 	ChassisFrusItems0StateOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ChassisFrusItems0
 	// ChassisFrusItems0
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ChassisFrusItems0StateError captures enum value "error"
 	ChassisFrusItems0StateError string = "error"
 )
@@ -392,23 +392,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ChassisFrusItems0
 	// ChassisFrusItems0
 	// type
 	// Type
 	// fan
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ChassisFrusItems0TypeFan captures enum value "fan"
 	ChassisFrusItems0TypeFan string = "fan"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ChassisFrusItems0
 	// ChassisFrusItems0
 	// type
 	// Type
 	// psu
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ChassisFrusItems0TypePsu captures enum value "psu"
 	ChassisFrusItems0TypePsu string = "psu"
 )
@@ -457,7 +457,7 @@ func (m *ChassisFrusItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ChassisNodesItems0 chassis nodes items0
+// ChassisNodesItems0 List of nodes in chassis.
 //
 // swagger:model ChassisNodesItems0
 type ChassisNodesItems0 struct {
@@ -469,6 +469,17 @@ type ChassisNodesItems0 struct {
 	// Example: node1
 	Name string `json:"name,omitempty"`
 
+	// pcis
+	Pcis *ChassisNodesItems0Pcis `json:"pcis,omitempty"`
+
+	// The Position of the Node in the Chassis
+	// Example: top
+	// Enum: [top bottom left right unknown]
+	Position string `json:"position,omitempty"`
+
+	// usbs
+	Usbs *ChassisNodesItems0Usbs `json:"usbs,omitempty"`
+
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID string `json:"uuid,omitempty"`
@@ -479,6 +490,18 @@ func (m *ChassisNodesItems0) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePcis(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePosition(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUsbs(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -505,11 +528,139 @@ func (m *ChassisNodesItems0) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *ChassisNodesItems0) validatePcis(formats strfmt.Registry) error {
+	if swag.IsZero(m.Pcis) { // not required
+		return nil
+	}
+
+	if m.Pcis != nil {
+		if err := m.Pcis.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("pcis")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var chassisNodesItems0TypePositionPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["top","bottom","left","right","unknown"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		chassisNodesItems0TypePositionPropEnum = append(chassisNodesItems0TypePositionPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ChassisNodesItems0
+	// ChassisNodesItems0
+	// position
+	// Position
+	// top
+	// END DEBUGGING
+	// ChassisNodesItems0PositionTop captures enum value "top"
+	ChassisNodesItems0PositionTop string = "top"
+
+	// BEGIN DEBUGGING
+	// ChassisNodesItems0
+	// ChassisNodesItems0
+	// position
+	// Position
+	// bottom
+	// END DEBUGGING
+	// ChassisNodesItems0PositionBottom captures enum value "bottom"
+	ChassisNodesItems0PositionBottom string = "bottom"
+
+	// BEGIN DEBUGGING
+	// ChassisNodesItems0
+	// ChassisNodesItems0
+	// position
+	// Position
+	// left
+	// END DEBUGGING
+	// ChassisNodesItems0PositionLeft captures enum value "left"
+	ChassisNodesItems0PositionLeft string = "left"
+
+	// BEGIN DEBUGGING
+	// ChassisNodesItems0
+	// ChassisNodesItems0
+	// position
+	// Position
+	// right
+	// END DEBUGGING
+	// ChassisNodesItems0PositionRight captures enum value "right"
+	ChassisNodesItems0PositionRight string = "right"
+
+	// BEGIN DEBUGGING
+	// ChassisNodesItems0
+	// ChassisNodesItems0
+	// position
+	// Position
+	// unknown
+	// END DEBUGGING
+	// ChassisNodesItems0PositionUnknown captures enum value "unknown"
+	ChassisNodesItems0PositionUnknown string = "unknown"
+)
+
+// prop value enum
+func (m *ChassisNodesItems0) validatePositionEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, chassisNodesItems0TypePositionPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ChassisNodesItems0) validatePosition(formats strfmt.Registry) error {
+	if swag.IsZero(m.Position) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePositionEnum("position", "body", m.Position); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ChassisNodesItems0) validateUsbs(formats strfmt.Registry) error {
+	if swag.IsZero(m.Usbs) { // not required
+		return nil
+	}
+
+	if m.Usbs != nil {
+		if err := m.Usbs.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("usbs")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this chassis nodes items0 based on the context it is used
 func (m *ChassisNodesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePcis(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsbs(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -525,6 +676,34 @@ func (m *ChassisNodesItems0) contextValidateLinks(ctx context.Context, formats s
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ChassisNodesItems0) contextValidatePcis(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Pcis != nil {
+		if err := m.Pcis.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("pcis")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ChassisNodesItems0) contextValidateUsbs(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Usbs != nil {
+		if err := m.Usbs.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("usbs")
 			}
 			return err
 		}
@@ -637,4 +816,285 @@ func (m *ChassisNodesItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HELLO RIPPY
+// ChassisNodesItems0Pcis chassis nodes items0 pcis
+//
+// swagger:model ChassisNodesItems0Pcis
+type ChassisNodesItems0Pcis struct {
+
+	// cards
+	Cards []*ChassisNodesItems0PcisCardsItems0 `json:"cards,omitempty"`
+}
+
+// Validate validates this chassis nodes items0 pcis
+func (m *ChassisNodesItems0Pcis) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateCards(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ChassisNodesItems0Pcis) validateCards(formats strfmt.Registry) error {
+	if swag.IsZero(m.Cards) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Cards); i++ {
+		if swag.IsZero(m.Cards[i]) { // not required
+			continue
+		}
+
+		if m.Cards[i] != nil {
+			if err := m.Cards[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("pcis" + "." + "cards" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this chassis nodes items0 pcis based on the context it is used
+func (m *ChassisNodesItems0Pcis) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCards(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ChassisNodesItems0Pcis) contextValidateCards(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Cards); i++ {
+
+		if m.Cards[i] != nil {
+			if err := m.Cards[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("pcis" + "." + "cards" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ChassisNodesItems0Pcis) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ChassisNodesItems0Pcis) UnmarshalBinary(b []byte) error {
+	var res ChassisNodesItems0Pcis
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ChassisNodesItems0PcisCardsItems0 chassis nodes items0 pcis cards items0
+//
+// swagger:model ChassisNodesItems0PcisCardsItems0
+type ChassisNodesItems0PcisCardsItems0 struct {
+
+	// The description of the PCI card.
+	// Example: Intel Lewisburg series chipset SATA Controller
+	Device string `json:"device,omitempty"`
+
+	// The info string from the device driver of the PCI card.
+	// Example: Additional Info: 0 (0xaaf00000)   SHM2S86Q120GLM22NP FW1146 114473MB 512B/sect (SPG190108GW)
+	Info string `json:"info,omitempty"`
+
+	// The slot where the PCI card is placed. This can sometimes take the form of "6-1" to indicate slot and subslot.
+	// Example: 0
+	Slot string `json:"slot,omitempty"`
+}
+
+// Validate validates this chassis nodes items0 pcis cards items0
+func (m *ChassisNodesItems0PcisCardsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this chassis nodes items0 pcis cards items0 based on context it is used
+func (m *ChassisNodesItems0PcisCardsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ChassisNodesItems0PcisCardsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ChassisNodesItems0PcisCardsItems0) UnmarshalBinary(b []byte) error {
+	var res ChassisNodesItems0PcisCardsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ChassisNodesItems0Usbs The status of the USB ports on the controller.
+//
+// swagger:model ChassisNodesItems0Usbs
+type ChassisNodesItems0Usbs struct {
+
+	// Indicates whether or not the USB ports are enabled.
+	Enabled bool `json:"enabled,omitempty"`
+
+	// ports
+	Ports []*ChassisNodesItems0UsbsPortsItems0 `json:"ports,omitempty"`
+
+	// Indicates whether or not USB ports are supported on the current platform.
+	Supported bool `json:"supported,omitempty"`
+}
+
+// Validate validates this chassis nodes items0 usbs
+func (m *ChassisNodesItems0Usbs) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePorts(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ChassisNodesItems0Usbs) validatePorts(formats strfmt.Registry) error {
+	if swag.IsZero(m.Ports) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Ports); i++ {
+		if swag.IsZero(m.Ports[i]) { // not required
+			continue
+		}
+
+		if m.Ports[i] != nil {
+			if err := m.Ports[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("usbs" + "." + "ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this chassis nodes items0 usbs based on the context it is used
+func (m *ChassisNodesItems0Usbs) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePorts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ChassisNodesItems0Usbs) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Ports); i++ {
+
+		if m.Ports[i] != nil {
+			if err := m.Ports[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("usbs" + "." + "ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ChassisNodesItems0Usbs) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ChassisNodesItems0Usbs) UnmarshalBinary(b []byte) error {
+	var res ChassisNodesItems0Usbs
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ChassisNodesItems0UsbsPortsItems0 chassis nodes items0 usbs ports items0
+//
+// swagger:model ChassisNodesItems0UsbsPortsItems0
+type ChassisNodesItems0UsbsPortsItems0 struct {
+
+	// Indicates whether or not the USB port has a device connected to it.
+	Connected bool `json:"connected,omitempty"`
+}
+
+// Validate validates this chassis nodes items0 usbs ports items0
+func (m *ChassisNodesItems0UsbsPortsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this chassis nodes items0 usbs ports items0 based on context it is used
+func (m *ChassisNodesItems0UsbsPortsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ChassisNodesItems0UsbsPortsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ChassisNodesItems0UsbsPortsItems0) UnmarshalBinary(b []byte) error {
+	var res ChassisNodesItems0UsbsPortsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

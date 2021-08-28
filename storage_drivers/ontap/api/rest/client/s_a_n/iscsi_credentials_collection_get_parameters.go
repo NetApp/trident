@@ -82,7 +82,7 @@ type IscsiCredentialsCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Initiator.
 
@@ -130,13 +130,13 @@ type IscsiCredentialsCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -144,7 +144,7 @@ type IscsiCredentialsCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -152,7 +152,7 @@ type IscsiCredentialsCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SvmName.
 
@@ -184,14 +184,14 @@ func (o *IscsiCredentialsCollectionGetParams) WithDefaults() *IscsiCredentialsCo
 // All values with no default are reset to their zero value.
 func (o *IscsiCredentialsCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := IscsiCredentialsCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -266,15 +266,15 @@ func (o *IscsiCredentialsCollectionGetParams) SetChapOutboundUserQueryParameter(
 	o.ChapOutboundUserQueryParameter = chapOutboundUser
 }
 
-// WithFields adds the fields to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithFields(fields []string) *IscsiCredentialsCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithFieldsQueryParameter(fields []string) *IscsiCredentialsCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithInitiatorQueryParameter adds the initiator to the iscsi credentials collection get params
@@ -354,48 +354,48 @@ func (o *IscsiCredentialsCollectionGetParams) SetInitiatorAddressRangesStartQuer
 	o.InitiatorAddressRangesStartQueryParameter = initiatorAddressRangesStart
 }
 
-// WithMaxRecords adds the maxRecords to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithMaxRecords(maxRecords *int64) *IscsiCredentialsCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *IscsiCredentialsCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
-// WithOrderBy adds the orderBy to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithOrderBy(orderBy []string) *IscsiCredentialsCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *IscsiCredentialsCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithReturnRecords(returnRecords *bool) *IscsiCredentialsCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *IscsiCredentialsCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *IscsiCredentialsCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *IscsiCredentialsCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the iscsi credentials collection get params
-func (o *IscsiCredentialsCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the iscsi credentials collection get params
+func (o *IscsiCredentialsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSVMNameQueryParameter adds the svmName to the iscsi credentials collection get params
@@ -479,7 +479,7 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -609,13 +609,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -626,7 +626,7 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -637,13 +637,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -654,13 +654,13 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -713,7 +713,7 @@ func (o *IscsiCredentialsCollectionGetParams) WriteToRequest(r runtime.ClientReq
 
 // bindParamIscsiCredentialsCollectionGet binds the parameter fields
 func (o *IscsiCredentialsCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -730,7 +730,7 @@ func (o *IscsiCredentialsCollectionGetParams) bindParamFields(formats strfmt.Reg
 
 // bindParamIscsiCredentialsCollectionGet binds the parameter order_by
 func (o *IscsiCredentialsCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

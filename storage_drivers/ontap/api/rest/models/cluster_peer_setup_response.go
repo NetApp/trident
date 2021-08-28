@@ -190,7 +190,7 @@ func (m *ClusterPeerSetupResponse) UnmarshalBinary(b []byte) error {
 type ClusterPeerSetupResponseAuthentication struct {
 
 	// The date and time the passphrase will expire.  The default expiry time is one hour.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 
@@ -332,5 +332,3 @@ func (m *ClusterPeerSetupResponseLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

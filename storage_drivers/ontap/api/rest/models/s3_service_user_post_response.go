@@ -153,5 +153,3 @@ func (m *S3ServiceUserPostResponse) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

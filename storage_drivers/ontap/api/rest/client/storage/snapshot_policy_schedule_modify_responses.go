@@ -54,7 +54,7 @@ type SnapshotPolicyScheduleModifyOK struct {
 }
 
 func (o *SnapshotPolicyScheduleModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot-policy.uuid}/schedules/{uuid}][%d] snapshotPolicyScheduleModifyOK ", 200)
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshotPolicyScheduleModifyOK ", 200)
 }
 
 func (o *SnapshotPolicyScheduleModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -89,7 +89,7 @@ func (o *SnapshotPolicyScheduleModifyDefault) Code() int {
 }
 
 func (o *SnapshotPolicyScheduleModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot-policy.uuid}/schedules/{uuid}][%d] snapshot_policy_schedule_modify default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[PATCH /storage/snapshot-policies/{snapshot_policy.uuid}/schedules/{schedule.uuid}][%d] snapshot_policy_schedule_modify default  %+v", o._statusCode, o.Payload)
 }
 func (o *SnapshotPolicyScheduleModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

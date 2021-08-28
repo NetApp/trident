@@ -64,7 +64,7 @@ type HTTPProxyGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *HTTPProxyGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the http proxy get params
-func (o *HTTPProxyGetParams) WithFields(fields []string) *HTTPProxyGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the http proxy get params
+func (o *HTTPProxyGetParams) WithFieldsQueryParameter(fields []string) *HTTPProxyGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the http proxy get params
-func (o *HTTPProxyGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the http proxy get params
+func (o *HTTPProxyGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the http proxy get params
@@ -155,7 +155,7 @@ func (o *HTTPProxyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *HTTPProxyGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 // bindParamHTTPProxyGet binds the parameter fields
 func (o *HTTPProxyGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

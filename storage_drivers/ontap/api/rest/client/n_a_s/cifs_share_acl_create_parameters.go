@@ -72,7 +72,7 @@ type CifsShareACLCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* Share.
 
@@ -84,7 +84,7 @@ type CifsShareACLCreateParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,11 +104,11 @@ func (o *CifsShareACLCreateParams) WithDefaults() *CifsShareACLCreateParams {
 // All values with no default are reset to their zero value.
 func (o *CifsShareACLCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := CifsShareACLCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -161,15 +161,15 @@ func (o *CifsShareACLCreateParams) SetInfo(info *models.CifsShareACL) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the cifs share acl create params
-func (o *CifsShareACLCreateParams) WithReturnRecords(returnRecords *bool) *CifsShareACLCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the cifs share acl create params
+func (o *CifsShareACLCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CifsShareACLCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the cifs share acl create params
-func (o *CifsShareACLCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the cifs share acl create params
+func (o *CifsShareACLCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WithSharePathParameter adds the share to the cifs share acl create params
@@ -183,15 +183,15 @@ func (o *CifsShareACLCreateParams) SetSharePathParameter(share string) {
 	o.SharePathParameter = share
 }
 
-// WithSvmUUID adds the svmUUID to the cifs share acl create params
-func (o *CifsShareACLCreateParams) WithSvmUUID(svmUUID string) *CifsShareACLCreateParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the cifs share acl create params
+func (o *CifsShareACLCreateParams) WithSVMUUIDPathParameter(svmUUID string) *CifsShareACLCreateParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the cifs share acl create params
-func (o *CifsShareACLCreateParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the cifs share acl create params
+func (o *CifsShareACLCreateParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -207,13 +207,13 @@ func (o *CifsShareACLCreateParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -230,7 +230,7 @@ func (o *CifsShareACLCreateParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

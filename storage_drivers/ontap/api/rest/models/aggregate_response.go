@@ -33,6 +33,9 @@ type AggregateResponse struct {
 
 	// spares
 	Spares []*AggregateSpare `json:"spares,omitempty"`
+
+	// List of warnings and remediation advice for the aggregate recommendation.
+	Warnings []*AggregateWarning `json:"warnings,omitempty"`
 }
 
 // Validate validates this aggregate response
@@ -52,6 +55,10 @@ func (m *AggregateResponse) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSpares(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateWarnings(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -143,6 +150,30 @@ func (m *AggregateResponse) validateSpares(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *AggregateResponse) validateWarnings(formats strfmt.Registry) error {
+	if swag.IsZero(m.Warnings) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Warnings); i++ {
+		if swag.IsZero(m.Warnings[i]) { // not required
+			continue
+		}
+
+		if m.Warnings[i] != nil {
+			if err := m.Warnings[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("warnings" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this aggregate response based on the context it is used
 func (m *AggregateResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -160,6 +191,10 @@ func (m *AggregateResponse) ContextValidate(ctx context.Context, formats strfmt.
 	}
 
 	if err := m.contextValidateSpares(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWarnings(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -223,6 +258,24 @@ func (m *AggregateResponse) contextValidateSpares(ctx context.Context, formats s
 			if err := m.Spares[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("spares" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AggregateResponse) contextValidateWarnings(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Warnings); i++ {
+
+		if m.Warnings[i] != nil {
+			if err := m.Warnings[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("warnings" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -378,5 +431,3 @@ func (m *AggregateResponseLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

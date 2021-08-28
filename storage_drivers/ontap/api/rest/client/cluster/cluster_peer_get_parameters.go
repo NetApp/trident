@@ -64,7 +64,7 @@ type ClusterPeerGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *ClusterPeerGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the cluster peer get params
-func (o *ClusterPeerGetParams) WithFields(fields []string) *ClusterPeerGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the cluster peer get params
+func (o *ClusterPeerGetParams) WithFieldsQueryParameter(fields []string) *ClusterPeerGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the cluster peer get params
-func (o *ClusterPeerGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the cluster peer get params
+func (o *ClusterPeerGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the cluster peer get params
@@ -155,7 +155,7 @@ func (o *ClusterPeerGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *ClusterPeerGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamClusterPeerGet binds the parameter fields
 func (o *ClusterPeerGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

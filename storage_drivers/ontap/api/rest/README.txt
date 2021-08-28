@@ -7,3 +7,9 @@ To regenerate the bindings, run the script named 'regen' within this folder.
 
 As generation can take a very long time, we're checking these in instead of running
 this regen script within CI on every build.
+
+
+NOTE: For debugging purposes, it may be helpful to run the following. Internally, 
+go-swagger converts the yaml to json and this can help give insights:
+   ./preprocess.py && ./convert_yaml_to_json.py && ./regen
+

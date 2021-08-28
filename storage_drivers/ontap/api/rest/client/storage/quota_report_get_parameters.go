@@ -64,7 +64,7 @@ type QuotaReportGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Index.
 
@@ -131,15 +131,15 @@ func (o *QuotaReportGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the quota report get params
-func (o *QuotaReportGetParams) WithFields(fields []string) *QuotaReportGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the quota report get params
+func (o *QuotaReportGetParams) WithFieldsQueryParameter(fields []string) *QuotaReportGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the quota report get params
-func (o *QuotaReportGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the quota report get params
+func (o *QuotaReportGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIndexPathParameter adds the index to the quota report get params
@@ -172,7 +172,7 @@ func (o *QuotaReportGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *QuotaReportGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamQuotaReportGet binds the parameter fields
 func (o *QuotaReportGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

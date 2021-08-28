@@ -64,7 +64,7 @@ type LicenseGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* LicensesActive.
 
@@ -102,6 +102,18 @@ type LicenseGetParams struct {
 	*/
 	LicensesExpiryTimeQueryParameter *string
 
+	/* LicensesHostID.
+
+	   Filter by licenses.host_id
+	*/
+	LicensesHostIDQueryParameter *string
+
+	/* LicensesInstalledLicense.
+
+	   Filter by licenses.installed_license
+	*/
+	LicensesInstalledLicenseQueryParameter *string
+
 	/* LicensesOwner.
 
 	   Filter by licenses.owner
@@ -119,12 +131,6 @@ type LicenseGetParams struct {
 	   Filter by licenses.start_time
 	*/
 	LicensesStartTimeQueryParameter *string
-
-	/* Name.
-
-	   Filter by name
-	*/
-	NameQueryParameter *string
 
 	/* Name.
 
@@ -197,15 +203,15 @@ func (o *LicenseGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the license get params
-func (o *LicenseGetParams) WithFields(fields []string) *LicenseGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the license get params
+func (o *LicenseGetParams) WithFieldsQueryParameter(fields []string) *LicenseGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the license get params
-func (o *LicenseGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the license get params
+func (o *LicenseGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithLicensesActiveQueryParameter adds the licensesActive to the license get params
@@ -274,6 +280,28 @@ func (o *LicenseGetParams) SetLicensesExpiryTimeQueryParameter(licensesExpiryTim
 	o.LicensesExpiryTimeQueryParameter = licensesExpiryTime
 }
 
+// WithLicensesHostIDQueryParameter adds the licensesHostID to the license get params
+func (o *LicenseGetParams) WithLicensesHostIDQueryParameter(licensesHostID *string) *LicenseGetParams {
+	o.SetLicensesHostIDQueryParameter(licensesHostID)
+	return o
+}
+
+// SetLicensesHostIDQueryParameter adds the licensesHostId to the license get params
+func (o *LicenseGetParams) SetLicensesHostIDQueryParameter(licensesHostID *string) {
+	o.LicensesHostIDQueryParameter = licensesHostID
+}
+
+// WithLicensesInstalledLicenseQueryParameter adds the licensesInstalledLicense to the license get params
+func (o *LicenseGetParams) WithLicensesInstalledLicenseQueryParameter(licensesInstalledLicense *string) *LicenseGetParams {
+	o.SetLicensesInstalledLicenseQueryParameter(licensesInstalledLicense)
+	return o
+}
+
+// SetLicensesInstalledLicenseQueryParameter adds the licensesInstalledLicense to the license get params
+func (o *LicenseGetParams) SetLicensesInstalledLicenseQueryParameter(licensesInstalledLicense *string) {
+	o.LicensesInstalledLicenseQueryParameter = licensesInstalledLicense
+}
+
 // WithLicensesOwnerQueryParameter adds the licensesOwner to the license get params
 func (o *LicenseGetParams) WithLicensesOwnerQueryParameter(licensesOwner *string) *LicenseGetParams {
 	o.SetLicensesOwnerQueryParameter(licensesOwner)
@@ -305,17 +333,6 @@ func (o *LicenseGetParams) WithLicensesStartTimeQueryParameter(licensesStartTime
 // SetLicensesStartTimeQueryParameter adds the licensesStartTime to the license get params
 func (o *LicenseGetParams) SetLicensesStartTimeQueryParameter(licensesStartTime *string) {
 	o.LicensesStartTimeQueryParameter = licensesStartTime
-}
-
-// WithNameQueryParameter adds the name to the license get params
-func (o *LicenseGetParams) WithNameQueryParameter(name *string) *LicenseGetParams {
-	o.SetNameQueryParameter(name)
-	return o
-}
-
-// SetNameQueryParameter adds the name to the license get params
-func (o *LicenseGetParams) SetNameQueryParameter(name *string) {
-	o.NameQueryParameter = name
 }
 
 // WithNamePathParameter adds the name to the license get params
@@ -359,7 +376,7 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -472,6 +489,40 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
+	if o.LicensesHostIDQueryParameter != nil {
+
+		// query param licenses.host_id
+		var qrLicensesHostID string
+
+		if o.LicensesHostIDQueryParameter != nil {
+			qrLicensesHostID = *o.LicensesHostIDQueryParameter
+		}
+		qLicensesHostID := qrLicensesHostID
+		if qLicensesHostID != "" {
+
+			if err := r.SetQueryParam("licenses.host_id", qLicensesHostID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LicensesInstalledLicenseQueryParameter != nil {
+
+		// query param licenses.installed_license
+		var qrLicensesInstalledLicense string
+
+		if o.LicensesInstalledLicenseQueryParameter != nil {
+			qrLicensesInstalledLicense = *o.LicensesInstalledLicenseQueryParameter
+		}
+		qLicensesInstalledLicense := qrLicensesInstalledLicense
+		if qLicensesInstalledLicense != "" {
+
+			if err := r.SetQueryParam("licenses.installed_license", qLicensesInstalledLicense); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.LicensesOwnerQueryParameter != nil {
 
 		// query param licenses.owner
@@ -518,23 +569,6 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		if qLicensesStartTime != "" {
 
 			if err := r.SetQueryParam("licenses.start_time", qLicensesStartTime); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.NameQueryParameter != nil {
-
-		// query param name
-		var qrName string
-
-		if o.NameQueryParameter != nil {
-			qrName = *o.NameQueryParameter
-		}
-		qName := qrName
-		if qName != "" {
-
-			if err := r.SetQueryParam("name", qName); err != nil {
 				return err
 			}
 		}
@@ -587,7 +621,7 @@ func (o *LicenseGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 
 // bindParamLicenseGet binds the parameter fields
 func (o *LicenseGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

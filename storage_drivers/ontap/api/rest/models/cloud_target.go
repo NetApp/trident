@@ -26,8 +26,8 @@ type CloudTarget struct {
 	// Access key ID for AWS_S3 and other S3 compatible provider types.
 	AccessKey string `json:"access_key,omitempty"`
 
-	// Authentication used to access the target. Snapmirror does not yet support CAP. Required in POST.
-	// Enum: [key cap ec2_iam gcp_sa]
+	// Authentication used to access the target. SnapMirror does not yet support CAP. Required in POST.
+	// Enum: [key cap ec2_iam gcp_sa azure_msi]
 	AuthenticationType string `json:"authentication_type,omitempty"`
 
 	// Azure account
@@ -88,6 +88,10 @@ type CloudTarget struct {
 	// svm
 	Svm *CloudTargetSvm `json:"svm,omitempty"`
 
+	// URL style used to access S3 bucket.
+	// Enum: [path_style virtual_hosted_style]
+	URLStyle string `json:"url_style,omitempty"`
+
 	// Use HTTP proxy when connecting to the object store.
 	UseHTTPProxy *bool `json:"use_http_proxy,omitempty"`
 
@@ -144,6 +148,10 @@ func (m *CloudTarget) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateURLStyle(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -171,7 +179,7 @@ var cloudTargetTypeAuthenticationTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["key","cap","ec2_iam","gcp_sa"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["key","cap","ec2_iam","gcp_sa","azure_msi"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -181,45 +189,55 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cloud_target
 	// CloudTarget
 	// authentication_type
 	// AuthenticationType
 	// key
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CloudTargetAuthenticationTypeKey captures enum value "key"
 	CloudTargetAuthenticationTypeKey string = "key"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cloud_target
 	// CloudTarget
 	// authentication_type
 	// AuthenticationType
 	// cap
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CloudTargetAuthenticationTypeCap captures enum value "cap"
 	CloudTargetAuthenticationTypeCap string = "cap"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cloud_target
 	// CloudTarget
 	// authentication_type
 	// AuthenticationType
 	// ec2_iam
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CloudTargetAuthenticationTypeEc2Iam captures enum value "ec2_iam"
 	CloudTargetAuthenticationTypeEc2Iam string = "ec2_iam"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cloud_target
 	// CloudTarget
 	// authentication_type
 	// AuthenticationType
 	// gcp_sa
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CloudTargetAuthenticationTypeGcpSa captures enum value "gcp_sa"
 	CloudTargetAuthenticationTypeGcpSa string = "gcp_sa"
+
+	// BEGIN DEBUGGING
+	// cloud_target
+	// CloudTarget
+	// authentication_type
+	// AuthenticationType
+	// azure_msi
+	// END DEBUGGING
+	// CloudTargetAuthenticationTypeAzureMsi captures enum value "azure_msi"
+	CloudTargetAuthenticationTypeAzureMsi string = "azure_msi"
 )
 
 // prop value enum
@@ -303,23 +321,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cloud_target
 	// CloudTarget
 	// owner
 	// Owner
 	// fabricpool
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CloudTargetOwnerFabricpool captures enum value "fabricpool"
 	CloudTargetOwnerFabricpool string = "fabricpool"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cloud_target
 	// CloudTarget
 	// owner
 	// Owner
 	// snapmirror
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CloudTargetOwnerSnapmirror captures enum value "snapmirror"
 	CloudTargetOwnerSnapmirror string = "snapmirror"
 )
@@ -371,23 +389,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cloud_target
 	// CloudTarget
 	// server_side_encryption
 	// ServerSideEncryption
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CloudTargetServerSideEncryptionNone captures enum value "none"
 	CloudTargetServerSideEncryptionNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cloud_target
 	// CloudTarget
 	// server_side_encryption
 	// ServerSideEncryption
 	// sse_s3
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CloudTargetServerSideEncryptionSseS3 captures enum value "sse_s3"
 	CloudTargetServerSideEncryptionSseS3 string = "sse_s3"
 )
@@ -427,23 +445,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cloud_target
 	// CloudTarget
 	// snapmirror_use
 	// SnapmirrorUse
 	// data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CloudTargetSnapmirrorUseData captures enum value "data"
 	CloudTargetSnapmirrorUseData string = "data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cloud_target
 	// CloudTarget
 	// snapmirror_use
 	// SnapmirrorUse
 	// metadata
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CloudTargetSnapmirrorUseMetadata captures enum value "metadata"
 	CloudTargetSnapmirrorUseMetadata string = "metadata"
 )
@@ -481,6 +499,62 @@ func (m *CloudTarget) validateSvm(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var cloudTargetTypeURLStylePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["path_style","virtual_hosted_style"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cloudTargetTypeURLStylePropEnum = append(cloudTargetTypeURLStylePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cloud_target
+	// CloudTarget
+	// url_style
+	// URLStyle
+	// path_style
+	// END DEBUGGING
+	// CloudTargetURLStylePathStyle captures enum value "path_style"
+	CloudTargetURLStylePathStyle string = "path_style"
+
+	// BEGIN DEBUGGING
+	// cloud_target
+	// CloudTarget
+	// url_style
+	// URLStyle
+	// virtual_hosted_style
+	// END DEBUGGING
+	// CloudTargetURLStyleVirtualHostedStyle captures enum value "virtual_hosted_style"
+	CloudTargetURLStyleVirtualHostedStyle string = "virtual_hosted_style"
+)
+
+// prop value enum
+func (m *CloudTarget) validateURLStyleEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cloudTargetTypeURLStylePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CloudTarget) validateURLStyle(formats strfmt.Registry) error {
+	if swag.IsZero(m.URLStyle) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateURLStyleEnum("url_style", "body", m.URLStyle); err != nil {
+		return err
 	}
 
 	return nil
@@ -1099,5 +1173,3 @@ func (m *CloudTargetSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

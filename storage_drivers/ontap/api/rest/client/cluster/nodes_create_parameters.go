@@ -78,13 +78,13 @@ type NodesCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,15 +106,15 @@ func (o *NodesCreateParams) SetDefaults() {
 	var (
 		createRecommendedAggregatesQueryParameterDefault = bool(false)
 
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := NodesCreateParams{
 		CreateRecommendedAggregatesQueryParameter: &createRecommendedAggregatesQueryParameterDefault,
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter:               &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter:               &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -178,26 +178,26 @@ func (o *NodesCreateParams) SetInfo(info *models.Node) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the nodes create params
-func (o *NodesCreateParams) WithReturnRecords(returnRecords *bool) *NodesCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the nodes create params
+func (o *NodesCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NodesCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the nodes create params
-func (o *NodesCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the nodes create params
+func (o *NodesCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the nodes create params
-func (o *NodesCreateParams) WithReturnTimeout(returnTimeout *int64) *NodesCreateParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the nodes create params
+func (o *NodesCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NodesCreateParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the nodes create params
-func (o *NodesCreateParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the nodes create params
+func (o *NodesCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -230,13 +230,13 @@ func (o *NodesCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -247,13 +247,13 @@ func (o *NodesCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

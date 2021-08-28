@@ -73,23 +73,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// fpolicy_engine
 	// FpolicyEngine
 	// type
 	// Type
 	// synchronous
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FpolicyEngineTypeSynchronous captures enum value "synchronous"
 	FpolicyEngineTypeSynchronous string = "synchronous"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// fpolicy_engine
 	// FpolicyEngine
 	// type
 	// Type
 	// asynchronous
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FpolicyEngineTypeAsynchronous captures enum value "asynchronous"
 	FpolicyEngineTypeAsynchronous string = "asynchronous"
 )
@@ -137,5 +137,3 @@ func (m *FpolicyEngine) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

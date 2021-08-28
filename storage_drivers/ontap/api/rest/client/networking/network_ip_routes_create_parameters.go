@@ -72,7 +72,7 @@ type NetworkIPRoutesCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -92,11 +92,11 @@ func (o *NetworkIPRoutesCreateParams) WithDefaults() *NetworkIPRoutesCreateParam
 // All values with no default are reset to their zero value.
 func (o *NetworkIPRoutesCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := NetworkIPRoutesCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -149,15 +149,15 @@ func (o *NetworkIPRoutesCreateParams) SetInfo(info *models.NetworkRoute) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the network ip routes create params
-func (o *NetworkIPRoutesCreateParams) WithReturnRecords(returnRecords *bool) *NetworkIPRoutesCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the network ip routes create params
+func (o *NetworkIPRoutesCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetworkIPRoutesCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the network ip routes create params
-func (o *NetworkIPRoutesCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the network ip routes create params
+func (o *NetworkIPRoutesCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -173,13 +173,13 @@ func (o *NetworkIPRoutesCreateParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

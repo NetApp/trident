@@ -73,7 +73,7 @@ type FcInterfaceCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -93,11 +93,11 @@ func (o *FcInterfaceCreateParams) WithDefaults() *FcInterfaceCreateParams {
 // All values with no default are reset to their zero value.
 func (o *FcInterfaceCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := FcInterfaceCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -150,15 +150,15 @@ func (o *FcInterfaceCreateParams) SetInfo(info *models.FcInterface) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the fc interface create params
-func (o *FcInterfaceCreateParams) WithReturnRecords(returnRecords *bool) *FcInterfaceCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the fc interface create params
+func (o *FcInterfaceCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FcInterfaceCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the fc interface create params
-func (o *FcInterfaceCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the fc interface create params
+func (o *FcInterfaceCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -174,13 +174,13 @@ func (o *FcInterfaceCreateParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

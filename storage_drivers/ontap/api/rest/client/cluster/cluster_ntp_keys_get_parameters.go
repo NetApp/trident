@@ -64,7 +64,7 @@ type ClusterNtpKeysGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* ID.
 
@@ -125,15 +125,15 @@ func (o *ClusterNtpKeysGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the cluster ntp keys get params
-func (o *ClusterNtpKeysGetParams) WithFields(fields []string) *ClusterNtpKeysGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the cluster ntp keys get params
+func (o *ClusterNtpKeysGetParams) WithFieldsQueryParameter(fields []string) *ClusterNtpKeysGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the cluster ntp keys get params
-func (o *ClusterNtpKeysGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the cluster ntp keys get params
+func (o *ClusterNtpKeysGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIDPathParameter adds the id to the cluster ntp keys get params
@@ -155,7 +155,7 @@ func (o *ClusterNtpKeysGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *ClusterNtpKeysGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 // bindParamClusterNtpKeysGet binds the parameter fields
 func (o *ClusterNtpKeysGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

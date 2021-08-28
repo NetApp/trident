@@ -64,7 +64,7 @@ type SecurityKeyManagerGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *SecurityKeyManagerGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the security key manager get params
-func (o *SecurityKeyManagerGetParams) WithFields(fields []string) *SecurityKeyManagerGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the security key manager get params
+func (o *SecurityKeyManagerGetParams) WithFieldsQueryParameter(fields []string) *SecurityKeyManagerGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the security key manager get params
-func (o *SecurityKeyManagerGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the security key manager get params
+func (o *SecurityKeyManagerGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the security key manager get params
@@ -155,7 +155,7 @@ func (o *SecurityKeyManagerGetParams) WriteToRequest(r runtime.ClientRequest, re
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *SecurityKeyManagerGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamSecurityKeyManagerGet binds the parameter fields
 func (o *SecurityKeyManagerGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

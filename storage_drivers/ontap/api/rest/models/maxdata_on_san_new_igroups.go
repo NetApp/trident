@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -19,6 +20,15 @@ import (
 //
 // swagger:model maxdata_on_san_new_igroups
 type MaxdataOnSanNewIgroups struct {
+
+	// A comment available for use by the administrator.
+	Comment string `json:"comment,omitempty"`
+
+	// igroups
+	Igroups []*MaxdataOnSanNewIgroupsIgroupsItems0 `json:"igroups,omitempty"`
+
+	// initiator objects
+	InitiatorObjects []*MaxdataOnSanNewIgroupsInitiatorObjectsItems0 `json:"initiator_objects,omitempty"`
 
 	// initiators
 	Initiators []string `json:"initiators,omitempty"`
@@ -42,6 +52,14 @@ type MaxdataOnSanNewIgroups struct {
 func (m *MaxdataOnSanNewIgroups) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateIgroups(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateInitiatorObjects(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
 	}
@@ -57,6 +75,54 @@ func (m *MaxdataOnSanNewIgroups) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *MaxdataOnSanNewIgroups) validateIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.Igroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Igroups); i++ {
+		if swag.IsZero(m.Igroups[i]) { // not required
+			continue
+		}
+
+		if m.Igroups[i] != nil {
+			if err := m.Igroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *MaxdataOnSanNewIgroups) validateInitiatorObjects(formats strfmt.Registry) error {
+	if swag.IsZero(m.InitiatorObjects) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.InitiatorObjects); i++ {
+		if swag.IsZero(m.InitiatorObjects[i]) { // not required
+			continue
+		}
+
+		if m.InitiatorObjects[i] != nil {
+			if err := m.InitiatorObjects[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("initiator_objects" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -91,103 +157,103 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_new_igroups
 	// MaxdataOnSanNewIgroups
 	// os_type
 	// OsType
 	// aix
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanNewIgroupsOsTypeAix captures enum value "aix"
 	MaxdataOnSanNewIgroupsOsTypeAix string = "aix"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_new_igroups
 	// MaxdataOnSanNewIgroups
 	// os_type
 	// OsType
 	// hpux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanNewIgroupsOsTypeHpux captures enum value "hpux"
 	MaxdataOnSanNewIgroupsOsTypeHpux string = "hpux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_new_igroups
 	// MaxdataOnSanNewIgroups
 	// os_type
 	// OsType
 	// hyper_v
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanNewIgroupsOsTypeHyperv captures enum value "hyper_v"
 	MaxdataOnSanNewIgroupsOsTypeHyperv string = "hyper_v"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_new_igroups
 	// MaxdataOnSanNewIgroups
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanNewIgroupsOsTypeLinux captures enum value "linux"
 	MaxdataOnSanNewIgroupsOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_new_igroups
 	// MaxdataOnSanNewIgroups
 	// os_type
 	// OsType
 	// netware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanNewIgroupsOsTypeNetware captures enum value "netware"
 	MaxdataOnSanNewIgroupsOsTypeNetware string = "netware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_new_igroups
 	// MaxdataOnSanNewIgroups
 	// os_type
 	// OsType
 	// openvms
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanNewIgroupsOsTypeOpenvms captures enum value "openvms"
 	MaxdataOnSanNewIgroupsOsTypeOpenvms string = "openvms"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_new_igroups
 	// MaxdataOnSanNewIgroups
 	// os_type
 	// OsType
 	// solaris
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanNewIgroupsOsTypeSolaris captures enum value "solaris"
 	MaxdataOnSanNewIgroupsOsTypeSolaris string = "solaris"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_new_igroups
 	// MaxdataOnSanNewIgroups
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanNewIgroupsOsTypeVmware captures enum value "vmware"
 	MaxdataOnSanNewIgroupsOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_new_igroups
 	// MaxdataOnSanNewIgroups
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanNewIgroupsOsTypeWindows captures enum value "windows"
 	MaxdataOnSanNewIgroupsOsTypeWindows string = "windows"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_new_igroups
 	// MaxdataOnSanNewIgroups
 	// os_type
 	// OsType
 	// xen
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanNewIgroupsOsTypeXen captures enum value "xen"
 	MaxdataOnSanNewIgroupsOsTypeXen string = "xen"
 )
@@ -227,23 +293,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_new_igroups
 	// MaxdataOnSanNewIgroups
 	// protocol
 	// Protocol
 	// fcp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanNewIgroupsProtocolFcp captures enum value "fcp"
 	MaxdataOnSanNewIgroupsProtocolFcp string = "fcp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// maxdata_on_san_new_igroups
 	// MaxdataOnSanNewIgroups
 	// protocol
 	// Protocol
 	// iscsi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MaxdataOnSanNewIgroupsProtocolIscsi captures enum value "iscsi"
 	MaxdataOnSanNewIgroupsProtocolIscsi string = "iscsi"
 )
@@ -269,8 +335,57 @@ func (m *MaxdataOnSanNewIgroups) validateProtocol(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validates this maxdata on san new igroups based on context it is used
+// ContextValidate validate this maxdata on san new igroups based on the context it is used
 func (m *MaxdataOnSanNewIgroups) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIgroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInitiatorObjects(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MaxdataOnSanNewIgroups) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Igroups); i++ {
+
+		if m.Igroups[i] != nil {
+			if err := m.Igroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *MaxdataOnSanNewIgroups) contextValidateInitiatorObjects(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.InitiatorObjects); i++ {
+
+		if m.InitiatorObjects[i] != nil {
+			if err := m.InitiatorObjects[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("initiator_objects" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -292,4 +407,82 @@ func (m *MaxdataOnSanNewIgroups) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HELLO RIPPY
+// MaxdataOnSanNewIgroupsIgroupsItems0 maxdata on san new igroups igroups items0
+//
+// swagger:model MaxdataOnSanNewIgroupsIgroupsItems0
+type MaxdataOnSanNewIgroupsIgroupsItems0 struct {
+
+	// The name of an igroup to nest within a parent igroup. Mutually exclusive with initiators and initiator_objects.
+	Name string `json:"name,omitempty"`
+
+	// The UUID of an igroup to nest within a parent igroup Usage: &lt;UUID&gt;
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this maxdata on san new igroups igroups items0
+func (m *MaxdataOnSanNewIgroupsIgroupsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this maxdata on san new igroups igroups items0 based on context it is used
+func (m *MaxdataOnSanNewIgroupsIgroupsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MaxdataOnSanNewIgroupsIgroupsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MaxdataOnSanNewIgroupsIgroupsItems0) UnmarshalBinary(b []byte) error {
+	var res MaxdataOnSanNewIgroupsIgroupsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MaxdataOnSanNewIgroupsInitiatorObjectsItems0 maxdata on san new igroups initiator objects items0
+//
+// swagger:model MaxdataOnSanNewIgroupsInitiatorObjectsItems0
+type MaxdataOnSanNewIgroupsInitiatorObjectsItems0 struct {
+
+	// A comment available for use by the administrator.
+	Comment string `json:"comment,omitempty"`
+
+	// The WWPN, IQN, or Alias of the initiator. Mutually exclusive with nested igroups and the initiators array.
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this maxdata on san new igroups initiator objects items0
+func (m *MaxdataOnSanNewIgroupsInitiatorObjectsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this maxdata on san new igroups initiator objects items0 based on context it is used
+func (m *MaxdataOnSanNewIgroupsInitiatorObjectsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MaxdataOnSanNewIgroupsInitiatorObjectsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MaxdataOnSanNewIgroupsInitiatorObjectsItems0) UnmarshalBinary(b []byte) error {
+	var res MaxdataOnSanNewIgroupsInitiatorObjectsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

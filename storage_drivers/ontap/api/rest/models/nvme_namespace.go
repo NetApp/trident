@@ -30,7 +30,7 @@ type NvmeNamespace struct {
 	// This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
 	// When set to _true_, the NVMe namespace becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the namespace is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new NVMe namespace is _false_.<br/>
-	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
@@ -44,7 +44,7 @@ type NvmeNamespace struct {
 	Comment *string `json:"comment,omitempty"`
 
 	// The time the NVMe namespace was created.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -56,6 +56,9 @@ type NvmeNamespace struct {
 
 	// location
 	Location *NvmeNamespaceLocation `json:"location,omitempty"`
+
+	// metric
+	Metric *NvmeNamespaceMetric `json:"metric,omitempty"`
 
 	// The fully qualified path name of the NVMe namespace composed of a "/vol" prefix, the volume name, the (optional) qtree name and base name of the namespace. Valid in POST.<br/>
 	// NVMe namespaces do not support rename, or movement between volumes.
@@ -71,6 +74,9 @@ type NvmeNamespace struct {
 
 	// space
 	Space *NvmeNamespaceSpace `json:"space,omitempty"`
+
+	// statistics
+	Statistics *NvmeNamespaceStatistics `json:"statistics,omitempty"`
 
 	// status
 	Status *NvmeNamespaceStatus `json:"status,omitempty"`
@@ -112,11 +118,19 @@ func (m *NvmeNamespace) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateMetric(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateOsType(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateSpace(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatistics(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -217,6 +231,23 @@ func (m *NvmeNamespace) validateLocation(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *NvmeNamespace) validateMetric(formats strfmt.Registry) error {
+	if swag.IsZero(m.Metric) { // not required
+		return nil
+	}
+
+	if m.Metric != nil {
+		if err := m.Metric.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 var nvmeNamespaceTypeOsTypePropEnum []interface{}
 
 func init() {
@@ -231,33 +262,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nvme_namespace
 	// NvmeNamespace
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeNamespaceOsTypeLinux captures enum value "linux"
 	NvmeNamespaceOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nvme_namespace
 	// NvmeNamespace
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeNamespaceOsTypeVmware captures enum value "vmware"
 	NvmeNamespaceOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nvme_namespace
 	// NvmeNamespace
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeNamespaceOsTypeWindows captures enum value "windows"
 	NvmeNamespaceOsTypeWindows string = "windows"
 )
@@ -292,6 +323,23 @@ func (m *NvmeNamespace) validateSpace(formats strfmt.Registry) error {
 		if err := m.Space.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("space")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespace) validateStatistics(formats strfmt.Registry) error {
+	if swag.IsZero(m.Statistics) { // not required
+		return nil
+	}
+
+	if m.Statistics != nil {
+		if err := m.Statistics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
 			}
 			return err
 		}
@@ -375,7 +423,15 @@ func (m *NvmeNamespace) ContextValidate(ctx context.Context, formats strfmt.Regi
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateMetric(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSpace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatistics(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -461,12 +517,40 @@ func (m *NvmeNamespace) contextValidateLocation(ctx context.Context, formats str
 	return nil
 }
 
+func (m *NvmeNamespace) contextValidateMetric(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Metric != nil {
+		if err := m.Metric.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *NvmeNamespace) contextValidateSpace(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Space != nil {
 		if err := m.Space.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("space")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespace) contextValidateStatistics(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Statistics != nil {
+		if err := m.Statistics.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
 			}
 			return err
 		}
@@ -1291,6 +1375,787 @@ func (m *NvmeNamespaceLocationVolumeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// NvmeNamespaceMetric Performance numbers, such as IOPS latency and throughput
+//
+// swagger:model NvmeNamespaceMetric
+type NvmeNamespaceMetric struct {
+
+	// links
+	Links *NvmeNamespaceMetricLinks `json:"_links,omitempty"`
+
+	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
+	//
+	// Example: PT15S
+	// Read Only: true
+	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	Duration string `json:"duration,omitempty"`
+
+	// iops
+	Iops *NvmeNamespaceMetricIops `json:"iops,omitempty"`
+
+	// latency
+	Latency *NvmeNamespaceMetricLatency `json:"latency,omitempty"`
+
+	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	Status string `json:"status,omitempty"`
+
+	// throughput
+	Throughput *NvmeNamespaceMetricThroughput `json:"throughput,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this nvme namespace metric
+func (m *NvmeNamespaceMetric) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLatency(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughput(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nvmeNamespaceMetricTypeDurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeNamespaceMetricTypeDurationPropEnum = append(nvmeNamespaceMetricTypeDurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// duration
+	// Duration
+	// PT15S
+	// END DEBUGGING
+	// NvmeNamespaceMetricDurationPT15S captures enum value "PT15S"
+	NvmeNamespaceMetricDurationPT15S string = "PT15S"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// duration
+	// Duration
+	// PT4M
+	// END DEBUGGING
+	// NvmeNamespaceMetricDurationPT4M captures enum value "PT4M"
+	NvmeNamespaceMetricDurationPT4M string = "PT4M"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// duration
+	// Duration
+	// PT30M
+	// END DEBUGGING
+	// NvmeNamespaceMetricDurationPT30M captures enum value "PT30M"
+	NvmeNamespaceMetricDurationPT30M string = "PT30M"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// duration
+	// Duration
+	// PT2H
+	// END DEBUGGING
+	// NvmeNamespaceMetricDurationPT2H captures enum value "PT2H"
+	NvmeNamespaceMetricDurationPT2H string = "PT2H"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// duration
+	// Duration
+	// P1D
+	// END DEBUGGING
+	// NvmeNamespaceMetricDurationP1D captures enum value "P1D"
+	NvmeNamespaceMetricDurationP1D string = "P1D"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// duration
+	// Duration
+	// PT5M
+	// END DEBUGGING
+	// NvmeNamespaceMetricDurationPT5M captures enum value "PT5M"
+	NvmeNamespaceMetricDurationPT5M string = "PT5M"
+)
+
+// prop value enum
+func (m *NvmeNamespaceMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeNamespaceMetricTypeDurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) validateDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Duration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) validateIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.Iops) { // not required
+		return nil
+	}
+
+	if m.Iops != nil {
+		if err := m.Iops.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "iops")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) validateLatency(formats strfmt.Registry) error {
+	if swag.IsZero(m.Latency) { // not required
+		return nil
+	}
+
+	if m.Latency != nil {
+		if err := m.Latency.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "latency")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nvmeNamespaceMetricTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeNamespaceMetricTypeStatusPropEnum = append(nvmeNamespaceMetricTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// NvmeNamespaceMetricStatusOk captures enum value "ok"
+	NvmeNamespaceMetricStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// NvmeNamespaceMetricStatusError captures enum value "error"
+	NvmeNamespaceMetricStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// NvmeNamespaceMetricStatusPartialNoData captures enum value "partial_no_data"
+	NvmeNamespaceMetricStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// NvmeNamespaceMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	NvmeNamespaceMetricStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// NvmeNamespaceMetricStatusPartialOtherError captures enum value "partial_other_error"
+	NvmeNamespaceMetricStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// NvmeNamespaceMetricStatusNegativeDelta captures enum value "negative_delta"
+	NvmeNamespaceMetricStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// NvmeNamespaceMetricStatusNotFound captures enum value "not_found"
+	NvmeNamespaceMetricStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// NvmeNamespaceMetricStatusBackfilledData captures enum value "backfilled_data"
+	NvmeNamespaceMetricStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// NvmeNamespaceMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NvmeNamespaceMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// NvmeNamespaceMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NvmeNamespaceMetricStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceMetric
+	// NvmeNamespaceMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// NvmeNamespaceMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NvmeNamespaceMetricStatusPartialNoUUID string = "partial_no_uuid"
+)
+
+// prop value enum
+func (m *NvmeNamespaceMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeNamespaceMetricTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) validateThroughput(formats strfmt.Registry) error {
+	if swag.IsZero(m.Throughput) { // not required
+		return nil
+	}
+
+	if m.Throughput != nil {
+		if err := m.Throughput.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "throughput")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("metric"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme namespace metric based on the context it is used
+func (m *NvmeNamespaceMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDuration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIops(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLatency(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughput(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", string(m.Duration)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Iops != nil {
+		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "iops")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Latency != nil {
+		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "latency")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Throughput != nil {
+		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "throughput")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceMetric) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceMetric) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceMetric
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeNamespaceMetricIops The rate of I/O operations observed at the storage object.
+//
+// swagger:model NvmeNamespaceMetricIops
+type NvmeNamespaceMetricIops struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nvme namespace metric iops
+func (m *NvmeNamespaceMetricIops) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nvme namespace metric iops based on the context it is used
+func (m *NvmeNamespaceMetricIops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceMetricIops) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceMetricIops) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceMetricIops
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeNamespaceMetricLatency The round trip latency in microseconds observed at the storage object.
+//
+// swagger:model NvmeNamespaceMetricLatency
+type NvmeNamespaceMetricLatency struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nvme namespace metric latency
+func (m *NvmeNamespaceMetricLatency) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nvme namespace metric latency based on the context it is used
+func (m *NvmeNamespaceMetricLatency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceMetricLatency) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceMetricLatency) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceMetricLatency
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeNamespaceMetricLinks nvme namespace metric links
+//
+// swagger:model NvmeNamespaceMetricLinks
+type NvmeNamespaceMetricLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this nvme namespace metric links
+func (m *NvmeNamespaceMetricLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceMetricLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme namespace metric links based on the context it is used
+func (m *NvmeNamespaceMetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceMetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceMetricLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceMetricLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceMetricLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeNamespaceMetricThroughput The rate of throughput bytes per second observed at the storage object.
+//
+// swagger:model NvmeNamespaceMetricThroughput
+type NvmeNamespaceMetricThroughput struct {
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nvme namespace metric throughput
+func (m *NvmeNamespaceMetricThroughput) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nvme namespace metric throughput based on the context it is used
+func (m *NvmeNamespaceMetricThroughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceMetricThroughput) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceMetricThroughput) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceMetricThroughput
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NvmeNamespaceSpace The storage space related properties of the NVMe namespace.
 //
 //
@@ -1309,9 +2174,12 @@ type NvmeNamespaceSpace struct {
 
 	// The total provisioned size of the NVMe namespace.<br/>
 	// NVMe namespaces do not support resize.<br/>
+	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes in bytes. The maximum size is variable with respect to large NVMe namespace support in ONTAP. If large namespaces are supported, the maximum size is 128 TB (140737488355328 bytes) and if not supported, the maximum size is just under 16 TB (17557557870592 bytes). The minimum size supported is always 4096 bytes.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
 	//
 	// Example: 1073741824
+	// Maximum: 1.40737488355328e+14
+	// Minimum: 4096
 	Size int64 `json:"size,omitempty"`
 
 	// The amount of space consumed by the main data stream of the NVMe namespace.<br/>
@@ -1331,6 +2199,10 @@ func (m *NvmeNamespaceSpace) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateGuarantee(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSize(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1385,6 +2257,22 @@ func (m *NvmeNamespaceSpace) validateGuarantee(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceSpace) validateSize(formats strfmt.Registry) error {
+	if swag.IsZero(m.Size) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("space"+"."+"size", "body", m.Size, 4096, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("space"+"."+"size", "body", m.Size, 1.40737488355328e+14, false); err != nil {
+		return err
 	}
 
 	return nil
@@ -1527,6 +2415,539 @@ func (m *NvmeNamespaceSpaceGuarantee) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// NvmeNamespaceStatistics These are raw performance numbers, such as IOPS latency and throughput. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
+//
+// swagger:model NvmeNamespaceStatistics
+type NvmeNamespaceStatistics struct {
+
+	// iops raw
+	IopsRaw *NvmeNamespaceStatisticsIopsRaw `json:"iops_raw,omitempty"`
+
+	// latency raw
+	LatencyRaw *NvmeNamespaceStatisticsLatencyRaw `json:"latency_raw,omitempty"`
+
+	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	Status string `json:"status,omitempty"`
+
+	// throughput raw
+	ThroughputRaw *NvmeNamespaceStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this nvme namespace statistics
+func (m *NvmeNamespaceStatistics) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateIopsRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLatencyRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughputRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceStatistics) validateIopsRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.IopsRaw) { // not required
+		return nil
+	}
+
+	if m.IopsRaw != nil {
+		if err := m.IopsRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "iops_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceStatistics) validateLatencyRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.LatencyRaw) { // not required
+		return nil
+	}
+
+	if m.LatencyRaw != nil {
+		if err := m.LatencyRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "latency_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nvmeNamespaceStatisticsTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeNamespaceStatisticsTypeStatusPropEnum = append(nvmeNamespaceStatisticsTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceStatistics
+	// NvmeNamespaceStatistics
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// NvmeNamespaceStatisticsStatusOk captures enum value "ok"
+	NvmeNamespaceStatisticsStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceStatistics
+	// NvmeNamespaceStatistics
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// NvmeNamespaceStatisticsStatusError captures enum value "error"
+	NvmeNamespaceStatisticsStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceStatistics
+	// NvmeNamespaceStatistics
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// NvmeNamespaceStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	NvmeNamespaceStatisticsStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceStatistics
+	// NvmeNamespaceStatistics
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// NvmeNamespaceStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	NvmeNamespaceStatisticsStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceStatistics
+	// NvmeNamespaceStatistics
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// NvmeNamespaceStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	NvmeNamespaceStatisticsStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceStatistics
+	// NvmeNamespaceStatistics
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// NvmeNamespaceStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	NvmeNamespaceStatisticsStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceStatistics
+	// NvmeNamespaceStatistics
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// NvmeNamespaceStatisticsStatusNotFound captures enum value "not_found"
+	NvmeNamespaceStatisticsStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceStatistics
+	// NvmeNamespaceStatistics
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// NvmeNamespaceStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	NvmeNamespaceStatisticsStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceStatistics
+	// NvmeNamespaceStatistics
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// NvmeNamespaceStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NvmeNamespaceStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceStatistics
+	// NvmeNamespaceStatistics
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// NvmeNamespaceStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NvmeNamespaceStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// NvmeNamespaceStatistics
+	// NvmeNamespaceStatistics
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// NvmeNamespaceStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NvmeNamespaceStatisticsStatusPartialNoUUID string = "partial_no_uuid"
+)
+
+// prop value enum
+func (m *NvmeNamespaceStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeNamespaceStatisticsTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceStatistics) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceStatistics) validateThroughputRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.ThroughputRaw) { // not required
+		return nil
+	}
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceStatistics) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("statistics"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme namespace statistics based on the context it is used
+func (m *NvmeNamespaceStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLatencyRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughputRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IopsRaw != nil {
+		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "iops_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceStatistics) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.LatencyRaw != nil {
+		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "latency_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceStatistics) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceStatistics) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceStatistics
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeNamespaceStatisticsIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+//
+// swagger:model NvmeNamespaceStatisticsIopsRaw
+type NvmeNamespaceStatisticsIopsRaw struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nvme namespace statistics iops raw
+func (m *NvmeNamespaceStatisticsIopsRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nvme namespace statistics iops raw based on the context it is used
+func (m *NvmeNamespaceStatisticsIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceStatisticsIopsRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeNamespaceStatisticsLatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+//
+// swagger:model NvmeNamespaceStatisticsLatencyRaw
+type NvmeNamespaceStatisticsLatencyRaw struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nvme namespace statistics latency raw
+func (m *NvmeNamespaceStatisticsLatencyRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nvme namespace statistics latency raw based on the context it is used
+func (m *NvmeNamespaceStatisticsLatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceStatisticsLatencyRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceStatisticsLatencyRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceStatisticsLatencyRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeNamespaceStatisticsThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+//
+// swagger:model NvmeNamespaceStatisticsThroughputRaw
+type NvmeNamespaceStatisticsThroughputRaw struct {
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nvme namespace statistics throughput raw
+func (m *NvmeNamespaceStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nvme namespace statistics throughput raw based on the context it is used
+func (m *NvmeNamespaceStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceStatisticsThroughputRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NvmeNamespaceStatus Status information about the NVMe namespace.
 //
 //
@@ -1540,7 +2961,7 @@ type NvmeNamespaceStatus struct {
 	ContainerState string `json:"container_state,omitempty"`
 
 	// Reports if the NVMe namespace is mapped to an NVMe subsystem.<br/>
-	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+	// There is an added cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Read Only: true
 	Mapped *bool `json:"mapped,omitempty"`
@@ -1590,33 +3011,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeNamespaceStatus
 	// NvmeNamespaceStatus
 	// container_state
 	// ContainerState
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeNamespaceStatusContainerStateOnline captures enum value "online"
 	NvmeNamespaceStatusContainerStateOnline string = "online"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeNamespaceStatus
 	// NvmeNamespaceStatus
 	// container_state
 	// ContainerState
 	// aggregate_offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeNamespaceStatusContainerStateAggregateOffline captures enum value "aggregate_offline"
 	NvmeNamespaceStatusContainerStateAggregateOffline string = "aggregate_offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeNamespaceStatus
 	// NvmeNamespaceStatus
 	// container_state
 	// ContainerState
 	// volume_offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeNamespaceStatusContainerStateVolumeOffline captures enum value "volume_offline"
 	NvmeNamespaceStatusContainerStateVolumeOffline string = "volume_offline"
 )
@@ -1656,43 +3077,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeNamespaceStatus
 	// NvmeNamespaceStatus
 	// state
 	// State
 	// nvfail
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeNamespaceStatusStateNvfail captures enum value "nvfail"
 	NvmeNamespaceStatusStateNvfail string = "nvfail"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeNamespaceStatus
 	// NvmeNamespaceStatus
 	// state
 	// State
 	// offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeNamespaceStatusStateOffline captures enum value "offline"
 	NvmeNamespaceStatusStateOffline string = "offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeNamespaceStatus
 	// NvmeNamespaceStatus
 	// state
 	// State
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeNamespaceStatusStateOnline captures enum value "online"
 	NvmeNamespaceStatusStateOnline string = "online"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NvmeNamespaceStatus
 	// NvmeNamespaceStatus
 	// state
 	// State
 	// space_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeNamespaceStatusStateSpaceError captures enum value "space_error"
 	NvmeNamespaceStatusStateSpaceError string = "space_error"
 )
@@ -1799,7 +3220,7 @@ func (m *NvmeNamespaceStatus) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeNamespaceSubsystemMap The NVMe subsystem with which the NVMe namespace is associated. A namespace can be mapped to zero (0) or one (1) subsystems.<br/>
-// There is an added cost to retrieving property values for `subsystem_map`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+// There is an added cost to retrieving property values for `subsystem_map`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 //
 //
 // swagger:model NvmeNamespaceSubsystemMap
@@ -2439,5 +3860,3 @@ func (m *NvmeNamespaceSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

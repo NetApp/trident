@@ -307,7 +307,7 @@ type NodeResponseRecordsItems0 struct {
 	// The current or "wall clock" time of the node in ISO-8601 date, time, and time zone format.
 	// The ISO-8601 date and time are localized based on the ONTAP cluster's timezone setting.
 	//
-	// Example: 2019-04-17 15:49:26
+	// Example: 2019-04-17T11:49:26-04:00
 	// Read Only: true
 	// Format: date-time
 	Date *strfmt.DateTime `json:"date,omitempty"`
@@ -335,6 +335,12 @@ type NodeResponseRecordsItems0 struct {
 	// Enum: [available joining member]
 	Membership string `json:"membership,omitempty"`
 
+	// metric
+	Metric *NodeResponseRecordsItems0Metric `json:"metric,omitempty"`
+
+	// metrocluster
+	Metrocluster *NodeResponseRecordsItems0Metrocluster `json:"metrocluster,omitempty"`
+
 	// model
 	// Example: FAS3070
 	// Read Only: true
@@ -343,6 +349,13 @@ type NodeResponseRecordsItems0 struct {
 	// name
 	// Example: node-01
 	Name string `json:"name,omitempty"`
+
+	// nvram
+	Nvram *NodeResponseRecordsItems0Nvram `json:"nvram,omitempty"`
+
+	// Owner of the node.
+	// Example: Example Corp
+	Owner string `json:"owner,omitempty"`
 
 	// serial number
 	// Example: 4048820-60-9
@@ -365,8 +378,26 @@ type NodeResponseRecordsItems0 struct {
 	// Enum: [up booting down taken_over waiting_for_giveback degraded unknown]
 	State string `json:"state,omitempty"`
 
+	// statistics
+	Statistics *NodeResponseRecordsItems0Statistics `json:"statistics,omitempty"`
+
+	// The storage configuration in the system. Possible values:
+	// * <i>mixed_path</i>
+	// * <i>single_path</i>
+	// * <i>multi_path</i>
+	// * <i>quad_path</i>
+	// * <i>mixed_path_ha</i>
+	// * <i>single_path_ha</i>
+	// * <i>multi_path_ha</i>
+	// * <i>quad_path_ha</i>
+	// * <i>unknown</i>
+	//
+	// Read Only: true
+	// Enum: [unknown single_path multi_path mixed_path quad_path single_path_ha multi_path_ha mixed_path_ha quad_path_ha]
+	StorageConfiguration string `json:"storage_configuration,omitempty"`
+
 	// system id
-	// Example: 537035403
+	// Example: 0537035403
 	// Read Only: true
 	SystemID string `json:"system_id,omitempty"`
 
@@ -438,11 +469,31 @@ func (m *NodeResponseRecordsItems0) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateMetric(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMetrocluster(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNvram(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateServiceProcessor(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatistics(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageConfiguration(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -623,33 +674,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0
 	// NodeResponseRecordsItems0
 	// membership
 	// Membership
 	// available
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0MembershipAvailable captures enum value "available"
 	NodeResponseRecordsItems0MembershipAvailable string = "available"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0
 	// NodeResponseRecordsItems0
 	// membership
 	// Membership
 	// joining
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0MembershipJoining captures enum value "joining"
 	NodeResponseRecordsItems0MembershipJoining string = "joining"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0
 	// NodeResponseRecordsItems0
 	// membership
 	// Membership
 	// member
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0MembershipMember captures enum value "member"
 	NodeResponseRecordsItems0MembershipMember string = "member"
 )
@@ -670,6 +721,57 @@ func (m *NodeResponseRecordsItems0) validateMembership(formats strfmt.Registry) 
 	// value enum
 	if err := m.validateMembershipEnum("membership", "body", m.Membership); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0) validateMetric(formats strfmt.Registry) error {
+	if swag.IsZero(m.Metric) { // not required
+		return nil
+	}
+
+	if m.Metric != nil {
+		if err := m.Metric.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0) validateMetrocluster(formats strfmt.Registry) error {
+	if swag.IsZero(m.Metrocluster) { // not required
+		return nil
+	}
+
+	if m.Metrocluster != nil {
+		if err := m.Metrocluster.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metrocluster")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0) validateNvram(formats strfmt.Registry) error {
+	if swag.IsZero(m.Nvram) { // not required
+		return nil
+	}
+
+	if m.Nvram != nil {
+		if err := m.Nvram.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nvram")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -706,73 +808,73 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0
 	// NodeResponseRecordsItems0
 	// state
 	// State
 	// up
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0StateUp captures enum value "up"
 	NodeResponseRecordsItems0StateUp string = "up"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0
 	// NodeResponseRecordsItems0
 	// state
 	// State
 	// booting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0StateBooting captures enum value "booting"
 	NodeResponseRecordsItems0StateBooting string = "booting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0
 	// NodeResponseRecordsItems0
 	// state
 	// State
 	// down
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0StateDown captures enum value "down"
 	NodeResponseRecordsItems0StateDown string = "down"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0
 	// NodeResponseRecordsItems0
 	// state
 	// State
 	// taken_over
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0StateTakenOver captures enum value "taken_over"
 	NodeResponseRecordsItems0StateTakenOver string = "taken_over"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0
 	// NodeResponseRecordsItems0
 	// state
 	// State
 	// waiting_for_giveback
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0StateWaitingForGiveback captures enum value "waiting_for_giveback"
 	NodeResponseRecordsItems0StateWaitingForGiveback string = "waiting_for_giveback"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0
 	// NodeResponseRecordsItems0
 	// state
 	// State
 	// degraded
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0StateDegraded captures enum value "degraded"
 	NodeResponseRecordsItems0StateDegraded string = "degraded"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0
 	// NodeResponseRecordsItems0
 	// state
 	// State
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0StateUnknown captures enum value "unknown"
 	NodeResponseRecordsItems0StateUnknown string = "unknown"
 )
@@ -792,6 +894,149 @@ func (m *NodeResponseRecordsItems0) validateState(formats strfmt.Registry) error
 
 	// value enum
 	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0) validateStatistics(formats strfmt.Registry) error {
+	if swag.IsZero(m.Statistics) { // not required
+		return nil
+	}
+
+	if m.Statistics != nil {
+		if err := m.Statistics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nodeResponseRecordsItems0TypeStorageConfigurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["unknown","single_path","multi_path","mixed_path","quad_path","single_path_ha","multi_path_ha","mixed_path_ha","quad_path_ha"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeResponseRecordsItems0TypeStorageConfigurationPropEnum = append(nodeResponseRecordsItems0TypeStorageConfigurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0
+	// NodeResponseRecordsItems0
+	// storage_configuration
+	// StorageConfiguration
+	// unknown
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StorageConfigurationUnknown captures enum value "unknown"
+	NodeResponseRecordsItems0StorageConfigurationUnknown string = "unknown"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0
+	// NodeResponseRecordsItems0
+	// storage_configuration
+	// StorageConfiguration
+	// single_path
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StorageConfigurationSinglePath captures enum value "single_path"
+	NodeResponseRecordsItems0StorageConfigurationSinglePath string = "single_path"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0
+	// NodeResponseRecordsItems0
+	// storage_configuration
+	// StorageConfiguration
+	// multi_path
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StorageConfigurationMultiPath captures enum value "multi_path"
+	NodeResponseRecordsItems0StorageConfigurationMultiPath string = "multi_path"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0
+	// NodeResponseRecordsItems0
+	// storage_configuration
+	// StorageConfiguration
+	// mixed_path
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StorageConfigurationMixedPath captures enum value "mixed_path"
+	NodeResponseRecordsItems0StorageConfigurationMixedPath string = "mixed_path"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0
+	// NodeResponseRecordsItems0
+	// storage_configuration
+	// StorageConfiguration
+	// quad_path
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StorageConfigurationQuadPath captures enum value "quad_path"
+	NodeResponseRecordsItems0StorageConfigurationQuadPath string = "quad_path"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0
+	// NodeResponseRecordsItems0
+	// storage_configuration
+	// StorageConfiguration
+	// single_path_ha
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StorageConfigurationSinglePathHa captures enum value "single_path_ha"
+	NodeResponseRecordsItems0StorageConfigurationSinglePathHa string = "single_path_ha"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0
+	// NodeResponseRecordsItems0
+	// storage_configuration
+	// StorageConfiguration
+	// multi_path_ha
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StorageConfigurationMultiPathHa captures enum value "multi_path_ha"
+	NodeResponseRecordsItems0StorageConfigurationMultiPathHa string = "multi_path_ha"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0
+	// NodeResponseRecordsItems0
+	// storage_configuration
+	// StorageConfiguration
+	// mixed_path_ha
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StorageConfigurationMixedPathHa captures enum value "mixed_path_ha"
+	NodeResponseRecordsItems0StorageConfigurationMixedPathHa string = "mixed_path_ha"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0
+	// NodeResponseRecordsItems0
+	// storage_configuration
+	// StorageConfiguration
+	// quad_path_ha
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StorageConfigurationQuadPathHa captures enum value "quad_path_ha"
+	NodeResponseRecordsItems0StorageConfigurationQuadPathHa string = "quad_path_ha"
+)
+
+// prop value enum
+func (m *NodeResponseRecordsItems0) validateStorageConfigurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeResponseRecordsItems0TypeStorageConfigurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0) validateStorageConfiguration(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageConfiguration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStorageConfigurationEnum("storage_configuration", "body", m.StorageConfiguration); err != nil {
 		return err
 	}
 
@@ -884,7 +1129,19 @@ func (m *NodeResponseRecordsItems0) ContextValidate(ctx context.Context, formats
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateMetric(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMetrocluster(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateModel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNvram(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -897,6 +1154,14 @@ func (m *NodeResponseRecordsItems0) ContextValidate(ctx context.Context, formats
 	}
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatistics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStorageConfiguration(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1066,10 +1331,52 @@ func (m *NodeResponseRecordsItems0) contextValidateMembership(ctx context.Contex
 	return nil
 }
 
+func (m *NodeResponseRecordsItems0) contextValidateMetric(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Metric != nil {
+		if err := m.Metric.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0) contextValidateMetrocluster(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Metrocluster != nil {
+		if err := m.Metrocluster.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metrocluster")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *NodeResponseRecordsItems0) contextValidateModel(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "model", "body", string(m.Model)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0) contextValidateNvram(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Nvram != nil {
+		if err := m.Nvram.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nvram")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1101,6 +1408,29 @@ func (m *NodeResponseRecordsItems0) contextValidateServiceProcessor(ctx context.
 func (m *NodeResponseRecordsItems0) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0) contextValidateStatistics(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Statistics != nil {
+		if err := m.Statistics.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0) contextValidateStorageConfiguration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "storage_configuration", "body", string(m.StorageConfiguration)); err != nil {
 		return err
 	}
 
@@ -1593,12 +1923,31 @@ func (m *NodeResponseRecordsItems0ClusterInterfacesItems0Links) UnmarshalBinary(
 // swagger:model NodeResponseRecordsItems0Controller
 type NodeResponseRecordsItems0Controller struct {
 
+	// Type of the system board. This is defined by vendor.
+	// Example: System Board XXVIII
+	// Read Only: true
+	Board string `json:"board,omitempty"`
+
+	// cpu
+	CPU *NodeResponseRecordsItems0ControllerCPU `json:"cpu,omitempty"`
+
+	// failed fan
+	FailedFan *NodeResponseRecordsItems0ControllerFailedFan `json:"failed_fan,omitempty"`
+
+	// failed power supply
+	FailedPowerSupply *NodeResponseRecordsItems0ControllerFailedPowerSupply `json:"failed_power_supply,omitempty"`
+
 	// A list of Flash-Cache devices. Only returned when requested by name.
 	// Read Only: true
 	FlashCache []*NodeResponseRecordsItems0ControllerFlashCacheItems0 `json:"flash_cache,omitempty"`
 
 	// List of FRUs on the node. Only returned when requested by name.
 	Frus []*NodeResponseRecordsItems0ControllerFrusItems0 `json:"frus,omitempty"`
+
+	// Memory available on the node, in bytes.
+	// Example: 1024000000
+	// Read Only: true
+	MemorySize int64 `json:"memory_size,omitempty"`
 
 	// Specifies whether the hardware is currently operating outside of its recommended temperature range. The hardware shuts down if the temperature exceeds critical thresholds.
 	// Read Only: true
@@ -1609,6 +1958,18 @@ type NodeResponseRecordsItems0Controller struct {
 // Validate validates this node response records items0 controller
 func (m *NodeResponseRecordsItems0Controller) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateCPU(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFailedFan(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFailedPowerSupply(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateFlashCache(formats); err != nil {
 		res = append(res, err)
@@ -1625,6 +1986,57 @@ func (m *NodeResponseRecordsItems0Controller) Validate(formats strfmt.Registry) 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Controller) validateCPU(formats strfmt.Registry) error {
+	if swag.IsZero(m.CPU) { // not required
+		return nil
+	}
+
+	if m.CPU != nil {
+		if err := m.CPU.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "cpu")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Controller) validateFailedFan(formats strfmt.Registry) error {
+	if swag.IsZero(m.FailedFan) { // not required
+		return nil
+	}
+
+	if m.FailedFan != nil {
+		if err := m.FailedFan.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_fan")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Controller) validateFailedPowerSupply(formats strfmt.Registry) error {
+	if swag.IsZero(m.FailedPowerSupply) { // not required
+		return nil
+	}
+
+	if m.FailedPowerSupply != nil {
+		if err := m.FailedPowerSupply.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_power_supply")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -1690,23 +2102,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0Controller
 	// NodeResponseRecordsItems0Controller
 	// over_temperature
 	// OverTemperature
 	// over
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerOverTemperatureOver captures enum value "over"
 	NodeResponseRecordsItems0ControllerOverTemperatureOver string = "over"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0Controller
 	// NodeResponseRecordsItems0Controller
 	// over_temperature
 	// OverTemperature
 	// normal
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerOverTemperatureNormal captures enum value "normal"
 	NodeResponseRecordsItems0ControllerOverTemperatureNormal string = "normal"
 )
@@ -1736,11 +2148,31 @@ func (m *NodeResponseRecordsItems0Controller) validateOverTemperature(formats st
 func (m *NodeResponseRecordsItems0Controller) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateBoard(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCPU(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFailedFan(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFailedPowerSupply(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFlashCache(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateFrus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMemorySize(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1751,6 +2183,57 @@ func (m *NodeResponseRecordsItems0Controller) ContextValidate(ctx context.Contex
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Controller) contextValidateBoard(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"board", "body", string(m.Board)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Controller) contextValidateCPU(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.CPU != nil {
+		if err := m.CPU.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "cpu")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Controller) contextValidateFailedFan(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.FailedFan != nil {
+		if err := m.FailedFan.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_fan")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Controller) contextValidateFailedPowerSupply(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.FailedPowerSupply != nil {
+		if err := m.FailedPowerSupply.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_power_supply")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -1794,6 +2277,15 @@ func (m *NodeResponseRecordsItems0Controller) contextValidateFrus(ctx context.Co
 	return nil
 }
 
+func (m *NodeResponseRecordsItems0Controller) contextValidateMemorySize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"memory_size", "body", int64(m.MemorySize)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *NodeResponseRecordsItems0Controller) contextValidateOverTemperature(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "controller"+"."+"over_temperature", "body", string(m.OverTemperature)); err != nil {
@@ -1821,6 +2313,455 @@ func (m *NodeResponseRecordsItems0Controller) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// NodeResponseRecordsItems0ControllerCPU CPU information.
+//
+// swagger:model NodeResponseRecordsItems0ControllerCPU
+type NodeResponseRecordsItems0ControllerCPU struct {
+
+	// Number of CPUs on the node.
+	// Example: 20
+	// Read Only: true
+	Count int64 `json:"count,omitempty"`
+
+	// Firmware release number. Defined by the CPU manufacturer.
+	// Read Only: true
+	FirmwareRelease string `json:"firmware_release,omitempty"`
+
+	// CPU type on the node.
+	// Read Only: true
+	Processor string `json:"processor,omitempty"`
+}
+
+// Validate validates this node response records items0 controller CPU
+func (m *NodeResponseRecordsItems0ControllerCPU) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this node response records items0 controller CPU based on the context it is used
+func (m *NodeResponseRecordsItems0ControllerCPU) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFirmwareRelease(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProcessor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerCPU) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"cpu"+"."+"count", "body", int64(m.Count)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerCPU) contextValidateFirmwareRelease(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"cpu"+"."+"firmware_release", "body", string(m.FirmwareRelease)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerCPU) contextValidateProcessor(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"cpu"+"."+"processor", "body", string(m.Processor)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ControllerCPU) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ControllerCPU) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0ControllerCPU
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0ControllerFailedFan node response records items0 controller failed fan
+//
+// swagger:model NodeResponseRecordsItems0ControllerFailedFan
+type NodeResponseRecordsItems0ControllerFailedFan struct {
+
+	// Specifies a count of the number of chassis fans that are not operating within the recommended RPM range.
+	// Example: 1
+	// Read Only: true
+	Count int64 `json:"count,omitempty"`
+
+	// message
+	Message *NodeResponseRecordsItems0ControllerFailedFanMessage `json:"message,omitempty"`
+}
+
+// Validate validates this node response records items0 controller failed fan
+func (m *NodeResponseRecordsItems0ControllerFailedFan) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMessage(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerFailedFan) validateMessage(formats strfmt.Registry) error {
+	if swag.IsZero(m.Message) { // not required
+		return nil
+	}
+
+	if m.Message != nil {
+		if err := m.Message.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_fan" + "." + "message")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response records items0 controller failed fan based on the context it is used
+func (m *NodeResponseRecordsItems0ControllerFailedFan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerFailedFan) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_fan"+"."+"count", "body", int64(m.Count)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerFailedFan) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Message != nil {
+		if err := m.Message.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_fan" + "." + "message")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ControllerFailedFan) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ControllerFailedFan) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0ControllerFailedFan
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0ControllerFailedFanMessage node response records items0 controller failed fan message
+//
+// swagger:model NodeResponseRecordsItems0ControllerFailedFanMessage
+type NodeResponseRecordsItems0ControllerFailedFanMessage struct {
+
+	// Error code describing the current condition of chassis fans.
+	// Example: 111411207
+	// Read Only: true
+	Code string `json:"code,omitempty"`
+
+	// Message describing the current condition of chassis fans. It is only of use when `failed_fan.count` is not zero.
+	// Example: There are no failed fans.
+	// Read Only: true
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this node response records items0 controller failed fan message
+func (m *NodeResponseRecordsItems0ControllerFailedFanMessage) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this node response records items0 controller failed fan message based on the context it is used
+func (m *NodeResponseRecordsItems0ControllerFailedFanMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerFailedFanMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_fan"+"."+"message"+"."+"code", "body", string(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerFailedFanMessage) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_fan"+"."+"message"+"."+"message", "body", string(m.Message)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ControllerFailedFanMessage) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ControllerFailedFanMessage) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0ControllerFailedFanMessage
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0ControllerFailedPowerSupply node response records items0 controller failed power supply
+//
+// swagger:model NodeResponseRecordsItems0ControllerFailedPowerSupply
+type NodeResponseRecordsItems0ControllerFailedPowerSupply struct {
+
+	// Number of failed power supply units.
+	// Example: 1
+	// Read Only: true
+	Count int64 `json:"count,omitempty"`
+
+	// message
+	Message *NodeResponseRecordsItems0ControllerFailedPowerSupplyMessage `json:"message,omitempty"`
+}
+
+// Validate validates this node response records items0 controller failed power supply
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupply) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMessage(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupply) validateMessage(formats strfmt.Registry) error {
+	if swag.IsZero(m.Message) { // not required
+		return nil
+	}
+
+	if m.Message != nil {
+		if err := m.Message.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_power_supply" + "." + "message")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response records items0 controller failed power supply based on the context it is used
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupply) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupply) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_power_supply"+"."+"count", "body", int64(m.Count)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupply) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Message != nil {
+		if err := m.Message.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("controller" + "." + "failed_power_supply" + "." + "message")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupply) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupply) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0ControllerFailedPowerSupply
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0ControllerFailedPowerSupplyMessage node response records items0 controller failed power supply message
+//
+// swagger:model NodeResponseRecordsItems0ControllerFailedPowerSupplyMessage
+type NodeResponseRecordsItems0ControllerFailedPowerSupplyMessage struct {
+
+	// Error code describing the current condition of power supply.
+	// Example: 111411208
+	// Read Only: true
+	Code string `json:"code,omitempty"`
+
+	// Message describing the state of any power supplies that are currently degraded. It is only of use when `failed_power_supply.count` is not zero.
+	// Example: There are no failed power supplies.
+	// Read Only: true
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this node response records items0 controller failed power supply message
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupplyMessage) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this node response records items0 controller failed power supply message based on the context it is used
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupplyMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupplyMessage) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_power_supply"+"."+"message"+"."+"code", "body", string(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupplyMessage) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "controller"+"."+"failed_power_supply"+"."+"message"+"."+"message", "body", string(m.Message)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupplyMessage) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ControllerFailedPowerSupplyMessage) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0ControllerFailedPowerSupplyMessage
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NodeResponseRecordsItems0ControllerFlashCacheItems0 node response records items0 controller flash cache items0
 //
 // swagger:model NodeResponseRecordsItems0ControllerFlashCacheItems0
@@ -1830,6 +2771,16 @@ type NodeResponseRecordsItems0ControllerFlashCacheItems0 struct {
 	// Example: 1024000000000
 	// Read Only: true
 	Capacity int64 `json:"capacity,omitempty"`
+
+	// device id
+	// Example: 0
+	// Read Only: true
+	DeviceID int64 `json:"device_id,omitempty"`
+
+	// firmware file
+	// Example: X9170_O000Z6300NVM
+	// Read Only: true
+	FirmwareFile string `json:"firmware_file,omitempty"`
 
 	// firmware version
 	// Example: NA05
@@ -1895,53 +2846,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0
 	// state
 	// State
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0StateOk captures enum value "ok"
 	NodeResponseRecordsItems0ControllerFlashCacheItems0StateOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0
 	// state
 	// State
 	// erasing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0StateErasing captures enum value "erasing"
 	NodeResponseRecordsItems0ControllerFlashCacheItems0StateErasing string = "erasing"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0
 	// state
 	// State
 	// erased
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0StateErased captures enum value "erased"
 	NodeResponseRecordsItems0ControllerFlashCacheItems0StateErased string = "erased"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0StateFailed captures enum value "failed"
 	NodeResponseRecordsItems0ControllerFlashCacheItems0StateFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0
 	// state
 	// State
 	// removed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFlashCacheItems0StateRemoved captures enum value "removed"
 	NodeResponseRecordsItems0ControllerFlashCacheItems0StateRemoved string = "removed"
 )
@@ -1972,6 +2923,14 @@ func (m *NodeResponseRecordsItems0ControllerFlashCacheItems0) ContextValidate(ct
 	var res []error
 
 	if err := m.contextValidateCapacity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFirmwareFile(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2012,6 +2971,24 @@ func (m *NodeResponseRecordsItems0ControllerFlashCacheItems0) ContextValidate(ct
 func (m *NodeResponseRecordsItems0ControllerFlashCacheItems0) contextValidateCapacity(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "capacity", "body", int64(m.Capacity)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerFlashCacheItems0) contextValidateDeviceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "device_id", "body", int64(m.DeviceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ControllerFlashCacheItems0) contextValidateFirmwareFile(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "firmware_file", "body", string(m.FirmwareFile)); err != nil {
 		return err
 	}
 
@@ -2106,7 +3083,7 @@ type NodeResponseRecordsItems0ControllerFrusItems0 struct {
 
 	// id
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 
 	// state
 	// Read Only: true
@@ -2151,23 +3128,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// state
 	// State
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0StateOk captures enum value "ok"
 	NodeResponseRecordsItems0ControllerFrusItems0StateOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// state
 	// State
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0StateError captures enum value "error"
 	NodeResponseRecordsItems0ControllerFrusItems0StateError string = "error"
 )
@@ -2207,73 +3184,73 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// type
 	// Type
 	// fan
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0TypeFan captures enum value "fan"
 	NodeResponseRecordsItems0ControllerFrusItems0TypeFan string = "fan"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// type
 	// Type
 	// psu
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0TypePsu captures enum value "psu"
 	NodeResponseRecordsItems0ControllerFrusItems0TypePsu string = "psu"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// type
 	// Type
 	// pcie
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0TypePcie captures enum value "pcie"
 	NodeResponseRecordsItems0ControllerFrusItems0TypePcie string = "pcie"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// type
 	// Type
 	// disk
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0TypeDisk captures enum value "disk"
 	NodeResponseRecordsItems0ControllerFrusItems0TypeDisk string = "disk"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// type
 	// Type
 	// nvs
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0TypeNvs captures enum value "nvs"
 	NodeResponseRecordsItems0ControllerFrusItems0TypeNvs string = "nvs"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// type
 	// Type
 	// dimm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0TypeDimm captures enum value "dimm"
 	NodeResponseRecordsItems0ControllerFrusItems0TypeDimm string = "dimm"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// NodeResponseRecordsItems0ControllerFrusItems0
 	// type
 	// Type
 	// controller
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ControllerFrusItems0TypeController captures enum value "controller"
 	NodeResponseRecordsItems0ControllerFrusItems0TypeController string = "controller"
 )
@@ -2323,7 +3300,7 @@ func (m *NodeResponseRecordsItems0ControllerFrusItems0) ContextValidate(ctx cont
 
 func (m *NodeResponseRecordsItems0ControllerFrusItems0) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
 		return err
 	}
 
@@ -2707,43 +3684,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaGiveback
 	// NodeResponseRecordsItems0HaGiveback
 	// state
 	// State
 	// nothing_to_giveback
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaGivebackStateNothingToGiveback captures enum value "nothing_to_giveback"
 	NodeResponseRecordsItems0HaGivebackStateNothingToGiveback string = "nothing_to_giveback"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaGiveback
 	// NodeResponseRecordsItems0HaGiveback
 	// state
 	// State
 	// not_attempted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaGivebackStateNotAttempted captures enum value "not_attempted"
 	NodeResponseRecordsItems0HaGivebackStateNotAttempted string = "not_attempted"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaGiveback
 	// NodeResponseRecordsItems0HaGiveback
 	// state
 	// State
 	// in_progress
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaGivebackStateInProgress captures enum value "in_progress"
 	NodeResponseRecordsItems0HaGivebackStateInProgress string = "in_progress"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaGiveback
 	// NodeResponseRecordsItems0HaGiveback
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaGivebackStateFailed captures enum value "failed"
 	NodeResponseRecordsItems0HaGivebackStateFailed string = "failed"
 )
@@ -3093,53 +4070,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaPortsItems0
 	// NodeResponseRecordsItems0HaPortsItems0
 	// state
 	// State
 	// down
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaPortsItems0StateDown captures enum value "down"
 	NodeResponseRecordsItems0HaPortsItems0StateDown string = "down"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaPortsItems0
 	// NodeResponseRecordsItems0HaPortsItems0
 	// state
 	// State
 	// initialized
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaPortsItems0StateInitialized captures enum value "initialized"
 	NodeResponseRecordsItems0HaPortsItems0StateInitialized string = "initialized"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaPortsItems0
 	// NodeResponseRecordsItems0HaPortsItems0
 	// state
 	// State
 	// armed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaPortsItems0StateArmed captures enum value "armed"
 	NodeResponseRecordsItems0HaPortsItems0StateArmed string = "armed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaPortsItems0
 	// NodeResponseRecordsItems0HaPortsItems0
 	// state
 	// State
 	// active
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaPortsItems0StateActive captures enum value "active"
 	NodeResponseRecordsItems0HaPortsItems0StateActive string = "active"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaPortsItems0
 	// NodeResponseRecordsItems0HaPortsItems0
 	// state
 	// State
 	// reserved
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaPortsItems0StateReserved captures enum value "reserved"
 	NodeResponseRecordsItems0HaPortsItems0StateReserved string = "reserved"
 )
@@ -3282,53 +4259,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaTakeover
 	// NodeResponseRecordsItems0HaTakeover
 	// state
 	// State
 	// not_possible
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaTakeoverStateNotPossible captures enum value "not_possible"
 	NodeResponseRecordsItems0HaTakeoverStateNotPossible string = "not_possible"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaTakeover
 	// NodeResponseRecordsItems0HaTakeover
 	// state
 	// State
 	// not_attempted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaTakeoverStateNotAttempted captures enum value "not_attempted"
 	NodeResponseRecordsItems0HaTakeoverStateNotAttempted string = "not_attempted"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaTakeover
 	// NodeResponseRecordsItems0HaTakeover
 	// state
 	// State
 	// in_takeover
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaTakeoverStateInTakeover captures enum value "in_takeover"
 	NodeResponseRecordsItems0HaTakeoverStateInTakeover string = "in_takeover"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaTakeover
 	// NodeResponseRecordsItems0HaTakeover
 	// state
 	// State
 	// in_progress
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaTakeoverStateInProgress captures enum value "in_progress"
 	NodeResponseRecordsItems0HaTakeoverStateInProgress string = "in_progress"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0HaTakeover
 	// NodeResponseRecordsItems0HaTakeover
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0HaTakeoverStateFailed captures enum value "failed"
 	NodeResponseRecordsItems0HaTakeoverStateFailed string = "failed"
 )
@@ -3923,6 +4900,908 @@ func (m *NodeResponseRecordsItems0ManagementInterfacesItems0Links) UnmarshalBina
 	return nil
 }
 
+// NodeResponseRecordsItems0Metric CPU performance for the nodes.
+//
+// swagger:model NodeResponseRecordsItems0Metric
+type NodeResponseRecordsItems0Metric struct {
+
+	// links
+	Links *NodeResponseRecordsItems0MetricLinks `json:"_links,omitempty"`
+
+	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
+	//
+	// Example: PT15S
+	// Enum: [PT15S PT5M PT30M PT2H P1D]
+	Duration string `json:"duration,omitempty"`
+
+	// Average CPU Utilization for the node
+	// Example: 13
+	ProcessorUtilization int64 `json:"processor_utilization,omitempty"`
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	Status string `json:"status,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this node response records items0 metric
+func (m *NodeResponseRecordsItems0Metric) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Metric) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nodeResponseRecordsItems0MetricTypeDurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["PT15S","PT5M","PT30M","PT2H","P1D"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeResponseRecordsItems0MetricTypeDurationPropEnum = append(nodeResponseRecordsItems0MetricTypeDurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// duration
+	// Duration
+	// PT15S
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricDurationPT15S captures enum value "PT15S"
+	NodeResponseRecordsItems0MetricDurationPT15S string = "PT15S"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// duration
+	// Duration
+	// PT5M
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricDurationPT5M captures enum value "PT5M"
+	NodeResponseRecordsItems0MetricDurationPT5M string = "PT5M"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// duration
+	// Duration
+	// PT30M
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricDurationPT30M captures enum value "PT30M"
+	NodeResponseRecordsItems0MetricDurationPT30M string = "PT30M"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// duration
+	// Duration
+	// PT2H
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricDurationPT2H captures enum value "PT2H"
+	NodeResponseRecordsItems0MetricDurationPT2H string = "PT2H"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// duration
+	// Duration
+	// P1D
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricDurationP1D captures enum value "P1D"
+	NodeResponseRecordsItems0MetricDurationP1D string = "P1D"
+)
+
+// prop value enum
+func (m *NodeResponseRecordsItems0Metric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeResponseRecordsItems0MetricTypeDurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Metric) validateDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Duration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var nodeResponseRecordsItems0MetricTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeResponseRecordsItems0MetricTypeStatusPropEnum = append(nodeResponseRecordsItems0MetricTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricStatusOk captures enum value "ok"
+	NodeResponseRecordsItems0MetricStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricStatusError captures enum value "error"
+	NodeResponseRecordsItems0MetricStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricStatusPartialNoData captures enum value "partial_no_data"
+	NodeResponseRecordsItems0MetricStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NodeResponseRecordsItems0MetricStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricStatusPartialNoResponse captures enum value "partial_no_response"
+	NodeResponseRecordsItems0MetricStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricStatusPartialOtherError captures enum value "partial_other_error"
+	NodeResponseRecordsItems0MetricStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricStatusNegativeDelta captures enum value "negative_delta"
+	NodeResponseRecordsItems0MetricStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricStatusBackfilledData captures enum value "backfilled_data"
+	NodeResponseRecordsItems0MetricStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NodeResponseRecordsItems0MetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metric
+	// NodeResponseRecordsItems0Metric
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NodeResponseRecordsItems0MetricStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *NodeResponseRecordsItems0Metric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeResponseRecordsItems0MetricTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Metric) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Metric) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("metric"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response records items0 metric based on the context it is used
+func (m *NodeResponseRecordsItems0Metric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Metric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0Metric) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0Metric) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0Metric
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0MetricLinks node response records items0 metric links
+//
+// swagger:model NodeResponseRecordsItems0MetricLinks
+type NodeResponseRecordsItems0MetricLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this node response records items0 metric links
+func (m *NodeResponseRecordsItems0MetricLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0MetricLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response records items0 metric links based on the context it is used
+func (m *NodeResponseRecordsItems0MetricLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0MetricLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0MetricLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0MetricLinks) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0MetricLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0Metrocluster Metrocluster
+//
+// swagger:model NodeResponseRecordsItems0Metrocluster
+type NodeResponseRecordsItems0Metrocluster struct {
+
+	// Indicates whether the MetroCluster over IP platform supports custom VLAN IDs.
+	// Read Only: true
+	CustomVlanCapable *bool `json:"custom_vlan_capable,omitempty"`
+
+	// MetroCluster over IP ports.
+	// Read Only: true
+	Ports []*NodeResponseRecordsItems0MetroclusterPortsItems0 `json:"ports,omitempty"`
+
+	// The Metrocluster configuration type
+	// Read Only: true
+	// Enum: [fc fc_2_node ip]
+	Type string `json:"type,omitempty"`
+}
+
+// Validate validates this node response records items0 metrocluster
+func (m *NodeResponseRecordsItems0Metrocluster) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePorts(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Metrocluster) validatePorts(formats strfmt.Registry) error {
+	if swag.IsZero(m.Ports) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Ports); i++ {
+		if swag.IsZero(m.Ports[i]) { // not required
+			continue
+		}
+
+		if m.Ports[i] != nil {
+			if err := m.Ports[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("metrocluster" + "." + "ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+var nodeResponseRecordsItems0MetroclusterTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["fc","fc_2_node","ip"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeResponseRecordsItems0MetroclusterTypeTypePropEnum = append(nodeResponseRecordsItems0MetroclusterTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metrocluster
+	// NodeResponseRecordsItems0Metrocluster
+	// type
+	// Type
+	// fc
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetroclusterTypeFc captures enum value "fc"
+	NodeResponseRecordsItems0MetroclusterTypeFc string = "fc"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metrocluster
+	// NodeResponseRecordsItems0Metrocluster
+	// type
+	// Type
+	// fc_2_node
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetroclusterTypeFc2Node captures enum value "fc_2_node"
+	NodeResponseRecordsItems0MetroclusterTypeFc2Node string = "fc_2_node"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Metrocluster
+	// NodeResponseRecordsItems0Metrocluster
+	// type
+	// Type
+	// ip
+	// END DEBUGGING
+	// NodeResponseRecordsItems0MetroclusterTypeIP captures enum value "ip"
+	NodeResponseRecordsItems0MetroclusterTypeIP string = "ip"
+)
+
+// prop value enum
+func (m *NodeResponseRecordsItems0Metrocluster) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeResponseRecordsItems0MetroclusterTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Metrocluster) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("metrocluster"+"."+"type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response records items0 metrocluster based on the context it is used
+func (m *NodeResponseRecordsItems0Metrocluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCustomVlanCapable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePorts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Metrocluster) contextValidateCustomVlanCapable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metrocluster"+"."+"custom_vlan_capable", "body", m.CustomVlanCapable); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Metrocluster) contextValidatePorts(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metrocluster"+"."+"ports", "body", []*NodeResponseRecordsItems0MetroclusterPortsItems0(m.Ports)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Ports); i++ {
+
+		if m.Ports[i] != nil {
+			if err := m.Ports[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("metrocluster" + "." + "ports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Metrocluster) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metrocluster"+"."+"type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0Metrocluster) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0Metrocluster) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0Metrocluster
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0MetroclusterPortsItems0 node response records items0 metrocluster ports items0
+//
+// swagger:model NodeResponseRecordsItems0MetroclusterPortsItems0
+type NodeResponseRecordsItems0MetroclusterPortsItems0 struct {
+
+	// name
+	// Example: e1b
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this node response records items0 metrocluster ports items0
+func (m *NodeResponseRecordsItems0MetroclusterPortsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this node response records items0 metrocluster ports items0 based on context it is used
+func (m *NodeResponseRecordsItems0MetroclusterPortsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0MetroclusterPortsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0MetroclusterPortsItems0) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0MetroclusterPortsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0Nvram node response records items0 nvram
+//
+// swagger:model NodeResponseRecordsItems0Nvram
+type NodeResponseRecordsItems0Nvram struct {
+
+	// Specifies status of the NVRAM battery. Possible values:
+	// * <i>battery_ok</i>
+	// * <i>battery_partially_discharged</i>
+	// * <i>battery_fully_discharged</i>
+	// * <i>battery_not_present</i>
+	// * <i>battery_near_end_of_life</i>
+	// * <i>battery_at_end_of_life</i>
+	// * <i>battery_unknown</i>
+	// * <i>battery_over_charged</i>
+	// * <i>battery_fully_charged</i>
+	//
+	// Read Only: true
+	// Enum: [battery_ok battery_partially_discharged battery_fully_discharged battery_not_present battery_near_end_of_life battery_at_end_of_life battery_unknown battery_over_charged battery_fully_charged]
+	BatteryState string `json:"battery_state,omitempty"`
+
+	// Vendor specific NVRAM ID of the node.
+	// Read Only: true
+	ID int64 `json:"id,omitempty"`
+}
+
+// Validate validates this node response records items0 nvram
+func (m *NodeResponseRecordsItems0Nvram) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBatteryState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nodeResponseRecordsItems0NvramTypeBatteryStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["battery_ok","battery_partially_discharged","battery_fully_discharged","battery_not_present","battery_near_end_of_life","battery_at_end_of_life","battery_unknown","battery_over_charged","battery_fully_charged"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeResponseRecordsItems0NvramTypeBatteryStatePropEnum = append(nodeResponseRecordsItems0NvramTypeBatteryStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Nvram
+	// NodeResponseRecordsItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_ok
+	// END DEBUGGING
+	// NodeResponseRecordsItems0NvramBatteryStateBatteryOk captures enum value "battery_ok"
+	NodeResponseRecordsItems0NvramBatteryStateBatteryOk string = "battery_ok"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Nvram
+	// NodeResponseRecordsItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_partially_discharged
+	// END DEBUGGING
+	// NodeResponseRecordsItems0NvramBatteryStateBatteryPartiallyDischarged captures enum value "battery_partially_discharged"
+	NodeResponseRecordsItems0NvramBatteryStateBatteryPartiallyDischarged string = "battery_partially_discharged"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Nvram
+	// NodeResponseRecordsItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_fully_discharged
+	// END DEBUGGING
+	// NodeResponseRecordsItems0NvramBatteryStateBatteryFullyDischarged captures enum value "battery_fully_discharged"
+	NodeResponseRecordsItems0NvramBatteryStateBatteryFullyDischarged string = "battery_fully_discharged"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Nvram
+	// NodeResponseRecordsItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_not_present
+	// END DEBUGGING
+	// NodeResponseRecordsItems0NvramBatteryStateBatteryNotPresent captures enum value "battery_not_present"
+	NodeResponseRecordsItems0NvramBatteryStateBatteryNotPresent string = "battery_not_present"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Nvram
+	// NodeResponseRecordsItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_near_end_of_life
+	// END DEBUGGING
+	// NodeResponseRecordsItems0NvramBatteryStateBatteryNearEndOfLife captures enum value "battery_near_end_of_life"
+	NodeResponseRecordsItems0NvramBatteryStateBatteryNearEndOfLife string = "battery_near_end_of_life"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Nvram
+	// NodeResponseRecordsItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_at_end_of_life
+	// END DEBUGGING
+	// NodeResponseRecordsItems0NvramBatteryStateBatteryAtEndOfLife captures enum value "battery_at_end_of_life"
+	NodeResponseRecordsItems0NvramBatteryStateBatteryAtEndOfLife string = "battery_at_end_of_life"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Nvram
+	// NodeResponseRecordsItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_unknown
+	// END DEBUGGING
+	// NodeResponseRecordsItems0NvramBatteryStateBatteryUnknown captures enum value "battery_unknown"
+	NodeResponseRecordsItems0NvramBatteryStateBatteryUnknown string = "battery_unknown"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Nvram
+	// NodeResponseRecordsItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_over_charged
+	// END DEBUGGING
+	// NodeResponseRecordsItems0NvramBatteryStateBatteryOverCharged captures enum value "battery_over_charged"
+	NodeResponseRecordsItems0NvramBatteryStateBatteryOverCharged string = "battery_over_charged"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Nvram
+	// NodeResponseRecordsItems0Nvram
+	// battery_state
+	// BatteryState
+	// battery_fully_charged
+	// END DEBUGGING
+	// NodeResponseRecordsItems0NvramBatteryStateBatteryFullyCharged captures enum value "battery_fully_charged"
+	NodeResponseRecordsItems0NvramBatteryStateBatteryFullyCharged string = "battery_fully_charged"
+)
+
+// prop value enum
+func (m *NodeResponseRecordsItems0Nvram) validateBatteryStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeResponseRecordsItems0NvramTypeBatteryStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Nvram) validateBatteryState(formats strfmt.Registry) error {
+	if swag.IsZero(m.BatteryState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateBatteryStateEnum("nvram"+"."+"battery_state", "body", m.BatteryState); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response records items0 nvram based on the context it is used
+func (m *NodeResponseRecordsItems0Nvram) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBatteryState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Nvram) contextValidateBatteryState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nvram"+"."+"battery_state", "body", string(m.BatteryState)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Nvram) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nvram"+"."+"id", "body", int64(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0Nvram) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0Nvram) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0Nvram
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NodeResponseRecordsItems0ServiceProcessor node response records items0 service processor
 //
 // swagger:model NodeResponseRecordsItems0ServiceProcessor
@@ -4030,43 +5909,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessor
 	// NodeResponseRecordsItems0ServiceProcessor
 	// link_status
 	// LinkStatus
 	// up
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessorLinkStatusUp captures enum value "up"
 	NodeResponseRecordsItems0ServiceProcessorLinkStatusUp string = "up"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessor
 	// NodeResponseRecordsItems0ServiceProcessor
 	// link_status
 	// LinkStatus
 	// down
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessorLinkStatusDown captures enum value "down"
 	NodeResponseRecordsItems0ServiceProcessorLinkStatusDown string = "down"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessor
 	// NodeResponseRecordsItems0ServiceProcessor
 	// link_status
 	// LinkStatus
 	// disabled
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessorLinkStatusDisabled captures enum value "disabled"
 	NodeResponseRecordsItems0ServiceProcessorLinkStatusDisabled string = "disabled"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessor
 	// NodeResponseRecordsItems0ServiceProcessor
 	// link_status
 	// LinkStatus
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessorLinkStatusUnknown captures enum value "unknown"
 	NodeResponseRecordsItems0ServiceProcessorLinkStatusUnknown string = "unknown"
 )
@@ -4106,83 +5985,83 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessor
 	// NodeResponseRecordsItems0ServiceProcessor
 	// state
 	// State
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessorStateOnline captures enum value "online"
 	NodeResponseRecordsItems0ServiceProcessorStateOnline string = "online"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessor
 	// NodeResponseRecordsItems0ServiceProcessor
 	// state
 	// State
 	// offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessorStateOffline captures enum value "offline"
 	NodeResponseRecordsItems0ServiceProcessorStateOffline string = "offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessor
 	// NodeResponseRecordsItems0ServiceProcessor
 	// state
 	// State
 	// degraded
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessorStateDegraded captures enum value "degraded"
 	NodeResponseRecordsItems0ServiceProcessorStateDegraded string = "degraded"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessor
 	// NodeResponseRecordsItems0ServiceProcessor
 	// state
 	// State
 	// rebooting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessorStateRebooting captures enum value "rebooting"
 	NodeResponseRecordsItems0ServiceProcessorStateRebooting string = "rebooting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessor
 	// NodeResponseRecordsItems0ServiceProcessor
 	// state
 	// State
 	// unknown
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessorStateUnknown captures enum value "unknown"
 	NodeResponseRecordsItems0ServiceProcessorStateUnknown string = "unknown"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessor
 	// NodeResponseRecordsItems0ServiceProcessor
 	// state
 	// State
 	// updating
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessorStateUpdating captures enum value "updating"
 	NodeResponseRecordsItems0ServiceProcessorStateUpdating string = "updating"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessor
 	// NodeResponseRecordsItems0ServiceProcessor
 	// state
 	// State
 	// node_offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessorStateNodeOffline captures enum value "node_offline"
 	NodeResponseRecordsItems0ServiceProcessorStateNodeOffline string = "node_offline"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessor
 	// NodeResponseRecordsItems0ServiceProcessor
 	// state
 	// State
 	// sp_daemon_offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0ServiceProcessorStateSpDaemonOffline captures enum value "sp_daemon_offline"
 	NodeResponseRecordsItems0ServiceProcessorStateSpDaemonOffline string = "sp_daemon_offline"
 )
@@ -4419,70 +6298,26 @@ func (m *NodeResponseRecordsItems0ServiceProcessorIPV4Interface) UnmarshalBinary
 // swagger:model NodeResponseRecordsItems0ServiceProcessorIPV6Interface
 type NodeResponseRecordsItems0ServiceProcessorIPV6Interface struct {
 
-	// IPv4 or IPv6 address
-	// Example: 10.10.10.7
+	// IPv6 address
+	// Example: fd20:8b1e:b255:5011:10:141:4:97
 	Address string `json:"address,omitempty"`
 
-	// The IPv4 or IPv6 address of the default router.
-	// Example: 10.1.1.1
+	// The IPv6 address of the default router.
+	// Example: fd20:8b1e:b255:5011:10::1
 	Gateway string `json:"gateway,omitempty"`
 
-	// netmask
-	Netmask IPNetmask `json:"netmask,omitempty"`
+	// The IPv6 netmask/prefix length. The default value is 64 with a valid range of 1 to 127.
+	// Example: 64
+	Netmask int64 `json:"netmask,omitempty"`
 }
 
 // Validate validates this node response records items0 service processor IP v6 interface
 func (m *NodeResponseRecordsItems0ServiceProcessorIPV6Interface) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateNetmask(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
-func (m *NodeResponseRecordsItems0ServiceProcessorIPV6Interface) validateNetmask(formats strfmt.Registry) error {
-	if swag.IsZero(m.Netmask) { // not required
-		return nil
-	}
-
-	if err := m.Netmask.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("service_processor" + "." + "ipv6_interface" + "." + "netmask")
-		}
-		return err
-	}
-
-	return nil
-}
-
-// ContextValidate validate this node response records items0 service processor IP v6 interface based on the context it is used
+// ContextValidate validates this node response records items0 service processor IP v6 interface based on context it is used
 func (m *NodeResponseRecordsItems0ServiceProcessorIPV6Interface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateNetmask(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *NodeResponseRecordsItems0ServiceProcessorIPV6Interface) contextValidateNetmask(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := m.Netmask.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("service_processor" + "." + "ipv6_interface" + "." + "netmask")
-		}
-		return err
-	}
-
 	return nil
 }
 
@@ -4497,6 +6332,219 @@ func (m *NodeResponseRecordsItems0ServiceProcessorIPV6Interface) MarshalBinary()
 // UnmarshalBinary interface implementation
 func (m *NodeResponseRecordsItems0ServiceProcessorIPV6Interface) UnmarshalBinary(b []byte) error {
 	var res NodeResponseRecordsItems0ServiceProcessorIPV6Interface
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0Statistics Raw CPU performance for the nodes.
+//
+// swagger:model NodeResponseRecordsItems0Statistics
+type NodeResponseRecordsItems0Statistics struct {
+
+	// Base counter for CPU Utilization.
+	// Example: 12345123
+	ProcessorUtilizationBase int64 `json:"processor_utilization_base,omitempty"`
+
+	// Raw CPU Utilization for the node. This should be divided by the processor_utilization_base to calculate the percentage CPU utilization for the node.
+	// Example: 13
+	ProcessorUtilizationRaw int64 `json:"processor_utilization_raw,omitempty"`
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	Status string `json:"status,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this node response records items0 statistics
+func (m *NodeResponseRecordsItems0Statistics) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nodeResponseRecordsItems0StatisticsTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeResponseRecordsItems0StatisticsTypeStatusPropEnum = append(nodeResponseRecordsItems0StatisticsTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Statistics
+	// NodeResponseRecordsItems0Statistics
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StatisticsStatusOk captures enum value "ok"
+	NodeResponseRecordsItems0StatisticsStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Statistics
+	// NodeResponseRecordsItems0Statistics
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StatisticsStatusError captures enum value "error"
+	NodeResponseRecordsItems0StatisticsStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Statistics
+	// NodeResponseRecordsItems0Statistics
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StatisticsStatusPartialNoData captures enum value "partial_no_data"
+	NodeResponseRecordsItems0StatisticsStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Statistics
+	// NodeResponseRecordsItems0Statistics
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	NodeResponseRecordsItems0StatisticsStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Statistics
+	// NodeResponseRecordsItems0Statistics
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	NodeResponseRecordsItems0StatisticsStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Statistics
+	// NodeResponseRecordsItems0Statistics
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	NodeResponseRecordsItems0StatisticsStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Statistics
+	// NodeResponseRecordsItems0Statistics
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StatisticsStatusNegativeDelta captures enum value "negative_delta"
+	NodeResponseRecordsItems0StatisticsStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Statistics
+	// NodeResponseRecordsItems0Statistics
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StatisticsStatusBackfilledData captures enum value "backfilled_data"
+	NodeResponseRecordsItems0StatisticsStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Statistics
+	// NodeResponseRecordsItems0Statistics
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NodeResponseRecordsItems0StatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0Statistics
+	// NodeResponseRecordsItems0Statistics
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// NodeResponseRecordsItems0StatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NodeResponseRecordsItems0StatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *NodeResponseRecordsItems0Statistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeResponseRecordsItems0StatisticsTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Statistics) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0Statistics) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("statistics"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this node response records items0 statistics based on context it is used
+func (m *NodeResponseRecordsItems0Statistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0Statistics) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0Statistics) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0Statistics
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4543,33 +6591,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0VM
 	// NodeResponseRecordsItems0VM
 	// provider_type
 	// ProviderType
 	// GoogleCloud
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0VMProviderTypeGoogleCloud captures enum value "GoogleCloud"
 	NodeResponseRecordsItems0VMProviderTypeGoogleCloud string = "GoogleCloud"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0VM
 	// NodeResponseRecordsItems0VM
 	// provider_type
 	// ProviderType
 	// AWS_S3
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0VMProviderTypeAWSS3 captures enum value "AWS_S3"
 	NodeResponseRecordsItems0VMProviderTypeAWSS3 string = "AWS_S3"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NodeResponseRecordsItems0VM
 	// NodeResponseRecordsItems0VM
 	// provider_type
 	// ProviderType
 	// Azure_Cloud
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NodeResponseRecordsItems0VMProviderTypeAzureCloud captures enum value "Azure_Cloud"
 	NodeResponseRecordsItems0VMProviderTypeAzureCloud string = "Azure_Cloud"
 )
@@ -4746,5 +6794,3 @@ func (m *NodeResponseRecordsItems0Version) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

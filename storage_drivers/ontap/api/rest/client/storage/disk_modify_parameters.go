@@ -15,6 +15,8 @@ import (
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
 // NewDiskModifyParams creates a new DiskModifyParams object,
@@ -62,21 +64,37 @@ type DiskModifyParams struct {
 
 	/* EncryptionOperation.
 
-	   Name of the operation to apply to encrypting disks.
+	     Name of the operation to apply to encrypting disks.
+	* rekey_data_default changes the data authentication key (AK) to the drive-unique Manufacture Secure ID (MSID) value. Allows the drive to be attached to other clusters. Disables data-at-rest protection without erasing the data.
+	* rekey_data_auto_id changes the data authentication key (AK) to an AK the cluster selects automatically. Enables data-at-rest protection.
+	* sanitize_disk cryptographically erases all user data from a spare or broken drive by altering the data encryption key. Resets the data AK to the drive-unique MSID value and disables data-at-rest protection. Used when a drive is being repurposed or returned.
+
 	*/
-	EncryptionOperationQueryParameter string
+	EncryptionOperationQueryParameter *string
+
+	/* Info.
+
+	   Information section for disk
+	*/
+	Info *models.Disk
 
 	/* Name.
 
 	   Disk name
 	*/
-	NameQueryParameter string
+	NameQueryParameter *string
+
+	/* Node.
+
+	   Node to assign disk
+	*/
+	NodeQueryParameter *string
 
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -96,11 +114,11 @@ func (o *DiskModifyParams) WithDefaults() *DiskModifyParams {
 // All values with no default are reset to their zero value.
 func (o *DiskModifyParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := DiskModifyParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -143,36 +161,58 @@ func (o *DiskModifyParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithEncryptionOperationQueryParameter adds the encryptionOperation to the disk modify params
-func (o *DiskModifyParams) WithEncryptionOperationQueryParameter(encryptionOperation string) *DiskModifyParams {
+func (o *DiskModifyParams) WithEncryptionOperationQueryParameter(encryptionOperation *string) *DiskModifyParams {
 	o.SetEncryptionOperationQueryParameter(encryptionOperation)
 	return o
 }
 
 // SetEncryptionOperationQueryParameter adds the encryptionOperation to the disk modify params
-func (o *DiskModifyParams) SetEncryptionOperationQueryParameter(encryptionOperation string) {
+func (o *DiskModifyParams) SetEncryptionOperationQueryParameter(encryptionOperation *string) {
 	o.EncryptionOperationQueryParameter = encryptionOperation
 }
 
+// WithInfo adds the info to the disk modify params
+func (o *DiskModifyParams) WithInfo(info *models.Disk) *DiskModifyParams {
+	o.SetInfo(info)
+	return o
+}
+
+// SetInfo adds the info to the disk modify params
+func (o *DiskModifyParams) SetInfo(info *models.Disk) {
+	o.Info = info
+}
+
 // WithNameQueryParameter adds the name to the disk modify params
-func (o *DiskModifyParams) WithNameQueryParameter(name string) *DiskModifyParams {
+func (o *DiskModifyParams) WithNameQueryParameter(name *string) *DiskModifyParams {
 	o.SetNameQueryParameter(name)
 	return o
 }
 
 // SetNameQueryParameter adds the name to the disk modify params
-func (o *DiskModifyParams) SetNameQueryParameter(name string) {
+func (o *DiskModifyParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithReturnRecords adds the returnRecords to the disk modify params
-func (o *DiskModifyParams) WithReturnRecords(returnRecords *bool) *DiskModifyParams {
-	o.SetReturnRecords(returnRecords)
+// WithNodeQueryParameter adds the node to the disk modify params
+func (o *DiskModifyParams) WithNodeQueryParameter(node *string) *DiskModifyParams {
+	o.SetNodeQueryParameter(node)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the disk modify params
-func (o *DiskModifyParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetNodeQueryParameter adds the node to the disk modify params
+func (o *DiskModifyParams) SetNodeQueryParameter(node *string) {
+	o.NodeQueryParameter = node
+}
+
+// WithReturnRecordsQueryParameter adds the returnRecords to the disk modify params
+func (o *DiskModifyParams) WithReturnRecordsQueryParameter(returnRecords *bool) *DiskModifyParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
+	return o
+}
+
+// SetReturnRecordsQueryParameter adds the returnRecords to the disk modify params
+func (o *DiskModifyParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -183,33 +223,69 @@ func (o *DiskModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	}
 	var res []error
 
-	// query param encryption_operation
-	qrEncryptionOperation := o.EncryptionOperationQueryParameter
-	qEncryptionOperation := qrEncryptionOperation
-	if qEncryptionOperation != "" {
+	if o.EncryptionOperationQueryParameter != nil {
 
-		if err := r.SetQueryParam("encryption_operation", qEncryptionOperation); err != nil {
+		// query param encryption_operation
+		var qrEncryptionOperation string
+
+		if o.EncryptionOperationQueryParameter != nil {
+			qrEncryptionOperation = *o.EncryptionOperationQueryParameter
+		}
+		qEncryptionOperation := qrEncryptionOperation
+		if qEncryptionOperation != "" {
+
+			if err := r.SetQueryParam("encryption_operation", qEncryptionOperation); err != nil {
+				return err
+			}
+		}
+	}
+	if o.Info != nil {
+		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
 		}
 	}
 
-	// query param name
-	qrName := o.NameQueryParameter
-	qName := qrName
-	if qName != "" {
+	if o.NameQueryParameter != nil {
 
-		if err := r.SetQueryParam("name", qName); err != nil {
-			return err
+		// query param name
+		var qrName string
+
+		if o.NameQueryParameter != nil {
+			qrName = *o.NameQueryParameter
+		}
+		qName := qrName
+		if qName != "" {
+
+			if err := r.SetQueryParam("name", qName); err != nil {
+				return err
+			}
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.NodeQueryParameter != nil {
+
+		// query param node
+		var qrNode string
+
+		if o.NodeQueryParameter != nil {
+			qrNode = *o.NodeQueryParameter
+		}
+		qNode := qrNode
+		if qNode != "" {
+
+			if err := r.SetQueryParam("node", qNode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

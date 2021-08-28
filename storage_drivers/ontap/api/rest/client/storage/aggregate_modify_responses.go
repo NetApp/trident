@@ -51,19 +51,19 @@ func NewAggregateModifyAccepted() *AggregateModifyAccepted {
 Accepted
 */
 type AggregateModifyAccepted struct {
-	Payload *models.JobLinkResponse
+	Payload *models.AggregatePatch
 }
 
 func (o *AggregateModifyAccepted) Error() string {
 	return fmt.Sprintf("[PATCH /storage/aggregates/{uuid}][%d] aggregateModifyAccepted  %+v", 202, o.Payload)
 }
-func (o *AggregateModifyAccepted) GetPayload() *models.JobLinkResponse {
+func (o *AggregateModifyAccepted) GetPayload() *models.AggregatePatch {
 	return o.Payload
 }
 
 func (o *AggregateModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.JobLinkResponse)
+	o.Payload = new(models.AggregatePatch)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -90,20 +90,21 @@ func NewAggregateModifyDefault(code int) *AggregateModifyDefault {
 | 786434 | Cannot connect to node where the aggregate resides. |
 | 786435 | Internal Error. Failed to create a communication handle. |
 | 786439 | An aggregate already uses the specified name. |
-| 786447 | Failed to modify aggregate. |
-| 786456 | Failed to add disks to aggregate. |
+| 786447 | Failed to modify the aggregate. |
+| 786456 | Failed to add disks to the aggregate. |
 | 786458 | Failed to rename aggregate. |
 | 786468 | VLDB is offline. |
 | 786472 | Node that hosts the aggregate is offline. |
 | 786479 | Cannot find node ID for the node. |
+| 786491 | Not enough spares on the node. |
 | 786730 | Internal Error |
 | 786771 | Aggregate does not exist. |
 | 786787 | Aggregate is not online. |
 | 786808 | Aggregate mirror failed. |
 | 786867 | Specified aggregate resides on the remote cluster. |
 | 786911 | Not every node in the cluster has the Data ONTAP version required for the feature. |
-| 786923 | This operation is disallowed during pre-commit phase of 7-mode to clustered Data ONTAP transition. |
-| 786924 | Internal Error for an aggregate that is in pre-commit phase of a 7-mode to clustered Data ONTAP transition. |
+| 786923 | This operation is not allowed during the pre-commit phase of a 7-mode to clustered Data ONTAP transition. |
+| 786924 | Internal error for an aggregate that is in the pre-commit phase of a 7-mode to clustered Data ONTAP transition. |
 | 786955 | Modifying raidtype to raid_tec requires a minimum of six disks in the RAID Group. |
 | 786956 | Modifying raidtype to raid_dp requires a minimum of four disks in the RAID Group. |
 | 786965 | Spare Selection in userspace failed. |
@@ -113,16 +114,42 @@ func NewAggregateModifyDefault(code int) *AggregateModifyDefault {
 | 787156 | Modifying the attributes of mirror object store is not allowed. |
 | 787169 | Only one field can be modified per operation. |
 | 787170 | Failed to patch the \"block_storage.primary.disk_count\" because the disk count specified is smaller than existing disk count. |
+| 787172 | This query is only allowed during the modification of the specified field. |
 | 787178 | Unmirroring an aggregate with a PATCH operation is not supported. |
+| 787187 | Internal error. Failed to check if the aggregate is a FabricPool. |
+| 1258699 | Cannot use all the disks specified for the requested operation. |
+| 1263500 | Operation will lead to creation of new raid group. |
+| 1263501 | Operation will exceed half of the maximum volume sizes allowed on the node. |
+| 1263502 | One spare data partition from at least one of the chosen root-data1-data2 disks will not be used. |
+| 1263503 | Operation will lead to downsizing of one or more disks. |
+| 1263504 | Operation will lead to a spares low condition. |
+| 1263598 | One or more selected disks will be partitioned. |
+| 1263624 | Operation will lead to a no sparecore condition. |
 | 2425736 | No matching node found for the UUID provided. |
+| 7209049 | Cannot perform the operation because the aggregate is currently expanding. |
+| 7209075 | Cannot perform the operation because the volume size limit for this system type would be exceeded. |
 | 13108106 | Cannot run aggregate relocation because volume expand is in progress. |
+| 19726347 | There are a number of unassigned disks visible to the node that owns this aggregate. |
+| 19726382 | Another provisioning operation is in progress on this cluster. Wait a few minutes, and try the operation again. |
+| 19726390 | Unable to automatically expand this aggregate. |
+| 19726391 | Too many unassigned disks visible to the node that owns this aggregate. |
+| 19726392 | Layout of this aggregate is not a supported configuration. |
+| 19726393 | Failed to expand the aggregate. Aggregate expansion is not supported on this system. |
+| 19726394 | Automatic aggregate expansion is not supported on systems with multiple data aggregates. |
+| 19726395 | Automatic aggregate expansion is not supported when MetroCluster is not configured. |
+| 19726396 | Automatic aggregate expansion is not supported when the DR group is not in a normal state. |
+| 19726397 | Aggregates must contain disks with identical disk-types and disk-sizes. |
+| 19726402 | Internal error. Unable to determine the MetroCluster configuration state. |
+| 19726538 | Cannot perform the operation because the aggregate is not in a healthy state. |
 | 26542083 | Destination node is at higher Data ONTAP version than source node. |
 | 26542084 | Source node is at higher Data ONTAP version than destination node. |
 | 26542097 | Unable to get D-blade ID of destination. |
-| 26542101 | Unable to contact source node. |
-| 26542102 | Unable to contact destination node. |
-| 26542120 | A Vserver migrate operation is in progress. When the migrate operation completes, try the operation again. |
+| 26542101 | Unable to contact the source node. |
+| 26542102 | Unable to contact the destination node. |
+| 26542120 | An SVM migrate operation is in progress. When the migrate operation completes, try the operation again. |
 | 26542121 | A MetroCluster disaster recovery operation is in progress. When the recovery operation completes, try the operation again. |
+| 196608334 | Failed to modify the aggregate because it contains NAE volumes. |
+| 196608335 | Failed to modify the aggregate because it contains non-encrypted volumes. |
 
 */
 type AggregateModifyDefault struct {

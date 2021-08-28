@@ -283,5 +283,3 @@ func (m *ApplicationComponentSnapshotResponseLinks) UnmarshalBinary(b []byte) er
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

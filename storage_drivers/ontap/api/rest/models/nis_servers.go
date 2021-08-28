@@ -53,5 +53,3 @@ func (m NisServers) Validate(formats strfmt.Registry) error {
 func (m NisServers) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

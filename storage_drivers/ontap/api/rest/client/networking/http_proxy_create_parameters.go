@@ -72,7 +72,7 @@ type HTTPProxyCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -92,11 +92,11 @@ func (o *HTTPProxyCreateParams) WithDefaults() *HTTPProxyCreateParams {
 // All values with no default are reset to their zero value.
 func (o *HTTPProxyCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := HTTPProxyCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -149,15 +149,15 @@ func (o *HTTPProxyCreateParams) SetInfo(info *models.NetworkHTTPProxy) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the http proxy create params
-func (o *HTTPProxyCreateParams) WithReturnRecords(returnRecords *bool) *HTTPProxyCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the http proxy create params
+func (o *HTTPProxyCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *HTTPProxyCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the http proxy create params
-func (o *HTTPProxyCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the http proxy create params
+func (o *HTTPProxyCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -173,13 +173,13 @@ func (o *HTTPProxyCreateParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

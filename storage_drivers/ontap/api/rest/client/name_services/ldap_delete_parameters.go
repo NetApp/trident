@@ -63,7 +63,7 @@ type LdapDeleteParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -118,15 +118,15 @@ func (o *LdapDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithSvmUUID adds the svmUUID to the ldap delete params
-func (o *LdapDeleteParams) WithSvmUUID(svmUUID string) *LdapDeleteParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the ldap delete params
+func (o *LdapDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *LdapDeleteParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the ldap delete params
-func (o *LdapDeleteParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the ldap delete params
+func (o *LdapDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -138,7 +138,7 @@ func (o *LdapDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	var res []error
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

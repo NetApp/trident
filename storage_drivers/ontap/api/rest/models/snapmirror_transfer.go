@@ -52,6 +52,9 @@ type SnapmirrorTransfer struct {
 	// This is supported for transfer of restore relationship only. Set this property to "false" to turn off storage efficiency for data transferred over the wire and written to the destination.
 	StorageEfficiencyEnabled *bool `json:"storage_efficiency_enabled,omitempty"`
 
+	// Throttle in KB/s. Defaults to throttle setting of the associated SnapMirror policy if set, or 0, which is interpreted as unlimited.
+	Throttle int64 `json:"throttle,omitempty"`
+
 	// uuid
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
@@ -161,63 +164,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_transfer
 	// SnapmirrorTransfer
 	// state
 	// State
 	// aborted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorTransferStateAborted captures enum value "aborted"
 	SnapmirrorTransferStateAborted string = "aborted"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_transfer
 	// SnapmirrorTransfer
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorTransferStateFailed captures enum value "failed"
 	SnapmirrorTransferStateFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_transfer
 	// SnapmirrorTransfer
 	// state
 	// State
 	// hard_aborted
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorTransferStateHardAborted captures enum value "hard_aborted"
 	SnapmirrorTransferStateHardAborted string = "hard_aborted"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_transfer
 	// SnapmirrorTransfer
 	// state
 	// State
 	// queued
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorTransferStateQueued captures enum value "queued"
 	SnapmirrorTransferStateQueued string = "queued"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_transfer
 	// SnapmirrorTransfer
 	// state
 	// State
 	// success
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorTransferStateSuccess captures enum value "success"
 	SnapmirrorTransferStateSuccess string = "success"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_transfer
 	// SnapmirrorTransfer
 	// state
 	// State
 	// transferring
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorTransferStateTransferring captures enum value "transferring"
 	SnapmirrorTransferStateTransferring string = "transferring"
 )
@@ -630,5 +633,3 @@ func (m *SnapmirrorTransferRelationship) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

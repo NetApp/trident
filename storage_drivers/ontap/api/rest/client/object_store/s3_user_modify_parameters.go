@@ -85,7 +85,7 @@ type S3UserModifyParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -184,15 +184,15 @@ func (o *S3UserModifyParams) SetRegenerateKeysQueryParameter(regenerateKeys *boo
 	o.RegenerateKeysQueryParameter = regenerateKeys
 }
 
-// WithSvmUUID adds the svmUUID to the s3 user modify params
-func (o *S3UserModifyParams) WithSvmUUID(svmUUID string) *S3UserModifyParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the s3 user modify params
+func (o *S3UserModifyParams) WithSVMUUIDPathParameter(svmUUID string) *S3UserModifyParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the s3 user modify params
-func (o *S3UserModifyParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the s3 user modify params
+func (o *S3UserModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -231,7 +231,7 @@ func (o *S3UserModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

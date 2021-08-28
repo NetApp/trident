@@ -71,7 +71,7 @@ type S3ServiceModifyParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -137,15 +137,15 @@ func (o *S3ServiceModifyParams) SetInfo(info *models.S3Service) {
 	o.Info = info
 }
 
-// WithSvmUUID adds the svmUUID to the s3 service modify params
-func (o *S3ServiceModifyParams) WithSvmUUID(svmUUID string) *S3ServiceModifyParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the s3 service modify params
+func (o *S3ServiceModifyParams) WithSVMUUIDPathParameter(svmUUID string) *S3ServiceModifyParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the s3 service modify params
-func (o *S3ServiceModifyParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the s3 service modify params
+func (o *S3ServiceModifyParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -162,7 +162,7 @@ func (o *S3ServiceModifyParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

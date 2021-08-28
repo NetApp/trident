@@ -56,6 +56,14 @@ type ClientService interface {
 
 	HTTPProxyModify(params *HTTPProxyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyModifyOK, error)
 
+	InterfacesMetricsCollectionGet(params *InterfacesMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*InterfacesMetricsCollectionGetOK, error)
+
+	IPServicePolicyCreate(params *IPServicePolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyCreateOK, error)
+
+	IPServicePolicyDelete(params *IPServicePolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyDeleteOK, error)
+
+	IPServicePolicyModify(params *IPServicePolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyModifyOK, error)
+
 	IpspaceDelete(params *IpspaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceDeleteOK, error)
 
 	IpspaceGet(params *IpspaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceGetOK, error)
@@ -117,6 +125,22 @@ type ClientService interface {
 	NetworkIPServicePoliciesGet(params *NetworkIPServicePoliciesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPServicePoliciesGetOK, error)
 
 	NetworkIPServicePolicyGet(params *NetworkIPServicePolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPServicePolicyGetOK, error)
+
+	PerformanceFcInterfaceMetricCollectionGet(params *PerformanceFcInterfaceMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcInterfaceMetricCollectionGetOK, error)
+
+	PerformanceFcPortMetricCollectionGet(params *PerformanceFcPortMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcPortMetricCollectionGetOK, error)
+
+	PortMetricsCollectionGet(params *PortMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortMetricsCollectionGetOK, error)
+
+	SwitchCollectionGet(params *SwitchCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchCollectionGetOK, error)
+
+	SwitchGet(params *SwitchGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchGetOK, error)
+
+	SwitchModify(params *SwitchModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchModifyAccepted, error)
+
+	SwitchPortCollectionGet(params *SwitchPortCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchPortCollectionGetOK, error)
+
+	SwitchPortGet(params *SwitchPortGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchPortGetOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -261,6 +285,10 @@ func (a *Client) FcInterfaceDelete(params *FcInterfaceDeleteParams, authInfo run
 
 /*
   FcInterfaceGet Retrieves an FC interface.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `statistics.*`
+* `metric.*`
 ### Related ONTAP commands
 * `network interface show`
 * `vserver fcp interface show`
@@ -349,8 +377,10 @@ func (a *Client) FcInterfaceModify(params *FcInterfaceModifyParams, authInfo run
 /*
   FcPortCollectionGet Retrieves FC ports.<br/>
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `fabric.name`
+* `statistics.*`
+* `metric.*`
 ### Related ONTAP commands
 * `network fcp adapter show`
 ### Learn more
@@ -395,8 +425,10 @@ func (a *Client) FcPortCollectionGet(params *FcPortCollectionGetParams, authInfo
 /*
   FcPortGet Retrieves an FC port.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `fabric.name`
+* `statistics.*`
+* `metric.*`
 ### Related ONTAP commands
 * `network fcp adapter show`
 ### Learn more
@@ -486,8 +518,6 @@ func (a *Client) FcPortModify(params *FcPortModifyParams, authInfo runtime.Clien
 ### Related ONTAP commands
 * `vserver http-proxy show`
 
-### Learn more
-* [`DOC /network/http-proxy`](#docs-networking-network_http-proxy)
 */
 func (a *Client) HTTPProxyCollectionGet(params *HTTPProxyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -539,11 +569,13 @@ Important notes:
   * `ipspace.uuid` or `ipspace.name` - Exisitng Cluster IPspace in which to create the HTTP proxy.
 * `server` - HTTP proxy server FQDN or IP address.
 * `port` - HTTP proxy server port.
+### Optional properties
+* `authentication_enabled` - Specifies if authentication is required for the HTTP proxy server.
+* `username` - Username used to authenticate with the HTTP proxy server.
+* `password` - Password used to authenticate with the HTTP proxy server.
 ### Related ONTAP commands
 * `vserver http-proxy create`
 
-### Learn more
-* [`DOC /network/http-proxy`](#docs-networking-network_http-proxy)
 */
 func (a *Client) HTTPProxyCreate(params *HTTPProxyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -585,8 +617,6 @@ func (a *Client) HTTPProxyCreate(params *HTTPProxyCreateParams, authInfo runtime
 ### Related ONTAP commands
 * `vserver http-proxy delete`
 
-### Learn more
-* [`DOC /network/http-proxy`](#docs-networking-network_http-proxy)
 */
 func (a *Client) HTTPProxyDelete(params *HTTPProxyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -628,8 +658,6 @@ func (a *Client) HTTPProxyDelete(params *HTTPProxyDeleteParams, authInfo runtime
 ### Related ONTAP commands
 * `vserver http-proxy show`
 
-### Learn more
-* [`DOC /network/http-proxy`](#docs-networking-network_http-proxy)
 */
 func (a *Client) HTTPProxyGet(params *HTTPProxyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -677,8 +705,6 @@ Important notes:
 ### Related ONTAP commands
 * `vserver http-proxy modify`
 
-### Learn more
-* [`DOC /network/http-proxy`](#docs-networking-network_http-proxy)
 */
 func (a *Client) HTTPProxyModify(params *HTTPProxyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HTTPProxyModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -716,12 +742,176 @@ func (a *Client) HTTPProxyModify(params *HTTPProxyModifyParams, authInfo runtime
 }
 
 /*
+  InterfacesMetricsCollectionGet Retrieves historical performance metrics for an interface.
+*/
+func (a *Client) InterfacesMetricsCollectionGet(params *InterfacesMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*InterfacesMetricsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewInterfacesMetricsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "interfaces_metrics_collection_get",
+		Method:             "GET",
+		PathPattern:        "/network/ip/interfaces/{uuid}/metrics",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &InterfacesMetricsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*InterfacesMetricsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*InterfacesMetricsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IPServicePolicyCreate Creates a service policy for network interfaces. <br/>
+### Required properties
+* `name` - Name of the service policy to create.
+* `ipspace.name` or `ipspace.uuid`
+  * Required for cluster-scoped service policies.
+  * Optional for SVM-scoped service policies.
+* `svm.name` or `svm.uuid`
+  * Required for SVM-scoped service policies.
+  * Not valid for cluster-scoped service policies.
+### Default property values
+If not specified in POST, the following default property values are assigned:
+* `scope`
+  * svm if the svm parameter is specified
+  * cluster if the svm parameter is not specified
+
+*/
+func (a *Client) IPServicePolicyCreate(params *IPServicePolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyCreateOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIPServicePolicyCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ip_service_policy_create",
+		Method:             "POST",
+		PathPattern:        "/network/ip/service-policies",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IPServicePolicyCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IPServicePolicyCreateOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IPServicePolicyCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IPServicePolicyDelete Deletes a service policy for network interfaces.
+*/
+func (a *Client) IPServicePolicyDelete(params *IPServicePolicyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIPServicePolicyDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ip_service_policy_delete",
+		Method:             "DELETE",
+		PathPattern:        "/network/ip/service-policies/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IPServicePolicyDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IPServicePolicyDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IPServicePolicyDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IPServicePolicyModify Updates a service policy for network interfaces.
+*/
+func (a *Client) IPServicePolicyModify(params *IPServicePolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IPServicePolicyModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIPServicePolicyModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ip_service_policy_modify",
+		Method:             "PATCH",
+		PathPattern:        "/network/ip/service-policies/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IPServicePolicyModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IPServicePolicyModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IPServicePolicyModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   IpspaceDelete Deletes an IPspace object.
 ### Related ONTAP commands
 * `network ipspace delete`
 
-### Learn more
-* [`DOC /network/ipspaces`](#docs-networking-network_ipspaces)
 */
 func (a *Client) IpspaceDelete(params *IpspaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -764,8 +954,6 @@ func (a *Client) IpspaceDelete(params *IpspaceDeleteParams, authInfo runtime.Cli
 ### Related ONTAP commands
 * `network ipspace show`
 
-### Learn more
-* [`DOC /network/ipspaces`](#docs-networking-network_ipspaces)
 */
 func (a *Client) IpspaceGet(params *IpspaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -807,8 +995,6 @@ func (a *Client) IpspaceGet(params *IpspaceGetParams, authInfo runtime.ClientAut
 ### Related ONTAP commands
 * `network ipspace rename`
 
-### Learn more
-* [`DOC /network/ipspaces`](#docs-networking-network_ipspaces)
 */
 func (a *Client) IpspaceModify(params *IpspaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspaceModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -853,8 +1039,6 @@ func (a *Client) IpspaceModify(params *IpspaceModifyParams, authInfo runtime.Cli
 ### Related ONTAP commands
 * `network ipspace create`
 
-### Learn more
-* [`DOC /network/ipspaces`](#docs-networking-network_ipspaces)
 */
 func (a *Client) IpspacesCreate(params *IpspacesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspacesCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -896,8 +1080,6 @@ func (a *Client) IpspacesCreate(params *IpspacesCreateParams, authInfo runtime.C
 ### Related ONTAP commands
 * `network ipspace show`
 
-### Learn more
-* [`DOC /network/ipspaces`](#docs-networking-network_ipspaces)
 */
 func (a *Client) IpspacesGet(params *IpspacesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpspacesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -939,8 +1121,6 @@ func (a *Client) IpspacesGet(params *IpspacesGetParams, authInfo runtime.ClientA
 ### Related ONTAP commands
 * `network port broadcast-domain delete`
 
-### Learn more
-* [`DOC /network/ethernet/broadcast-domains`](#docs-networking-network_ethernet_broadcast-domains)
 */
 func (a *Client) NetworkEthernetBroadcastDomainDelete(params *NetworkEthernetBroadcastDomainDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -982,8 +1162,6 @@ func (a *Client) NetworkEthernetBroadcastDomainDelete(params *NetworkEthernetBro
 ### Related ONTAP commands
 * `network port broadcast-domain show`
 
-### Learn more
-* [`DOC /network/ethernet/broadcast-domains`](#docs-networking-network_ethernet_broadcast-domains)
 */
 func (a *Client) NetworkEthernetBroadcastDomainGet(params *NetworkEthernetBroadcastDomainGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1025,9 +1203,8 @@ func (a *Client) NetworkEthernetBroadcastDomainGet(params *NetworkEthernetBroadc
 ### Related ONTAP commands
 * `network port broadcast-domain modify`
 * `network port broadcast-domain rename`
+* `network port broadcast-domain move`
 
-### Learn more
-* [`DOC /network/ethernet/broadcast-domains`](#docs-networking-network_ethernet_broadcast-domains)
 */
 func (a *Client) NetworkEthernetBroadcastDomainModify(params *NetworkEthernetBroadcastDomainModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1077,8 +1254,6 @@ If not specified in POST, the following default property values are assigned:
 ### Related ONTAP commands
 * `network port broadcast-domain create`
 
-### Learn more
-* [`DOC /network/ethernet/broadcast-domains`](#docs-networking-network_ethernet_broadcast-domains)
 */
 func (a *Client) NetworkEthernetBroadcastDomainsCreate(params *NetworkEthernetBroadcastDomainsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainsCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1120,8 +1295,6 @@ func (a *Client) NetworkEthernetBroadcastDomainsCreate(params *NetworkEthernetBr
 ### Related ONTAP commands
 * `network port broadcast-domain show`
 
-### Learn more
-* [`DOC /network/ethernet/broadcast-domains`](#docs-networking-network_ethernet_broadcast-domains)
 */
 func (a *Client) NetworkEthernetBroadcastDomainsGet(params *NetworkEthernetBroadcastDomainsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetBroadcastDomainsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1164,8 +1337,6 @@ func (a *Client) NetworkEthernetBroadcastDomainsGet(params *NetworkEthernetBroad
 * `network port ifgrp delete`
 * `network port vlan delete`
 
-### Learn more
-* [`DOC /network/ethernet/ports`](#docs-networking-network_ethernet_ports)
 */
 func (a *Client) NetworkEthernetPortDelete(params *NetworkEthernetPortDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1209,8 +1380,6 @@ func (a *Client) NetworkEthernetPortDelete(params *NetworkEthernetPortDeletePara
 * `network port ifgrp show`
 * `network port vlan show`
 
-### Learn more
-* [`DOC /network/ethernet/ports`](#docs-networking-network_ethernet_ports)
 */
 func (a *Client) NetworkEthernetPortGet(params *NetworkEthernetPortGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1255,9 +1424,8 @@ func (a *Client) NetworkEthernetPortGet(params *NetworkEthernetPortGetParams, au
 * `network port ifgrp modify`
 * `network port modify`
 * `network port vlan modify`
+* `network port reachability repair`
 
-### Learn more
-* [`DOC /network/ethernet/ports`](#docs-networking-network_ethernet_ports)
 */
 func (a *Client) NetworkEthernetPortModify(params *NetworkEthernetPortModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1298,7 +1466,6 @@ func (a *Client) NetworkEthernetPortModify(params *NetworkEthernetPortModifyPara
   NetworkEthernetPortsCreate Creates a new VLAN (such as node1:e0a-100) or LAG (ifgrp, such as node2:a0a).
 ### Required properties
 * `node` - Node the port will be created on.
-* `broadcast_domain` - Broadcast domain the port is associated with.
 * `type` - Defines if a VLAN or LAG will be created:
   * VLAN
     * `vlan.base_port` - Physical port or LAG the VLAN will be created on.
@@ -1307,12 +1474,12 @@ func (a *Client) NetworkEthernetPortModify(params *NetworkEthernetPortModifyPara
     * `lag.mode` - Policy for the LAG that will be created.
     * `lag.distribution_policy` - Indicates how the packets are distributed between ports.
     * `lag.member_ports` - Set of ports the LAG consists of.
+### Optional properties
+* `broadcast_domain` - The layer-2 broadcast domain the port is associated with. The port will be placed in a broadcast domain if it is not specified.  It may take several minutes for the broadcast domain to be assigned.  During that period the port cannot host interfaces.
 ### Related ONTAP commands
 * `network port ifgrp create`
 * `network port vlan create`
 
-### Learn more
-* [`DOC /network/ethernet/ports`](#docs-networking-network_ethernet_ports)
 */
 func (a *Client) NetworkEthernetPortsCreate(params *NetworkEthernetPortsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortsCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1356,8 +1523,6 @@ func (a *Client) NetworkEthernetPortsCreate(params *NetworkEthernetPortsCreatePa
 * `network port ifgrp show`
 * `network port vlan show`
 
-### Learn more
-* [`DOC /network/ethernet/ports`](#docs-networking-network_ethernet_ports)
 */
 func (a *Client) NetworkEthernetPortsGet(params *NetworkEthernetPortsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkEthernetPortsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1399,8 +1564,6 @@ func (a *Client) NetworkEthernetPortsGet(params *NetworkEthernetPortsGetParams, 
 ### Related ONTAP commands
 * `network bgp peer-group delete`
 
-### Learn more
-* [`DOC /network/ip/bgp/peer-groups`](#docs-networking-network_ip_bgp_peer-groups)
 */
 func (a *Client) NetworkIPBgpPeerGroupDelete(params *NetworkIPBgpPeerGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1442,8 +1605,6 @@ func (a *Client) NetworkIPBgpPeerGroupDelete(params *NetworkIPBgpPeerGroupDelete
 ### Related ONTAP commands
 * `network bgp peer-group show`
 
-### Learn more
-* [`DOC /network/ip/bgp/peer-groups`](#docs-networking-network_ip_bgp_peer-groups)
 */
 func (a *Client) NetworkIPBgpPeerGroupGet(params *NetworkIPBgpPeerGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1486,8 +1647,6 @@ func (a *Client) NetworkIPBgpPeerGroupGet(params *NetworkIPBgpPeerGroupGetParams
 * `network bgp peer-group modify`
 * `network bgp peer-group rename`
 
-### Learn more
-* [`DOC /network/ip/bgp/peer-groups`](#docs-networking-network_ip_bgp_peer-groups)
 */
 func (a *Client) NetworkIPBgpPeerGroupModify(params *NetworkIPBgpPeerGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1536,11 +1695,12 @@ func (a *Client) NetworkIPBgpPeerGroupModify(params *NetworkIPBgpPeerGroupModify
 * `local.interface.name`, `local.ip` and `local.port`
   * Required to create a new local interface.
 * `peer.address` - IP address of the peer router
+### Default property values
+If not specified in POST, the following default property values are assigned:
+* `is_next_hop` - _false_
 ### Related ONTAP commands
 * `network bgp peer-group create`
 
-### Learn more
-* [`DOC /network/ip/bgp/peer-groups`](#docs-networking-network_ip_bgp_peer-groups)
 */
 func (a *Client) NetworkIPBgpPeerGroupsCreate(params *NetworkIPBgpPeerGroupsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupsCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1582,8 +1742,6 @@ func (a *Client) NetworkIPBgpPeerGroupsCreate(params *NetworkIPBgpPeerGroupsCrea
 ### Related ONTAP Commands
 * `network bgp peer-group show`
 
-### Learn more
-* [`DOC /network/ip/bgp/peer-groups`](#docs-networking-network_ip_bgp_peer-groups)
 */
 func (a *Client) NetworkIPBgpPeerGroupsGet(params *NetworkIPBgpPeerGroupsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPBgpPeerGroupsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1625,8 +1783,6 @@ func (a *Client) NetworkIPBgpPeerGroupsGet(params *NetworkIPBgpPeerGroupsGetPara
 ### Related ONTAP commands
 * `network interface delete`
 
-### Learn more
-* [`DOC /network/ip/interfaces`](#docs-networking-network_ip_interfaces)
 */
 func (a *Client) NetworkIPInterfaceDelete(params *NetworkIPInterfaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1669,8 +1825,6 @@ func (a *Client) NetworkIPInterfaceDelete(params *NetworkIPInterfaceDeleteParams
 ### Related ONTAP commands
 * `network interface show`
 
-### Learn more
-* [`DOC /network/ip/interfaces`](#docs-networking-network_ip_interfaces)
 */
 func (a *Client) NetworkIPInterfaceGet(params *NetworkIPInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1715,8 +1869,6 @@ func (a *Client) NetworkIPInterfaceGet(params *NetworkIPInterfaceGetParams, auth
 * `network interface rename`
 * `network interface revert`
 
-### Learn more
-* [`DOC /network/ip/interfaces`](#docs-networking-network_ip_interfaces)
 */
 func (a *Client) NetworkIPInterfaceModify(params *NetworkIPInterfaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfaceModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1788,11 +1940,12 @@ If not specified in POST, the following default property values are assigned:
   * _default-management_ if scope is `cluster` and IPspace is not `Cluster`
   * _default-cluster_ if scope is `svm` and IPspace is `Cluster`
 * `failover` - Selects the least restrictive failover policy supported by all the services in the service policy.
+* `ddns_enabled`
+  * _true_ if the interface supports _data_nfs_ or _data_cifs_ services
+  * _false_ otherwise
 ### Related ONTAP commands
 * `network interface create`
 
-### Learn more
-* [`DOC /network/ip/interfaces`](#docs-networking-network_ip_interfaces)
 */
 func (a *Client) NetworkIPInterfacesCreate(params *NetworkIPInterfacesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfacesCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1834,8 +1987,6 @@ func (a *Client) NetworkIPInterfacesCreate(params *NetworkIPInterfacesCreatePara
 ### Related ONTAP Commands
 * `network interface show`
 
-### Learn more
-* [`DOC /network/ip/interfaces`](#docs-networking-network_ip_interfaces)
 */
 func (a *Client) NetworkIPInterfacesGet(params *NetworkIPInterfacesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPInterfacesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1877,8 +2028,6 @@ func (a *Client) NetworkIPInterfacesGet(params *NetworkIPInterfacesGetParams, au
 ### Related ONTAP commands
 * `network route delete`
 
-### Learn more
-* [`DOC /network/ip/routes`](#docs-networking-network_ip_routes)
 */
 func (a *Client) NetworkIPRouteDelete(params *NetworkIPRouteDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPRouteDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1919,9 +2068,8 @@ func (a *Client) NetworkIPRouteDelete(params *NetworkIPRouteDeleteParams, authIn
   NetworkIPRouteGet Retrieves the details of a specific IP route.
 ### Related ONTAP commands
 * `network route show`
+* `network route show-lifs`
 
-### Learn more
-* [`DOC /network/ip/routes`](#docs-networking-network_ip_routes)
 */
 func (a *Client) NetworkIPRouteGet(params *NetworkIPRouteGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPRouteGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1975,8 +2123,6 @@ If not specified in POST, the following default property values are assigned:
 ### Related ONTAP commands
 * `network route create`
 
-### Learn more
-* [`DOC /network/ip/routes`](#docs-networking-network_ip_routes)
 */
 func (a *Client) NetworkIPRoutesCreate(params *NetworkIPRoutesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPRoutesCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -2015,11 +2161,13 @@ func (a *Client) NetworkIPRoutesCreate(params *NetworkIPRoutesCreateParams, auth
 
 /*
   NetworkIPRoutesGet Retrieves the collection of IP routes.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `interfaces.*`
 ### Related ONTAP commands
 * `network route show`
+* `network route show-lifs`
 
-### Learn more
-* [`DOC /network/ip/routes`](#docs-networking-network_ip_routes)
 */
 func (a *Client) NetworkIPRoutesGet(params *NetworkIPRoutesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPRoutesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2061,8 +2209,6 @@ func (a *Client) NetworkIPRoutesGet(params *NetworkIPRoutesGetParams, authInfo r
 ### Related ONTAP commands
 * `network interface service-policy show`
 
-### Learn more
-* [`DOC /network/ip/service-policies`](#docs-networking-network_ip_service-policies)
 */
 func (a *Client) NetworkIPServicePoliciesGet(params *NetworkIPServicePoliciesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPServicePoliciesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2104,8 +2250,6 @@ func (a *Client) NetworkIPServicePoliciesGet(params *NetworkIPServicePoliciesGet
 ### Related ONTAP commands
 * `network interface service-policy show`
 
-### Learn more
-* [`DOC /network/ip/service-policies`](#docs-networking-network_ip_service-policies)
 */
 func (a *Client) NetworkIPServicePolicyGet(params *NetworkIPServicePolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NetworkIPServicePolicyGetOK, error) {
 	// TODO: Validate the params before sending
@@ -2139,6 +2283,328 @@ func (a *Client) NetworkIPServicePolicyGet(params *NetworkIPServicePolicyGetPara
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NetworkIPServicePolicyGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  PerformanceFcInterfaceMetricCollectionGet Retrieves historical performance metrics for an FC interface.
+*/
+func (a *Client) PerformanceFcInterfaceMetricCollectionGet(params *PerformanceFcInterfaceMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcInterfaceMetricCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceFcInterfaceMetricCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_fc_interface_metric_collection_get",
+		Method:             "GET",
+		PathPattern:        "/network/fc/interfaces/{uuid}/metrics",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceFcInterfaceMetricCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceFcInterfaceMetricCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceFcInterfaceMetricCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  PerformanceFcPortMetricCollectionGet Retrieves historical performance metrics for an FC port
+*/
+func (a *Client) PerformanceFcPortMetricCollectionGet(params *PerformanceFcPortMetricCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PerformanceFcPortMetricCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPerformanceFcPortMetricCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "performance_fc_port_metric_collection_get",
+		Method:             "GET",
+		PathPattern:        "/network/fc/ports/{uuid}/metrics",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PerformanceFcPortMetricCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PerformanceFcPortMetricCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PerformanceFcPortMetricCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  PortMetricsCollectionGet Retrieves historical performance metrics for a port.
+*/
+func (a *Client) PortMetricsCollectionGet(params *PortMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortMetricsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPortMetricsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "port_metrics_collection_get",
+		Method:             "GET",
+		PathPattern:        "/network/ethernet/ports/{uuid}/metrics",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PortMetricsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PortMetricsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PortMetricsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SwitchCollectionGet Retrieves the ethernet switches attached to the chassis.
+### Related ONTAP commands
+* `system switch ethernet show`
+### Learn more
+* [`DOC /network/ethernet/switches`](#docs-networking-network_ethernet_switches)
+
+*/
+func (a *Client) SwitchCollectionGet(params *SwitchCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSwitchCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "switch_collection_get",
+		Method:             "GET",
+		PathPattern:        "/network/ethernet/switches",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SwitchCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SwitchCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SwitchCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SwitchGet Retrieves the details of an ethernet switch.
+### Related ONTAP commands
+* `system switch ethernet show`
+### Learn more
+* [`DOC /network/ethernet/switches`](#docs-networking-network_ethernet_switches)
+
+*/
+func (a *Client) SwitchGet(params *SwitchGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSwitchGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "switch_get",
+		Method:             "GET",
+		PathPattern:        "/network/ethernet/switches/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SwitchGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SwitchGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SwitchGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SwitchModify Update Ethernet Switch REST API
+*/
+func (a *Client) SwitchModify(params *SwitchModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSwitchModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "switch_modify",
+		Method:             "PATCH",
+		PathPattern:        "/network/ethernet/switches/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SwitchModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SwitchModifyAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SwitchModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SwitchPortCollectionGet Retrieves the ethernet switch ports.
+### Related ONTAP commands
+* `system switch ethernet interface show`
+### Learn more
+* [`DOC /network/ethernet/switch/ports`](#docs-networking-network_ethernet_switch_ports)
+
+*/
+func (a *Client) SwitchPortCollectionGet(params *SwitchPortCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchPortCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSwitchPortCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "switch_port_collection_get",
+		Method:             "GET",
+		PathPattern:        "/network/ethernet/switch/ports",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SwitchPortCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SwitchPortCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SwitchPortCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SwitchPortGet Retrieves an ethernet switch port.
+### Related ONTAP commands
+* `system switch ethernet interface show`
+
+*/
+func (a *Client) SwitchPortGet(params *SwitchPortGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SwitchPortGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSwitchPortGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "switch_port_get",
+		Method:             "GET",
+		PathPattern:        "/network/ethernet/switch/ports/{switch}/{identity.name}/{identity.index}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SwitchPortGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SwitchPortGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SwitchPortGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

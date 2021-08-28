@@ -62,7 +62,7 @@ type IgroupInitiatorDeleteParams struct {
 
 	/* AllowDeleteWhileMapped.
 
-	     Allows deletion of an initiator from of a mapped initiator group.<br/>
+	     Allows the deletion of an initiator from of a mapped initiator group.<br/>
 	Deleting an initiator from a mapped initiator group makes the LUNs to which the initiator group is mapped no longer available to the initiator. This might cause a disruption in the availability of data.<br/>
 	<b>This parameter should be used with caution.</b>
 
@@ -78,7 +78,7 @@ type IgroupInitiatorDeleteParams struct {
 
 	/* Name.
 
-	   The initiator name.
+	   The name of the initiator to delete.
 
 	*/
 	NamePathParameter string

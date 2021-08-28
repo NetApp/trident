@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -19,6 +20,15 @@ import (
 //
 // swagger:model mongo_db_on_san_new_igroups
 type MongoDbOnSanNewIgroups struct {
+
+	// A comment available for use by the administrator.
+	Comment string `json:"comment,omitempty"`
+
+	// igroups
+	Igroups []*MongoDbOnSanNewIgroupsIgroupsItems0 `json:"igroups,omitempty"`
+
+	// initiator objects
+	InitiatorObjects []*MongoDbOnSanNewIgroupsInitiatorObjectsItems0 `json:"initiator_objects,omitempty"`
 
 	// initiators
 	Initiators []string `json:"initiators,omitempty"`
@@ -42,6 +52,14 @@ type MongoDbOnSanNewIgroups struct {
 func (m *MongoDbOnSanNewIgroups) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateIgroups(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateInitiatorObjects(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
 	}
@@ -57,6 +75,54 @@ func (m *MongoDbOnSanNewIgroups) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *MongoDbOnSanNewIgroups) validateIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.Igroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Igroups); i++ {
+		if swag.IsZero(m.Igroups[i]) { // not required
+			continue
+		}
+
+		if m.Igroups[i] != nil {
+			if err := m.Igroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *MongoDbOnSanNewIgroups) validateInitiatorObjects(formats strfmt.Registry) error {
+	if swag.IsZero(m.InitiatorObjects) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.InitiatorObjects); i++ {
+		if swag.IsZero(m.InitiatorObjects[i]) { // not required
+			continue
+		}
+
+		if m.InitiatorObjects[i] != nil {
+			if err := m.InitiatorObjects[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("initiator_objects" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -91,63 +157,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san_new_igroups
 	// MongoDbOnSanNewIgroups
 	// os_type
 	// OsType
 	// hyper_v
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanNewIgroupsOsTypeHyperv captures enum value "hyper_v"
 	MongoDbOnSanNewIgroupsOsTypeHyperv string = "hyper_v"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san_new_igroups
 	// MongoDbOnSanNewIgroups
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanNewIgroupsOsTypeLinux captures enum value "linux"
 	MongoDbOnSanNewIgroupsOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san_new_igroups
 	// MongoDbOnSanNewIgroups
 	// os_type
 	// OsType
 	// solaris
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanNewIgroupsOsTypeSolaris captures enum value "solaris"
 	MongoDbOnSanNewIgroupsOsTypeSolaris string = "solaris"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san_new_igroups
 	// MongoDbOnSanNewIgroups
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanNewIgroupsOsTypeVmware captures enum value "vmware"
 	MongoDbOnSanNewIgroupsOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san_new_igroups
 	// MongoDbOnSanNewIgroups
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanNewIgroupsOsTypeWindows captures enum value "windows"
 	MongoDbOnSanNewIgroupsOsTypeWindows string = "windows"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san_new_igroups
 	// MongoDbOnSanNewIgroups
 	// os_type
 	// OsType
 	// xen
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanNewIgroupsOsTypeXen captures enum value "xen"
 	MongoDbOnSanNewIgroupsOsTypeXen string = "xen"
 )
@@ -187,33 +253,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san_new_igroups
 	// MongoDbOnSanNewIgroups
 	// protocol
 	// Protocol
 	// fcp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanNewIgroupsProtocolFcp captures enum value "fcp"
 	MongoDbOnSanNewIgroupsProtocolFcp string = "fcp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san_new_igroups
 	// MongoDbOnSanNewIgroups
 	// protocol
 	// Protocol
 	// iscsi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanNewIgroupsProtocolIscsi captures enum value "iscsi"
 	MongoDbOnSanNewIgroupsProtocolIscsi string = "iscsi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san_new_igroups
 	// MongoDbOnSanNewIgroups
 	// protocol
 	// Protocol
 	// mixed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanNewIgroupsProtocolMixed captures enum value "mixed"
 	MongoDbOnSanNewIgroupsProtocolMixed string = "mixed"
 )
@@ -239,8 +305,57 @@ func (m *MongoDbOnSanNewIgroups) validateProtocol(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validates this mongo db on san new igroups based on context it is used
+// ContextValidate validate this mongo db on san new igroups based on the context it is used
 func (m *MongoDbOnSanNewIgroups) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIgroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInitiatorObjects(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MongoDbOnSanNewIgroups) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Igroups); i++ {
+
+		if m.Igroups[i] != nil {
+			if err := m.Igroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *MongoDbOnSanNewIgroups) contextValidateInitiatorObjects(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.InitiatorObjects); i++ {
+
+		if m.InitiatorObjects[i] != nil {
+			if err := m.InitiatorObjects[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("initiator_objects" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -262,4 +377,82 @@ func (m *MongoDbOnSanNewIgroups) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HELLO RIPPY
+// MongoDbOnSanNewIgroupsIgroupsItems0 mongo db on san new igroups igroups items0
+//
+// swagger:model MongoDbOnSanNewIgroupsIgroupsItems0
+type MongoDbOnSanNewIgroupsIgroupsItems0 struct {
+
+	// The name of an igroup to nest within a parent igroup. Mutually exclusive with initiators and initiator_objects.
+	Name string `json:"name,omitempty"`
+
+	// The UUID of an igroup to nest within a parent igroup Usage: &lt;UUID&gt;
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this mongo db on san new igroups igroups items0
+func (m *MongoDbOnSanNewIgroupsIgroupsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this mongo db on san new igroups igroups items0 based on context it is used
+func (m *MongoDbOnSanNewIgroupsIgroupsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MongoDbOnSanNewIgroupsIgroupsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MongoDbOnSanNewIgroupsIgroupsItems0) UnmarshalBinary(b []byte) error {
+	var res MongoDbOnSanNewIgroupsIgroupsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// MongoDbOnSanNewIgroupsInitiatorObjectsItems0 mongo db on san new igroups initiator objects items0
+//
+// swagger:model MongoDbOnSanNewIgroupsInitiatorObjectsItems0
+type MongoDbOnSanNewIgroupsInitiatorObjectsItems0 struct {
+
+	// A comment available for use by the administrator.
+	Comment string `json:"comment,omitempty"`
+
+	// The WWPN, IQN, or Alias of the initiator. Mutually exclusive with nested igroups and the initiators array.
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this mongo db on san new igroups initiator objects items0
+func (m *MongoDbOnSanNewIgroupsInitiatorObjectsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this mongo db on san new igroups initiator objects items0 based on context it is used
+func (m *MongoDbOnSanNewIgroupsInitiatorObjectsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *MongoDbOnSanNewIgroupsInitiatorObjectsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *MongoDbOnSanNewIgroupsInitiatorObjectsItems0) UnmarshalBinary(b []byte) error {
+	var res MongoDbOnSanNewIgroupsInitiatorObjectsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

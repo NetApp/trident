@@ -79,7 +79,7 @@ func NewAccountModifyDefault(code int) *AccountModifyDefault {
 | 1263343 | Cannot lock user with password not set or non-password authentication method. |
 | 5636096 | Cannot perform the operation for this user account since the password is not set. |
 | 5636097 | The operation for user account failed since user password is not set. |
-| 5636100 | User modification is not supported for service-processor application. |
+| 5636100 | Modification of a service-processor user's role to a non-admin role is not supported. |
 | 5636125 | The operation not supported on AutoSupport user account which is reserved. |
 | 5636129 | The role does not exist. |
 | 5636154 | The second-authentication-method parameter is supported for ssh application. |

@@ -69,33 +69,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nas_application_components_tiering
 	// NasApplicationComponentsTiering
 	// control
 	// Control
 	// required
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasApplicationComponentsTieringControlRequired captures enum value "required"
 	NasApplicationComponentsTieringControlRequired string = "required"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nas_application_components_tiering
 	// NasApplicationComponentsTiering
 	// control
 	// Control
 	// best_effort
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasApplicationComponentsTieringControlBestEffort captures enum value "best_effort"
 	NasApplicationComponentsTieringControlBestEffort string = "best_effort"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nas_application_components_tiering
 	// NasApplicationComponentsTiering
 	// control
 	// Control
 	// disallowed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasApplicationComponentsTieringControlDisallowed captures enum value "disallowed"
 	NasApplicationComponentsTieringControlDisallowed string = "disallowed"
 )
@@ -159,43 +159,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nas_application_components_tiering
 	// NasApplicationComponentsTiering
 	// policy
 	// Policy
 	// all
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasApplicationComponentsTieringPolicyAll captures enum value "all"
 	NasApplicationComponentsTieringPolicyAll string = "all"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nas_application_components_tiering
 	// NasApplicationComponentsTiering
 	// policy
 	// Policy
 	// auto
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasApplicationComponentsTieringPolicyAuto captures enum value "auto"
 	NasApplicationComponentsTieringPolicyAuto string = "auto"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nas_application_components_tiering
 	// NasApplicationComponentsTiering
 	// policy
 	// Policy
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasApplicationComponentsTieringPolicyNone captures enum value "none"
 	NasApplicationComponentsTieringPolicyNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nas_application_components_tiering
 	// NasApplicationComponentsTiering
 	// policy
 	// Policy
 	// snapshot_only
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NasApplicationComponentsTieringPolicySnapshotOnly captures enum value "snapshot_only"
 	NasApplicationComponentsTieringPolicySnapshotOnly string = "snapshot_only"
 )
@@ -276,7 +276,7 @@ func (m *NasApplicationComponentsTiering) UnmarshalBinary(b []byte) error {
 // swagger:model NasApplicationComponentsTieringObjectStoresItems0
 type NasApplicationComponentsTieringObjectStoresItems0 struct {
 
-	// The name of the object-store to use. Usage: &lt;(size 1..512)&gt;
+	// The name of the object-store to use.
 	// Max Length: 512
 	// Min Length: 1
 	Name string `json:"name,omitempty"`
@@ -334,5 +334,3 @@ func (m *NasApplicationComponentsTieringObjectStoresItems0) UnmarshalBinary(b []
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

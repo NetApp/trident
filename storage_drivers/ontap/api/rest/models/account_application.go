@@ -22,7 +22,7 @@ import (
 type AccountApplication struct {
 
 	// Applications
-	// Enum: [console http ontapi service_processor ssh]
+	// Enum: [amqp console http ontapi service_processor ssh]
 	Application string `json:"application,omitempty"`
 
 	// authentication methods
@@ -59,7 +59,7 @@ var accountApplicationTypeApplicationPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["console","http","ontapi","service_processor","ssh"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["amqp","console","http","ontapi","service_processor","ssh"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -69,53 +69,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// account_application
+	// AccountApplication
+	// application
+	// Application
+	// amqp
+	// END DEBUGGING
+	// AccountApplicationApplicationAmqp captures enum value "amqp"
+	AccountApplicationApplicationAmqp string = "amqp"
+
+	// BEGIN DEBUGGING
 	// account_application
 	// AccountApplication
 	// application
 	// Application
 	// console
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AccountApplicationApplicationConsole captures enum value "console"
 	AccountApplicationApplicationConsole string = "console"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// account_application
 	// AccountApplication
 	// application
 	// Application
 	// http
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AccountApplicationApplicationHTTP captures enum value "http"
 	AccountApplicationApplicationHTTP string = "http"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// account_application
 	// AccountApplication
 	// application
 	// Application
 	// ontapi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AccountApplicationApplicationOntapi captures enum value "ontapi"
 	AccountApplicationApplicationOntapi string = "ontapi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// account_application
 	// AccountApplication
 	// application
 	// Application
 	// service_processor
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AccountApplicationApplicationServiceProcessor captures enum value "service_processor"
 	AccountApplicationApplicationServiceProcessor string = "service_processor"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// account_application
 	// AccountApplication
 	// application
 	// Application
 	// ssh
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AccountApplicationApplicationSSH captures enum value "ssh"
 	AccountApplicationApplicationSSH string = "ssh"
 )
@@ -191,43 +201,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// account_application
 	// AccountApplication
 	// second_authentication_method
 	// SecondAuthenticationMethod
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AccountApplicationSecondAuthenticationMethodNone captures enum value "none"
 	AccountApplicationSecondAuthenticationMethodNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// account_application
 	// AccountApplication
 	// second_authentication_method
 	// SecondAuthenticationMethod
 	// password
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AccountApplicationSecondAuthenticationMethodPassword captures enum value "password"
 	AccountApplicationSecondAuthenticationMethodPassword string = "password"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// account_application
 	// AccountApplication
 	// second_authentication_method
 	// SecondAuthenticationMethod
 	// publickey
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AccountApplicationSecondAuthenticationMethodPublickey captures enum value "publickey"
 	AccountApplicationSecondAuthenticationMethodPublickey string = "publickey"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// account_application
 	// AccountApplication
 	// second_authentication_method
 	// SecondAuthenticationMethod
 	// nsswitch
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AccountApplicationSecondAuthenticationMethodNsswitch captures enum value "nsswitch"
 	AccountApplicationSecondAuthenticationMethodNsswitch string = "nsswitch"
 )
@@ -275,5 +285,3 @@ func (m *AccountApplication) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

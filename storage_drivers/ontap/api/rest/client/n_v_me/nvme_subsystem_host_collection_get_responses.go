@@ -82,7 +82,11 @@ func NewNvmeSubsystemHostCollectionGetDefault(code int) *NvmeSubsystemHostCollec
 
 /* NvmeSubsystemHostCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Codes
+| Error Code | Description |
+| ---------- | ----------- |
+| 72090001 | The NVMe subsystem does not exist. |
+
 */
 type NvmeSubsystemHostCollectionGetDefault struct {
 	_statusCode int

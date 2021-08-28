@@ -60,7 +60,17 @@ type ClientService interface {
 
 	IgroupInitiatorGet(params *IgroupInitiatorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorGetOK, error)
 
+	IgroupInitiatorModify(params *IgroupInitiatorModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorModifyOK, error)
+
 	IgroupModify(params *IgroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupModifyOK, error)
+
+	IgroupNestedCollectionGet(params *IgroupNestedCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedCollectionGetOK, error)
+
+	IgroupNestedCreate(params *IgroupNestedCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedCreateCreated, error)
+
+	IgroupNestedDelete(params *IgroupNestedDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedDeleteOK, error)
+
+	IgroupNestedGet(params *IgroupNestedGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedGetOK, error)
 
 	IscsiCollectionPerformanceMetricsGet(params *IscsiCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiCollectionPerformanceMetricsGetOK, error)
 
@@ -107,6 +117,22 @@ type ClientService interface {
 	LunMapGet(params *LunMapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapGetOK, error)
 
 	LunModify(params *LunModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunModifyOK, error)
+
+	PortsetCollectionGet(params *PortsetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetCollectionGetOK, error)
+
+	PortsetCreate(params *PortsetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetCreateCreated, error)
+
+	PortsetDelete(params *PortsetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetDeleteOK, error)
+
+	PortsetGet(params *PortsetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetGetOK, error)
+
+	PortsetInterfaceCollectionGet(params *PortsetInterfaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceCollectionGetOK, error)
+
+	PortsetInterfaceCreate(params *PortsetInterfaceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceCreateCreated, error)
+
+	PortsetInterfaceDelete(params *PortsetInterfaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceDeleteOK, error)
+
+	PortsetInterfaceGet(params *PortsetInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceGetOK, error)
 
 	WwpnAliasCollectionGet(params *WwpnAliasCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WwpnAliasCollectionGetOK, error)
 
@@ -248,7 +274,7 @@ func (a *Client) FcpCollectionPerformanceMetricsGet(params *FcpCollectionPerform
 /*
   FcpServiceCollectionGet Retrieves FC Protocol services.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands
@@ -471,8 +497,10 @@ func (a *Client) FcpServiceModify(params *FcpServiceModifyParams, authInfo runti
 /*
   IgroupCollectionGet Retrieves initiator groups.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `igroups.*`
 * `lun_maps.*`
+* `parent_igroups.*`
 ### Related ONTAP commands
 * `lun igroup show`
 * `lun mapping show`
@@ -526,6 +554,8 @@ func (a *Client) IgroupCollectionGet(params *IgroupCollectionGetParams, authInfo
 ### Default property values
 If not specified in POST, the following default property values are assigned.
 * `protocol` - _mixed_ - Data protocol of the initiator group's initiators.
+### Related ONTAP commands
+* `lun igroup create`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
 
@@ -611,8 +641,10 @@ func (a *Client) IgroupDelete(params *IgroupDeleteParams, authInfo runtime.Clien
 /*
   IgroupGet Retrieves an initiator group.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `igroups.*`
 * `lun_maps.*`
+* `parent_igroups.*`
 ### Related ONTAP commands
 * `lun igroup show`
 * `lun mapping show`
@@ -657,6 +689,9 @@ func (a *Client) IgroupGet(params *IgroupGetParams, authInfo runtime.ClientAuthI
 
 /*
   IgroupInitiatorCollectionGet Retrieves initiators of an initiator group.
+This API only reports initiators owned directly by the initiator group.
+Initiators of nested initiator groups are not included in this
+collection.
 ### Related ONTAP commands
 * `lun igroup show`
 ### Learn more
@@ -700,6 +735,8 @@ func (a *Client) IgroupInitiatorCollectionGet(params *IgroupInitiatorCollectionG
 
 /*
   IgroupInitiatorCreate Adds one or more initiators to an initiator group.
+This API does not support adding initiators to an initiator group that
+already contains nested initiator groups.
 ### Required properties
 * `name` or `records.name` - Initiator name(s) to add to the initiator group.
 ### Related ONTAP commands
@@ -745,6 +782,9 @@ func (a *Client) IgroupInitiatorCreate(params *IgroupInitiatorCreateParams, auth
 
 /*
   IgroupInitiatorDelete Deletes an initiator from an initiator group.
+This API only supports removal of initiators owned directly by the
+initiator group. Initiators of nested initiator groups must be
+removed on the initiator group that directly owns the initiator.
 ### Related ONTAP commands
 * `lun igroup remove`
 ### Learn more
@@ -788,6 +828,8 @@ func (a *Client) IgroupInitiatorDelete(params *IgroupInitiatorDeleteParams, auth
 
 /*
   IgroupInitiatorGet Retrieves an initiator of an initiator group.
+This API only reports initiators owned directly by the initiator group.
+Initiators of nested initiator groups are not part of this collection.
 ### Related ONTAP commands
 * `lun igroup show`
 ### Learn more
@@ -830,10 +872,58 @@ func (a *Client) IgroupInitiatorGet(params *IgroupInitiatorGetParams, authInfo r
 }
 
 /*
+  IgroupInitiatorModify Updates an initiator of an initiator group.
+This API only supports modification of initiators owned directly by the
+initiator group. Initiators of nested initiator groups must be
+modified on the initiator group that directly owns the initiator.
+### Related ONTAP commands
+* `lun igroup initiator modify`
+### Learn more
+* [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
+
+*/
+func (a *Client) IgroupInitiatorModify(params *IgroupInitiatorModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupInitiatorModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIgroupInitiatorModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "igroup_initiator_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/initiators/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IgroupInitiatorModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IgroupInitiatorModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IgroupInitiatorModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   IgroupModify Updates an initiator group.
 ### Related ONTAP commands
 * `lun igroup modify`
 * `lun igroup rename`
+* `lun igroup bind`
+* `lun igroup unbind`
 ### Learn more
 * [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
 
@@ -870,6 +960,195 @@ func (a *Client) IgroupModify(params *IgroupModifyParams, authInfo runtime.Clien
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*IgroupModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IgroupNestedCollectionGet Retrieves nested initiator groups of an initiator group.
+This API only reports the nested initiator groups that are direct
+children of the initiator group. Further nested initiator groups are
+reported by their direct parent initiator group.
+### Related ONTAP commands
+* `lun igroup show`
+### Learn more
+* [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
+
+*/
+func (a *Client) IgroupNestedCollectionGet(params *IgroupNestedCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIgroupNestedCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "igroup_nested_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/igroups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IgroupNestedCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IgroupNestedCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IgroupNestedCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IgroupNestedCreate Adds one or more nested initiator groups to an initiator group. A single
+nested initiator group can be added by directly specifying the name or
+UUID. Multiple nested initiator groups can be added by specifying the
+names or UUIDs in the records array. Nested initiator groups cannot be
+added to an initiator group that already directly contains initiators.
+### Required properties
+* `name` and/or `uuid` or `records` - Nested initiator groups to add to the initiator group.
+### Related ONTAP commands
+* `lun igroup add`
+### Learn more
+* [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
+
+*/
+func (a *Client) IgroupNestedCreate(params *IgroupNestedCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIgroupNestedCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "igroup_nested_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/igroups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IgroupNestedCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IgroupNestedCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IgroupNestedCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IgroupNestedDelete Removes a nested initiator group from an initiator group. This API does
+not delete the nested initiator group itself. It removes the relationship
+between a parent and child initiator group.
+This API only supports removal of initiator groups owned directly by the
+initiator group. Further nested initiator groups must be removed from the
+direct parent initiator group.
+### Related ONTAP commands
+* `lun igroup remove`
+### Learn more
+* [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
+
+*/
+func (a *Client) IgroupNestedDelete(params *IgroupNestedDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIgroupNestedDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "igroup_nested_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/igroups/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IgroupNestedDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IgroupNestedDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IgroupNestedDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IgroupNestedGet Retrieves a nested initiator group of an initiator group.
+This API only reports the nested initiator groups that are direct
+children of the initiator group. Further nested initiator groups are
+reported by their direct parent initiator group.
+### Related ONTAP commands
+* `lun igroup show`
+### Learn more
+* [`DOC /protocols/san/igroups`](#docs-SAN-protocols_san_igroups)
+
+*/
+func (a *Client) IgroupNestedGet(params *IgroupNestedGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IgroupNestedGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIgroupNestedGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "igroup_nested_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/igroups/{igroup.uuid}/igroups/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IgroupNestedGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IgroupNestedGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IgroupNestedGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1141,7 +1420,7 @@ func (a *Client) IscsiCredentialsModify(params *IscsiCredentialsModifyParams, au
 /*
   IscsiServiceCollectionGet Retrieves iSCSI services.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands
@@ -1454,13 +1733,13 @@ func (a *Client) IscsiSessionGet(params *IscsiSessionGetParams, authInfo runtime
 /*
   LunCollectionGet Retrieves LUNs.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `auto_delete`
 * `lun_maps.*`
 * `movement.*`
 * `status.mapped`
 * `statistics.*`
-* `metrics.*`
+* `metric.*`
 ### Related ONTAP commands
 * `lun mapping show`
 * `lun move show`
@@ -1645,13 +1924,13 @@ func (a *Client) LunDelete(params *LunDeleteParams, authInfo runtime.ClientAuthI
 /*
   LunGet Retrieves a LUN.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `auto_delete`
 * `lun_maps.*`
 * `movement.*`
 * `status.mapped`
 * `statistics.*`
-* `metrics.*`
+* `metric.*`
 ### Related ONTAP commands
 * `lun mapping show`
 * `lun move show`
@@ -1702,8 +1981,6 @@ func (a *Client) LunGet(params *LunGetParams, authInfo runtime.ClientAuthInfoWri
 * `lun mapping show`
 * [`DOC /protocols/san/lun-maps`](#docs-SAN-protocols_san_lun-maps)
 
-### Learn more
-* [`DOC /protocols/san/lun-maps`](#docs-SAN-protocols_san_lun-maps)
 */
 func (a *Client) LunMapCollectionGet(params *LunMapCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1922,6 +2199,361 @@ func (a *Client) LunModify(params *LunModifyParams, authInfo runtime.ClientAuthI
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*LunModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  PortsetCollectionGet Retrieves portsets.
+### Related ONTAP commands
+* `lun portset show`
+### Learn more
+* [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
+
+*/
+func (a *Client) PortsetCollectionGet(params *PortsetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPortsetCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "portset_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/portsets",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PortsetCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PortsetCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PortsetCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  PortsetCreate Creates a portset.
+### Required properties
+* `svm.uuid` or `svm.name` - Existing SVM in which to create the portset.
+* `name` - Name of the portset.
+### Recommended optional properties
+* `protocol` - The network protocol of the interfaces in the portset.
+* `interfaces` - Network interfaces to include in the portset. This property can be used to create the portset and populate it with network interfaces in a single request.
+### Default property values
+If not specified in POST, the following default property values are assigned.
+* `protocol` - _mixed_ - Data protocol of the portset's network interfaces.
+### Related ONTAP commands
+* `lun portset create`
+### Learn more
+* [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
+
+*/
+func (a *Client) PortsetCreate(params *PortsetCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPortsetCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "portset_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/san/portsets",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PortsetCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PortsetCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PortsetCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  PortsetDelete Deletes a portset.
+### Related ONTAP commands
+* `lun portset delete`
+### Learn more
+* [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
+
+*/
+func (a *Client) PortsetDelete(params *PortsetDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPortsetDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "portset_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/portsets/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PortsetDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PortsetDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PortsetDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  PortsetGet Retrieves a portset.
+### Related ONTAP commands
+* `lun portset show`
+### Learn more
+* [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
+
+*/
+func (a *Client) PortsetGet(params *PortsetGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPortsetGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "portset_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/portsets/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PortsetGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PortsetGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PortsetGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  PortsetInterfaceCollectionGet Retrieves interfaces of a portset.
+### Related ONTAP commands
+* `lun portset show`
+### Learn more
+* [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
+
+*/
+func (a *Client) PortsetInterfaceCollectionGet(params *PortsetInterfaceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPortsetInterfaceCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "portset_interface_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/portsets/{portset.uuid}/interfaces",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PortsetInterfaceCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PortsetInterfaceCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PortsetInterfaceCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  PortsetInterfaceCreate Adds one or more interfaces to a portset.
+### Required properties
+* `fc`, `ip` or `records` - Network interface(s) to add to the portset.
+### Related ONTAP commands
+* `lun portset add`
+### Learn more
+* [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
+
+*/
+func (a *Client) PortsetInterfaceCreate(params *PortsetInterfaceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPortsetInterfaceCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "portset_interface_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/san/portsets/{portset.uuid}/interfaces",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PortsetInterfaceCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PortsetInterfaceCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PortsetInterfaceCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  PortsetInterfaceDelete Deletes a network interface from a portset.
+### Related ONTAP commands
+* `lun portset remove`
+### Learn more
+* [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
+
+*/
+func (a *Client) PortsetInterfaceDelete(params *PortsetInterfaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPortsetInterfaceDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "portset_interface_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/portsets/{portset.uuid}/interfaces/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PortsetInterfaceDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PortsetInterfaceDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PortsetInterfaceDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  PortsetInterfaceGet Retrieves a network interface of a portset.
+### Related ONTAP commands
+* `lun portset show`
+### Learn more
+* [`DOC /protocols/san/portsets`](#docs-SAN-protocols_san_portsets)
+
+*/
+func (a *Client) PortsetInterfaceGet(params *PortsetInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPortsetInterfaceGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "portset_interface_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/portsets/{portset.uuid}/interfaces/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PortsetInterfaceGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PortsetInterfaceGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*PortsetInterfaceGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

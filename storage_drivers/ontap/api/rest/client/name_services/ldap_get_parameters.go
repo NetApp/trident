@@ -64,13 +64,13 @@ type LdapGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -125,26 +125,26 @@ func (o *LdapGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the ldap get params
-func (o *LdapGetParams) WithFields(fields []string) *LdapGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the ldap get params
+func (o *LdapGetParams) WithFieldsQueryParameter(fields []string) *LdapGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the ldap get params
-func (o *LdapGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the ldap get params
+func (o *LdapGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithSvmUUID adds the svmUUID to the ldap get params
-func (o *LdapGetParams) WithSvmUUID(svmUUID string) *LdapGetParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the ldap get params
+func (o *LdapGetParams) WithSVMUUIDPathParameter(svmUUID string) *LdapGetParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the ldap get params
-func (o *LdapGetParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the ldap get params
+func (o *LdapGetParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -155,7 +155,7 @@ func (o *LdapGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -167,7 +167,7 @@ func (o *LdapGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 
@@ -179,7 +179,7 @@ func (o *LdapGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 
 // bindParamLdapGet binds the parameter fields
 func (o *LdapGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

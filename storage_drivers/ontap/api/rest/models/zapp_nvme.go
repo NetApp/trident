@@ -28,9 +28,8 @@ type ZappNvme struct {
 	Components []*ZappNvmeComponentsItems0 `json:"components"`
 
 	// The name of the host OS running the application.
-	// Required: true
 	// Enum: [linux vmware windows]
-	OsType *string `json:"os_type"`
+	OsType string `json:"os_type,omitempty"`
 
 	// rpo
 	Rpo *ZappNvmeRpo `json:"rpo,omitempty"`
@@ -107,33 +106,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme
 	// ZappNvme
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeOsTypeLinux captures enum value "linux"
 	ZappNvmeOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme
 	// ZappNvme
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeOsTypeVmware captures enum value "vmware"
 	ZappNvmeOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme
 	// ZappNvme
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeOsTypeWindows captures enum value "windows"
 	ZappNvmeOsTypeWindows string = "windows"
 )
@@ -147,13 +146,12 @@ func (m *ZappNvme) validateOsTypeEnum(path, location string, value string) error
 }
 
 func (m *ZappNvme) validateOsType(formats strfmt.Registry) error {
-
-	if err := validate.Required("os_type", "body", m.OsType); err != nil {
-		return err
+	if swag.IsZero(m.OsType) { // not required
+		return nil
 	}
 
 	// value enum
-	if err := m.validateOsTypeEnum("os_type", "body", *m.OsType); err != nil {
+	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
 		return err
 	}
 
@@ -256,13 +254,20 @@ type ZappNvmeComponentsItems0 struct {
 	// Min Length: 1
 	Name *string `json:"name"`
 
-	// The number of namespaces in the component
+	// The number of namespaces in the component.
 	// Maximum: 32
 	// Minimum: 1
 	NamespaceCount int64 `json:"namespace_count,omitempty"`
 
+	// The name of the host OS running the application.
+	// Enum: [linux vmware windows]
+	OsType string `json:"os_type,omitempty"`
+
 	// performance
 	Performance *ZappNvmeComponentsItems0Performance `json:"performance,omitempty"`
+
+	// qos
+	Qos *ZappNvmeComponentsItems0Qos `json:"qos,omitempty"`
 
 	// subsystem
 	Subsystem *ZappNvmeComponentsSubsystem `json:"subsystem,omitempty"`
@@ -271,8 +276,7 @@ type ZappNvmeComponentsItems0 struct {
 	Tiering *ZappNvmeComponentsTiering `json:"tiering,omitempty"`
 
 	// The total size of the component, spread across member namespaces. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
-	// Required: true
-	TotalSize *int64 `json:"total_size"`
+	TotalSize int64 `json:"total_size,omitempty"`
 }
 
 // Validate validates this zapp nvme components items0
@@ -287,7 +291,15 @@ func (m *ZappNvmeComponentsItems0) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateOsType(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validatePerformance(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateQos(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -296,10 +308,6 @@ func (m *ZappNvmeComponentsItems0) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateTiering(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateTotalSize(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -342,6 +350,72 @@ func (m *ZappNvmeComponentsItems0) validateNamespaceCount(formats strfmt.Registr
 	return nil
 }
 
+var zappNvmeComponentsItems0TypeOsTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["linux","vmware","windows"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		zappNvmeComponentsItems0TypeOsTypePropEnum = append(zappNvmeComponentsItems0TypeOsTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ZappNvmeComponentsItems0
+	// ZappNvmeComponentsItems0
+	// os_type
+	// OsType
+	// linux
+	// END DEBUGGING
+	// ZappNvmeComponentsItems0OsTypeLinux captures enum value "linux"
+	ZappNvmeComponentsItems0OsTypeLinux string = "linux"
+
+	// BEGIN DEBUGGING
+	// ZappNvmeComponentsItems0
+	// ZappNvmeComponentsItems0
+	// os_type
+	// OsType
+	// vmware
+	// END DEBUGGING
+	// ZappNvmeComponentsItems0OsTypeVmware captures enum value "vmware"
+	ZappNvmeComponentsItems0OsTypeVmware string = "vmware"
+
+	// BEGIN DEBUGGING
+	// ZappNvmeComponentsItems0
+	// ZappNvmeComponentsItems0
+	// os_type
+	// OsType
+	// windows
+	// END DEBUGGING
+	// ZappNvmeComponentsItems0OsTypeWindows captures enum value "windows"
+	ZappNvmeComponentsItems0OsTypeWindows string = "windows"
+)
+
+// prop value enum
+func (m *ZappNvmeComponentsItems0) validateOsTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, zappNvmeComponentsItems0TypeOsTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ZappNvmeComponentsItems0) validateOsType(formats strfmt.Registry) error {
+	if swag.IsZero(m.OsType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateOsTypeEnum("os_type", "body", m.OsType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *ZappNvmeComponentsItems0) validatePerformance(formats strfmt.Registry) error {
 	if swag.IsZero(m.Performance) { // not required
 		return nil
@@ -351,6 +425,23 @@ func (m *ZappNvmeComponentsItems0) validatePerformance(formats strfmt.Registry) 
 		if err := m.Performance.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("performance")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ZappNvmeComponentsItems0) validateQos(formats strfmt.Registry) error {
+	if swag.IsZero(m.Qos) { // not required
+		return nil
+	}
+
+	if m.Qos != nil {
+		if err := m.Qos.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos")
 			}
 			return err
 		}
@@ -393,20 +484,15 @@ func (m *ZappNvmeComponentsItems0) validateTiering(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *ZappNvmeComponentsItems0) validateTotalSize(formats strfmt.Registry) error {
-
-	if err := validate.Required("total_size", "body", m.TotalSize); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // ContextValidate validate this zapp nvme components items0 based on the context it is used
 func (m *ZappNvmeComponentsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidatePerformance(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateQos(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -430,6 +516,20 @@ func (m *ZappNvmeComponentsItems0) contextValidatePerformance(ctx context.Contex
 		if err := m.Performance.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("performance")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ZappNvmeComponentsItems0) contextValidateQos(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Qos != nil {
+		if err := m.Qos.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos")
 			}
 			return err
 		}
@@ -608,33 +708,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ZappNvmeComponentsItems0PerformanceStorageService
 	// ZappNvmeComponentsItems0PerformanceStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsItems0PerformanceStorageServiceNameExtreme captures enum value "extreme"
 	ZappNvmeComponentsItems0PerformanceStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ZappNvmeComponentsItems0PerformanceStorageService
 	// ZappNvmeComponentsItems0PerformanceStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsItems0PerformanceStorageServiceNamePerformance captures enum value "performance"
 	ZappNvmeComponentsItems0PerformanceStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ZappNvmeComponentsItems0PerformanceStorageService
 	// ZappNvmeComponentsItems0PerformanceStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsItems0PerformanceStorageServiceNameValue captures enum value "value"
 	ZappNvmeComponentsItems0PerformanceStorageServiceNameValue string = "value"
 )
@@ -676,6 +776,132 @@ func (m *ZappNvmeComponentsItems0PerformanceStorageService) MarshalBinary() ([]b
 // UnmarshalBinary interface implementation
 func (m *ZappNvmeComponentsItems0PerformanceStorageService) UnmarshalBinary(b []byte) error {
 	var res ZappNvmeComponentsItems0PerformanceStorageService
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ZappNvmeComponentsItems0Qos zapp nvme components items0 qos
+//
+// swagger:model ZappNvmeComponentsItems0Qos
+type ZappNvmeComponentsItems0Qos struct {
+
+	// policy
+	Policy *ZappNvmeComponentsItems0QosPolicy `json:"policy,omitempty"`
+}
+
+// Validate validates this zapp nvme components items0 qos
+func (m *ZappNvmeComponentsItems0Qos) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ZappNvmeComponentsItems0Qos) validatePolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.Policy) { // not required
+		return nil
+	}
+
+	if m.Policy != nil {
+		if err := m.Policy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos" + "." + "policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this zapp nvme components items0 qos based on the context it is used
+func (m *ZappNvmeComponentsItems0Qos) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ZappNvmeComponentsItems0Qos) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Policy != nil {
+		if err := m.Policy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos" + "." + "policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ZappNvmeComponentsItems0Qos) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ZappNvmeComponentsItems0Qos) UnmarshalBinary(b []byte) error {
+	var res ZappNvmeComponentsItems0Qos
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ZappNvmeComponentsItems0QosPolicy zapp nvme components items0 qos policy
+//
+// swagger:model ZappNvmeComponentsItems0QosPolicy
+type ZappNvmeComponentsItems0QosPolicy struct {
+
+	// The name of an existing QoS policy.
+	Name string `json:"name,omitempty"`
+
+	// The UUID of an existing QoS policy. Usage: &lt;UUID&gt;
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this zapp nvme components items0 qos policy
+func (m *ZappNvmeComponentsItems0QosPolicy) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this zapp nvme components items0 qos policy based on context it is used
+func (m *ZappNvmeComponentsItems0QosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ZappNvmeComponentsItems0QosPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ZappNvmeComponentsItems0QosPolicy) UnmarshalBinary(b []byte) error {
+	var res ZappNvmeComponentsItems0QosPolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -774,11 +1000,11 @@ func (m *ZappNvmeRpo) UnmarshalBinary(b []byte) error {
 // swagger:model ZappNvmeRpoLocal
 type ZappNvmeRpoLocal struct {
 
-	// The local rpo of the application.
+	// The local RPO of the application.
 	// Enum: [hourly none]
 	Name string `json:"name,omitempty"`
 
-	// The snapshot policy to apply to each volume in the smart container. This property is only supported for smart containers. Usage: &lt;snapshot policy&gt;
+	// The Snapshot copy policy to apply to each volume in the smart container. This property is only supported for smart containers. Usage: &lt;snapshot policy&gt;
 	Policy string `json:"policy,omitempty"`
 }
 
@@ -810,23 +1036,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ZappNvmeRpoLocal
 	// ZappNvmeRpoLocal
 	// name
 	// Name
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeRpoLocalNameHourly captures enum value "hourly"
 	ZappNvmeRpoLocalNameHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ZappNvmeRpoLocal
 	// ZappNvmeRpoLocal
 	// name
 	// Name
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeRpoLocalNameNone captures enum value "none"
 	ZappNvmeRpoLocalNameNone string = "none"
 )
@@ -874,5 +1100,3 @@ func (m *ZappNvmeRpoLocal) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -77,14 +77,22 @@ func NewDNSModifyDefault(code int) *DNSModifyDefault {
 | 8847360    | Only admin or data SVMs allowed |
 | 8847361    | Exceeded the maximum number of domains allowed. Maximum of six domains only |
 | 8847362    | Exceeded the maximum number of name servers allowed. Maximum of three name servers only |
+| 8847376    | FQDN is mandatory if dynamic DNS update is being enabled. |
+| 8847380    | Secure updates can be enabled only after a CIFS server or an Active Directory account has been created for the SVM. |
+| 8847381    | A unique FQDN must be specified for each SVM. |
+| 8847383    | The specified TTL exceeds the maximum supported value of 720 hours. |
 | 8847392    | Domain name cannot be an IP address |
 | 8847393    | Top level domain name is invalid |
 | 8847394    | FQDN name voilated the limitations |
 | 8847399    | One or more of the specified DNS servers do not exist or cannot be reached |
+| 8847404    | Dynamic DNS is applicable only for data SVMs |
+| 8847405    | DNS parameters updated successfully; however the update of Dynamic DNS-related parameters has failed. |
 | 9240587    | FQDN name cannot be empty |
 | 9240588    | FQDN name is too long. Maximum supported length: 255 characters  |
 | 9240590    | FQDN name is reserved. Following names are reserved: "all", "local" and "localhost" |
-| 9240607    | One of the FQDN labels is too long. Maximum supported length: 63 characters |
+| 9240607    | One of the FQDN labels is too long. Maximum supported length is 63 characters |
+| 9240608    | FQDN does not contain a ".". At least one "." is mandatory for an FQDN. |
+| 9240607    | A label of the FQDN is too long (73 characters). Maximum supported length for each label is 63 characters. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
 
 */

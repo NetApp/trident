@@ -64,7 +64,7 @@ type SecurityKeyManagerKeyServersGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Server.
 
@@ -131,15 +131,15 @@ func (o *SecurityKeyManagerKeyServersGetParams) SetHTTPClient(client *http.Clien
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the security key manager key servers get params
-func (o *SecurityKeyManagerKeyServersGetParams) WithFields(fields []string) *SecurityKeyManagerKeyServersGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the security key manager key servers get params
+func (o *SecurityKeyManagerKeyServersGetParams) WithFieldsQueryParameter(fields []string) *SecurityKeyManagerKeyServersGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the security key manager key servers get params
-func (o *SecurityKeyManagerKeyServersGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the security key manager key servers get params
+func (o *SecurityKeyManagerKeyServersGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithServerPathParameter adds the server to the security key manager key servers get params
@@ -172,7 +172,7 @@ func (o *SecurityKeyManagerKeyServersGetParams) WriteToRequest(r runtime.ClientR
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *SecurityKeyManagerKeyServersGetParams) WriteToRequest(r runtime.ClientR
 
 // bindParamSecurityKeyManagerKeyServersGet binds the parameter fields
 func (o *SecurityKeyManagerKeyServersGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

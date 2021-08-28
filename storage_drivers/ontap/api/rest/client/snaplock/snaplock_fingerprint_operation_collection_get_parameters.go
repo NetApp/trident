@@ -64,19 +64,19 @@ type SnaplockFingerprintOperationCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -84,7 +84,7 @@ type SnaplockFingerprintOperationCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -92,7 +92,7 @@ type SnaplockFingerprintOperationCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SvmUUID.
 
@@ -124,14 +124,14 @@ func (o *SnaplockFingerprintOperationCollectionGetParams) WithDefaults() *Snaplo
 // All values with no default are reset to their zero value.
 func (o *SnaplockFingerprintOperationCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SnaplockFingerprintOperationCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -173,59 +173,59 @@ func (o *SnaplockFingerprintOperationCollectionGetParams) SetHTTPClient(client *
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snaplock fingerprint operation collection get params
-func (o *SnaplockFingerprintOperationCollectionGetParams) WithFields(fields []string) *SnaplockFingerprintOperationCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snaplock fingerprint operation collection get params
+func (o *SnaplockFingerprintOperationCollectionGetParams) WithFieldsQueryParameter(fields []string) *SnaplockFingerprintOperationCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snaplock fingerprint operation collection get params
-func (o *SnaplockFingerprintOperationCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snaplock fingerprint operation collection get params
+func (o *SnaplockFingerprintOperationCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithMaxRecords adds the maxRecords to the snaplock fingerprint operation collection get params
-func (o *SnaplockFingerprintOperationCollectionGetParams) WithMaxRecords(maxRecords *int64) *SnaplockFingerprintOperationCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the snaplock fingerprint operation collection get params
+func (o *SnaplockFingerprintOperationCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnaplockFingerprintOperationCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the snaplock fingerprint operation collection get params
-func (o *SnaplockFingerprintOperationCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the snaplock fingerprint operation collection get params
+func (o *SnaplockFingerprintOperationCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
-// WithOrderBy adds the orderBy to the snaplock fingerprint operation collection get params
-func (o *SnaplockFingerprintOperationCollectionGetParams) WithOrderBy(orderBy []string) *SnaplockFingerprintOperationCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the snaplock fingerprint operation collection get params
+func (o *SnaplockFingerprintOperationCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SnaplockFingerprintOperationCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the snaplock fingerprint operation collection get params
-func (o *SnaplockFingerprintOperationCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the snaplock fingerprint operation collection get params
+func (o *SnaplockFingerprintOperationCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the snaplock fingerprint operation collection get params
-func (o *SnaplockFingerprintOperationCollectionGetParams) WithReturnRecords(returnRecords *bool) *SnaplockFingerprintOperationCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the snaplock fingerprint operation collection get params
+func (o *SnaplockFingerprintOperationCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnaplockFingerprintOperationCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the snaplock fingerprint operation collection get params
-func (o *SnaplockFingerprintOperationCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the snaplock fingerprint operation collection get params
+func (o *SnaplockFingerprintOperationCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the snaplock fingerprint operation collection get params
-func (o *SnaplockFingerprintOperationCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SnaplockFingerprintOperationCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the snaplock fingerprint operation collection get params
+func (o *SnaplockFingerprintOperationCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnaplockFingerprintOperationCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the snaplock fingerprint operation collection get params
-func (o *SnaplockFingerprintOperationCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the snaplock fingerprint operation collection get params
+func (o *SnaplockFingerprintOperationCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSVMUUIDQueryParameter adds the svmUUID to the snaplock fingerprint operation collection get params
@@ -258,7 +258,7 @@ func (o *SnaplockFingerprintOperationCollectionGetParams) WriteToRequest(r runti
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -269,13 +269,13 @@ func (o *SnaplockFingerprintOperationCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -286,7 +286,7 @@ func (o *SnaplockFingerprintOperationCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -297,13 +297,13 @@ func (o *SnaplockFingerprintOperationCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -314,13 +314,13 @@ func (o *SnaplockFingerprintOperationCollectionGetParams) WriteToRequest(r runti
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -359,7 +359,7 @@ func (o *SnaplockFingerprintOperationCollectionGetParams) WriteToRequest(r runti
 
 // bindParamSnaplockFingerprintOperationCollectionGet binds the parameter fields
 func (o *SnaplockFingerprintOperationCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -376,7 +376,7 @@ func (o *SnaplockFingerprintOperationCollectionGetParams) bindParamFields(format
 
 // bindParamSnaplockFingerprintOperationCollectionGet binds the parameter order_by
 func (o *SnaplockFingerprintOperationCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

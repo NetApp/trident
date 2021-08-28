@@ -23,7 +23,7 @@ type SoftwarePackage struct {
 	Links *SoftwarePackageLinks `json:"_links,omitempty"`
 
 	// Indicates when this package was loaded
-	// Example: 2019-02-04 19:00:00
+	// Example: 2019-02-04T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -238,5 +238,3 @@ func (m *SoftwarePackageLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -28,13 +28,13 @@ type Snapshot struct {
 	Comment string `json:"comment,omitempty"`
 
 	// Creation time of the Snapshot copy. It is the volume access time when the Snapshot copy was created.
-	// Example: 2019-02-04 19:00:00
+	// Example: 2019-02-04T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
 
 	// The expiry time for the Snapshot copy. This is an optional attribute for POST or PATCH. Snapshot copies with an expiry time set are not allowed to be deleted until the retention time is reached.
-	// Example: 2019-02-04 19:00:00
+	// Example: 2019-02-04T19:00:00Z
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 
@@ -46,11 +46,19 @@ type Snapshot struct {
 	// Read Only: true
 	Owners []string `json:"owners,omitempty"`
 
+	// Size of the active file system at the time the Snapshot copy is captured. The actual size of the Snapshot copy also includes those blocks trapped by other Snapshot copies. On a Snapshot copy deletion, the "size" amount of blocks is the maximum number of blocks available. On a Snapshot copy restore, the "afs-used size" value will match the Snapshot copy "size" value.
+	// Example: 122880
+	// Read Only: true
+	Size int64 `json:"size,omitempty"`
+
 	// SnapLock expiry time for the Snapshot copy, if the Snapshot copy is taken on a SnapLock volume. A Snapshot copy is not allowed to be deleted or renamed until the SnapLock ComplianceClock time goes beyond this retention time.
-	// Example: 2019-02-04 19:00:00
+	// Example: 2019-02-04T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	SnaplockExpiryTime *strfmt.DateTime `json:"snaplock_expiry_time,omitempty"`
+
+	// Label for SnapMirror operations
+	SnapmirrorLabel string `json:"snapmirror_label,omitempty"`
 
 	// State of the Snapshot copy. There are cases where some Snapshot copies are not complete. In the "partial" state, the Snapshot copy is consistent but exists only on the subset of the constituents that existed prior to the FlexGroup's expansion. Partial Snapshot copies cannot be used for a Snapshot copy restore operation. A Snapshot copy is in an "invalid" state when it is present in some FlexGroup constituents but not in others. At all other times, a Snapshot copy is valid.
 	// Read Only: true
@@ -214,33 +222,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapshot
 	// Snapshot
 	// state
 	// State
 	// valid
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapshotStateValid captures enum value "valid"
 	SnapshotStateValid string = "valid"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapshot
 	// Snapshot
 	// state
 	// State
 	// invalid
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapshotStateInvalid captures enum value "invalid"
 	SnapshotStateInvalid string = "invalid"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapshot
 	// Snapshot
 	// state
 	// State
 	// partial
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapshotStatePartial captures enum value "partial"
 	SnapshotStatePartial string = "partial"
 )
@@ -316,6 +324,10 @@ func (m *Snapshot) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSnaplockExpiryTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -368,6 +380,15 @@ func (m *Snapshot) contextValidateCreateTime(ctx context.Context, formats strfmt
 func (m *Snapshot) contextValidateOwners(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "owners", "body", []string(m.Owners)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Snapshot) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "size", "body", int64(m.Size)); err != nil {
 		return err
 	}
 
@@ -894,5 +915,3 @@ func (m *SnapshotVolumeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

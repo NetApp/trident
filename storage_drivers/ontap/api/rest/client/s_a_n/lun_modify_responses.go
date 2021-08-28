@@ -95,6 +95,8 @@ func NewLunModifyDefault(code int) *LunModifyDefault {
 | 5374885 | An error occurred after successfully modifying some of the properties of the LUN. Some properties were not modified. |
 | 5374889 | An invalid value was specified for `movement.progress.state`. Active LUN movement operations can be PATCHed to only _paused_ or _replicating_. |
 | 5374892 | An attempt was made to reduce the size of a LUN. |
+| 5374904 | The destination volume is not online. |
+| 7018919 | A copy or move job exists with the same destination LUN. |
 | 13565952 | The LUN clone request failed. |
 
 */

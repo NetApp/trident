@@ -85,7 +85,7 @@ type NodeModifyParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* ShutdownRebootReason.
 
@@ -119,12 +119,12 @@ func (o *NodeModifyParams) SetDefaults() {
 	var (
 		allowDataOutageQueryParameterDefault = bool(false)
 
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := NodeModifyParams{
 		AllowDataOutageQueryParameter: &allowDataOutageQueryParameterDefault,
-		ReturnTimeout:                 &returnTimeoutDefault,
+		ReturnTimeoutQueryParameter:   &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -199,15 +199,15 @@ func (o *NodeModifyParams) SetInfo(info *models.Node) {
 	o.Info = info
 }
 
-// WithReturnTimeout adds the returnTimeout to the node modify params
-func (o *NodeModifyParams) WithReturnTimeout(returnTimeout *int64) *NodeModifyParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the node modify params
+func (o *NodeModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NodeModifyParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the node modify params
-func (o *NodeModifyParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the node modify params
+func (o *NodeModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithShutdownRebootReasonQueryParameter adds the shutdownRebootReason to the node modify params
@@ -279,13 +279,13 @@ func (o *NodeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

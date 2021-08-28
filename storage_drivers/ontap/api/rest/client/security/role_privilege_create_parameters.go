@@ -84,7 +84,7 @@ type RolePrivilegeCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,11 +104,11 @@ func (o *RolePrivilegeCreateParams) WithDefaults() *RolePrivilegeCreateParams {
 // All values with no default are reset to their zero value.
 func (o *RolePrivilegeCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := RolePrivilegeCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -183,15 +183,15 @@ func (o *RolePrivilegeCreateParams) SetOwnerUUIDPathParameter(ownerUUID string) 
 	o.OwnerUUIDPathParameter = ownerUUID
 }
 
-// WithReturnRecords adds the returnRecords to the role privilege create params
-func (o *RolePrivilegeCreateParams) WithReturnRecords(returnRecords *bool) *RolePrivilegeCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the role privilege create params
+func (o *RolePrivilegeCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *RolePrivilegeCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the role privilege create params
-func (o *RolePrivilegeCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the role privilege create params
+func (o *RolePrivilegeCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -217,13 +217,13 @@ func (o *RolePrivilegeCreateParams) WriteToRequest(r runtime.ClientRequest, reg 
 		return err
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

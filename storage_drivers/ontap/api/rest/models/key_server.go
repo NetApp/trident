@@ -23,9 +23,6 @@ type KeyServer struct {
 	// links
 	Links *KeyServerLinks `json:"_links,omitempty"`
 
-	// connectivity
-	Connectivity *KeyServerConnectivity `json:"connectivity,omitempty"`
-
 	// Password credentials for connecting with the key server. This is not audited.
 	// Example: password
 	// Format: password
@@ -35,6 +32,9 @@ type KeyServer struct {
 	//
 	// Max Items: 4
 	Records []*KeyServerRecordsItems0 `json:"records,omitempty"`
+
+	// A list of the secondary key servers associated with the primary key server.
+	SecondaryKeyServers []string `json:"secondary_key_servers,omitempty"`
 
 	// External key server for key management. If no port is provided, a default port of 5696 is used. Not valid in POST if `records` is provided.
 	// Example: keyserver1.com:5698
@@ -56,10 +56,6 @@ func (m *KeyServer) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateConnectivity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -90,23 +86,6 @@ func (m *KeyServer) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *KeyServer) validateConnectivity(formats strfmt.Registry) error {
-	if swag.IsZero(m.Connectivity) { // not required
-		return nil
-	}
-
-	if m.Connectivity != nil {
-		if err := m.Connectivity.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("connectivity")
 			}
 			return err
 		}
@@ -181,10 +160,6 @@ func (m *KeyServer) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateConnectivity(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -201,20 +176,6 @@ func (m *KeyServer) contextValidateLinks(ctx context.Context, formats strfmt.Reg
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *KeyServer) contextValidateConnectivity(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Connectivity != nil {
-		if err := m.Connectivity.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("connectivity")
 			}
 			return err
 		}
@@ -252,128 +213,6 @@ func (m *KeyServer) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *KeyServer) UnmarshalBinary(b []byte) error {
 	var res KeyServer
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// KeyServerConnectivity This property returns the key server connectivity state on all nodes of the cluster. The state is returned for a node only if the connectivity is not in an available state on that node.
-// This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
-//
-//
-// swagger:model KeyServerConnectivity
-type KeyServerConnectivity struct {
-
-	// Set to true when key server connectivity state is available on all nodes of the cluster.
-	// Read Only: true
-	ClusterAvailability *bool `json:"cluster_availability,omitempty"`
-
-	// An array of key server connectivity states for each node.
-	//
-	// Read Only: true
-	Records []*KeyServerState `json:"records,omitempty"`
-}
-
-// Validate validates this key server connectivity
-func (m *KeyServerConnectivity) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateRecords(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *KeyServerConnectivity) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
-			continue
-		}
-
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("connectivity" + "." + "records" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-// ContextValidate validate this key server connectivity based on the context it is used
-func (m *KeyServerConnectivity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateClusterAvailability(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *KeyServerConnectivity) contextValidateClusterAvailability(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "connectivity"+"."+"cluster_availability", "body", m.ClusterAvailability); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *KeyServerConnectivity) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "connectivity"+"."+"records", "body", []*KeyServerState(m.Records)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Records); i++ {
-
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("connectivity" + "." + "records" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *KeyServerConnectivity) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *KeyServerConnectivity) UnmarshalBinary(b []byte) error {
-	var res KeyServerConnectivity
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -475,13 +314,13 @@ type KeyServerRecordsItems0 struct {
 	// links
 	Links *KeyServerRecordsItems0Links `json:"_links,omitempty"`
 
-	// connectivity
-	Connectivity *KeyServerRecordsItems0Connectivity `json:"connectivity,omitempty"`
-
 	// Password credentials for connecting with the key server. This is not audited.
 	// Example: password
 	// Format: password
 	Password strfmt.Password `json:"password,omitempty"`
+
+	// A list of the secondary key servers associated with the primary key server.
+	SecondaryKeyServers []string `json:"secondary_key_servers,omitempty"`
 
 	// External key server for key management. If no port is provided, a default port of 5696 is used. Not valid in POST if `records` is provided.
 	// Example: keyserver1.com:5698
@@ -503,10 +342,6 @@ func (m *KeyServerRecordsItems0) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateConnectivity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -533,23 +368,6 @@ func (m *KeyServerRecordsItems0) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *KeyServerRecordsItems0) validateConnectivity(formats strfmt.Registry) error {
-	if swag.IsZero(m.Connectivity) { // not required
-		return nil
-	}
-
-	if m.Connectivity != nil {
-		if err := m.Connectivity.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("connectivity")
 			}
 			return err
 		}
@@ -594,10 +412,6 @@ func (m *KeyServerRecordsItems0) ContextValidate(ctx context.Context, formats st
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateConnectivity(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -618,20 +432,6 @@ func (m *KeyServerRecordsItems0) contextValidateLinks(ctx context.Context, forma
 	return nil
 }
 
-func (m *KeyServerRecordsItems0) contextValidateConnectivity(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Connectivity != nil {
-		if err := m.Connectivity.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("connectivity")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
 // MarshalBinary interface implementation
 func (m *KeyServerRecordsItems0) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -643,128 +443,6 @@ func (m *KeyServerRecordsItems0) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *KeyServerRecordsItems0) UnmarshalBinary(b []byte) error {
 	var res KeyServerRecordsItems0
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// KeyServerRecordsItems0Connectivity This property returns the key server connectivity state on all nodes of the cluster. The state is returned for a node only if the connectivity is not in an available state on that node.
-// This is an advanced property; there is an added cost to retrieving its value. The property is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter or GET for all advanced properties is enabled.
-//
-//
-// swagger:model KeyServerRecordsItems0Connectivity
-type KeyServerRecordsItems0Connectivity struct {
-
-	// Set to true when key server connectivity state is available on all nodes of the cluster.
-	// Read Only: true
-	ClusterAvailability *bool `json:"cluster_availability,omitempty"`
-
-	// An array of key server connectivity states for each node.
-	//
-	// Read Only: true
-	Records []*KeyServerState `json:"records,omitempty"`
-}
-
-// Validate validates this key server records items0 connectivity
-func (m *KeyServerRecordsItems0Connectivity) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateRecords(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *KeyServerRecordsItems0Connectivity) validateRecords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Records) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Records); i++ {
-		if swag.IsZero(m.Records[i]) { // not required
-			continue
-		}
-
-		if m.Records[i] != nil {
-			if err := m.Records[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("connectivity" + "." + "records" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-// ContextValidate validate this key server records items0 connectivity based on the context it is used
-func (m *KeyServerRecordsItems0Connectivity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateClusterAvailability(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateRecords(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *KeyServerRecordsItems0Connectivity) contextValidateClusterAvailability(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "connectivity"+"."+"cluster_availability", "body", m.ClusterAvailability); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *KeyServerRecordsItems0Connectivity) contextValidateRecords(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "connectivity"+"."+"records", "body", []*KeyServerState(m.Records)); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Records); i++ {
-
-		if m.Records[i] != nil {
-			if err := m.Records[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("connectivity" + "." + "records" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *KeyServerRecordsItems0Connectivity) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *KeyServerRecordsItems0Connectivity) UnmarshalBinary(b []byte) error {
-	var res KeyServerRecordsItems0Connectivity
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -857,5 +535,3 @@ func (m *KeyServerRecordsItems0Links) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

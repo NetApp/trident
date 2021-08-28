@@ -64,7 +64,7 @@ type NodeGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	// UUID.
 	//
@@ -124,15 +124,15 @@ func (o *NodeGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the node get params
-func (o *NodeGetParams) WithFields(fields []string) *NodeGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the node get params
+func (o *NodeGetParams) WithFieldsQueryParameter(fields []string) *NodeGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the node get params
-func (o *NodeGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the node get params
+func (o *NodeGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the node get params
@@ -154,7 +154,7 @@ func (o *NodeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -178,7 +178,7 @@ func (o *NodeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 
 // bindParamNodeGet binds the parameter fields
 func (o *NodeGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -21,7 +21,7 @@ import (
 type SoftwareHistory struct {
 
 	// Completion time of this installation request.
-	// Example: 2019-02-02 20:00:00
+	// Example: 2019-02-02T20:00:00Z
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -35,7 +35,7 @@ type SoftwareHistory struct {
 	Node *SoftwareHistoryNode `json:"node,omitempty"`
 
 	// Start time of this installation request.
-	// Example: 2019-02-02 19:00:00
+	// Example: 2019-02-02T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -133,23 +133,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_history
 	// SoftwareHistory
 	// state
 	// State
 	// successful
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareHistoryStateSuccessful captures enum value "successful"
 	SoftwareHistoryStateSuccessful string = "successful"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_history
 	// SoftwareHistory
 	// state
 	// State
 	// canceled
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareHistoryStateCanceled captures enum value "canceled"
 	SoftwareHistoryStateCanceled string = "canceled"
 )
@@ -465,5 +465,3 @@ func (m *SoftwareHistoryNodeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

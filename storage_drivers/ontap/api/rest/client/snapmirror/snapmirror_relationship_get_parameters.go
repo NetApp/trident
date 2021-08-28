@@ -64,7 +64,7 @@ type SnapmirrorRelationshipGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* ListDestinationsOnly.
 
@@ -131,15 +131,15 @@ func (o *SnapmirrorRelationshipGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snapmirror relationship get params
-func (o *SnapmirrorRelationshipGetParams) WithFields(fields []string) *SnapmirrorRelationshipGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snapmirror relationship get params
+func (o *SnapmirrorRelationshipGetParams) WithFieldsQueryParameter(fields []string) *SnapmirrorRelationshipGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snapmirror relationship get params
-func (o *SnapmirrorRelationshipGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snapmirror relationship get params
+func (o *SnapmirrorRelationshipGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithListDestinationsOnlyQueryParameter adds the listDestinationsOnly to the snapmirror relationship get params
@@ -172,7 +172,7 @@ func (o *SnapmirrorRelationshipGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -213,7 +213,7 @@ func (o *SnapmirrorRelationshipGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamSnapmirrorRelationshipGet binds the parameter fields
 func (o *SnapmirrorRelationshipGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

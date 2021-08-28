@@ -70,7 +70,7 @@ type ApplicationSnapshotGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -142,15 +142,15 @@ func (o *ApplicationSnapshotGetParams) SetApplicationUUIDPathParameter(applicati
 	o.ApplicationUUIDPathParameter = applicationUUID
 }
 
-// WithFields adds the fields to the application snapshot get params
-func (o *ApplicationSnapshotGetParams) WithFields(fields []string) *ApplicationSnapshotGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the application snapshot get params
+func (o *ApplicationSnapshotGetParams) WithFieldsQueryParameter(fields []string) *ApplicationSnapshotGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the application snapshot get params
-func (o *ApplicationSnapshotGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the application snapshot get params
+func (o *ApplicationSnapshotGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the application snapshot get params
@@ -177,7 +177,7 @@ func (o *ApplicationSnapshotGetParams) WriteToRequest(r runtime.ClientRequest, r
 		return err
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *ApplicationSnapshotGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamApplicationSnapshotGet binds the parameter fields
 func (o *ApplicationSnapshotGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -72,19 +72,19 @@ type SnapmirrorRelationshipCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* ValidateOnly.
 
 	   Validate the operation and its parameters, without actually performing the operation.
 	*/
-	ValidateOnly *bool
+	ValidateOnlyQueryParameter *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,14 +104,14 @@ func (o *SnapmirrorRelationshipCreateParams) WithDefaults() *SnapmirrorRelations
 // All values with no default are reset to their zero value.
 func (o *SnapmirrorRelationshipCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := SnapmirrorRelationshipCreateParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -164,37 +164,37 @@ func (o *SnapmirrorRelationshipCreateParams) SetInfo(info *models.SnapmirrorRela
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the snapmirror relationship create params
-func (o *SnapmirrorRelationshipCreateParams) WithReturnRecords(returnRecords *bool) *SnapmirrorRelationshipCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the snapmirror relationship create params
+func (o *SnapmirrorRelationshipCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnapmirrorRelationshipCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the snapmirror relationship create params
-func (o *SnapmirrorRelationshipCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the snapmirror relationship create params
+func (o *SnapmirrorRelationshipCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the snapmirror relationship create params
-func (o *SnapmirrorRelationshipCreateParams) WithReturnTimeout(returnTimeout *int64) *SnapmirrorRelationshipCreateParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationship create params
+func (o *SnapmirrorRelationshipCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnapmirrorRelationshipCreateParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the snapmirror relationship create params
-func (o *SnapmirrorRelationshipCreateParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationship create params
+func (o *SnapmirrorRelationshipCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
-// WithValidateOnly adds the validateOnly to the snapmirror relationship create params
-func (o *SnapmirrorRelationshipCreateParams) WithValidateOnly(validateOnly *bool) *SnapmirrorRelationshipCreateParams {
-	o.SetValidateOnly(validateOnly)
+// WithValidateOnlyQueryParameter adds the validateOnly to the snapmirror relationship create params
+func (o *SnapmirrorRelationshipCreateParams) WithValidateOnlyQueryParameter(validateOnly *bool) *SnapmirrorRelationshipCreateParams {
+	o.SetValidateOnlyQueryParameter(validateOnly)
 	return o
 }
 
-// SetValidateOnly adds the validateOnly to the snapmirror relationship create params
-func (o *SnapmirrorRelationshipCreateParams) SetValidateOnly(validateOnly *bool) {
-	o.ValidateOnly = validateOnly
+// SetValidateOnlyQueryParameter adds the validateOnly to the snapmirror relationship create params
+func (o *SnapmirrorRelationshipCreateParams) SetValidateOnlyQueryParameter(validateOnly *bool) {
+	o.ValidateOnlyQueryParameter = validateOnly
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -210,13 +210,13 @@ func (o *SnapmirrorRelationshipCreateParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -227,13 +227,13 @@ func (o *SnapmirrorRelationshipCreateParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -244,13 +244,13 @@ func (o *SnapmirrorRelationshipCreateParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ValidateOnly != nil {
+	if o.ValidateOnlyQueryParameter != nil {
 
 		// query param validate_only
 		var qrValidateOnly bool
 
-		if o.ValidateOnly != nil {
-			qrValidateOnly = *o.ValidateOnly
+		if o.ValidateOnlyQueryParameter != nil {
+			qrValidateOnly = *o.ValidateOnlyQueryParameter
 		}
 		qValidateOnly := swag.FormatBool(qrValidateOnly)
 		if qValidateOnly != "" {

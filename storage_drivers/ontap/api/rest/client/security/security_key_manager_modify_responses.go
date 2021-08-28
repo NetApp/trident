@@ -79,7 +79,6 @@ func NewSecurityKeyManagerModifyDefault(code int) *SecurityKeyManagerModifyDefau
 | 65536404 | The passphrase does not match the accepted length. |
 | 65536406 | The change of passphrase failed. |
 | 65536407 | The passphrase update failed on some nodes. |
-| 65536408 | The passphrase update failed on some nodes. |
 | 65536802 | The passphrase does not match the accepted length in common criteria mode. |
 | 65536821 | The certificate is not installed. |
 | 65536822 | Multitenant key management is not supported in the current cluster version. |
@@ -92,7 +91,6 @@ func NewSecurityKeyManagerModifyDefault(code int) *SecurityKeyManagerModifyDefau
 | 66060338 | Failed to establish secure connection for a key management server due to incorrect server_ca certificates. |
 | 66060339 | Failed to establish secure connection for a key management server due to incorrect client certificates. |
 | 66060340 | Failed to establish secure connection for a key management server due to Cryptsoft error. |
-| 66060341 | Failed to establish secure connection for a key management server due to network configuration issues. |
 
 */
 type SecurityKeyManagerModifyDefault struct {

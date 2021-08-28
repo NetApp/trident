@@ -60,6 +60,12 @@ type ClientService interface {
 
 	CifsServiceModify(params *CifsServiceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsServiceModifyAccepted, error)
 
+	CifsSessionCollectionGet(params *CifsSessionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionCollectionGetOK, error)
+
+	CifsSessionDelete(params *CifsSessionDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionDeleteOK, error)
+
+	CifsSessionGet(params *CifsSessionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionGetOK, error)
+
 	CifsShareACLCollectionGet(params *CifsShareACLCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLCollectionGetOK, error)
 
 	CifsShareACLCreate(params *CifsShareACLCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsShareACLCreateCreated, error)
@@ -90,6 +96,8 @@ type ClientService interface {
 
 	CifsSymlinkMappingModify(params *CifsSymlinkMappingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingModifyOK, error)
 
+	EffectivePermissionGet(params *EffectivePermissionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EffectivePermissionGetOK, error)
+
 	ExportPolicyCollectionGet(params *ExportPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyCollectionGetOK, error)
 
 	ExportPolicyCreate(params *ExportPolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyCreateCreated, error)
@@ -115,6 +123,34 @@ type ClientService interface {
 	ExportRuleGet(params *ExportRuleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleGetOK, error)
 
 	ExportRuleModify(params *ExportRuleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportRuleModifyOK, error)
+
+	FileAccessEventCollectionGet(params *FileAccessEventCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessEventCollectionGetOK, error)
+
+	FileAccessEventDelete(params *FileAccessEventDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessEventDeleteOK, error)
+
+	FileAccessEventGet(params *FileAccessEventGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessEventGetOK, error)
+
+	FileAccessFilterCollectionGet(params *FileAccessFilterCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterCollectionGetOK, error)
+
+	FileAccessFilterCreate(params *FileAccessFilterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterCreateCreated, error)
+
+	FileAccessFilterDelete(params *FileAccessFilterDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterDeleteOK, error)
+
+	FileAccessFilterGet(params *FileAccessFilterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterGetOK, error)
+
+	FileAccessFilterModify(params *FileAccessFilterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterModifyOK, error)
+
+	FileDirectorySecurityACLCreate(params *FileDirectorySecurityACLCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLCreateAccepted, error)
+
+	FileDirectorySecurityACLDelete(params *FileDirectorySecurityACLDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLDeleteAccepted, error)
+
+	FileDirectorySecurityACLModify(params *FileDirectorySecurityACLModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLModifyAccepted, error)
+
+	FileDirectorySecurityCreate(params *FileDirectorySecurityCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityCreateAccepted, error)
+
+	FileDirectorySecurityGet(params *FileDirectorySecurityGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityGetOK, error)
+
+	FileDirectorySecurityModify(params *FileDirectorySecurityModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityModifyAccepted, error)
 
 	FpolicyCollectionGet(params *FpolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyCollectionGetOK, error)
 
@@ -723,7 +759,7 @@ func (a *Client) CifsSearchPathModify(params *CifsSearchPathModifyParams, authIn
 /*
   CifsServiceCollectionGet Retrieves CIFS servers.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands
@@ -792,6 +828,7 @@ If not specified in POST, the following default property values are assigned:
 * `restrict_anonymous` - _no_enumeration_
 * `smb_signing` - _false_
 * `smb_encryption` - _false_
+* `encrypt_dc_connection` - _false_
 * `kdc_encryption` - _false_
 * `default_unix_user` - _pcuser_
 * `netbios_enabled` - _false_ However, if either "netbios.wins-server" or "netbios.aliases" is set during POST and if `netbios_enabled` is not specified then `netbios_enabled` is set to true.
@@ -972,6 +1009,135 @@ func (a *Client) CifsServiceModify(params *CifsServiceModifyParams, authInfo run
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*CifsServiceModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CifsSessionCollectionGet Retrieves the CIFS sessions information for all SVMs.
+### Related ONTAP commands
+  * `vserver cifs session show -active-volumes`
+### Learn more
+* [`DOC /protocols/cifs/sessions`](#docs-NAS-protocols_cifs_sessions)
+
+*/
+func (a *Client) CifsSessionCollectionGet(params *CifsSessionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsSessionCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_session_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/sessions",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsSessionCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsSessionCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsSessionCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CifsSessionDelete Deletes SMB session information on a node for an SVM.
+* To delete the specific SMB session information, pass the relavant SMB session's identifier and connection Id.
+* To delete all the SMB session information on specific connection, pass the specific SMB session's Identifier value as zero(0).
+* To delete all the SMB session information, pass the specific session's identifier and connection Id values as zero(0).
+* To delete all the SMB session information on specific Identifier alone is not allowed.
+### Learn more
+* [`DOC /protocols/cifs/sessions`](#docs-NAS-protocols_cifs_sessions)
+
+*/
+func (a *Client) CifsSessionDelete(params *CifsSessionDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsSessionDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_session_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsSessionDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsSessionDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsSessionDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CifsSessionGet Retrieves specific SMB session information for a specific SMB connection in a node on an SVM.
+### Learn more
+* [`DOC /protocols/cifs/sessions`](#docs-NAS-protocols_cifs_sessions)
+
+*/
+func (a *Client) CifsSessionGet(params *CifsSessionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSessionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsSessionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_session_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/sessions/{node.uuid}/{svm.uuid}/{identifier}/{connection_id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsSessionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsSessionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsSessionGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1658,6 +1824,47 @@ func (a *Client) CifsSymlinkMappingModify(params *CifsSymlinkMappingModifyParams
 }
 
 /*
+  EffectivePermissionGet Retrieves effective security permissions on a file.
+### Related ONTAP commands
+* `vserver security file-directory show-effective-permissions`
+
+*/
+func (a *Client) EffectivePermissionGet(params *EffectivePermissionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EffectivePermissionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewEffectivePermissionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "effective_permission_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/file-security/effective-permissions/{svm.uuid}/{path}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &EffectivePermissionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*EffectivePermissionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*EffectivePermissionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   ExportPolicyCollectionGet Retrieves export policies.
 ### Related ONTAP commands
 * `vserver export-policy show`
@@ -2068,6 +2275,10 @@ If not specified in POST, the following default property values are assigned:
 * `protocols` - _any_
 * `anonymous_user` - _none_
 * `superuser` - _any_
+* `allow_device_creation` - _true_
+* `ntfs_unix_security` - _fail_
+* `chown_mode` - _restricted_
+* `allow_suid` - _true_
 ### Related ONTAP commands
 * `vserver export-policy rule create`
 ### Learn more
@@ -2236,6 +2447,588 @@ func (a *Client) ExportRuleModify(params *ExportRuleModifyParams, authInfo runti
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ExportRuleModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileAccessEventCollectionGet Retrieves the trace results for access allowed or denied events.
+### Related ONTAP commands
+* `vserver security trace trace-result show`
+
+*/
+func (a *Client) FileAccessEventCollectionGet(params *FileAccessEventCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessEventCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileAccessEventCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_access_event_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/file-access-tracing/events",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileAccessEventCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileAccessEventCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileAccessEventCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileAccessEventDelete Deletes trace results.
+### Related ONTAP commands
+* `vserver security trace result delete`
+
+*/
+func (a *Client) FileAccessEventDelete(params *FileAccessEventDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessEventDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileAccessEventDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_access_event_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/file-access-tracing/events/{node.uuid}/{svm.uuid}/{index}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileAccessEventDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileAccessEventDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileAccessEventDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileAccessEventGet Retrieves trace results for the specified sequence number.
+### Related ONTAP commands
+* `vserver security trace trace-result show`
+
+*/
+func (a *Client) FileAccessEventGet(params *FileAccessEventGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessEventGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileAccessEventGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_access_event_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/file-access-tracing/events/{node.uuid}/{svm.uuid}/{index}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileAccessEventGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileAccessEventGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileAccessEventGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileAccessFilterCollectionGet Retrieves information about security trace filter entries.
+### Related ONTAP commands
+* `vserver security trace filter show`
+
+*/
+func (a *Client) FileAccessFilterCollectionGet(params *FileAccessFilterCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileAccessFilterCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_access_filter_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/file-access-tracing/filters",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileAccessFilterCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileAccessFilterCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileAccessFilterCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileAccessFilterCreate Creates security trace filter entries.
+### Related ONTAP commands
+* `vserver security trace filter create`
+
+*/
+func (a *Client) FileAccessFilterCreate(params *FileAccessFilterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileAccessFilterCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_access_filter_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/file-access-tracing/filters",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileAccessFilterCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileAccessFilterCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileAccessFilterCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileAccessFilterDelete Deletes security trace filters.
+### Related ONTAP commands
+* `vserver security trace filter delete`
+
+*/
+func (a *Client) FileAccessFilterDelete(params *FileAccessFilterDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileAccessFilterDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_access_filter_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/file-access-tracing/filters/{svm.uuid}/{index}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileAccessFilterDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileAccessFilterDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileAccessFilterDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileAccessFilterGet Retrieves information about security trace filter entries.
+### Related ONTAP commands
+* `vserver security trace filter show`
+
+*/
+func (a *Client) FileAccessFilterGet(params *FileAccessFilterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileAccessFilterGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_access_filter_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/file-access-tracing/filters/{svm.uuid}/{index}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileAccessFilterGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileAccessFilterGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileAccessFilterGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileAccessFilterModify Updates security trace filter entries.
+### Related ONTAP commands
+* `vserver security trace filter modify`
+
+*/
+func (a *Client) FileAccessFilterModify(params *FileAccessFilterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileAccessFilterModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileAccessFilterModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_access_filter_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/file-access-tracing/filters/{svm.uuid}/{index}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileAccessFilterModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileAccessFilterModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileAccessFilterModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileDirectorySecurityACLCreate Adds the new SACL/DACL ACL.
+### Related ONTAP commands
+* `vserver security file-directory ntfs dacl add`
+* `vserver security file-directory ntfs sacl add`
+
+*/
+func (a *Client) FileDirectorySecurityACLCreate(params *FileDirectorySecurityACLCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileDirectorySecurityACLCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_directory_security_acl_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}/acl",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileDirectorySecurityACLCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileDirectorySecurityACLCreateAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileDirectorySecurityACLCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileDirectorySecurityACLDelete Deletes the SACL/DACL ACL
+### Related ONTAP commands
+* `vserver security file-directory ntfs dacl remove`
+* `vserver security file-directory ntfs sacl remove`
+
+*/
+func (a *Client) FileDirectorySecurityACLDelete(params *FileDirectorySecurityACLDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileDirectorySecurityACLDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_directory_security_acl_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}/acl/{user}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileDirectorySecurityACLDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileDirectorySecurityACLDeleteAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileDirectorySecurityACLDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileDirectorySecurityACLModify Updates the SACLs/DACLs
+### Related ONTAP commands
+* `vserver security file-directory ntfs dacl modify`
+* `vserver security file-directory ntfs sacl modify`
+
+*/
+func (a *Client) FileDirectorySecurityACLModify(params *FileDirectorySecurityACLModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityACLModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileDirectorySecurityACLModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_directory_security_acl_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}/acl/{user}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileDirectorySecurityACLModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileDirectorySecurityACLModifyAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileDirectorySecurityACLModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileDirectorySecurityCreate Applies an SD  to the given path.
+### Related ONTAP commands
+* `vserver security file-directory ntfs create`
+* `vserver security file-directory ntfs dacl add`
+* `vserver security file-directory ntfs sacl add`
+* `vserver security file-directory policy create`
+* `vserver security file-directory policy task add`
+* `vserver security file-directory apply`
+
+*/
+func (a *Client) FileDirectorySecurityCreate(params *FileDirectorySecurityCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileDirectorySecurityCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_directory_security_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileDirectorySecurityCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileDirectorySecurityCreateAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileDirectorySecurityCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileDirectorySecurityGet Retrieves  file permissions
+### Related ONTAP commands
+* `vserver security file-directory show`
+
+*/
+func (a *Client) FileDirectorySecurityGet(params *FileDirectorySecurityGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileDirectorySecurityGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_directory_security_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileDirectorySecurityGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileDirectorySecurityGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileDirectorySecurityGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FileDirectorySecurityModify Updates SD specific Information i.e owner, group & control-flags
+### Related ONTAP commands
+* `vserver security file-directory ntfs modify`
+
+*/
+func (a *Client) FileDirectorySecurityModify(params *FileDirectorySecurityModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileDirectorySecurityModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_directory_security_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileDirectorySecurityModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileDirectorySecurityModifyAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileDirectorySecurityModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -3487,9 +4280,10 @@ func (a *Client) KerberosRealmModify(params *KerberosRealmModifyParams, authInfo
 
 /*
   NfsClientsGet Retrieves the NFS configuration of SVMs.
+### Expensive properties
+export_policy.id is expensive field. It is not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `export_policy.id`
 
-### Learn more
-* [`DOC /protocols/nfs/connected-clients`](#docs-NAS-protocols_nfs_connected-clients)
 */
 func (a *Client) NfsClientsGet(params *NfsClientsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3529,7 +4323,7 @@ func (a *Client) NfsClientsGet(params *NfsClientsGetParams, authInfo runtime.Cli
 /*
   NfsCollectionGet Retrieves the NFS configuration of SVMs.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `statistics.*`
 * `metric.*`
 ### Related ONTAP commands
@@ -3623,7 +4417,9 @@ If not specified in POST, the following default property values are assigned:
 * `transport.udp_enabled` - _true_
 * `transport.tcp_enabled` - _true_
 * `protocol.v3_enabled` - _true_
+* `protocol.v3_64bit_identifiers_enabled` - _false_
 * `protocol.v4_id_domain` - defaultv4iddomain.com
+* `protocol.v4_64bit_identifiers_enabled` - _true_
 * `protocol.v4_enabled` - _false_
 * `protocol.v41_enabled` - _false_
 * `protocol.v40_features.acl_enabled` - _false_
@@ -3634,6 +4430,11 @@ If not specified in POST, the following default property values are assigned:
 * `protocol.v41_features.write_delegation_enabled` - _false_
 * `protocol.v41_features.pnfs_enabled` - _false_
 * `vstorage_enabled` - _false_
+* `rquota_enabled` - _false_
+* `showmount_enabled` - _true_
+* `auth_sys_extended_groups_enabled` - _false_
+* `extended_groups_limit` - _32_
+* `positive_cached_credential_ttl` - _7200000_
 ### Related ONTAP commands
 * `vserver nfs create`
 ### Learn more
@@ -3820,7 +4621,6 @@ Important notes:
 * `vserver vscan scanner-pool show`
 * `vserver vscan scanner-pool servers show`
 * `vserver vscan scanner-pool privileged-users show`
-* `vserver vscan scanner-pool show-active`
 * `vserver vscan on-access-policy show`
 * `vserver vscan on-access-policy file-ext-to-exclude show`
 * `vserver vscan on-access-policy file-ext-to-include show`
@@ -3990,7 +4790,6 @@ Important note:
 * `vserver vscan scanner-pool show`
 * `vserver vscan scanner-pool servers show`
 * `vserver vscan scanner-pool privileged-users show`
-* `vserver vscan scanner-pool show-active`
 * `vserver vscan on-access-policy show`
 * `vserver vscan on-access-policy file-ext-to-exclude show`
 * `vserver vscan on-access-policy file-ext-to-include show`
@@ -4573,7 +5372,6 @@ func (a *Client) VscanOnDemandPolicyCollectionGet(params *VscanOnDemandPolicyCol
 * `vserver vscan scanner-pool show`
 * `vserver vscan scanner-pool privileged-users show`
 * `vserver vscan scanner-pool servers show`
-* `vserver vscan scanner-pool show-active`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/scanner-pools`](#docs-NAS-protocols_vscan_{svm.uuid}_scanner-pools)
 
@@ -4779,7 +5577,6 @@ func (a *Client) VscanScannerModify(params *VscanScannerModifyParams, authInfo r
 * `vserver vscan scanner-pool show`
 * `vserver vscan scanner-pool privileged-users show`
 * `vserver vscan scanner-pool servers show`
-* `vserver vscan scanner-pool show-active`
 ### Learn more
 * [`DOC /protocols/vscan/{svm.uuid}/scanner-pools`](#docs-NAS-protocols_vscan_{svm.uuid}_scanner-pools)
 

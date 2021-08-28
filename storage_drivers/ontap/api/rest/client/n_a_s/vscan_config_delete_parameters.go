@@ -63,7 +63,7 @@ type VscanConfigDeleteParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -118,15 +118,15 @@ func (o *VscanConfigDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithSvmUUID adds the svmUUID to the vscan config delete params
-func (o *VscanConfigDeleteParams) WithSvmUUID(svmUUID string) *VscanConfigDeleteParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the vscan config delete params
+func (o *VscanConfigDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *VscanConfigDeleteParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the vscan config delete params
-func (o *VscanConfigDeleteParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the vscan config delete params
+func (o *VscanConfigDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -138,7 +138,7 @@ func (o *VscanConfigDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	var res []error
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

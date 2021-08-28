@@ -99,13 +99,13 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ntp_key
 	// NtpKey
 	// digest_type
 	// DigestType
 	// sha1
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NtpKeyDigestTypeSha1 captures enum value "sha1"
 	NtpKeyDigestTypeSha1 string = "sha1"
 )
@@ -278,5 +278,3 @@ func (m *NtpKeyLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

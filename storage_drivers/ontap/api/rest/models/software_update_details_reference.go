@@ -94,93 +94,93 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_update_details_reference
 	// SoftwareUpdateDetailsReference
 	// state
 	// State
 	// in_progress
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareUpdateDetailsReferenceStateInProgress captures enum value "in_progress"
 	SoftwareUpdateDetailsReferenceStateInProgress string = "in_progress"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_update_details_reference
 	// SoftwareUpdateDetailsReference
 	// state
 	// State
 	// waiting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareUpdateDetailsReferenceStateWaiting captures enum value "waiting"
 	SoftwareUpdateDetailsReferenceStateWaiting string = "waiting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_update_details_reference
 	// SoftwareUpdateDetailsReference
 	// state
 	// State
 	// paused_by_user
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareUpdateDetailsReferenceStatePausedByUser captures enum value "paused_by_user"
 	SoftwareUpdateDetailsReferenceStatePausedByUser string = "paused_by_user"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_update_details_reference
 	// SoftwareUpdateDetailsReference
 	// state
 	// State
 	// paused_on_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareUpdateDetailsReferenceStatePausedOnError captures enum value "paused_on_error"
 	SoftwareUpdateDetailsReferenceStatePausedOnError string = "paused_on_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_update_details_reference
 	// SoftwareUpdateDetailsReference
 	// state
 	// State
 	// completed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareUpdateDetailsReferenceStateCompleted captures enum value "completed"
 	SoftwareUpdateDetailsReferenceStateCompleted string = "completed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_update_details_reference
 	// SoftwareUpdateDetailsReference
 	// state
 	// State
 	// canceled
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareUpdateDetailsReferenceStateCanceled captures enum value "canceled"
 	SoftwareUpdateDetailsReferenceStateCanceled string = "canceled"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_update_details_reference
 	// SoftwareUpdateDetailsReference
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareUpdateDetailsReferenceStateFailed captures enum value "failed"
 	SoftwareUpdateDetailsReferenceStateFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_update_details_reference
 	// SoftwareUpdateDetailsReference
 	// state
 	// State
 	// pause_pending
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareUpdateDetailsReferenceStatePausePending captures enum value "pause_pending"
 	SoftwareUpdateDetailsReferenceStatePausePending string = "pause_pending"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_update_details_reference
 	// SoftwareUpdateDetailsReference
 	// state
 	// State
 	// cancel_pending
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareUpdateDetailsReferenceStateCancelPending captures enum value "cancel_pending"
 	SoftwareUpdateDetailsReferenceStateCancelPending string = "cancel_pending"
 )
@@ -360,5 +360,3 @@ func (m *SoftwareUpdateDetailsReferenceNode) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

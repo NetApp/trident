@@ -64,7 +64,7 @@ type ShelfGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UID.
 
@@ -125,15 +125,15 @@ func (o *ShelfGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the shelf get params
-func (o *ShelfGetParams) WithFields(fields []string) *ShelfGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the shelf get params
+func (o *ShelfGetParams) WithFieldsQueryParameter(fields []string) *ShelfGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the shelf get params
-func (o *ShelfGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the shelf get params
+func (o *ShelfGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUIDPathParameter adds the uid to the shelf get params
@@ -155,7 +155,7 @@ func (o *ShelfGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *ShelfGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 
 // bindParamShelfGet binds the parameter fields
 func (o *ShelfGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -594,5 +594,3 @@ func (m *NvmeSubsystemHostNoRecordsSubsystemLinks) UnmarshalBinary(b []byte) err
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

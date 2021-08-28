@@ -64,13 +64,13 @@ type S3BucketSvmDeleteParams struct {
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	/* UUID.
 
@@ -96,11 +96,11 @@ func (o *S3BucketSvmDeleteParams) WithDefaults() *S3BucketSvmDeleteParams {
 // All values with no default are reset to their zero value.
 func (o *S3BucketSvmDeleteParams) SetDefaults() {
 	var (
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := S3BucketSvmDeleteParams{
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -142,26 +142,26 @@ func (o *S3BucketSvmDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithReturnTimeout adds the returnTimeout to the s3 bucket svm delete params
-func (o *S3BucketSvmDeleteParams) WithReturnTimeout(returnTimeout *int64) *S3BucketSvmDeleteParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the s3 bucket svm delete params
+func (o *S3BucketSvmDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *S3BucketSvmDeleteParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the s3 bucket svm delete params
-func (o *S3BucketSvmDeleteParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the s3 bucket svm delete params
+func (o *S3BucketSvmDeleteParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
-// WithSvmUUID adds the svmUUID to the s3 bucket svm delete params
-func (o *S3BucketSvmDeleteParams) WithSvmUUID(svmUUID string) *S3BucketSvmDeleteParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the s3 bucket svm delete params
+func (o *S3BucketSvmDeleteParams) WithSVMUUIDPathParameter(svmUUID string) *S3BucketSvmDeleteParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the s3 bucket svm delete params
-func (o *S3BucketSvmDeleteParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the s3 bucket svm delete params
+func (o *S3BucketSvmDeleteParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WithUUIDPathParameter adds the uuid to the s3 bucket svm delete params
@@ -183,13 +183,13 @@ func (o *S3BucketSvmDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -201,7 +201,7 @@ func (o *S3BucketSvmDeleteParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

@@ -82,7 +82,18 @@ func NewLdapCollectionGetDefault(code int) *LdapCollectionGetDefault {
 
 /* LdapCollectionGetDefault describes a response with status code -1, with default header values.
 
-Error
+ Following error codes can be thrown as part of LDAP status information, if LDAP status is needed to be retrieved.
+| Error Code | Description |
+| ---------- | ----------- |
+| 4915229    | DNS resolution failed due to an internal error. Contact technical support if this issue persists |
+| 4915231    | DNS resolution failed for one or more of the specified LDAP servers. Verify that a valid DNS server is configured |
+| 23724132   | DNS resolution failed for all the specified LDAP servers. Verify that a valid DNS server is configured |
+| 4915258    | The LDAP configuration is invalid. Verify that the Active Directory domain or servers are reachable and that the network configuration is correct |
+| 4915263    | Failed to check the current status of LDAP server. Reason:<Reason for the failure> |
+| 4915234    | The specified LDAP server or preferred Active Directory server is not supported because it is one of the following: multicast, loopback, 0.0.0.0, or broadcast |
+| 4915265    | The specified bind password or bind DN is invalid |
+| 4915264    | Certificate verification failed. Verify that a valid certificate is installed |
+
 */
 type LdapCollectionGetDefault struct {
 	_statusCode int

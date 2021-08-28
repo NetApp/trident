@@ -64,7 +64,7 @@ type CifsSearchPathCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Index.
 
@@ -76,13 +76,13 @@ type CifsSearchPathCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* Path.
 
@@ -96,7 +96,7 @@ type CifsSearchPathCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -104,7 +104,7 @@ type CifsSearchPathCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SvmName.
 
@@ -136,14 +136,14 @@ func (o *CifsSearchPathCollectionGetParams) WithDefaults() *CifsSearchPathCollec
 // All values with no default are reset to their zero value.
 func (o *CifsSearchPathCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := CifsSearchPathCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -185,15 +185,15 @@ func (o *CifsSearchPathCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the cifs search path collection get params
-func (o *CifsSearchPathCollectionGetParams) WithFields(fields []string) *CifsSearchPathCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the cifs search path collection get params
+func (o *CifsSearchPathCollectionGetParams) WithFieldsQueryParameter(fields []string) *CifsSearchPathCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the cifs search path collection get params
-func (o *CifsSearchPathCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the cifs search path collection get params
+func (o *CifsSearchPathCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIndexQueryParameter adds the index to the cifs search path collection get params
@@ -207,26 +207,26 @@ func (o *CifsSearchPathCollectionGetParams) SetIndexQueryParameter(index *int64)
 	o.IndexQueryParameter = index
 }
 
-// WithMaxRecords adds the maxRecords to the cifs search path collection get params
-func (o *CifsSearchPathCollectionGetParams) WithMaxRecords(maxRecords *int64) *CifsSearchPathCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the cifs search path collection get params
+func (o *CifsSearchPathCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CifsSearchPathCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the cifs search path collection get params
-func (o *CifsSearchPathCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the cifs search path collection get params
+func (o *CifsSearchPathCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
-// WithOrderBy adds the orderBy to the cifs search path collection get params
-func (o *CifsSearchPathCollectionGetParams) WithOrderBy(orderBy []string) *CifsSearchPathCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the cifs search path collection get params
+func (o *CifsSearchPathCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CifsSearchPathCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the cifs search path collection get params
-func (o *CifsSearchPathCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the cifs search path collection get params
+func (o *CifsSearchPathCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPathQueryParameter adds the path to the cifs search path collection get params
@@ -240,26 +240,26 @@ func (o *CifsSearchPathCollectionGetParams) SetPathQueryParameter(path *string) 
 	o.PathQueryParameter = path
 }
 
-// WithReturnRecords adds the returnRecords to the cifs search path collection get params
-func (o *CifsSearchPathCollectionGetParams) WithReturnRecords(returnRecords *bool) *CifsSearchPathCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the cifs search path collection get params
+func (o *CifsSearchPathCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CifsSearchPathCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the cifs search path collection get params
-func (o *CifsSearchPathCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the cifs search path collection get params
+func (o *CifsSearchPathCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the cifs search path collection get params
-func (o *CifsSearchPathCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CifsSearchPathCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the cifs search path collection get params
+func (o *CifsSearchPathCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CifsSearchPathCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the cifs search path collection get params
-func (o *CifsSearchPathCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the cifs search path collection get params
+func (o *CifsSearchPathCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSVMNameQueryParameter adds the svmName to the cifs search path collection get params
@@ -292,7 +292,7 @@ func (o *CifsSearchPathCollectionGetParams) WriteToRequest(r runtime.ClientReque
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -320,13 +320,13 @@ func (o *CifsSearchPathCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -337,7 +337,7 @@ func (o *CifsSearchPathCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -365,13 +365,13 @@ func (o *CifsSearchPathCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -382,13 +382,13 @@ func (o *CifsSearchPathCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -441,7 +441,7 @@ func (o *CifsSearchPathCollectionGetParams) WriteToRequest(r runtime.ClientReque
 
 // bindParamCifsSearchPathCollectionGet binds the parameter fields
 func (o *CifsSearchPathCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -458,7 +458,7 @@ func (o *CifsSearchPathCollectionGetParams) bindParamFields(formats strfmt.Regis
 
 // bindParamCifsSearchPathCollectionGet binds the parameter order_by
 func (o *CifsSearchPathCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

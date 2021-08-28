@@ -22,14 +22,29 @@ type SvmS3ServiceReference struct {
 	// links
 	Links *SvmS3ServiceReferenceLinks `json:"_links,omitempty"`
 
+	// certificate
+	Certificate *SvmS3ServiceReferenceCertificate `json:"certificate,omitempty"`
+
 	// Specifies whether or not to enable S3. Setting this value to true creates a service if one is not yet created.
 	Enabled bool `json:"enabled,omitempty"`
 
-	// Specifies the name of the S3 server. A server name length can range from 1 to 15 characters and can only contain the following combination of characters 0-9, A-Z, a-z, ".", and "-".
+	// Specifies whether HTTP is enabled on the S3 server. By default, HTTP is disabled on the S3 server.
+	IsHTTPEnabled *bool `json:"is_http_enabled,omitempty"`
+
+	// Specifies whether HTTPS is enabled on the S3 server. By default, HTTPS is enabled on the S3 server.
+	IsHTTPSEnabled *bool `json:"is_https_enabled,omitempty"`
+
+	// Specifies the name of the S3 server. A server name length can range from 1 to 253 characters and can only contain the following combination of characters 0-9, A-Z, a-z, ".", and "-".
 	// Example: s3-server-1
-	// Max Length: 15
+	// Max Length: 253
 	// Min Length: 1
 	Name string `json:"name,omitempty"`
+
+	// Specifies the HTTP listener port for the S3 server. By default, HTTP is enabled on port 80.
+	Port *int64 `json:"port,omitempty"`
+
+	// Specifies the HTTPS listener port for the S3 server. By default, HTTPS is enabled on port 443.
+	SecurePort *int64 `json:"secure_port,omitempty"`
 }
 
 // Validate validates this svm s3 service reference
@@ -37,6 +52,10 @@ func (m *SvmS3ServiceReference) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCertificate(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -67,6 +86,23 @@ func (m *SvmS3ServiceReference) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SvmS3ServiceReference) validateCertificate(formats strfmt.Registry) error {
+	if swag.IsZero(m.Certificate) { // not required
+		return nil
+	}
+
+	if m.Certificate != nil {
+		if err := m.Certificate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *SvmS3ServiceReference) validateName(formats strfmt.Registry) error {
 	if swag.IsZero(m.Name) { // not required
 		return nil
@@ -76,7 +112,7 @@ func (m *SvmS3ServiceReference) validateName(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", m.Name, 15); err != nil {
+	if err := validate.MaxLength("name", "body", m.Name, 253); err != nil {
 		return err
 	}
 
@@ -88,6 +124,10 @@ func (m *SvmS3ServiceReference) ContextValidate(ctx context.Context, formats str
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCertificate(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -111,6 +151,20 @@ func (m *SvmS3ServiceReference) contextValidateLinks(ctx context.Context, format
 	return nil
 }
 
+func (m *SvmS3ServiceReference) contextValidateCertificate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Certificate != nil {
+		if err := m.Certificate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *SvmS3ServiceReference) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -122,6 +176,186 @@ func (m *SvmS3ServiceReference) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SvmS3ServiceReference) UnmarshalBinary(b []byte) error {
 	var res SvmS3ServiceReference
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmS3ServiceReferenceCertificate Specifies the certificate that will be used for creating HTTPS connections to the S3 server.
+//
+// swagger:model SvmS3ServiceReferenceCertificate
+type SvmS3ServiceReferenceCertificate struct {
+
+	// links
+	Links *SvmS3ServiceReferenceCertificateLinks `json:"_links,omitempty"`
+
+	// Certificate name
+	// Example: cert1
+	Name string `json:"name,omitempty"`
+
+	// Certificate UUID
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this svm s3 service reference certificate
+func (m *SvmS3ServiceReferenceCertificate) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmS3ServiceReferenceCertificate) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm s3 service reference certificate based on the context it is used
+func (m *SvmS3ServiceReferenceCertificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmS3ServiceReferenceCertificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmS3ServiceReferenceCertificate) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmS3ServiceReferenceCertificate) UnmarshalBinary(b []byte) error {
+	var res SvmS3ServiceReferenceCertificate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmS3ServiceReferenceCertificateLinks svm s3 service reference certificate links
+//
+// swagger:model SvmS3ServiceReferenceCertificateLinks
+type SvmS3ServiceReferenceCertificateLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this svm s3 service reference certificate links
+func (m *SvmS3ServiceReferenceCertificateLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmS3ServiceReferenceCertificateLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this svm s3 service reference certificate links based on the context it is used
+func (m *SvmS3ServiceReferenceCertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SvmS3ServiceReferenceCertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmS3ServiceReferenceCertificateLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmS3ServiceReferenceCertificateLinks) UnmarshalBinary(b []byte) error {
+	var res SvmS3ServiceReferenceCertificateLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -214,5 +448,3 @@ func (m *SvmS3ServiceReferenceLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

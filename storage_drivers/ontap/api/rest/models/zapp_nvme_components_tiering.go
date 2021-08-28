@@ -69,33 +69,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme_components_tiering
 	// ZappNvmeComponentsTiering
 	// control
 	// Control
 	// required
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsTieringControlRequired captures enum value "required"
 	ZappNvmeComponentsTieringControlRequired string = "required"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme_components_tiering
 	// ZappNvmeComponentsTiering
 	// control
 	// Control
 	// best_effort
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsTieringControlBestEffort captures enum value "best_effort"
 	ZappNvmeComponentsTieringControlBestEffort string = "best_effort"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme_components_tiering
 	// ZappNvmeComponentsTiering
 	// control
 	// Control
 	// disallowed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsTieringControlDisallowed captures enum value "disallowed"
 	ZappNvmeComponentsTieringControlDisallowed string = "disallowed"
 )
@@ -159,43 +159,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme_components_tiering
 	// ZappNvmeComponentsTiering
 	// policy
 	// Policy
 	// all
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsTieringPolicyAll captures enum value "all"
 	ZappNvmeComponentsTieringPolicyAll string = "all"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme_components_tiering
 	// ZappNvmeComponentsTiering
 	// policy
 	// Policy
 	// auto
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsTieringPolicyAuto captures enum value "auto"
 	ZappNvmeComponentsTieringPolicyAuto string = "auto"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme_components_tiering
 	// ZappNvmeComponentsTiering
 	// policy
 	// Policy
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsTieringPolicyNone captures enum value "none"
 	ZappNvmeComponentsTieringPolicyNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// zapp_nvme_components_tiering
 	// ZappNvmeComponentsTiering
 	// policy
 	// Policy
 	// snapshot_only
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ZappNvmeComponentsTieringPolicySnapshotOnly captures enum value "snapshot_only"
 	ZappNvmeComponentsTieringPolicySnapshotOnly string = "snapshot_only"
 )
@@ -276,7 +276,7 @@ func (m *ZappNvmeComponentsTiering) UnmarshalBinary(b []byte) error {
 // swagger:model ZappNvmeComponentsTieringObjectStoresItems0
 type ZappNvmeComponentsTieringObjectStoresItems0 struct {
 
-	// The name of the object-store to use. Usage: &lt;(size 1..512)&gt;
+	// The name of the object-store to use.
 	// Max Length: 512
 	// Min Length: 1
 	Name string `json:"name,omitempty"`
@@ -334,5 +334,3 @@ func (m *ZappNvmeComponentsTieringObjectStoresItems0) UnmarshalBinary(b []byte) 
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

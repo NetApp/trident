@@ -193,33 +193,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// sql_on_san
 	// SQLOnSan
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanOsTypeWindows captures enum value "windows"
 	SQLOnSanOsTypeWindows string = "windows"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// sql_on_san
 	// SQLOnSan
 	// os_type
 	// OsType
 	// windows_2008
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanOsTypeWindows2008 captures enum value "windows_2008"
 	SQLOnSanOsTypeWindows2008 string = "windows_2008"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// sql_on_san
 	// SQLOnSan
 	// os_type
 	// OsType
 	// windows_gpt
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanOsTypeWindowsGpt captures enum value "windows_gpt"
 	SQLOnSanOsTypeWindowsGpt string = "windows_gpt"
 )
@@ -542,33 +542,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanDbStorageService
 	// SQLOnSanDbStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanDbStorageServiceNameExtreme captures enum value "extreme"
 	SQLOnSanDbStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanDbStorageService
 	// SQLOnSanDbStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanDbStorageServiceNamePerformance captures enum value "performance"
 	SQLOnSanDbStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanDbStorageService
 	// SQLOnSanDbStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanDbStorageServiceNameValue captures enum value "value"
 	SQLOnSanDbStorageServiceNameValue string = "value"
 )
@@ -758,33 +758,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanLogStorageService
 	// SQLOnSanLogStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanLogStorageServiceNameExtreme captures enum value "extreme"
 	SQLOnSanLogStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanLogStorageService
 	// SQLOnSanLogStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanLogStorageServiceNamePerformance captures enum value "performance"
 	SQLOnSanLogStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanLogStorageService
 	// SQLOnSanLogStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanLogStorageServiceNameValue captures enum value "value"
 	SQLOnSanLogStorageServiceNameValue string = "value"
 )
@@ -838,11 +838,11 @@ func (m *SQLOnSanLogStorageService) UnmarshalBinary(b []byte) error {
 // swagger:model SQLOnSanProtectionType
 type SQLOnSanProtectionType struct {
 
-	// The local rpo of the application.
+	// The local RPO of the application.
 	// Enum: [hourly none]
 	LocalRpo string `json:"local_rpo,omitempty"`
 
-	// The remote rpo of the application.
+	// The remote RPO of the application.
 	// Enum: [none zero]
 	RemoteRpo string `json:"remote_rpo,omitempty"`
 }
@@ -879,23 +879,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanProtectionType
 	// SQLOnSanProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanProtectionTypeLocalRpoHourly captures enum value "hourly"
 	SQLOnSanProtectionTypeLocalRpoHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanProtectionType
 	// SQLOnSanProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanProtectionTypeLocalRpoNone captures enum value "none"
 	SQLOnSanProtectionTypeLocalRpoNone string = "none"
 )
@@ -935,23 +935,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanProtectionType
 	// SQLOnSanProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanProtectionTypeRemoteRpoNone captures enum value "none"
 	SQLOnSanProtectionTypeRemoteRpoNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanProtectionType
 	// SQLOnSanProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanProtectionTypeRemoteRpoZero captures enum value "zero"
 	SQLOnSanProtectionTypeRemoteRpoZero string = "zero"
 )
@@ -1127,33 +1127,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanTempDbStorageService
 	// SQLOnSanTempDbStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanTempDbStorageServiceNameExtreme captures enum value "extreme"
 	SQLOnSanTempDbStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanTempDbStorageService
 	// SQLOnSanTempDbStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanTempDbStorageServiceNamePerformance captures enum value "performance"
 	SQLOnSanTempDbStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SQLOnSanTempDbStorageService
 	// SQLOnSanTempDbStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SQLOnSanTempDbStorageServiceNameValue captures enum value "value"
 	SQLOnSanTempDbStorageServiceNameValue string = "value"
 )
@@ -1201,5 +1201,3 @@ func (m *SQLOnSanTempDbStorageService) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

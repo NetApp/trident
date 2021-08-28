@@ -28,6 +28,10 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	CapacityPoolCollectionGet(params *CapacityPoolCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CapacityPoolCollectionGetOK, error)
+
+	CapacityPoolGet(params *CapacityPoolGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CapacityPoolGetOK, error)
+
 	ChassisCollectionGet(params *ChassisCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ChassisCollectionGetOK, error)
 
 	ChassisGet(params *ChassisGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ChassisGetOK, error)
@@ -70,6 +74,8 @@ type ClientService interface {
 
 	ClusterPeerModify(params *ClusterPeerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerModifyOK, error)
 
+	FirmwareHistoryCollectionGet(params *FirmwareHistoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FirmwareHistoryCollectionGetOK, error)
+
 	JobCollectionGet(params *JobCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JobCollectionGetOK, error)
 
 	JobGet(params *JobGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JobGetOK, error)
@@ -82,11 +88,57 @@ type ClientService interface {
 
 	LicenseGet(params *LicenseGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseGetOK, error)
 
+	LicenseManagerCollectionGet(params *LicenseManagerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerCollectionGetOK, error)
+
+	LicenseManagerGet(params *LicenseManagerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerGetOK, error)
+
+	LicenseManagerModify(params *LicenseManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerModifyAccepted, error)
+
 	LicensesGet(params *LicensesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicensesGetOK, error)
+
+	MediatorCollectionGet(params *MediatorCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorCollectionGetOK, error)
+
+	MediatorCreate(params *MediatorCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorCreateAccepted, error)
+
+	MediatorDelete(params *MediatorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorDeleteAccepted, error)
+
+	MediatorGet(params *MediatorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorGetOK, error)
+
+	MetroclusterCreate(params *MetroclusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterCreateAccepted, error)
+
+	MetroclusterDiagnosticsCreate(params *MetroclusterDiagnosticsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDiagnosticsCreateAccepted, error)
+
+	MetroclusterDiagnosticsGet(params *MetroclusterDiagnosticsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDiagnosticsGetOK, error)
+
+	MetroclusterDrGroupCollectionGet(params *MetroclusterDrGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupCollectionGetOK, error)
+
+	MetroclusterDrGroupCreate(params *MetroclusterDrGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupCreateAccepted, error)
+
+	MetroclusterDrGroupDelete(params *MetroclusterDrGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupDeleteAccepted, error)
+
+	MetroclusterDrGroupGet(params *MetroclusterDrGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupGetOK, error)
+
+	MetroclusterGet(params *MetroclusterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterGetOK, error)
+
+	MetroclusterInterconnectCollectionGet(params *MetroclusterInterconnectCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectCollectionGetOK, error)
+
+	MetroclusterInterconnectGet(params *MetroclusterInterconnectGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectGetOK, error)
+
+	MetroclusterModify(params *MetroclusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterModifyAccepted, error)
+
+	MetroclusterNodeCollectionGet(params *MetroclusterNodeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterNodeCollectionGetOK, error)
+
+	MetroclusterNodeGet(params *MetroclusterNodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterNodeGetOK, error)
+
+	MetroclusterOperationCollectionGet(params *MetroclusterOperationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterOperationCollectionGetOK, error)
+
+	MetroclusterOperationGet(params *MetroclusterOperationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterOperationGetOK, error)
 
 	NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeDeleteAccepted, error)
 
 	NodeGet(params *NodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeGetOK, error)
+
+	NodeMetricsCollectionGet(params *NodeMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeMetricsCollectionGetOK, error)
 
 	NodeModify(params *NodeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeModifyAccepted, error)
 
@@ -120,7 +172,97 @@ type ClientService interface {
 
 	SoftwarePackagesCollectionGet(params *SoftwarePackagesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackagesCollectionGetOK, error)
 
+	SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareUploadAccepted, error)
+
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+  CapacityPoolCollectionGet Retrieves a collection of capacity pools.
+### Learn more
+* [`DOC /cluster/licensing/capacity-pools`](#docs-cluster-cluster_licensing_capacity-pools)
+### Related ONTAP commands
+* `system license show-status`
+* `system license show`
+
+*/
+func (a *Client) CapacityPoolCollectionGet(params *CapacityPoolCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CapacityPoolCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCapacityPoolCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "capacity_pool_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/licensing/capacity-pools",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CapacityPoolCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CapacityPoolCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CapacityPoolCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CapacityPoolGet Retrieves information about the capacity pool.
+### Learn more
+* [`DOC /cluster/licensing/capacity-pools`](#docs-cluster-cluster_licensing_capacity-pools)
+### Related ONTAP commands
+* `system license show-status`
+* `system license show`
+
+*/
+func (a *Client) CapacityPoolGet(params *CapacityPoolGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CapacityPoolGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCapacityPoolGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "capacity_pool_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/licensing/capacity-pools/{serial_number}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CapacityPoolGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CapacityPoolGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CapacityPoolGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -306,8 +448,6 @@ func (a *Client) ClusterCreate(params *ClusterCreateParams, authInfo runtime.Cli
 
 /*
   ClusterGet Retrieves the cluster configuration.
-### Learn more
-* [`DOC /cluster`](#docs-cluster-cluster)
 */
 func (a *Client) ClusterGet(params *ClusterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterGetOK, error) {
 	// TODO: Validate the params before sending
@@ -347,8 +487,6 @@ func (a *Client) ClusterGet(params *ClusterGetParams, authInfo runtime.ClientAut
 /*
   ClusterModify Updates the cluster configuration after the cluster is created.
 ### Related ONTAP commands * `cluster identity modify` * `system node modify` * `vserver services dns modify` * `vserver services name-service dns modify` * `timezone` * `security ssl modify`
-### Learn more
-* [`DOC /cluster`](#docs-cluster-cluster)
 */
 func (a *Client) ClusterModify(params *ClusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -842,8 +980,6 @@ func (a *Client) ClusterNtpServersModify(params *ClusterNtpServersModifyParams, 
 
 /*
   ClusterPeerCollectionGet Retrieves the collection of cluster peers.
-### Learn more
-* [`DOC /cluster/peers`](#docs-cluster-cluster_peers)
 */
 func (a *Client) ClusterPeerCollectionGet(params *ClusterPeerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -909,8 +1045,6 @@ As with creating a cluster peer through the CLI, the combinations of options mus
 * A passphrase, peer IP address, and any proposed encryption protocol (OK)
 * A non empty list of initial allowed SVM peer names or UUIDs. (OK)
 
-### Learn more
-* [`DOC /cluster/peers`](#docs-cluster-cluster_peers)
 */
 func (a *Client) ClusterPeerCreate(params *ClusterPeerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -949,8 +1083,6 @@ func (a *Client) ClusterPeerCreate(params *ClusterPeerCreateParams, authInfo run
 
 /*
   ClusterPeerDelete Deletes a cluster peer.
-### Learn more
-* [`DOC /cluster/peers`](#docs-cluster-cluster_peers)
 */
 func (a *Client) ClusterPeerDelete(params *ClusterPeerDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -989,8 +1121,6 @@ func (a *Client) ClusterPeerDelete(params *ClusterPeerDeleteParams, authInfo run
 
 /*
   ClusterPeerGet Retrieves a specific cluster peer instance.
-### Learn more
-* [`DOC /cluster/peers`](#docs-cluster-cluster_peers)
 */
 func (a *Client) ClusterPeerGet(params *ClusterPeerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1029,8 +1159,6 @@ func (a *Client) ClusterPeerGet(params *ClusterPeerGetParams, authInfo runtime.C
 
 /*
   ClusterPeerModify Updates a cluster peer instance.
-### Learn more
-* [`DOC /cluster/peers`](#docs-cluster-cluster_peers)
 */
 func (a *Client) ClusterPeerModify(params *ClusterPeerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1068,9 +1196,48 @@ func (a *Client) ClusterPeerModify(params *ClusterPeerModifyParams, authInfo run
 }
 
 /*
-  JobCollectionGet Retrieves a list of recently running asynchronous jobs. After a job transitions to a failure or success state, it is deleted after a default time of 300 seconds.
+  FirmwareHistoryCollectionGet Retrieves the history details for firmware update requests.
 ### Learn more
-* [`DOC /cluster/jobs`](#docs-cluster-cluster_jobs)
+* [`DOC /cluster/firmware/history`](#docs-cluster-cluster_firmware_history)
+
+*/
+func (a *Client) FirmwareHistoryCollectionGet(params *FirmwareHistoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FirmwareHistoryCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFirmwareHistoryCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "firmware_history_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/firmware/history",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FirmwareHistoryCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FirmwareHistoryCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FirmwareHistoryCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  JobCollectionGet Retrieves a list of recently running asynchronous jobs. After a job transitions to a failure or success state, it is deleted after a default time of 300 seconds.
 */
 func (a *Client) JobCollectionGet(params *JobCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JobCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1109,8 +1276,6 @@ func (a *Client) JobCollectionGet(params *JobCollectionGetParams, authInfo runti
 
 /*
   JobGet Retrieves the details of a specific asynchronous job. After a job transitions to a failure or success state, it is deleted after a default time of 300 seconds.
-### Learn more
-* [`DOC /cluster/jobs`](#docs-cluster-cluster_jobs)
 */
 func (a *Client) JobGet(params *JobGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JobGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1149,8 +1314,6 @@ func (a *Client) JobGet(params *JobGetParams, authInfo runtime.ClientAuthInfoWri
 
 /*
   JobModify Updates the state of a specific asynchronous job.
-### Learn more
-* [`DOC /cluster/jobs`](#docs-cluster-cluster_jobs)
 */
 func (a *Client) JobModify(params *JobModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*JobModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1194,8 +1357,6 @@ func (a *Client) JobModify(params *JobModifyParams, authInfo runtime.ClientAuthI
 ### Related ONTAP commands
 * `system license add`
 
-### Learn more
-* [`DOC /cluster/licensing/licenses`](#docs-cluster-cluster_licensing_licenses)
 */
 func (a *Client) LicenseCreate(params *LicenseCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1237,8 +1398,6 @@ func (a *Client) LicenseCreate(params *LicenseCreateParams, authInfo runtime.Cli
 ### Related ONTAP commands
 * `system license delete`
 
-### Learn more
-* [`DOC /cluster/licensing/licenses/{name}`](#docs-cluster-cluster_licensing_licenses_{name})
 */
 func (a *Client) LicenseDelete(params *LicenseDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1277,12 +1436,12 @@ func (a *Client) LicenseDelete(params *LicenseDeleteParams, authInfo runtime.Cli
 
 /*
   LicenseGet Retrieves a specific license package.
+####
+**Note:** By default, the GET method only returns licensed packages. You must provide the following query "state=unlicensed" to retrieve unlicensed packages.
 ### Related ONTAP commands
 * `system license show`
 * `system license show-status`
 
-### Learn more
-* [`DOC /cluster/licensing/licenses/{name}`](#docs-cluster-cluster_licensing_licenses_{name})
 */
 func (a *Client) LicenseGet(params *LicenseGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1320,13 +1479,142 @@ func (a *Client) LicenseGet(params *LicenseGetParams, authInfo runtime.ClientAut
 }
 
 /*
+  LicenseManagerCollectionGet Retrieves a collection of license managers.
+### Learn more
+* [`DOC /cluster/licensing/license-managers`](#docs-cluster-cluster_licensing_license-managers)
+### Related ONTAP commands
+* `system license license-manager show`
+
+*/
+func (a *Client) LicenseManagerCollectionGet(params *LicenseManagerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLicenseManagerCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "license_manager_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/licensing/license-managers",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LicenseManagerCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LicenseManagerCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LicenseManagerCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LicenseManagerGet Retrieves information about the license manager.
+### Learn more
+* [`DOC /cluster/licensing/license-managers`](#docs-cluster-cluster_licensing_license-managers)
+### Related ONTAP commands
+* `system license license-manager show`
+
+*/
+func (a *Client) LicenseManagerGet(params *LicenseManagerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLicenseManagerGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "license_manager_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/licensing/license-managers/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LicenseManagerGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LicenseManagerGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LicenseManagerGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LicenseManagerModify Updates the license manager configuration.
+### Learn more
+* [`DOC /cluster/licensing/license-managers`](#docs-cluster-cluster_licensing_license-managers)
+### Related ONTAP commands
+* `system license license-manager modify`
+
+*/
+func (a *Client) LicenseManagerModify(params *LicenseManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicenseManagerModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLicenseManagerModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "license_manager_modify",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/licensing/license-managers/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LicenseManagerModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LicenseManagerModifyAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LicenseManagerModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   LicensesGet Retrieves a collection of license packages.
+####
+**Note:** By default, the GET method only returns licensed packages. You must provide the following query "state=unlicensed" to retrieve unlicensed packages.
 ### Related ONTAP commands
 * `system license show-status`
 * `system license show`
 
-### Learn more
-* [`DOC /cluster/licensing/licenses`](#docs-cluster-cluster_licensing_licenses)
 */
 func (a *Client) LicensesGet(params *LicensesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LicensesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1360,6 +1648,785 @@ func (a *Client) LicensesGet(params *LicensesGetParams, authInfo runtime.ClientA
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*LicensesGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MediatorCollectionGet Retrieves mediators configured in the cluster.
+*/
+func (a *Client) MediatorCollectionGet(params *MediatorCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMediatorCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "mediator_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/mediators",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MediatorCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MediatorCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MediatorCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MediatorCreate Creates and connect a mediator.
+*/
+func (a *Client) MediatorCreate(params *MediatorCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMediatorCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "mediator_create",
+		Method:             "POST",
+		PathPattern:        "/cluster/mediators",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MediatorCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MediatorCreateAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MediatorCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MediatorDelete Deletes the mediator.
+*/
+func (a *Client) MediatorDelete(params *MediatorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMediatorDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "mediator_delete",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/mediators/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MediatorDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MediatorDeleteAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MediatorDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MediatorGet Retrieves the mediator state and configuration.
+*/
+func (a *Client) MediatorGet(params *MediatorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMediatorGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "mediator_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/mediators/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MediatorGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MediatorGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MediatorGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterCreate Sets up a MetroCluster.
+### Required properties
+* `partner_cluster.name`
+* `dr_pairs`
+### Recommended optional properties
+* `mediator.*`
+### Learn more
+* [`DOC /cluster/metrocluster`](#docs-cluster-cluster_metrocluster)
+### Related ONTAP commands
+* `metrocluster configuration-settings dr-group create`
+* `metrocluster configuration-settings interface create`
+* `metrocluster configuration-settings connection connect`
+* `metrocluster configuration-settings mediator add`
+* `storage aggregate create`
+* `storage aggregate mirror`
+* `metrocluster configure`
+
+*/
+func (a *Client) MetroclusterCreate(params *MetroclusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_create",
+		Method:             "POST",
+		PathPattern:        "/cluster/metrocluster",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterCreateAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterDiagnosticsCreate Start a MetroCluster diagnostic operation or set up a schedule for the diagnostics to be run periodically.
+
+*/
+func (a *Client) MetroclusterDiagnosticsCreate(params *MetroclusterDiagnosticsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDiagnosticsCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterDiagnosticsCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_diagnostics_create",
+		Method:             "POST",
+		PathPattern:        "/cluster/metrocluster/diagnostics",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterDiagnosticsCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterDiagnosticsCreateAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterDiagnosticsCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterDiagnosticsGet Retrieves the results of a completed diagnostic operation for the MetroCluster configuration.
+
+*/
+func (a *Client) MetroclusterDiagnosticsGet(params *MetroclusterDiagnosticsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDiagnosticsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterDiagnosticsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_diagnostics_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/metrocluster/diagnostics",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterDiagnosticsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterDiagnosticsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterDiagnosticsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterDrGroupCollectionGet Retrieves all the DR group in the MetroCluster over IP configuration.
+
+*/
+func (a *Client) MetroclusterDrGroupCollectionGet(params *MetroclusterDrGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterDrGroupCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_dr_group_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/metrocluster/dr-groups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterDrGroupCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterDrGroupCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterDrGroupCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterDrGroupCreate Creates a new DR group in the MetroCluster over IP configuration.
+### Required properties
+* `partner_cluster.name`
+* `dr_pairs`
+### Recommended optional properties
+* `vlans`
+### Learn more
+* [`DOC /cluster/metrocluster/dr-groups`](#docs-cluster-cluster_metrocluster_dr-groups)
+### Related ONTAP commands
+* `metrocluster configuration-settings dr-group create`
+
+*/
+func (a *Client) MetroclusterDrGroupCreate(params *MetroclusterDrGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterDrGroupCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_dr_group_create",
+		Method:             "POST",
+		PathPattern:        "/cluster/metrocluster/dr-groups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterDrGroupCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterDrGroupCreateAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterDrGroupCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterDrGroupDelete Remove the DR group from the current MetroCluster over IP configuration specified by the DR group id.
+
+*/
+func (a *Client) MetroclusterDrGroupDelete(params *MetroclusterDrGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterDrGroupDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_dr_group_delete",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/metrocluster/dr-groups/{id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterDrGroupDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterDrGroupDeleteAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterDrGroupDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterDrGroupGet Retrieves the DR group information specified by the DR group id.
+
+*/
+func (a *Client) MetroclusterDrGroupGet(params *MetroclusterDrGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterDrGroupGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterDrGroupGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_dr_group_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/metrocluster/dr-groups/{id}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterDrGroupGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterDrGroupGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterDrGroupGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterGet Retrieves MetroCluster status and configuration details.
+### Related ONTAP commands * `metrocluster show` * `metrocluster node show`
+*/
+func (a *Client) MetroclusterGet(params *MetroclusterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/metrocluster",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterInterconnectCollectionGet Retrieves a list of interconnect adapter information for nodes in the MetroCluster.
+### Related ONTAP Commands
+* `metrocluster interconnect show`
+### Learn more
+* [`DOC /cluster/metrocluster/interconnects`](#docs-cluster-cluster_metrocluster_interconnects)
+
+*/
+func (a *Client) MetroclusterInterconnectCollectionGet(params *MetroclusterInterconnectCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterInterconnectCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_interconnect_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/metrocluster/interconnects",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterInterconnectCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterInterconnectCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterInterconnectCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterInterconnectGet Retrieves information about a MetroCluster Interconnect for a specific partner type and adapter.
+### Related ONTAP Commands
+* `metrocluster interconnect show`
+
+*/
+func (a *Client) MetroclusterInterconnectGet(params *MetroclusterInterconnectGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterInterconnectGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_interconnect_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterInterconnectGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterInterconnectGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterInterconnectGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterModify Initiates a switchover or switchback operation.
+### Related ONTAP commands * `metrocluster switchover` * `metrocluster switchback`
+*/
+func (a *Client) MetroclusterModify(params *MetroclusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_modify",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/metrocluster",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterModifyAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterNodeCollectionGet Retrieves MetroCluster nodes and their configurations.
+### Related ONTAP Commands
+* `metrocluster node show`
+### Learn more
+* [`DOC /cluster/metrocluster/nodes`](#docs-cluster-cluster_metrocluster_nodes)
+
+*/
+func (a *Client) MetroclusterNodeCollectionGet(params *MetroclusterNodeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterNodeCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterNodeCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_node_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/metrocluster/nodes",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterNodeCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterNodeCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterNodeCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterNodeGet Retrieves the node configuration in the MetroCluster.
+### Related ONTAP Commands
+* `metrocluster node show`
+
+*/
+func (a *Client) MetroclusterNodeGet(params *MetroclusterNodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterNodeGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterNodeGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_node_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/metrocluster/nodes/{node.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterNodeGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterNodeGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterNodeGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterOperationCollectionGet Retrieves the list of MetroCluster operations on the local cluster.
+### Related ONTAP Commands
+* `metrocluster operation history show`
+### Learn more
+* [`DOC /cluster/metrocluster/operations`](#docs-cluster-cluster_metrocluster_operations)
+
+*/
+func (a *Client) MetroclusterOperationCollectionGet(params *MetroclusterOperationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterOperationCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterOperationCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_operation_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/metrocluster/operations",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterOperationCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterOperationCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterOperationCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  MetroclusterOperationGet Retrieves information about a specific MetroCluster operation.
+### Related ONTAP Commands
+* `metrocluster operation show`
+
+*/
+func (a *Client) MetroclusterOperationGet(params *MetroclusterOperationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterOperationGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterOperationGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_operation_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/metrocluster/operations/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterOperationGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterOperationGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterOperationGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1425,8 +2492,6 @@ func (a *Client) NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAut
 * `system service-processor show`
 * `version`
 
-### Learn more
-* [`DOC /cluster/nodes`](#docs-cluster-cluster_nodes)
 */
 func (a *Client) NodeGet(params *NodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1464,6 +2529,44 @@ func (a *Client) NodeGet(params *NodeGetParams, authInfo runtime.ClientAuthInfoW
 }
 
 /*
+  NodeMetricsCollectionGet Retrieves historical performance metrics for a node.
+*/
+func (a *Client) NodeMetricsCollectionGet(params *NodeMetricsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeMetricsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNodeMetricsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "node_metrics_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/nodes/{uuid}/metrics",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NodeMetricsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NodeMetricsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NodeMetricsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   NodeModify Updates the node information or performs shutdown/reboot actions on a node.
 ### Related ONTAP commands
 * `cluster ha modify`
@@ -1472,8 +2575,6 @@ func (a *Client) NodeGet(params *NodeGetParams, authInfo runtime.ClientAuthInfoW
 * `system node reboot`
 * `system service-processor network modify`
 
-### Learn more
-* [`DOC /cluster/nodes`](#docs-cluster-cluster_nodes)
 */
 func (a *Client) NodeModify(params *NodeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1521,8 +2622,6 @@ func (a *Client) NodeModify(params *NodeModifyParams, authInfo runtime.ClientAut
 * `system node modify`
 * `system service-processor network modify`
 
-### Learn more
-* [`DOC /cluster/nodes`](#docs-cluster-cluster_nodes)
 */
 func (a *Client) NodesCreate(params *NodesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodesCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1561,11 +2660,13 @@ func (a *Client) NodesCreate(params *NodesCreateParams, authInfo runtime.ClientA
 
 /*
   NodesGet Retrieves the nodes in the cluster.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `statistics.*`
+* `metric.*`
 ### Related ONTAP commands
 * `system node show`
 
-### Learn more
-* [`DOC /cluster/nodes`](#docs-cluster-cluster_nodes)
 */
 func (a *Client) NodesGet(params *NodesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodesGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1604,8 +2705,6 @@ func (a *Client) NodesGet(params *NodesGetParams, authInfo runtime.ClientAuthInf
 
 /*
   ScheduleCollectionGet Retrieves a schedule.
-### Learn more
-* [`DOC /cluster/schedules`](#docs-cluster-cluster_schedules)
 */
 func (a *Client) ScheduleCollectionGet(params *ScheduleCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1648,8 +2747,6 @@ func (a *Client) ScheduleCollectionGet(params *ScheduleCollectionGetParams, auth
 * name - Name of the job schedule.
 You must provide a minutes field for a cron schedule and an interval field for an interval schedule. Do not provide both a cron field and an interval field.
 
-### Learn more
-* [`DOC /cluster/schedules`](#docs-cluster-cluster_schedules)
 */
 func (a *Client) ScheduleCreate(params *ScheduleCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -1688,8 +2785,6 @@ func (a *Client) ScheduleCreate(params *ScheduleCreateParams, authInfo runtime.C
 
 /*
   ScheduleDelete Deletes a schedule.
-### Learn more
-* [`DOC /cluster/schedules`](#docs-cluster-cluster_schedules)
 */
 func (a *Client) ScheduleDelete(params *ScheduleDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -1728,8 +2823,6 @@ func (a *Client) ScheduleDelete(params *ScheduleDeleteParams, authInfo runtime.C
 
 /*
   ScheduleGet Retrieves a schedule.
-### Learn more
-* [`DOC /cluster/schedules`](#docs-cluster-cluster_schedules)
 */
 func (a *Client) ScheduleGet(params *ScheduleGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1768,8 +2861,6 @@ func (a *Client) ScheduleGet(params *ScheduleGetParams, authInfo runtime.ClientA
 
 /*
   ScheduleModify Updates a schedule. Note that you cannot modify a cron field of an interval schedule, or the interval field of a cron schedule.
-### Learn more
-* [`DOC /cluster/schedules`](#docs-cluster-cluster_schedules)
 */
 func (a *Client) ScheduleModify(params *ScheduleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ScheduleModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1807,7 +2898,7 @@ func (a *Client) ScheduleModify(params *ScheduleModifyParams, authInfo runtime.C
 }
 
 /*
-  SoftwareDownloadGet Retrieves the software download status.
+  SoftwareDownloadGet Retrieves the software or firmware download status.
 ### Related ONTAP commands
 * `cluster image package check-download-progress`
 ### Learn more
@@ -1947,6 +3038,9 @@ Important note:
 * `validate_only` - Required to validate a software package before an upgrade.
 * `skip_warnings` - Used to skip validation warnings when starting a software upgrade.
 * `action` - Used to pause, resume, or cancel an ongoing software upgrade.
+* `stabilize_minutes` - Specifies a custom value between 1 to 60 minutes that allows each node a specified amount of time to stabilize after a reboot; the default is 8 minutes.
+* `estimate_only` - Estimates the time duration; does not perform any update.
+* `nodes_to_update` - Specifies a subset of the cluster's nodes for update.
 ### Related ONTAP commands
 * `cluster image validate`
 * `cluster image update`
@@ -1993,7 +3087,7 @@ func (a *Client) SoftwareModify(params *SoftwareModifyParams, authInfo runtime.C
 }
 
 /*
-  SoftwarePackageCreate Downloads a software package from the server.
+  SoftwarePackageCreate Downloads a software or firmware package from the server.
 ### Required properties
 * `url` - URL location of the software package
 ### Recommended optional parameters
@@ -2166,6 +3260,49 @@ func (a *Client) SoftwarePackagesCollectionGet(params *SoftwarePackagesCollectio
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SoftwarePackagesCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SoftwareUpload Uploads a software or firmware package located on the local filesystem.
+### Related ONTAP commands
+* `cluster image package get`
+### Learn more
+* [`DOC /cluster/software`](#docs-cluster-cluster_software)
+
+*/
+func (a *Client) SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareUploadAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSoftwareUploadParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "software_upload",
+		Method:             "POST",
+		PathPattern:        "/cluster/software/upload",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"multipart/form-data"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SoftwareUploadReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SoftwareUploadAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SoftwareUploadDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

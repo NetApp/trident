@@ -17,7 +17,7 @@ import (
 )
 
 // QuotaRule quota rule
-// Example: {"files":{"hard_limit":100,"soft_limit":80},"qtree":{"id":1,"name":"qt1"},"space":{"hard_limit":1222800,"soft_limit":51200},"svm":{"name":"svm1"},"type":"user","user_mapping":true,"users":[{"name":"fred"}],"uuid":"264a9e0b-2e03-11e9-a610-005056a7b72d","volume":{"name":"fv"}}
+// Example: {"files":{"hard_limit":"100","soft_limit":"80"},"qtree":{"id":"1","name":"qt1"},"space":{"hard_limit":"1222800","soft_limit":"51200"},"svm":{"name":"svm1"},"type":"user","user_mapping":true,"users":[{"name":"fred"}],"uuid":"264a9e0b-2e03-11e9-a610-005056a7b72d","volume":{"name":"fv"}}
 //
 // swagger:model quota_rule
 type QuotaRule struct {
@@ -221,33 +221,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// quota_rule
 	// QuotaRule
 	// type
 	// Type
 	// tree
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// QuotaRuleTypeTree captures enum value "tree"
 	QuotaRuleTypeTree string = "tree"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// quota_rule
 	// QuotaRule
 	// type
 	// Type
 	// user
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// QuotaRuleTypeUser captures enum value "user"
 	QuotaRuleTypeUser string = "user"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// quota_rule
 	// QuotaRule
 	// type
 	// Type
 	// group
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// QuotaRuleTypeGroup captures enum value "group"
 	QuotaRuleTypeGroup string = "group"
 )
@@ -549,11 +549,9 @@ func (m *QuotaRuleFiles) UnmarshalBinary(b []byte) error {
 type QuotaRuleGroup struct {
 
 	// Quota target group ID
-	// Read Only: true
 	ID string `json:"id,omitempty"`
 
 	// Quota target group name
-	// Read Only: true
 	Name string `json:"name,omitempty"`
 }
 
@@ -562,39 +560,8 @@ func (m *QuotaRuleGroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota rule group based on the context it is used
+// ContextValidate validates this quota rule group based on context it is used
 func (m *QuotaRuleGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateID(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateName(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *QuotaRuleGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "group"+"."+"id", "body", string(m.ID)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *QuotaRuleGroup) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "group"+"."+"name", "body", string(m.Name)); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -712,6 +679,7 @@ type QuotaRuleQtree struct {
 
 	// The unique identifier for a qtree.
 	// Example: 1
+	// Read Only: true
 	ID int64 `json:"id,omitempty"`
 
 	// The name of the qtree.
@@ -758,6 +726,10 @@ func (m *QuotaRuleQtree) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -773,6 +745,15 @@ func (m *QuotaRuleQtree) contextValidateLinks(ctx context.Context, formats strfm
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *QuotaRuleQtree) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "qtree"+"."+"id", "body", int64(m.ID)); err != nil {
+		return err
 	}
 
 	return nil
@@ -1110,11 +1091,9 @@ func (m *QuotaRuleSvmLinks) UnmarshalBinary(b []byte) error {
 type QuotaRuleUsersItems0 struct {
 
 	// Quota target user ID
-	// Read Only: true
 	ID string `json:"id,omitempty"`
 
 	// Quota target user name
-	// Read Only: true
 	Name string `json:"name,omitempty"`
 }
 
@@ -1123,39 +1102,8 @@ func (m *QuotaRuleUsersItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this quota rule users items0 based on the context it is used
+// ContextValidate validates this quota rule users items0 based on context it is used
 func (m *QuotaRuleUsersItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateID(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateName(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *QuotaRuleUsersItems0) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *QuotaRuleUsersItems0) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -1356,5 +1304,3 @@ func (m *QuotaRuleVolumeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

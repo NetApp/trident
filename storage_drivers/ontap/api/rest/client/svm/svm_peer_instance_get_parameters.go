@@ -64,7 +64,7 @@ type SvmPeerInstanceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* ReturnTimeout.
 
@@ -72,7 +72,7 @@ type SvmPeerInstanceGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* UUID.
 
@@ -98,11 +98,11 @@ func (o *SvmPeerInstanceGetParams) WithDefaults() *SvmPeerInstanceGetParams {
 // All values with no default are reset to their zero value.
 func (o *SvmPeerInstanceGetParams) SetDefaults() {
 	var (
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SvmPeerInstanceGetParams{
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -144,26 +144,26 @@ func (o *SvmPeerInstanceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the svm peer instance get params
-func (o *SvmPeerInstanceGetParams) WithFields(fields []string) *SvmPeerInstanceGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the svm peer instance get params
+func (o *SvmPeerInstanceGetParams) WithFieldsQueryParameter(fields []string) *SvmPeerInstanceGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the svm peer instance get params
-func (o *SvmPeerInstanceGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the svm peer instance get params
+func (o *SvmPeerInstanceGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithReturnTimeout adds the returnTimeout to the svm peer instance get params
-func (o *SvmPeerInstanceGetParams) WithReturnTimeout(returnTimeout *int64) *SvmPeerInstanceGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm peer instance get params
+func (o *SvmPeerInstanceGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmPeerInstanceGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the svm peer instance get params
-func (o *SvmPeerInstanceGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm peer instance get params
+func (o *SvmPeerInstanceGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithUUIDPathParameter adds the uuid to the svm peer instance get params
@@ -185,7 +185,7 @@ func (o *SvmPeerInstanceGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -196,13 +196,13 @@ func (o *SvmPeerInstanceGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -226,7 +226,7 @@ func (o *SvmPeerInstanceGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamSvmPeerInstanceGet binds the parameter fields
 func (o *SvmPeerInstanceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

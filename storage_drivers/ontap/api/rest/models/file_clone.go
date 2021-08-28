@@ -18,12 +18,18 @@ import (
 // swagger:model file_clone
 type FileClone struct {
 
-	// Mark file clone for auto deletion.
+	// Mark clone file for auto deletion.
 	Autodelete bool `json:"autodelete,omitempty"`
 
 	// Relative path of the clone/destination file in the volume.
 	// Example: dest_file1, dir1/dest_file2
 	DestinationPath string `json:"destination_path,omitempty"`
+
+	// Mark clone file for backup.
+	IsBackup bool `json:"is_backup,omitempty"`
+
+	// Destination file gets overwritten.
+	OverwriteDestination bool `json:"overwrite_destination,omitempty"`
 
 	// List of block ranges for sub-file cloning in the format "source-file-block-number:destination-file-block-number:block-count"
 	// Example: ["10:10:5","20:20:10"]
@@ -293,5 +299,3 @@ func (m *FileCloneVolumeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

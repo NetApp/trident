@@ -70,13 +70,13 @@ type VscanCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OnAccessPoliciesEnabled.
 
@@ -202,7 +202,7 @@ type VscanCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -210,7 +210,7 @@ type VscanCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -218,7 +218,7 @@ type VscanCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* ScannerPoolsClusterName.
 
@@ -286,14 +286,14 @@ func (o *VscanCollectionGetParams) WithDefaults() *VscanCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *VscanCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := VscanCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -346,26 +346,26 @@ func (o *VscanCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
 	o.EnabledQueryParameter = enabled
 }
 
-// WithFields adds the fields to the vscan collection get params
-func (o *VscanCollectionGetParams) WithFields(fields []string) *VscanCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the vscan collection get params
+func (o *VscanCollectionGetParams) WithFieldsQueryParameter(fields []string) *VscanCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the vscan collection get params
-func (o *VscanCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the vscan collection get params
+func (o *VscanCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithMaxRecords adds the maxRecords to the vscan collection get params
-func (o *VscanCollectionGetParams) WithMaxRecords(maxRecords *int64) *VscanCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the vscan collection get params
+func (o *VscanCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *VscanCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the vscan collection get params
-func (o *VscanCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the vscan collection get params
+func (o *VscanCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithOnAccessPoliciesEnabledQueryParameter adds the onAccessPoliciesEnabled to the vscan collection get params
@@ -588,37 +588,37 @@ func (o *VscanCollectionGetParams) SetOnDemandPoliciesScopeScanWithoutExtensionQ
 	o.OnDemandPoliciesScopeScanWithoutExtensionQueryParameter = onDemandPoliciesScopeScanWithoutExtension
 }
 
-// WithOrderBy adds the orderBy to the vscan collection get params
-func (o *VscanCollectionGetParams) WithOrderBy(orderBy []string) *VscanCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the vscan collection get params
+func (o *VscanCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *VscanCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the vscan collection get params
-func (o *VscanCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the vscan collection get params
+func (o *VscanCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the vscan collection get params
-func (o *VscanCollectionGetParams) WithReturnRecords(returnRecords *bool) *VscanCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the vscan collection get params
+func (o *VscanCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *VscanCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the vscan collection get params
-func (o *VscanCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the vscan collection get params
+func (o *VscanCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the vscan collection get params
-func (o *VscanCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *VscanCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the vscan collection get params
+func (o *VscanCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *VscanCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the vscan collection get params
-func (o *VscanCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the vscan collection get params
+func (o *VscanCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithScannerPoolsClusterNameQueryParameter adds the scannerPoolsClusterName to the vscan collection get params
@@ -734,7 +734,7 @@ func (o *VscanCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -745,13 +745,13 @@ func (o *VscanCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1102,7 +1102,7 @@ func (o *VscanCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1113,13 +1113,13 @@ func (o *VscanCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1130,13 +1130,13 @@ func (o *VscanCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1291,7 +1291,7 @@ func (o *VscanCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamVscanCollectionGet binds the parameter fields
 func (o *VscanCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1308,7 +1308,7 @@ func (o *VscanCollectionGetParams) bindParamFields(formats strfmt.Registry) []st
 
 // bindParamVscanCollectionGet binds the parameter order_by
 func (o *VscanCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

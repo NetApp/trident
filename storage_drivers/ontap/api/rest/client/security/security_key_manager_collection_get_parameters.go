@@ -60,11 +60,23 @@ func NewSecurityKeyManagerCollectionGetParamsWithHTTPClient(client *http.Client)
 */
 type SecurityKeyManagerCollectionGetParams struct {
 
+	/* ExternalClientCertificateName.
+
+	   Filter by external.client_certificate.name
+	*/
+	ExternalClientCertificateNameQueryParameter *string
+
 	/* ExternalClientCertificateUUID.
 
 	   Filter by external.client_certificate.uuid
 	*/
 	ExternalClientCertificateUUIDQueryParameter *string
+
+	/* ExternalServerCaCertificatesName.
+
+	   Filter by external.server_ca_certificates.name
+	*/
+	ExternalServerCaCertificatesNameQueryParameter *string
 
 	/* ExternalServerCaCertificatesUUID.
 
@@ -72,29 +84,11 @@ type SecurityKeyManagerCollectionGetParams struct {
 	*/
 	ExternalServerCaCertificatesUUIDQueryParameter *string
 
-	/* ExternalServersConnectivityClusterAvailability.
+	/* ExternalServersSecondaryKeyServers.
 
-	   Filter by external.servers.connectivity.cluster_availability
+	   Filter by external.servers.secondary_key_servers
 	*/
-	ExternalServersConnectivityClusterAvailabilityQueryParameter *bool
-
-	/* ExternalServersConnectivityRecordsNodeName.
-
-	   Filter by external.servers.connectivity.records.node.name
-	*/
-	ExternalServersConnectivityRecordsNodeNameQueryParameter *string
-
-	/* ExternalServersConnectivityRecordsNodeUUID.
-
-	   Filter by external.servers.connectivity.records.node.uuid
-	*/
-	ExternalServersConnectivityRecordsNodeUUIDQueryParameter *string
-
-	/* ExternalServersConnectivityRecordsState.
-
-	   Filter by external.servers.connectivity.records.state
-	*/
-	ExternalServersConnectivityRecordsStateQueryParameter *string
+	ExternalServersSecondaryKeyServersQueryParameter *string
 
 	/* ExternalServersServer.
 
@@ -118,7 +112,7 @@ type SecurityKeyManagerCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* IsDefaultDataAtRestEncryptionDisabled.
 
@@ -130,7 +124,7 @@ type SecurityKeyManagerCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OnboardEnabled.
 
@@ -148,7 +142,13 @@ type SecurityKeyManagerCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
+
+	/* Policy.
+
+	   Filter by policy
+	*/
+	PolicyQueryParameter *string
 
 	/* ReturnRecords.
 
@@ -156,7 +156,7 @@ type SecurityKeyManagerCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -164,7 +164,7 @@ type SecurityKeyManagerCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Scope.
 
@@ -238,14 +238,14 @@ func (o *SecurityKeyManagerCollectionGetParams) WithDefaults() *SecurityKeyManag
 // All values with no default are reset to their zero value.
 func (o *SecurityKeyManagerCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SecurityKeyManagerCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -287,6 +287,17 @@ func (o *SecurityKeyManagerCollectionGetParams) SetHTTPClient(client *http.Clien
 	o.HTTPClient = client
 }
 
+// WithExternalClientCertificateNameQueryParameter adds the externalClientCertificateName to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithExternalClientCertificateNameQueryParameter(externalClientCertificateName *string) *SecurityKeyManagerCollectionGetParams {
+	o.SetExternalClientCertificateNameQueryParameter(externalClientCertificateName)
+	return o
+}
+
+// SetExternalClientCertificateNameQueryParameter adds the externalClientCertificateName to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetExternalClientCertificateNameQueryParameter(externalClientCertificateName *string) {
+	o.ExternalClientCertificateNameQueryParameter = externalClientCertificateName
+}
+
 // WithExternalClientCertificateUUIDQueryParameter adds the externalClientCertificateUUID to the security key manager collection get params
 func (o *SecurityKeyManagerCollectionGetParams) WithExternalClientCertificateUUIDQueryParameter(externalClientCertificateUUID *string) *SecurityKeyManagerCollectionGetParams {
 	o.SetExternalClientCertificateUUIDQueryParameter(externalClientCertificateUUID)
@@ -296,6 +307,17 @@ func (o *SecurityKeyManagerCollectionGetParams) WithExternalClientCertificateUUI
 // SetExternalClientCertificateUUIDQueryParameter adds the externalClientCertificateUuid to the security key manager collection get params
 func (o *SecurityKeyManagerCollectionGetParams) SetExternalClientCertificateUUIDQueryParameter(externalClientCertificateUUID *string) {
 	o.ExternalClientCertificateUUIDQueryParameter = externalClientCertificateUUID
+}
+
+// WithExternalServerCaCertificatesNameQueryParameter adds the externalServerCaCertificatesName to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithExternalServerCaCertificatesNameQueryParameter(externalServerCaCertificatesName *string) *SecurityKeyManagerCollectionGetParams {
+	o.SetExternalServerCaCertificatesNameQueryParameter(externalServerCaCertificatesName)
+	return o
+}
+
+// SetExternalServerCaCertificatesNameQueryParameter adds the externalServerCaCertificatesName to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetExternalServerCaCertificatesNameQueryParameter(externalServerCaCertificatesName *string) {
+	o.ExternalServerCaCertificatesNameQueryParameter = externalServerCaCertificatesName
 }
 
 // WithExternalServerCaCertificatesUUIDQueryParameter adds the externalServerCaCertificatesUUID to the security key manager collection get params
@@ -309,48 +331,15 @@ func (o *SecurityKeyManagerCollectionGetParams) SetExternalServerCaCertificatesU
 	o.ExternalServerCaCertificatesUUIDQueryParameter = externalServerCaCertificatesUUID
 }
 
-// WithExternalServersConnectivityClusterAvailabilityQueryParameter adds the externalServersConnectivityClusterAvailability to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) WithExternalServersConnectivityClusterAvailabilityQueryParameter(externalServersConnectivityClusterAvailability *bool) *SecurityKeyManagerCollectionGetParams {
-	o.SetExternalServersConnectivityClusterAvailabilityQueryParameter(externalServersConnectivityClusterAvailability)
+// WithExternalServersSecondaryKeyServersQueryParameter adds the externalServersSecondaryKeyServers to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithExternalServersSecondaryKeyServersQueryParameter(externalServersSecondaryKeyServers *string) *SecurityKeyManagerCollectionGetParams {
+	o.SetExternalServersSecondaryKeyServersQueryParameter(externalServersSecondaryKeyServers)
 	return o
 }
 
-// SetExternalServersConnectivityClusterAvailabilityQueryParameter adds the externalServersConnectivityClusterAvailability to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) SetExternalServersConnectivityClusterAvailabilityQueryParameter(externalServersConnectivityClusterAvailability *bool) {
-	o.ExternalServersConnectivityClusterAvailabilityQueryParameter = externalServersConnectivityClusterAvailability
-}
-
-// WithExternalServersConnectivityRecordsNodeNameQueryParameter adds the externalServersConnectivityRecordsNodeName to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) WithExternalServersConnectivityRecordsNodeNameQueryParameter(externalServersConnectivityRecordsNodeName *string) *SecurityKeyManagerCollectionGetParams {
-	o.SetExternalServersConnectivityRecordsNodeNameQueryParameter(externalServersConnectivityRecordsNodeName)
-	return o
-}
-
-// SetExternalServersConnectivityRecordsNodeNameQueryParameter adds the externalServersConnectivityRecordsNodeName to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) SetExternalServersConnectivityRecordsNodeNameQueryParameter(externalServersConnectivityRecordsNodeName *string) {
-	o.ExternalServersConnectivityRecordsNodeNameQueryParameter = externalServersConnectivityRecordsNodeName
-}
-
-// WithExternalServersConnectivityRecordsNodeUUIDQueryParameter adds the externalServersConnectivityRecordsNodeUUID to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) WithExternalServersConnectivityRecordsNodeUUIDQueryParameter(externalServersConnectivityRecordsNodeUUID *string) *SecurityKeyManagerCollectionGetParams {
-	o.SetExternalServersConnectivityRecordsNodeUUIDQueryParameter(externalServersConnectivityRecordsNodeUUID)
-	return o
-}
-
-// SetExternalServersConnectivityRecordsNodeUUIDQueryParameter adds the externalServersConnectivityRecordsNodeUuid to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) SetExternalServersConnectivityRecordsNodeUUIDQueryParameter(externalServersConnectivityRecordsNodeUUID *string) {
-	o.ExternalServersConnectivityRecordsNodeUUIDQueryParameter = externalServersConnectivityRecordsNodeUUID
-}
-
-// WithExternalServersConnectivityRecordsStateQueryParameter adds the externalServersConnectivityRecordsState to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) WithExternalServersConnectivityRecordsStateQueryParameter(externalServersConnectivityRecordsState *string) *SecurityKeyManagerCollectionGetParams {
-	o.SetExternalServersConnectivityRecordsStateQueryParameter(externalServersConnectivityRecordsState)
-	return o
-}
-
-// SetExternalServersConnectivityRecordsStateQueryParameter adds the externalServersConnectivityRecordsState to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) SetExternalServersConnectivityRecordsStateQueryParameter(externalServersConnectivityRecordsState *string) {
-	o.ExternalServersConnectivityRecordsStateQueryParameter = externalServersConnectivityRecordsState
+// SetExternalServersSecondaryKeyServersQueryParameter adds the externalServersSecondaryKeyServers to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetExternalServersSecondaryKeyServersQueryParameter(externalServersSecondaryKeyServers *string) {
+	o.ExternalServersSecondaryKeyServersQueryParameter = externalServersSecondaryKeyServers
 }
 
 // WithExternalServersServerQueryParameter adds the externalServersServer to the security key manager collection get params
@@ -386,15 +375,15 @@ func (o *SecurityKeyManagerCollectionGetParams) SetExternalServersUsernameQueryP
 	o.ExternalServersUsernameQueryParameter = externalServersUsername
 }
 
-// WithFields adds the fields to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) WithFields(fields []string) *SecurityKeyManagerCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithFieldsQueryParameter(fields []string) *SecurityKeyManagerCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIsDefaultDataAtRestEncryptionDisabledQueryParameter adds the isDefaultDataAtRestEncryptionDisabled to the security key manager collection get params
@@ -408,15 +397,15 @@ func (o *SecurityKeyManagerCollectionGetParams) SetIsDefaultDataAtRestEncryption
 	o.IsDefaultDataAtRestEncryptionDisabledQueryParameter = isDefaultDataAtRestEncryptionDisabled
 }
 
-// WithMaxRecords adds the maxRecords to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) WithMaxRecords(maxRecords *int64) *SecurityKeyManagerCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SecurityKeyManagerCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithOnboardEnabledQueryParameter adds the onboardEnabled to the security key manager collection get params
@@ -441,37 +430,48 @@ func (o *SecurityKeyManagerCollectionGetParams) SetOnboardKeyBackupQueryParamete
 	o.OnboardKeyBackupQueryParameter = onboardKeyBackup
 }
 
-// WithOrderBy adds the orderBy to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) WithOrderBy(orderBy []string) *SecurityKeyManagerCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *SecurityKeyManagerCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) WithReturnRecords(returnRecords *bool) *SecurityKeyManagerCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithPolicyQueryParameter adds the policy to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithPolicyQueryParameter(policy *string) *SecurityKeyManagerCollectionGetParams {
+	o.SetPolicyQueryParameter(policy)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetPolicyQueryParameter adds the policy to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetPolicyQueryParameter(policy *string) {
+	o.PolicyQueryParameter = policy
 }
 
-// WithReturnTimeout adds the returnTimeout to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *SecurityKeyManagerCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnRecordsQueryParameter adds the returnRecords to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecurityKeyManagerCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the security key manager collection get params
-func (o *SecurityKeyManagerCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnRecordsQueryParameter adds the returnRecords to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
+}
+
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SecurityKeyManagerCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
+	return o
+}
+
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the security key manager collection get params
+func (o *SecurityKeyManagerCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithScopeQueryParameter adds the scope to the security key manager collection get params
@@ -581,6 +581,23 @@ func (o *SecurityKeyManagerCollectionGetParams) WriteToRequest(r runtime.ClientR
 	}
 	var res []error
 
+	if o.ExternalClientCertificateNameQueryParameter != nil {
+
+		// query param external.client_certificate.name
+		var qrExternalClientCertificateName string
+
+		if o.ExternalClientCertificateNameQueryParameter != nil {
+			qrExternalClientCertificateName = *o.ExternalClientCertificateNameQueryParameter
+		}
+		qExternalClientCertificateName := qrExternalClientCertificateName
+		if qExternalClientCertificateName != "" {
+
+			if err := r.SetQueryParam("external.client_certificate.name", qExternalClientCertificateName); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ExternalClientCertificateUUIDQueryParameter != nil {
 
 		// query param external.client_certificate.uuid
@@ -593,6 +610,23 @@ func (o *SecurityKeyManagerCollectionGetParams) WriteToRequest(r runtime.ClientR
 		if qExternalClientCertificateUUID != "" {
 
 			if err := r.SetQueryParam("external.client_certificate.uuid", qExternalClientCertificateUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExternalServerCaCertificatesNameQueryParameter != nil {
+
+		// query param external.server_ca_certificates.name
+		var qrExternalServerCaCertificatesName string
+
+		if o.ExternalServerCaCertificatesNameQueryParameter != nil {
+			qrExternalServerCaCertificatesName = *o.ExternalServerCaCertificatesNameQueryParameter
+		}
+		qExternalServerCaCertificatesName := qrExternalServerCaCertificatesName
+		if qExternalServerCaCertificatesName != "" {
+
+			if err := r.SetQueryParam("external.server_ca_certificates.name", qExternalServerCaCertificatesName); err != nil {
 				return err
 			}
 		}
@@ -615,69 +649,18 @@ func (o *SecurityKeyManagerCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ExternalServersConnectivityClusterAvailabilityQueryParameter != nil {
+	if o.ExternalServersSecondaryKeyServersQueryParameter != nil {
 
-		// query param external.servers.connectivity.cluster_availability
-		var qrExternalServersConnectivityClusterAvailability bool
+		// query param external.servers.secondary_key_servers
+		var qrExternalServersSecondaryKeyServers string
 
-		if o.ExternalServersConnectivityClusterAvailabilityQueryParameter != nil {
-			qrExternalServersConnectivityClusterAvailability = *o.ExternalServersConnectivityClusterAvailabilityQueryParameter
+		if o.ExternalServersSecondaryKeyServersQueryParameter != nil {
+			qrExternalServersSecondaryKeyServers = *o.ExternalServersSecondaryKeyServersQueryParameter
 		}
-		qExternalServersConnectivityClusterAvailability := swag.FormatBool(qrExternalServersConnectivityClusterAvailability)
-		if qExternalServersConnectivityClusterAvailability != "" {
+		qExternalServersSecondaryKeyServers := qrExternalServersSecondaryKeyServers
+		if qExternalServersSecondaryKeyServers != "" {
 
-			if err := r.SetQueryParam("external.servers.connectivity.cluster_availability", qExternalServersConnectivityClusterAvailability); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ExternalServersConnectivityRecordsNodeNameQueryParameter != nil {
-
-		// query param external.servers.connectivity.records.node.name
-		var qrExternalServersConnectivityRecordsNodeName string
-
-		if o.ExternalServersConnectivityRecordsNodeNameQueryParameter != nil {
-			qrExternalServersConnectivityRecordsNodeName = *o.ExternalServersConnectivityRecordsNodeNameQueryParameter
-		}
-		qExternalServersConnectivityRecordsNodeName := qrExternalServersConnectivityRecordsNodeName
-		if qExternalServersConnectivityRecordsNodeName != "" {
-
-			if err := r.SetQueryParam("external.servers.connectivity.records.node.name", qExternalServersConnectivityRecordsNodeName); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ExternalServersConnectivityRecordsNodeUUIDQueryParameter != nil {
-
-		// query param external.servers.connectivity.records.node.uuid
-		var qrExternalServersConnectivityRecordsNodeUUID string
-
-		if o.ExternalServersConnectivityRecordsNodeUUIDQueryParameter != nil {
-			qrExternalServersConnectivityRecordsNodeUUID = *o.ExternalServersConnectivityRecordsNodeUUIDQueryParameter
-		}
-		qExternalServersConnectivityRecordsNodeUUID := qrExternalServersConnectivityRecordsNodeUUID
-		if qExternalServersConnectivityRecordsNodeUUID != "" {
-
-			if err := r.SetQueryParam("external.servers.connectivity.records.node.uuid", qExternalServersConnectivityRecordsNodeUUID); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ExternalServersConnectivityRecordsStateQueryParameter != nil {
-
-		// query param external.servers.connectivity.records.state
-		var qrExternalServersConnectivityRecordsState string
-
-		if o.ExternalServersConnectivityRecordsStateQueryParameter != nil {
-			qrExternalServersConnectivityRecordsState = *o.ExternalServersConnectivityRecordsStateQueryParameter
-		}
-		qExternalServersConnectivityRecordsState := qrExternalServersConnectivityRecordsState
-		if qExternalServersConnectivityRecordsState != "" {
-
-			if err := r.SetQueryParam("external.servers.connectivity.records.state", qExternalServersConnectivityRecordsState); err != nil {
+			if err := r.SetQueryParam("external.servers.secondary_key_servers", qExternalServersSecondaryKeyServers); err != nil {
 				return err
 			}
 		}
@@ -734,7 +717,7 @@ func (o *SecurityKeyManagerCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -762,13 +745,13 @@ func (o *SecurityKeyManagerCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -813,7 +796,7 @@ func (o *SecurityKeyManagerCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -824,13 +807,30 @@ func (o *SecurityKeyManagerCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.PolicyQueryParameter != nil {
+
+		// query param policy
+		var qrPolicy string
+
+		if o.PolicyQueryParameter != nil {
+			qrPolicy = *o.PolicyQueryParameter
+		}
+		qPolicy := qrPolicy
+		if qPolicy != "" {
+
+			if err := r.SetQueryParam("policy", qPolicy); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -841,13 +841,13 @@ func (o *SecurityKeyManagerCollectionGetParams) WriteToRequest(r runtime.ClientR
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1019,7 +1019,7 @@ func (o *SecurityKeyManagerCollectionGetParams) WriteToRequest(r runtime.ClientR
 
 // bindParamSecurityKeyManagerCollectionGet binds the parameter fields
 func (o *SecurityKeyManagerCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1036,7 +1036,7 @@ func (o *SecurityKeyManagerCollectionGetParams) bindParamFields(formats strfmt.R
 
 // bindParamSecurityKeyManagerCollectionGet binds the parameter order_by
 func (o *SecurityKeyManagerCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

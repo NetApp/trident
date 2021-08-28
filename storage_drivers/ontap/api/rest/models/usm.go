@@ -117,43 +117,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// usm
 	// Usm
 	// authentication_protocol
 	// AuthenticationProtocol
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// UsmAuthenticationProtocolNone captures enum value "none"
 	UsmAuthenticationProtocolNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// usm
 	// Usm
 	// authentication_protocol
 	// AuthenticationProtocol
 	// md5
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// UsmAuthenticationProtocolMd5 captures enum value "md5"
 	UsmAuthenticationProtocolMd5 string = "md5"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// usm
 	// Usm
 	// authentication_protocol
 	// AuthenticationProtocol
 	// sha
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// UsmAuthenticationProtocolSha captures enum value "sha"
 	UsmAuthenticationProtocolSha string = "sha"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// usm
 	// Usm
 	// authentication_protocol
 	// AuthenticationProtocol
 	// sha2_256
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// UsmAuthenticationProtocolSha2256 captures enum value "sha2_256"
 	UsmAuthenticationProtocolSha2256 string = "sha2_256"
 )
@@ -205,33 +205,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// usm
 	// Usm
 	// privacy_protocol
 	// PrivacyProtocol
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// UsmPrivacyProtocolNone captures enum value "none"
 	UsmPrivacyProtocolNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// usm
 	// Usm
 	// privacy_protocol
 	// PrivacyProtocol
 	// des
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// UsmPrivacyProtocolDes captures enum value "des"
 	UsmPrivacyProtocolDes string = "des"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// usm
 	// Usm
 	// privacy_protocol
 	// PrivacyProtocol
 	// aes128
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// UsmPrivacyProtocolAes128 captures enum value "aes128"
 	UsmPrivacyProtocolAes128 string = "aes128"
 )
@@ -388,5 +388,3 @@ func (m *UsmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

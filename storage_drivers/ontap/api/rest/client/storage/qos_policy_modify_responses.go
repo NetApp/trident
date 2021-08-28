@@ -55,7 +55,7 @@ type QosPolicyModifyAccepted struct {
 }
 
 func (o *QosPolicyModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /storage/qos/policies/{policy.uuid}][%d] qosPolicyModifyAccepted  %+v", 202, o.Payload)
+	return fmt.Sprintf("[PATCH /storage/qos/policies/{uuid}][%d] qosPolicyModifyAccepted  %+v", 202, o.Payload)
 }
 func (o *QosPolicyModifyAccepted) GetPayload() *models.JobLinkResponse {
 	return o.Payload
@@ -108,7 +108,7 @@ func (o *QosPolicyModifyDefault) Code() int {
 }
 
 func (o *QosPolicyModifyDefault) Error() string {
-	return fmt.Sprintf("[PATCH /storage/qos/policies/{policy.uuid}][%d] qos_policy_modify default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[PATCH /storage/qos/policies/{uuid}][%d] qos_policy_modify default  %+v", o._statusCode, o.Payload)
 }
 func (o *QosPolicyModifyDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

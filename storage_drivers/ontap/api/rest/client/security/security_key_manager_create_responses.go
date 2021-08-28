@@ -88,7 +88,8 @@ func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefau
 | 65536038 | A maximum of 4 active key servers are allowed. |
 | 65536214 | Failed to generate cluster key encryption key. |
 | 65536216 | Failed to add cluster key encryption key. |
-| 65536310 | Failed to setup onboard key management because the MetroCluster peer is unhealthy. |
+| 65536310 | Failed to setup the Onboard Key Manager because the MetroCluster peer is unhealthy. |
+| 65536341 | Failed to setup the Onboard Key Manager because the MetroCluster peer is unhealthy. |
 | 65536508 | The platform does not support data at rest encryption. |
 | 65536821 | The certificate is not installed. |
 | 65536822 | Multitenant key management is not supported in the current cluster version. |
@@ -101,11 +102,11 @@ func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefau
 | 65536876 | External key management requires client and server CA certificates installed and with one or more key servers provided. |
 | 65536878 | External key management cannot be configured as one or more volume encryption keys of the SVM are stored in cluster key management server. |
 | 65536895 | External key manager cannnot be configured since this cluster is part of a MetroCluster configuration and the partner site of this MetroCluster configuration has Onboard Key Manager configured. |
-| 65536900 | Onboard key management cannot be configured because this cluster is part of a MetroCluster configuration and the partner site has the external key manager configured. |
-| 65536903 | Onboard key management has failed to configure on some nodes in the cluster. Use the CLI to sync the onboard key management configuration on failed nodes. |
-| 65536906 | Onboard key management has already been configured at the partner site. Use the CLI to sync the onboard key management with the same passphrase. |
-| 65536907 | Onboard key management is already configured. Use the CLI to sync any nodes with onboard key management configuration. |
-| 65536916 | Onboard key management is only supported for an admin SVM. |
+| 65536900 | The Onboard Key Manager cannot be configured because this cluster is part of a MetroCluster configuration and the partner site has the external key manager configured. |
+| 65536903 | The Onboard Key Manager has failed to configure on some nodes in the cluster. Use the CLI to sync the Onboard Key Manager configuration on failed nodes. |
+| 65536906 | The Onboard Key Manager has already been configured at the partner site. Use the CLI to sync the Onboard Key Manager with the same passphrase. |
+| 65536907 | The Onboard Key Manager is already configured. Use the CLI to sync any nodes with the Onboard Key Manager configuration. |
+| 65536916 | The Onboard Key Manager is only supported for an admin SVM. |
 | 65536920 | The Onboard Key Manager passphrase length is incorrect. |
 | 65537240 | The Onboard Key Manager passphrase must be provided when performing a POST/synchronize operation. |
 | 65537241 | The Onboard Key Manager existing_passphrase must not be provided when performing a POST/synchronize operation. |
@@ -115,7 +116,6 @@ func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefau
 | 66060338 | Failed to establish secure connection for a key management server due to incorrect server_ca certificates. |
 | 66060339 | Failed to establish secure connection for a key management server due to incorrect client certificates. |
 | 66060340 | Failed to establish secure connection for a key management server due to Cryptsoft error. |
-| 66060341 | Failed to establish secure connection for a key management server due to network configuration issues. |
 
 */
 type SecurityKeyManagerCreateDefault struct {

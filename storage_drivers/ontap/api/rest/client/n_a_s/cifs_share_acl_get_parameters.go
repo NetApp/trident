@@ -64,7 +64,7 @@ type CifsShareACLGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Share.
 
@@ -76,7 +76,7 @@ type CifsShareACLGetParams struct {
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	/* Type.
 
@@ -143,15 +143,15 @@ func (o *CifsShareACLGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the cifs share acl get params
-func (o *CifsShareACLGetParams) WithFields(fields []string) *CifsShareACLGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the cifs share acl get params
+func (o *CifsShareACLGetParams) WithFieldsQueryParameter(fields []string) *CifsShareACLGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the cifs share acl get params
-func (o *CifsShareACLGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the cifs share acl get params
+func (o *CifsShareACLGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithSharePathParameter adds the share to the cifs share acl get params
@@ -165,15 +165,15 @@ func (o *CifsShareACLGetParams) SetSharePathParameter(share string) {
 	o.SharePathParameter = share
 }
 
-// WithSvmUUID adds the svmUUID to the cifs share acl get params
-func (o *CifsShareACLGetParams) WithSvmUUID(svmUUID string) *CifsShareACLGetParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the cifs share acl get params
+func (o *CifsShareACLGetParams) WithSVMUUIDPathParameter(svmUUID string) *CifsShareACLGetParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the cifs share acl get params
-func (o *CifsShareACLGetParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the cifs share acl get params
+func (o *CifsShareACLGetParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WithTypePathParameter adds the typeVar to the cifs share acl get params
@@ -206,7 +206,7 @@ func (o *CifsShareACLGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -223,7 +223,7 @@ func (o *CifsShareACLGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 
@@ -245,7 +245,7 @@ func (o *CifsShareACLGetParams) WriteToRequest(r runtime.ClientRequest, reg strf
 
 // bindParamCifsShareACLGet binds the parameter fields
 func (o *CifsShareACLGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

@@ -72,13 +72,13 @@ type FpolicyPolicyCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
 	*/
-	SvmUUID string
+	SVMUUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,11 +98,11 @@ func (o *FpolicyPolicyCreateParams) WithDefaults() *FpolicyPolicyCreateParams {
 // All values with no default are reset to their zero value.
 func (o *FpolicyPolicyCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := FpolicyPolicyCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -155,26 +155,26 @@ func (o *FpolicyPolicyCreateParams) SetInfo(info *models.FpolicyPolicy) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the fpolicy policy create params
-func (o *FpolicyPolicyCreateParams) WithReturnRecords(returnRecords *bool) *FpolicyPolicyCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the fpolicy policy create params
+func (o *FpolicyPolicyCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FpolicyPolicyCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the fpolicy policy create params
-func (o *FpolicyPolicyCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the fpolicy policy create params
+func (o *FpolicyPolicyCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithSvmUUID adds the svmUUID to the fpolicy policy create params
-func (o *FpolicyPolicyCreateParams) WithSvmUUID(svmUUID string) *FpolicyPolicyCreateParams {
-	o.SetSvmUUID(svmUUID)
+// WithSVMUUIDPathParameter adds the svmUUID to the fpolicy policy create params
+func (o *FpolicyPolicyCreateParams) WithSVMUUIDPathParameter(svmUUID string) *FpolicyPolicyCreateParams {
+	o.SetSVMUUIDPathParameter(svmUUID)
 	return o
 }
 
-// SetSvmUUID adds the svmUuid to the fpolicy policy create params
-func (o *FpolicyPolicyCreateParams) SetSvmUUID(svmUUID string) {
-	o.SvmUUID = svmUUID
+// SetSVMUUIDPathParameter adds the svmUuid to the fpolicy policy create params
+func (o *FpolicyPolicyCreateParams) SetSVMUUIDPathParameter(svmUUID string) {
+	o.SVMUUIDPathParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -190,13 +190,13 @@ func (o *FpolicyPolicyCreateParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -208,7 +208,7 @@ func (o *FpolicyPolicyCreateParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 
 	// path param svm.uuid
-	if err := r.SetPathParam("svm.uuid", o.SvmUUID); err != nil {
+	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
 	}
 

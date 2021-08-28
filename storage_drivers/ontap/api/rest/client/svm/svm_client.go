@@ -68,7 +68,7 @@ type ClientService interface {
 * It is not recommended to create or delete more than five SVMs in parallel.
 * REST APIs only expose a data SVM as an SVM.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `snapmirror.*`
 ### Related ONTAP commands
 * `vserver show`
@@ -95,6 +95,18 @@ There is an added cost to retrieving values for these properties. They are not i
     <br/>
     ```
     GET "/api/svm/svms?s3.enabled=true"
+    ```
+    <br/>
+5 Retrieves a list of SVMs in the cluster that have the FCP protocol allowed
+    <br/>
+    ```
+    GET "/api/svm/svms?fcp.allowed=true"
+    ```
+    <br/>
+6. Retrieves a list of SVMs in the cluster that have the CIFS protocol allowed
+    <br/>
+    ```
+    GET "/api/svm/svms?cifs.allowed=true"
     ```
     <br/>
 ### Learn more
@@ -193,6 +205,8 @@ If not specified in POST, the following default property values are assigned:
 * `vserver fcp create`
 * `vserver services name-service ns-switch create`
 * `vserver object-store-server create`
+* `vserver add-protocols`
+* `vserver remove-protocols`
 ### Examples
 1. Creates an SVM with default "snapshot_policy"
     <br/>
@@ -252,6 +266,24 @@ If not specified in POST, the following default property values are assigned:
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"svm5", "s3":{"name":"s3-server-1", "enabled":true}}'
+    ```
+    <br/>
+11. Creates an SVM and disallows NVMe service for the SVM
+    <br/>
+    ```
+    POST "/api/svm/svms" '{"name":"testVs", "nvme":{"allowed":"false"}}'
+    ```
+    <br/>
+12. Creates an SVM, allows and configures the NFS service for the SVM
+    <br/>
+    ```
+    POST "/api/svm/svms" '{"name":"testVs", "nfs":{"allowed":"true", "enabled":true}}'
+    ```
+    <br/>
+13. Create an SVM and set the max volume limit for the SVM
+    <br/>
+    ```
+    POST "/api/svm/svms/" '{"name":"testVs", "max_volumes":"200"}'
     ```
     <br/>
 ### Learn more
@@ -351,7 +383,7 @@ func (a *Client) SvmDelete(params *SvmDeleteParams, authInfo runtime.ClientAuthI
 * The SVM object includes a large set of fields and can be expensive to retrieve.
 * REST APIs only expose a data SVM as an SVM.
 ### Expensive properties
-There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `snapmirror.*`
 ### Example
     Retrieving an individual SVM in the cluster
@@ -361,8 +393,6 @@ There is an added cost to retrieving values for these properties. They are not i
     ```
     <br/>
 
-### Learn more
-* [`DOC /svm/svms`](#docs-svm-svm_svms)
 */
 func (a *Client) SvmGet(params *SvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmGetOK, error) {
 	// TODO: Validate the params before sending
@@ -407,6 +437,8 @@ func (a *Client) SvmGet(params *SvmGetParams, authInfo runtime.ClientAuthInfoWri
 * `vserver start`
 * `vserver stop`
 * `security ssl modify`
+* `vserver add-protocols`
+* `vserver remove-protocols`
 ### Examples
 1.  Stops an SVM and updates the "comment" field for an individual SVM
     <br/>
@@ -448,6 +480,24 @@ func (a *Client) SvmGet(params *SvmGetParams, authInfo runtime.ClientAuthInfoWri
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"certificate":{"uuid":"1cd8a442-86d1-11e0-ae1c-123478563412"}}'
+    ```
+    <br/>
+8.  Updates the QoS policy for the SVM
+    <br/>
+    ```
+    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"qos_policy_group":{"name":"qpolicy1"}}'
+    ```
+    <br/>
+9.  Allows NFS protocol which was previously disallowed for the SVM
+    <br/>
+    ```
+    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"nfs":{"enabled":"true"}}'
+    ```
+    <br/>
+10. Updates the max volume limit for the SVM
+    <br/>
+    ```
+    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"max_volumes":"200"}'
     ```
     <br/>
 ### Learn more
@@ -562,7 +612,7 @@ func (a *Client) SvmPeerCollectionGet(params *SvmPeerCollectionGetParams, authIn
 Creates a new SVM peer relationship.
 <br/>
 ```
-POST "/api/svm/peers" '{"svm":{"name":"vs1", "peer.cluster.name":"cluster2", "peer.svm.name":"VS1", "applications":["snapmirror"]}'
+POST "/api/svm/peers" '{"svm":{"name":"vs1"}, "peer.cluster.name":"cluster2", "peer.svm.name":"VS1", "applications":["snapmirror"]}'
 ```
 <br/>
 ### Learn more

@@ -296,5 +296,3 @@ func (m *CloudStorageTierCloudStoreLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

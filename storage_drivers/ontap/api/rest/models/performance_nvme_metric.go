@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// PerformanceNvmeMetric Performance numbers, such as IOPS latency and throughput.
+// PerformanceNvmeMetric Performance numbers, such as IOPS latency and throughput, for SVM protocols.
 //
 // swagger:model performance_nvme_metric
 type PerformanceNvmeMetric struct {
@@ -36,17 +36,20 @@ type PerformanceNvmeMetric struct {
 	// latency
 	Latency *PerformanceNvmeMetricLatency `json:"latency,omitempty"`
 
-	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
+
+	// svm
+	Svm *PerformanceNvmeMetricSvm `json:"svm,omitempty"`
 
 	// throughput
 	Throughput *PerformanceNvmeMetricThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -73,6 +76,10 @@ func (m *PerformanceNvmeMetric) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -121,63 +128,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricDurationPT15S captures enum value "PT15S"
 	PerformanceNvmeMetricDurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricDurationPT4M captures enum value "PT4M"
 	PerformanceNvmeMetricDurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricDurationPT30M captures enum value "PT30M"
 	PerformanceNvmeMetricDurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricDurationPT2H captures enum value "PT2H"
 	PerformanceNvmeMetricDurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricDurationP1D captures enum value "P1D"
 	PerformanceNvmeMetricDurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricDurationPT5M captures enum value "PT5M"
 	PerformanceNvmeMetricDurationPT5M string = "PT5M"
 )
@@ -241,7 +248,7 @@ var performanceNvmeMetricTypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -251,105 +258,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricStatusOk captures enum value "ok"
 	PerformanceNvmeMetricStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricStatusError captures enum value "error"
 	PerformanceNvmeMetricStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricStatusPartialNoData captures enum value "partial_no_data"
 	PerformanceNvmeMetricStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// performance_nvme_metric
-	// PerformanceNvmeMetric
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// PerformanceNvmeMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceNvmeMetricStatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricStatusPartialNoResponse captures enum value "partial_no_response"
 	PerformanceNvmeMetricStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricStatusPartialOtherError captures enum value "partial_other_error"
 	PerformanceNvmeMetricStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricStatusNegativeDelta captures enum value "negative_delta"
 	PerformanceNvmeMetricStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// performance_nvme_metric
+	// PerformanceNvmeMetric
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// PerformanceNvmeMetricStatusNotFound captures enum value "not_found"
+	PerformanceNvmeMetricStatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricStatusBackfilledData captures enum value "backfilled_data"
 	PerformanceNvmeMetricStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	PerformanceNvmeMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// performance_nvme_metric
 	// PerformanceNvmeMetric
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceNvmeMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	PerformanceNvmeMetricStatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// performance_nvme_metric
+	// PerformanceNvmeMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// PerformanceNvmeMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceNvmeMetricStatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -368,6 +385,23 @@ func (m *PerformanceNvmeMetric) validateStatus(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *PerformanceNvmeMetric) validateSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.Svm) { // not required
+		return nil
+	}
+
+	if m.Svm != nil {
+		if err := m.Svm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -423,6 +457,10 @@ func (m *PerformanceNvmeMetric) ContextValidate(ctx context.Context, formats str
 	}
 
 	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -495,6 +533,20 @@ func (m *PerformanceNvmeMetric) contextValidateStatus(ctx context.Context, forma
 
 	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *PerformanceNvmeMetric) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Svm != nil {
+		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -735,13 +787,49 @@ func (m *PerformanceNvmeMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// PerformanceNvmeMetricSvm performance nvme metric svm
+//
+// swagger:model PerformanceNvmeMetricSvm
+type PerformanceNvmeMetricSvm struct {
+
+	// The unique identifier of the SVM.
+	//
+	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this performance nvme metric svm
+func (m *PerformanceNvmeMetricSvm) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this performance nvme metric svm based on context it is used
+func (m *PerformanceNvmeMetricSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PerformanceNvmeMetricSvm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PerformanceNvmeMetricSvm) UnmarshalBinary(b []byte) error {
+	var res PerformanceNvmeMetricSvm
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // PerformanceNvmeMetricThroughput The rate of throughput bytes per second observed at the storage object.
 //
 // swagger:model PerformanceNvmeMetricThroughput
 type PerformanceNvmeMetricThroughput struct {
-
-	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
@@ -788,5 +876,3 @@ func (m *PerformanceNvmeMetricThroughput) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -78,13 +78,13 @@ type SecurityLogForwardingCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,15 +106,15 @@ func (o *SecurityLogForwardingCreateParams) SetDefaults() {
 	var (
 		forceQueryParameterDefault = bool(false)
 
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := SecurityLogForwardingCreateParams{
-		ForceQueryParameter: &forceQueryParameterDefault,
-		ReturnRecords:       &returnRecordsDefault,
-		ReturnTimeout:       &returnTimeoutDefault,
+		ForceQueryParameter:         &forceQueryParameterDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -178,26 +178,26 @@ func (o *SecurityLogForwardingCreateParams) SetInfo(info *models.SecurityAuditLo
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the security log forwarding create params
-func (o *SecurityLogForwardingCreateParams) WithReturnRecords(returnRecords *bool) *SecurityLogForwardingCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the security log forwarding create params
+func (o *SecurityLogForwardingCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecurityLogForwardingCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the security log forwarding create params
-func (o *SecurityLogForwardingCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the security log forwarding create params
+func (o *SecurityLogForwardingCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the security log forwarding create params
-func (o *SecurityLogForwardingCreateParams) WithReturnTimeout(returnTimeout *int64) *SecurityLogForwardingCreateParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the security log forwarding create params
+func (o *SecurityLogForwardingCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SecurityLogForwardingCreateParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the security log forwarding create params
-func (o *SecurityLogForwardingCreateParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the security log forwarding create params
+func (o *SecurityLogForwardingCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -230,13 +230,13 @@ func (o *SecurityLogForwardingCreateParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -247,13 +247,13 @@ func (o *SecurityLogForwardingCreateParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

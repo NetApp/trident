@@ -149,93 +149,93 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san
 	// MongoDbOnSan
 	// os_type
 	// OsType
 	// hyper_v
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanOsTypeHyperv captures enum value "hyper_v"
 	MongoDbOnSanOsTypeHyperv string = "hyper_v"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san
 	// MongoDbOnSan
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanOsTypeLinux captures enum value "linux"
 	MongoDbOnSanOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san
 	// MongoDbOnSan
 	// os_type
 	// OsType
 	// solaris
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanOsTypeSolaris captures enum value "solaris"
 	MongoDbOnSanOsTypeSolaris string = "solaris"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san
 	// MongoDbOnSan
 	// os_type
 	// OsType
 	// solaris_efi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanOsTypeSolarisEfi captures enum value "solaris_efi"
 	MongoDbOnSanOsTypeSolarisEfi string = "solaris_efi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san
 	// MongoDbOnSan
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanOsTypeVmware captures enum value "vmware"
 	MongoDbOnSanOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san
 	// MongoDbOnSan
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanOsTypeWindows captures enum value "windows"
 	MongoDbOnSanOsTypeWindows string = "windows"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san
 	// MongoDbOnSan
 	// os_type
 	// OsType
 	// windows_2008
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanOsTypeWindows2008 captures enum value "windows_2008"
 	MongoDbOnSanOsTypeWindows2008 string = "windows_2008"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san
 	// MongoDbOnSan
 	// os_type
 	// OsType
 	// windows_gpt
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanOsTypeWindowsGpt captures enum value "windows_gpt"
 	MongoDbOnSanOsTypeWindowsGpt string = "windows_gpt"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// mongo_db_on_san
 	// MongoDbOnSan
 	// os_type
 	// OsType
 	// xen
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanOsTypeXen captures enum value "xen"
 	MongoDbOnSanOsTypeXen string = "xen"
 )
@@ -628,33 +628,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MongoDbOnSanDatasetStorageService
 	// MongoDbOnSanDatasetStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanDatasetStorageServiceNameExtreme captures enum value "extreme"
 	MongoDbOnSanDatasetStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MongoDbOnSanDatasetStorageService
 	// MongoDbOnSanDatasetStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanDatasetStorageServiceNamePerformance captures enum value "performance"
 	MongoDbOnSanDatasetStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MongoDbOnSanDatasetStorageService
 	// MongoDbOnSanDatasetStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanDatasetStorageServiceNameValue captures enum value "value"
 	MongoDbOnSanDatasetStorageServiceNameValue string = "value"
 )
@@ -708,11 +708,11 @@ func (m *MongoDbOnSanDatasetStorageService) UnmarshalBinary(b []byte) error {
 // swagger:model MongoDbOnSanProtectionType
 type MongoDbOnSanProtectionType struct {
 
-	// The local rpo of the application.
+	// The local RPO of the application.
 	// Enum: [hourly none]
 	LocalRpo string `json:"local_rpo,omitempty"`
 
-	// The remote rpo of the application.
+	// The remote RPO of the application.
 	// Enum: [none zero]
 	RemoteRpo string `json:"remote_rpo,omitempty"`
 }
@@ -749,23 +749,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MongoDbOnSanProtectionType
 	// MongoDbOnSanProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanProtectionTypeLocalRpoHourly captures enum value "hourly"
 	MongoDbOnSanProtectionTypeLocalRpoHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MongoDbOnSanProtectionType
 	// MongoDbOnSanProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanProtectionTypeLocalRpoNone captures enum value "none"
 	MongoDbOnSanProtectionTypeLocalRpoNone string = "none"
 )
@@ -805,23 +805,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MongoDbOnSanProtectionType
 	// MongoDbOnSanProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanProtectionTypeRemoteRpoNone captures enum value "none"
 	MongoDbOnSanProtectionTypeRemoteRpoNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// MongoDbOnSanProtectionType
 	// MongoDbOnSanProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// MongoDbOnSanProtectionTypeRemoteRpoZero captures enum value "zero"
 	MongoDbOnSanProtectionTypeRemoteRpoZero string = "zero"
 )
@@ -933,5 +933,3 @@ func (m *MongoDbOnSanSecondaryIgroupsItems0) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

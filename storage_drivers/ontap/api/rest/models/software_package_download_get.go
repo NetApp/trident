@@ -62,43 +62,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_package_download_get
 	// SoftwarePackageDownloadGet
 	// state
 	// State
 	// not_started
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwarePackageDownloadGetStateNotStarted captures enum value "not_started"
 	SoftwarePackageDownloadGetStateNotStarted string = "not_started"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_package_download_get
 	// SoftwarePackageDownloadGet
 	// state
 	// State
 	// running
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwarePackageDownloadGetStateRunning captures enum value "running"
 	SoftwarePackageDownloadGetStateRunning string = "running"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_package_download_get
 	// SoftwarePackageDownloadGet
 	// state
 	// State
 	// success
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwarePackageDownloadGetStateSuccess captures enum value "success"
 	SoftwarePackageDownloadGetStateSuccess string = "success"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_package_download_get
 	// SoftwarePackageDownloadGet
 	// state
 	// State
 	// failure
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwarePackageDownloadGetStateFailure captures enum value "failure"
 	SoftwarePackageDownloadGetStateFailure string = "failure"
 )
@@ -124,13 +124,8 @@ func (m *SoftwarePackageDownloadGet) validateState(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validate this software package download get based on the context it is used
+// ContextValidate validates this software package download get based on context it is used
 func (m *SoftwarePackageDownloadGet) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
@@ -151,5 +146,3 @@ func (m *SoftwarePackageDownloadGet) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -74,9 +74,15 @@ func NewIgroupModifyDefault(code int) *IgroupModifyDefault {
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
+| 1254264 | An attempt was made to bind a portset to an initiator group that is already bound to a portset. |
 | 5373958 | An invalid initiator group name was supplied for a rename operation. |
 | 5374023 | A rename operation failed because an initiator group with the same name already exists. |
+| 5374027 | An attempt was made to bind a portset with no member network interfaces to the initiator group. |
+| 5374028 | An attempt was made to bind a portset with an incompatible protocol to the initiator group. |
 | 5374733 | An initiator is already in another initiator group with a conflicting operating system type. |
+| 5374745 | An attempt was made to add an initiator group as a child to itself. |
+| 5374746 | The cluster is currently running in a mixed version and nested initiator groups cannot be created until the effective cluster version reaches 9.9.1. |
+| 5374747 | The cluster is currently running in a mixed version and initiator group comments cannot be created until the effective cluster version reaches 9.9.1. |
 | 5374852 | The initiator group does not exist. |
 | 5374868 | The initiator group was partially modified before an error was encountered while renaming the initiator group. |
 

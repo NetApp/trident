@@ -90,11 +90,12 @@ func NewQtreeCreateDefault(code int) *QtreeCreateDefault {
 | 918236 | The specified `volume.uuid` and `volume.name` refer to different volumes. |
 | 2621462 | The specified SVM does not exist. |
 | 2621706 | The specified `svm.uuid` and `svm.name` do not refer to the same SVM. |
-| 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
+| 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be provided. |
 | 5242886 | Failed to create qtree. |
 | 5242951 | Export Policy supplied does not belong to the specified Export Policy ID. |
 | 5242952 | Export Policy ID specified is invalid. |
 | 5242953 | Qtree name must be provided. |
+| 5242967 | UNIX user or group ID must be 32-bit unsigned integer. |
 
 */
 type QtreeCreateDefault struct {

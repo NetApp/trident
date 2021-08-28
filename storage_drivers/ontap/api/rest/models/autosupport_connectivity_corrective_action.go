@@ -88,5 +88,3 @@ func (m *AutosupportConnectivityCorrectiveAction) UnmarshalBinary(b []byte) erro
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

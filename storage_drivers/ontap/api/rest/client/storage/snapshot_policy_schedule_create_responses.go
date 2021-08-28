@@ -54,7 +54,7 @@ type SnapshotPolicyScheduleCreateCreated struct {
 }
 
 func (o *SnapshotPolicyScheduleCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /storage/snapshot-policies/{snapshot-policy.uuid}/schedules][%d] snapshotPolicyScheduleCreateCreated ", 201)
+	return fmt.Sprintf("[POST /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshotPolicyScheduleCreateCreated ", 201)
 }
 
 func (o *SnapshotPolicyScheduleCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -95,7 +95,7 @@ func (o *SnapshotPolicyScheduleCreateDefault) Code() int {
 }
 
 func (o *SnapshotPolicyScheduleCreateDefault) Error() string {
-	return fmt.Sprintf("[POST /storage/snapshot-policies/{snapshot-policy.uuid}/schedules][%d] snapshot_policy_schedule_create default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[POST /storage/snapshot-policies/{snapshot_policy.uuid}/schedules][%d] snapshot_policy_schedule_create default  %+v", o._statusCode, o.Payload)
 }
 func (o *SnapshotPolicyScheduleCreateDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

@@ -413,43 +413,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsDestinationResponseRecordsItems0
 	// EmsDestinationResponseRecordsItems0
 	// type
 	// Type
 	// snmp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsDestinationResponseRecordsItems0TypeSnmp captures enum value "snmp"
 	EmsDestinationResponseRecordsItems0TypeSnmp string = "snmp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsDestinationResponseRecordsItems0
 	// EmsDestinationResponseRecordsItems0
 	// type
 	// Type
 	// email
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsDestinationResponseRecordsItems0TypeEmail captures enum value "email"
 	EmsDestinationResponseRecordsItems0TypeEmail string = "email"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsDestinationResponseRecordsItems0
 	// EmsDestinationResponseRecordsItems0
 	// type
 	// Type
 	// syslog
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsDestinationResponseRecordsItems0TypeSyslog captures enum value "syslog"
 	EmsDestinationResponseRecordsItems0TypeSyslog string = "syslog"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// EmsDestinationResponseRecordsItems0
 	// EmsDestinationResponseRecordsItems0
 	// type
 	// Type
 	// rest_api
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// EmsDestinationResponseRecordsItems0TypeRestAPI captures enum value "rest_api"
 	EmsDestinationResponseRecordsItems0TypeRestAPI string = "rest_api"
 )
@@ -913,5 +913,3 @@ func (m *EmsDestinationResponseRecordsItems0Links) UnmarshalBinary(b []byte) err
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

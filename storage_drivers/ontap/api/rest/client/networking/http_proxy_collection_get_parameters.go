@@ -60,11 +60,17 @@ func NewHTTPProxyCollectionGetParamsWithHTTPClient(client *http.Client) *HTTPPro
 */
 type HTTPProxyCollectionGetParams struct {
 
+	/* AuthenticationEnabled.
+
+	   Filter by authentication_enabled
+	*/
+	AuthenticationEnabledQueryParameter *bool
+
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* IpspaceName.
 
@@ -82,13 +88,13 @@ type HTTPProxyCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* Port.
 
@@ -102,7 +108,7 @@ type HTTPProxyCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -110,7 +116,7 @@ type HTTPProxyCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Scope.
 
@@ -160,14 +166,14 @@ func (o *HTTPProxyCollectionGetParams) WithDefaults() *HTTPProxyCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *HTTPProxyCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := HTTPProxyCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -209,15 +215,26 @@ func (o *HTTPProxyCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithFields(fields []string) *HTTPProxyCollectionGetParams {
-	o.SetFields(fields)
+// WithAuthenticationEnabledQueryParameter adds the authenticationEnabled to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithAuthenticationEnabledQueryParameter(authenticationEnabled *bool) *HTTPProxyCollectionGetParams {
+	o.SetAuthenticationEnabledQueryParameter(authenticationEnabled)
 	return o
 }
 
-// SetFields adds the fields to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetAuthenticationEnabledQueryParameter adds the authenticationEnabled to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetAuthenticationEnabledQueryParameter(authenticationEnabled *bool) {
+	o.AuthenticationEnabledQueryParameter = authenticationEnabled
+}
+
+// WithFieldsQueryParameter adds the fields to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithFieldsQueryParameter(fields []string) *HTTPProxyCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
+	return o
+}
+
+// SetFieldsQueryParameter adds the fields to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIpspaceNameQueryParameter adds the ipspaceName to the http proxy collection get params
@@ -242,26 +259,26 @@ func (o *HTTPProxyCollectionGetParams) SetIpspaceUUIDQueryParameter(ipspaceUUID 
 	o.IpspaceUUIDQueryParameter = ipspaceUUID
 }
 
-// WithMaxRecords adds the maxRecords to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithMaxRecords(maxRecords *int64) *HTTPProxyCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *HTTPProxyCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
-// WithOrderBy adds the orderBy to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithOrderBy(orderBy []string) *HTTPProxyCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *HTTPProxyCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPortQueryParameter adds the port to the http proxy collection get params
@@ -275,26 +292,26 @@ func (o *HTTPProxyCollectionGetParams) SetPortQueryParameter(port *int64) {
 	o.PortQueryParameter = port
 }
 
-// WithReturnRecords adds the returnRecords to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithReturnRecords(returnRecords *bool) *HTTPProxyCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *HTTPProxyCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *HTTPProxyCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *HTTPProxyCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the http proxy collection get params
-func (o *HTTPProxyCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the http proxy collection get params
+func (o *HTTPProxyCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithScopeQueryParameter adds the scope to the http proxy collection get params
@@ -360,7 +377,24 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.AuthenticationEnabledQueryParameter != nil {
+
+		// query param authentication_enabled
+		var qrAuthenticationEnabled bool
+
+		if o.AuthenticationEnabledQueryParameter != nil {
+			qrAuthenticationEnabled = *o.AuthenticationEnabledQueryParameter
+		}
+		qAuthenticationEnabled := swag.FormatBool(qrAuthenticationEnabled)
+		if qAuthenticationEnabled != "" {
+
+			if err := r.SetQueryParam("authentication_enabled", qAuthenticationEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -405,13 +439,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -422,7 +456,7 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -450,13 +484,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -467,13 +501,13 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -577,7 +611,7 @@ func (o *HTTPProxyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamHTTPProxyCollectionGet binds the parameter fields
 func (o *HTTPProxyCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -594,7 +628,7 @@ func (o *HTTPProxyCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamHTTPProxyCollectionGet binds the parameter order_by
 func (o *HTTPProxyCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

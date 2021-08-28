@@ -47,7 +47,8 @@ type SnmpUser struct {
 	Owner *SnmpUserOwner `json:"owner,omitempty"`
 
 	// scope
-	Scope NetworkScopeReadonly `json:"scope,omitempty"`
+	// Enum: [svm cluster]
+	Scope string `json:"scope,omitempty"`
 
 	// snmpv3
 	Snmpv3 *SnmpUserSnmpv3 `json:"snmpv3,omitempty"`
@@ -126,33 +127,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snmp_user
 	// SnmpUser
 	// authentication_method
 	// AuthenticationMethod
 	// community
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnmpUserAuthenticationMethodCommunity captures enum value "community"
 	SnmpUserAuthenticationMethodCommunity string = "community"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snmp_user
 	// SnmpUser
 	// authentication_method
 	// AuthenticationMethod
 	// usm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnmpUserAuthenticationMethodUsm captures enum value "usm"
 	SnmpUserAuthenticationMethodUsm string = "usm"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snmp_user
 	// SnmpUser
 	// authentication_method
 	// AuthenticationMethod
 	// both
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnmpUserAuthenticationMethodBoth captures enum value "both"
 	SnmpUserAuthenticationMethodBoth string = "both"
 )
@@ -223,15 +224,56 @@ func (m *SnmpUser) validateOwner(formats strfmt.Registry) error {
 	return nil
 }
 
+var snmpUserTypeScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["svm","cluster"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		snmpUserTypeScopePropEnum = append(snmpUserTypeScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// snmp_user
+	// SnmpUser
+	// scope
+	// Scope
+	// svm
+	// END DEBUGGING
+	// SnmpUserScopeSvm captures enum value "svm"
+	SnmpUserScopeSvm string = "svm"
+
+	// BEGIN DEBUGGING
+	// snmp_user
+	// SnmpUser
+	// scope
+	// Scope
+	// cluster
+	// END DEBUGGING
+	// SnmpUserScopeCluster captures enum value "cluster"
+	SnmpUserScopeCluster string = "cluster"
+)
+
+// prop value enum
+func (m *SnmpUser) validateScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, snmpUserTypeScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *SnmpUser) validateScope(formats strfmt.Registry) error {
 	if swag.IsZero(m.Scope) { // not required
 		return nil
 	}
 
-	if err := m.Scope.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
-		}
+	// value enum
+	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
 		return err
 	}
 
@@ -264,10 +306,6 @@ func (m *SnmpUser) ContextValidate(ctx context.Context, formats strfmt.Registry)
 	}
 
 	if err := m.contextValidateOwner(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateScope(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -304,18 +342,6 @@ func (m *SnmpUser) contextValidateOwner(ctx context.Context, formats strfmt.Regi
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *SnmpUser) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := m.Scope.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
-		}
-		return err
 	}
 
 	return nil
@@ -723,43 +749,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnmpUserSnmpv3
 	// SnmpUserSnmpv3
 	// authentication_protocol
 	// AuthenticationProtocol
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnmpUserSnmpv3AuthenticationProtocolNone captures enum value "none"
 	SnmpUserSnmpv3AuthenticationProtocolNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnmpUserSnmpv3
 	// SnmpUserSnmpv3
 	// authentication_protocol
 	// AuthenticationProtocol
 	// md5
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnmpUserSnmpv3AuthenticationProtocolMd5 captures enum value "md5"
 	SnmpUserSnmpv3AuthenticationProtocolMd5 string = "md5"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnmpUserSnmpv3
 	// SnmpUserSnmpv3
 	// authentication_protocol
 	// AuthenticationProtocol
 	// sha
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnmpUserSnmpv3AuthenticationProtocolSha captures enum value "sha"
 	SnmpUserSnmpv3AuthenticationProtocolSha string = "sha"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnmpUserSnmpv3
 	// SnmpUserSnmpv3
 	// authentication_protocol
 	// AuthenticationProtocol
 	// sha2_256
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnmpUserSnmpv3AuthenticationProtocolSha2256 captures enum value "sha2_256"
 	SnmpUserSnmpv3AuthenticationProtocolSha2256 string = "sha2_256"
 )
@@ -811,33 +837,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnmpUserSnmpv3
 	// SnmpUserSnmpv3
 	// privacy_protocol
 	// PrivacyProtocol
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnmpUserSnmpv3PrivacyProtocolNone captures enum value "none"
 	SnmpUserSnmpv3PrivacyProtocolNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnmpUserSnmpv3
 	// SnmpUserSnmpv3
 	// privacy_protocol
 	// PrivacyProtocol
 	// des
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnmpUserSnmpv3PrivacyProtocolDes captures enum value "des"
 	SnmpUserSnmpv3PrivacyProtocolDes string = "des"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnmpUserSnmpv3
 	// SnmpUserSnmpv3
 	// privacy_protocol
 	// PrivacyProtocol
 	// aes128
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnmpUserSnmpv3PrivacyProtocolAes128 captures enum value "aes128"
 	SnmpUserSnmpv3PrivacyProtocolAes128 string = "aes128"
 )
@@ -994,5 +1020,3 @@ func (m *SnmpUserSnmpv3Links) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

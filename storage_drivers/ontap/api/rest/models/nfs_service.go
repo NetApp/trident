@@ -23,15 +23,36 @@ type NfsService struct {
 	// links
 	Links *NfsServiceLinks `json:"_links,omitempty"`
 
+	// Specifies whether or not extended groups support over AUTH_SYS is enabled.
+	AuthSysExtendedGroupsEnabled *bool `json:"auth_sys_extended_groups_enabled,omitempty"`
+
 	// Specifies if the NFS service is administratively enabled.
 	//
 	Enabled *bool `json:"enabled,omitempty"`
 
+	// Specifies the maximum auxillary groups supported over AUTH_SYS and RPCSEC_GSS.
+	// Example: 32
+	// Maximum: 1024
+	// Minimum: 32
+	ExtendedGroupsLimit int64 `json:"extended_groups_limit,omitempty"`
+
 	// metric
 	Metric *NfsServiceMetric `json:"metric,omitempty"`
 
+	// Specifies the time to live value (in msecs) of a positive cached credential
+	// Example: 7200000
+	// Maximum: 6.048e+08
+	// Minimum: 60000
+	PositiveCachedCredentialTTL int64 `json:"positive_cached_credential_ttl,omitempty"`
+
 	// protocol
 	Protocol *NfsServiceProtocol `json:"protocol,omitempty"`
+
+	// Specifies whether or not the remote quota feature is enabled.
+	RquotaEnabled *bool `json:"rquota_enabled,omitempty"`
+
+	// Specifies whether or not the showmount feature is enabled.
+	ShowmountEnabled *bool `json:"showmount_enabled,omitempty"`
 
 	// Specifies the state of the NFS service on the SVM. The following values are supported:
 	//           * online - NFS server is ready to accept client requests.
@@ -50,7 +71,7 @@ type NfsService struct {
 	// transport
 	Transport *NfsServiceTransport `json:"transport,omitempty"`
 
-	// Specifies whether VMware vstorage feature is enabled.
+	// Specifies whether or not the VMware vstorage feature is enabled.
 	VstorageEnabled *bool `json:"vstorage_enabled,omitempty"`
 }
 
@@ -62,7 +83,15 @@ func (m *NfsService) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateExtendedGroupsLimit(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateMetric(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePositiveCachedCredentialTTL(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -109,6 +138,22 @@ func (m *NfsService) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *NfsService) validateExtendedGroupsLimit(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExtendedGroupsLimit) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("extended_groups_limit", "body", m.ExtendedGroupsLimit, 32, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("extended_groups_limit", "body", m.ExtendedGroupsLimit, 1024, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *NfsService) validateMetric(formats strfmt.Registry) error {
 	if swag.IsZero(m.Metric) { // not required
 		return nil
@@ -121,6 +166,22 @@ func (m *NfsService) validateMetric(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) validatePositiveCachedCredentialTTL(formats strfmt.Registry) error {
+	if swag.IsZero(m.PositiveCachedCredentialTTL) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("positive_cached_credential_ttl", "body", m.PositiveCachedCredentialTTL, 60000, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("positive_cached_credential_ttl", "body", m.PositiveCachedCredentialTTL, 6.048e+08, false); err != nil {
+		return err
 	}
 
 	return nil
@@ -157,23 +218,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nfs_service
 	// NfsService
 	// state
 	// State
 	// online
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceStateOnline captures enum value "online"
 	NfsServiceStateOnline string = "online"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nfs_service
 	// NfsService
 	// state
 	// State
 	// offline
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceStateOffline captures enum value "offline"
 	NfsServiceStateOffline string = "offline"
 )
@@ -492,6 +553,12 @@ type NfsServiceMetric struct {
 
 	// v3
 	V3 *NfsServiceMetricV3 `json:"v3,omitempty"`
+
+	// v4
+	V4 *NfsServiceMetricV4 `json:"v4,omitempty"`
+
+	// v41
+	V41 *NfsServiceMetricV41 `json:"v41,omitempty"`
 }
 
 // Validate validates this nfs service metric
@@ -499,6 +566,14 @@ func (m *NfsServiceMetric) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateV3(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateV4(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateV41(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -525,11 +600,53 @@ func (m *NfsServiceMetric) validateV3(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *NfsServiceMetric) validateV4(formats strfmt.Registry) error {
+	if swag.IsZero(m.V4) { // not required
+		return nil
+	}
+
+	if m.V4 != nil {
+		if err := m.V4.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v4")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetric) validateV41(formats strfmt.Registry) error {
+	if swag.IsZero(m.V41) { // not required
+		return nil
+	}
+
+	if m.V41 != nil {
+		if err := m.V41.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v41")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this nfs service metric based on the context it is used
 func (m *NfsServiceMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateV3(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateV4(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateV41(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -545,6 +662,34 @@ func (m *NfsServiceMetric) contextValidateV3(ctx context.Context, formats strfmt
 		if err := m.V3.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("metric" + "." + "v3")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetric) contextValidateV4(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.V4 != nil {
+		if err := m.V4.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v4")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetric) contextValidateV41(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.V41 != nil {
+		if err := m.V41.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v41")
 			}
 			return err
 		}
@@ -595,14 +740,14 @@ type NfsServiceMetricV3 struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput
 	Throughput *NfsServiceMetricV3Throughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -677,63 +822,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3DurationPT15S captures enum value "PT15S"
 	NfsServiceMetricV3DurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3DurationPT4M captures enum value "PT4M"
 	NfsServiceMetricV3DurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3DurationPT30M captures enum value "PT30M"
 	NfsServiceMetricV3DurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3DurationPT2H captures enum value "PT2H"
 	NfsServiceMetricV3DurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3DurationP1D captures enum value "P1D"
 	NfsServiceMetricV3DurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3DurationPT5M captures enum value "PT5M"
 	NfsServiceMetricV3DurationPT5M string = "PT5M"
 )
@@ -797,7 +942,7 @@ var nfsServiceMetricV3TypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -807,105 +952,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3StatusOk captures enum value "ok"
 	NfsServiceMetricV3StatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3StatusError captures enum value "error"
 	NfsServiceMetricV3StatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3StatusPartialNoData captures enum value "partial_no_data"
 	NfsServiceMetricV3StatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// NfsServiceMetricV3
-	// NfsServiceMetricV3
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// NfsServiceMetricV3StatusPartialNoUUID captures enum value "partial_no_uuid"
-	NfsServiceMetricV3StatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3StatusPartialNoResponse captures enum value "partial_no_response"
 	NfsServiceMetricV3StatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3StatusPartialOtherError captures enum value "partial_other_error"
 	NfsServiceMetricV3StatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3StatusNegativeDelta captures enum value "negative_delta"
 	NfsServiceMetricV3StatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV3
+	// NfsServiceMetricV3
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// NfsServiceMetricV3StatusNotFound captures enum value "not_found"
+	NfsServiceMetricV3StatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3StatusBackfilledData captures enum value "backfilled_data"
 	NfsServiceMetricV3StatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	NfsServiceMetricV3StatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceMetricV3
 	// NfsServiceMetricV3
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceMetricV3StatusInconsistentOldData captures enum value "inconsistent_old_data"
 	NfsServiceMetricV3StatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV3
+	// NfsServiceMetricV3
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// NfsServiceMetricV3StatusPartialNoUUID captures enum value "partial_no_uuid"
+	NfsServiceMetricV3StatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -1342,10 +1497,1575 @@ func (m *NfsServiceMetricV3Throughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// NfsServiceMetricV4 The NFSv4 operations
+//
+// swagger:model NfsServiceMetricV4
+type NfsServiceMetricV4 struct {
+
+	// links
+	Links *NfsServiceMetricV4Links `json:"_links,omitempty"`
+
+	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
+	//
+	// Example: PT15S
+	// Read Only: true
+	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	Duration string `json:"duration,omitempty"`
+
+	// iops
+	Iops *NfsServiceMetricV4Iops `json:"iops,omitempty"`
+
+	// latency
+	Latency *NfsServiceMetricV4Latency `json:"latency,omitempty"`
+
+	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	Status string `json:"status,omitempty"`
+
+	// throughput
+	Throughput *NfsServiceMetricV4Throughput `json:"throughput,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this nfs service metric v4
+func (m *NfsServiceMetricV4) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLatency(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughput(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceMetricV4) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v4" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nfsServiceMetricV4TypeDurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceMetricV4TypeDurationPropEnum = append(nfsServiceMetricV4TypeDurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// duration
+	// Duration
+	// PT15S
+	// END DEBUGGING
+	// NfsServiceMetricV4DurationPT15S captures enum value "PT15S"
+	NfsServiceMetricV4DurationPT15S string = "PT15S"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// duration
+	// Duration
+	// PT4M
+	// END DEBUGGING
+	// NfsServiceMetricV4DurationPT4M captures enum value "PT4M"
+	NfsServiceMetricV4DurationPT4M string = "PT4M"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// duration
+	// Duration
+	// PT30M
+	// END DEBUGGING
+	// NfsServiceMetricV4DurationPT30M captures enum value "PT30M"
+	NfsServiceMetricV4DurationPT30M string = "PT30M"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// duration
+	// Duration
+	// PT2H
+	// END DEBUGGING
+	// NfsServiceMetricV4DurationPT2H captures enum value "PT2H"
+	NfsServiceMetricV4DurationPT2H string = "PT2H"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// duration
+	// Duration
+	// P1D
+	// END DEBUGGING
+	// NfsServiceMetricV4DurationP1D captures enum value "P1D"
+	NfsServiceMetricV4DurationP1D string = "P1D"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// duration
+	// Duration
+	// PT5M
+	// END DEBUGGING
+	// NfsServiceMetricV4DurationPT5M captures enum value "PT5M"
+	NfsServiceMetricV4DurationPT5M string = "PT5M"
+)
+
+// prop value enum
+func (m *NfsServiceMetricV4) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceMetricV4TypeDurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceMetricV4) validateDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Duration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDurationEnum("metric"+"."+"v4"+"."+"duration", "body", m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV4) validateIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.Iops) { // not required
+		return nil
+	}
+
+	if m.Iops != nil {
+		if err := m.Iops.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v4" + "." + "iops")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV4) validateLatency(formats strfmt.Registry) error {
+	if swag.IsZero(m.Latency) { // not required
+		return nil
+	}
+
+	if m.Latency != nil {
+		if err := m.Latency.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v4" + "." + "latency")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nfsServiceMetricV4TypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceMetricV4TypeStatusPropEnum = append(nfsServiceMetricV4TypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// NfsServiceMetricV4StatusOk captures enum value "ok"
+	NfsServiceMetricV4StatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// NfsServiceMetricV4StatusError captures enum value "error"
+	NfsServiceMetricV4StatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// NfsServiceMetricV4StatusPartialNoData captures enum value "partial_no_data"
+	NfsServiceMetricV4StatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// NfsServiceMetricV4StatusPartialNoResponse captures enum value "partial_no_response"
+	NfsServiceMetricV4StatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// NfsServiceMetricV4StatusPartialOtherError captures enum value "partial_other_error"
+	NfsServiceMetricV4StatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// NfsServiceMetricV4StatusNegativeDelta captures enum value "negative_delta"
+	NfsServiceMetricV4StatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// NfsServiceMetricV4StatusNotFound captures enum value "not_found"
+	NfsServiceMetricV4StatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// NfsServiceMetricV4StatusBackfilledData captures enum value "backfilled_data"
+	NfsServiceMetricV4StatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// NfsServiceMetricV4StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NfsServiceMetricV4StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// NfsServiceMetricV4StatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NfsServiceMetricV4StatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV4
+	// NfsServiceMetricV4
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// NfsServiceMetricV4StatusPartialNoUUID captures enum value "partial_no_uuid"
+	NfsServiceMetricV4StatusPartialNoUUID string = "partial_no_uuid"
+)
+
+// prop value enum
+func (m *NfsServiceMetricV4) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceMetricV4TypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceMetricV4) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("metric"+"."+"v4"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV4) validateThroughput(formats strfmt.Registry) error {
+	if swag.IsZero(m.Throughput) { // not required
+		return nil
+	}
+
+	if m.Throughput != nil {
+		if err := m.Throughput.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v4" + "." + "throughput")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV4) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("metric"+"."+"v4"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nfs service metric v4 based on the context it is used
+func (m *NfsServiceMetricV4) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDuration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIops(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLatency(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughput(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceMetricV4) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v4" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV4) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"v4"+"."+"duration", "body", string(m.Duration)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV4) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Iops != nil {
+		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v4" + "." + "iops")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV4) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Latency != nil {
+		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v4" + "." + "latency")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV4) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"v4"+"."+"status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV4) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Throughput != nil {
+		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v4" + "." + "throughput")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV4) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"v4"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceMetricV4) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceMetricV4) UnmarshalBinary(b []byte) error {
+	var res NfsServiceMetricV4
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceMetricV41 The NFSv4.1 operations
+//
+// swagger:model NfsServiceMetricV41
+type NfsServiceMetricV41 struct {
+
+	// links
+	Links *NfsServiceMetricV41Links `json:"_links,omitempty"`
+
+	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
+	//
+	// Example: PT15S
+	// Read Only: true
+	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
+	Duration string `json:"duration,omitempty"`
+
+	// iops
+	Iops *NfsServiceMetricV41Iops `json:"iops,omitempty"`
+
+	// latency
+	Latency *NfsServiceMetricV41Latency `json:"latency,omitempty"`
+
+	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	Status string `json:"status,omitempty"`
+
+	// throughput
+	Throughput *NfsServiceMetricV41Throughput `json:"throughput,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this nfs service metric v41
+func (m *NfsServiceMetricV41) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIops(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLatency(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughput(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceMetricV41) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v41" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nfsServiceMetricV41TypeDurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceMetricV41TypeDurationPropEnum = append(nfsServiceMetricV41TypeDurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// duration
+	// Duration
+	// PT15S
+	// END DEBUGGING
+	// NfsServiceMetricV41DurationPT15S captures enum value "PT15S"
+	NfsServiceMetricV41DurationPT15S string = "PT15S"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// duration
+	// Duration
+	// PT4M
+	// END DEBUGGING
+	// NfsServiceMetricV41DurationPT4M captures enum value "PT4M"
+	NfsServiceMetricV41DurationPT4M string = "PT4M"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// duration
+	// Duration
+	// PT30M
+	// END DEBUGGING
+	// NfsServiceMetricV41DurationPT30M captures enum value "PT30M"
+	NfsServiceMetricV41DurationPT30M string = "PT30M"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// duration
+	// Duration
+	// PT2H
+	// END DEBUGGING
+	// NfsServiceMetricV41DurationPT2H captures enum value "PT2H"
+	NfsServiceMetricV41DurationPT2H string = "PT2H"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// duration
+	// Duration
+	// P1D
+	// END DEBUGGING
+	// NfsServiceMetricV41DurationP1D captures enum value "P1D"
+	NfsServiceMetricV41DurationP1D string = "P1D"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// duration
+	// Duration
+	// PT5M
+	// END DEBUGGING
+	// NfsServiceMetricV41DurationPT5M captures enum value "PT5M"
+	NfsServiceMetricV41DurationPT5M string = "PT5M"
+)
+
+// prop value enum
+func (m *NfsServiceMetricV41) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceMetricV41TypeDurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceMetricV41) validateDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Duration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDurationEnum("metric"+"."+"v41"+"."+"duration", "body", m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV41) validateIops(formats strfmt.Registry) error {
+	if swag.IsZero(m.Iops) { // not required
+		return nil
+	}
+
+	if m.Iops != nil {
+		if err := m.Iops.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v41" + "." + "iops")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV41) validateLatency(formats strfmt.Registry) error {
+	if swag.IsZero(m.Latency) { // not required
+		return nil
+	}
+
+	if m.Latency != nil {
+		if err := m.Latency.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v41" + "." + "latency")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nfsServiceMetricV41TypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceMetricV41TypeStatusPropEnum = append(nfsServiceMetricV41TypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// NfsServiceMetricV41StatusOk captures enum value "ok"
+	NfsServiceMetricV41StatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// NfsServiceMetricV41StatusError captures enum value "error"
+	NfsServiceMetricV41StatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// NfsServiceMetricV41StatusPartialNoData captures enum value "partial_no_data"
+	NfsServiceMetricV41StatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// NfsServiceMetricV41StatusPartialNoResponse captures enum value "partial_no_response"
+	NfsServiceMetricV41StatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// NfsServiceMetricV41StatusPartialOtherError captures enum value "partial_other_error"
+	NfsServiceMetricV41StatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// NfsServiceMetricV41StatusNegativeDelta captures enum value "negative_delta"
+	NfsServiceMetricV41StatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// NfsServiceMetricV41StatusNotFound captures enum value "not_found"
+	NfsServiceMetricV41StatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// NfsServiceMetricV41StatusBackfilledData captures enum value "backfilled_data"
+	NfsServiceMetricV41StatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// NfsServiceMetricV41StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NfsServiceMetricV41StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// NfsServiceMetricV41StatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NfsServiceMetricV41StatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceMetricV41
+	// NfsServiceMetricV41
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// NfsServiceMetricV41StatusPartialNoUUID captures enum value "partial_no_uuid"
+	NfsServiceMetricV41StatusPartialNoUUID string = "partial_no_uuid"
+)
+
+// prop value enum
+func (m *NfsServiceMetricV41) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceMetricV41TypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceMetricV41) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("metric"+"."+"v41"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV41) validateThroughput(formats strfmt.Registry) error {
+	if swag.IsZero(m.Throughput) { // not required
+		return nil
+	}
+
+	if m.Throughput != nil {
+		if err := m.Throughput.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v41" + "." + "throughput")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV41) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("metric"+"."+"v41"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nfs service metric v41 based on the context it is used
+func (m *NfsServiceMetricV41) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDuration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIops(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLatency(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughput(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceMetricV41) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v41" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV41) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"v41"+"."+"duration", "body", string(m.Duration)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV41) contextValidateIops(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Iops != nil {
+		if err := m.Iops.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v41" + "." + "iops")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV41) contextValidateLatency(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Latency != nil {
+		if err := m.Latency.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v41" + "." + "latency")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV41) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"v41"+"."+"status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV41) contextValidateThroughput(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Throughput != nil {
+		if err := m.Throughput.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v41" + "." + "throughput")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceMetricV41) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"v41"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceMetricV41) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceMetricV41) UnmarshalBinary(b []byte) error {
+	var res NfsServiceMetricV41
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceMetricV41Iops The rate of I/O operations observed at the storage object.
+//
+// swagger:model NfsServiceMetricV41Iops
+type NfsServiceMetricV41Iops struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nfs service metric v41 iops
+func (m *NfsServiceMetricV41Iops) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nfs service metric v41 iops based on the context it is used
+func (m *NfsServiceMetricV41Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceMetricV41Iops) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceMetricV41Iops) UnmarshalBinary(b []byte) error {
+	var res NfsServiceMetricV41Iops
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceMetricV41Latency The round trip latency in microseconds observed at the storage object.
+//
+// swagger:model NfsServiceMetricV41Latency
+type NfsServiceMetricV41Latency struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nfs service metric v41 latency
+func (m *NfsServiceMetricV41Latency) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nfs service metric v41 latency based on the context it is used
+func (m *NfsServiceMetricV41Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceMetricV41Latency) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceMetricV41Latency) UnmarshalBinary(b []byte) error {
+	var res NfsServiceMetricV41Latency
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceMetricV41Links nfs service metric v41 links
+//
+// swagger:model NfsServiceMetricV41Links
+type NfsServiceMetricV41Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this nfs service metric v41 links
+func (m *NfsServiceMetricV41Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceMetricV41Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v41" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nfs service metric v41 links based on the context it is used
+func (m *NfsServiceMetricV41Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceMetricV41Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v41" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceMetricV41Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceMetricV41Links) UnmarshalBinary(b []byte) error {
+	var res NfsServiceMetricV41Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceMetricV41Throughput The rate of throughput bytes per second observed at the storage object.
+//
+// swagger:model NfsServiceMetricV41Throughput
+type NfsServiceMetricV41Throughput struct {
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nfs service metric v41 throughput
+func (m *NfsServiceMetricV41Throughput) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nfs service metric v41 throughput based on the context it is used
+func (m *NfsServiceMetricV41Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceMetricV41Throughput) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceMetricV41Throughput) UnmarshalBinary(b []byte) error {
+	var res NfsServiceMetricV41Throughput
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceMetricV4Iops The rate of I/O operations observed at the storage object.
+//
+// swagger:model NfsServiceMetricV4Iops
+type NfsServiceMetricV4Iops struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nfs service metric v4 iops
+func (m *NfsServiceMetricV4Iops) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nfs service metric v4 iops based on the context it is used
+func (m *NfsServiceMetricV4Iops) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceMetricV4Iops) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceMetricV4Iops) UnmarshalBinary(b []byte) error {
+	var res NfsServiceMetricV4Iops
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceMetricV4Latency The round trip latency in microseconds observed at the storage object.
+//
+// swagger:model NfsServiceMetricV4Latency
+type NfsServiceMetricV4Latency struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nfs service metric v4 latency
+func (m *NfsServiceMetricV4Latency) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nfs service metric v4 latency based on the context it is used
+func (m *NfsServiceMetricV4Latency) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceMetricV4Latency) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceMetricV4Latency) UnmarshalBinary(b []byte) error {
+	var res NfsServiceMetricV4Latency
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceMetricV4Links nfs service metric v4 links
+//
+// swagger:model NfsServiceMetricV4Links
+type NfsServiceMetricV4Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this nfs service metric v4 links
+func (m *NfsServiceMetricV4Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceMetricV4Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v4" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nfs service metric v4 links based on the context it is used
+func (m *NfsServiceMetricV4Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceMetricV4Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "v4" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceMetricV4Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceMetricV4Links) UnmarshalBinary(b []byte) error {
+	var res NfsServiceMetricV4Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceMetricV4Throughput The rate of throughput bytes per second observed at the storage object.
+//
+// swagger:model NfsServiceMetricV4Throughput
+type NfsServiceMetricV4Throughput struct {
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nfs service metric v4 throughput
+func (m *NfsServiceMetricV4Throughput) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nfs service metric v4 throughput based on the context it is used
+func (m *NfsServiceMetricV4Throughput) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceMetricV4Throughput) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceMetricV4Throughput) UnmarshalBinary(b []byte) error {
+	var res NfsServiceMetricV4Throughput
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NfsServiceProtocol nfs service protocol
 //
 // swagger:model NfsServiceProtocol
 type NfsServiceProtocol struct {
+
+	// Specifies whether 64-bit support for NFSv3 FSIDs and file IDs is enabled.
+	V364bitIdentifiersEnabled *bool `json:"v3_64bit_identifiers_enabled,omitempty"`
 
 	// Specifies whether NFSv3 protocol is enabled.
 	V3Enabled *bool `json:"v3_enabled,omitempty"`
@@ -1356,11 +3076,14 @@ type NfsServiceProtocol struct {
 	// v40 features
 	V40Features *NfsServiceProtocolV40Features `json:"v40_features,omitempty"`
 
-	// Specifies whether NFSv4.1 protocol is enabled.
+	// Specifies whether NFSv4.1 or later protocol is enabled.
 	V41Enabled *bool `json:"v41_enabled,omitempty"`
 
 	// v41 features
 	V41Features *NfsServiceProtocolV41Features `json:"v41_features,omitempty"`
+
+	// Specifies whether 64-bit support for NFSv4.x FSIDs and file IDs is enabled.
+	V464bitIdentifiersEnabled *bool `json:"v4_64bit_identifiers_enabled,omitempty"`
 
 	// Specifies the domain portion of the string form of user and group
 	// names as defined by the NFSv4 protocol.
@@ -1532,16 +3255,16 @@ func (m *NfsServiceProtocolV40Features) UnmarshalBinary(b []byte) error {
 // swagger:model NfsServiceProtocolV41Features
 type NfsServiceProtocolV41Features struct {
 
-	// Specifies whether NFSv4.1 ACLs is enabled.
+	// Specifies whether NFSv4.1 or later ACLs is enabled.
 	ACLEnabled *bool `json:"acl_enabled,omitempty"`
 
-	// Specifies whether NFSv4.1 Parallel NFS is enabled.
+	// Specifies whether NFSv4.1 or later Parallel NFS is enabled.
 	PnfsEnabled *bool `json:"pnfs_enabled,omitempty"`
 
-	// Specifies whether NFSv4.1 Read Delegation is enabled.
+	// Specifies whether NFSv4.1 or later Read Delegation is enabled.
 	ReadDelegationEnabled *bool `json:"read_delegation_enabled,omitempty"`
 
-	// Specifies whether NFSv4.1 Write Delegation is enabled.
+	// Specifies whether NFSv4.1 or later Write Delegation is enabled.
 	WriteDelegationEnabled *bool `json:"write_delegation_enabled,omitempty"`
 }
 
@@ -1580,6 +3303,12 @@ type NfsServiceStatistics struct {
 
 	// v3
 	V3 *NfsServiceStatisticsV3 `json:"v3,omitempty"`
+
+	// v4
+	V4 *NfsServiceStatisticsV4 `json:"v4,omitempty"`
+
+	// v41
+	V41 *NfsServiceStatisticsV41 `json:"v41,omitempty"`
 }
 
 // Validate validates this nfs service statistics
@@ -1587,6 +3316,14 @@ func (m *NfsServiceStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateV3(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateV4(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateV41(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1613,11 +3350,53 @@ func (m *NfsServiceStatistics) validateV3(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *NfsServiceStatistics) validateV4(formats strfmt.Registry) error {
+	if swag.IsZero(m.V4) { // not required
+		return nil
+	}
+
+	if m.V4 != nil {
+		if err := m.V4.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v4")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatistics) validateV41(formats strfmt.Registry) error {
+	if swag.IsZero(m.V41) { // not required
+		return nil
+	}
+
+	if m.V41 != nil {
+		if err := m.V41.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v41")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this nfs service statistics based on the context it is used
 func (m *NfsServiceStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateV3(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateV4(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateV41(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1633,6 +3412,34 @@ func (m *NfsServiceStatistics) contextValidateV3(ctx context.Context, formats st
 		if err := m.V3.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("statistics" + "." + "v3")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatistics) contextValidateV4(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.V4 != nil {
+		if err := m.V4.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v4")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatistics) contextValidateV41(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.V41 != nil {
+		if err := m.V41.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v41")
 			}
 			return err
 		}
@@ -1673,14 +3480,14 @@ type NfsServiceStatisticsV3 struct {
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
 
 	// throughput raw
 	ThroughputRaw *NfsServiceStatisticsV3ThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1754,7 +3561,7 @@ var nfsServiceStatisticsV3TypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1764,105 +3571,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceStatisticsV3
 	// NfsServiceStatisticsV3
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceStatisticsV3StatusOk captures enum value "ok"
 	NfsServiceStatisticsV3StatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceStatisticsV3
 	// NfsServiceStatisticsV3
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceStatisticsV3StatusError captures enum value "error"
 	NfsServiceStatisticsV3StatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceStatisticsV3
 	// NfsServiceStatisticsV3
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceStatisticsV3StatusPartialNoData captures enum value "partial_no_data"
 	NfsServiceStatisticsV3StatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// NfsServiceStatisticsV3
-	// NfsServiceStatisticsV3
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// NfsServiceStatisticsV3StatusPartialNoUUID captures enum value "partial_no_uuid"
-	NfsServiceStatisticsV3StatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceStatisticsV3
 	// NfsServiceStatisticsV3
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceStatisticsV3StatusPartialNoResponse captures enum value "partial_no_response"
 	NfsServiceStatisticsV3StatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceStatisticsV3
 	// NfsServiceStatisticsV3
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceStatisticsV3StatusPartialOtherError captures enum value "partial_other_error"
 	NfsServiceStatisticsV3StatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceStatisticsV3
 	// NfsServiceStatisticsV3
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceStatisticsV3StatusNegativeDelta captures enum value "negative_delta"
 	NfsServiceStatisticsV3StatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV3
+	// NfsServiceStatisticsV3
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// NfsServiceStatisticsV3StatusNotFound captures enum value "not_found"
+	NfsServiceStatisticsV3StatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// NfsServiceStatisticsV3
 	// NfsServiceStatisticsV3
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceStatisticsV3StatusBackfilledData captures enum value "backfilled_data"
 	NfsServiceStatisticsV3StatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceStatisticsV3
 	// NfsServiceStatisticsV3
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceStatisticsV3StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	NfsServiceStatisticsV3StatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// NfsServiceStatisticsV3
 	// NfsServiceStatisticsV3
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsServiceStatisticsV3StatusInconsistentOldData captures enum value "inconsistent_old_data"
 	NfsServiceStatisticsV3StatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV3
+	// NfsServiceStatisticsV3
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// NfsServiceStatisticsV3StatusPartialNoUUID captures enum value "partial_no_uuid"
+	NfsServiceStatisticsV3StatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -2182,6 +3999,1072 @@ func (m *NfsServiceStatisticsV3ThroughputRaw) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// NfsServiceStatisticsV4 The NFSv4 operations
+//
+// swagger:model NfsServiceStatisticsV4
+type NfsServiceStatisticsV4 struct {
+
+	// iops raw
+	IopsRaw *NfsServiceStatisticsV4IopsRaw `json:"iops_raw,omitempty"`
+
+	// latency raw
+	LatencyRaw *NfsServiceStatisticsV4LatencyRaw `json:"latency_raw,omitempty"`
+
+	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	Status string `json:"status,omitempty"`
+
+	// throughput raw
+	ThroughputRaw *NfsServiceStatisticsV4ThroughputRaw `json:"throughput_raw,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this nfs service statistics v4
+func (m *NfsServiceStatisticsV4) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateIopsRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLatencyRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughputRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceStatisticsV4) validateIopsRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.IopsRaw) { // not required
+		return nil
+	}
+
+	if m.IopsRaw != nil {
+		if err := m.IopsRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v4" + "." + "iops_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV4) validateLatencyRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.LatencyRaw) { // not required
+		return nil
+	}
+
+	if m.LatencyRaw != nil {
+		if err := m.LatencyRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v4" + "." + "latency_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nfsServiceStatisticsV4TypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceStatisticsV4TypeStatusPropEnum = append(nfsServiceStatisticsV4TypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV4
+	// NfsServiceStatisticsV4
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// NfsServiceStatisticsV4StatusOk captures enum value "ok"
+	NfsServiceStatisticsV4StatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV4
+	// NfsServiceStatisticsV4
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// NfsServiceStatisticsV4StatusError captures enum value "error"
+	NfsServiceStatisticsV4StatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV4
+	// NfsServiceStatisticsV4
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// NfsServiceStatisticsV4StatusPartialNoData captures enum value "partial_no_data"
+	NfsServiceStatisticsV4StatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV4
+	// NfsServiceStatisticsV4
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// NfsServiceStatisticsV4StatusPartialNoResponse captures enum value "partial_no_response"
+	NfsServiceStatisticsV4StatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV4
+	// NfsServiceStatisticsV4
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// NfsServiceStatisticsV4StatusPartialOtherError captures enum value "partial_other_error"
+	NfsServiceStatisticsV4StatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV4
+	// NfsServiceStatisticsV4
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// NfsServiceStatisticsV4StatusNegativeDelta captures enum value "negative_delta"
+	NfsServiceStatisticsV4StatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV4
+	// NfsServiceStatisticsV4
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// NfsServiceStatisticsV4StatusNotFound captures enum value "not_found"
+	NfsServiceStatisticsV4StatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV4
+	// NfsServiceStatisticsV4
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// NfsServiceStatisticsV4StatusBackfilledData captures enum value "backfilled_data"
+	NfsServiceStatisticsV4StatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV4
+	// NfsServiceStatisticsV4
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// NfsServiceStatisticsV4StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NfsServiceStatisticsV4StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV4
+	// NfsServiceStatisticsV4
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// NfsServiceStatisticsV4StatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NfsServiceStatisticsV4StatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV4
+	// NfsServiceStatisticsV4
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// NfsServiceStatisticsV4StatusPartialNoUUID captures enum value "partial_no_uuid"
+	NfsServiceStatisticsV4StatusPartialNoUUID string = "partial_no_uuid"
+)
+
+// prop value enum
+func (m *NfsServiceStatisticsV4) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceStatisticsV4TypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceStatisticsV4) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("statistics"+"."+"v4"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV4) validateThroughputRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.ThroughputRaw) { // not required
+		return nil
+	}
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v4" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV4) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("statistics"+"."+"v4"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nfs service statistics v4 based on the context it is used
+func (m *NfsServiceStatisticsV4) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLatencyRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughputRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceStatisticsV4) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IopsRaw != nil {
+		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v4" + "." + "iops_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV4) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.LatencyRaw != nil {
+		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v4" + "." + "latency_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV4) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"v4"+"."+"status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV4) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v4" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV4) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"v4"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceStatisticsV4) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceStatisticsV4) UnmarshalBinary(b []byte) error {
+	var res NfsServiceStatisticsV4
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceStatisticsV41 The NFSv4.1 operations
+//
+// swagger:model NfsServiceStatisticsV41
+type NfsServiceStatisticsV41 struct {
+
+	// iops raw
+	IopsRaw *NfsServiceStatisticsV41IopsRaw `json:"iops_raw,omitempty"`
+
+	// latency raw
+	LatencyRaw *NfsServiceStatisticsV41LatencyRaw `json:"latency_raw,omitempty"`
+
+	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
+	Status string `json:"status,omitempty"`
+
+	// throughput raw
+	ThroughputRaw *NfsServiceStatisticsV41ThroughputRaw `json:"throughput_raw,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this nfs service statistics v41
+func (m *NfsServiceStatisticsV41) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateIopsRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLatencyRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughputRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceStatisticsV41) validateIopsRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.IopsRaw) { // not required
+		return nil
+	}
+
+	if m.IopsRaw != nil {
+		if err := m.IopsRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v41" + "." + "iops_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV41) validateLatencyRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.LatencyRaw) { // not required
+		return nil
+	}
+
+	if m.LatencyRaw != nil {
+		if err := m.LatencyRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v41" + "." + "latency_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nfsServiceStatisticsV41TypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceStatisticsV41TypeStatusPropEnum = append(nfsServiceStatisticsV41TypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV41
+	// NfsServiceStatisticsV41
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// NfsServiceStatisticsV41StatusOk captures enum value "ok"
+	NfsServiceStatisticsV41StatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV41
+	// NfsServiceStatisticsV41
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// NfsServiceStatisticsV41StatusError captures enum value "error"
+	NfsServiceStatisticsV41StatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV41
+	// NfsServiceStatisticsV41
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// NfsServiceStatisticsV41StatusPartialNoData captures enum value "partial_no_data"
+	NfsServiceStatisticsV41StatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV41
+	// NfsServiceStatisticsV41
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// NfsServiceStatisticsV41StatusPartialNoResponse captures enum value "partial_no_response"
+	NfsServiceStatisticsV41StatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV41
+	// NfsServiceStatisticsV41
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// NfsServiceStatisticsV41StatusPartialOtherError captures enum value "partial_other_error"
+	NfsServiceStatisticsV41StatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV41
+	// NfsServiceStatisticsV41
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// NfsServiceStatisticsV41StatusNegativeDelta captures enum value "negative_delta"
+	NfsServiceStatisticsV41StatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV41
+	// NfsServiceStatisticsV41
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// NfsServiceStatisticsV41StatusNotFound captures enum value "not_found"
+	NfsServiceStatisticsV41StatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV41
+	// NfsServiceStatisticsV41
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// NfsServiceStatisticsV41StatusBackfilledData captures enum value "backfilled_data"
+	NfsServiceStatisticsV41StatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV41
+	// NfsServiceStatisticsV41
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// NfsServiceStatisticsV41StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	NfsServiceStatisticsV41StatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV41
+	// NfsServiceStatisticsV41
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// NfsServiceStatisticsV41StatusInconsistentOldData captures enum value "inconsistent_old_data"
+	NfsServiceStatisticsV41StatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// NfsServiceStatisticsV41
+	// NfsServiceStatisticsV41
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// NfsServiceStatisticsV41StatusPartialNoUUID captures enum value "partial_no_uuid"
+	NfsServiceStatisticsV41StatusPartialNoUUID string = "partial_no_uuid"
+)
+
+// prop value enum
+func (m *NfsServiceStatisticsV41) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceStatisticsV41TypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceStatisticsV41) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("statistics"+"."+"v41"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV41) validateThroughputRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.ThroughputRaw) { // not required
+		return nil
+	}
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v41" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV41) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("statistics"+"."+"v41"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nfs service statistics v41 based on the context it is used
+func (m *NfsServiceStatisticsV41) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLatencyRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughputRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsServiceStatisticsV41) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IopsRaw != nil {
+		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v41" + "." + "iops_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV41) contextValidateLatencyRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.LatencyRaw != nil {
+		if err := m.LatencyRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v41" + "." + "latency_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV41) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"v41"+"."+"status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV41) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "v41" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsServiceStatisticsV41) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"v41"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceStatisticsV41) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceStatisticsV41) UnmarshalBinary(b []byte) error {
+	var res NfsServiceStatisticsV41
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceStatisticsV41IopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+//
+// swagger:model NfsServiceStatisticsV41IopsRaw
+type NfsServiceStatisticsV41IopsRaw struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nfs service statistics v41 iops raw
+func (m *NfsServiceStatisticsV41IopsRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nfs service statistics v41 iops raw based on the context it is used
+func (m *NfsServiceStatisticsV41IopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceStatisticsV41IopsRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceStatisticsV41IopsRaw) UnmarshalBinary(b []byte) error {
+	var res NfsServiceStatisticsV41IopsRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceStatisticsV41LatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+//
+// swagger:model NfsServiceStatisticsV41LatencyRaw
+type NfsServiceStatisticsV41LatencyRaw struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nfs service statistics v41 latency raw
+func (m *NfsServiceStatisticsV41LatencyRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nfs service statistics v41 latency raw based on the context it is used
+func (m *NfsServiceStatisticsV41LatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceStatisticsV41LatencyRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceStatisticsV41LatencyRaw) UnmarshalBinary(b []byte) error {
+	var res NfsServiceStatisticsV41LatencyRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceStatisticsV41ThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+//
+// swagger:model NfsServiceStatisticsV41ThroughputRaw
+type NfsServiceStatisticsV41ThroughputRaw struct {
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nfs service statistics v41 throughput raw
+func (m *NfsServiceStatisticsV41ThroughputRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nfs service statistics v41 throughput raw based on the context it is used
+func (m *NfsServiceStatisticsV41ThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceStatisticsV41ThroughputRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceStatisticsV41ThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res NfsServiceStatisticsV41ThroughputRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceStatisticsV4IopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+//
+// swagger:model NfsServiceStatisticsV4IopsRaw
+type NfsServiceStatisticsV4IopsRaw struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nfs service statistics v4 iops raw
+func (m *NfsServiceStatisticsV4IopsRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nfs service statistics v4 iops raw based on the context it is used
+func (m *NfsServiceStatisticsV4IopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceStatisticsV4IopsRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceStatisticsV4IopsRaw) UnmarshalBinary(b []byte) error {
+	var res NfsServiceStatisticsV4IopsRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceStatisticsV4LatencyRaw The raw latency in microseconds observed at the storage object. This should be divided by the raw IOPS value to calculate the average latency per I/O operation.
+//
+// swagger:model NfsServiceStatisticsV4LatencyRaw
+type NfsServiceStatisticsV4LatencyRaw struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nfs service statistics v4 latency raw
+func (m *NfsServiceStatisticsV4LatencyRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nfs service statistics v4 latency raw based on the context it is used
+func (m *NfsServiceStatisticsV4LatencyRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceStatisticsV4LatencyRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceStatisticsV4LatencyRaw) UnmarshalBinary(b []byte) error {
+	var res NfsServiceStatisticsV4LatencyRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceStatisticsV4ThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+//
+// swagger:model NfsServiceStatisticsV4ThroughputRaw
+type NfsServiceStatisticsV4ThroughputRaw struct {
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this nfs service statistics v4 throughput raw
+func (m *NfsServiceStatisticsV4ThroughputRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nfs service statistics v4 throughput raw based on the context it is used
+func (m *NfsServiceStatisticsV4ThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceStatisticsV4ThroughputRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceStatisticsV4ThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res NfsServiceStatisticsV4ThroughputRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NfsServiceSvm nfs service svm
 //
 // swagger:model NfsServiceSvm
@@ -2405,5 +5288,3 @@ func (m *NfsServiceTransport) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

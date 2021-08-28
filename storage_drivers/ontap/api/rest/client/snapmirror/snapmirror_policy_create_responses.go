@@ -86,7 +86,7 @@ func NewSnapmirrorPolicyCreateDefault(code int) *SnapmirrorPolicyCreateDefault {
 | Error code  |  Description |
 |-------------|--------------|
 | 13303850    | Invalid input parameter|
-| 13303887    | Maximum number of allowed retention rules reached |
+| 13303887    | Failed to create SnapMirror policy. Reason: Maximum number of allowed retention rules reached |
 
 */
 type SnapmirrorPolicyCreateDefault struct {

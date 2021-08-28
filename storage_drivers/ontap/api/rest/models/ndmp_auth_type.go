@@ -70,5 +70,3 @@ func (m NdmpAuthType) Validate(formats strfmt.Registry) error {
 func (m NdmpAuthType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

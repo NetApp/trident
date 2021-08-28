@@ -351,5 +351,3 @@ func (m *S3UserSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

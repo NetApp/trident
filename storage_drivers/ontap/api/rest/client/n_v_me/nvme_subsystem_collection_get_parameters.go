@@ -76,7 +76,7 @@ type NvmeSubsystemCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* HostsNqn.
 
@@ -100,7 +100,7 @@ type NvmeSubsystemCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -112,7 +112,7 @@ type NvmeSubsystemCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* OsType.
 
@@ -126,7 +126,7 @@ type NvmeSubsystemCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -134,7 +134,7 @@ type NvmeSubsystemCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SerialNumber.
 
@@ -190,6 +190,12 @@ type NvmeSubsystemCollectionGetParams struct {
 	*/
 	UUIDQueryParameter *string
 
+	/* VendorUuids.
+
+	   Filter by vendor_uuids
+	*/
+	VendorUUIDsQueryParameter *string
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -208,14 +214,14 @@ func (o *NvmeSubsystemCollectionGetParams) WithDefaults() *NvmeSubsystemCollecti
 // All values with no default are reset to their zero value.
 func (o *NvmeSubsystemCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := NvmeSubsystemCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -279,15 +285,15 @@ func (o *NvmeSubsystemCollectionGetParams) SetDeleteOnUnmapQueryParameter(delete
 	o.DeleteOnUnmapQueryParameter = deleteOnUnmap
 }
 
-// WithFields adds the fields to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithFields(fields []string) *NvmeSubsystemCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithFieldsQueryParameter(fields []string) *NvmeSubsystemCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithHostsNqnQueryParameter adds the hostsNqn to the nvme subsystem collection get params
@@ -323,15 +329,15 @@ func (o *NvmeSubsystemCollectionGetParams) SetIoQueueDefaultDepthQueryParameter(
 	o.IoQueueDefaultDepthQueryParameter = ioQueueDefaultDepth
 }
 
-// WithMaxRecords adds the maxRecords to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithMaxRecords(maxRecords *int64) *NvmeSubsystemCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NvmeSubsystemCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the nvme subsystem collection get params
@@ -345,15 +351,15 @@ func (o *NvmeSubsystemCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithOrderBy(orderBy []string) *NvmeSubsystemCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *NvmeSubsystemCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithOsTypeQueryParameter adds the osType to the nvme subsystem collection get params
@@ -367,26 +373,26 @@ func (o *NvmeSubsystemCollectionGetParams) SetOsTypeQueryParameter(osType *strin
 	o.OsTypeQueryParameter = osType
 }
 
-// WithReturnRecords adds the returnRecords to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithReturnRecords(returnRecords *bool) *NvmeSubsystemCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NvmeSubsystemCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *NvmeSubsystemCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NvmeSubsystemCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the nvme subsystem collection get params
-func (o *NvmeSubsystemCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSerialNumberQueryParameter adds the serialNumber to the nvme subsystem collection get params
@@ -488,6 +494,17 @@ func (o *NvmeSubsystemCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
 	o.UUIDQueryParameter = uuid
 }
 
+// WithVendorUUIDsQueryParameter adds the vendorUuids to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) WithVendorUUIDsQueryParameter(vendorUuids *string) *NvmeSubsystemCollectionGetParams {
+	o.SetVendorUUIDsQueryParameter(vendorUuids)
+	return o
+}
+
+// SetVendorUUIDsQueryParameter adds the vendorUuids to the nvme subsystem collection get params
+func (o *NvmeSubsystemCollectionGetParams) SetVendorUUIDsQueryParameter(vendorUuids *string) {
+	o.VendorUUIDsQueryParameter = vendorUuids
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -530,7 +547,7 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -592,13 +609,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -626,7 +643,7 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -654,13 +671,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -671,13 +688,13 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -841,6 +858,23 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.VendorUUIDsQueryParameter != nil {
+
+		// query param vendor_uuids
+		var qrVendorUuids string
+
+		if o.VendorUUIDsQueryParameter != nil {
+			qrVendorUuids = *o.VendorUUIDsQueryParameter
+		}
+		qVendorUuids := qrVendorUuids
+		if qVendorUuids != "" {
+
+			if err := r.SetQueryParam("vendor_uuids", qVendorUuids); err != nil {
+				return err
+			}
+		}
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -849,7 +883,7 @@ func (o *NvmeSubsystemCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamNvmeSubsystemCollectionGet binds the parameter fields
 func (o *NvmeSubsystemCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -866,7 +900,7 @@ func (o *NvmeSubsystemCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamNvmeSubsystemCollectionGet binds the parameter order_by
 func (o *NvmeSubsystemCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

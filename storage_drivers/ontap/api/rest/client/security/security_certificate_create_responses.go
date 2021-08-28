@@ -92,7 +92,7 @@ func NewSecurityCertificateCreateDefault(code int) *SecurityCertificateCreateDef
 | 3735553    |  Failed to create self-signed Certificate. |
 | 3735646    |  Failed to store the certificates. |
 | 3735693    |  The certificate installation failed as private key was empty. |
-| 3735618    |  Cannot accept private key for server-ca or client-ca. |
+| 3735618    |  Cannot accept private key for server_ca or client_ca. |
 | 52363365   |  Failed to allocate memory. |
 | 52559975   |  Failed to read the certificate due to incorrect formatting. |
 | 52363366   |  Unsupported key type. |
@@ -101,7 +101,7 @@ func NewSecurityCertificateCreateDefault(code int) *SecurityCertificateCreateDef
 | 52559976   |  The certificate and private key do not match. |
 | 52559973   |  The certificate has expired. |
 | 52363366   |  Logic error: use of a dead object. |
-| 3735696    |  Intermediate certificates are not supported with client-ca and server-ca type certificates. |
+| 3735696    |  Intermediate certificates are not supported with client_ca and server_ca type certificates. |
 | 52559974   |  The certificate is not supported in FIPS mode. |
 | 3735676    |  Cannot continue the installation without a value for the common name. Since the subject field in the certificate is empty, the field "common_name" must have a value to continue with the installation. |
 | 3735558    |  Failed to extract information about Common Name from the certificate. |

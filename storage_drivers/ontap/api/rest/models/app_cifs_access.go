@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// AppCifsAccess The list of CIFS access controls.
+// AppCifsAccess The list of CIFS access controls. You must provide either 'user_or_group' or 'access' to enable CIFS access.
 //
 // swagger:model app_cifs_access
 type AppCifsAccess struct {
@@ -56,43 +56,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// app_cifs_access
 	// AppCifsAccess
 	// access
 	// Access
 	// change
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AppCifsAccessAccessChange captures enum value "change"
 	AppCifsAccessAccessChange string = "change"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// app_cifs_access
 	// AppCifsAccess
 	// access
 	// Access
 	// full_control
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AppCifsAccessAccessFullControl captures enum value "full_control"
 	AppCifsAccessAccessFullControl string = "full_control"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// app_cifs_access
 	// AppCifsAccess
 	// access
 	// Access
 	// no_access
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AppCifsAccessAccessNoAccess captures enum value "no_access"
 	AppCifsAccessAccessNoAccess string = "no_access"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// app_cifs_access
 	// AppCifsAccess
 	// access
 	// Access
 	// read
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// AppCifsAccessAccessRead captures enum value "read"
 	AppCifsAccessAccessRead string = "read"
 )
@@ -140,5 +140,3 @@ func (m *AppCifsAccess) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -60,6 +60,48 @@ func NewSnapmirrorRelationshipsGetParamsWithHTTPClient(client *http.Client) *Sna
 */
 type SnapmirrorRelationshipsGetParams struct {
 
+	/* ConsistencyGroupFailoverErrorArgumentsCode.
+
+	   Filter by consistency_group_failover.error.arguments.code
+	*/
+	ConsistencyGroupFailoverErrorArgumentsCodeQueryParameter *string
+
+	/* ConsistencyGroupFailoverErrorArgumentsMessage.
+
+	   Filter by consistency_group_failover.error.arguments.message
+	*/
+	ConsistencyGroupFailoverErrorArgumentsMessageQueryParameter *string
+
+	/* ConsistencyGroupFailoverErrorCode.
+
+	   Filter by consistency_group_failover.error.code
+	*/
+	ConsistencyGroupFailoverErrorCodeQueryParameter *string
+
+	/* ConsistencyGroupFailoverErrorMessage.
+
+	   Filter by consistency_group_failover.error.message
+	*/
+	ConsistencyGroupFailoverErrorMessageQueryParameter *string
+
+	/* ConsistencyGroupFailoverErrorTarget.
+
+	   Filter by consistency_group_failover.error.target
+	*/
+	ConsistencyGroupFailoverErrorTargetQueryParameter *string
+
+	/* ConsistencyGroupFailoverStatusCode.
+
+	   Filter by consistency_group_failover.status.code
+	*/
+	ConsistencyGroupFailoverStatusCodeQueryParameter *string
+
+	/* ConsistencyGroupFailoverStatusMessage.
+
+	   Filter by consistency_group_failover.status.message
+	*/
+	ConsistencyGroupFailoverStatusMessageQueryParameter *string
+
 	/* DestinationClusterName.
 
 	   Filter by destination.cluster.name
@@ -71,6 +113,18 @@ type SnapmirrorRelationshipsGetParams struct {
 	   Filter by destination.cluster.uuid
 	*/
 	DestinationClusterUUIDQueryParameter *string
+
+	/* DestinationConsistencyGroupVolumesName.
+
+	   Filter by destination.consistency_group_volumes.name
+	*/
+	DestinationConsistencyGroupVolumesNameQueryParameter *string
+
+	/* DestinationConsistencyGroupVolumesUUID.
+
+	   Filter by destination.consistency_group_volumes.uuid
+	*/
+	DestinationConsistencyGroupVolumesUUIDQueryParameter *string
 
 	/* DestinationPath.
 
@@ -100,7 +154,7 @@ type SnapmirrorRelationshipsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Healthy.
 
@@ -124,13 +178,13 @@ type SnapmirrorRelationshipsGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* PolicyName.
 
@@ -162,7 +216,7 @@ type SnapmirrorRelationshipsGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -170,7 +224,7 @@ type SnapmirrorRelationshipsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SourceClusterName.
 
@@ -183,6 +237,18 @@ type SnapmirrorRelationshipsGetParams struct {
 	   Filter by source.cluster.uuid
 	*/
 	SourceClusterUUIDQueryParameter *string
+
+	/* SourceConsistencyGroupVolumesName.
+
+	   Filter by source.consistency_group_volumes.name
+	*/
+	SourceConsistencyGroupVolumesNameQueryParameter *string
+
+	/* SourceConsistencyGroupVolumesUUID.
+
+	   Filter by source.consistency_group_volumes.uuid
+	*/
+	SourceConsistencyGroupVolumesUUIDQueryParameter *string
 
 	/* SourcePath.
 
@@ -214,11 +280,23 @@ type SnapmirrorRelationshipsGetParams struct {
 	*/
 	TransferBytesTransferredQueryParameter *int64
 
+	/* TransferEndTime.
+
+	   Filter by transfer.end_time
+	*/
+	TransferEndTimeQueryParameter *string
+
 	/* TransferState.
 
 	   Filter by transfer.state
 	*/
 	TransferStateQueryParameter *string
+
+	/* TransferTotalDuration.
+
+	   Filter by transfer.total_duration
+	*/
+	TransferTotalDurationQueryParameter *string
 
 	/* TransferUUID.
 
@@ -268,14 +346,14 @@ func (o *SnapmirrorRelationshipsGetParams) WithDefaults() *SnapmirrorRelationshi
 // All values with no default are reset to their zero value.
 func (o *SnapmirrorRelationshipsGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SnapmirrorRelationshipsGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -317,6 +395,83 @@ func (o *SnapmirrorRelationshipsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithConsistencyGroupFailoverErrorArgumentsCodeQueryParameter adds the consistencyGroupFailoverErrorArgumentsCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorArgumentsCodeQueryParameter(consistencyGroupFailoverErrorArgumentsCode *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverErrorArgumentsCodeQueryParameter(consistencyGroupFailoverErrorArgumentsCode)
+	return o
+}
+
+// SetConsistencyGroupFailoverErrorArgumentsCodeQueryParameter adds the consistencyGroupFailoverErrorArgumentsCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorArgumentsCodeQueryParameter(consistencyGroupFailoverErrorArgumentsCode *string) {
+	o.ConsistencyGroupFailoverErrorArgumentsCodeQueryParameter = consistencyGroupFailoverErrorArgumentsCode
+}
+
+// WithConsistencyGroupFailoverErrorArgumentsMessageQueryParameter adds the consistencyGroupFailoverErrorArgumentsMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorArgumentsMessageQueryParameter(consistencyGroupFailoverErrorArgumentsMessage *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverErrorArgumentsMessageQueryParameter(consistencyGroupFailoverErrorArgumentsMessage)
+	return o
+}
+
+// SetConsistencyGroupFailoverErrorArgumentsMessageQueryParameter adds the consistencyGroupFailoverErrorArgumentsMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorArgumentsMessageQueryParameter(consistencyGroupFailoverErrorArgumentsMessage *string) {
+	o.ConsistencyGroupFailoverErrorArgumentsMessageQueryParameter = consistencyGroupFailoverErrorArgumentsMessage
+}
+
+// WithConsistencyGroupFailoverErrorCodeQueryParameter adds the consistencyGroupFailoverErrorCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorCodeQueryParameter(consistencyGroupFailoverErrorCode *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverErrorCodeQueryParameter(consistencyGroupFailoverErrorCode)
+	return o
+}
+
+// SetConsistencyGroupFailoverErrorCodeQueryParameter adds the consistencyGroupFailoverErrorCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorCodeQueryParameter(consistencyGroupFailoverErrorCode *string) {
+	o.ConsistencyGroupFailoverErrorCodeQueryParameter = consistencyGroupFailoverErrorCode
+}
+
+// WithConsistencyGroupFailoverErrorMessageQueryParameter adds the consistencyGroupFailoverErrorMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorMessageQueryParameter(consistencyGroupFailoverErrorMessage *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverErrorMessageQueryParameter(consistencyGroupFailoverErrorMessage)
+	return o
+}
+
+// SetConsistencyGroupFailoverErrorMessageQueryParameter adds the consistencyGroupFailoverErrorMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorMessageQueryParameter(consistencyGroupFailoverErrorMessage *string) {
+	o.ConsistencyGroupFailoverErrorMessageQueryParameter = consistencyGroupFailoverErrorMessage
+}
+
+// WithConsistencyGroupFailoverErrorTargetQueryParameter adds the consistencyGroupFailoverErrorTarget to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverErrorTargetQueryParameter(consistencyGroupFailoverErrorTarget *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverErrorTargetQueryParameter(consistencyGroupFailoverErrorTarget)
+	return o
+}
+
+// SetConsistencyGroupFailoverErrorTargetQueryParameter adds the consistencyGroupFailoverErrorTarget to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverErrorTargetQueryParameter(consistencyGroupFailoverErrorTarget *string) {
+	o.ConsistencyGroupFailoverErrorTargetQueryParameter = consistencyGroupFailoverErrorTarget
+}
+
+// WithConsistencyGroupFailoverStatusCodeQueryParameter adds the consistencyGroupFailoverStatusCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverStatusCodeQueryParameter(consistencyGroupFailoverStatusCode *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverStatusCodeQueryParameter(consistencyGroupFailoverStatusCode)
+	return o
+}
+
+// SetConsistencyGroupFailoverStatusCodeQueryParameter adds the consistencyGroupFailoverStatusCode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverStatusCodeQueryParameter(consistencyGroupFailoverStatusCode *string) {
+	o.ConsistencyGroupFailoverStatusCodeQueryParameter = consistencyGroupFailoverStatusCode
+}
+
+// WithConsistencyGroupFailoverStatusMessageQueryParameter adds the consistencyGroupFailoverStatusMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithConsistencyGroupFailoverStatusMessageQueryParameter(consistencyGroupFailoverStatusMessage *string) *SnapmirrorRelationshipsGetParams {
+	o.SetConsistencyGroupFailoverStatusMessageQueryParameter(consistencyGroupFailoverStatusMessage)
+	return o
+}
+
+// SetConsistencyGroupFailoverStatusMessageQueryParameter adds the consistencyGroupFailoverStatusMessage to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetConsistencyGroupFailoverStatusMessageQueryParameter(consistencyGroupFailoverStatusMessage *string) {
+	o.ConsistencyGroupFailoverStatusMessageQueryParameter = consistencyGroupFailoverStatusMessage
+}
+
 // WithDestinationClusterNameQueryParameter adds the destinationClusterName to the snapmirror relationships get params
 func (o *SnapmirrorRelationshipsGetParams) WithDestinationClusterNameQueryParameter(destinationClusterName *string) *SnapmirrorRelationshipsGetParams {
 	o.SetDestinationClusterNameQueryParameter(destinationClusterName)
@@ -337,6 +492,28 @@ func (o *SnapmirrorRelationshipsGetParams) WithDestinationClusterUUIDQueryParame
 // SetDestinationClusterUUIDQueryParameter adds the destinationClusterUuid to the snapmirror relationships get params
 func (o *SnapmirrorRelationshipsGetParams) SetDestinationClusterUUIDQueryParameter(destinationClusterUUID *string) {
 	o.DestinationClusterUUIDQueryParameter = destinationClusterUUID
+}
+
+// WithDestinationConsistencyGroupVolumesNameQueryParameter adds the destinationConsistencyGroupVolumesName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithDestinationConsistencyGroupVolumesNameQueryParameter(destinationConsistencyGroupVolumesName *string) *SnapmirrorRelationshipsGetParams {
+	o.SetDestinationConsistencyGroupVolumesNameQueryParameter(destinationConsistencyGroupVolumesName)
+	return o
+}
+
+// SetDestinationConsistencyGroupVolumesNameQueryParameter adds the destinationConsistencyGroupVolumesName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetDestinationConsistencyGroupVolumesNameQueryParameter(destinationConsistencyGroupVolumesName *string) {
+	o.DestinationConsistencyGroupVolumesNameQueryParameter = destinationConsistencyGroupVolumesName
+}
+
+// WithDestinationConsistencyGroupVolumesUUIDQueryParameter adds the destinationConsistencyGroupVolumesUUID to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithDestinationConsistencyGroupVolumesUUIDQueryParameter(destinationConsistencyGroupVolumesUUID *string) *SnapmirrorRelationshipsGetParams {
+	o.SetDestinationConsistencyGroupVolumesUUIDQueryParameter(destinationConsistencyGroupVolumesUUID)
+	return o
+}
+
+// SetDestinationConsistencyGroupVolumesUUIDQueryParameter adds the destinationConsistencyGroupVolumesUuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetDestinationConsistencyGroupVolumesUUIDQueryParameter(destinationConsistencyGroupVolumesUUID *string) {
+	o.DestinationConsistencyGroupVolumesUUIDQueryParameter = destinationConsistencyGroupVolumesUUID
 }
 
 // WithDestinationPathQueryParameter adds the destinationPath to the snapmirror relationships get params
@@ -383,15 +560,15 @@ func (o *SnapmirrorRelationshipsGetParams) SetExportedSnapshotQueryParameter(exp
 	o.ExportedSnapshotQueryParameter = exportedSnapshot
 }
 
-// WithFields adds the fields to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithFields(fields []string) *SnapmirrorRelationshipsGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithFieldsQueryParameter(fields []string) *SnapmirrorRelationshipsGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithHealthyQueryParameter adds the healthy to the snapmirror relationships get params
@@ -427,26 +604,26 @@ func (o *SnapmirrorRelationshipsGetParams) SetListDestinationsOnlyQueryParameter
 	o.ListDestinationsOnlyQueryParameter = listDestinationsOnly
 }
 
-// WithMaxRecords adds the maxRecords to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithMaxRecords(maxRecords *int64) *SnapmirrorRelationshipsGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SnapmirrorRelationshipsGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
-// WithOrderBy adds the orderBy to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithOrderBy(orderBy []string) *SnapmirrorRelationshipsGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithOrderByQueryParameter(orderBy []string) *SnapmirrorRelationshipsGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPolicyNameQueryParameter adds the policyName to the snapmirror relationships get params
@@ -493,26 +670,26 @@ func (o *SnapmirrorRelationshipsGetParams) SetRestoreQueryParameter(restore *boo
 	o.RestoreQueryParameter = restore
 }
 
-// WithReturnRecords adds the returnRecords to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithReturnRecords(returnRecords *bool) *SnapmirrorRelationshipsGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnapmirrorRelationshipsGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) WithReturnTimeout(returnTimeout *int64) *SnapmirrorRelationshipsGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SnapmirrorRelationshipsGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the snapmirror relationships get params
-func (o *SnapmirrorRelationshipsGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSourceClusterNameQueryParameter adds the sourceClusterName to the snapmirror relationships get params
@@ -535,6 +712,28 @@ func (o *SnapmirrorRelationshipsGetParams) WithSourceClusterUUIDQueryParameter(s
 // SetSourceClusterUUIDQueryParameter adds the sourceClusterUuid to the snapmirror relationships get params
 func (o *SnapmirrorRelationshipsGetParams) SetSourceClusterUUIDQueryParameter(sourceClusterUUID *string) {
 	o.SourceClusterUUIDQueryParameter = sourceClusterUUID
+}
+
+// WithSourceConsistencyGroupVolumesNameQueryParameter adds the sourceConsistencyGroupVolumesName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithSourceConsistencyGroupVolumesNameQueryParameter(sourceConsistencyGroupVolumesName *string) *SnapmirrorRelationshipsGetParams {
+	o.SetSourceConsistencyGroupVolumesNameQueryParameter(sourceConsistencyGroupVolumesName)
+	return o
+}
+
+// SetSourceConsistencyGroupVolumesNameQueryParameter adds the sourceConsistencyGroupVolumesName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetSourceConsistencyGroupVolumesNameQueryParameter(sourceConsistencyGroupVolumesName *string) {
+	o.SourceConsistencyGroupVolumesNameQueryParameter = sourceConsistencyGroupVolumesName
+}
+
+// WithSourceConsistencyGroupVolumesUUIDQueryParameter adds the sourceConsistencyGroupVolumesUUID to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithSourceConsistencyGroupVolumesUUIDQueryParameter(sourceConsistencyGroupVolumesUUID *string) *SnapmirrorRelationshipsGetParams {
+	o.SetSourceConsistencyGroupVolumesUUIDQueryParameter(sourceConsistencyGroupVolumesUUID)
+	return o
+}
+
+// SetSourceConsistencyGroupVolumesUUIDQueryParameter adds the sourceConsistencyGroupVolumesUuid to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetSourceConsistencyGroupVolumesUUIDQueryParameter(sourceConsistencyGroupVolumesUUID *string) {
+	o.SourceConsistencyGroupVolumesUUIDQueryParameter = sourceConsistencyGroupVolumesUUID
 }
 
 // WithSourcePathQueryParameter adds the sourcePath to the snapmirror relationships get params
@@ -592,6 +791,17 @@ func (o *SnapmirrorRelationshipsGetParams) SetTransferBytesTransferredQueryParam
 	o.TransferBytesTransferredQueryParameter = transferBytesTransferred
 }
 
+// WithTransferEndTimeQueryParameter adds the transferEndTime to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithTransferEndTimeQueryParameter(transferEndTime *string) *SnapmirrorRelationshipsGetParams {
+	o.SetTransferEndTimeQueryParameter(transferEndTime)
+	return o
+}
+
+// SetTransferEndTimeQueryParameter adds the transferEndTime to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetTransferEndTimeQueryParameter(transferEndTime *string) {
+	o.TransferEndTimeQueryParameter = transferEndTime
+}
+
 // WithTransferStateQueryParameter adds the transferState to the snapmirror relationships get params
 func (o *SnapmirrorRelationshipsGetParams) WithTransferStateQueryParameter(transferState *string) *SnapmirrorRelationshipsGetParams {
 	o.SetTransferStateQueryParameter(transferState)
@@ -601,6 +811,17 @@ func (o *SnapmirrorRelationshipsGetParams) WithTransferStateQueryParameter(trans
 // SetTransferStateQueryParameter adds the transferState to the snapmirror relationships get params
 func (o *SnapmirrorRelationshipsGetParams) SetTransferStateQueryParameter(transferState *string) {
 	o.TransferStateQueryParameter = transferState
+}
+
+// WithTransferTotalDurationQueryParameter adds the transferTotalDuration to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithTransferTotalDurationQueryParameter(transferTotalDuration *string) *SnapmirrorRelationshipsGetParams {
+	o.SetTransferTotalDurationQueryParameter(transferTotalDuration)
+	return o
+}
+
+// SetTransferTotalDurationQueryParameter adds the transferTotalDuration to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetTransferTotalDurationQueryParameter(transferTotalDuration *string) {
+	o.TransferTotalDurationQueryParameter = transferTotalDuration
 }
 
 // WithTransferUUIDQueryParameter adds the transferUUID to the snapmirror relationships get params
@@ -666,6 +887,125 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 	}
 	var res []error
 
+	if o.ConsistencyGroupFailoverErrorArgumentsCodeQueryParameter != nil {
+
+		// query param consistency_group_failover.error.arguments.code
+		var qrConsistencyGroupFailoverErrorArgumentsCode string
+
+		if o.ConsistencyGroupFailoverErrorArgumentsCodeQueryParameter != nil {
+			qrConsistencyGroupFailoverErrorArgumentsCode = *o.ConsistencyGroupFailoverErrorArgumentsCodeQueryParameter
+		}
+		qConsistencyGroupFailoverErrorArgumentsCode := qrConsistencyGroupFailoverErrorArgumentsCode
+		if qConsistencyGroupFailoverErrorArgumentsCode != "" {
+
+			if err := r.SetQueryParam("consistency_group_failover.error.arguments.code", qConsistencyGroupFailoverErrorArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupFailoverErrorArgumentsMessageQueryParameter != nil {
+
+		// query param consistency_group_failover.error.arguments.message
+		var qrConsistencyGroupFailoverErrorArgumentsMessage string
+
+		if o.ConsistencyGroupFailoverErrorArgumentsMessageQueryParameter != nil {
+			qrConsistencyGroupFailoverErrorArgumentsMessage = *o.ConsistencyGroupFailoverErrorArgumentsMessageQueryParameter
+		}
+		qConsistencyGroupFailoverErrorArgumentsMessage := qrConsistencyGroupFailoverErrorArgumentsMessage
+		if qConsistencyGroupFailoverErrorArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("consistency_group_failover.error.arguments.message", qConsistencyGroupFailoverErrorArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupFailoverErrorCodeQueryParameter != nil {
+
+		// query param consistency_group_failover.error.code
+		var qrConsistencyGroupFailoverErrorCode string
+
+		if o.ConsistencyGroupFailoverErrorCodeQueryParameter != nil {
+			qrConsistencyGroupFailoverErrorCode = *o.ConsistencyGroupFailoverErrorCodeQueryParameter
+		}
+		qConsistencyGroupFailoverErrorCode := qrConsistencyGroupFailoverErrorCode
+		if qConsistencyGroupFailoverErrorCode != "" {
+
+			if err := r.SetQueryParam("consistency_group_failover.error.code", qConsistencyGroupFailoverErrorCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupFailoverErrorMessageQueryParameter != nil {
+
+		// query param consistency_group_failover.error.message
+		var qrConsistencyGroupFailoverErrorMessage string
+
+		if o.ConsistencyGroupFailoverErrorMessageQueryParameter != nil {
+			qrConsistencyGroupFailoverErrorMessage = *o.ConsistencyGroupFailoverErrorMessageQueryParameter
+		}
+		qConsistencyGroupFailoverErrorMessage := qrConsistencyGroupFailoverErrorMessage
+		if qConsistencyGroupFailoverErrorMessage != "" {
+
+			if err := r.SetQueryParam("consistency_group_failover.error.message", qConsistencyGroupFailoverErrorMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupFailoverErrorTargetQueryParameter != nil {
+
+		// query param consistency_group_failover.error.target
+		var qrConsistencyGroupFailoverErrorTarget string
+
+		if o.ConsistencyGroupFailoverErrorTargetQueryParameter != nil {
+			qrConsistencyGroupFailoverErrorTarget = *o.ConsistencyGroupFailoverErrorTargetQueryParameter
+		}
+		qConsistencyGroupFailoverErrorTarget := qrConsistencyGroupFailoverErrorTarget
+		if qConsistencyGroupFailoverErrorTarget != "" {
+
+			if err := r.SetQueryParam("consistency_group_failover.error.target", qConsistencyGroupFailoverErrorTarget); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupFailoverStatusCodeQueryParameter != nil {
+
+		// query param consistency_group_failover.status.code
+		var qrConsistencyGroupFailoverStatusCode string
+
+		if o.ConsistencyGroupFailoverStatusCodeQueryParameter != nil {
+			qrConsistencyGroupFailoverStatusCode = *o.ConsistencyGroupFailoverStatusCodeQueryParameter
+		}
+		qConsistencyGroupFailoverStatusCode := qrConsistencyGroupFailoverStatusCode
+		if qConsistencyGroupFailoverStatusCode != "" {
+
+			if err := r.SetQueryParam("consistency_group_failover.status.code", qConsistencyGroupFailoverStatusCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupFailoverStatusMessageQueryParameter != nil {
+
+		// query param consistency_group_failover.status.message
+		var qrConsistencyGroupFailoverStatusMessage string
+
+		if o.ConsistencyGroupFailoverStatusMessageQueryParameter != nil {
+			qrConsistencyGroupFailoverStatusMessage = *o.ConsistencyGroupFailoverStatusMessageQueryParameter
+		}
+		qConsistencyGroupFailoverStatusMessage := qrConsistencyGroupFailoverStatusMessage
+		if qConsistencyGroupFailoverStatusMessage != "" {
+
+			if err := r.SetQueryParam("consistency_group_failover.status.message", qConsistencyGroupFailoverStatusMessage); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.DestinationClusterNameQueryParameter != nil {
 
 		// query param destination.cluster.name
@@ -695,6 +1035,40 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		if qDestinationClusterUUID != "" {
 
 			if err := r.SetQueryParam("destination.cluster.uuid", qDestinationClusterUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DestinationConsistencyGroupVolumesNameQueryParameter != nil {
+
+		// query param destination.consistency_group_volumes.name
+		var qrDestinationConsistencyGroupVolumesName string
+
+		if o.DestinationConsistencyGroupVolumesNameQueryParameter != nil {
+			qrDestinationConsistencyGroupVolumesName = *o.DestinationConsistencyGroupVolumesNameQueryParameter
+		}
+		qDestinationConsistencyGroupVolumesName := qrDestinationConsistencyGroupVolumesName
+		if qDestinationConsistencyGroupVolumesName != "" {
+
+			if err := r.SetQueryParam("destination.consistency_group_volumes.name", qDestinationConsistencyGroupVolumesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DestinationConsistencyGroupVolumesUUIDQueryParameter != nil {
+
+		// query param destination.consistency_group_volumes.uuid
+		var qrDestinationConsistencyGroupVolumesUUID string
+
+		if o.DestinationConsistencyGroupVolumesUUIDQueryParameter != nil {
+			qrDestinationConsistencyGroupVolumesUUID = *o.DestinationConsistencyGroupVolumesUUIDQueryParameter
+		}
+		qDestinationConsistencyGroupVolumesUUID := qrDestinationConsistencyGroupVolumesUUID
+		if qDestinationConsistencyGroupVolumesUUID != "" {
+
+			if err := r.SetQueryParam("destination.consistency_group_volumes.uuid", qDestinationConsistencyGroupVolumesUUID); err != nil {
 				return err
 			}
 		}
@@ -768,7 +1142,7 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -830,13 +1204,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -847,7 +1221,7 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -926,13 +1300,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -943,13 +1317,13 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -989,6 +1363,40 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		if qSourceClusterUUID != "" {
 
 			if err := r.SetQueryParam("source.cluster.uuid", qSourceClusterUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SourceConsistencyGroupVolumesNameQueryParameter != nil {
+
+		// query param source.consistency_group_volumes.name
+		var qrSourceConsistencyGroupVolumesName string
+
+		if o.SourceConsistencyGroupVolumesNameQueryParameter != nil {
+			qrSourceConsistencyGroupVolumesName = *o.SourceConsistencyGroupVolumesNameQueryParameter
+		}
+		qSourceConsistencyGroupVolumesName := qrSourceConsistencyGroupVolumesName
+		if qSourceConsistencyGroupVolumesName != "" {
+
+			if err := r.SetQueryParam("source.consistency_group_volumes.name", qSourceConsistencyGroupVolumesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SourceConsistencyGroupVolumesUUIDQueryParameter != nil {
+
+		// query param source.consistency_group_volumes.uuid
+		var qrSourceConsistencyGroupVolumesUUID string
+
+		if o.SourceConsistencyGroupVolumesUUIDQueryParameter != nil {
+			qrSourceConsistencyGroupVolumesUUID = *o.SourceConsistencyGroupVolumesUUIDQueryParameter
+		}
+		qSourceConsistencyGroupVolumesUUID := qrSourceConsistencyGroupVolumesUUID
+		if qSourceConsistencyGroupVolumesUUID != "" {
+
+			if err := r.SetQueryParam("source.consistency_group_volumes.uuid", qSourceConsistencyGroupVolumesUUID); err != nil {
 				return err
 			}
 		}
@@ -1079,6 +1487,23 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.TransferEndTimeQueryParameter != nil {
+
+		// query param transfer.end_time
+		var qrTransferEndTime string
+
+		if o.TransferEndTimeQueryParameter != nil {
+			qrTransferEndTime = *o.TransferEndTimeQueryParameter
+		}
+		qTransferEndTime := qrTransferEndTime
+		if qTransferEndTime != "" {
+
+			if err := r.SetQueryParam("transfer.end_time", qTransferEndTime); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.TransferStateQueryParameter != nil {
 
 		// query param transfer.state
@@ -1091,6 +1516,23 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		if qTransferState != "" {
 
 			if err := r.SetQueryParam("transfer.state", qTransferState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TransferTotalDurationQueryParameter != nil {
+
+		// query param transfer.total_duration
+		var qrTransferTotalDuration string
+
+		if o.TransferTotalDurationQueryParameter != nil {
+			qrTransferTotalDuration = *o.TransferTotalDurationQueryParameter
+		}
+		qTransferTotalDuration := qrTransferTotalDuration
+		if qTransferTotalDuration != "" {
+
+			if err := r.SetQueryParam("transfer.total_duration", qTransferTotalDuration); err != nil {
 				return err
 			}
 		}
@@ -1189,7 +1631,7 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamSnapmirrorRelationshipsGet binds the parameter fields
 func (o *SnapmirrorRelationshipsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1206,7 +1648,7 @@ func (o *SnapmirrorRelationshipsGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamSnapmirrorRelationshipsGet binds the parameter order_by
 func (o *SnapmirrorRelationshipsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -95,15 +95,23 @@ func NewAggregateCreateDefault(code int) *AggregateCreateDefault {
 | 786911 | Not every node in the cluster has the Data ONTAP version required for the feature. |
 | 787069 | Node is setup for MetroCluster over IP configuration; creating an unmirrored aggregate is not supported in this configuration. |
 | 787092 | The target field cannot be specified for this operation. |
+| 918138 | Internal error. Failed to get encryption operation status. |
 | 1114292 | The required SnapLock license is not installed. |
 | 2425736 | No matching node found for the target UUID. |
 | 19726341 | Not enough eligible spare disks are available on the node. |
 | 19726344 | No recommendation can be made for this cluster. |
-| 19726357 | Automatic aggregate creation is not supported on MetroCluster. |
+| 19726357 | Automatic aggregate creation is not supported on MetroCluster with Fibre Channel (FC). |
 | 19726358 | Automatic aggregate creation is not supported on ONTAP Cloud. |
 | 19726373 | Recommendation specified for creating aggregates is not current. |
+| 19726378 | Failed to create recommended aggregates on one or more nodes. |
 | 19726382 | Another provisioning operation is in progress on this cluster. Wait a few minutes, and try the operation again. |
 | 19726386 | Encountered an error when retrieving licensing information on this cluster. |
+| 19726387 | No recommendation can be provided for this cluster within the license capacity. |
+| 19726401 | Aggregate recommendations are not supported when the DR group is not in the "normal" state. |
+| 19726402 | Internal error. Unable to determine the MetroCluster configuration state. |
+| 19726403 | Aggregate recommendation is not supported when there are no healthy target connections to remote storage. |
+| 196608055 | Aggregate recommendation is not supported on this node because it does not support NetApp Aggregate Encryption (NAE). |
+| 196608206 | Internal error. Failed to get encryption operation status. |
 
 */
 type AggregateCreateDefault struct {

@@ -155,5 +155,3 @@ func (m *S3BucketSvmResponse) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

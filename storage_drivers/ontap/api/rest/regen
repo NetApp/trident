@@ -8,5 +8,5 @@ rm -rf ./client
 
 swagger generate client -f swagger_full_converted.yaml \
    -C ./templates/default-client.yml \
-   --template-dir=./templates --allow-template-override  | tee regen.log
+   --template-dir=./templates --allow-template-override  2>&1 | tee regen.log
 

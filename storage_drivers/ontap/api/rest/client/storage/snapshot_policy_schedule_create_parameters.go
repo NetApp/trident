@@ -72,7 +72,7 @@ type SnapshotPolicyScheduleCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* SnapshotPolicyUUID.
 
@@ -98,11 +98,11 @@ func (o *SnapshotPolicyScheduleCreateParams) WithDefaults() *SnapshotPolicySched
 // All values with no default are reset to their zero value.
 func (o *SnapshotPolicyScheduleCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := SnapshotPolicyScheduleCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -155,15 +155,15 @@ func (o *SnapshotPolicyScheduleCreateParams) SetInfo(info *models.SnapshotPolicy
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the snapshot policy schedule create params
-func (o *SnapshotPolicyScheduleCreateParams) WithReturnRecords(returnRecords *bool) *SnapshotPolicyScheduleCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the snapshot policy schedule create params
+func (o *SnapshotPolicyScheduleCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnapshotPolicyScheduleCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the snapshot policy schedule create params
-func (o *SnapshotPolicyScheduleCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the snapshot policy schedule create params
+func (o *SnapshotPolicyScheduleCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WithSnapshotPolicyUUIDPathParameter adds the snapshotPolicyUUID to the snapshot policy schedule create params
@@ -190,13 +190,13 @@ func (o *SnapshotPolicyScheduleCreateParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -207,8 +207,8 @@ func (o *SnapshotPolicyScheduleCreateParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	// path param snapshot-policy.uuid
-	if err := r.SetPathParam("snapshot-policy.uuid", o.SnapshotPolicyUUIDPathParameter); err != nil {
+	// path param snapshot_policy.uuid
+	if err := r.SetPathParam("snapshot_policy.uuid", o.SnapshotPolicyUUIDPathParameter); err != nil {
 		return err
 	}
 

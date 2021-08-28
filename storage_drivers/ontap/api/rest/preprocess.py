@@ -25,6 +25,8 @@ def pascalize(s):
     s = s.replace("_dns", "_DNS")
     s = s.replace("_uri", "_URI")
     s = s.replace("_tls", "_TLS")
+    s = s.replace("_ttl", "_TTL")
+    s = s.replace("_cpu", "_CPU")
     #s = s.replace("_kdc", "_KDC")
 
     s = s.replace("url_", "URL_")
@@ -42,7 +44,15 @@ def pascalize(s):
     s = s.replace("dns_", "DNS_")
     s = s.replace("uri_", "URI_")
     s = s.replace("tls_", "TLS_")
+    s = s.replace("ttl_", "TTL_")
+    s = s.replace("cpu_", "CPU_")
     #s = s.replace("kdc_", "KDC_")
+
+    # fix sas_ports.phy_1.state etc..
+    s = s.replace("phy_1", "phy1")
+    s = s.replace("phy_2", "phy2")
+    s = s.replace("phy_3", "phy3")
+    s = s.replace("phy_4", "phy4")
 
     s = humps.pascalize(s)
     s = s.replace("IPv4", "IPV4")
@@ -85,7 +95,8 @@ def remove_invalid_doc_fields(d):
     for key in invalid_doc_paths:
         # TODO only pop if the key exists, in case they fix this later
         # TODO a better way to detect these? these are all paths that don't start with "/"
-        d['paths'].pop(key)
+        if key in d['paths']:
+            d['paths'].pop(key)
 
 def fix_incorrect_enum_type(d):
     #   - description: Filter by block_storage.primary.disk_type
@@ -124,7 +135,8 @@ def fix_incorrect_type_for_ignore_warnings(d):
     for parameter in d["paths"]["/cloud/targets/{uuid}"]["patch"]["parameters"]:
         if "name" in parameter:
             if parameter["name"] == "ignore_warnings":
-                parameter.pop("items") # remove the incorrect entry for items here
+                if 'items' in parameter:
+                    parameter.pop("items") # remove the incorrect entry for items here
 
 def fix_incorrect_operationIds_for_snaplock(d):
     # - "snaplock_legal_hold_collection_get" is defined 2 times
@@ -140,6 +152,77 @@ def fix_incorrect_default_value_for_include_extensions(d):
     # they were "*" instead of ["*"]
     d["definitions"]["vscan_on_access"]["properties"]["scope"]["properties"]["include_extensions"]["default"] = ["*"]
     d["definitions"]["vscan_on_demand"]["properties"]["scope"]["properties"]["include_extensions"]["default"] = ["*"]
+
+def fix_incorrect_min_max_for_name_mapping(d):
+    # these are set as a string value, probably should be minLength and maxLength
+    d['definitions']['name_mapping']['properties']['pattern'].pop('minimum')
+    d['definitions']['name_mapping']['properties']['pattern'].pop('maximum')
+    d['definitions']['name_mapping']['properties']['replacement'].pop('minimum')
+    d['definitions']['name_mapping']['properties']['replacement'].pop('maximum')
+
+def fix_duplicate_parameter_in_metrocluster_modify(d):
+    # - duplicate parameter name "return_timeout" for "query" in operation "metrocluster_modify"
+    # remove the 1st one, the other one is more complete
+    if d['paths']['/cluster/metrocluster']['patch']['parameters'][1]['name'] == "return_timeout" and \
+       d['paths']['/cluster/metrocluster']['patch']['parameters'][3]['name'] == "return_timeout":
+        d['paths']['/cluster/metrocluster']['patch']['parameters'].pop(1)
+
+def fix_incorrect_body_and_form_data(d):
+    # - operation "file_info_modify" has both formData and body parameters. Only one such In: type may be used for a given operation
+    # - operation "file_info_create" has both formData and body parameters. Only one such In: type may be used for a given operation
+    # removing the readonly body parameter from the patch operation
+    # https://stackoverflow.com/questions/36862371/swagger-send-body-and-formdata-parameter
+
+    # fix PATCH
+    if d['paths']['/storage/volumes/{volume.uuid}/files/{path}']['patch']['parameters'][5]['in'] == "body" and \
+       d['paths']['/storage/volumes/{volume.uuid}/files/{path}']['patch']['parameters'][5]['name'] == "info":
+        d['paths']['/storage/volumes/{volume.uuid}/files/{path}']['patch']['parameters'].pop(5)
+
+    # fix POST
+    if d['paths']['/storage/volumes/{volume.uuid}/files/{path}']['post']['parameters'][5]['in'] == "body" and \
+       d['paths']['/storage/volumes/{volume.uuid}/files/{path}']['post']['parameters'][5]['name'] == "info":
+        d['paths']['/storage/volumes/{volume.uuid}/files/{path}']['post']['parameters'].pop(5)
+
+def fix_incorrect_string_value_for_number(d):
+
+    ### fc ports
+    enum = d["definitions"]["storage_bridge"]["properties"]["fc_ports"]["items"]["properties"]["configured_data_rate"]["enum"]
+    for i in range(0, len(enum)):
+        if isinstance(enum[i], str):
+            print("Converting integer enum value type from str -> int")
+            enum[i] = int(enum[i])  # force it to be int
+
+    enum = d["definitions"]["storage_bridge"]["properties"]["fc_ports"]["items"]["properties"]["data_rate_capability"]["enum"]
+    for i in range(0, len(enum)):
+        if isinstance(enum[i], str):
+            print("Converting integer enum value type from str -> int")
+            enum[i] = int(enum[i])  # force it to be int
+
+    enum = d["definitions"]["storage_bridge"]["properties"]["fc_ports"]["items"]["properties"]["negotiated_data_rate"]["enum"]
+    for i in range(0, len(enum)):
+        if isinstance(enum[i], str):
+            print("Converting integer enum value type from str -> int")
+            enum[i] = int(enum[i])  # force it to be int
+
+    enum = d["definitions"]["storage_bridge"]["properties"]["fc_ports"]["items"]["properties"]["sfp"]["properties"]["data_rate_capability"]["enum"]
+    for i in range(0, len(enum)):
+        if isinstance(enum[i], str):
+            print("Converting integer enum value type from str -> int")
+            enum[i] = int(enum[i])  # force it to be int
+
+    ### sas ports
+    enum = d["definitions"]["storage_bridge"]["properties"]["sas_ports"]["items"]["properties"]["data_rate_capability"]["enum"]
+    for i in range(0, len(enum)):
+        if isinstance(enum[i], str):
+            print("Converting integer enum value type from str -> float")
+            enum[i] = float(enum[i])  # force it to be float
+
+    enum = d["definitions"]["storage_bridge"]["properties"]["sas_ports"]["items"]["properties"]["negotiated_data_rate"]["enum"]
+    for i in range(0, len(enum)):
+        if isinstance(enum[i], str):
+            print("Converting integer enum value type from str -> float")
+            enum[i] = float(enum[i])  # force it to be int
+
 
 def remove_extra_fields_for_snmp_user_definition(d):
     # - definitions.snmp_user.scope.default in body must be of type string: "null"
@@ -160,9 +243,43 @@ def add_unique_types_for_properties(d):
     d["definitions"]["fc_interface"]["properties"]["svm"]["x-go-name"] = "FcInterfaceSvmType"
     d["definitions"]["fc_interface"]["properties"]["svm"]["properties"]["_links"]["x-go-name"] = "FcInterfaceSvmLinksType"
 
+    d["definitions"]["azure_key_vault"]["properties"]["state"]["x-go-name"] = "AzureKeyVaultStateType"
+
+    d["definitions"]["file_info"]["properties"]["_links"]["x-go-name"] = "FileInfoLinksType"
+
+    d["definitions"]["flexcache"]["properties"]["prepopulate"]["x-go-name"] = "FlexcachePrepopulateType"
+
+    d["definitions"]["gcp_kms"]["properties"]["state"]["x-go-name"] = "GcpKmsStateType"
+
+    d["definitions"]["license_manager"]["properties"]["uri"]["x-go-name"] = "LicenseManagerURIType"
+
+    d["definitions"]["node"]["properties"]["statistics"]["x-go-name"] = "NodeStatisticsType"
+
+    d["definitions"]["port"]["properties"]["statistics"]["x-go-name"] = "PortStatisticsType"
+    d["definitions"]["port"]["properties"]["statistics"]["properties"]["device"]["x-go-name"] = "PortStatisticsTypeDeviceType"
+    d["definitions"]["port"]["properties"]["statistics"]["properties"]["device"]['properties']['receive_raw']["x-go-name"] = "PortStatisticsTypeDeviceTypeReceiveRawType"
+    d["definitions"]["port"]["properties"]["statistics"]["properties"]["device"]['properties']['transmit_raw']["x-go-name"] = "PortStatisticsTypeDeviceTypeTransmitRawType"
+    d["definitions"]["port"]["properties"]["statistics"]["properties"]["throughput_raw"]["x-go-name"] = "PortStatisticsTypeThroughputRawType"
+
+    d["definitions"]["port_statistics"]["properties"]["device"]["x-go-name"] = "PortStatisticsDeviceType"
+    d["definitions"]["port_statistics"]["properties"]["device"]['properties']['receive_raw']["x-go-name"] = "PortStatisticsDeviceTypeReceiveRawType"
+    d["definitions"]["port_statistics"]["properties"]["device"]['properties']['transmit_raw']["x-go-name"] = "PortStatisticsDeviceTypeTransmitRawType"
+    d["definitions"]["port_statistics"]["properties"]["throughput_raw"]["x-go-name"] = "PortStatisticsDeviceTypeThroughputRawType"
+
+    d["definitions"]["volume"]["properties"]["efficiency"]["x-go-name"] = "VolumeEfficiencyType"
+    d["definitions"]["volume"]["properties"]["efficiency"]["properties"]["policy"]["x-go-name"] = "VolumeEfficiencyTypePolicyType"
+
 # def add_go_package_names(d):
 #     d["definitions"]["application"]["properties"]["template"]["x-go-name"] = "ApplicationTemplateType"
 
+def make_volume_nas_path_nillable(d):
+    #   - description: Filter by block_storage.primary.disk_type
+    #     in: query
+    #     name: block_storage.primary.disk_type
+    #     type: enum
+
+    #d["paths"]["/storage/aggregates"]["get"]["parameters"][7]["type"] = "string"
+    d['definitions']['volume']['properties']['nas']['properties']['path']["x-nullable"] = True
 
 def walk(o):
 
@@ -170,6 +287,9 @@ def walk(o):
         # set an x-go-name to remove duplicated variable names when go-swagger hits these
         for d in o:
             if isinstance(d, dict):
+                if "x-ntap-introduced" in d:
+                    print('Removing x-ntap-introduced 1...')
+                    d.pop('x-ntap-introduced')
                 if "in" in d:
                     in_value = d["in"]
                     if in_value == "query":
@@ -183,6 +303,23 @@ def walk(o):
                             go_variable_name = pascalize(name)
                             d["x-go-name"] = dq(go_variable_name)
 
+                if "type" in d:
+                    type = d["type"]
+                    isIntegerType = (type == "integer")
+
+                    if isIntegerType:
+                        # make sure they are ints (and not strings)
+                        if "minimum" in d:
+                            minValue = d["minimum"]
+                            if isinstance(minValue, str):
+                                print("Converting path minValue type from str -> int")
+                                d['minimum'] = int(minValue)
+                        if "maximum" in d:
+                            maxValue = d["maximum"]
+                            if isinstance(maxValue, str):
+                                print("Converting path maxValue type from str -> int")
+                                d['maximum'] = int(maxValue)
+
     if isinstance(o, list):
         for e in o:
             walk(e)
@@ -192,6 +329,9 @@ def walk(o):
         for key in list(d.keys()):
             v = d[key]
             if isinstance(v, dict):
+                if "x-ntap-introduced" in v:
+                    print('Removing x-ntap-introduced 2...')
+                    v.pop('x-ntap-introduced')
                 # correct typo of the word 'description'
                 if "decription" in v:
                     # - definitions.software_status_details_reference.properties.action.properties.message.decription in body is a forbidden property
@@ -226,14 +366,52 @@ def walk(o):
                     isArrayTypeString = False
 
                     if isArrayType:
+                        # to fix issues like Snapshot.Owners being sent when it should not be sent
+                        # see also:  https://goswagger.io/use/models/schemas.html#omit-empty-values
+                        v["x-omitempty"] = True
+
                         if "items" in v:
                             items = v["items"]
                             if "type" in items:
                                 items_type = items["type"]
                                 isArrayTypeString = True
-                        # to fix issues like Snapshot.Owners being sent when it should not be sent
-                        # see also:  https://goswagger.io/use/models/schemas.html#omit-empty-values
-                        v["x-omitempty"] = True
+
+                            # make sure min/max items are ints (and not strings)
+                            # should they even be here at this level, nested inside? (TODO maybe need to move up/out to the array in the yaml?)
+                            if "minItems" in items:
+                                minItems = items["minItems"]
+                                if isinstance(minItems, str):
+                                    print("Converting minItems type from str -> int")
+                                    items['minItems'] = int(minItems)
+                            if "maxItems" in items:
+                                maxItems = items["maxItems"]
+                                if isinstance(maxItems, str):
+                                    print("Converting maxItems type from str -> int")
+                                    items['maxItems'] = int(maxItems)
+
+                        # make sure min/max items are ints (and not strings)
+                        if "minItems" in v:
+                            minItems = v["minItems"]
+                            if isinstance(minItems, str):
+                                print("Converting minItems type from str -> int")
+                                v['minItems'] = int(minItems)
+                        if "maxItems" in v:
+                            maxItems = v["maxItems"]
+                            if isinstance(maxItems, str):
+                                print("Converting maxItems type from str -> int")
+                                v['maxItems'] = int(maxItems)
+
+                        # make sure min/max lengths are ints (and not strings) (TODO it exists, but is this valid?)
+                        if "minLength" in v:
+                            minLength = v["minLength"]
+                            if isinstance(minLength, str):
+                                print("Converting minLength type from str -> int")
+                                v['minLength'] = int(minLength)
+                        if "maxLength" in v:
+                            maxLength = v["maxLength"]
+                            if isinstance(maxLength, str):
+                                print("Converting maxLength type from str -> int")
+                                v['maxLength'] = int(maxLength)
 
                     if isIntegerType:
                         # correct minValue to be minimum
@@ -245,6 +423,31 @@ def walk(o):
                         if "maxValue" in v:
                             maxValue = v["maxValue"]
                             v['maximum'] = v.pop("maxValue")
+
+                        # make sure they are ints (and not strings)
+                        if "minimum" in v:
+                            minValue = v["minimum"]
+                            if isinstance(minValue, str):
+                                print("Converting minValue type from str -> int")
+                                v['minimum'] = int(minValue)
+                        if "maximum" in v:
+                            maxValue = v["maximum"]
+                            if isinstance(maxValue, str):
+                                print("Converting maxValue type from str -> int")
+                                v['maximum'] = int(maxValue)
+
+                    if isStringType:
+                        # make sure min/max lengths are ints (and not strings)
+                        if "minLength" in v:
+                            minLength = v["minLength"]
+                            if isinstance(minLength, str):
+                                print("Converting minLength type from str -> int")
+                                v['minLength'] = int(minLength)
+                        if "maxLength" in v:
+                            maxLength = v["maxLength"]
+                            if isinstance(maxLength, str):
+                                print("Converting maxLength type from str -> int")
+                                v['maxLength'] = int(maxLength)
 
                     if "default" in v:
                         default = v["default"]
@@ -260,6 +463,11 @@ def walk(o):
                             if default == "enabled":
                                 v["default"] = True
 
+                        if isIntegerType:
+                            if isinstance(default, str):
+                                print("Converting default type from str -> int")
+                                v['default'] = int(default)
+
                         if isStringType:
                             v["default"] = dq(v["default"])  # force quotes around the default string value
 
@@ -269,6 +477,11 @@ def walk(o):
 
                         if isStringType:
                             v["example"] = dq(v["example"])  # force quotes around the example string value
+
+                        if isIntegerType:
+                            if isinstance(example, str):
+                                print("Converting example type from str -> int")
+                                v['example'] = int(example)
 
                         if isArrayType:
                             if isArrayTypeString:
@@ -314,6 +527,13 @@ def walk(o):
                             for i in range(0, len(enum)):
                                 enum[i] = dq(enum[i])  # force quotes around the string value
 
+                        if isIntegerType:
+                            enum = v["enum"]
+                            for i in range(0, len(enum)):
+                                if isinstance(enum[i], str):
+                                    print("Converting integer enum value type from str -> int")
+                                    enum[i] = int(enum[i])  # force it to be int
+
                     if type == "enum":
                         # the type should be string, not enum
                         # - "definitions.aggregate.properties.block_storage.properties.primary.properties.disk_type.type" must validate at least one schema (anyOf)
@@ -357,8 +577,13 @@ with open('swagger_full.yaml') as input_file:
     fix_incorrect_type_for_ignore_warnings(dataMap)
     fix_incorrect_operationIds_for_snaplock(dataMap)
     fix_incorrect_default_value_for_include_extensions(dataMap)
+    fix_incorrect_min_max_for_name_mapping(dataMap)
+    fix_duplicate_parameter_in_metrocluster_modify(dataMap)
+    fix_incorrect_body_and_form_data(dataMap)
+    fix_incorrect_string_value_for_number(dataMap)
     remove_extra_fields_for_snmp_user_definition(dataMap)
     add_unique_types_for_properties(dataMap)
+    make_volume_nas_path_nillable(dataMap)
 
     walk(dataMap)
 

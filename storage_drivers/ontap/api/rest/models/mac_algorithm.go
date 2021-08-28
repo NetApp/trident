@@ -110,5 +110,3 @@ func (m MacAlgorithm) Validate(formats strfmt.Registry) error {
 func (m MacAlgorithm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
-
-// HELLO RIPPY

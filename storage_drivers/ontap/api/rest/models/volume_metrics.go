@@ -33,6 +33,9 @@ type VolumeMetrics struct {
 	// Enum: [PT15S PT4M PT30M PT2H P1D PT5M]
 	Duration string `json:"duration,omitempty"`
 
+	// flexcache
+	Flexcache *VolumeMetricsFlexcache `json:"flexcache,omitempty"`
+
 	// iops
 	Iops *VolumeMetricsIops `json:"iops,omitempty"`
 
@@ -49,7 +52,7 @@ type VolumeMetrics struct {
 	Throughput *VolumeMetricsThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -68,6 +71,10 @@ func (m *VolumeMetrics) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFlexcache(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -145,63 +152,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsDurationPT15S captures enum value "PT15S"
 	VolumeMetricsDurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsDurationPT4M captures enum value "PT4M"
 	VolumeMetricsDurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsDurationPT30M captures enum value "PT30M"
 	VolumeMetricsDurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsDurationPT2H captures enum value "PT2H"
 	VolumeMetricsDurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsDurationP1D captures enum value "P1D"
 	VolumeMetricsDurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsDurationPT5M captures enum value "PT5M"
 	VolumeMetricsDurationPT5M string = "PT5M"
 )
@@ -222,6 +229,23 @@ func (m *VolumeMetrics) validateDuration(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateDurationEnum("duration", "body", m.Duration); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeMetrics) validateFlexcache(formats strfmt.Registry) error {
+	if swag.IsZero(m.Flexcache) { // not required
+		return nil
+	}
+
+	if m.Flexcache != nil {
+		if err := m.Flexcache.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("flexcache")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -275,103 +299,103 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsStatusOk captures enum value "ok"
 	VolumeMetricsStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsStatusError captures enum value "error"
 	VolumeMetricsStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsStatusPartialNoData captures enum value "partial_no_data"
 	VolumeMetricsStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// status
 	// Status
 	// partial_no_uuid
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsStatusPartialNoUUID captures enum value "partial_no_uuid"
 	VolumeMetricsStatusPartialNoUUID string = "partial_no_uuid"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsStatusPartialNoResponse captures enum value "partial_no_response"
 	VolumeMetricsStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsStatusPartialOtherError captures enum value "partial_other_error"
 	VolumeMetricsStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsStatusNegativeDelta captures enum value "negative_delta"
 	VolumeMetricsStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsStatusBackfilledData captures enum value "backfilled_data"
 	VolumeMetricsStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	VolumeMetricsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// volume_metrics
 	// VolumeMetrics
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	VolumeMetricsStatusInconsistentOldData string = "inconsistent_old_data"
 )
@@ -442,6 +466,10 @@ func (m *VolumeMetrics) ContextValidate(ctx context.Context, formats strfmt.Regi
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateFlexcache(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIops(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -500,6 +528,20 @@ func (m *VolumeMetrics) contextValidateDuration(ctx context.Context, formats str
 
 	if err := validate.ReadOnly(ctx, "duration", "body", string(m.Duration)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeMetrics) contextValidateFlexcache(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Flexcache != nil {
+		if err := m.Flexcache.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("flexcache")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -608,7 +650,7 @@ type VolumeMetricsCloud struct {
 	Status string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -658,63 +700,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudDurationPT15S captures enum value "PT15S"
 	VolumeMetricsCloudDurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudDurationPT4M captures enum value "PT4M"
 	VolumeMetricsCloudDurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudDurationPT30M captures enum value "PT30M"
 	VolumeMetricsCloudDurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudDurationPT2H captures enum value "PT2H"
 	VolumeMetricsCloudDurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudDurationP1D captures enum value "P1D"
 	VolumeMetricsCloudDurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudDurationPT5M captures enum value "PT5M"
 	VolumeMetricsCloudDurationPT5M string = "PT5M"
 )
@@ -788,103 +830,103 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudStatusOk captures enum value "ok"
 	VolumeMetricsCloudStatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudStatusError captures enum value "error"
 	VolumeMetricsCloudStatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudStatusPartialNoData captures enum value "partial_no_data"
 	VolumeMetricsCloudStatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// status
 	// Status
 	// partial_no_uuid
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudStatusPartialNoUUID captures enum value "partial_no_uuid"
 	VolumeMetricsCloudStatusPartialNoUUID string = "partial_no_uuid"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudStatusPartialNoResponse captures enum value "partial_no_response"
 	VolumeMetricsCloudStatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudStatusPartialOtherError captures enum value "partial_other_error"
 	VolumeMetricsCloudStatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudStatusNegativeDelta captures enum value "negative_delta"
 	VolumeMetricsCloudStatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudStatusBackfilledData captures enum value "backfilled_data"
 	VolumeMetricsCloudStatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	VolumeMetricsCloudStatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VolumeMetricsCloud
 	// VolumeMetricsCloud
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VolumeMetricsCloudStatusInconsistentOldData captures enum value "inconsistent_old_data"
 	VolumeMetricsCloudStatusInconsistentOldData string = "inconsistent_old_data"
 )
@@ -1126,6 +1168,362 @@ func (m *VolumeMetricsCloudLatency) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *VolumeMetricsCloudLatency) UnmarshalBinary(b []byte) error {
 	var res VolumeMetricsCloudLatency
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeMetricsFlexcache Performance number for FlexCache used to measure cache effectiveness.
+//
+// swagger:model VolumeMetricsFlexcache
+type VolumeMetricsFlexcache struct {
+
+	// Bandwidth savings denoting the amount of data served locally by the cache, in bytes.
+	// Example: 4096
+	BandwidthSavings int64 `json:"bandwidth_savings,omitempty"`
+
+	// Cache miss percentage.
+	// Example: 20
+	CacheMissPercent int64 `json:"cache_miss_percent,omitempty"`
+
+	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
+	//
+	// Example: PT1D
+	// Read Only: true
+	// Enum: [PT15S PT5M PT30M PT2H PT1D]
+	Duration string `json:"duration,omitempty"`
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	Status string `json:"status,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this volume metrics flexcache
+func (m *VolumeMetricsFlexcache) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var volumeMetricsFlexcacheTypeDurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["PT15S","PT5M","PT30M","PT2H","PT1D"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeMetricsFlexcacheTypeDurationPropEnum = append(volumeMetricsFlexcacheTypeDurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// duration
+	// Duration
+	// PT15S
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheDurationPT15S captures enum value "PT15S"
+	VolumeMetricsFlexcacheDurationPT15S string = "PT15S"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// duration
+	// Duration
+	// PT5M
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheDurationPT5M captures enum value "PT5M"
+	VolumeMetricsFlexcacheDurationPT5M string = "PT5M"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// duration
+	// Duration
+	// PT30M
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheDurationPT30M captures enum value "PT30M"
+	VolumeMetricsFlexcacheDurationPT30M string = "PT30M"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// duration
+	// Duration
+	// PT2H
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheDurationPT2H captures enum value "PT2H"
+	VolumeMetricsFlexcacheDurationPT2H string = "PT2H"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// duration
+	// Duration
+	// PT1D
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheDurationPT1D captures enum value "PT1D"
+	VolumeMetricsFlexcacheDurationPT1D string = "PT1D"
+)
+
+// prop value enum
+func (m *VolumeMetricsFlexcache) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeMetricsFlexcacheTypeDurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeMetricsFlexcache) validateDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Duration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDurationEnum("flexcache"+"."+"duration", "body", m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var volumeMetricsFlexcacheTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeMetricsFlexcacheTypeStatusPropEnum = append(volumeMetricsFlexcacheTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheStatusOk captures enum value "ok"
+	VolumeMetricsFlexcacheStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheStatusError captures enum value "error"
+	VolumeMetricsFlexcacheStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheStatusPartialNoData captures enum value "partial_no_data"
+	VolumeMetricsFlexcacheStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheStatusPartialNoUUID captures enum value "partial_no_uuid"
+	VolumeMetricsFlexcacheStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheStatusPartialNoResponse captures enum value "partial_no_response"
+	VolumeMetricsFlexcacheStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheStatusPartialOtherError captures enum value "partial_other_error"
+	VolumeMetricsFlexcacheStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheStatusNegativeDelta captures enum value "negative_delta"
+	VolumeMetricsFlexcacheStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheStatusBackfilledData captures enum value "backfilled_data"
+	VolumeMetricsFlexcacheStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	VolumeMetricsFlexcacheStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// VolumeMetricsFlexcache
+	// VolumeMetricsFlexcache
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// VolumeMetricsFlexcacheStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	VolumeMetricsFlexcacheStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *VolumeMetricsFlexcache) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeMetricsFlexcacheTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeMetricsFlexcache) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("flexcache"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeMetricsFlexcache) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("flexcache"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume metrics flexcache based on the context it is used
+func (m *VolumeMetricsFlexcache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDuration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeMetricsFlexcache) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "flexcache"+"."+"duration", "body", string(m.Duration)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeMetricsFlexcache) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "flexcache"+"."+"status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeMetricsFlexcache) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "flexcache"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeMetricsFlexcache) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeMetricsFlexcache) UnmarshalBinary(b []byte) error {
+	var res VolumeMetricsFlexcache
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1380,5 +1778,3 @@ func (m *VolumeMetricsThroughput) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

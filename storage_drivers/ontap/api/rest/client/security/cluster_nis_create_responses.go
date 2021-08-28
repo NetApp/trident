@@ -88,6 +88,7 @@ func NewClusterNisCreateDefault(code int) *ClusterNisCreateDefault {
 | 1966253    | IPv6 is not enabled in the cluster. |
 | 3276964    | The NIS domain name or NIS server domain is too long. The maximum supported for domain name is 64 characters and the maximum supported for NIS server domain is 255 characters. |
 | 3276933    | A maximum of 10 NIS servers can be configured per SVM. |
+| 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724109   | DNS resolution failed for one or more specified servers.  |
 | 23724112   | DNS resolution failed due to an internal error. Contact technical support if this issue persists.  |
 | 23724132   | DNS resolution failed for all the specified servers.  |

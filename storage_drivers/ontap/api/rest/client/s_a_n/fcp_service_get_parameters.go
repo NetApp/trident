@@ -64,7 +64,7 @@ type FcpServiceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* SvmUUID.
 
@@ -126,15 +126,15 @@ func (o *FcpServiceGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the fcp service get params
-func (o *FcpServiceGetParams) WithFields(fields []string) *FcpServiceGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the fcp service get params
+func (o *FcpServiceGetParams) WithFieldsQueryParameter(fields []string) *FcpServiceGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the fcp service get params
-func (o *FcpServiceGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the fcp service get params
+func (o *FcpServiceGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithSVMUUIDPathParameter adds the svmUUID to the fcp service get params
@@ -156,7 +156,7 @@ func (o *FcpServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -180,7 +180,7 @@ func (o *FcpServiceGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamFcpServiceGet binds the parameter fields
 func (o *FcpServiceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

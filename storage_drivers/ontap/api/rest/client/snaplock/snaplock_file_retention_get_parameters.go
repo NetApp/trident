@@ -64,7 +64,7 @@ type SnaplockFileRetentionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Path.
 
@@ -131,15 +131,15 @@ func (o *SnaplockFileRetentionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snaplock file retention get params
-func (o *SnaplockFileRetentionGetParams) WithFields(fields []string) *SnaplockFileRetentionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snaplock file retention get params
+func (o *SnaplockFileRetentionGetParams) WithFieldsQueryParameter(fields []string) *SnaplockFileRetentionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snaplock file retention get params
-func (o *SnaplockFileRetentionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snaplock file retention get params
+func (o *SnaplockFileRetentionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithPathPathParameter adds the path to the snaplock file retention get params
@@ -172,7 +172,7 @@ func (o *SnaplockFileRetentionGetParams) WriteToRequest(r runtime.ClientRequest,
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *SnaplockFileRetentionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamSnaplockFileRetentionGet binds the parameter fields
 func (o *SnaplockFileRetentionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

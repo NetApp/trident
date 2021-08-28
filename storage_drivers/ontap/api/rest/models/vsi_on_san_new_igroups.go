@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -19,6 +20,15 @@ import (
 //
 // swagger:model vsi_on_san_new_igroups
 type VsiOnSanNewIgroups struct {
+
+	// A comment available for use by the administrator.
+	Comment string `json:"comment,omitempty"`
+
+	// igroups
+	Igroups []*VsiOnSanNewIgroupsIgroupsItems0 `json:"igroups,omitempty"`
+
+	// initiator objects
+	InitiatorObjects []*VsiOnSanNewIgroupsInitiatorObjectsItems0 `json:"initiator_objects,omitempty"`
 
 	// initiators
 	Initiators []string `json:"initiators,omitempty"`
@@ -38,6 +48,14 @@ type VsiOnSanNewIgroups struct {
 func (m *VsiOnSanNewIgroups) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateIgroups(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateInitiatorObjects(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
 	}
@@ -49,6 +67,54 @@ func (m *VsiOnSanNewIgroups) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VsiOnSanNewIgroups) validateIgroups(formats strfmt.Registry) error {
+	if swag.IsZero(m.Igroups) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Igroups); i++ {
+		if swag.IsZero(m.Igroups[i]) { // not required
+			continue
+		}
+
+		if m.Igroups[i] != nil {
+			if err := m.Igroups[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VsiOnSanNewIgroups) validateInitiatorObjects(formats strfmt.Registry) error {
+	if swag.IsZero(m.InitiatorObjects) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.InitiatorObjects); i++ {
+		if swag.IsZero(m.InitiatorObjects[i]) { // not required
+			continue
+		}
+
+		if m.InitiatorObjects[i] != nil {
+			if err := m.InitiatorObjects[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("initiator_objects" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -83,33 +149,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vsi_on_san_new_igroups
 	// VsiOnSanNewIgroups
 	// protocol
 	// Protocol
 	// fcp
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanNewIgroupsProtocolFcp captures enum value "fcp"
 	VsiOnSanNewIgroupsProtocolFcp string = "fcp"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vsi_on_san_new_igroups
 	// VsiOnSanNewIgroups
 	// protocol
 	// Protocol
 	// iscsi
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanNewIgroupsProtocolIscsi captures enum value "iscsi"
 	VsiOnSanNewIgroupsProtocolIscsi string = "iscsi"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vsi_on_san_new_igroups
 	// VsiOnSanNewIgroups
 	// protocol
 	// Protocol
 	// mixed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnSanNewIgroupsProtocolMixed captures enum value "mixed"
 	VsiOnSanNewIgroupsProtocolMixed string = "mixed"
 )
@@ -135,8 +201,57 @@ func (m *VsiOnSanNewIgroups) validateProtocol(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this vsi on san new igroups based on context it is used
+// ContextValidate validate this vsi on san new igroups based on the context it is used
 func (m *VsiOnSanNewIgroups) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIgroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInitiatorObjects(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VsiOnSanNewIgroups) contextValidateIgroups(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Igroups); i++ {
+
+		if m.Igroups[i] != nil {
+			if err := m.Igroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("igroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VsiOnSanNewIgroups) contextValidateInitiatorObjects(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.InitiatorObjects); i++ {
+
+		if m.InitiatorObjects[i] != nil {
+			if err := m.InitiatorObjects[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("initiator_objects" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -158,4 +273,82 @@ func (m *VsiOnSanNewIgroups) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// HELLO RIPPY
+// VsiOnSanNewIgroupsIgroupsItems0 vsi on san new igroups igroups items0
+//
+// swagger:model VsiOnSanNewIgroupsIgroupsItems0
+type VsiOnSanNewIgroupsIgroupsItems0 struct {
+
+	// The name of an igroup to nest within a parent igroup. Mutually exclusive with initiators and initiator_objects.
+	Name string `json:"name,omitempty"`
+
+	// The UUID of an igroup to nest within a parent igroup Usage: &lt;UUID&gt;
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this vsi on san new igroups igroups items0
+func (m *VsiOnSanNewIgroupsIgroupsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this vsi on san new igroups igroups items0 based on context it is used
+func (m *VsiOnSanNewIgroupsIgroupsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VsiOnSanNewIgroupsIgroupsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VsiOnSanNewIgroupsIgroupsItems0) UnmarshalBinary(b []byte) error {
+	var res VsiOnSanNewIgroupsIgroupsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VsiOnSanNewIgroupsInitiatorObjectsItems0 vsi on san new igroups initiator objects items0
+//
+// swagger:model VsiOnSanNewIgroupsInitiatorObjectsItems0
+type VsiOnSanNewIgroupsInitiatorObjectsItems0 struct {
+
+	// A comment available for use by the administrator.
+	Comment string `json:"comment,omitempty"`
+
+	// The WWPN, IQN, or Alias of the initiator. Mutually exclusive with nested igroups and the initiators array.
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this vsi on san new igroups initiator objects items0
+func (m *VsiOnSanNewIgroupsInitiatorObjectsItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this vsi on san new igroups initiator objects items0 based on context it is used
+func (m *VsiOnSanNewIgroupsInitiatorObjectsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VsiOnSanNewIgroupsInitiatorObjectsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VsiOnSanNewIgroupsInitiatorObjectsItems0) UnmarshalBinary(b []byte) error {
+	var res VsiOnSanNewIgroupsInitiatorObjectsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

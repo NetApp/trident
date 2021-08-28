@@ -21,6 +21,10 @@ type SecurityCertificateReference struct {
 	// links
 	Links *SecurityCertificateReferenceLinks `json:"_links,omitempty"`
 
+	// Certificate name
+	// Example: cert1
+	Name string `json:"name,omitempty"`
+
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID string `json:"uuid,omitempty"`
@@ -188,5 +192,3 @@ func (m *SecurityCertificateReferenceLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

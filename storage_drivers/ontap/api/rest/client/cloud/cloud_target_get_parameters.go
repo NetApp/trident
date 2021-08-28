@@ -64,7 +64,7 @@ type CloudTargetGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *CloudTargetGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the cloud target get params
-func (o *CloudTargetGetParams) WithFields(fields []string) *CloudTargetGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the cloud target get params
+func (o *CloudTargetGetParams) WithFieldsQueryParameter(fields []string) *CloudTargetGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the cloud target get params
-func (o *CloudTargetGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the cloud target get params
+func (o *CloudTargetGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the cloud target get params
@@ -155,7 +155,7 @@ func (o *CloudTargetGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *CloudTargetGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 // bindParamCloudTargetGet binds the parameter fields
 func (o *CloudTargetGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

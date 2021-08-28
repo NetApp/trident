@@ -75,7 +75,8 @@ func NewIgroupInitiatorDeleteDefault(code int) *IgroupInitiatorDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 1254213 | The initiator group is mapped to one or more LUNs and `allow_delete_while_mapped` has not been specified. |
-| 5374034 | The initiator is not a member of the group. |
+| 5374034 | An initiator is not a member of the initiator group. |
+| 5374041 | The initiator is not owned by the supplied initiator group. |
 | 5374852 | The initiator group specified in the URI does not exist. |
 
 */

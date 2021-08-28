@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -25,6 +26,9 @@ type Qtree struct {
 	// export policy
 	ExportPolicy *QtreeExportPolicy `json:"export_policy,omitempty"`
 
+	// group
+	Group *QtreeGroup `json:"group,omitempty"`
+
 	// The identifier for the qtree, unique within the qtree's volume.
 	//
 	// Example: 1
@@ -36,20 +40,32 @@ type Qtree struct {
 	// The name of the qtree. Required in POST; optional in PATCH.
 	Name string `json:"name,omitempty"`
 
-	// Client visible path to the qtree. This field is not available if the volume does not have a junction-path configured. Not valid in POST or PATCH.
+	// nas
+	Nas *QtreeNas `json:"nas,omitempty"`
+
+	// Client visible path to the qtree. This field is not available if the volume does not have a junction-path configured. Not valid in POST or PATCH. This field is to be deprecated and replaced with nas.path.
 	// Example: /volume3/qtree1
 	// Read Only: true
 	Path string `json:"path,omitempty"`
 
+	// qos policy
+	QosPolicy *QtreeQosPolicy `json:"qos_policy,omitempty"`
+
 	// security style
 	SecurityStyle SecurityStyle `json:"security_style,omitempty"`
+
+	// statistics
+	Statistics *QtreeStatistics `json:"statistics,omitempty"`
 
 	// svm
 	Svm *QtreeSvm `json:"svm,omitempty"`
 
 	// The UNIX permissions for the qtree. Valid in POST or PATCH.
-	// Example: 493
+	// Example: 755
 	UnixPermissions int64 `json:"unix_permissions,omitempty"`
+
+	// user
+	User *QtreeUser `json:"user,omitempty"`
 
 	// volume
 	Volume *QtreeVolume `json:"volume,omitempty"`
@@ -67,7 +83,19 @@ func (m *Qtree) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateGroup(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNas(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateQosPolicy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -75,7 +103,15 @@ func (m *Qtree) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateStatistics(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUser(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -123,6 +159,23 @@ func (m *Qtree) validateExportPolicy(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Qtree) validateGroup(formats strfmt.Registry) error {
+	if swag.IsZero(m.Group) { // not required
+		return nil
+	}
+
+	if m.Group != nil {
+		if err := m.Group.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Qtree) validateID(formats strfmt.Registry) error {
 	if swag.IsZero(m.ID) { // not required
 		return nil
@@ -134,6 +187,40 @@ func (m *Qtree) validateID(formats strfmt.Registry) error {
 
 	if err := validate.MaximumInt("id", "body", m.ID, 4994, false); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Qtree) validateNas(formats strfmt.Registry) error {
+	if swag.IsZero(m.Nas) { // not required
+		return nil
+	}
+
+	if m.Nas != nil {
+		if err := m.Nas.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Qtree) validateQosPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.QosPolicy) { // not required
+		return nil
+	}
+
+	if m.QosPolicy != nil {
+		if err := m.QosPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -154,6 +241,23 @@ func (m *Qtree) validateSecurityStyle(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Qtree) validateStatistics(formats strfmt.Registry) error {
+	if swag.IsZero(m.Statistics) { // not required
+		return nil
+	}
+
+	if m.Statistics != nil {
+		if err := m.Statistics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Qtree) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -163,6 +267,23 @@ func (m *Qtree) validateSvm(formats strfmt.Registry) error {
 		if err := m.Svm.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Qtree) validateUser(formats strfmt.Registry) error {
+	if swag.IsZero(m.User) { // not required
+		return nil
+	}
+
+	if m.User != nil {
+		if err := m.User.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("user")
 			}
 			return err
 		}
@@ -200,7 +321,15 @@ func (m *Qtree) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateGroup(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNas(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -208,11 +337,23 @@ func (m *Qtree) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateQosPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSecurityStyle(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateStatistics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUser(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -254,6 +395,20 @@ func (m *Qtree) contextValidateExportPolicy(ctx context.Context, formats strfmt.
 	return nil
 }
 
+func (m *Qtree) contextValidateGroup(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Group != nil {
+		if err := m.Group.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Qtree) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
@@ -263,10 +418,38 @@ func (m *Qtree) contextValidateID(ctx context.Context, formats strfmt.Registry) 
 	return nil
 }
 
+func (m *Qtree) contextValidateNas(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Nas != nil {
+		if err := m.Nas.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nas")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Qtree) contextValidatePath(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "path", "body", string(m.Path)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Qtree) contextValidateQosPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.QosPolicy != nil {
+		if err := m.QosPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -284,12 +467,40 @@ func (m *Qtree) contextValidateSecurityStyle(ctx context.Context, formats strfmt
 	return nil
 }
 
+func (m *Qtree) contextValidateStatistics(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Statistics != nil {
+		if err := m.Statistics.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Qtree) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
 		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Qtree) contextValidateUser(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.User != nil {
+		if err := m.User.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("user")
 			}
 			return err
 		}
@@ -510,6 +721,48 @@ func (m *QtreeExportPolicyLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// QtreeGroup The user set as owner of the qtree.
+//
+// swagger:model QtreeGroup
+type QtreeGroup struct {
+
+	// The numeric ID of the group that owns the qtree. Valid in POST or PATCH.
+	// Example: 20001
+	ID string `json:"id,omitempty"`
+
+	// Alphanumeric group name of group that owns the qtree. Valid in POST or PATCH.
+	// Example: unix_group1
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this qtree group
+func (m *QtreeGroup) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this qtree group based on context it is used
+func (m *QtreeGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *QtreeGroup) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *QtreeGroup) UnmarshalBinary(b []byte) error {
+	var res QtreeGroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // QtreeLinks qtree links
 //
 // swagger:model QtreeLinks
@@ -589,6 +842,685 @@ func (m *QtreeLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *QtreeLinks) UnmarshalBinary(b []byte) error {
 	var res QtreeLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// QtreeNas qtree nas
+//
+// swagger:model QtreeNas
+type QtreeNas struct {
+
+	// Client visible path to the qtree. This field is not available if the volume does not have a junction-path configured. Not valid in POST or PATCH.
+	// Example: /volume3/qtree1
+	// Read Only: true
+	Path string `json:"path,omitempty"`
+}
+
+// Validate validates this qtree nas
+func (m *QtreeNas) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this qtree nas based on the context it is used
+func (m *QtreeNas) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePath(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *QtreeNas) contextValidatePath(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nas"+"."+"path", "body", string(m.Path)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *QtreeNas) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *QtreeNas) UnmarshalBinary(b []byte) error {
+	var res QtreeNas
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// QtreeQosPolicy When "min_throughput_iops", "max_throughput_iops" or "max_throughput_mbps" attributes are specified, the storage object is assigned to an auto-generated QoS policy group. If the attributes are later modified, the auto-generated QoS policy-group attributes are modified. Attributes can be removed by specifying "0" and policy group by specifying "none". Upon deletion of the storage object or if the attributes are removed, then the QoS policy-group is also removed.
+//
+// swagger:model QtreeQosPolicy
+type QtreeQosPolicy struct {
+
+	// links
+	Links *QtreeQosPolicyLinks `json:"_links,omitempty"`
+
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 10000
+	MaxThroughputIops int64 `json:"max_throughput_iops,omitempty"`
+
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 500
+	MaxThroughputMbps int64 `json:"max_throughput_mbps,omitempty"`
+
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 2000
+	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
+
+	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
+	// Example: performance
+	Name string `json:"name,omitempty"`
+
+	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this qtree qos policy
+func (m *QtreeQosPolicy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *QtreeQosPolicy) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this qtree qos policy based on the context it is used
+func (m *QtreeQosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *QtreeQosPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *QtreeQosPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *QtreeQosPolicy) UnmarshalBinary(b []byte) error {
+	var res QtreeQosPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// QtreeQosPolicyLinks qtree qos policy links
+//
+// swagger:model QtreeQosPolicyLinks
+type QtreeQosPolicyLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this qtree qos policy links
+func (m *QtreeQosPolicyLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *QtreeQosPolicyLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this qtree qos policy links based on the context it is used
+func (m *QtreeQosPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *QtreeQosPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *QtreeQosPolicyLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *QtreeQosPolicyLinks) UnmarshalBinary(b []byte) error {
+	var res QtreeQosPolicyLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// QtreeStatistics These are raw IOPS and throughput performance numbers. These numbers are aggregated across all nodes in the cluster and increase with the uptime of the cluster.
+//
+// swagger:model QtreeStatistics
+type QtreeStatistics struct {
+
+	// iops raw
+	IopsRaw *QtreeStatisticsIopsRaw `json:"iops_raw,omitempty"`
+
+	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled with the next closest collection and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes does not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	Status string `json:"status,omitempty"`
+
+	// throughput raw
+	ThroughputRaw *QtreeStatisticsThroughputRaw `json:"throughput_raw,omitempty"`
+
+	// The timestamp of the performance data.
+	// Example: 2017-01-25T11:20:13Z
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+}
+
+// Validate validates this qtree statistics
+func (m *QtreeStatistics) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateIopsRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThroughputRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *QtreeStatistics) validateIopsRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.IopsRaw) { // not required
+		return nil
+	}
+
+	if m.IopsRaw != nil {
+		if err := m.IopsRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "iops_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var qtreeStatisticsTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		qtreeStatisticsTypeStatusPropEnum = append(qtreeStatisticsTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// QtreeStatistics
+	// QtreeStatistics
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// QtreeStatisticsStatusOk captures enum value "ok"
+	QtreeStatisticsStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// QtreeStatistics
+	// QtreeStatistics
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// QtreeStatisticsStatusError captures enum value "error"
+	QtreeStatisticsStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// QtreeStatistics
+	// QtreeStatistics
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// QtreeStatisticsStatusPartialNoData captures enum value "partial_no_data"
+	QtreeStatisticsStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// QtreeStatistics
+	// QtreeStatistics
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// QtreeStatisticsStatusPartialNoUUID captures enum value "partial_no_uuid"
+	QtreeStatisticsStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// QtreeStatistics
+	// QtreeStatistics
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// QtreeStatisticsStatusPartialNoResponse captures enum value "partial_no_response"
+	QtreeStatisticsStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// QtreeStatistics
+	// QtreeStatistics
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// QtreeStatisticsStatusPartialOtherError captures enum value "partial_other_error"
+	QtreeStatisticsStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// QtreeStatistics
+	// QtreeStatistics
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// QtreeStatisticsStatusNegativeDelta captures enum value "negative_delta"
+	QtreeStatisticsStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// QtreeStatistics
+	// QtreeStatistics
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// QtreeStatisticsStatusBackfilledData captures enum value "backfilled_data"
+	QtreeStatisticsStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// QtreeStatistics
+	// QtreeStatistics
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// QtreeStatisticsStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	QtreeStatisticsStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// QtreeStatistics
+	// QtreeStatistics
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// QtreeStatisticsStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	QtreeStatisticsStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *QtreeStatistics) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, qtreeStatisticsTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *QtreeStatistics) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("statistics"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *QtreeStatistics) validateThroughputRaw(formats strfmt.Registry) error {
+	if swag.IsZero(m.ThroughputRaw) { // not required
+		return nil
+	}
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *QtreeStatistics) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("statistics"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this qtree statistics based on the context it is used
+func (m *QtreeStatistics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIopsRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThroughputRaw(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *QtreeStatistics) contextValidateIopsRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IopsRaw != nil {
+		if err := m.IopsRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "iops_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *QtreeStatistics) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *QtreeStatistics) contextValidateThroughputRaw(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ThroughputRaw != nil {
+		if err := m.ThroughputRaw.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("statistics" + "." + "throughput_raw")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *QtreeStatistics) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "statistics"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *QtreeStatistics) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *QtreeStatistics) UnmarshalBinary(b []byte) error {
+	var res QtreeStatistics
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// QtreeStatisticsIopsRaw The number of I/O operations observed at the storage object. This should be used along with delta time to calculate the rate of I/O operations per unit of time.
+//
+// swagger:model QtreeStatisticsIopsRaw
+type QtreeStatisticsIopsRaw struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this qtree statistics iops raw
+func (m *QtreeStatisticsIopsRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this qtree statistics iops raw based on the context it is used
+func (m *QtreeStatisticsIopsRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *QtreeStatisticsIopsRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *QtreeStatisticsIopsRaw) UnmarshalBinary(b []byte) error {
+	var res QtreeStatisticsIopsRaw
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// QtreeStatisticsThroughputRaw Throughput bytes observed at the storage object. This should be used along with delta time to calculate the rate of throughput bytes per unit of time.
+//
+// swagger:model QtreeStatisticsThroughputRaw
+type QtreeStatisticsThroughputRaw struct {
+
+	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
+	Other int64 `json:"other,omitempty"`
+
+	// Performance metric for read I/O operations.
+	// Example: 200
+	Read int64 `json:"read,omitempty"`
+
+	// Performance metric aggregated over all types of I/O operations.
+	// Example: 1000
+	Total int64 `json:"total,omitempty"`
+
+	// Peformance metric for write I/O operations.
+	// Example: 100
+	Write int64 `json:"write,omitempty"`
+}
+
+// Validate validates this qtree statistics throughput raw
+func (m *QtreeStatisticsThroughputRaw) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this qtree statistics throughput raw based on the context it is used
+func (m *QtreeStatisticsThroughputRaw) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *QtreeStatisticsThroughputRaw) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *QtreeStatisticsThroughputRaw) UnmarshalBinary(b []byte) error {
+	var res QtreeStatisticsThroughputRaw
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -778,6 +1710,48 @@ func (m *QtreeSvmLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// QtreeUser The user set as owner of the qtree.
+//
+// swagger:model QtreeUser
+type QtreeUser struct {
+
+	// The numeric ID of the user who owns the qtree. Valid in POST or PATCH.
+	// Example: 10001
+	ID string `json:"id,omitempty"`
+
+	// Alphanumeric username of user who owns the qtree. Valid in POST or PATCH.
+	// Example: unix_user1
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this qtree user
+func (m *QtreeUser) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this qtree user based on context it is used
+func (m *QtreeUser) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *QtreeUser) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *QtreeUser) UnmarshalBinary(b []byte) error {
+	var res QtreeUser
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // QtreeVolume Required in POST
 //
 // swagger:model QtreeVolume
@@ -957,5 +1931,3 @@ func (m *QtreeVolumeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

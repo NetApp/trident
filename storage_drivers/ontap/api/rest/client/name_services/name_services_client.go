@@ -68,15 +68,46 @@ type ClientService interface {
 
 	NisModify(params *NisModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NisModifyOK, error)
 
+	UnixGroupCollectionGet(params *UnixGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupCollectionGetOK, error)
+
+	UnixGroupCreate(params *UnixGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupCreateCreated, error)
+
+	UnixGroupDelete(params *UnixGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupDeleteOK, error)
+
+	UnixGroupGet(params *UnixGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupGetOK, error)
+
+	UnixGroupModify(params *UnixGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupModifyOK, error)
+
+	UnixGroupUserDelete(params *UnixGroupUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUserDeleteOK, error)
+
+	UnixGroupUsersCreate(params *UnixGroupUsersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersCreateOK, error)
+
+	UnixUserCollectionGet(params *UnixUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserCollectionGetOK, error)
+
+	UnixUserCreate(params *UnixUserCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserCreateCreated, error)
+
+	UnixUserDelete(params *UnixUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserDeleteOK, error)
+
+	UnixUserGet(params *UnixUserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserGetOK, error)
+
+	UnixUserModify(params *UnixUserModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserModifyOK, error)
+
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  DNSCollectionGet Retrieves the DNS configurations of all data SVMs.
-DNS configuration for the cluster is retrieved and managed via [`/api/cluster`](#docs-cluster-cluster).
+  DNSCollectionGet Retrieves the DNS configurations of all SVMs.
+Specify 'scope' as 'svm' to retrieve the DNS configuration of all the data SVMs.
+Specify 'scope' as 'cluster' to retrieve the DNS configuration of the cluster.
+### Advanced properties
+* 'tld_query_enabled'
+* 'source_address_match'
+* 'packet_query_match'
+* 'status' property retrieves the status of each name server of the DNS configuration for an SVM.
 ### Related ONTAP commands
 * `vserver services name-service dns show`
 * `vserver services name-service dns check`
+* `vserver services name-service dns dynamic-update show`
 ### Learn more
 * [`DOC /name-services/dns`](#docs-name-services-name-services_dns)
 
@@ -128,9 +159,17 @@ func (a *Client) DNSCollectionGet(params *DNSCollectionGetParams, authInfo runti
 1. The server is not a DNS server.
 2. The server does not exist.
 3. The server is unreachable.<br/>
+- The DNS server validation can be skipped by setting the property "skip_config_validation" to "true".
+- Scope of the SVM can be specified using the "scope" parameter. "svm" scope refers to data SVMs and "cluster" scope refers to clusters.
+#### The following parameters are optional:
+- timeout
+- attempts
+- source_address_match
+- packet_query_match
+- tld_query_enabled
+- skip_config_validation
+- scope
 
-### Learn more
-* [`DOC /name-services/dns`](#docs-name-services-name-services_dns)
 */
 func (a *Client) DNSCreate(params *DNSCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -212,10 +251,15 @@ func (a *Client) DNSDelete(params *DNSDeleteParams, authInfo runtime.ClientAuthI
 
 /*
   DNSGet Retrieves DNS domain and server configuration of an SVM. By default, both DNS domains and servers are displayed.
-DNS configuration for the cluster is retrieved and managed via [`/api/cluster`](#docs-cluster-cluster).
+### Advanced properties
+* 'tld_query_enabled'
+* 'source_address_match'
+* 'packet_query_match'
+* 'status' property retrieves the status of each name server of the DNS configuration for an SVM.
 ### Related ONTAP commands
 * `vserver services name-service dns show`
 * `vserver services name-service dns check`
+* `vserver services name-service dns dynamic-update show`
 ### Learn more
 * [`DOC /name-services/dns`](#docs-name-services-name-services_dns)
 
@@ -266,9 +310,26 @@ The validation fails in the following scenarios:<br/>
 1. The server is not a DNS server.
 2. The server does not exist.
 3. The server is unreachable.<br/>
-
+- The DNS server validation can be skipped by setting the property "skip_config_validation" to "true".
+- Dynamic DNS configuration can be modified.
+- If both DNS and Dynamic DNS parameters are modified, DNS parameters are updated first followed by Dynamic DNS parameters.
+  If updating Dynamic DNS fails, then the updated DNS configuration is not reverted.
+#### The following parameters are optional:
+- timeout
+- attempts
+- source_address_match
+- packet_query_match
+- tld_query_enabled
+- skip_config_validation
+- dynamic_dns.enabled
+- dynamic_dns.use_secure
+- dynamic_dns.time_to_live
+### Related ONTAP commands
+* `vserver services name-service dns modify`
+* `vserver services name-service dns dynamic-update modify`
 ### Learn more
 * [`DOC /name-services/dns`](#docs-name-services-name-services_dns)
+
 */
 func (a *Client) DNSModify(params *DNSModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -308,8 +369,6 @@ func (a *Client) DNSModify(params *DNSModifyParams, authInfo runtime.ClientAuthI
 /*
   LdapCollectionGet Retrieves the LDAP configurations for all SVMs.
 
-### Learn more
-* [`DOC /name-services/ldap`](#docs-name-services-name-services_ldap)
 */
 func (a *Client) LdapCollectionGet(params *LdapCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -357,11 +416,26 @@ func (a *Client) LdapCollectionGet(params *LdapCollectionGetParams, authInfo run
 - preferred AD servers
 - schema
 - port
+- ldaps_enabled
 - min_bind_level
 - bind_password
 - base_scope
 - use_start_tls
-- session_security</br>
+- session_security
+- referral_enabled
+- bind_as_cifs_server
+- query_timeout
+- user_dn
+- user_scope
+- group_dn
+- group_scope
+- netgroup_dn
+- netgroup_scope
+- netgroup_byhost_dn
+- netgroup_byhost_scope
+- is_netgroup_byhost_enabled
+- group_membership_filter
+- skip_config_validation</br>
 Configuring more than one LDAP server is recommended to avoid a single point of failure.
 Both FQDNs and IP addresses are supported for the "servers" field.
 The Acitve Directory domain or LDAP servers are validated as part of this operation.</br>
@@ -370,8 +444,6 @@ LDAP validation fails in the following scenarios:<br/>
 2. The server or Active Directory domain is invalid.
 3. The server or Active Directory domain is unreachable.<br/>
 
-### Learn more
-* [`DOC /name-services/ldap`](#docs-name-services-name-services_ldap)
 */
 func (a *Client) LdapCreate(params *LdapCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -411,8 +483,6 @@ func (a *Client) LdapCreate(params *LdapCreateParams, authInfo runtime.ClientAut
 /*
   LdapDelete Deletes the LDAP configuration of the specified SVM. LDAP can be removed as a source from the ns-switch if LDAP is not used as a source for lookups.
 
-### Learn more
-* [`DOC /name-services/ldap`](#docs-name-services-name-services_ldap)
 */
 func (a *Client) LdapDelete(params *LdapDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapDeleteOK, error) {
 	// TODO: Validate the params before sending
@@ -452,8 +522,6 @@ func (a *Client) LdapDelete(params *LdapDeleteParams, authInfo runtime.ClientAut
 /*
   LdapGet Retrieves LDAP configuration for an SVM. All parameters for the LDAP configuration are displayed by default.
 
-### Learn more
-* [`DOC /name-services/ldap`](#docs-name-services-name-services_ldap)
 */
 func (a *Client) LdapGet(params *LdapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapGetOK, error) {
 	// TODO: Validate the params before sending
@@ -504,8 +572,6 @@ LDAP validation fails in the following scenarios:<br/>
 2. The server or Active Directory domain is invalid.
 3. The server or Active Directory domain is unreachable<br/>
 
-### Learn more
-* [`DOC /name-services/ldap`](#docs-name-services-name-services_ldap)
 */
 func (a *Client) LdapModify(params *LdapModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapModifyOK, error) {
 	// TODO: Validate the params before sending
@@ -1000,6 +1066,508 @@ func (a *Client) NisModify(params *NisModifyParams, authInfo runtime.ClientAuthI
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NisModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixGroupCollectionGet Retrieves the UNIX groups for all of the SVMs. UNIX users who are the members of the group are also displayed.
+### Related ONTAP commands
+* `vserver services name-service unix-group show`
+### Learn more
+* [`DOC /name-services/unix-groups`](#docs-name-services-name-services_unix-groups)
+
+*/
+func (a *Client) UnixGroupCollectionGet(params *UnixGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_collection_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/unix-groups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixGroupCreate Creates the local UNIX group configuration for the specified SVM.<br/>
+Group name and group ID are mandatory parameters.
+### Learn more
+* [`DOC /name-services/unix-groups`](#docs-name-services-name-services_unix-groups)
+
+*/
+func (a *Client) UnixGroupCreate(params *UnixGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_create",
+		Method:             "POST",
+		PathPattern:        "/name-services/unix-groups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixGroupDelete Deletes a UNIX group configuration for the specified SVM.
+### Related ONTAP commands
+* `vserver services name-service unix-group delete`
+### Learn more
+* [`DOC /name-services/unix-groups`](#docs-name-services-name-services_unix-groups)
+
+*/
+func (a *Client) UnixGroupDelete(params *UnixGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_delete",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixGroupGet Retrieves UNIX group information for the specified group and SVM. UNIX users who are part of this group
+are also retrieved.
+### Related ONTAP commands
+* `vserver services name-service unix-group show`
+### Learn more
+* [`DOC /name-services/unix-groups`](#docs-name-services-name-services_unix-groups)
+
+*/
+func (a *Client) UnixGroupGet(params *UnixGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixGroupModify Updates the UNIX group information of the specified group in the specified SVM.
+### Learn more
+* [`DOC /name-services/unix-groups`](#docs-name-services-name-services_unix-groups)
+
+*/
+func (a *Client) UnixGroupModify(params *UnixGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_modify",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixGroupUserDelete Deletes a user from the specified UNIX group.
+### Related ONTAP commands
+* `vserver services name-service unix-group deluser`
+
+*/
+func (a *Client) UnixGroupUserDelete(params *UnixGroupUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUserDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupUserDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_user_delete",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{unix_group.name}/users/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupUserDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupUserDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupUserDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixGroupUsersCreate Adds users to the specified UNIX group and SVM.
+### Important notes
+- Multiple users can be added in a single call using the "records" parameter.
+- "records" parameter must not be specified when "name" parameter is specified.
+- Specified users are appended to the existing list of users.
+- Duplicate users are ignored.
+### Related ONTAP commands
+* `vserver services name-service unix-group adduser`
+* `vserver services name-service unix-group addusers`
+
+*/
+func (a *Client) UnixGroupUsersCreate(params *UnixGroupUsersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersCreateOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupUsersCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_users_create",
+		Method:             "POST",
+		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{unix_group.name}/users",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupUsersCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupUsersCreateOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupUsersCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixUserCollectionGet Retrieves all of the UNIX users for all of the SVMs.
+### Related ONTAP commands
+* `vserver services name-service unix-user show`
+
+*/
+func (a *Client) UnixUserCollectionGet(params *UnixUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixUserCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_user_collection_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/unix-users",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixUserCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixUserCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixUserCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixUserCreate Creates the local UNIX user configuration for an SVM.<br/>
+
+*/
+func (a *Client) UnixUserCreate(params *UnixUserCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixUserCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_user_create",
+		Method:             "POST",
+		PathPattern:        "/name-services/unix-users",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixUserCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixUserCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixUserCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixUserDelete Deletes a UNIX user configuration for the specified SVM.
+### Related ONTAP commands
+* `vserver services name-service unix-user delete`
+
+*/
+func (a *Client) UnixUserDelete(params *UnixUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixUserDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_user_delete",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/unix-users/{svm.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixUserDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixUserDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixUserDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixUserGet Retrieves UNIX user information for the specified user and SVM.
+### Related ONTAP commands
+* `vserver services name-service unix-user show`
+
+*/
+func (a *Client) UnixUserGet(params *UnixUserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixUserGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_user_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/unix-users/{svm.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixUserGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixUserGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixUserGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixUserModify Updates UNIX user information for the specified user and SVM.
+
+*/
+func (a *Client) UnixUserModify(params *UnixUserModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixUserModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_user_modify",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/unix-users/{svm.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixUserModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixUserModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixUserModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

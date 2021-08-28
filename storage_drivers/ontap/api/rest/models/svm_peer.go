@@ -144,63 +144,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm_peer
 	// SvmPeer
 	// state
 	// State
 	// peered
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmPeerStatePeered captures enum value "peered"
 	SvmPeerStatePeered string = "peered"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm_peer
 	// SvmPeer
 	// state
 	// State
 	// rejected
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmPeerStateRejected captures enum value "rejected"
 	SvmPeerStateRejected string = "rejected"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm_peer
 	// SvmPeer
 	// state
 	// State
 	// suspended
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmPeerStateSuspended captures enum value "suspended"
 	SvmPeerStateSuspended string = "suspended"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm_peer
 	// SvmPeer
 	// state
 	// State
 	// initiated
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmPeerStateInitiated captures enum value "initiated"
 	SvmPeerStateInitiated string = "initiated"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm_peer
 	// SvmPeer
 	// state
 	// State
 	// pending
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmPeerStatePending captures enum value "pending"
 	SvmPeerStatePending string = "pending"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// svm_peer
 	// SvmPeer
 	// state
 	// State
 	// initializing
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SvmPeerStateInitializing captures enum value "initializing"
 	SvmPeerStateInitializing string = "initializing"
 )
@@ -1115,5 +1115,3 @@ func (m *SvmPeerSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

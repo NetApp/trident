@@ -30,6 +30,12 @@ type Flexcache struct {
 	// Number of FlexCache constituents per aggregate when the 'aggregates' field is mentioned.
 	ConstituentsPerAggregate *int64 `json:"constituents_per_aggregate,omitempty"`
 
+	// If set to true, a DR cache is created.
+	DrCache *bool `json:"dr_cache,omitempty"`
+
+	// Specifies whether or not a FlexCache volume has global file locking mode enabled. Global file locking mode is a mode where protocol read locking semantics are enforced across all FlexCaches and origins of a FlexCache volume.
+	GlobalFileLockingEnabled *bool `json:"global_file_locking_enabled,omitempty"`
+
 	// guarantee
 	Guarantee *FlexcacheGuarantee `json:"guarantee,omitempty"`
 
@@ -46,11 +52,17 @@ type Flexcache struct {
 	// Example: /user/my_fc
 	Path string `json:"path,omitempty"`
 
+	// prepopulate
+	Prepopulate *FlexcachePrepopulateType `json:"prepopulate,omitempty"`
+
 	// Physical size of the FlexCache. The recommended size for a FlexCache is 10% of the origin volume. The minimum FlexCache constituent size is 1GB.
 	Size int64 `json:"size,omitempty"`
 
 	// svm
 	Svm *FlexcacheSvm `json:"svm,omitempty"`
+
+	// Specifies whether or not a Fabricpool-enabled aggregate can be used in FlexCache creation. The use_tiered_aggregate is only used when auto-provisioning a FlexCache volume.
+	UseTieredAggregate *bool `json:"use_tiered_aggregate,omitempty"`
 
 	// FlexCache UUID. Unique identifier for the FlexCache.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
@@ -79,6 +91,10 @@ func (m *Flexcache) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateOrigins(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePrepopulate(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -190,6 +206,23 @@ func (m *Flexcache) validateOrigins(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Flexcache) validatePrepopulate(formats strfmt.Registry) error {
+	if swag.IsZero(m.Prepopulate) { // not required
+		return nil
+	}
+
+	if m.Prepopulate != nil {
+		if err := m.Prepopulate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("prepopulate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Flexcache) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -224,6 +257,10 @@ func (m *Flexcache) ContextValidate(ctx context.Context, formats strfmt.Registry
 	}
 
 	if err := m.contextValidateOrigins(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePrepopulate(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -300,6 +337,20 @@ func (m *Flexcache) contextValidateOrigins(ctx context.Context, formats strfmt.R
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *Flexcache) contextValidatePrepopulate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Prepopulate != nil {
+		if err := m.Prepopulate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("prepopulate")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -533,7 +584,7 @@ type FlexcacheGuarantee struct {
 
 	// The type of space guarantee of this volume in the aggregate.
 	// Enum: [volume none]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // Validate validates this flexcache guarantee
@@ -564,23 +615,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// FlexcacheGuarantee
 	// FlexcacheGuarantee
 	// type
 	// Type
 	// volume
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FlexcacheGuaranteeTypeVolume captures enum value "volume"
 	FlexcacheGuaranteeTypeVolume string = "volume"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// FlexcacheGuarantee
 	// FlexcacheGuarantee
 	// type
 	// Type
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// FlexcacheGuaranteeTypeNone captures enum value "none"
 	FlexcacheGuaranteeTypeNone string = "none"
 )
@@ -599,7 +650,7 @@ func (m *FlexcacheGuarantee) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("guarantee"+"."+"type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("guarantee"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -708,6 +759,49 @@ func (m *FlexcacheLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *FlexcacheLinks) UnmarshalBinary(b []byte) error {
 	var res FlexcacheLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FlexcachePrepopulateType FlexCache prepopulate
+//
+// swagger:model FlexcachePrepopulateType
+type FlexcachePrepopulateType struct {
+
+	// dir paths
+	DirPaths []string `json:"dir_paths,omitempty"`
+
+	// exclude dir paths
+	ExcludeDirPaths []string `json:"exclude_dir_paths,omitempty"`
+
+	// Specifies whether or not the prepopulate action should search through the directory-path recursively. If not set, the default value "true" is used.
+	Recurse *bool `json:"recurse,omitempty"`
+}
+
+// Validate validates this flexcache prepopulate type
+func (m *FlexcachePrepopulateType) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this flexcache prepopulate type based on context it is used
+func (m *FlexcachePrepopulateType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FlexcachePrepopulateType) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FlexcachePrepopulateType) UnmarshalBinary(b []byte) error {
+	var res FlexcachePrepopulateType
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -896,5 +990,3 @@ func (m *FlexcacheSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

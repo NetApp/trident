@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -28,6 +29,10 @@ type NetworkRoute struct {
 	// The IP address of the gateway router leading to the destination.
 	// Example: 10.1.1.1
 	Gateway string `json:"gateway,omitempty"`
+
+	// IP interfaces on the same subnet as the gateway.
+	// Read Only: true
+	Interfaces []*NetworkRouteInterfacesItems0 `json:"interfaces,omitempty"`
 
 	// ipspace
 	Ipspace *NetworkRouteIpspace `json:"ipspace,omitempty"`
@@ -53,6 +58,10 @@ func (m *NetworkRoute) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDestination(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateInterfaces(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -103,6 +112,30 @@ func (m *NetworkRoute) validateDestination(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *NetworkRoute) validateInterfaces(formats strfmt.Registry) error {
+	if swag.IsZero(m.Interfaces) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Interfaces); i++ {
+		if swag.IsZero(m.Interfaces[i]) { // not required
+			continue
+		}
+
+		if m.Interfaces[i] != nil {
+			if err := m.Interfaces[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("interfaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -169,6 +202,10 @@ func (m *NetworkRoute) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateInterfaces(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIpspace(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -214,6 +251,28 @@ func (m *NetworkRoute) contextValidateDestination(ctx context.Context, formats s
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *NetworkRoute) contextValidateInterfaces(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "interfaces", "body", []*NetworkRouteInterfacesItems0(m.Interfaces)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Interfaces); i++ {
+
+		if m.Interfaces[i] != nil {
+			if err := m.Interfaces[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("interfaces" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -279,6 +338,310 @@ func (m *NetworkRoute) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *NetworkRoute) UnmarshalBinary(b []byte) error {
 	var res NetworkRoute
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NetworkRouteInterfacesItems0 network route interfaces items0
+//
+// swagger:model NetworkRouteInterfacesItems0
+type NetworkRouteInterfacesItems0 struct {
+
+	// links
+	Links *NetworkRouteInterfacesItems0Links `json:"_links,omitempty"`
+
+	// ip
+	IP *NetworkRouteInterfacesItems0IP `json:"ip,omitempty"`
+
+	// The name of the interface.
+	// Example: lif1
+	Name string `json:"name,omitempty"`
+
+	// The UUID that uniquely identifies the interface.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this network route interfaces items0
+func (m *NetworkRouteInterfacesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIP(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetworkRouteInterfacesItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NetworkRouteInterfacesItems0) validateIP(formats strfmt.Registry) error {
+	if swag.IsZero(m.IP) { // not required
+		return nil
+	}
+
+	if m.IP != nil {
+		if err := m.IP.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this network route interfaces items0 based on the context it is used
+func (m *NetworkRouteInterfacesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetworkRouteInterfacesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NetworkRouteInterfacesItems0) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IP != nil {
+		if err := m.IP.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NetworkRouteInterfacesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NetworkRouteInterfacesItems0) UnmarshalBinary(b []byte) error {
+	var res NetworkRouteInterfacesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NetworkRouteInterfacesItems0IP IP information
+//
+// swagger:model NetworkRouteInterfacesItems0IP
+type NetworkRouteInterfacesItems0IP struct {
+
+	// address
+	Address IPAddressReadonly `json:"address,omitempty"`
+}
+
+// Validate validates this network route interfaces items0 IP
+func (m *NetworkRouteInterfacesItems0IP) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAddress(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetworkRouteInterfacesItems0IP) validateAddress(formats strfmt.Registry) error {
+	if swag.IsZero(m.Address) { // not required
+		return nil
+	}
+
+	if err := m.Address.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("ip" + "." + "address")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this network route interfaces items0 IP based on the context it is used
+func (m *NetworkRouteInterfacesItems0IP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAddress(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetworkRouteInterfacesItems0IP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Address.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("ip" + "." + "address")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NetworkRouteInterfacesItems0IP) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NetworkRouteInterfacesItems0IP) UnmarshalBinary(b []byte) error {
+	var res NetworkRouteInterfacesItems0IP
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NetworkRouteInterfacesItems0Links network route interfaces items0 links
+//
+// swagger:model NetworkRouteInterfacesItems0Links
+type NetworkRouteInterfacesItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this network route interfaces items0 links
+func (m *NetworkRouteInterfacesItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetworkRouteInterfacesItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this network route interfaces items0 links based on the context it is used
+func (m *NetworkRouteInterfacesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetworkRouteInterfacesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NetworkRouteInterfacesItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NetworkRouteInterfacesItems0Links) UnmarshalBinary(b []byte) error {
+	var res NetworkRouteInterfacesItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -733,5 +1096,3 @@ func (m *NetworkRouteSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

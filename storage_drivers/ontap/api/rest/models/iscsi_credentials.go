@@ -104,33 +104,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// iscsi_credentials
 	// IscsiCredentials
 	// authentication_type
 	// AuthenticationType
 	// chap
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiCredentialsAuthenticationTypeChap captures enum value "chap"
 	IscsiCredentialsAuthenticationTypeChap string = "chap"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// iscsi_credentials
 	// IscsiCredentials
 	// authentication_type
 	// AuthenticationType
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiCredentialsAuthenticationTypeNone captures enum value "none"
 	IscsiCredentialsAuthenticationTypeNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// iscsi_credentials
 	// IscsiCredentials
 	// authentication_type
 	// AuthenticationType
 	// deny
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// IscsiCredentialsAuthenticationTypeDeny captures enum value "deny"
 	IscsiCredentialsAuthenticationTypeDeny string = "deny"
 )
@@ -1020,5 +1020,3 @@ func (m *IscsiCredentialsSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

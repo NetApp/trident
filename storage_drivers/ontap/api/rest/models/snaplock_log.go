@@ -383,7 +383,7 @@ type SnaplockLogLogArchive struct {
 	BaseName string `json:"base_name,omitempty"`
 
 	// Expiry time of the log file in date-time format. Value '9999-12-31T00:00:00Z' indicates infinite expiry time.
-	// Example: 2058-06-04 19:00:00
+	// Example: 2058-06-04T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
@@ -452,33 +452,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnaplockLogLogArchive
 	// SnaplockLogLogArchive
 	// base_name
 	// BaseName
 	// legal_hold
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockLogLogArchiveBaseNameLegalHold captures enum value "legal_hold"
 	SnaplockLogLogArchiveBaseNameLegalHold string = "legal_hold"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnaplockLogLogArchive
 	// SnaplockLogLogArchive
 	// base_name
 	// BaseName
 	// privileged_delete
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockLogLogArchiveBaseNamePrivilegedDelete captures enum value "privileged_delete"
 	SnaplockLogLogArchiveBaseNamePrivilegedDelete string = "privileged_delete"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// SnaplockLogLogArchive
 	// SnaplockLogLogArchive
 	// base_name
 	// BaseName
 	// system
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockLogLogArchiveBaseNameSystem captures enum value "system"
 	SnaplockLogLogArchiveBaseNameSystem string = "system"
 )
@@ -868,5 +868,3 @@ func (m *SnaplockLogSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

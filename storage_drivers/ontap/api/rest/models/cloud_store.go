@@ -23,6 +23,9 @@ type CloudStore struct {
 	// links
 	Links *CloudStoreLinks `json:"_links,omitempty"`
 
+	// aggregate
+	Aggregate *CloudStoreAggregate `json:"aggregate,omitempty"`
+
 	// Availability of the object store.
 	// Read Only: true
 	// Enum: [available unavailable]
@@ -55,6 +58,10 @@ func (m *CloudStore) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAggregate(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -93,6 +100,23 @@ func (m *CloudStore) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *CloudStore) validateAggregate(formats strfmt.Registry) error {
+	if swag.IsZero(m.Aggregate) { // not required
+		return nil
+	}
+
+	if m.Aggregate != nil {
+		if err := m.Aggregate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 var cloudStoreTypeAvailabilityPropEnum []interface{}
 
 func init() {
@@ -107,23 +131,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cloud_store
 	// CloudStore
 	// availability
 	// Availability
 	// available
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CloudStoreAvailabilityAvailable captures enum value "available"
 	CloudStoreAvailabilityAvailable string = "available"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// cloud_store
 	// CloudStore
 	// availability
 	// Availability
 	// unavailable
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// CloudStoreAvailabilityUnavailable captures enum value "unavailable"
 	CloudStoreAvailabilityUnavailable string = "unavailable"
 )
@@ -191,6 +215,10 @@ func (m *CloudStore) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAggregate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateAvailability(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -223,6 +251,20 @@ func (m *CloudStore) contextValidateLinks(ctx context.Context, formats strfmt.Re
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *CloudStore) contextValidateAggregate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Aggregate != nil {
+		if err := m.Aggregate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aggregate")
 			}
 			return err
 		}
@@ -297,6 +339,44 @@ func (m *CloudStore) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *CloudStore) UnmarshalBinary(b []byte) error {
 	var res CloudStore
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// CloudStoreAggregate Aggregate
+//
+// swagger:model CloudStoreAggregate
+type CloudStoreAggregate struct {
+
+	// name
+	// Example: aggr1
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this cloud store aggregate
+func (m *CloudStoreAggregate) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this cloud store aggregate based on context it is used
+func (m *CloudStoreAggregate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *CloudStoreAggregate) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *CloudStoreAggregate) UnmarshalBinary(b []byte) error {
+	var res CloudStoreAggregate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -625,5 +705,3 @@ func (m *CloudStoreUnavailableReason) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -336,7 +336,6 @@ func (d *RestClient) VolumeList(
 	params := storage.NewVolumeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
@@ -344,7 +343,7 @@ func (d *RestClient) VolumeList(
 	params.SetNameQueryParameter(ToStringPointer(pattern))
 	params.SetStateQueryParameter(ToStringPointer(models.VolumeStateOnline))
 	params.SetStyleQueryParameter(ToStringPointer(models.VolumeStyleFlexvol))
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.VolumeCollectionGet(params, d.authInfo)
 
@@ -438,7 +437,6 @@ func (d *RestClient) VolumeCreate(
 	params := storage.NewVolumeCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(size)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
@@ -596,7 +594,7 @@ func (d RestClient) VolumeMount(
 	}
 
 	if volume.Nas != nil {
-		if volume.Nas.Path == junctionPath {
+		if volume.Nas.Path != nil && *volume.Nas.Path == junctionPath {
 			Logc(ctx).Debug("already mounted to the correct junction path, nothing to do")
 			return nil
 		}
@@ -610,7 +608,7 @@ func (d RestClient) VolumeMount(
 	params.UUIDPathParameter = uuid
 
 	volumeInfo := &models.Volume{
-		Nas: &models.VolumeNas{Path: junctionPath},
+		Nas: &models.VolumeNas{Path: ToStringPointer(junctionPath)},
 	}
 	params.SetInfo(volumeInfo)
 
@@ -967,7 +965,6 @@ func (d *RestClient) SnapshotCreate(
 	params := storage.NewSnapshotCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	params.VolumeUUIDPathParameter = volumeUUID
 
@@ -1007,12 +1004,11 @@ func (d *RestClient) SnapshotList(
 	params := storage.NewSnapshotCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	params.VolumeUUIDPathParameter = volumeUUID
 
 	params.SVMNameQueryParameter = ToStringPointer(d.config.SVM)
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.SnapshotCollectionGet(params, d.authInfo)
 
@@ -1062,13 +1058,12 @@ func (d *RestClient) SnapshotListByName(
 	params := storage.NewSnapshotCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	params.VolumeUUIDPathParameter = volumeUUID
 	params.NameQueryParameter = ToStringPointer(snapshotName)
 
 	params.SVMNameQueryParameter = ToStringPointer(d.config.SVM)
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	return d.api.Storage.SnapshotCollectionGet(params, d.authInfo)
 }
@@ -1181,10 +1176,9 @@ func (d RestClient) VolumeListAllBackedBySnapshot(
 	params := storage.NewVolumeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	params.SVMNameQueryParameter = &d.config.SVM
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	params.SetCloneParentVolumeNameQueryParameter(ToStringPointer(volumeName))
 	params.SetCloneParentSnapshotNameQueryParameter(ToStringPointer(snapshotName))
@@ -1258,7 +1252,6 @@ func (d RestClient) volumeCloneCreate(
 	params := storage.NewVolumeCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	cloneInfo := &models.VolumeClone{
 		ParentVolume: &models.VolumeCloneParentVolume{
@@ -1310,7 +1303,6 @@ func (d RestClient) IgroupCreate(
 	params := san.NewIgroupCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	igroupInfo := &models.Igroup{
 		Name:     initiatorGroupName,
@@ -1447,11 +1439,9 @@ func (d RestClient) IgroupList(ctx context.Context, pattern string) (*san.Igroup
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
 
-	params.ReturnRecords = ToBoolPointer(true)
-
 	params.SVMNameQueryParameter = &d.config.SVM
 	params.SetNameQueryParameter(ToStringPointer(pattern))
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.San.IgroupCollectionGet(params, d.authInfo)
 
@@ -1536,7 +1526,6 @@ func (d RestClient) LunCreate(
 	params := san.NewLunCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(size)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
@@ -1609,11 +1598,9 @@ func (d RestClient) LunList(
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
 
-	params.ReturnRecords = ToBoolPointer(true)
-
 	params.SVMNameQueryParameter = &d.config.SVM
 	params.SetNameQueryParameter(ToStringPointer(pattern))
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.San.LunCollectionGet(params, d.authInfo)
 
@@ -1689,10 +1676,8 @@ func (d RestClient) NetworkIPInterfacesList(
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
 
-	params.ReturnRecords = ToBoolPointer(true)
-
 	params.SVMNameQueryParameter = &d.config.SVM
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Networking.NetworkIPInterfacesGet(params, d.authInfo)
 
@@ -1746,12 +1731,10 @@ func (d RestClient) NetInterfaceGetDataLIFs(
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
 
-	params.ReturnRecords = ToBoolPointer(true)
-
 	params.ServicesQueryParameter = ToStringPointer(fmt.Sprintf("data_%v", protocol))
 
 	params.SVMNameQueryParameter = &d.config.SVM
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	lifResponse, err := d.api.Networking.NetworkIPInterfacesGet(params, d.authInfo)
 	if err != nil {
@@ -1787,7 +1770,7 @@ func (d *RestClient) JobGet(
 	params.HTTPClient = d.httpClient
 	params.UUIDPathParameter = jobUUID
 
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need, this forces ALL fields
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need, this forces ALL fields
 
 	return d.api.Cluster.JobGet(params, d.authInfo)
 }
@@ -1938,10 +1921,9 @@ func (d *RestClient) AggregateList(
 
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	params.SetNameQueryParameter(ToStringPointer(pattern))
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.AggregateCollectionGet(params, d.authInfo)
 
@@ -2011,10 +1993,9 @@ func (d *RestClient) SvmList(
 
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	params.SetNameQueryParameter(ToStringPointer(pattern))
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Svm.SvmCollectionGet(params, d.authInfo)
 
@@ -2101,9 +2082,8 @@ func (d *RestClient) ClusterInfo(
 	params := cluster.NewClusterGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	return d.api.Cluster.ClusterGet(params, d.authInfo)
 }
@@ -2144,10 +2124,9 @@ func (d *RestClient) NodeList(
 
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	params.SetNameQueryParameter(ToStringPointer(pattern))
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Cluster.NodesGet(params, d.authInfo)
 
@@ -2466,7 +2445,6 @@ func (d RestClient) ExportPolicyCreate(
 	params := nas.NewExportPolicyCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	exportPolicyInfo := &models.ExportPolicy{
 		Name: policy,
@@ -2504,11 +2482,10 @@ func (d *RestClient) ExportPolicyList(
 
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 	params.SVMNameQueryParameter = &d.config.SVM
 
 	params.SetNameQueryParameter(ToStringPointer(pattern))
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Nas.ExportPolicyCollectionGet(params, d.authInfo)
 
@@ -2603,10 +2580,9 @@ func (d RestClient) ExportRuleList(
 
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 	params.PolicyIDPathParameter = exportPolicy.ID
 
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Nas.ExportRuleCollectionGet(params, d.authInfo)
 
@@ -2768,7 +2744,6 @@ func (d RestClient) FlexGroupCreate(
 	params := storage.NewVolumeCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	// TODO merge this with VolumeCreate as much as possible, Style is the main difference between the two
 	volumeInfo := &models.Volume{
@@ -2956,7 +2931,6 @@ func (d RestClient) FlexGroupGetAll(ctx context.Context, pattern string) (*stora
 	params := storage.NewVolumeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
@@ -2964,7 +2938,7 @@ func (d RestClient) FlexGroupGetAll(ctx context.Context, pattern string) (*stora
 	params.SetNameQueryParameter(ToStringPointer(pattern))
 	params.SetStateQueryParameter(ToStringPointer(models.VolumeStateOnline))
 	params.SetStyleQueryParameter(ToStringPointer(models.VolumeStyleFlexgroup))
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.VolumeCollectionGet(params, d.authInfo)
 
@@ -3020,7 +2994,6 @@ func (d RestClient) QtreeCreate(
 	params := storage.NewQtreeCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	qtreeInfo := &models.Qtree{
 		Name: name,
@@ -3158,14 +3131,13 @@ func (d RestClient) QtreeList(
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
 	params.SVMNameQueryParameter = &d.config.SVM
 	params.SetNameQueryParameter(ToStringPointer(namePattern))         // Qtree name prefix
 	params.SetVolumeNameQueryParameter(ToStringPointer(volumePattern)) // Flexvol name prefix
-	params.SetFields([]string{"**"})                                   // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"})                     // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
 
@@ -3216,13 +3188,12 @@ func (d RestClient) QtreeGetByPath(
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
 	params.SVMNameQueryParameter = &d.config.SVM
 	params.SetPathQueryParameter(ToStringPointer(path))
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
 
@@ -3257,14 +3228,13 @@ func (d RestClient) QtreeGetByName(
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
 	params.SVMNameQueryParameter = &d.config.SVM
 	params.SetNameQueryParameter(ToStringPointer(name))
 	params.SetVolumeNameQueryParameter(ToStringPointer(volumeName))
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
 
@@ -3298,13 +3268,12 @@ func (d RestClient) QtreeCount(
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
 	params.SVMNameQueryParameter = &d.config.SVM
 	params.SetVolumeNameQueryParameter(ToStringPointer(volume)) // Flexvol name
-	params.SetFields([]string{"**"})                            // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"})              // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
 
@@ -3369,14 +3338,13 @@ func (d RestClient) QtreeExists(
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
 	params.SVMNameQueryParameter = &d.config.SVM
 	params.SetNameQueryParameter(ToStringPointer(name))                // Qtree name
 	params.SetVolumeNameQueryParameter(ToStringPointer(volumePattern)) // Flexvol name prefix
-	params.SetFields([]string{"**"})                                   // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"})                     // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
 
@@ -3450,14 +3418,13 @@ func (d RestClient) QtreeGet(
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
 	params.SVMNameQueryParameter = &d.config.SVM
 	params.SetNameQueryParameter(ToStringPointer(name))          // qtree name
 	params.SetVolumeNameQueryParameter(ToStringPointer(pattern)) // Flexvol name prefix
-	params.SetFields([]string{"**"})                             // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"})               // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
 
@@ -3497,13 +3464,12 @@ func (d RestClient) QtreeGetAll(
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
 	params.SVMNameQueryParameter = &d.config.SVM
 	params.SetVolumeNameQueryParameter(ToStringPointer(pattern)) // Flexvol name prefix
-	params.SetFields([]string{"**"})                             // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"})               // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.QtreeCollectionGet(params, d.authInfo)
 
@@ -3675,7 +3641,6 @@ func (d RestClient) QuotaSetEntry(
 	params := storage.NewQuotaRuleCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	quotaRuleInfo := &models.QuotaRule{
 		Qtree: &models.QuotaRuleQtree{
@@ -3731,7 +3696,6 @@ func (d RestClient) QuotaGetEntry(
 	params := storage.NewQuotaRuleCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
@@ -3741,7 +3705,7 @@ func (d RestClient) QuotaGetEntry(
 	params.VolumeUUIDQueryParameter = &qtree.Volume.UUID
 
 	// TODO Limit the returned data to only the disk limit
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.QuotaRuleCollectionGet(params, d.authInfo)
 
@@ -3802,7 +3766,6 @@ func (d RestClient) QuotaEntryList(
 	params := storage.NewQuotaRuleCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
-	params.ReturnRecords = ToBoolPointer(true)
 
 	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
@@ -3810,7 +3773,7 @@ func (d RestClient) QuotaEntryList(
 	params.VolumeNameQueryParameter = ToStringPointer(volumeName)
 
 	// TODO Limit the returned data to only the disk limit
-	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.QuotaRuleCollectionGet(params, d.authInfo)
 

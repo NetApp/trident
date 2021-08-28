@@ -107,33 +107,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vdi_on_san
 	// VdiOnSan
 	// hypervisor
 	// Hypervisor
 	// hyper_v
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VdiOnSanHypervisorHyperv captures enum value "hyper_v"
 	VdiOnSanHypervisorHyperv string = "hyper_v"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vdi_on_san
 	// VdiOnSan
 	// hypervisor
 	// Hypervisor
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VdiOnSanHypervisorVmware captures enum value "vmware"
 	VdiOnSanHypervisorVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// vdi_on_san
 	// VdiOnSan
 	// hypervisor
 	// Hypervisor
 	// xen
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VdiOnSanHypervisorXen captures enum value "xen"
 	VdiOnSanHypervisorXen string = "xen"
 )
@@ -480,33 +480,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VdiOnSanDesktopsStorageService
 	// VdiOnSanDesktopsStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VdiOnSanDesktopsStorageServiceNameExtreme captures enum value "extreme"
 	VdiOnSanDesktopsStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VdiOnSanDesktopsStorageService
 	// VdiOnSanDesktopsStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VdiOnSanDesktopsStorageServiceNamePerformance captures enum value "performance"
 	VdiOnSanDesktopsStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VdiOnSanDesktopsStorageService
 	// VdiOnSanDesktopsStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VdiOnSanDesktopsStorageServiceNameValue captures enum value "value"
 	VdiOnSanDesktopsStorageServiceNameValue string = "value"
 )
@@ -560,11 +560,11 @@ func (m *VdiOnSanDesktopsStorageService) UnmarshalBinary(b []byte) error {
 // swagger:model VdiOnSanProtectionType
 type VdiOnSanProtectionType struct {
 
-	// The local rpo of the application.
+	// The local RPO of the application.
 	// Enum: [hourly none]
 	LocalRpo string `json:"local_rpo,omitempty"`
 
-	// The remote rpo of the application.
+	// The remote RPO of the application.
 	// Enum: [none zero]
 	RemoteRpo string `json:"remote_rpo,omitempty"`
 }
@@ -601,23 +601,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VdiOnSanProtectionType
 	// VdiOnSanProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VdiOnSanProtectionTypeLocalRpoHourly captures enum value "hourly"
 	VdiOnSanProtectionTypeLocalRpoHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VdiOnSanProtectionType
 	// VdiOnSanProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VdiOnSanProtectionTypeLocalRpoNone captures enum value "none"
 	VdiOnSanProtectionTypeLocalRpoNone string = "none"
 )
@@ -657,23 +657,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VdiOnSanProtectionType
 	// VdiOnSanProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VdiOnSanProtectionTypeRemoteRpoNone captures enum value "none"
 	VdiOnSanProtectionTypeRemoteRpoNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VdiOnSanProtectionType
 	// VdiOnSanProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VdiOnSanProtectionTypeRemoteRpoZero captures enum value "zero"
 	VdiOnSanProtectionTypeRemoteRpoZero string = "zero"
 )
@@ -721,5 +721,3 @@ func (m *VdiOnSanProtectionType) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

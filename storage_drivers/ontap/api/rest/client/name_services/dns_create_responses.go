@@ -93,10 +93,11 @@ func NewDNSCreateDefault(code int) *DNSCreateDefault {
 | 8847393    | Top level domain name is invalid |
 | 8847399    | One or more of the specified DNS servers do not exist or cannot be reached |
 | 8847394    | FQDN name violated the limitations |
+| 8847403    | Scope specified is invalid for the specified SVM |
 | 9240587    | FQDN name cannot be empty |
 | 9240588    | FQDN name is too long. Maximum supported length: 255 characters  |
 | 9240590    | FQDN name is reserved. Following names are reserved: "all", "local" and "localhost" |
-| 9240607    | One of the FQDN labels is too long. Maximum supported length: 63 characters |
+| 9240607    | One of the FQDN labels is too long. Maximum supported length is 63 characters |
 | 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
 

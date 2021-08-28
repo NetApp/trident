@@ -266,7 +266,7 @@ func (a *Client) SnaplockFileRetentionGet(params *SnaplockFileRetentionGetParams
 }
 
 /*
-  SnaplockFileRetentionTimeModify Updates the SnapLock retention time of a file or extends the retention time of a WORM file. Input parameter expiry_time expects the date in ISO 8601 format or infinite.
+  SnaplockFileRetentionTimeModify Updates the SnapLock retention time of a file or extends the retention time of a WORM file. Input parameter "expiry_time" expects the date in ISO 8601 format, "infinite", or "unspecified".
 ### Related ONTAP commands
 * `volume file retention set`
 ### Learn more
@@ -693,8 +693,6 @@ func (a *Client) SnaplockLegalHoldDelete(params *SnaplockLegalHoldDeleteParams, 
 
 /*
   SnaplockLegalHoldFilesGet Displays the list of files for the specified litigation ID.
-### Learn more
-* [`DOC /storage/snaplock/litigations/{litigation.id}/files`](#docs-snaplock-storage_snaplock_litigations_{litigation.id}_files)
 */
 func (a *Client) SnaplockLegalHoldFilesGet(params *SnaplockLegalHoldFilesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockLegalHoldFilesGetOK, error) {
 	// TODO: Validate the params before sending

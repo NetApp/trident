@@ -28,7 +28,7 @@ type VsiOnNas struct {
 	// hyper v access
 	HypervAccess *VsiOnNasHypervAccess `json:"hyper_v_access,omitempty"`
 
-	// The list of NFS access controls.
+	// The list of NFS access controls. You must provide either 'host' or 'access' to enable NFS access.
 	NfsAccess []*AppNfsAccess `json:"nfs_access,omitempty"`
 
 	// protection type
@@ -407,33 +407,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnNasDatastoreStorageService
 	// VsiOnNasDatastoreStorageService
 	// name
 	// Name
 	// extreme
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnNasDatastoreStorageServiceNameExtreme captures enum value "extreme"
 	VsiOnNasDatastoreStorageServiceNameExtreme string = "extreme"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnNasDatastoreStorageService
 	// VsiOnNasDatastoreStorageService
 	// name
 	// Name
 	// performance
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnNasDatastoreStorageServiceNamePerformance captures enum value "performance"
 	VsiOnNasDatastoreStorageServiceNamePerformance string = "performance"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnNasDatastoreStorageService
 	// VsiOnNasDatastoreStorageService
 	// name
 	// Name
 	// value
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnNasDatastoreStorageServiceNameValue captures enum value "value"
 	VsiOnNasDatastoreStorageServiceNameValue string = "value"
 )
@@ -551,11 +551,11 @@ func (m *VsiOnNasHypervAccess) UnmarshalBinary(b []byte) error {
 // swagger:model VsiOnNasProtectionType
 type VsiOnNasProtectionType struct {
 
-	// The local rpo of the application.
+	// The local RPO of the application.
 	// Enum: [hourly none]
 	LocalRpo string `json:"local_rpo,omitempty"`
 
-	// The remote rpo of the application.
+	// The remote RPO of the application.
 	// Enum: [none zero]
 	RemoteRpo string `json:"remote_rpo,omitempty"`
 }
@@ -592,23 +592,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnNasProtectionType
 	// VsiOnNasProtectionType
 	// local_rpo
 	// LocalRpo
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnNasProtectionTypeLocalRpoHourly captures enum value "hourly"
 	VsiOnNasProtectionTypeLocalRpoHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnNasProtectionType
 	// VsiOnNasProtectionType
 	// local_rpo
 	// LocalRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnNasProtectionTypeLocalRpoNone captures enum value "none"
 	VsiOnNasProtectionTypeLocalRpoNone string = "none"
 )
@@ -648,23 +648,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnNasProtectionType
 	// VsiOnNasProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnNasProtectionTypeRemoteRpoNone captures enum value "none"
 	VsiOnNasProtectionTypeRemoteRpoNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// VsiOnNasProtectionType
 	// VsiOnNasProtectionType
 	// remote_rpo
 	// RemoteRpo
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// VsiOnNasProtectionTypeRemoteRpoZero captures enum value "zero"
 	VsiOnNasProtectionTypeRemoteRpoZero string = "zero"
 )
@@ -712,5 +712,3 @@ func (m *VsiOnNasProtectionType) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

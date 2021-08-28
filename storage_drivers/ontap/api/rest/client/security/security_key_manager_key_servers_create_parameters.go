@@ -72,7 +72,7 @@ type SecurityKeyManagerKeyServersCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* UUID.
 
@@ -98,11 +98,11 @@ func (o *SecurityKeyManagerKeyServersCreateParams) WithDefaults() *SecurityKeyMa
 // All values with no default are reset to their zero value.
 func (o *SecurityKeyManagerKeyServersCreateParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 	)
 
 	val := SecurityKeyManagerKeyServersCreateParams{
-		ReturnRecords: &returnRecordsDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -155,15 +155,15 @@ func (o *SecurityKeyManagerKeyServersCreateParams) SetInfo(info *models.KeyServe
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the security key manager key servers create params
-func (o *SecurityKeyManagerKeyServersCreateParams) WithReturnRecords(returnRecords *bool) *SecurityKeyManagerKeyServersCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the security key manager key servers create params
+func (o *SecurityKeyManagerKeyServersCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecurityKeyManagerKeyServersCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the security key manager key servers create params
-func (o *SecurityKeyManagerKeyServersCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the security key manager key servers create params
+func (o *SecurityKeyManagerKeyServersCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WithUUIDPathParameter adds the uuid to the security key manager key servers create params
@@ -190,13 +190,13 @@ func (o *SecurityKeyManagerKeyServersCreateParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {

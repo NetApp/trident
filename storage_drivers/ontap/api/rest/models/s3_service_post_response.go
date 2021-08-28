@@ -294,5 +294,3 @@ func (m *S3ServicePostResponseRecordsItems0) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

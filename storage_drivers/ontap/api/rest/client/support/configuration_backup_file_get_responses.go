@@ -51,19 +51,19 @@ func NewConfigurationBackupFileGetOK() *ConfigurationBackupFileGetOK {
 OK
 */
 type ConfigurationBackupFileGetOK struct {
-	Payload *models.ConfigurationBackupFileResponse
+	Payload *models.ConfigurationBackupFile
 }
 
 func (o *ConfigurationBackupFileGetOK) Error() string {
 	return fmt.Sprintf("[GET /support/configuration-backup/backups/{node.uuid}/{name}][%d] configurationBackupFileGetOK  %+v", 200, o.Payload)
 }
-func (o *ConfigurationBackupFileGetOK) GetPayload() *models.ConfigurationBackupFileResponse {
+func (o *ConfigurationBackupFileGetOK) GetPayload() *models.ConfigurationBackupFile {
 	return o.Payload
 }
 
 func (o *ConfigurationBackupFileGetOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ConfigurationBackupFileResponse)
+	o.Payload = new(models.ConfigurationBackupFile)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

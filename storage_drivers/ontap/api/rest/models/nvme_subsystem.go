@@ -63,7 +63,7 @@ type NvmeSubsystem struct {
 	SerialNumber string `json:"serial_number,omitempty"`
 
 	// The NVMe namespaces mapped to the NVMe subsystem.<br/>
-	// There is an added cost to retrieving property values for `subsystem_maps`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+	// There is an added cost to retrieving property values for `subsystem_maps`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Read Only: true
 	SubsystemMaps []*NvmeSubsystemSubsystemMapsItems0 `json:"subsystem_maps,omitempty"`
@@ -84,6 +84,10 @@ type NvmeSubsystem struct {
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
+
+	// Vendor-specific identifiers (UUIDs) optionally assigned to an NVMe subsystem when the subsystem is created. The identifiers are used to enable vendor-specific NVMe protocol features. The identifiers are provided by a host application vendor and shared with NetApp prior to a joint product release. Creating an NVMe subsystem with an unknown or non-specific identifier will have no effect on the NVMe subsystem. Refer to the ONTAP SAN Administration Guide for a list of the supported vendor-specific identifiers. After a subsystem is created, the vendor-specific identifiers cannot be changed or removed. Optional in POST.
+	//
+	VendorUuids []string `json:"vendor_uuids,omitempty"`
 }
 
 // Validate validates this nvme subsystem
@@ -240,33 +244,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nvme_subsystem
 	// NvmeSubsystem
 	// os_type
 	// OsType
 	// linux
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeSubsystemOsTypeLinux captures enum value "linux"
 	NvmeSubsystemOsTypeLinux string = "linux"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nvme_subsystem
 	// NvmeSubsystem
 	// os_type
 	// OsType
 	// vmware
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeSubsystemOsTypeVmware captures enum value "vmware"
 	NvmeSubsystemOsTypeVmware string = "vmware"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nvme_subsystem
 	// NvmeSubsystem
 	// os_type
 	// OsType
 	// windows
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NvmeSubsystemOsTypeWindows captures enum value "windows"
 	NvmeSubsystemOsTypeWindows string = "windows"
 )
@@ -1520,5 +1524,3 @@ func (m *NvmeSubsystemSvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

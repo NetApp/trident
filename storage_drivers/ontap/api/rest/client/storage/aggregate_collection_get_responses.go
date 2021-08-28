@@ -86,13 +86,23 @@ func NewAggregateCollectionGetDefault(code int) *AggregateCollectionGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 787092 | The target field cannot be specified for this operation. |
+| 918138 | Internal error. Failed to get encryption operation status. |
 | 8586225 | Encountered unexpected error in retrieving metrics and statistics for an aggregate. |
 | 19726341 | Not enough eligible spare disks are available on the node. |
 | 19726344 | No recommendation can be made for this cluster. |
-| 19726357 | Aggregate recommendations are not supported on MetroCluster. |
+| 19726357 | Aggregate recommendations are not supported on MetroCluster with Fibre Channel (FC). |
 | 19726358 | Aggregate recommendations are not supported on ONTAP Cloud. |
 | 19726382 | Another provisioning operation is in progress on this cluster. Wait a few minutes, and try the operation again. |
 | 19726386 | Encountered an error when retrieving licensing information on this cluster. |
+| 19726387 | No recommendation can be provided for this cluster within the license capacity. |
+| 19726401 | Aggregate recommendations are not supported when the DR group is not in the "normal" state. |
+| 19726402 | Internal error. Unable to determine the MetroCluster configuration state. |
+| 19726403 | Aggregate recommendation is not supported when there are no healthy target connections to remote storage. |
+| 19726404 | The recommended mirrored aggregate couldn't use all the attached capacity in one of the SyncMirror pools. Make sure that the remote and local storage is symmetrically wired. |
+| 19726405 | Not all local and remote disks attached to the node have been auto-partitioned. |
+| 19726406 | Aggregate recommendations are not supported on this node because remote and local storage is not symmetrically wired. |
+| 196608055 | Aggregate recommendation is not supported on this node because it does not support NetApp Aggregate Encryption (NAE). |
+| 196608206 | Internal error. Failed to get encryption operation status. |
 
 */
 type AggregateCollectionGetDefault struct {

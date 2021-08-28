@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// SnapmirrorPolicy SnapMirror policy information
+// SnapmirrorPolicy SnapMirror policy information. SnapMirror policy can either be of type "async" or "sync".<br>The policy type "async" can be associated with a SnapMirror relationship that has either the FlexVol volume or FlexGroup volume or SVM as the endpoint.<br>The policy type "sync" along with "sync_type" as "sync" or "strict_sync" can be associated with a SnapMirror relationship that has FlexVol volume as the endpoint. The policy type "sync" can have a "sync_type" of either "sync", "strict_sync" or "automated_failover". If the "sync_type" is "sync" then a write success is returned to the client after writing the data to the source endpoint and before writing the data to the destination endpoint. If the "sync_type" is "strict_sync" then a write success is returned to the client after writing the data to the both source and destination endpoints.<br>If the "sync_type" is "automated_failover" then the policy can be associated with a SnapMirror relationship that has Consistency Group as the endpoint. Use the "sync" policy with "sync_type" as "automated_failover" to establish SnapMirror relationships for business continuity usecases. SnapMirror relationships with policy type as "sync" and "sync_type" as "automated_failover" can be monitored by the Mediator, if configured. In case the source Consistency Group endpoint is not reachable, the Mediator may trigger a failover to the destination Consistency Group endpoint.
 //
 // swagger:model snapmirror_policy
 type SnapmirrorPolicy struct {
@@ -27,7 +27,7 @@ type SnapmirrorPolicy struct {
 	// Comment associated with the policy.
 	Comment string `json:"comment,omitempty"`
 
-	// Specifies which configuration of the source SVM is replicated to the destination. This property is applicable only for SVM data protection and async policies.
+	// Specifies which configuration of the source SVM is replicated to the destination SVM. This property is applicable only for SVM data protection with "async" policy type.
 	// Enum: [full exclude_network_config exclude_network_and_protocol_config]
 	IdentityPreservation string `json:"identity_preservation,omitempty"`
 
@@ -35,10 +35,10 @@ type SnapmirrorPolicy struct {
 	// Example: Asynchronous
 	Name string `json:"name,omitempty"`
 
-	// Specifies whether network compression is enabled for transfers. This is applicable only to async policies.
+	// Specifies whether network compression is enabled for transfers. This is applicable only to the policies of type "async".
 	NetworkCompressionEnabled *bool `json:"network_compression_enabled,omitempty"`
 
-	// Policy on Snapshot copy retention. This is applicable only to async policies.
+	// Policy on Snapshot copy retention.
 	Retention []*SnapmirrorPolicyRule `json:"retention,omitempty"`
 
 	// Set to "svm" for policies owned by an SVM, otherwise set to "cluster".
@@ -53,7 +53,7 @@ type SnapmirrorPolicy struct {
 	SyncCommonSnapshotSchedule *SnapmirrorPolicySyncCommonSnapshotSchedule `json:"sync_common_snapshot_schedule,omitempty"`
 
 	// sync type
-	// Enum: [sync strict_sync active_sync]
+	// Enum: [sync strict_sync automated_failover]
 	SyncType string `json:"sync_type,omitempty"`
 
 	// Throttle in KB/s. Default to unlimited.
@@ -154,33 +154,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_policy
 	// SnapmirrorPolicy
 	// identity_preservation
 	// IdentityPreservation
 	// full
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorPolicyIdentityPreservationFull captures enum value "full"
 	SnapmirrorPolicyIdentityPreservationFull string = "full"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_policy
 	// SnapmirrorPolicy
 	// identity_preservation
 	// IdentityPreservation
 	// exclude_network_config
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorPolicyIdentityPreservationExcludeNetworkConfig captures enum value "exclude_network_config"
 	SnapmirrorPolicyIdentityPreservationExcludeNetworkConfig string = "exclude_network_config"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_policy
 	// SnapmirrorPolicy
 	// identity_preservation
 	// IdentityPreservation
 	// exclude_network_and_protocol_config
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorPolicyIdentityPreservationExcludeNetworkAndProtocolConfig captures enum value "exclude_network_and_protocol_config"
 	SnapmirrorPolicyIdentityPreservationExcludeNetworkAndProtocolConfig string = "exclude_network_and_protocol_config"
 )
@@ -244,23 +244,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_policy
 	// SnapmirrorPolicy
 	// scope
 	// Scope
 	// svm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorPolicyScopeSvm captures enum value "svm"
 	SnapmirrorPolicyScopeSvm string = "svm"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_policy
 	// SnapmirrorPolicy
 	// scope
 	// Scope
 	// cluster
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorPolicyScopeCluster captures enum value "cluster"
 	SnapmirrorPolicyScopeCluster string = "cluster"
 )
@@ -324,7 +324,7 @@ var snapmirrorPolicyTypeSyncTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["sync","strict_sync","active_sync"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["sync","strict_sync","automated_failover"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -334,35 +334,35 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_policy
 	// SnapmirrorPolicy
 	// sync_type
 	// SyncType
 	// sync
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorPolicySyncTypeSync captures enum value "sync"
 	SnapmirrorPolicySyncTypeSync string = "sync"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_policy
 	// SnapmirrorPolicy
 	// sync_type
 	// SyncType
 	// strict_sync
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorPolicySyncTypeStrictSync captures enum value "strict_sync"
 	SnapmirrorPolicySyncTypeStrictSync string = "strict_sync"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_policy
 	// SnapmirrorPolicy
 	// sync_type
 	// SyncType
-	// active_sync
-	// END RIPPY DEBUGGING
-	// SnapmirrorPolicySyncTypeActiveSync captures enum value "active_sync"
-	SnapmirrorPolicySyncTypeActiveSync string = "active_sync"
+	// automated_failover
+	// END DEBUGGING
+	// SnapmirrorPolicySyncTypeAutomatedFailover captures enum value "automated_failover"
+	SnapmirrorPolicySyncTypeAutomatedFailover string = "automated_failover"
 )
 
 // prop value enum
@@ -417,23 +417,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_policy
 	// SnapmirrorPolicy
 	// type
 	// Type
 	// async
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorPolicyTypeAsync captures enum value "async"
 	SnapmirrorPolicyTypeAsync string = "async"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snapmirror_policy
 	// SnapmirrorPolicy
 	// type
 	// Type
 	// sync
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnapmirrorPolicyTypeSync captures enum value "sync"
 	SnapmirrorPolicyTypeSync string = "sync"
 )
@@ -1246,5 +1246,3 @@ func (m *SnapmirrorPolicyTransferScheduleLinks) UnmarshalBinary(b []byte) error 
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

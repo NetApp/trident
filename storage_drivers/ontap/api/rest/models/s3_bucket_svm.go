@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -43,16 +44,27 @@ type S3BucketSvm struct {
 	LogicalUsedSize int64 `json:"logical_used_size,omitempty"`
 
 	// Specifies the name of the bucket. Bucket name is a string that can only contain the following combination of ASCII-range alphanumeric characters 0-9, a-z, ".", and "-".
-	// Example: bucket-1
+	// Example: bucket1
 	// Max Length: 63
 	// Min Length: 3
 	Name string `json:"name,omitempty"`
+
+	// policy
+	Policy *S3BucketSvmPolicy `json:"policy,omitempty"`
+
+	// qos policy
+	QosPolicy *S3BucketSvmQosPolicy `json:"qos_policy,omitempty"`
 
 	// Specifies the bucket size in bytes; ranges from 80MB to 64TB.
 	// Example: 1677721600
 	// Maximum: 7.0368744177664e+13
 	// Minimum: 8.388608e+07
 	Size int64 `json:"size,omitempty"`
+
+	// Specifies the storage service level of the FlexGroup volume on which the bucket should be created. Valid values are "value", "performance" or "extreme".
+	// Example: value
+	// Enum: [value performance extreme]
+	StorageServiceLevel string `json:"storage_service_level,omitempty"`
 
 	// svm
 	Svm *S3BucketSvmSvm `json:"svm,omitempty"`
@@ -91,7 +103,19 @@ func (m *S3BucketSvm) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validatePolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateQosPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageServiceLevel(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -202,6 +226,40 @@ func (m *S3BucketSvm) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *S3BucketSvm) validatePolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.Policy) { // not required
+		return nil
+	}
+
+	if m.Policy != nil {
+		if err := m.Policy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketSvm) validateQosPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.QosPolicy) { // not required
+		return nil
+	}
+
+	if m.QosPolicy != nil {
+		if err := m.QosPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *S3BucketSvm) validateSize(formats strfmt.Registry) error {
 	if swag.IsZero(m.Size) { // not required
 		return nil
@@ -212,6 +270,72 @@ func (m *S3BucketSvm) validateSize(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaximumInt("size", "body", m.Size, 7.0368744177664e+13, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var s3BucketSvmTypeStorageServiceLevelPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["value","performance","extreme"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		s3BucketSvmTypeStorageServiceLevelPropEnum = append(s3BucketSvmTypeStorageServiceLevelPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// s3_bucket_svm
+	// S3BucketSvm
+	// storage_service_level
+	// StorageServiceLevel
+	// value
+	// END DEBUGGING
+	// S3BucketSvmStorageServiceLevelValue captures enum value "value"
+	S3BucketSvmStorageServiceLevelValue string = "value"
+
+	// BEGIN DEBUGGING
+	// s3_bucket_svm
+	// S3BucketSvm
+	// storage_service_level
+	// StorageServiceLevel
+	// performance
+	// END DEBUGGING
+	// S3BucketSvmStorageServiceLevelPerformance captures enum value "performance"
+	S3BucketSvmStorageServiceLevelPerformance string = "performance"
+
+	// BEGIN DEBUGGING
+	// s3_bucket_svm
+	// S3BucketSvm
+	// storage_service_level
+	// StorageServiceLevel
+	// extreme
+	// END DEBUGGING
+	// S3BucketSvmStorageServiceLevelExtreme captures enum value "extreme"
+	S3BucketSvmStorageServiceLevelExtreme string = "extreme"
+)
+
+// prop value enum
+func (m *S3BucketSvm) validateStorageServiceLevelEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3BucketSvmTypeStorageServiceLevelPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *S3BucketSvm) validateStorageServiceLevel(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageServiceLevel) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStorageServiceLevelEnum("storage_service_level", "body", m.StorageServiceLevel); err != nil {
 		return err
 	}
 
@@ -280,6 +404,14 @@ func (m *S3BucketSvm) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateQosPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -334,6 +466,34 @@ func (m *S3BucketSvm) contextValidateLogicalUsedSize(ctx context.Context, format
 
 	if err := validate.ReadOnly(ctx, "logical_used_size", "body", int64(m.LogicalUsedSize)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *S3BucketSvm) contextValidatePolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Policy != nil {
+		if err := m.Policy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketSvm) contextValidateQosPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.QosPolicy != nil {
+		if err := m.QosPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -609,6 +769,299 @@ func (m *S3BucketSvmEncryption) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *S3BucketSvmEncryption) UnmarshalBinary(b []byte) error {
 	var res S3BucketSvmEncryption
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketSvmPolicy A policy is an object associated with a bucket. It defines resource (bucket, folder, or object) permissions. These policies get evaluated when an S3 user makes a request by executing a specific command. The user must be part of the principal (user or group) specified in the policy. Permissions in the policies determine whether the request is allowed or denied.
+//
+// swagger:model S3BucketSvmPolicy
+type S3BucketSvmPolicy struct {
+
+	// Specifies bucket access policy statement.
+	Statements []*S3BucketPolicyStatement `json:"statements,omitempty"`
+}
+
+// Validate validates this s3 bucket svm policy
+func (m *S3BucketSvmPolicy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateStatements(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketSvmPolicy) validateStatements(formats strfmt.Registry) error {
+	if swag.IsZero(m.Statements) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Statements); i++ {
+		if swag.IsZero(m.Statements[i]) { // not required
+			continue
+		}
+
+		if m.Statements[i] != nil {
+			if err := m.Statements[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("policy" + "." + "statements" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket svm policy based on the context it is used
+func (m *S3BucketSvmPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateStatements(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketSvmPolicy) contextValidateStatements(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Statements); i++ {
+
+		if m.Statements[i] != nil {
+			if err := m.Statements[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("policy" + "." + "statements" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketSvmPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketSvmPolicy) UnmarshalBinary(b []byte) error {
+	var res S3BucketSvmPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketSvmQosPolicy Specifes "qos_policy.max_throughput_iops" and/or "qos_policy.max_throughput_mbps" or "qos_policy.min_throughput_iops". Specifes "min_throughput_iops" is only supported on volumes hosted on a node that is flash optimized. A pre-created QoS policy can also be used by specifying "qos_policy.name" or "qos_policy.uuid" properties. Setting or assigning a QoS policy to a bucket is not supported if its containing volume or SVM already has a QoS policy attached.
+//
+// swagger:model S3BucketSvmQosPolicy
+type S3BucketSvmQosPolicy struct {
+
+	// links
+	Links *S3BucketSvmQosPolicyLinks `json:"_links,omitempty"`
+
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 10000
+	MaxThroughputIops int64 `json:"max_throughput_iops,omitempty"`
+
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 500
+	MaxThroughputMbps int64 `json:"max_throughput_mbps,omitempty"`
+
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 2000
+	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
+
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 500
+	MinThroughputMbps int64 `json:"min_throughput_mbps,omitempty"`
+
+	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
+	// Example: performance
+	Name string `json:"name,omitempty"`
+
+	// The QoS policy group UUID. This is mutually exclusive with name and other QoS attributes during POST and PATCH.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this s3 bucket svm qos policy
+func (m *S3BucketSvmQosPolicy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketSvmQosPolicy) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket svm qos policy based on the context it is used
+func (m *S3BucketSvmQosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketSvmQosPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketSvmQosPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketSvmQosPolicy) UnmarshalBinary(b []byte) error {
+	var res S3BucketSvmQosPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketSvmQosPolicyLinks s3 bucket svm qos policy links
+//
+// swagger:model S3BucketSvmQosPolicyLinks
+type S3BucketSvmQosPolicyLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this s3 bucket svm qos policy links
+func (m *S3BucketSvmQosPolicyLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketSvmQosPolicyLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket svm qos policy links based on the context it is used
+func (m *S3BucketSvmQosPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketSvmQosPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qos_policy" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketSvmQosPolicyLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketSvmQosPolicyLinks) UnmarshalBinary(b []byte) error {
+	var res S3BucketSvmQosPolicyLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -977,5 +1430,3 @@ func (m *S3BucketSvmVolumeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -146,23 +146,23 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// algorithm
 	// Algorithm
 	// md5
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintAlgorithmMd5 captures enum value "md5"
 	SnaplockFileFingerprintAlgorithmMd5 string = "md5"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// algorithm
 	// Algorithm
 	// sha256
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintAlgorithmSha256 captures enum value "sha256"
 	SnaplockFileFingerprintAlgorithmSha256 string = "sha256"
 )
@@ -202,53 +202,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// file_type
 	// FileType
 	// worm
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintFileTypeWorm captures enum value "worm"
 	SnaplockFileFingerprintFileTypeWorm string = "worm"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// file_type
 	// FileType
 	// worm_appendable
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintFileTypeWormAppendable captures enum value "worm_appendable"
 	SnaplockFileFingerprintFileTypeWormAppendable string = "worm_appendable"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// file_type
 	// FileType
 	// worm_active_log
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintFileTypeWormActiveLog captures enum value "worm_active_log"
 	SnaplockFileFingerprintFileTypeWormActiveLog string = "worm_active_log"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// file_type
 	// FileType
 	// worm_log
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintFileTypeWormLog captures enum value "worm_log"
 	SnaplockFileFingerprintFileTypeWormLog string = "worm_log"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// file_type
 	// FileType
 	// regular
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintFileTypeRegular captures enum value "regular"
 	SnaplockFileFingerprintFileTypeRegular string = "regular"
 )
@@ -288,33 +288,33 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// scope
 	// Scope
 	// data_and_metadata
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintScopeDataAndMetadata captures enum value "data_and_metadata"
 	SnaplockFileFingerprintScopeDataAndMetadata string = "data_and_metadata"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// scope
 	// Scope
 	// data_only
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintScopeDataOnly captures enum value "data_only"
 	SnaplockFileFingerprintScopeDataOnly string = "data_only"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// scope
 	// Scope
 	// metadata_only
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintScopeMetadataOnly captures enum value "metadata_only"
 	SnaplockFileFingerprintScopeMetadataOnly string = "metadata_only"
 )
@@ -354,43 +354,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// state
 	// State
 	// in_progress
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintStateInProgress captures enum value "in_progress"
 	SnaplockFileFingerprintStateInProgress string = "in_progress"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintStateFailed captures enum value "failed"
 	SnaplockFileFingerprintStateFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// state
 	// State
 	// aborting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintStateAborting captures enum value "aborting"
 	SnaplockFileFingerprintStateAborting string = "aborting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// snaplock_file_fingerprint
 	// SnaplockFileFingerprint
 	// state
 	// State
 	// completed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SnaplockFileFingerprintStateCompleted captures enum value "completed"
 	SnaplockFileFingerprintStateCompleted string = "completed"
 )
@@ -1070,5 +1070,3 @@ func (m *SnaplockFileFingerprintVolumeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

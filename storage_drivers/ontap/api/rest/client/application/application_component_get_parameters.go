@@ -70,7 +70,7 @@ type ApplicationComponentGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -142,15 +142,15 @@ func (o *ApplicationComponentGetParams) SetApplicationUUIDPathParameter(applicat
 	o.ApplicationUUIDPathParameter = applicationUUID
 }
 
-// WithFields adds the fields to the application component get params
-func (o *ApplicationComponentGetParams) WithFields(fields []string) *ApplicationComponentGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the application component get params
+func (o *ApplicationComponentGetParams) WithFieldsQueryParameter(fields []string) *ApplicationComponentGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the application component get params
-func (o *ApplicationComponentGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the application component get params
+func (o *ApplicationComponentGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the application component get params
@@ -177,7 +177,7 @@ func (o *ApplicationComponentGetParams) WriteToRequest(r runtime.ClientRequest, 
 		return err
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *ApplicationComponentGetParams) WriteToRequest(r runtime.ClientRequest, 
 
 // bindParamApplicationComponentGet binds the parameter fields
 func (o *ApplicationComponentGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

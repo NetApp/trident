@@ -100,13 +100,13 @@ type CifsServiceCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* MetricDuration.
 
@@ -220,7 +220,7 @@ type CifsServiceCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -228,7 +228,7 @@ type CifsServiceCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -236,13 +236,25 @@ type CifsServiceCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
+
+	/* SecurityEncryptDcConnection.
+
+	   Filter by security.encrypt_dc_connection
+	*/
+	SecurityEncryptDcConnectionQueryParameter *bool
 
 	/* SecurityKdcEncryption.
 
 	   Filter by security.kdc_encryption
 	*/
 	SecurityKdcEncryptionQueryParameter *bool
+
+	/* SecurityLmCompatibilityLevel.
+
+	   Filter by security.lm_compatibility_level
+	*/
+	SecurityLmCompatibilityLevelQueryParameter *string
 
 	/* SecurityRestrictAnonymous.
 
@@ -370,14 +382,14 @@ func (o *CifsServiceCollectionGetParams) WithDefaults() *CifsServiceCollectionGe
 // All values with no default are reset to their zero value.
 func (o *CifsServiceCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := CifsServiceCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -485,26 +497,26 @@ func (o *CifsServiceCollectionGetParams) SetEnabledQueryParameter(enabled *bool)
 	o.EnabledQueryParameter = enabled
 }
 
-// WithFields adds the fields to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithFields(fields []string) *CifsServiceCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithFieldsQueryParameter(fields []string) *CifsServiceCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithMaxRecords adds the maxRecords to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithMaxRecords(maxRecords *int64) *CifsServiceCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CifsServiceCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithMetricDurationQueryParameter adds the metricDuration to the cifs service collection get params
@@ -705,37 +717,48 @@ func (o *CifsServiceCollectionGetParams) SetNetbiosWinsServersQueryParameter(net
 	o.NetbiosWinsServersQueryParameter = netbiosWinsServers
 }
 
-// WithOrderBy adds the orderBy to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithOrderBy(orderBy []string) *CifsServiceCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CifsServiceCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithReturnRecords(returnRecords *bool) *CifsServiceCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CifsServiceCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CifsServiceCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CifsServiceCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
+}
+
+// WithSecurityEncryptDcConnectionQueryParameter adds the securityEncryptDcConnection to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityEncryptDcConnectionQueryParameter(securityEncryptDcConnection *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityEncryptDcConnectionQueryParameter(securityEncryptDcConnection)
+	return o
+}
+
+// SetSecurityEncryptDcConnectionQueryParameter adds the securityEncryptDcConnection to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityEncryptDcConnectionQueryParameter(securityEncryptDcConnection *bool) {
+	o.SecurityEncryptDcConnectionQueryParameter = securityEncryptDcConnection
 }
 
 // WithSecurityKdcEncryptionQueryParameter adds the securityKdcEncryption to the cifs service collection get params
@@ -747,6 +770,17 @@ func (o *CifsServiceCollectionGetParams) WithSecurityKdcEncryptionQueryParameter
 // SetSecurityKdcEncryptionQueryParameter adds the securityKdcEncryption to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) SetSecurityKdcEncryptionQueryParameter(securityKdcEncryption *bool) {
 	o.SecurityKdcEncryptionQueryParameter = securityKdcEncryption
+}
+
+// WithSecurityLmCompatibilityLevelQueryParameter adds the securityLmCompatibilityLevel to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityLmCompatibilityLevelQueryParameter(securityLmCompatibilityLevel *string) *CifsServiceCollectionGetParams {
+	o.SetSecurityLmCompatibilityLevelQueryParameter(securityLmCompatibilityLevel)
+	return o
+}
+
+// SetSecurityLmCompatibilityLevelQueryParameter adds the securityLmCompatibilityLevel to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityLmCompatibilityLevelQueryParameter(securityLmCompatibilityLevel *string) {
+	o.SecurityLmCompatibilityLevelQueryParameter = securityLmCompatibilityLevel
 }
 
 // WithSecurityRestrictAnonymousQueryParameter adds the securityRestrictAnonymous to the cifs service collection get params
@@ -1057,7 +1091,7 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1068,13 +1102,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -1391,7 +1425,7 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -1402,13 +1436,13 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -1419,18 +1453,35 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityEncryptDcConnectionQueryParameter != nil {
+
+		// query param security.encrypt_dc_connection
+		var qrSecurityEncryptDcConnection bool
+
+		if o.SecurityEncryptDcConnectionQueryParameter != nil {
+			qrSecurityEncryptDcConnection = *o.SecurityEncryptDcConnectionQueryParameter
+		}
+		qSecurityEncryptDcConnection := swag.FormatBool(qrSecurityEncryptDcConnection)
+		if qSecurityEncryptDcConnection != "" {
+
+			if err := r.SetQueryParam("security.encrypt_dc_connection", qSecurityEncryptDcConnection); err != nil {
 				return err
 			}
 		}
@@ -1448,6 +1499,23 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qSecurityKdcEncryption != "" {
 
 			if err := r.SetQueryParam("security.kdc_encryption", qSecurityKdcEncryption); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityLmCompatibilityLevelQueryParameter != nil {
+
+		// query param security.lm_compatibility_level
+		var qrSecurityLmCompatibilityLevel string
+
+		if o.SecurityLmCompatibilityLevelQueryParameter != nil {
+			qrSecurityLmCompatibilityLevel = *o.SecurityLmCompatibilityLevelQueryParameter
+		}
+		qSecurityLmCompatibilityLevel := qrSecurityLmCompatibilityLevel
+		if qSecurityLmCompatibilityLevel != "" {
+
+			if err := r.SetQueryParam("security.lm_compatibility_level", qSecurityLmCompatibilityLevel); err != nil {
 				return err
 			}
 		}
@@ -1767,7 +1835,7 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamCifsServiceCollectionGet binds the parameter fields
 func (o *CifsServiceCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1784,7 +1852,7 @@ func (o *CifsServiceCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamCifsServiceCollectionGet binds the parameter order_by
 func (o *CifsServiceCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

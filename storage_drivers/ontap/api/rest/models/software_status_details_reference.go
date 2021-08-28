@@ -24,7 +24,7 @@ type SoftwareStatusDetailsReference struct {
 	Action *SoftwareStatusDetailsReferenceAction `json:"action,omitempty"`
 
 	// End time for each status phase.
-	// Example: 2019-02-02 19:00:00
+	// Example: 2019-02-02T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -41,7 +41,7 @@ type SoftwareStatusDetailsReference struct {
 	Node *SoftwareStatusDetailsReferenceNode `json:"node,omitempty"`
 
 	// Start time for each status phase.
-	// Example: 2019-02-02 19:00:00
+	// Example: 2019-02-02T19:00:00Z
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -176,93 +176,93 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_status_details_reference
 	// SoftwareStatusDetailsReference
 	// state
 	// State
 	// in_progress
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareStatusDetailsReferenceStateInProgress captures enum value "in_progress"
 	SoftwareStatusDetailsReferenceStateInProgress string = "in_progress"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_status_details_reference
 	// SoftwareStatusDetailsReference
 	// state
 	// State
 	// waiting
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareStatusDetailsReferenceStateWaiting captures enum value "waiting"
 	SoftwareStatusDetailsReferenceStateWaiting string = "waiting"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_status_details_reference
 	// SoftwareStatusDetailsReference
 	// state
 	// State
 	// paused_by_user
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareStatusDetailsReferenceStatePausedByUser captures enum value "paused_by_user"
 	SoftwareStatusDetailsReferenceStatePausedByUser string = "paused_by_user"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_status_details_reference
 	// SoftwareStatusDetailsReference
 	// state
 	// State
 	// paused_on_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareStatusDetailsReferenceStatePausedOnError captures enum value "paused_on_error"
 	SoftwareStatusDetailsReferenceStatePausedOnError string = "paused_on_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_status_details_reference
 	// SoftwareStatusDetailsReference
 	// state
 	// State
 	// completed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareStatusDetailsReferenceStateCompleted captures enum value "completed"
 	SoftwareStatusDetailsReferenceStateCompleted string = "completed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_status_details_reference
 	// SoftwareStatusDetailsReference
 	// state
 	// State
 	// canceled
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareStatusDetailsReferenceStateCanceled captures enum value "canceled"
 	SoftwareStatusDetailsReferenceStateCanceled string = "canceled"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_status_details_reference
 	// SoftwareStatusDetailsReference
 	// state
 	// State
 	// failed
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareStatusDetailsReferenceStateFailed captures enum value "failed"
 	SoftwareStatusDetailsReferenceStateFailed string = "failed"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_status_details_reference
 	// SoftwareStatusDetailsReference
 	// state
 	// State
 	// pause_pending
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareStatusDetailsReferenceStatePausePending captures enum value "pause_pending"
 	SoftwareStatusDetailsReferenceStatePausePending string = "pause_pending"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// software_status_details_reference
 	// SoftwareStatusDetailsReference
 	// state
 	// State
 	// cancel_pending
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// SoftwareStatusDetailsReferenceStateCancelPending captures enum value "cancel_pending"
 	SoftwareStatusDetailsReferenceStateCancelPending string = "cancel_pending"
 )
@@ -427,6 +427,9 @@ func (m *SoftwareStatusDetailsReference) UnmarshalBinary(b []byte) error {
 // swagger:model SoftwareStatusDetailsReferenceAction
 type SoftwareStatusDetailsReferenceAction struct {
 
+	// Error code corresponding the status error
+	Code int64 `json:"code,omitempty"`
+
 	// Corrective action to be taken to resolve the status error.
 	Message string `json:"message,omitempty"`
 }
@@ -468,6 +471,10 @@ func (m *SoftwareStatusDetailsReferenceAction) UnmarshalBinary(b []byte) error {
 //
 // swagger:model SoftwareStatusDetailsReferenceIssue
 type SoftwareStatusDetailsReferenceIssue struct {
+
+	// Error code corresponding to update status
+	// Example: 10551399
+	Code int64 `json:"code,omitempty"`
 
 	// Update status details
 	// Example: Image update complete
@@ -563,5 +570,3 @@ func (m *SoftwareStatusDetailsReferenceNode) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

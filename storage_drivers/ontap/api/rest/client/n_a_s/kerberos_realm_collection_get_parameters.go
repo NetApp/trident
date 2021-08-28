@@ -88,7 +88,7 @@ type KerberosRealmCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* KdcIP.
 
@@ -112,7 +112,7 @@ type KerberosRealmCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -124,7 +124,7 @@ type KerberosRealmCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -132,7 +132,7 @@ type KerberosRealmCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -140,7 +140,7 @@ type KerberosRealmCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SvmName.
 
@@ -172,14 +172,14 @@ func (o *KerberosRealmCollectionGetParams) WithDefaults() *KerberosRealmCollecti
 // All values with no default are reset to their zero value.
 func (o *KerberosRealmCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := KerberosRealmCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -265,15 +265,15 @@ func (o *KerberosRealmCollectionGetParams) SetEncryptionTypesQueryParameter(encr
 	o.EncryptionTypesQueryParameter = encryptionTypes
 }
 
-// WithFields adds the fields to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithFields(fields []string) *KerberosRealmCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithFieldsQueryParameter(fields []string) *KerberosRealmCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithKdcIPQueryParameter adds the kdcIP to the kerberos realm collection get params
@@ -309,15 +309,15 @@ func (o *KerberosRealmCollectionGetParams) SetKdcVendorQueryParameter(kdcVendor 
 	o.KdcVendorQueryParameter = kdcVendor
 }
 
-// WithMaxRecords adds the maxRecords to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithMaxRecords(maxRecords *int64) *KerberosRealmCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *KerberosRealmCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the kerberos realm collection get params
@@ -331,37 +331,37 @@ func (o *KerberosRealmCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithOrderBy(orderBy []string) *KerberosRealmCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *KerberosRealmCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithReturnRecords(returnRecords *bool) *KerberosRealmCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *KerberosRealmCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *KerberosRealmCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *KerberosRealmCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the kerberos realm collection get params
-func (o *KerberosRealmCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the kerberos realm collection get params
+func (o *KerberosRealmCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSVMNameQueryParameter adds the svmName to the kerberos realm collection get params
@@ -462,7 +462,7 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -524,13 +524,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -558,7 +558,7 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -569,13 +569,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -586,13 +586,13 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -645,7 +645,7 @@ func (o *KerberosRealmCollectionGetParams) WriteToRequest(r runtime.ClientReques
 
 // bindParamKerberosRealmCollectionGet binds the parameter fields
 func (o *KerberosRealmCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -662,7 +662,7 @@ func (o *KerberosRealmCollectionGetParams) bindParamFields(formats strfmt.Regist
 
 // bindParamKerberosRealmCollectionGet binds the parameter order_by
 func (o *KerberosRealmCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

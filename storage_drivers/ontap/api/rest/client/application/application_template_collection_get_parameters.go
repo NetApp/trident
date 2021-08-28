@@ -70,13 +70,13 @@ type ApplicationTemplateCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* MissingPrerequisites.
 
@@ -94,7 +94,7 @@ type ApplicationTemplateCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* Protocol.
 
@@ -108,7 +108,7 @@ type ApplicationTemplateCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -116,7 +116,7 @@ type ApplicationTemplateCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -136,14 +136,14 @@ func (o *ApplicationTemplateCollectionGetParams) WithDefaults() *ApplicationTemp
 // All values with no default are reset to their zero value.
 func (o *ApplicationTemplateCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := ApplicationTemplateCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -196,26 +196,26 @@ func (o *ApplicationTemplateCollectionGetParams) SetDescriptionQueryParameter(de
 	o.DescriptionQueryParameter = description
 }
 
-// WithFields adds the fields to the application template collection get params
-func (o *ApplicationTemplateCollectionGetParams) WithFields(fields []string) *ApplicationTemplateCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the application template collection get params
+func (o *ApplicationTemplateCollectionGetParams) WithFieldsQueryParameter(fields []string) *ApplicationTemplateCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the application template collection get params
-func (o *ApplicationTemplateCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the application template collection get params
+func (o *ApplicationTemplateCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithMaxRecords adds the maxRecords to the application template collection get params
-func (o *ApplicationTemplateCollectionGetParams) WithMaxRecords(maxRecords *int64) *ApplicationTemplateCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the application template collection get params
+func (o *ApplicationTemplateCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ApplicationTemplateCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the application template collection get params
-func (o *ApplicationTemplateCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the application template collection get params
+func (o *ApplicationTemplateCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithMissingPrerequisitesQueryParameter adds the missingPrerequisites to the application template collection get params
@@ -240,15 +240,15 @@ func (o *ApplicationTemplateCollectionGetParams) SetNameQueryParameter(name *str
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the application template collection get params
-func (o *ApplicationTemplateCollectionGetParams) WithOrderBy(orderBy []string) *ApplicationTemplateCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the application template collection get params
+func (o *ApplicationTemplateCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ApplicationTemplateCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the application template collection get params
-func (o *ApplicationTemplateCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the application template collection get params
+func (o *ApplicationTemplateCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithProtocolQueryParameter adds the protocol to the application template collection get params
@@ -262,26 +262,26 @@ func (o *ApplicationTemplateCollectionGetParams) SetProtocolQueryParameter(proto
 	o.ProtocolQueryParameter = protocol
 }
 
-// WithReturnRecords adds the returnRecords to the application template collection get params
-func (o *ApplicationTemplateCollectionGetParams) WithReturnRecords(returnRecords *bool) *ApplicationTemplateCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the application template collection get params
+func (o *ApplicationTemplateCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ApplicationTemplateCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the application template collection get params
-func (o *ApplicationTemplateCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the application template collection get params
+func (o *ApplicationTemplateCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the application template collection get params
-func (o *ApplicationTemplateCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ApplicationTemplateCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the application template collection get params
+func (o *ApplicationTemplateCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ApplicationTemplateCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the application template collection get params
-func (o *ApplicationTemplateCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the application template collection get params
+func (o *ApplicationTemplateCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -309,7 +309,7 @@ func (o *ApplicationTemplateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -320,13 +320,13 @@ func (o *ApplicationTemplateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -371,7 +371,7 @@ func (o *ApplicationTemplateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -399,13 +399,13 @@ func (o *ApplicationTemplateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -416,13 +416,13 @@ func (o *ApplicationTemplateCollectionGetParams) WriteToRequest(r runtime.Client
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -441,7 +441,7 @@ func (o *ApplicationTemplateCollectionGetParams) WriteToRequest(r runtime.Client
 
 // bindParamApplicationTemplateCollectionGet binds the parameter fields
 func (o *ApplicationTemplateCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -458,7 +458,7 @@ func (o *ApplicationTemplateCollectionGetParams) bindParamFields(formats strfmt.
 
 // bindParamApplicationTemplateCollectionGet binds the parameter order_by
 func (o *ApplicationTemplateCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -178,7 +178,7 @@ type AggregateCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* HomeNodeName.
 
@@ -192,11 +192,23 @@ type AggregateCollectionGetParams struct {
 	*/
 	HomeNodeUUIDQueryParameter *string
 
+	/* InactiveDataReportingEnabled.
+
+	   Filter by inactive_data_reporting.enabled
+	*/
+	InactiveDataReportingEnabledQueryParameter *bool
+
+	/* InactiveDataReportingStartTime.
+
+	   Filter by inactive_data_reporting.start_time
+	*/
+	InactiveDataReportingStartTimeQueryParameter *string
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* MetricDuration.
 
@@ -310,7 +322,7 @@ type AggregateCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* Recommend.
 
@@ -324,7 +336,7 @@ type AggregateCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -332,7 +344,7 @@ type AggregateCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* ShowSpares.
 
@@ -363,6 +375,12 @@ type AggregateCollectionGetParams struct {
 	   Filter by space.block_storage.inactive_user_data
 	*/
 	SpaceBlockStorageInactiveUserDataQueryParameter *int64
+
+	/* SpaceBlockStoragePhysicalUsed.
+
+	   Filter by space.block_storage.physical_used
+	*/
+	SpaceBlockStoragePhysicalUsedQueryParameter *int64
 
 	/* SpaceBlockStorageSize.
 
@@ -417,6 +435,24 @@ type AggregateCollectionGetParams struct {
 	   Filter by space.efficiency_without_snapshots.savings
 	*/
 	SpaceEfficiencyWithoutSnapshotsSavingsQueryParameter *int64
+
+	/* SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed.
+
+	   Filter by space.efficiency_without_snapshots_flexclones.logical_used
+	*/
+	SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter *int64
+
+	/* SpaceEfficiencyWithoutSnapshotsFlexclonesRatio.
+
+	   Filter by space.efficiency_without_snapshots_flexclones.ratio
+	*/
+	SpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter *float64
+
+	/* SpaceEfficiencyWithoutSnapshotsFlexclonesSavings.
+
+	   Filter by space.efficiency_without_snapshots_flexclones.savings
+	*/
+	SpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter *int64
 
 	/* SpaceFootprint.
 
@@ -538,14 +574,14 @@ func (o *AggregateCollectionGetParams) WithDefaults() *AggregateCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *AggregateCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := AggregateCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -796,15 +832,15 @@ func (o *AggregateCollectionGetParams) SetDrHomeNodeUUIDQueryParameter(drHomeNod
 	o.DrHomeNodeUUIDQueryParameter = drHomeNodeUUID
 }
 
-// WithFields adds the fields to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithFields(fields []string) *AggregateCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithFieldsQueryParameter(fields []string) *AggregateCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithHomeNodeNameQueryParameter adds the homeNodeName to the aggregate collection get params
@@ -829,15 +865,37 @@ func (o *AggregateCollectionGetParams) SetHomeNodeUUIDQueryParameter(homeNodeUUI
 	o.HomeNodeUUIDQueryParameter = homeNodeUUID
 }
 
-// WithMaxRecords adds the maxRecords to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithMaxRecords(maxRecords *int64) *AggregateCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithInactiveDataReportingEnabledQueryParameter adds the inactiveDataReportingEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInactiveDataReportingEnabledQueryParameter(inactiveDataReportingEnabled *bool) *AggregateCollectionGetParams {
+	o.SetInactiveDataReportingEnabledQueryParameter(inactiveDataReportingEnabled)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetInactiveDataReportingEnabledQueryParameter adds the inactiveDataReportingEnabled to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInactiveDataReportingEnabledQueryParameter(inactiveDataReportingEnabled *bool) {
+	o.InactiveDataReportingEnabledQueryParameter = inactiveDataReportingEnabled
+}
+
+// WithInactiveDataReportingStartTimeQueryParameter adds the inactiveDataReportingStartTime to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithInactiveDataReportingStartTimeQueryParameter(inactiveDataReportingStartTime *string) *AggregateCollectionGetParams {
+	o.SetInactiveDataReportingStartTimeQueryParameter(inactiveDataReportingStartTime)
+	return o
+}
+
+// SetInactiveDataReportingStartTimeQueryParameter adds the inactiveDataReportingStartTime to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetInactiveDataReportingStartTimeQueryParameter(inactiveDataReportingStartTime *string) {
+	o.InactiveDataReportingStartTimeQueryParameter = inactiveDataReportingStartTime
+}
+
+// WithMaxRecordsQueryParameter adds the maxRecords to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *AggregateCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
+	return o
+}
+
+// SetMaxRecordsQueryParameter adds the maxRecords to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithMetricDurationQueryParameter adds the metricDuration to the aggregate collection get params
@@ -1038,15 +1096,15 @@ func (o *AggregateCollectionGetParams) SetNodeUUIDQueryParameter(nodeUUID *strin
 	o.NodeUUIDQueryParameter = nodeUUID
 }
 
-// WithOrderBy adds the orderBy to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithOrderBy(orderBy []string) *AggregateCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *AggregateCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithRecommendQueryParameter adds the recommend to the aggregate collection get params
@@ -1060,26 +1118,26 @@ func (o *AggregateCollectionGetParams) SetRecommendQueryParameter(recommend *boo
 	o.RecommendQueryParameter = recommend
 }
 
-// WithReturnRecords adds the returnRecords to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithReturnRecords(returnRecords *bool) *AggregateCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AggregateCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the aggregate collection get params
-func (o *AggregateCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *AggregateCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AggregateCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the aggregate collection get params
-func (o *AggregateCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithShowSparesQueryParameter adds the showSpares to the aggregate collection get params
@@ -1135,6 +1193,17 @@ func (o *AggregateCollectionGetParams) WithSpaceBlockStorageInactiveUserDataQuer
 // SetSpaceBlockStorageInactiveUserDataQueryParameter adds the spaceBlockStorageInactiveUserData to the aggregate collection get params
 func (o *AggregateCollectionGetParams) SetSpaceBlockStorageInactiveUserDataQueryParameter(spaceBlockStorageInactiveUserData *int64) {
 	o.SpaceBlockStorageInactiveUserDataQueryParameter = spaceBlockStorageInactiveUserData
+}
+
+// WithSpaceBlockStoragePhysicalUsedQueryParameter adds the spaceBlockStoragePhysicalUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceBlockStoragePhysicalUsedQueryParameter(spaceBlockStoragePhysicalUsed *int64) *AggregateCollectionGetParams {
+	o.SetSpaceBlockStoragePhysicalUsedQueryParameter(spaceBlockStoragePhysicalUsed)
+	return o
+}
+
+// SetSpaceBlockStoragePhysicalUsedQueryParameter adds the spaceBlockStoragePhysicalUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceBlockStoragePhysicalUsedQueryParameter(spaceBlockStoragePhysicalUsed *int64) {
+	o.SpaceBlockStoragePhysicalUsedQueryParameter = spaceBlockStoragePhysicalUsed
 }
 
 // WithSpaceBlockStorageSizeQueryParameter adds the spaceBlockStorageSize to the aggregate collection get params
@@ -1234,6 +1303,39 @@ func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsSaving
 // SetSpaceEfficiencyWithoutSnapshotsSavingsQueryParameter adds the spaceEfficiencyWithoutSnapshotsSavings to the aggregate collection get params
 func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsSavingsQueryParameter(spaceEfficiencyWithoutSnapshotsSavings *int64) {
 	o.SpaceEfficiencyWithoutSnapshotsSavingsQueryParameter = spaceEfficiencyWithoutSnapshotsSavings
+}
+
+// WithSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter adds the spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed)
+	return o
+}
+
+// SetSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter adds the spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed *int64) {
+	o.SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter = spaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed
+}
+
+// WithSpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter adds the spaceEfficiencyWithoutSnapshotsFlexclonesRatio to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesRatio *float64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesRatio)
+	return o
+}
+
+// SetSpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter adds the spaceEfficiencyWithoutSnapshotsFlexclonesRatio to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesRatio *float64) {
+	o.SpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter = spaceEfficiencyWithoutSnapshotsFlexclonesRatio
+}
+
+// WithSpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter adds the spaceEfficiencyWithoutSnapshotsFlexclonesSavings to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesSavings *int64) *AggregateCollectionGetParams {
+	o.SetSpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesSavings)
+	return o
+}
+
+// SetSpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter adds the spaceEfficiencyWithoutSnapshotsFlexclonesSavings to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter(spaceEfficiencyWithoutSnapshotsFlexclonesSavings *int64) {
+	o.SpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter = spaceEfficiencyWithoutSnapshotsFlexclonesSavings
 }
 
 // WithSpaceFootprintQueryParameter adds the spaceFootprint to the aggregate collection get params
@@ -1754,7 +1856,7 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -1799,13 +1901,47 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.InactiveDataReportingEnabledQueryParameter != nil {
+
+		// query param inactive_data_reporting.enabled
+		var qrInactiveDataReportingEnabled bool
+
+		if o.InactiveDataReportingEnabledQueryParameter != nil {
+			qrInactiveDataReportingEnabled = *o.InactiveDataReportingEnabledQueryParameter
+		}
+		qInactiveDataReportingEnabled := swag.FormatBool(qrInactiveDataReportingEnabled)
+		if qInactiveDataReportingEnabled != "" {
+
+			if err := r.SetQueryParam("inactive_data_reporting.enabled", qInactiveDataReportingEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.InactiveDataReportingStartTimeQueryParameter != nil {
+
+		// query param inactive_data_reporting.start_time
+		var qrInactiveDataReportingStartTime string
+
+		if o.InactiveDataReportingStartTimeQueryParameter != nil {
+			qrInactiveDataReportingStartTime = *o.InactiveDataReportingStartTimeQueryParameter
+		}
+		qInactiveDataReportingStartTime := qrInactiveDataReportingStartTime
+		if qInactiveDataReportingStartTime != "" {
+
+			if err := r.SetQueryParam("inactive_data_reporting.start_time", qInactiveDataReportingStartTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -2122,7 +2258,7 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -2150,13 +2286,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -2167,13 +2303,13 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -2264,6 +2400,23 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qSpaceBlockStorageInactiveUserData != "" {
 
 			if err := r.SetQueryParam("space.block_storage.inactive_user_data", qSpaceBlockStorageInactiveUserData); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceBlockStoragePhysicalUsedQueryParameter != nil {
+
+		// query param space.block_storage.physical_used
+		var qrSpaceBlockStoragePhysicalUsed int64
+
+		if o.SpaceBlockStoragePhysicalUsedQueryParameter != nil {
+			qrSpaceBlockStoragePhysicalUsed = *o.SpaceBlockStoragePhysicalUsedQueryParameter
+		}
+		qSpaceBlockStoragePhysicalUsed := swag.FormatInt64(qrSpaceBlockStoragePhysicalUsed)
+		if qSpaceBlockStoragePhysicalUsed != "" {
+
+			if err := r.SetQueryParam("space.block_storage.physical_used", qSpaceBlockStoragePhysicalUsed); err != nil {
 				return err
 			}
 		}
@@ -2417,6 +2570,57 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qSpaceEfficiencyWithoutSnapshotsSavings != "" {
 
 			if err := r.SetQueryParam("space.efficiency_without_snapshots.savings", qSpaceEfficiencyWithoutSnapshotsSavings); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter != nil {
+
+		// query param space.efficiency_without_snapshots_flexclones.logical_used
+		var qrSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed int64
+
+		if o.SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter != nil {
+			qrSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed = *o.SpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsedQueryParameter
+		}
+		qSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed := swag.FormatInt64(qrSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed)
+		if qSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed != "" {
+
+			if err := r.SetQueryParam("space.efficiency_without_snapshots_flexclones.logical_used", qSpaceEfficiencyWithoutSnapshotsFlexclonesLogicalUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter != nil {
+
+		// query param space.efficiency_without_snapshots_flexclones.ratio
+		var qrSpaceEfficiencyWithoutSnapshotsFlexclonesRatio float64
+
+		if o.SpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter != nil {
+			qrSpaceEfficiencyWithoutSnapshotsFlexclonesRatio = *o.SpaceEfficiencyWithoutSnapshotsFlexclonesRatioQueryParameter
+		}
+		qSpaceEfficiencyWithoutSnapshotsFlexclonesRatio := swag.FormatFloat64(qrSpaceEfficiencyWithoutSnapshotsFlexclonesRatio)
+		if qSpaceEfficiencyWithoutSnapshotsFlexclonesRatio != "" {
+
+			if err := r.SetQueryParam("space.efficiency_without_snapshots_flexclones.ratio", qSpaceEfficiencyWithoutSnapshotsFlexclonesRatio); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter != nil {
+
+		// query param space.efficiency_without_snapshots_flexclones.savings
+		var qrSpaceEfficiencyWithoutSnapshotsFlexclonesSavings int64
+
+		if o.SpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter != nil {
+			qrSpaceEfficiencyWithoutSnapshotsFlexclonesSavings = *o.SpaceEfficiencyWithoutSnapshotsFlexclonesSavingsQueryParameter
+		}
+		qSpaceEfficiencyWithoutSnapshotsFlexclonesSavings := swag.FormatInt64(qrSpaceEfficiencyWithoutSnapshotsFlexclonesSavings)
+		if qSpaceEfficiencyWithoutSnapshotsFlexclonesSavings != "" {
+
+			if err := r.SetQueryParam("space.efficiency_without_snapshots_flexclones.savings", qSpaceEfficiencyWithoutSnapshotsFlexclonesSavings); err != nil {
 				return err
 			}
 		}
@@ -2719,7 +2923,7 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamAggregateCollectionGet binds the parameter fields
 func (o *AggregateCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -2736,7 +2940,7 @@ func (o *AggregateCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamAggregateCollectionGet binds the parameter order_by
 func (o *AggregateCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

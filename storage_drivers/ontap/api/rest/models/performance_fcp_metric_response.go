@@ -286,7 +286,7 @@ func (m *PerformanceFcpMetricResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PerformanceFcpMetricResponseRecordsItems0 Performance numbers, such as IOPS latency and throughput.
+// PerformanceFcpMetricResponseRecordsItems0 Performance numbers, such as IOPS latency and throughput, for SVM protocols.
 //
 // swagger:model PerformanceFcpMetricResponseRecordsItems0
 type PerformanceFcpMetricResponseRecordsItems0 struct {
@@ -307,17 +307,20 @@ type PerformanceFcpMetricResponseRecordsItems0 struct {
 	// latency
 	Latency *PerformanceFcpMetricResponseRecordsItems0Latency `json:"latency,omitempty"`
 
-	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
 	// Read Only: true
-	// Enum: [ok error partial_no_data partial_no_uuid partial_no_response partial_other_error negative_delta backfilled_data inconsistent_delta_time inconsistent_old_data]
+	// Enum: [ok error partial_no_data partial_no_response partial_other_error negative_delta not_found backfilled_data inconsistent_delta_time inconsistent_old_data partial_no_uuid]
 	Status string `json:"status,omitempty"`
+
+	// svm
+	Svm *PerformanceFcpMetricResponseRecordsItems0Svm `json:"svm,omitempty"`
 
 	// throughput
 	Throughput *PerformanceFcpMetricResponseRecordsItems0Throughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25T11:20:13Z
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -344,6 +347,10 @@ func (m *PerformanceFcpMetricResponseRecordsItems0) Validate(formats strfmt.Regi
 	}
 
 	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -392,63 +399,63 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// duration
 	// Duration
 	// PT15S
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0DurationPT15S captures enum value "PT15S"
 	PerformanceFcpMetricResponseRecordsItems0DurationPT15S string = "PT15S"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// duration
 	// Duration
 	// PT4M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0DurationPT4M captures enum value "PT4M"
 	PerformanceFcpMetricResponseRecordsItems0DurationPT4M string = "PT4M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// duration
 	// Duration
 	// PT30M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0DurationPT30M captures enum value "PT30M"
 	PerformanceFcpMetricResponseRecordsItems0DurationPT30M string = "PT30M"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// duration
 	// Duration
 	// PT2H
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0DurationPT2H captures enum value "PT2H"
 	PerformanceFcpMetricResponseRecordsItems0DurationPT2H string = "PT2H"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// duration
 	// Duration
 	// P1D
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0DurationP1D captures enum value "P1D"
 	PerformanceFcpMetricResponseRecordsItems0DurationP1D string = "P1D"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// duration
 	// Duration
 	// PT5M
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0DurationPT5M captures enum value "PT5M"
 	PerformanceFcpMetricResponseRecordsItems0DurationPT5M string = "PT5M"
 )
@@ -512,7 +519,7 @@ var performanceFcpMetricResponseRecordsItems0TypeStatusPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_response","partial_other_error","negative_delta","not_found","backfilled_data","inconsistent_delta_time","inconsistent_old_data","partial_no_uuid"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -522,105 +529,115 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// status
 	// Status
 	// ok
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0StatusOk captures enum value "ok"
 	PerformanceFcpMetricResponseRecordsItems0StatusOk string = "ok"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// status
 	// Status
 	// error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0StatusError captures enum value "error"
 	PerformanceFcpMetricResponseRecordsItems0StatusError string = "error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// status
 	// Status
 	// partial_no_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0StatusPartialNoData captures enum value "partial_no_data"
 	PerformanceFcpMetricResponseRecordsItems0StatusPartialNoData string = "partial_no_data"
 
-	// BEGIN RIPPY DEBUGGING
-	// PerformanceFcpMetricResponseRecordsItems0
-	// PerformanceFcpMetricResponseRecordsItems0
-	// status
-	// Status
-	// partial_no_uuid
-	// END RIPPY DEBUGGING
-	// PerformanceFcpMetricResponseRecordsItems0StatusPartialNoUUID captures enum value "partial_no_uuid"
-	PerformanceFcpMetricResponseRecordsItems0StatusPartialNoUUID string = "partial_no_uuid"
-
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// status
 	// Status
 	// partial_no_response
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0StatusPartialNoResponse captures enum value "partial_no_response"
 	PerformanceFcpMetricResponseRecordsItems0StatusPartialNoResponse string = "partial_no_response"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// status
 	// Status
 	// partial_other_error
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0StatusPartialOtherError captures enum value "partial_other_error"
 	PerformanceFcpMetricResponseRecordsItems0StatusPartialOtherError string = "partial_other_error"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// status
 	// Status
 	// negative_delta
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0StatusNegativeDelta captures enum value "negative_delta"
 	PerformanceFcpMetricResponseRecordsItems0StatusNegativeDelta string = "negative_delta"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
+	// PerformanceFcpMetricResponseRecordsItems0
+	// PerformanceFcpMetricResponseRecordsItems0
+	// status
+	// Status
+	// not_found
+	// END DEBUGGING
+	// PerformanceFcpMetricResponseRecordsItems0StatusNotFound captures enum value "not_found"
+	PerformanceFcpMetricResponseRecordsItems0StatusNotFound string = "not_found"
+
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// status
 	// Status
 	// backfilled_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0StatusBackfilledData captures enum value "backfilled_data"
 	PerformanceFcpMetricResponseRecordsItems0StatusBackfilledData string = "backfilled_data"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// status
 	// Status
 	// inconsistent_delta_time
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0StatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
 	PerformanceFcpMetricResponseRecordsItems0StatusInconsistentDeltaTime string = "inconsistent_delta_time"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0
 	// PerformanceFcpMetricResponseRecordsItems0
 	// status
 	// Status
 	// inconsistent_old_data
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// PerformanceFcpMetricResponseRecordsItems0StatusInconsistentOldData captures enum value "inconsistent_old_data"
 	PerformanceFcpMetricResponseRecordsItems0StatusInconsistentOldData string = "inconsistent_old_data"
+
+	// BEGIN DEBUGGING
+	// PerformanceFcpMetricResponseRecordsItems0
+	// PerformanceFcpMetricResponseRecordsItems0
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// PerformanceFcpMetricResponseRecordsItems0StatusPartialNoUUID captures enum value "partial_no_uuid"
+	PerformanceFcpMetricResponseRecordsItems0StatusPartialNoUUID string = "partial_no_uuid"
 )
 
 // prop value enum
@@ -639,6 +656,23 @@ func (m *PerformanceFcpMetricResponseRecordsItems0) validateStatus(formats strfm
 	// value enum
 	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *PerformanceFcpMetricResponseRecordsItems0) validateSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.Svm) { // not required
+		return nil
+	}
+
+	if m.Svm != nil {
+		if err := m.Svm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -694,6 +728,10 @@ func (m *PerformanceFcpMetricResponseRecordsItems0) ContextValidate(ctx context.
 	}
 
 	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -766,6 +804,20 @@ func (m *PerformanceFcpMetricResponseRecordsItems0) contextValidateStatus(ctx co
 
 	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *PerformanceFcpMetricResponseRecordsItems0) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Svm != nil {
+		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1006,13 +1058,49 @@ func (m *PerformanceFcpMetricResponseRecordsItems0Links) UnmarshalBinary(b []byt
 	return nil
 }
 
+// PerformanceFcpMetricResponseRecordsItems0Svm performance fcp metric response records items0 svm
+//
+// swagger:model PerformanceFcpMetricResponseRecordsItems0Svm
+type PerformanceFcpMetricResponseRecordsItems0Svm struct {
+
+	// The unique identifier of the SVM.
+	//
+	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this performance fcp metric response records items0 svm
+func (m *PerformanceFcpMetricResponseRecordsItems0Svm) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this performance fcp metric response records items0 svm based on context it is used
+func (m *PerformanceFcpMetricResponseRecordsItems0Svm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PerformanceFcpMetricResponseRecordsItems0Svm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PerformanceFcpMetricResponseRecordsItems0Svm) UnmarshalBinary(b []byte) error {
+	var res PerformanceFcpMetricResponseRecordsItems0Svm
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // PerformanceFcpMetricResponseRecordsItems0Throughput The rate of throughput bytes per second observed at the storage object.
 //
 // swagger:model PerformanceFcpMetricResponseRecordsItems0Throughput
 type PerformanceFcpMetricResponseRecordsItems0Throughput struct {
-
-	// Performance metric for other I/O operations. Other I/O operations can be metadata operations, such as directory lookups and so on.
-	Other int64 `json:"other,omitempty"`
 
 	// Performance metric for read I/O operations.
 	// Example: 200
@@ -1059,5 +1147,3 @@ func (m *PerformanceFcpMetricResponseRecordsItems0Throughput) UnmarshalBinary(b 
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

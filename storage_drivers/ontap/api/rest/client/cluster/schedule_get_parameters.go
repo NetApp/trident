@@ -64,7 +64,7 @@ type ScheduleGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *ScheduleGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the schedule get params
-func (o *ScheduleGetParams) WithFields(fields []string) *ScheduleGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the schedule get params
+func (o *ScheduleGetParams) WithFieldsQueryParameter(fields []string) *ScheduleGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the schedule get params
-func (o *ScheduleGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the schedule get params
+func (o *ScheduleGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the schedule get params
@@ -155,7 +155,7 @@ func (o *ScheduleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *ScheduleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 
 // bindParamScheduleGet binds the parameter fields
 func (o *ScheduleGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

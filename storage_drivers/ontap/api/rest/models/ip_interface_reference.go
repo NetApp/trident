@@ -316,5 +316,3 @@ func (m *IPInterfaceReferenceLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

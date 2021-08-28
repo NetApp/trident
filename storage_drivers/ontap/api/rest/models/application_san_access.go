@@ -254,13 +254,13 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationSanAccessBackingStorage
 	// ApplicationSanAccessBackingStorage
 	// type
 	// Type
 	// lun
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationSanAccessBackingStorageTypeLun captures enum value "lun"
 	ApplicationSanAccessBackingStorageTypeLun string = "lun"
 )
@@ -339,5 +339,3 @@ func (m *ApplicationSanAccessBackingStorage) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

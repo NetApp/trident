@@ -64,7 +64,7 @@ type NetworkEthernetBroadcastDomainsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* IpspaceName.
 
@@ -82,7 +82,7 @@ type NetworkEthernetBroadcastDomainsGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Mtu.
 
@@ -100,7 +100,7 @@ type NetworkEthernetBroadcastDomainsGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* PortsName.
 
@@ -126,7 +126,7 @@ type NetworkEthernetBroadcastDomainsGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -134,7 +134,7 @@ type NetworkEthernetBroadcastDomainsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* UUID.
 
@@ -160,14 +160,14 @@ func (o *NetworkEthernetBroadcastDomainsGetParams) WithDefaults() *NetworkEthern
 // All values with no default are reset to their zero value.
 func (o *NetworkEthernetBroadcastDomainsGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := NetworkEthernetBroadcastDomainsGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -209,15 +209,15 @@ func (o *NetworkEthernetBroadcastDomainsGetParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the network ethernet broadcast domains get params
-func (o *NetworkEthernetBroadcastDomainsGetParams) WithFields(fields []string) *NetworkEthernetBroadcastDomainsGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the network ethernet broadcast domains get params
+func (o *NetworkEthernetBroadcastDomainsGetParams) WithFieldsQueryParameter(fields []string) *NetworkEthernetBroadcastDomainsGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the network ethernet broadcast domains get params
-func (o *NetworkEthernetBroadcastDomainsGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the network ethernet broadcast domains get params
+func (o *NetworkEthernetBroadcastDomainsGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIpspaceNameQueryParameter adds the ipspaceName to the network ethernet broadcast domains get params
@@ -242,15 +242,15 @@ func (o *NetworkEthernetBroadcastDomainsGetParams) SetIpspaceUUIDQueryParameter(
 	o.IpspaceUUIDQueryParameter = ipspaceUUID
 }
 
-// WithMaxRecords adds the maxRecords to the network ethernet broadcast domains get params
-func (o *NetworkEthernetBroadcastDomainsGetParams) WithMaxRecords(maxRecords *int64) *NetworkEthernetBroadcastDomainsGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the network ethernet broadcast domains get params
+func (o *NetworkEthernetBroadcastDomainsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NetworkEthernetBroadcastDomainsGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the network ethernet broadcast domains get params
-func (o *NetworkEthernetBroadcastDomainsGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the network ethernet broadcast domains get params
+func (o *NetworkEthernetBroadcastDomainsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithMtuQueryParameter adds the mtu to the network ethernet broadcast domains get params
@@ -275,15 +275,15 @@ func (o *NetworkEthernetBroadcastDomainsGetParams) SetNameQueryParameter(name *s
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the network ethernet broadcast domains get params
-func (o *NetworkEthernetBroadcastDomainsGetParams) WithOrderBy(orderBy []string) *NetworkEthernetBroadcastDomainsGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the network ethernet broadcast domains get params
+func (o *NetworkEthernetBroadcastDomainsGetParams) WithOrderByQueryParameter(orderBy []string) *NetworkEthernetBroadcastDomainsGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the network ethernet broadcast domains get params
-func (o *NetworkEthernetBroadcastDomainsGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the network ethernet broadcast domains get params
+func (o *NetworkEthernetBroadcastDomainsGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithPortsNameQueryParameter adds the portsName to the network ethernet broadcast domains get params
@@ -319,26 +319,26 @@ func (o *NetworkEthernetBroadcastDomainsGetParams) SetPortsUUIDQueryParameter(po
 	o.PortsUUIDQueryParameter = portsUUID
 }
 
-// WithReturnRecords adds the returnRecords to the network ethernet broadcast domains get params
-func (o *NetworkEthernetBroadcastDomainsGetParams) WithReturnRecords(returnRecords *bool) *NetworkEthernetBroadcastDomainsGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the network ethernet broadcast domains get params
+func (o *NetworkEthernetBroadcastDomainsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NetworkEthernetBroadcastDomainsGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the network ethernet broadcast domains get params
-func (o *NetworkEthernetBroadcastDomainsGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the network ethernet broadcast domains get params
+func (o *NetworkEthernetBroadcastDomainsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the network ethernet broadcast domains get params
-func (o *NetworkEthernetBroadcastDomainsGetParams) WithReturnTimeout(returnTimeout *int64) *NetworkEthernetBroadcastDomainsGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the network ethernet broadcast domains get params
+func (o *NetworkEthernetBroadcastDomainsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *NetworkEthernetBroadcastDomainsGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the network ethernet broadcast domains get params
-func (o *NetworkEthernetBroadcastDomainsGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the network ethernet broadcast domains get params
+func (o *NetworkEthernetBroadcastDomainsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithUUIDQueryParameter adds the uuid to the network ethernet broadcast domains get params
@@ -360,7 +360,7 @@ func (o *NetworkEthernetBroadcastDomainsGetParams) WriteToRequest(r runtime.Clie
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -405,13 +405,13 @@ func (o *NetworkEthernetBroadcastDomainsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -456,7 +456,7 @@ func (o *NetworkEthernetBroadcastDomainsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -518,13 +518,13 @@ func (o *NetworkEthernetBroadcastDomainsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -535,13 +535,13 @@ func (o *NetworkEthernetBroadcastDomainsGetParams) WriteToRequest(r runtime.Clie
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -577,7 +577,7 @@ func (o *NetworkEthernetBroadcastDomainsGetParams) WriteToRequest(r runtime.Clie
 
 // bindParamNetworkEthernetBroadcastDomainsGet binds the parameter fields
 func (o *NetworkEthernetBroadcastDomainsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -594,7 +594,7 @@ func (o *NetworkEthernetBroadcastDomainsGetParams) bindParamFields(formats strfm
 
 // bindParamNetworkEthernetBroadcastDomainsGet binds the parameter order_by
 func (o *NetworkEthernetBroadcastDomainsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

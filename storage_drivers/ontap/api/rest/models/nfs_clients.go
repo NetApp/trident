@@ -27,6 +27,9 @@ type NfsClients struct {
 	//
 	ClientIP *string `json:"client_ip,omitempty"`
 
+	// export policy
+	ExportPolicy *NfsClientsExportPolicy `json:"export_policy,omitempty"`
+
 	// Specifies an ISO-8601 format of date and time to retrieve the idle time duration in hours, minutes, and seconds format.
 	//
 	// Example: P4DT84H30M5S
@@ -73,6 +76,10 @@ func (m *NfsClients) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateExportPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateNode(formats); err != nil {
 		res = append(res, err)
 	}
@@ -112,6 +119,23 @@ func (m *NfsClients) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *NfsClients) validateExportPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExportPolicy) { // not required
+		return nil
+	}
+
+	if m.ExportPolicy != nil {
+		if err := m.ExportPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("export_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *NfsClients) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
@@ -143,43 +167,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nfs_clients
 	// NfsClients
 	// protocol
 	// Protocol
 	// nfs
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsClientsProtocolNfs captures enum value "nfs"
 	NfsClientsProtocolNfs string = "nfs"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nfs_clients
 	// NfsClients
 	// protocol
 	// Protocol
 	// nfs3
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsClientsProtocolNfs3 captures enum value "nfs3"
 	NfsClientsProtocolNfs3 string = "nfs3"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nfs_clients
 	// NfsClients
 	// protocol
 	// Protocol
 	// nfs4
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsClientsProtocolNfs4 captures enum value "nfs4"
 	NfsClientsProtocolNfs4 string = "nfs4"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// nfs_clients
 	// NfsClients
 	// protocol
 	// Protocol
 	// nfs4.1
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// NfsClientsProtocolNfs4Dot1 captures enum value "nfs4.1"
 	NfsClientsProtocolNfs4Dot1 string = "nfs4.1"
 )
@@ -247,6 +271,10 @@ func (m *NfsClients) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateExportPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -275,6 +303,20 @@ func (m *NfsClients) contextValidateLinks(ctx context.Context, formats strfmt.Re
 		if err := m.Links.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsClients) contextValidateExportPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ExportPolicy != nil {
+		if err := m.ExportPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("export_policy")
 			}
 			return err
 		}
@@ -345,6 +387,186 @@ func (m *NfsClients) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *NfsClients) UnmarshalBinary(b []byte) error {
 	var res NfsClients
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsClientsExportPolicy Export Policy
+//
+// swagger:model NfsClientsExportPolicy
+type NfsClientsExportPolicy struct {
+
+	// links
+	Links *NfsClientsExportPolicyLinks `json:"_links,omitempty"`
+
+	// id
+	// Example: 100
+	ID int64 `json:"id,omitempty"`
+
+	// name
+	// Example: default
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this nfs clients export policy
+func (m *NfsClientsExportPolicy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsClientsExportPolicy) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("export_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nfs clients export policy based on the context it is used
+func (m *NfsClientsExportPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsClientsExportPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("export_policy" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsClientsExportPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsClientsExportPolicy) UnmarshalBinary(b []byte) error {
+	var res NfsClientsExportPolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsClientsExportPolicyLinks nfs clients export policy links
+//
+// swagger:model NfsClientsExportPolicyLinks
+type NfsClientsExportPolicyLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this nfs clients export policy links
+func (m *NfsClientsExportPolicyLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsClientsExportPolicyLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("export_policy" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nfs clients export policy links based on the context it is used
+func (m *NfsClientsExportPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NfsClientsExportPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("export_policy" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsClientsExportPolicyLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsClientsExportPolicyLinks) UnmarshalBinary(b []byte) error {
+	var res NfsClientsExportPolicyLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -979,5 +1201,3 @@ func (m *NfsClientsVolumeLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

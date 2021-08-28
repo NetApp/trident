@@ -64,7 +64,7 @@ type IgroupInitiatorGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* IgroupUUID.
 
@@ -133,15 +133,15 @@ func (o *IgroupInitiatorGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the igroup initiator get params
-func (o *IgroupInitiatorGetParams) WithFields(fields []string) *IgroupInitiatorGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the igroup initiator get params
+func (o *IgroupInitiatorGetParams) WithFieldsQueryParameter(fields []string) *IgroupInitiatorGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the igroup initiator get params
-func (o *IgroupInitiatorGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the igroup initiator get params
+func (o *IgroupInitiatorGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIgroupUUIDPathParameter adds the igroupUUID to the igroup initiator get params
@@ -174,7 +174,7 @@ func (o *IgroupInitiatorGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -203,7 +203,7 @@ func (o *IgroupInitiatorGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 
 // bindParamIgroupInitiatorGet binds the parameter fields
 func (o *IgroupInitiatorGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

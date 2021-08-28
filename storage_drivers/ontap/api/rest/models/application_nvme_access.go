@@ -204,13 +204,13 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationNvmeAccessBackingStorage
 	// ApplicationNvmeAccessBackingStorage
 	// type
 	// Type
 	// namespace
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationNvmeAccessBackingStorageTypeNamespace captures enum value "namespace"
 	ApplicationNvmeAccessBackingStorageTypeNamespace string = "namespace"
 )
@@ -948,5 +948,3 @@ func (m *ApplicationNvmeAccessSubsystemMapSubsystemLinks) UnmarshalBinary(b []by
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

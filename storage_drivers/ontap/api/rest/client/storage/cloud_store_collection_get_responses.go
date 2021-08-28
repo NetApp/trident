@@ -82,7 +82,7 @@ func NewCloudStoreCollectionGetDefault(code int) *CloudStoreCollectionGetDefault
 
 /* CloudStoreCollectionGetDefault describes a response with status code -1, with default header values.
 
-CloudStoreCollectionGetDefault cloud store collection get default
+Error
 */
 type CloudStoreCollectionGetDefault struct {
 	_statusCode int

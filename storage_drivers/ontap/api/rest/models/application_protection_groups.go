@@ -306,43 +306,43 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationProtectionGroupsRpoLocal
 	// ApplicationProtectionGroupsRpoLocal
 	// name
 	// Name
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationProtectionGroupsRpoLocalNameNone captures enum value "none"
 	ApplicationProtectionGroupsRpoLocalNameNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationProtectionGroupsRpoLocal
 	// ApplicationProtectionGroupsRpoLocal
 	// name
 	// Name
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationProtectionGroupsRpoLocalNameHourly captures enum value "hourly"
 	ApplicationProtectionGroupsRpoLocalNameHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationProtectionGroupsRpoLocal
 	// ApplicationProtectionGroupsRpoLocal
 	// name
 	// Name
 	// 6_hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationProtectionGroupsRpoLocalNameNr6Hourly captures enum value "6_hourly"
 	ApplicationProtectionGroupsRpoLocalNameNr6Hourly string = "6_hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationProtectionGroupsRpoLocal
 	// ApplicationProtectionGroupsRpoLocal
 	// name
 	// Name
 	// 15_minutely
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationProtectionGroupsRpoLocalNameNr15Minutely captures enum value "15_minutely"
 	ApplicationProtectionGroupsRpoLocalNameNr15Minutely string = "15_minutely"
 )
@@ -465,53 +465,53 @@ func init() {
 
 const (
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationProtectionGroupsRpoRemote
 	// ApplicationProtectionGroupsRpoRemote
 	// name
 	// Name
 	// none
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationProtectionGroupsRpoRemoteNameNone captures enum value "none"
 	ApplicationProtectionGroupsRpoRemoteNameNone string = "none"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationProtectionGroupsRpoRemote
 	// ApplicationProtectionGroupsRpoRemote
 	// name
 	// Name
 	// zero
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationProtectionGroupsRpoRemoteNameZero captures enum value "zero"
 	ApplicationProtectionGroupsRpoRemoteNameZero string = "zero"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationProtectionGroupsRpoRemote
 	// ApplicationProtectionGroupsRpoRemote
 	// name
 	// Name
 	// hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationProtectionGroupsRpoRemoteNameHourly captures enum value "hourly"
 	ApplicationProtectionGroupsRpoRemoteNameHourly string = "hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationProtectionGroupsRpoRemote
 	// ApplicationProtectionGroupsRpoRemote
 	// name
 	// Name
 	// 6_hourly
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationProtectionGroupsRpoRemoteNameNr6Hourly captures enum value "6_hourly"
 	ApplicationProtectionGroupsRpoRemoteNameNr6Hourly string = "6_hourly"
 
-	// BEGIN RIPPY DEBUGGING
+	// BEGIN DEBUGGING
 	// ApplicationProtectionGroupsRpoRemote
 	// ApplicationProtectionGroupsRpoRemote
 	// name
 	// Name
 	// 15_minutely
-	// END RIPPY DEBUGGING
+	// END DEBUGGING
 	// ApplicationProtectionGroupsRpoRemoteNameNr15Minutely captures enum value "15_minutely"
 	ApplicationProtectionGroupsRpoRemoteNameNr15Minutely string = "15_minutely"
 )
@@ -590,5 +590,3 @@ func (m *ApplicationProtectionGroupsRpoRemote) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

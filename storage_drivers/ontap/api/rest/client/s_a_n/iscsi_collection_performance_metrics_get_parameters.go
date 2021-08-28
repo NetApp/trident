@@ -70,7 +70,7 @@ type IscsiCollectionPerformanceMetricsGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Interval.
 
@@ -139,13 +139,13 @@ type IscsiCollectionPerformanceMetricsGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -153,7 +153,7 @@ type IscsiCollectionPerformanceMetricsGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -161,7 +161,7 @@ type IscsiCollectionPerformanceMetricsGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Status.
 
@@ -174,12 +174,6 @@ type IscsiCollectionPerformanceMetricsGetParams struct {
 	   The unique identifier of the SVM.
 	*/
 	SVMUUIDPathParameter string
-
-	/* ThroughputOther.
-
-	   Filter by throughput.other
-	*/
-	ThroughputOtherQueryParameter *int64
 
 	/* ThroughputRead.
 
@@ -225,15 +219,15 @@ func (o *IscsiCollectionPerformanceMetricsGetParams) SetDefaults() {
 	var (
 		intervalQueryParameterDefault = string("1h")
 
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := IscsiCollectionPerformanceMetricsGetParams{
-		IntervalQueryParameter: &intervalQueryParameterDefault,
-		ReturnRecords:          &returnRecordsDefault,
-		ReturnTimeout:          &returnTimeoutDefault,
+		IntervalQueryParameter:      &intervalQueryParameterDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -286,15 +280,15 @@ func (o *IscsiCollectionPerformanceMetricsGetParams) SetDurationQueryParameter(d
 	o.DurationQueryParameter = duration
 }
 
-// WithFields adds the fields to the iscsi collection performance metrics get params
-func (o *IscsiCollectionPerformanceMetricsGetParams) WithFields(fields []string) *IscsiCollectionPerformanceMetricsGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the iscsi collection performance metrics get params
+func (o *IscsiCollectionPerformanceMetricsGetParams) WithFieldsQueryParameter(fields []string) *IscsiCollectionPerformanceMetricsGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the iscsi collection performance metrics get params
-func (o *IscsiCollectionPerformanceMetricsGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the iscsi collection performance metrics get params
+func (o *IscsiCollectionPerformanceMetricsGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIntervalQueryParameter adds the interval to the iscsi collection performance metrics get params
@@ -396,48 +390,48 @@ func (o *IscsiCollectionPerformanceMetricsGetParams) SetLatencyWriteQueryParamet
 	o.LatencyWriteQueryParameter = latencyWrite
 }
 
-// WithMaxRecords adds the maxRecords to the iscsi collection performance metrics get params
-func (o *IscsiCollectionPerformanceMetricsGetParams) WithMaxRecords(maxRecords *int64) *IscsiCollectionPerformanceMetricsGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the iscsi collection performance metrics get params
+func (o *IscsiCollectionPerformanceMetricsGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *IscsiCollectionPerformanceMetricsGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the iscsi collection performance metrics get params
-func (o *IscsiCollectionPerformanceMetricsGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the iscsi collection performance metrics get params
+func (o *IscsiCollectionPerformanceMetricsGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
-// WithOrderBy adds the orderBy to the iscsi collection performance metrics get params
-func (o *IscsiCollectionPerformanceMetricsGetParams) WithOrderBy(orderBy []string) *IscsiCollectionPerformanceMetricsGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the iscsi collection performance metrics get params
+func (o *IscsiCollectionPerformanceMetricsGetParams) WithOrderByQueryParameter(orderBy []string) *IscsiCollectionPerformanceMetricsGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the iscsi collection performance metrics get params
-func (o *IscsiCollectionPerformanceMetricsGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the iscsi collection performance metrics get params
+func (o *IscsiCollectionPerformanceMetricsGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the iscsi collection performance metrics get params
-func (o *IscsiCollectionPerformanceMetricsGetParams) WithReturnRecords(returnRecords *bool) *IscsiCollectionPerformanceMetricsGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the iscsi collection performance metrics get params
+func (o *IscsiCollectionPerformanceMetricsGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *IscsiCollectionPerformanceMetricsGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the iscsi collection performance metrics get params
-func (o *IscsiCollectionPerformanceMetricsGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the iscsi collection performance metrics get params
+func (o *IscsiCollectionPerformanceMetricsGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the iscsi collection performance metrics get params
-func (o *IscsiCollectionPerformanceMetricsGetParams) WithReturnTimeout(returnTimeout *int64) *IscsiCollectionPerformanceMetricsGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the iscsi collection performance metrics get params
+func (o *IscsiCollectionPerformanceMetricsGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *IscsiCollectionPerformanceMetricsGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the iscsi collection performance metrics get params
-func (o *IscsiCollectionPerformanceMetricsGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the iscsi collection performance metrics get params
+func (o *IscsiCollectionPerformanceMetricsGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithStatusQueryParameter adds the status to the iscsi collection performance metrics get params
@@ -460,17 +454,6 @@ func (o *IscsiCollectionPerformanceMetricsGetParams) WithSVMUUIDPathParameter(sv
 // SetSVMUUIDPathParameter adds the svmUuid to the iscsi collection performance metrics get params
 func (o *IscsiCollectionPerformanceMetricsGetParams) SetSVMUUIDPathParameter(svmUUID string) {
 	o.SVMUUIDPathParameter = svmUUID
-}
-
-// WithThroughputOtherQueryParameter adds the throughputOther to the iscsi collection performance metrics get params
-func (o *IscsiCollectionPerformanceMetricsGetParams) WithThroughputOtherQueryParameter(throughputOther *int64) *IscsiCollectionPerformanceMetricsGetParams {
-	o.SetThroughputOtherQueryParameter(throughputOther)
-	return o
-}
-
-// SetThroughputOtherQueryParameter adds the throughputOther to the iscsi collection performance metrics get params
-func (o *IscsiCollectionPerformanceMetricsGetParams) SetThroughputOtherQueryParameter(throughputOther *int64) {
-	o.ThroughputOtherQueryParameter = throughputOther
 }
 
 // WithThroughputReadQueryParameter adds the throughputRead to the iscsi collection performance metrics get params
@@ -542,7 +525,7 @@ func (o *IscsiCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -706,13 +689,13 @@ func (o *IscsiCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -723,7 +706,7 @@ func (o *IscsiCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -734,13 +717,13 @@ func (o *IscsiCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -751,13 +734,13 @@ func (o *IscsiCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cl
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -788,23 +771,6 @@ func (o *IscsiCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cl
 	// path param svm.uuid
 	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
-	}
-
-	if o.ThroughputOtherQueryParameter != nil {
-
-		// query param throughput.other
-		var qrThroughputOther int64
-
-		if o.ThroughputOtherQueryParameter != nil {
-			qrThroughputOther = *o.ThroughputOtherQueryParameter
-		}
-		qThroughputOther := swag.FormatInt64(qrThroughputOther)
-		if qThroughputOther != "" {
-
-			if err := r.SetQueryParam("throughput.other", qThroughputOther); err != nil {
-				return err
-			}
-		}
 	}
 
 	if o.ThroughputReadQueryParameter != nil {
@@ -883,7 +849,7 @@ func (o *IscsiCollectionPerformanceMetricsGetParams) WriteToRequest(r runtime.Cl
 
 // bindParamIscsiCollectionPerformanceMetricsGet binds the parameter fields
 func (o *IscsiCollectionPerformanceMetricsGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -900,7 +866,7 @@ func (o *IscsiCollectionPerformanceMetricsGetParams) bindParamFields(formats str
 
 // bindParamIscsiCollectionPerformanceMetricsGet binds the parameter order_by
 func (o *IscsiCollectionPerformanceMetricsGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -112,7 +112,7 @@ type CloudTargetCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* IpspaceName.
 
@@ -130,7 +130,7 @@ type CloudTargetCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -142,7 +142,7 @@ type CloudTargetCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* Owner.
 
@@ -168,7 +168,7 @@ type CloudTargetCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -176,7 +176,7 @@ type CloudTargetCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Server.
 
@@ -214,6 +214,12 @@ type CloudTargetCollectionGetParams struct {
 	*/
 	SVMUUIDQueryParameter *string
 
+	/* URLStyle.
+
+	   Filter by url_style
+	*/
+	URLStyleQueryParameter *string
+
 	/* UseHTTPProxy.
 
 	   Filter by use_http_proxy
@@ -250,14 +256,14 @@ func (o *CloudTargetCollectionGetParams) WithDefaults() *CloudTargetCollectionGe
 // All values with no default are reset to their zero value.
 func (o *CloudTargetCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := CloudTargetCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -387,15 +393,15 @@ func (o *CloudTargetCollectionGetParams) SetContainerQueryParameter(container *s
 	o.ContainerQueryParameter = container
 }
 
-// WithFields adds the fields to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithFields(fields []string) *CloudTargetCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithFieldsQueryParameter(fields []string) *CloudTargetCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIpspaceNameQueryParameter adds the ipspaceName to the cloud target collection get params
@@ -420,15 +426,15 @@ func (o *CloudTargetCollectionGetParams) SetIpspaceUUIDQueryParameter(ipspaceUUI
 	o.IpspaceUUIDQueryParameter = ipspaceUUID
 }
 
-// WithMaxRecords adds the maxRecords to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithMaxRecords(maxRecords *int64) *CloudTargetCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *CloudTargetCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the cloud target collection get params
@@ -442,15 +448,15 @@ func (o *CloudTargetCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithOrderBy(orderBy []string) *CloudTargetCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CloudTargetCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
 // WithOwnerQueryParameter adds the owner to the cloud target collection get params
@@ -486,26 +492,26 @@ func (o *CloudTargetCollectionGetParams) SetProviderTypeQueryParameter(providerT
 	o.ProviderTypeQueryParameter = providerType
 }
 
-// WithReturnRecords adds the returnRecords to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithReturnRecords(returnRecords *bool) *CloudTargetCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *CloudTargetCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *CloudTargetCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *CloudTargetCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the cloud target collection get params
-func (o *CloudTargetCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithServerQueryParameter adds the server to the cloud target collection get params
@@ -572,6 +578,17 @@ func (o *CloudTargetCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *stri
 // SetSVMUUIDQueryParameter adds the svmUuid to the cloud target collection get params
 func (o *CloudTargetCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
 	o.SVMUUIDQueryParameter = svmUUID
+}
+
+// WithURLStyleQueryParameter adds the uRLStyle to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) WithURLStyleQueryParameter(uRLStyle *string) *CloudTargetCollectionGetParams {
+	o.SetURLStyleQueryParameter(uRLStyle)
+	return o
+}
+
+// SetURLStyleQueryParameter adds the urlStyle to the cloud target collection get params
+func (o *CloudTargetCollectionGetParams) SetURLStyleQueryParameter(uRLStyle *string) {
+	o.URLStyleQueryParameter = uRLStyle
 }
 
 // WithUseHTTPProxyQueryParameter adds the useHTTPProxy to the cloud target collection get params
@@ -751,7 +768,7 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -796,13 +813,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -830,7 +847,7 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -892,13 +909,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -909,13 +926,13 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -1028,6 +1045,23 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
+	if o.URLStyleQueryParameter != nil {
+
+		// query param url_style
+		var qrURLStyle string
+
+		if o.URLStyleQueryParameter != nil {
+			qrURLStyle = *o.URLStyleQueryParameter
+		}
+		qURLStyle := qrURLStyle
+		if qURLStyle != "" {
+
+			if err := r.SetQueryParam("url_style", qURLStyle); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.UseHTTPProxyQueryParameter != nil {
 
 		// query param use_http_proxy
@@ -1087,7 +1121,7 @@ func (o *CloudTargetCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 
 // bindParamCloudTargetCollectionGet binds the parameter fields
 func (o *CloudTargetCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1104,7 +1138,7 @@ func (o *CloudTargetCollectionGetParams) bindParamFields(formats strfmt.Registry
 
 // bindParamCloudTargetCollectionGet binds the parameter order_by
 func (o *CloudTargetCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

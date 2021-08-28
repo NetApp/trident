@@ -192,5 +192,3 @@ func (m *VolumeReferenceLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

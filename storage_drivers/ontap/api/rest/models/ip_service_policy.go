@@ -7,11 +7,13 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // IPServicePolicy ip service policy
@@ -29,8 +31,9 @@ type IPServicePolicy struct {
 	// Example: default-intercluster
 	Name string `json:"name,omitempty"`
 
-	// scope
-	Scope NetworkScope `json:"scope,omitempty"`
+	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
+	// Enum: [svm cluster]
+	Scope string `json:"scope,omitempty"`
 
 	// services
 	Services []IPService `json:"services,omitempty"`
@@ -40,6 +43,7 @@ type IPServicePolicy struct {
 
 	// uuid
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
 }
 
@@ -107,15 +111,56 @@ func (m *IPServicePolicy) validateIpspace(formats strfmt.Registry) error {
 	return nil
 }
 
+var ipServicePolicyTypeScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["svm","cluster"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ipServicePolicyTypeScopePropEnum = append(ipServicePolicyTypeScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ip_service_policy
+	// IPServicePolicy
+	// scope
+	// Scope
+	// svm
+	// END DEBUGGING
+	// IPServicePolicyScopeSvm captures enum value "svm"
+	IPServicePolicyScopeSvm string = "svm"
+
+	// BEGIN DEBUGGING
+	// ip_service_policy
+	// IPServicePolicy
+	// scope
+	// Scope
+	// cluster
+	// END DEBUGGING
+	// IPServicePolicyScopeCluster captures enum value "cluster"
+	IPServicePolicyScopeCluster string = "cluster"
+)
+
+// prop value enum
+func (m *IPServicePolicy) validateScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ipServicePolicyTypeScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *IPServicePolicy) validateScope(formats strfmt.Registry) error {
 	if swag.IsZero(m.Scope) { // not required
 		return nil
 	}
 
-	if err := m.Scope.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
-		}
+	// value enum
+	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
 		return err
 	}
 
@@ -170,15 +215,15 @@ func (m *IPServicePolicy) ContextValidate(ctx context.Context, formats strfmt.Re
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateScope(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateServices(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -216,18 +261,6 @@ func (m *IPServicePolicy) contextValidateIpspace(ctx context.Context, formats st
 	return nil
 }
 
-func (m *IPServicePolicy) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := m.Scope.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("scope")
-		}
-		return err
-	}
-
-	return nil
-}
-
 func (m *IPServicePolicy) contextValidateServices(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Services); i++ {
@@ -258,6 +291,15 @@ func (m *IPServicePolicy) contextValidateSvm(ctx context.Context, formats strfmt
 	return nil
 }
 
+func (m *IPServicePolicy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *IPServicePolicy) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -276,7 +318,7 @@ func (m *IPServicePolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// IPServicePolicyIpspace Applies to both SVM and cluster-scoped objects. Either the UUID or name may be supplied on input.
+// IPServicePolicyIpspace IP service policy ipspace
 //
 // swagger:model IPServicePolicyIpspace
 type IPServicePolicyIpspace struct {
@@ -723,5 +765,3 @@ func (m *IPServicePolicySvmLinks) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -64,7 +64,7 @@ type LicensesGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* LicensesActive.
 
@@ -102,6 +102,18 @@ type LicensesGetParams struct {
 	*/
 	LicensesExpiryTimeQueryParameter *string
 
+	/* LicensesHostID.
+
+	   Filter by licenses.host_id
+	*/
+	LicensesHostIDQueryParameter *string
+
+	/* LicensesInstalledLicense.
+
+	   Filter by licenses.installed_license
+	*/
+	LicensesInstalledLicenseQueryParameter *string
+
 	/* LicensesOwner.
 
 	   Filter by licenses.owner
@@ -124,7 +136,7 @@ type LicensesGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -136,7 +148,7 @@ type LicensesGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -144,7 +156,7 @@ type LicensesGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -152,7 +164,7 @@ type LicensesGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Scope.
 
@@ -184,14 +196,14 @@ func (o *LicensesGetParams) WithDefaults() *LicensesGetParams {
 // All values with no default are reset to their zero value.
 func (o *LicensesGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := LicensesGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -233,15 +245,15 @@ func (o *LicensesGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the licenses get params
-func (o *LicensesGetParams) WithFields(fields []string) *LicensesGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the licenses get params
+func (o *LicensesGetParams) WithFieldsQueryParameter(fields []string) *LicensesGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the licenses get params
-func (o *LicensesGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the licenses get params
+func (o *LicensesGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithLicensesActiveQueryParameter adds the licensesActive to the licenses get params
@@ -310,6 +322,28 @@ func (o *LicensesGetParams) SetLicensesExpiryTimeQueryParameter(licensesExpiryTi
 	o.LicensesExpiryTimeQueryParameter = licensesExpiryTime
 }
 
+// WithLicensesHostIDQueryParameter adds the licensesHostID to the licenses get params
+func (o *LicensesGetParams) WithLicensesHostIDQueryParameter(licensesHostID *string) *LicensesGetParams {
+	o.SetLicensesHostIDQueryParameter(licensesHostID)
+	return o
+}
+
+// SetLicensesHostIDQueryParameter adds the licensesHostId to the licenses get params
+func (o *LicensesGetParams) SetLicensesHostIDQueryParameter(licensesHostID *string) {
+	o.LicensesHostIDQueryParameter = licensesHostID
+}
+
+// WithLicensesInstalledLicenseQueryParameter adds the licensesInstalledLicense to the licenses get params
+func (o *LicensesGetParams) WithLicensesInstalledLicenseQueryParameter(licensesInstalledLicense *string) *LicensesGetParams {
+	o.SetLicensesInstalledLicenseQueryParameter(licensesInstalledLicense)
+	return o
+}
+
+// SetLicensesInstalledLicenseQueryParameter adds the licensesInstalledLicense to the licenses get params
+func (o *LicensesGetParams) SetLicensesInstalledLicenseQueryParameter(licensesInstalledLicense *string) {
+	o.LicensesInstalledLicenseQueryParameter = licensesInstalledLicense
+}
+
 // WithLicensesOwnerQueryParameter adds the licensesOwner to the licenses get params
 func (o *LicensesGetParams) WithLicensesOwnerQueryParameter(licensesOwner *string) *LicensesGetParams {
 	o.SetLicensesOwnerQueryParameter(licensesOwner)
@@ -343,15 +377,15 @@ func (o *LicensesGetParams) SetLicensesStartTimeQueryParameter(licensesStartTime
 	o.LicensesStartTimeQueryParameter = licensesStartTime
 }
 
-// WithMaxRecords adds the maxRecords to the licenses get params
-func (o *LicensesGetParams) WithMaxRecords(maxRecords *int64) *LicensesGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the licenses get params
+func (o *LicensesGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *LicensesGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the licenses get params
-func (o *LicensesGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the licenses get params
+func (o *LicensesGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the licenses get params
@@ -365,37 +399,37 @@ func (o *LicensesGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the licenses get params
-func (o *LicensesGetParams) WithOrderBy(orderBy []string) *LicensesGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the licenses get params
+func (o *LicensesGetParams) WithOrderByQueryParameter(orderBy []string) *LicensesGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the licenses get params
-func (o *LicensesGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the licenses get params
+func (o *LicensesGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the licenses get params
-func (o *LicensesGetParams) WithReturnRecords(returnRecords *bool) *LicensesGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the licenses get params
+func (o *LicensesGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *LicensesGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the licenses get params
-func (o *LicensesGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the licenses get params
+func (o *LicensesGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the licenses get params
-func (o *LicensesGetParams) WithReturnTimeout(returnTimeout *int64) *LicensesGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the licenses get params
+func (o *LicensesGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *LicensesGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the licenses get params
-func (o *LicensesGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the licenses get params
+func (o *LicensesGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithScopeQueryParameter adds the scope to the licenses get params
@@ -428,7 +462,7 @@ func (o *LicensesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -541,6 +575,40 @@ func (o *LicensesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
+	if o.LicensesHostIDQueryParameter != nil {
+
+		// query param licenses.host_id
+		var qrLicensesHostID string
+
+		if o.LicensesHostIDQueryParameter != nil {
+			qrLicensesHostID = *o.LicensesHostIDQueryParameter
+		}
+		qLicensesHostID := qrLicensesHostID
+		if qLicensesHostID != "" {
+
+			if err := r.SetQueryParam("licenses.host_id", qLicensesHostID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LicensesInstalledLicenseQueryParameter != nil {
+
+		// query param licenses.installed_license
+		var qrLicensesInstalledLicense string
+
+		if o.LicensesInstalledLicenseQueryParameter != nil {
+			qrLicensesInstalledLicense = *o.LicensesInstalledLicenseQueryParameter
+		}
+		qLicensesInstalledLicense := qrLicensesInstalledLicense
+		if qLicensesInstalledLicense != "" {
+
+			if err := r.SetQueryParam("licenses.installed_license", qLicensesInstalledLicense); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.LicensesOwnerQueryParameter != nil {
 
 		// query param licenses.owner
@@ -592,13 +660,13 @@ func (o *LicensesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -626,7 +694,7 @@ func (o *LicensesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -637,13 +705,13 @@ func (o *LicensesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -654,13 +722,13 @@ func (o *LicensesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -713,7 +781,7 @@ func (o *LicensesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 
 // bindParamLicensesGet binds the parameter fields
 func (o *LicensesGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -730,7 +798,7 @@ func (o *LicensesGetParams) bindParamFields(formats strfmt.Registry) []string {
 
 // bindParamLicensesGet binds the parameter order_by
 func (o *LicensesGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

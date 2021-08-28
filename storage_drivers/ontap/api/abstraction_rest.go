@@ -201,7 +201,9 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 	}
 
 	if volumeGetResponse.Nas != nil {
-		responseJunctionPath = volumeGetResponse.Nas.Path
+		if volumeGetResponse.Nas.Path != nil {
+			responseJunctionPath = *volumeGetResponse.Nas.Path
+		}
 
 		if volumeGetResponse.Nas.ExportPolicy != nil {
 			responseExportPolicy = volumeGetResponse.Nas.ExportPolicy.Name

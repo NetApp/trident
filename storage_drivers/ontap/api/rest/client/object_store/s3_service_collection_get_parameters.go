@@ -84,6 +84,108 @@ type S3ServiceCollectionGetParams struct {
 	*/
 	BucketsNameQueryParameter *string
 
+	/* BucketsPolicyStatementsActions.
+
+	   Filter by buckets.policy.statements.actions
+	*/
+	BucketsPolicyStatementsActionsQueryParameter *string
+
+	/* BucketsPolicyStatementsConditionsDelimiters.
+
+	   Filter by buckets.policy.statements.conditions.delimiters
+	*/
+	BucketsPolicyStatementsConditionsDelimitersQueryParameter *string
+
+	/* BucketsPolicyStatementsConditionsMaxKeys.
+
+	   Filter by buckets.policy.statements.conditions.max_keys
+	*/
+	BucketsPolicyStatementsConditionsMaxKeysQueryParameter *int64
+
+	/* BucketsPolicyStatementsConditionsOperator.
+
+	   Filter by buckets.policy.statements.conditions.operator
+	*/
+	BucketsPolicyStatementsConditionsOperatorQueryParameter *string
+
+	/* BucketsPolicyStatementsConditionsPrefixes.
+
+	   Filter by buckets.policy.statements.conditions.prefixes
+	*/
+	BucketsPolicyStatementsConditionsPrefixesQueryParameter *string
+
+	/* BucketsPolicyStatementsConditionsSourceIps.
+
+	   Filter by buckets.policy.statements.conditions.source_ips
+	*/
+	BucketsPolicyStatementsConditionsSourceIPsQueryParameter *string
+
+	/* BucketsPolicyStatementsConditionsUsernames.
+
+	   Filter by buckets.policy.statements.conditions.usernames
+	*/
+	BucketsPolicyStatementsConditionsUsernamesQueryParameter *string
+
+	/* BucketsPolicyStatementsEffect.
+
+	   Filter by buckets.policy.statements.effect
+	*/
+	BucketsPolicyStatementsEffectQueryParameter *string
+
+	/* BucketsPolicyStatementsPrincipals.
+
+	   Filter by buckets.policy.statements.principals
+	*/
+	BucketsPolicyStatementsPrincipalsQueryParameter *string
+
+	/* BucketsPolicyStatementsResources.
+
+	   Filter by buckets.policy.statements.resources
+	*/
+	BucketsPolicyStatementsResourcesQueryParameter *string
+
+	/* BucketsPolicyStatementsSid.
+
+	   Filter by buckets.policy.statements.sid
+	*/
+	BucketsPolicyStatementsSIDQueryParameter *string
+
+	/* BucketsQosPolicyMaxThroughputIops.
+
+	   Filter by buckets.qos_policy.max_throughput_iops
+	*/
+	BucketsQosPolicyMaxThroughputIopsQueryParameter *int64
+
+	/* BucketsQosPolicyMaxThroughputMbps.
+
+	   Filter by buckets.qos_policy.max_throughput_mbps
+	*/
+	BucketsQosPolicyMaxThroughputMbpsQueryParameter *int64
+
+	/* BucketsQosPolicyMinThroughputIops.
+
+	   Filter by buckets.qos_policy.min_throughput_iops
+	*/
+	BucketsQosPolicyMinThroughputIopsQueryParameter *int64
+
+	/* BucketsQosPolicyMinThroughputMbps.
+
+	   Filter by buckets.qos_policy.min_throughput_mbps
+	*/
+	BucketsQosPolicyMinThroughputMbpsQueryParameter *int64
+
+	/* BucketsQosPolicyName.
+
+	   Filter by buckets.qos_policy.name
+	*/
+	BucketsQosPolicyNameQueryParameter *string
+
+	/* BucketsQosPolicyUUID.
+
+	   Filter by buckets.qos_policy.uuid
+	*/
+	BucketsQosPolicyUUIDQueryParameter *string
+
 	/* BucketsSize.
 
 	   Filter by buckets.size
@@ -120,6 +222,18 @@ type S3ServiceCollectionGetParams struct {
 	*/
 	BucketsVolumeUUIDQueryParameter *string
 
+	/* CertificateName.
+
+	   Filter by certificate.name
+	*/
+	CertificateNameQueryParameter *string
+
+	/* CertificateUUID.
+
+	   Filter by certificate.uuid
+	*/
+	CertificateUUIDQueryParameter *string
+
 	/* Comment.
 
 	   Filter by comment
@@ -136,13 +250,109 @@ type S3ServiceCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
+
+	/* IsHTTPEnabled.
+
+	   Filter by is_http_enabled
+	*/
+	IsHTTPEnabledQueryParameter *bool
+
+	/* IsHTTPSEnabled.
+
+	   Filter by is_https_enabled
+	*/
+	IsHTTPsEnabledQueryParameter *bool
 
 	/* MaxRecords.
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
+
+	/* MetricDuration.
+
+	   Filter by metric.duration
+	*/
+	MetricDurationQueryParameter *string
+
+	/* MetricIopsOther.
+
+	   Filter by metric.iops.other
+	*/
+	MetricIopsOtherQueryParameter *int64
+
+	/* MetricIopsRead.
+
+	   Filter by metric.iops.read
+	*/
+	MetricIopsReadQueryParameter *int64
+
+	/* MetricIopsTotal.
+
+	   Filter by metric.iops.total
+	*/
+	MetricIopsTotalQueryParameter *int64
+
+	/* MetricIopsWrite.
+
+	   Filter by metric.iops.write
+	*/
+	MetricIopsWriteQueryParameter *int64
+
+	/* MetricLatencyOther.
+
+	   Filter by metric.latency.other
+	*/
+	MetricLatencyOtherQueryParameter *int64
+
+	/* MetricLatencyRead.
+
+	   Filter by metric.latency.read
+	*/
+	MetricLatencyReadQueryParameter *int64
+
+	/* MetricLatencyTotal.
+
+	   Filter by metric.latency.total
+	*/
+	MetricLatencyTotalQueryParameter *int64
+
+	/* MetricLatencyWrite.
+
+	   Filter by metric.latency.write
+	*/
+	MetricLatencyWriteQueryParameter *int64
+
+	/* MetricStatus.
+
+	   Filter by metric.status
+	*/
+	MetricStatusQueryParameter *string
+
+	/* MetricThroughputRead.
+
+	   Filter by metric.throughput.read
+	*/
+	MetricThroughputReadQueryParameter *int64
+
+	/* MetricThroughputTotal.
+
+	   Filter by metric.throughput.total
+	*/
+	MetricThroughputTotalQueryParameter *int64
+
+	/* MetricThroughputWrite.
+
+	   Filter by metric.throughput.write
+	*/
+	MetricThroughputWriteQueryParameter *int64
+
+	/* MetricTimestamp.
+
+	   Filter by metric.timestamp
+	*/
+	MetricTimestampQueryParameter *string
 
 	/* Name.
 
@@ -154,7 +364,13 @@ type S3ServiceCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
+
+	/* Port.
+
+	   Filter by port
+	*/
+	PortQueryParameter *int64
 
 	/* ReturnRecords.
 
@@ -162,7 +378,7 @@ type S3ServiceCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -170,7 +386,91 @@ type S3ServiceCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
+
+	/* SecurePort.
+
+	   Filter by secure_port
+	*/
+	SecurePortQueryParameter *int64
+
+	/* StatisticsIopsRawOther.
+
+	   Filter by statistics.iops_raw.other
+	*/
+	StatisticsIopsRawOtherQueryParameter *int64
+
+	/* StatisticsIopsRawRead.
+
+	   Filter by statistics.iops_raw.read
+	*/
+	StatisticsIopsRawReadQueryParameter *int64
+
+	/* StatisticsIopsRawTotal.
+
+	   Filter by statistics.iops_raw.total
+	*/
+	StatisticsIopsRawTotalQueryParameter *int64
+
+	/* StatisticsIopsRawWrite.
+
+	   Filter by statistics.iops_raw.write
+	*/
+	StatisticsIopsRawWriteQueryParameter *int64
+
+	/* StatisticsLatencyRawOther.
+
+	   Filter by statistics.latency_raw.other
+	*/
+	StatisticsLatencyRawOtherQueryParameter *int64
+
+	/* StatisticsLatencyRawRead.
+
+	   Filter by statistics.latency_raw.read
+	*/
+	StatisticsLatencyRawReadQueryParameter *int64
+
+	/* StatisticsLatencyRawTotal.
+
+	   Filter by statistics.latency_raw.total
+	*/
+	StatisticsLatencyRawTotalQueryParameter *int64
+
+	/* StatisticsLatencyRawWrite.
+
+	   Filter by statistics.latency_raw.write
+	*/
+	StatisticsLatencyRawWriteQueryParameter *int64
+
+	/* StatisticsStatus.
+
+	   Filter by statistics.status
+	*/
+	StatisticsStatusQueryParameter *string
+
+	/* StatisticsThroughputRawRead.
+
+	   Filter by statistics.throughput_raw.read
+	*/
+	StatisticsThroughputRawReadQueryParameter *int64
+
+	/* StatisticsThroughputRawTotal.
+
+	   Filter by statistics.throughput_raw.total
+	*/
+	StatisticsThroughputRawTotalQueryParameter *int64
+
+	/* StatisticsThroughputRawWrite.
+
+	   Filter by statistics.throughput_raw.write
+	*/
+	StatisticsThroughputRawWriteQueryParameter *int64
+
+	/* StatisticsTimestamp.
+
+	   Filter by statistics.timestamp
+	*/
+	StatisticsTimestampQueryParameter *string
 
 	/* SvmName.
 
@@ -232,14 +532,14 @@ func (o *S3ServiceCollectionGetParams) WithDefaults() *S3ServiceCollectionGetPar
 // All values with no default are reset to their zero value.
 func (o *S3ServiceCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := S3ServiceCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -325,6 +625,193 @@ func (o *S3ServiceCollectionGetParams) SetBucketsNameQueryParameter(bucketsName 
 	o.BucketsNameQueryParameter = bucketsName
 }
 
+// WithBucketsPolicyStatementsActionsQueryParameter adds the bucketsPolicyStatementsActions to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsActionsQueryParameter(bucketsPolicyStatementsActions *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsActionsQueryParameter(bucketsPolicyStatementsActions)
+	return o
+}
+
+// SetBucketsPolicyStatementsActionsQueryParameter adds the bucketsPolicyStatementsActions to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsActionsQueryParameter(bucketsPolicyStatementsActions *string) {
+	o.BucketsPolicyStatementsActionsQueryParameter = bucketsPolicyStatementsActions
+}
+
+// WithBucketsPolicyStatementsConditionsDelimitersQueryParameter adds the bucketsPolicyStatementsConditionsDelimiters to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsDelimitersQueryParameter(bucketsPolicyStatementsConditionsDelimiters *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsDelimitersQueryParameter(bucketsPolicyStatementsConditionsDelimiters)
+	return o
+}
+
+// SetBucketsPolicyStatementsConditionsDelimitersQueryParameter adds the bucketsPolicyStatementsConditionsDelimiters to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsDelimitersQueryParameter(bucketsPolicyStatementsConditionsDelimiters *string) {
+	o.BucketsPolicyStatementsConditionsDelimitersQueryParameter = bucketsPolicyStatementsConditionsDelimiters
+}
+
+// WithBucketsPolicyStatementsConditionsMaxKeysQueryParameter adds the bucketsPolicyStatementsConditionsMaxKeys to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsMaxKeysQueryParameter(bucketsPolicyStatementsConditionsMaxKeys *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsMaxKeysQueryParameter(bucketsPolicyStatementsConditionsMaxKeys)
+	return o
+}
+
+// SetBucketsPolicyStatementsConditionsMaxKeysQueryParameter adds the bucketsPolicyStatementsConditionsMaxKeys to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsMaxKeysQueryParameter(bucketsPolicyStatementsConditionsMaxKeys *int64) {
+	o.BucketsPolicyStatementsConditionsMaxKeysQueryParameter = bucketsPolicyStatementsConditionsMaxKeys
+}
+
+// WithBucketsPolicyStatementsConditionsOperatorQueryParameter adds the bucketsPolicyStatementsConditionsOperator to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsOperatorQueryParameter(bucketsPolicyStatementsConditionsOperator *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsOperatorQueryParameter(bucketsPolicyStatementsConditionsOperator)
+	return o
+}
+
+// SetBucketsPolicyStatementsConditionsOperatorQueryParameter adds the bucketsPolicyStatementsConditionsOperator to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsOperatorQueryParameter(bucketsPolicyStatementsConditionsOperator *string) {
+	o.BucketsPolicyStatementsConditionsOperatorQueryParameter = bucketsPolicyStatementsConditionsOperator
+}
+
+// WithBucketsPolicyStatementsConditionsPrefixesQueryParameter adds the bucketsPolicyStatementsConditionsPrefixes to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsPrefixesQueryParameter(bucketsPolicyStatementsConditionsPrefixes *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsPrefixesQueryParameter(bucketsPolicyStatementsConditionsPrefixes)
+	return o
+}
+
+// SetBucketsPolicyStatementsConditionsPrefixesQueryParameter adds the bucketsPolicyStatementsConditionsPrefixes to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsPrefixesQueryParameter(bucketsPolicyStatementsConditionsPrefixes *string) {
+	o.BucketsPolicyStatementsConditionsPrefixesQueryParameter = bucketsPolicyStatementsConditionsPrefixes
+}
+
+// WithBucketsPolicyStatementsConditionsSourceIPsQueryParameter adds the bucketsPolicyStatementsConditionsSourceIps to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsSourceIPsQueryParameter(bucketsPolicyStatementsConditionsSourceIps *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsSourceIPsQueryParameter(bucketsPolicyStatementsConditionsSourceIps)
+	return o
+}
+
+// SetBucketsPolicyStatementsConditionsSourceIPsQueryParameter adds the bucketsPolicyStatementsConditionsSourceIps to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsSourceIPsQueryParameter(bucketsPolicyStatementsConditionsSourceIps *string) {
+	o.BucketsPolicyStatementsConditionsSourceIPsQueryParameter = bucketsPolicyStatementsConditionsSourceIps
+}
+
+// WithBucketsPolicyStatementsConditionsUsernamesQueryParameter adds the bucketsPolicyStatementsConditionsUsernames to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsUsernamesQueryParameter(bucketsPolicyStatementsConditionsUsernames *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsUsernamesQueryParameter(bucketsPolicyStatementsConditionsUsernames)
+	return o
+}
+
+// SetBucketsPolicyStatementsConditionsUsernamesQueryParameter adds the bucketsPolicyStatementsConditionsUsernames to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsUsernamesQueryParameter(bucketsPolicyStatementsConditionsUsernames *string) {
+	o.BucketsPolicyStatementsConditionsUsernamesQueryParameter = bucketsPolicyStatementsConditionsUsernames
+}
+
+// WithBucketsPolicyStatementsEffectQueryParameter adds the bucketsPolicyStatementsEffect to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsEffectQueryParameter(bucketsPolicyStatementsEffect *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsEffectQueryParameter(bucketsPolicyStatementsEffect)
+	return o
+}
+
+// SetBucketsPolicyStatementsEffectQueryParameter adds the bucketsPolicyStatementsEffect to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsEffectQueryParameter(bucketsPolicyStatementsEffect *string) {
+	o.BucketsPolicyStatementsEffectQueryParameter = bucketsPolicyStatementsEffect
+}
+
+// WithBucketsPolicyStatementsPrincipalsQueryParameter adds the bucketsPolicyStatementsPrincipals to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsPrincipalsQueryParameter(bucketsPolicyStatementsPrincipals *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsPrincipalsQueryParameter(bucketsPolicyStatementsPrincipals)
+	return o
+}
+
+// SetBucketsPolicyStatementsPrincipalsQueryParameter adds the bucketsPolicyStatementsPrincipals to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsPrincipalsQueryParameter(bucketsPolicyStatementsPrincipals *string) {
+	o.BucketsPolicyStatementsPrincipalsQueryParameter = bucketsPolicyStatementsPrincipals
+}
+
+// WithBucketsPolicyStatementsResourcesQueryParameter adds the bucketsPolicyStatementsResources to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsResourcesQueryParameter(bucketsPolicyStatementsResources *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsResourcesQueryParameter(bucketsPolicyStatementsResources)
+	return o
+}
+
+// SetBucketsPolicyStatementsResourcesQueryParameter adds the bucketsPolicyStatementsResources to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsResourcesQueryParameter(bucketsPolicyStatementsResources *string) {
+	o.BucketsPolicyStatementsResourcesQueryParameter = bucketsPolicyStatementsResources
+}
+
+// WithBucketsPolicyStatementsSIDQueryParameter adds the bucketsPolicyStatementsSid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsSIDQueryParameter(bucketsPolicyStatementsSid *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsSIDQueryParameter(bucketsPolicyStatementsSid)
+	return o
+}
+
+// SetBucketsPolicyStatementsSIDQueryParameter adds the bucketsPolicyStatementsSid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsSIDQueryParameter(bucketsPolicyStatementsSid *string) {
+	o.BucketsPolicyStatementsSIDQueryParameter = bucketsPolicyStatementsSid
+}
+
+// WithBucketsQosPolicyMaxThroughputIopsQueryParameter adds the bucketsQosPolicyMaxThroughputIops to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMaxThroughputIopsQueryParameter(bucketsQosPolicyMaxThroughputIops *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsQosPolicyMaxThroughputIopsQueryParameter(bucketsQosPolicyMaxThroughputIops)
+	return o
+}
+
+// SetBucketsQosPolicyMaxThroughputIopsQueryParameter adds the bucketsQosPolicyMaxThroughputIops to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyMaxThroughputIopsQueryParameter(bucketsQosPolicyMaxThroughputIops *int64) {
+	o.BucketsQosPolicyMaxThroughputIopsQueryParameter = bucketsQosPolicyMaxThroughputIops
+}
+
+// WithBucketsQosPolicyMaxThroughputMbpsQueryParameter adds the bucketsQosPolicyMaxThroughputMbps to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMaxThroughputMbpsQueryParameter(bucketsQosPolicyMaxThroughputMbps *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsQosPolicyMaxThroughputMbpsQueryParameter(bucketsQosPolicyMaxThroughputMbps)
+	return o
+}
+
+// SetBucketsQosPolicyMaxThroughputMbpsQueryParameter adds the bucketsQosPolicyMaxThroughputMbps to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyMaxThroughputMbpsQueryParameter(bucketsQosPolicyMaxThroughputMbps *int64) {
+	o.BucketsQosPolicyMaxThroughputMbpsQueryParameter = bucketsQosPolicyMaxThroughputMbps
+}
+
+// WithBucketsQosPolicyMinThroughputIopsQueryParameter adds the bucketsQosPolicyMinThroughputIops to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMinThroughputIopsQueryParameter(bucketsQosPolicyMinThroughputIops *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsQosPolicyMinThroughputIopsQueryParameter(bucketsQosPolicyMinThroughputIops)
+	return o
+}
+
+// SetBucketsQosPolicyMinThroughputIopsQueryParameter adds the bucketsQosPolicyMinThroughputIops to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyMinThroughputIopsQueryParameter(bucketsQosPolicyMinThroughputIops *int64) {
+	o.BucketsQosPolicyMinThroughputIopsQueryParameter = bucketsQosPolicyMinThroughputIops
+}
+
+// WithBucketsQosPolicyMinThroughputMbpsQueryParameter adds the bucketsQosPolicyMinThroughputMbps to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMinThroughputMbpsQueryParameter(bucketsQosPolicyMinThroughputMbps *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsQosPolicyMinThroughputMbpsQueryParameter(bucketsQosPolicyMinThroughputMbps)
+	return o
+}
+
+// SetBucketsQosPolicyMinThroughputMbpsQueryParameter adds the bucketsQosPolicyMinThroughputMbps to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyMinThroughputMbpsQueryParameter(bucketsQosPolicyMinThroughputMbps *int64) {
+	o.BucketsQosPolicyMinThroughputMbpsQueryParameter = bucketsQosPolicyMinThroughputMbps
+}
+
+// WithBucketsQosPolicyNameQueryParameter adds the bucketsQosPolicyName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyNameQueryParameter(bucketsQosPolicyName *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsQosPolicyNameQueryParameter(bucketsQosPolicyName)
+	return o
+}
+
+// SetBucketsQosPolicyNameQueryParameter adds the bucketsQosPolicyName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyNameQueryParameter(bucketsQosPolicyName *string) {
+	o.BucketsQosPolicyNameQueryParameter = bucketsQosPolicyName
+}
+
+// WithBucketsQosPolicyUUIDQueryParameter adds the bucketsQosPolicyUUID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyUUIDQueryParameter(bucketsQosPolicyUUID *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsQosPolicyUUIDQueryParameter(bucketsQosPolicyUUID)
+	return o
+}
+
+// SetBucketsQosPolicyUUIDQueryParameter adds the bucketsQosPolicyUuid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyUUIDQueryParameter(bucketsQosPolicyUUID *string) {
+	o.BucketsQosPolicyUUIDQueryParameter = bucketsQosPolicyUUID
+}
+
 // WithBucketsSizeQueryParameter adds the bucketsSize to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) WithBucketsSizeQueryParameter(bucketsSize *int64) *S3ServiceCollectionGetParams {
 	o.SetBucketsSizeQueryParameter(bucketsSize)
@@ -391,6 +878,28 @@ func (o *S3ServiceCollectionGetParams) SetBucketsVolumeUUIDQueryParameter(bucket
 	o.BucketsVolumeUUIDQueryParameter = bucketsVolumeUUID
 }
 
+// WithCertificateNameQueryParameter adds the certificateName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithCertificateNameQueryParameter(certificateName *string) *S3ServiceCollectionGetParams {
+	o.SetCertificateNameQueryParameter(certificateName)
+	return o
+}
+
+// SetCertificateNameQueryParameter adds the certificateName to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetCertificateNameQueryParameter(certificateName *string) {
+	o.CertificateNameQueryParameter = certificateName
+}
+
+// WithCertificateUUIDQueryParameter adds the certificateUUID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithCertificateUUIDQueryParameter(certificateUUID *string) *S3ServiceCollectionGetParams {
+	o.SetCertificateUUIDQueryParameter(certificateUUID)
+	return o
+}
+
+// SetCertificateUUIDQueryParameter adds the certificateUuid to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetCertificateUUIDQueryParameter(certificateUUID *string) {
+	o.CertificateUUIDQueryParameter = certificateUUID
+}
+
 // WithCommentQueryParameter adds the comment to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) WithCommentQueryParameter(comment *string) *S3ServiceCollectionGetParams {
 	o.SetCommentQueryParameter(comment)
@@ -413,26 +922,202 @@ func (o *S3ServiceCollectionGetParams) SetEnabledQueryParameter(enabled *bool) {
 	o.EnabledQueryParameter = enabled
 }
 
-// WithFields adds the fields to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithFields(fields []string) *S3ServiceCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithFieldsQueryParameter(fields []string) *S3ServiceCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithMaxRecords adds the maxRecords to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithMaxRecords(maxRecords *int64) *S3ServiceCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithIsHTTPEnabledQueryParameter adds the isHTTPEnabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithIsHTTPEnabledQueryParameter(isHTTPEnabled *bool) *S3ServiceCollectionGetParams {
+	o.SetIsHTTPEnabledQueryParameter(isHTTPEnabled)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetIsHTTPEnabledQueryParameter adds the isHttpEnabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetIsHTTPEnabledQueryParameter(isHTTPEnabled *bool) {
+	o.IsHTTPEnabledQueryParameter = isHTTPEnabled
+}
+
+// WithIsHTTPsEnabledQueryParameter adds the isHTTPSEnabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithIsHTTPsEnabledQueryParameter(isHTTPSEnabled *bool) *S3ServiceCollectionGetParams {
+	o.SetIsHTTPsEnabledQueryParameter(isHTTPSEnabled)
+	return o
+}
+
+// SetIsHTTPsEnabledQueryParameter adds the isHttpsEnabled to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetIsHTTPsEnabledQueryParameter(isHTTPSEnabled *bool) {
+	o.IsHTTPsEnabledQueryParameter = isHTTPSEnabled
+}
+
+// WithMaxRecordsQueryParameter adds the maxRecords to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *S3ServiceCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
+	return o
+}
+
+// SetMaxRecordsQueryParameter adds the maxRecords to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
+}
+
+// WithMetricDurationQueryParameter adds the metricDuration to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricDurationQueryParameter(metricDuration *string) *S3ServiceCollectionGetParams {
+	o.SetMetricDurationQueryParameter(metricDuration)
+	return o
+}
+
+// SetMetricDurationQueryParameter adds the metricDuration to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricDurationQueryParameter(metricDuration *string) {
+	o.MetricDurationQueryParameter = metricDuration
+}
+
+// WithMetricIopsOtherQueryParameter adds the metricIopsOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricIopsOtherQueryParameter(metricIopsOther *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricIopsOtherQueryParameter(metricIopsOther)
+	return o
+}
+
+// SetMetricIopsOtherQueryParameter adds the metricIopsOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricIopsOtherQueryParameter(metricIopsOther *int64) {
+	o.MetricIopsOtherQueryParameter = metricIopsOther
+}
+
+// WithMetricIopsReadQueryParameter adds the metricIopsRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricIopsReadQueryParameter(metricIopsRead *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricIopsReadQueryParameter(metricIopsRead)
+	return o
+}
+
+// SetMetricIopsReadQueryParameter adds the metricIopsRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricIopsReadQueryParameter(metricIopsRead *int64) {
+	o.MetricIopsReadQueryParameter = metricIopsRead
+}
+
+// WithMetricIopsTotalQueryParameter adds the metricIopsTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricIopsTotalQueryParameter(metricIopsTotal *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricIopsTotalQueryParameter(metricIopsTotal)
+	return o
+}
+
+// SetMetricIopsTotalQueryParameter adds the metricIopsTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricIopsTotalQueryParameter(metricIopsTotal *int64) {
+	o.MetricIopsTotalQueryParameter = metricIopsTotal
+}
+
+// WithMetricIopsWriteQueryParameter adds the metricIopsWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricIopsWriteQueryParameter(metricIopsWrite *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricIopsWriteQueryParameter(metricIopsWrite)
+	return o
+}
+
+// SetMetricIopsWriteQueryParameter adds the metricIopsWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricIopsWriteQueryParameter(metricIopsWrite *int64) {
+	o.MetricIopsWriteQueryParameter = metricIopsWrite
+}
+
+// WithMetricLatencyOtherQueryParameter adds the metricLatencyOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricLatencyOtherQueryParameter(metricLatencyOther *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricLatencyOtherQueryParameter(metricLatencyOther)
+	return o
+}
+
+// SetMetricLatencyOtherQueryParameter adds the metricLatencyOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricLatencyOtherQueryParameter(metricLatencyOther *int64) {
+	o.MetricLatencyOtherQueryParameter = metricLatencyOther
+}
+
+// WithMetricLatencyReadQueryParameter adds the metricLatencyRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricLatencyReadQueryParameter(metricLatencyRead *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricLatencyReadQueryParameter(metricLatencyRead)
+	return o
+}
+
+// SetMetricLatencyReadQueryParameter adds the metricLatencyRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricLatencyReadQueryParameter(metricLatencyRead *int64) {
+	o.MetricLatencyReadQueryParameter = metricLatencyRead
+}
+
+// WithMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricLatencyTotalQueryParameter(metricLatencyTotal)
+	return o
+}
+
+// SetMetricLatencyTotalQueryParameter adds the metricLatencyTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricLatencyTotalQueryParameter(metricLatencyTotal *int64) {
+	o.MetricLatencyTotalQueryParameter = metricLatencyTotal
+}
+
+// WithMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricLatencyWriteQueryParameter(metricLatencyWrite)
+	return o
+}
+
+// SetMetricLatencyWriteQueryParameter adds the metricLatencyWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricLatencyWriteQueryParameter(metricLatencyWrite *int64) {
+	o.MetricLatencyWriteQueryParameter = metricLatencyWrite
+}
+
+// WithMetricStatusQueryParameter adds the metricStatus to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricStatusQueryParameter(metricStatus *string) *S3ServiceCollectionGetParams {
+	o.SetMetricStatusQueryParameter(metricStatus)
+	return o
+}
+
+// SetMetricStatusQueryParameter adds the metricStatus to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricStatusQueryParameter(metricStatus *string) {
+	o.MetricStatusQueryParameter = metricStatus
+}
+
+// WithMetricThroughputReadQueryParameter adds the metricThroughputRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricThroughputReadQueryParameter(metricThroughputRead *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricThroughputReadQueryParameter(metricThroughputRead)
+	return o
+}
+
+// SetMetricThroughputReadQueryParameter adds the metricThroughputRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricThroughputReadQueryParameter(metricThroughputRead *int64) {
+	o.MetricThroughputReadQueryParameter = metricThroughputRead
+}
+
+// WithMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricThroughputTotalQueryParameter(metricThroughputTotal)
+	return o
+}
+
+// SetMetricThroughputTotalQueryParameter adds the metricThroughputTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricThroughputTotalQueryParameter(metricThroughputTotal *int64) {
+	o.MetricThroughputTotalQueryParameter = metricThroughputTotal
+}
+
+// WithMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) *S3ServiceCollectionGetParams {
+	o.SetMetricThroughputWriteQueryParameter(metricThroughputWrite)
+	return o
+}
+
+// SetMetricThroughputWriteQueryParameter adds the metricThroughputWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricThroughputWriteQueryParameter(metricThroughputWrite *int64) {
+	o.MetricThroughputWriteQueryParameter = metricThroughputWrite
+}
+
+// WithMetricTimestampQueryParameter adds the metricTimestamp to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithMetricTimestampQueryParameter(metricTimestamp *string) *S3ServiceCollectionGetParams {
+	o.SetMetricTimestampQueryParameter(metricTimestamp)
+	return o
+}
+
+// SetMetricTimestampQueryParameter adds the metricTimestamp to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
+	o.MetricTimestampQueryParameter = metricTimestamp
 }
 
 // WithNameQueryParameter adds the name to the s3 service collection get params
@@ -446,37 +1131,202 @@ func (o *S3ServiceCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithOrderBy(orderBy []string) *S3ServiceCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *S3ServiceCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithReturnRecords(returnRecords *bool) *S3ServiceCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithPortQueryParameter adds the port to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithPortQueryParameter(port *int64) *S3ServiceCollectionGetParams {
+	o.SetPortQueryParameter(port)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetPortQueryParameter adds the port to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetPortQueryParameter(port *int64) {
+	o.PortQueryParameter = port
 }
 
-// WithReturnTimeout adds the returnTimeout to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *S3ServiceCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnRecordsQueryParameter adds the returnRecords to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *S3ServiceCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the s3 service collection get params
-func (o *S3ServiceCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnRecordsQueryParameter adds the returnRecords to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
+}
+
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *S3ServiceCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
+	return o
+}
+
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
+}
+
+// WithSecurePortQueryParameter adds the securePort to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithSecurePortQueryParameter(securePort *int64) *S3ServiceCollectionGetParams {
+	o.SetSecurePortQueryParameter(securePort)
+	return o
+}
+
+// SetSecurePortQueryParameter adds the securePort to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetSecurePortQueryParameter(securePort *int64) {
+	o.SecurePortQueryParameter = securePort
+}
+
+// WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther)
+	return o
+}
+
+// SetStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsIopsRawOtherQueryParameter(statisticsIopsRawOther *int64) {
+	o.StatisticsIopsRawOtherQueryParameter = statisticsIopsRawOther
+}
+
+// WithStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead)
+	return o
+}
+
+// SetStatisticsIopsRawReadQueryParameter adds the statisticsIopsRawRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsIopsRawReadQueryParameter(statisticsIopsRawRead *int64) {
+	o.StatisticsIopsRawReadQueryParameter = statisticsIopsRawRead
+}
+
+// WithStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal)
+	return o
+}
+
+// SetStatisticsIopsRawTotalQueryParameter adds the statisticsIopsRawTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsIopsRawTotalQueryParameter(statisticsIopsRawTotal *int64) {
+	o.StatisticsIopsRawTotalQueryParameter = statisticsIopsRawTotal
+}
+
+// WithStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite)
+	return o
+}
+
+// SetStatisticsIopsRawWriteQueryParameter adds the statisticsIopsRawWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsIopsRawWriteQueryParameter(statisticsIopsRawWrite *int64) {
+	o.StatisticsIopsRawWriteQueryParameter = statisticsIopsRawWrite
+}
+
+// WithStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther)
+	return o
+}
+
+// SetStatisticsLatencyRawOtherQueryParameter adds the statisticsLatencyRawOther to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsLatencyRawOtherQueryParameter(statisticsLatencyRawOther *int64) {
+	o.StatisticsLatencyRawOtherQueryParameter = statisticsLatencyRawOther
+}
+
+// WithStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead)
+	return o
+}
+
+// SetStatisticsLatencyRawReadQueryParameter adds the statisticsLatencyRawRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsLatencyRawReadQueryParameter(statisticsLatencyRawRead *int64) {
+	o.StatisticsLatencyRawReadQueryParameter = statisticsLatencyRawRead
+}
+
+// WithStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal)
+	return o
+}
+
+// SetStatisticsLatencyRawTotalQueryParameter adds the statisticsLatencyRawTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsLatencyRawTotalQueryParameter(statisticsLatencyRawTotal *int64) {
+	o.StatisticsLatencyRawTotalQueryParameter = statisticsLatencyRawTotal
+}
+
+// WithStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite)
+	return o
+}
+
+// SetStatisticsLatencyRawWriteQueryParameter adds the statisticsLatencyRawWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsLatencyRawWriteQueryParameter(statisticsLatencyRawWrite *int64) {
+	o.StatisticsLatencyRawWriteQueryParameter = statisticsLatencyRawWrite
+}
+
+// WithStatisticsStatusQueryParameter adds the statisticsStatus to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsStatusQueryParameter(statisticsStatus *string) *S3ServiceCollectionGetParams {
+	o.SetStatisticsStatusQueryParameter(statisticsStatus)
+	return o
+}
+
+// SetStatisticsStatusQueryParameter adds the statisticsStatus to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsStatusQueryParameter(statisticsStatus *string) {
+	o.StatisticsStatusQueryParameter = statisticsStatus
+}
+
+// WithStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead)
+	return o
+}
+
+// SetStatisticsThroughputRawReadQueryParameter adds the statisticsThroughputRawRead to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsThroughputRawReadQueryParameter(statisticsThroughputRawRead *int64) {
+	o.StatisticsThroughputRawReadQueryParameter = statisticsThroughputRawRead
+}
+
+// WithStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal)
+	return o
+}
+
+// SetStatisticsThroughputRawTotalQueryParameter adds the statisticsThroughputRawTotal to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsThroughputRawTotalQueryParameter(statisticsThroughputRawTotal *int64) {
+	o.StatisticsThroughputRawTotalQueryParameter = statisticsThroughputRawTotal
+}
+
+// WithStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) *S3ServiceCollectionGetParams {
+	o.SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite)
+	return o
+}
+
+// SetStatisticsThroughputRawWriteQueryParameter adds the statisticsThroughputRawWrite to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsThroughputRawWriteQueryParameter(statisticsThroughputRawWrite *int64) {
+	o.StatisticsThroughputRawWriteQueryParameter = statisticsThroughputRawWrite
+}
+
+// WithStatisticsTimestampQueryParameter adds the statisticsTimestamp to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithStatisticsTimestampQueryParameter(statisticsTimestamp *string) *S3ServiceCollectionGetParams {
+	o.SetStatisticsTimestampQueryParameter(statisticsTimestamp)
+	return o
+}
+
+// SetStatisticsTimestampQueryParameter adds the statisticsTimestamp to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetStatisticsTimestampQueryParameter(statisticsTimestamp *string) {
+	o.StatisticsTimestampQueryParameter = statisticsTimestamp
 }
 
 // WithSVMNameQueryParameter adds the svmName to the s3 service collection get params
@@ -632,6 +1482,295 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.BucketsPolicyStatementsActionsQueryParameter != nil {
+
+		// query param buckets.policy.statements.actions
+		var qrBucketsPolicyStatementsActions string
+
+		if o.BucketsPolicyStatementsActionsQueryParameter != nil {
+			qrBucketsPolicyStatementsActions = *o.BucketsPolicyStatementsActionsQueryParameter
+		}
+		qBucketsPolicyStatementsActions := qrBucketsPolicyStatementsActions
+		if qBucketsPolicyStatementsActions != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.actions", qBucketsPolicyStatementsActions); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsConditionsDelimitersQueryParameter != nil {
+
+		// query param buckets.policy.statements.conditions.delimiters
+		var qrBucketsPolicyStatementsConditionsDelimiters string
+
+		if o.BucketsPolicyStatementsConditionsDelimitersQueryParameter != nil {
+			qrBucketsPolicyStatementsConditionsDelimiters = *o.BucketsPolicyStatementsConditionsDelimitersQueryParameter
+		}
+		qBucketsPolicyStatementsConditionsDelimiters := qrBucketsPolicyStatementsConditionsDelimiters
+		if qBucketsPolicyStatementsConditionsDelimiters != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.conditions.delimiters", qBucketsPolicyStatementsConditionsDelimiters); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsConditionsMaxKeysQueryParameter != nil {
+
+		// query param buckets.policy.statements.conditions.max_keys
+		var qrBucketsPolicyStatementsConditionsMaxKeys int64
+
+		if o.BucketsPolicyStatementsConditionsMaxKeysQueryParameter != nil {
+			qrBucketsPolicyStatementsConditionsMaxKeys = *o.BucketsPolicyStatementsConditionsMaxKeysQueryParameter
+		}
+		qBucketsPolicyStatementsConditionsMaxKeys := swag.FormatInt64(qrBucketsPolicyStatementsConditionsMaxKeys)
+		if qBucketsPolicyStatementsConditionsMaxKeys != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.conditions.max_keys", qBucketsPolicyStatementsConditionsMaxKeys); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsConditionsOperatorQueryParameter != nil {
+
+		// query param buckets.policy.statements.conditions.operator
+		var qrBucketsPolicyStatementsConditionsOperator string
+
+		if o.BucketsPolicyStatementsConditionsOperatorQueryParameter != nil {
+			qrBucketsPolicyStatementsConditionsOperator = *o.BucketsPolicyStatementsConditionsOperatorQueryParameter
+		}
+		qBucketsPolicyStatementsConditionsOperator := qrBucketsPolicyStatementsConditionsOperator
+		if qBucketsPolicyStatementsConditionsOperator != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.conditions.operator", qBucketsPolicyStatementsConditionsOperator); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsConditionsPrefixesQueryParameter != nil {
+
+		// query param buckets.policy.statements.conditions.prefixes
+		var qrBucketsPolicyStatementsConditionsPrefixes string
+
+		if o.BucketsPolicyStatementsConditionsPrefixesQueryParameter != nil {
+			qrBucketsPolicyStatementsConditionsPrefixes = *o.BucketsPolicyStatementsConditionsPrefixesQueryParameter
+		}
+		qBucketsPolicyStatementsConditionsPrefixes := qrBucketsPolicyStatementsConditionsPrefixes
+		if qBucketsPolicyStatementsConditionsPrefixes != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.conditions.prefixes", qBucketsPolicyStatementsConditionsPrefixes); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsConditionsSourceIPsQueryParameter != nil {
+
+		// query param buckets.policy.statements.conditions.source_ips
+		var qrBucketsPolicyStatementsConditionsSourceIps string
+
+		if o.BucketsPolicyStatementsConditionsSourceIPsQueryParameter != nil {
+			qrBucketsPolicyStatementsConditionsSourceIps = *o.BucketsPolicyStatementsConditionsSourceIPsQueryParameter
+		}
+		qBucketsPolicyStatementsConditionsSourceIps := qrBucketsPolicyStatementsConditionsSourceIps
+		if qBucketsPolicyStatementsConditionsSourceIps != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.conditions.source_ips", qBucketsPolicyStatementsConditionsSourceIps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsConditionsUsernamesQueryParameter != nil {
+
+		// query param buckets.policy.statements.conditions.usernames
+		var qrBucketsPolicyStatementsConditionsUsernames string
+
+		if o.BucketsPolicyStatementsConditionsUsernamesQueryParameter != nil {
+			qrBucketsPolicyStatementsConditionsUsernames = *o.BucketsPolicyStatementsConditionsUsernamesQueryParameter
+		}
+		qBucketsPolicyStatementsConditionsUsernames := qrBucketsPolicyStatementsConditionsUsernames
+		if qBucketsPolicyStatementsConditionsUsernames != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.conditions.usernames", qBucketsPolicyStatementsConditionsUsernames); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsEffectQueryParameter != nil {
+
+		// query param buckets.policy.statements.effect
+		var qrBucketsPolicyStatementsEffect string
+
+		if o.BucketsPolicyStatementsEffectQueryParameter != nil {
+			qrBucketsPolicyStatementsEffect = *o.BucketsPolicyStatementsEffectQueryParameter
+		}
+		qBucketsPolicyStatementsEffect := qrBucketsPolicyStatementsEffect
+		if qBucketsPolicyStatementsEffect != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.effect", qBucketsPolicyStatementsEffect); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsPrincipalsQueryParameter != nil {
+
+		// query param buckets.policy.statements.principals
+		var qrBucketsPolicyStatementsPrincipals string
+
+		if o.BucketsPolicyStatementsPrincipalsQueryParameter != nil {
+			qrBucketsPolicyStatementsPrincipals = *o.BucketsPolicyStatementsPrincipalsQueryParameter
+		}
+		qBucketsPolicyStatementsPrincipals := qrBucketsPolicyStatementsPrincipals
+		if qBucketsPolicyStatementsPrincipals != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.principals", qBucketsPolicyStatementsPrincipals); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsResourcesQueryParameter != nil {
+
+		// query param buckets.policy.statements.resources
+		var qrBucketsPolicyStatementsResources string
+
+		if o.BucketsPolicyStatementsResourcesQueryParameter != nil {
+			qrBucketsPolicyStatementsResources = *o.BucketsPolicyStatementsResourcesQueryParameter
+		}
+		qBucketsPolicyStatementsResources := qrBucketsPolicyStatementsResources
+		if qBucketsPolicyStatementsResources != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.resources", qBucketsPolicyStatementsResources); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsSIDQueryParameter != nil {
+
+		// query param buckets.policy.statements.sid
+		var qrBucketsPolicyStatementsSid string
+
+		if o.BucketsPolicyStatementsSIDQueryParameter != nil {
+			qrBucketsPolicyStatementsSid = *o.BucketsPolicyStatementsSIDQueryParameter
+		}
+		qBucketsPolicyStatementsSid := qrBucketsPolicyStatementsSid
+		if qBucketsPolicyStatementsSid != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.sid", qBucketsPolicyStatementsSid); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsQosPolicyMaxThroughputIopsQueryParameter != nil {
+
+		// query param buckets.qos_policy.max_throughput_iops
+		var qrBucketsQosPolicyMaxThroughputIops int64
+
+		if o.BucketsQosPolicyMaxThroughputIopsQueryParameter != nil {
+			qrBucketsQosPolicyMaxThroughputIops = *o.BucketsQosPolicyMaxThroughputIopsQueryParameter
+		}
+		qBucketsQosPolicyMaxThroughputIops := swag.FormatInt64(qrBucketsQosPolicyMaxThroughputIops)
+		if qBucketsQosPolicyMaxThroughputIops != "" {
+
+			if err := r.SetQueryParam("buckets.qos_policy.max_throughput_iops", qBucketsQosPolicyMaxThroughputIops); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsQosPolicyMaxThroughputMbpsQueryParameter != nil {
+
+		// query param buckets.qos_policy.max_throughput_mbps
+		var qrBucketsQosPolicyMaxThroughputMbps int64
+
+		if o.BucketsQosPolicyMaxThroughputMbpsQueryParameter != nil {
+			qrBucketsQosPolicyMaxThroughputMbps = *o.BucketsQosPolicyMaxThroughputMbpsQueryParameter
+		}
+		qBucketsQosPolicyMaxThroughputMbps := swag.FormatInt64(qrBucketsQosPolicyMaxThroughputMbps)
+		if qBucketsQosPolicyMaxThroughputMbps != "" {
+
+			if err := r.SetQueryParam("buckets.qos_policy.max_throughput_mbps", qBucketsQosPolicyMaxThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsQosPolicyMinThroughputIopsQueryParameter != nil {
+
+		// query param buckets.qos_policy.min_throughput_iops
+		var qrBucketsQosPolicyMinThroughputIops int64
+
+		if o.BucketsQosPolicyMinThroughputIopsQueryParameter != nil {
+			qrBucketsQosPolicyMinThroughputIops = *o.BucketsQosPolicyMinThroughputIopsQueryParameter
+		}
+		qBucketsQosPolicyMinThroughputIops := swag.FormatInt64(qrBucketsQosPolicyMinThroughputIops)
+		if qBucketsQosPolicyMinThroughputIops != "" {
+
+			if err := r.SetQueryParam("buckets.qos_policy.min_throughput_iops", qBucketsQosPolicyMinThroughputIops); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsQosPolicyMinThroughputMbpsQueryParameter != nil {
+
+		// query param buckets.qos_policy.min_throughput_mbps
+		var qrBucketsQosPolicyMinThroughputMbps int64
+
+		if o.BucketsQosPolicyMinThroughputMbpsQueryParameter != nil {
+			qrBucketsQosPolicyMinThroughputMbps = *o.BucketsQosPolicyMinThroughputMbpsQueryParameter
+		}
+		qBucketsQosPolicyMinThroughputMbps := swag.FormatInt64(qrBucketsQosPolicyMinThroughputMbps)
+		if qBucketsQosPolicyMinThroughputMbps != "" {
+
+			if err := r.SetQueryParam("buckets.qos_policy.min_throughput_mbps", qBucketsQosPolicyMinThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsQosPolicyNameQueryParameter != nil {
+
+		// query param buckets.qos_policy.name
+		var qrBucketsQosPolicyName string
+
+		if o.BucketsQosPolicyNameQueryParameter != nil {
+			qrBucketsQosPolicyName = *o.BucketsQosPolicyNameQueryParameter
+		}
+		qBucketsQosPolicyName := qrBucketsQosPolicyName
+		if qBucketsQosPolicyName != "" {
+
+			if err := r.SetQueryParam("buckets.qos_policy.name", qBucketsQosPolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsQosPolicyUUIDQueryParameter != nil {
+
+		// query param buckets.qos_policy.uuid
+		var qrBucketsQosPolicyUUID string
+
+		if o.BucketsQosPolicyUUIDQueryParameter != nil {
+			qrBucketsQosPolicyUUID = *o.BucketsQosPolicyUUIDQueryParameter
+		}
+		qBucketsQosPolicyUUID := qrBucketsQosPolicyUUID
+		if qBucketsQosPolicyUUID != "" {
+
+			if err := r.SetQueryParam("buckets.qos_policy.uuid", qBucketsQosPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.BucketsSizeQueryParameter != nil {
 
 		// query param buckets.size
@@ -734,6 +1873,40 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.CertificateNameQueryParameter != nil {
+
+		// query param certificate.name
+		var qrCertificateName string
+
+		if o.CertificateNameQueryParameter != nil {
+			qrCertificateName = *o.CertificateNameQueryParameter
+		}
+		qCertificateName := qrCertificateName
+		if qCertificateName != "" {
+
+			if err := r.SetQueryParam("certificate.name", qCertificateName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CertificateUUIDQueryParameter != nil {
+
+		// query param certificate.uuid
+		var qrCertificateUUID string
+
+		if o.CertificateUUIDQueryParameter != nil {
+			qrCertificateUUID = *o.CertificateUUIDQueryParameter
+		}
+		qCertificateUUID := qrCertificateUUID
+		if qCertificateUUID != "" {
+
+			if err := r.SetQueryParam("certificate.uuid", qCertificateUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CommentQueryParameter != nil {
 
 		// query param comment
@@ -768,7 +1941,7 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -779,18 +1952,290 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.IsHTTPEnabledQueryParameter != nil {
+
+		// query param is_http_enabled
+		var qrIsHTTPEnabled bool
+
+		if o.IsHTTPEnabledQueryParameter != nil {
+			qrIsHTTPEnabled = *o.IsHTTPEnabledQueryParameter
+		}
+		qIsHTTPEnabled := swag.FormatBool(qrIsHTTPEnabled)
+		if qIsHTTPEnabled != "" {
+
+			if err := r.SetQueryParam("is_http_enabled", qIsHTTPEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsHTTPsEnabledQueryParameter != nil {
+
+		// query param is_https_enabled
+		var qrIsHTTPSEnabled bool
+
+		if o.IsHTTPsEnabledQueryParameter != nil {
+			qrIsHTTPSEnabled = *o.IsHTTPsEnabledQueryParameter
+		}
+		qIsHTTPSEnabled := swag.FormatBool(qrIsHTTPSEnabled)
+		if qIsHTTPSEnabled != "" {
+
+			if err := r.SetQueryParam("is_https_enabled", qIsHTTPSEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricDurationQueryParameter != nil {
+
+		// query param metric.duration
+		var qrMetricDuration string
+
+		if o.MetricDurationQueryParameter != nil {
+			qrMetricDuration = *o.MetricDurationQueryParameter
+		}
+		qMetricDuration := qrMetricDuration
+		if qMetricDuration != "" {
+
+			if err := r.SetQueryParam("metric.duration", qMetricDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsOtherQueryParameter != nil {
+
+		// query param metric.iops.other
+		var qrMetricIopsOther int64
+
+		if o.MetricIopsOtherQueryParameter != nil {
+			qrMetricIopsOther = *o.MetricIopsOtherQueryParameter
+		}
+		qMetricIopsOther := swag.FormatInt64(qrMetricIopsOther)
+		if qMetricIopsOther != "" {
+
+			if err := r.SetQueryParam("metric.iops.other", qMetricIopsOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsReadQueryParameter != nil {
+
+		// query param metric.iops.read
+		var qrMetricIopsRead int64
+
+		if o.MetricIopsReadQueryParameter != nil {
+			qrMetricIopsRead = *o.MetricIopsReadQueryParameter
+		}
+		qMetricIopsRead := swag.FormatInt64(qrMetricIopsRead)
+		if qMetricIopsRead != "" {
+
+			if err := r.SetQueryParam("metric.iops.read", qMetricIopsRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsTotalQueryParameter != nil {
+
+		// query param metric.iops.total
+		var qrMetricIopsTotal int64
+
+		if o.MetricIopsTotalQueryParameter != nil {
+			qrMetricIopsTotal = *o.MetricIopsTotalQueryParameter
+		}
+		qMetricIopsTotal := swag.FormatInt64(qrMetricIopsTotal)
+		if qMetricIopsTotal != "" {
+
+			if err := r.SetQueryParam("metric.iops.total", qMetricIopsTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricIopsWriteQueryParameter != nil {
+
+		// query param metric.iops.write
+		var qrMetricIopsWrite int64
+
+		if o.MetricIopsWriteQueryParameter != nil {
+			qrMetricIopsWrite = *o.MetricIopsWriteQueryParameter
+		}
+		qMetricIopsWrite := swag.FormatInt64(qrMetricIopsWrite)
+		if qMetricIopsWrite != "" {
+
+			if err := r.SetQueryParam("metric.iops.write", qMetricIopsWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyOtherQueryParameter != nil {
+
+		// query param metric.latency.other
+		var qrMetricLatencyOther int64
+
+		if o.MetricLatencyOtherQueryParameter != nil {
+			qrMetricLatencyOther = *o.MetricLatencyOtherQueryParameter
+		}
+		qMetricLatencyOther := swag.FormatInt64(qrMetricLatencyOther)
+		if qMetricLatencyOther != "" {
+
+			if err := r.SetQueryParam("metric.latency.other", qMetricLatencyOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyReadQueryParameter != nil {
+
+		// query param metric.latency.read
+		var qrMetricLatencyRead int64
+
+		if o.MetricLatencyReadQueryParameter != nil {
+			qrMetricLatencyRead = *o.MetricLatencyReadQueryParameter
+		}
+		qMetricLatencyRead := swag.FormatInt64(qrMetricLatencyRead)
+		if qMetricLatencyRead != "" {
+
+			if err := r.SetQueryParam("metric.latency.read", qMetricLatencyRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyTotalQueryParameter != nil {
+
+		// query param metric.latency.total
+		var qrMetricLatencyTotal int64
+
+		if o.MetricLatencyTotalQueryParameter != nil {
+			qrMetricLatencyTotal = *o.MetricLatencyTotalQueryParameter
+		}
+		qMetricLatencyTotal := swag.FormatInt64(qrMetricLatencyTotal)
+		if qMetricLatencyTotal != "" {
+
+			if err := r.SetQueryParam("metric.latency.total", qMetricLatencyTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricLatencyWriteQueryParameter != nil {
+
+		// query param metric.latency.write
+		var qrMetricLatencyWrite int64
+
+		if o.MetricLatencyWriteQueryParameter != nil {
+			qrMetricLatencyWrite = *o.MetricLatencyWriteQueryParameter
+		}
+		qMetricLatencyWrite := swag.FormatInt64(qrMetricLatencyWrite)
+		if qMetricLatencyWrite != "" {
+
+			if err := r.SetQueryParam("metric.latency.write", qMetricLatencyWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricStatusQueryParameter != nil {
+
+		// query param metric.status
+		var qrMetricStatus string
+
+		if o.MetricStatusQueryParameter != nil {
+			qrMetricStatus = *o.MetricStatusQueryParameter
+		}
+		qMetricStatus := qrMetricStatus
+		if qMetricStatus != "" {
+
+			if err := r.SetQueryParam("metric.status", qMetricStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputReadQueryParameter != nil {
+
+		// query param metric.throughput.read
+		var qrMetricThroughputRead int64
+
+		if o.MetricThroughputReadQueryParameter != nil {
+			qrMetricThroughputRead = *o.MetricThroughputReadQueryParameter
+		}
+		qMetricThroughputRead := swag.FormatInt64(qrMetricThroughputRead)
+		if qMetricThroughputRead != "" {
+
+			if err := r.SetQueryParam("metric.throughput.read", qMetricThroughputRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputTotalQueryParameter != nil {
+
+		// query param metric.throughput.total
+		var qrMetricThroughputTotal int64
+
+		if o.MetricThroughputTotalQueryParameter != nil {
+			qrMetricThroughputTotal = *o.MetricThroughputTotalQueryParameter
+		}
+		qMetricThroughputTotal := swag.FormatInt64(qrMetricThroughputTotal)
+		if qMetricThroughputTotal != "" {
+
+			if err := r.SetQueryParam("metric.throughput.total", qMetricThroughputTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricThroughputWriteQueryParameter != nil {
+
+		// query param metric.throughput.write
+		var qrMetricThroughputWrite int64
+
+		if o.MetricThroughputWriteQueryParameter != nil {
+			qrMetricThroughputWrite = *o.MetricThroughputWriteQueryParameter
+		}
+		qMetricThroughputWrite := swag.FormatInt64(qrMetricThroughputWrite)
+		if qMetricThroughputWrite != "" {
+
+			if err := r.SetQueryParam("metric.throughput.write", qMetricThroughputWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricTimestampQueryParameter != nil {
+
+		// query param metric.timestamp
+		var qrMetricTimestamp string
+
+		if o.MetricTimestampQueryParameter != nil {
+			qrMetricTimestamp = *o.MetricTimestampQueryParameter
+		}
+		qMetricTimestamp := qrMetricTimestamp
+		if qMetricTimestamp != "" {
+
+			if err := r.SetQueryParam("metric.timestamp", qMetricTimestamp); err != nil {
 				return err
 			}
 		}
@@ -813,7 +2258,7 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -824,13 +2269,30 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.PortQueryParameter != nil {
+
+		// query param port
+		var qrPort int64
+
+		if o.PortQueryParameter != nil {
+			qrPort = *o.PortQueryParameter
+		}
+		qPort := swag.FormatInt64(qrPort)
+		if qPort != "" {
+
+			if err := r.SetQueryParam("port", qPort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -841,18 +2303,256 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurePortQueryParameter != nil {
+
+		// query param secure_port
+		var qrSecurePort int64
+
+		if o.SecurePortQueryParameter != nil {
+			qrSecurePort = *o.SecurePortQueryParameter
+		}
+		qSecurePort := swag.FormatInt64(qrSecurePort)
+		if qSecurePort != "" {
+
+			if err := r.SetQueryParam("secure_port", qSecurePort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawOtherQueryParameter != nil {
+
+		// query param statistics.iops_raw.other
+		var qrStatisticsIopsRawOther int64
+
+		if o.StatisticsIopsRawOtherQueryParameter != nil {
+			qrStatisticsIopsRawOther = *o.StatisticsIopsRawOtherQueryParameter
+		}
+		qStatisticsIopsRawOther := swag.FormatInt64(qrStatisticsIopsRawOther)
+		if qStatisticsIopsRawOther != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.other", qStatisticsIopsRawOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawReadQueryParameter != nil {
+
+		// query param statistics.iops_raw.read
+		var qrStatisticsIopsRawRead int64
+
+		if o.StatisticsIopsRawReadQueryParameter != nil {
+			qrStatisticsIopsRawRead = *o.StatisticsIopsRawReadQueryParameter
+		}
+		qStatisticsIopsRawRead := swag.FormatInt64(qrStatisticsIopsRawRead)
+		if qStatisticsIopsRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.read", qStatisticsIopsRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawTotalQueryParameter != nil {
+
+		// query param statistics.iops_raw.total
+		var qrStatisticsIopsRawTotal int64
+
+		if o.StatisticsIopsRawTotalQueryParameter != nil {
+			qrStatisticsIopsRawTotal = *o.StatisticsIopsRawTotalQueryParameter
+		}
+		qStatisticsIopsRawTotal := swag.FormatInt64(qrStatisticsIopsRawTotal)
+		if qStatisticsIopsRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.total", qStatisticsIopsRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsIopsRawWriteQueryParameter != nil {
+
+		// query param statistics.iops_raw.write
+		var qrStatisticsIopsRawWrite int64
+
+		if o.StatisticsIopsRawWriteQueryParameter != nil {
+			qrStatisticsIopsRawWrite = *o.StatisticsIopsRawWriteQueryParameter
+		}
+		qStatisticsIopsRawWrite := swag.FormatInt64(qrStatisticsIopsRawWrite)
+		if qStatisticsIopsRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.iops_raw.write", qStatisticsIopsRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawOtherQueryParameter != nil {
+
+		// query param statistics.latency_raw.other
+		var qrStatisticsLatencyRawOther int64
+
+		if o.StatisticsLatencyRawOtherQueryParameter != nil {
+			qrStatisticsLatencyRawOther = *o.StatisticsLatencyRawOtherQueryParameter
+		}
+		qStatisticsLatencyRawOther := swag.FormatInt64(qrStatisticsLatencyRawOther)
+		if qStatisticsLatencyRawOther != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.other", qStatisticsLatencyRawOther); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawReadQueryParameter != nil {
+
+		// query param statistics.latency_raw.read
+		var qrStatisticsLatencyRawRead int64
+
+		if o.StatisticsLatencyRawReadQueryParameter != nil {
+			qrStatisticsLatencyRawRead = *o.StatisticsLatencyRawReadQueryParameter
+		}
+		qStatisticsLatencyRawRead := swag.FormatInt64(qrStatisticsLatencyRawRead)
+		if qStatisticsLatencyRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.read", qStatisticsLatencyRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawTotalQueryParameter != nil {
+
+		// query param statistics.latency_raw.total
+		var qrStatisticsLatencyRawTotal int64
+
+		if o.StatisticsLatencyRawTotalQueryParameter != nil {
+			qrStatisticsLatencyRawTotal = *o.StatisticsLatencyRawTotalQueryParameter
+		}
+		qStatisticsLatencyRawTotal := swag.FormatInt64(qrStatisticsLatencyRawTotal)
+		if qStatisticsLatencyRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.total", qStatisticsLatencyRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsLatencyRawWriteQueryParameter != nil {
+
+		// query param statistics.latency_raw.write
+		var qrStatisticsLatencyRawWrite int64
+
+		if o.StatisticsLatencyRawWriteQueryParameter != nil {
+			qrStatisticsLatencyRawWrite = *o.StatisticsLatencyRawWriteQueryParameter
+		}
+		qStatisticsLatencyRawWrite := swag.FormatInt64(qrStatisticsLatencyRawWrite)
+		if qStatisticsLatencyRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.latency_raw.write", qStatisticsLatencyRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsStatusQueryParameter != nil {
+
+		// query param statistics.status
+		var qrStatisticsStatus string
+
+		if o.StatisticsStatusQueryParameter != nil {
+			qrStatisticsStatus = *o.StatisticsStatusQueryParameter
+		}
+		qStatisticsStatus := qrStatisticsStatus
+		if qStatisticsStatus != "" {
+
+			if err := r.SetQueryParam("statistics.status", qStatisticsStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawReadQueryParameter != nil {
+
+		// query param statistics.throughput_raw.read
+		var qrStatisticsThroughputRawRead int64
+
+		if o.StatisticsThroughputRawReadQueryParameter != nil {
+			qrStatisticsThroughputRawRead = *o.StatisticsThroughputRawReadQueryParameter
+		}
+		qStatisticsThroughputRawRead := swag.FormatInt64(qrStatisticsThroughputRawRead)
+		if qStatisticsThroughputRawRead != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.read", qStatisticsThroughputRawRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawTotalQueryParameter != nil {
+
+		// query param statistics.throughput_raw.total
+		var qrStatisticsThroughputRawTotal int64
+
+		if o.StatisticsThroughputRawTotalQueryParameter != nil {
+			qrStatisticsThroughputRawTotal = *o.StatisticsThroughputRawTotalQueryParameter
+		}
+		qStatisticsThroughputRawTotal := swag.FormatInt64(qrStatisticsThroughputRawTotal)
+		if qStatisticsThroughputRawTotal != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.total", qStatisticsThroughputRawTotal); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsThroughputRawWriteQueryParameter != nil {
+
+		// query param statistics.throughput_raw.write
+		var qrStatisticsThroughputRawWrite int64
+
+		if o.StatisticsThroughputRawWriteQueryParameter != nil {
+			qrStatisticsThroughputRawWrite = *o.StatisticsThroughputRawWriteQueryParameter
+		}
+		qStatisticsThroughputRawWrite := swag.FormatInt64(qrStatisticsThroughputRawWrite)
+		if qStatisticsThroughputRawWrite != "" {
+
+			if err := r.SetQueryParam("statistics.throughput_raw.write", qStatisticsThroughputRawWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsTimestampQueryParameter != nil {
+
+		// query param statistics.timestamp
+		var qrStatisticsTimestamp string
+
+		if o.StatisticsTimestampQueryParameter != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestampQueryParameter
+		}
+		qStatisticsTimestamp := qrStatisticsTimestamp
+		if qStatisticsTimestamp != "" {
+
+			if err := r.SetQueryParam("statistics.timestamp", qStatisticsTimestamp); err != nil {
 				return err
 			}
 		}
@@ -985,7 +2685,7 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamS3ServiceCollectionGet binds the parameter fields
 func (o *S3ServiceCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -1002,7 +2702,7 @@ func (o *S3ServiceCollectionGetParams) bindParamFields(formats strfmt.Registry) 
 
 // bindParamS3ServiceCollectionGet binds the parameter order_by
 func (o *S3ServiceCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -78,13 +78,13 @@ type ClusterCreateParams struct {
 
 	   The default is false.  If set to true, the records are returned.
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SingleNodeCluster.
 
@@ -112,15 +112,15 @@ func (o *ClusterCreateParams) SetDefaults() {
 	var (
 		createRecommendedAggregatesQueryParameterDefault = bool(false)
 
-		returnRecordsDefault = bool(false)
+		returnRecordsQueryParameterDefault = bool(false)
 
-		returnTimeoutDefault = int64(0)
+		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := ClusterCreateParams{
 		CreateRecommendedAggregatesQueryParameter: &createRecommendedAggregatesQueryParameterDefault,
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter:               &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter:               &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -184,26 +184,26 @@ func (o *ClusterCreateParams) SetInfo(info *models.Cluster) {
 	o.Info = info
 }
 
-// WithReturnRecords adds the returnRecords to the cluster create params
-func (o *ClusterCreateParams) WithReturnRecords(returnRecords *bool) *ClusterCreateParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the cluster create params
+func (o *ClusterCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ClusterCreateParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the cluster create params
-func (o *ClusterCreateParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the cluster create params
+func (o *ClusterCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the cluster create params
-func (o *ClusterCreateParams) WithReturnTimeout(returnTimeout *int64) *ClusterCreateParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the cluster create params
+func (o *ClusterCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ClusterCreateParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the cluster create params
-func (o *ClusterCreateParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the cluster create params
+func (o *ClusterCreateParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSingleNodeClusterQueryParameter adds the singleNodeCluster to the cluster create params
@@ -247,13 +247,13 @@ func (o *ClusterCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -264,13 +264,13 @@ func (o *ClusterCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {

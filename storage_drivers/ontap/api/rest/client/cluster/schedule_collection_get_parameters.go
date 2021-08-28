@@ -106,7 +106,7 @@ type ScheduleCollectionGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Interval.
 
@@ -118,7 +118,7 @@ type ScheduleCollectionGetParams struct {
 
 	   Limit the number of records returned.
 	*/
-	MaxRecords *int64
+	MaxRecordsQueryParameter *int64
 
 	/* Name.
 
@@ -130,7 +130,7 @@ type ScheduleCollectionGetParams struct {
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
-	OrderBy []string
+	OrderByQueryParameter []string
 
 	/* ReturnRecords.
 
@@ -138,7 +138,7 @@ type ScheduleCollectionGetParams struct {
 
 	   Default: true
 	*/
-	ReturnRecords *bool
+	ReturnRecordsQueryParameter *bool
 
 	/* ReturnTimeout.
 
@@ -146,7 +146,7 @@ type ScheduleCollectionGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* Type.
 
@@ -178,14 +178,14 @@ func (o *ScheduleCollectionGetParams) WithDefaults() *ScheduleCollectionGetParam
 // All values with no default are reset to their zero value.
 func (o *ScheduleCollectionGetParams) SetDefaults() {
 	var (
-		returnRecordsDefault = bool(true)
+		returnRecordsQueryParameterDefault = bool(true)
 
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := ScheduleCollectionGetParams{
-		ReturnRecords: &returnRecordsDefault,
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -304,15 +304,15 @@ func (o *ScheduleCollectionGetParams) SetCronWeekdaysQueryParameter(cronWeekdays
 	o.CronWeekdaysQueryParameter = cronWeekdays
 }
 
-// WithFields adds the fields to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithFields(fields []string) *ScheduleCollectionGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithFieldsQueryParameter(fields []string) *ScheduleCollectionGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIntervalQueryParameter adds the interval to the schedule collection get params
@@ -326,15 +326,15 @@ func (o *ScheduleCollectionGetParams) SetIntervalQueryParameter(interval *string
 	o.IntervalQueryParameter = interval
 }
 
-// WithMaxRecords adds the maxRecords to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithMaxRecords(maxRecords *int64) *ScheduleCollectionGetParams {
-	o.SetMaxRecords(maxRecords)
+// WithMaxRecordsQueryParameter adds the maxRecords to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ScheduleCollectionGetParams {
+	o.SetMaxRecordsQueryParameter(maxRecords)
 	return o
 }
 
-// SetMaxRecords adds the maxRecords to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetMaxRecords(maxRecords *int64) {
-	o.MaxRecords = maxRecords
+// SetMaxRecordsQueryParameter adds the maxRecords to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
+	o.MaxRecordsQueryParameter = maxRecords
 }
 
 // WithNameQueryParameter adds the name to the schedule collection get params
@@ -348,37 +348,37 @@ func (o *ScheduleCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
-// WithOrderBy adds the orderBy to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithOrderBy(orderBy []string) *ScheduleCollectionGetParams {
-	o.SetOrderBy(orderBy)
+// WithOrderByQueryParameter adds the orderBy to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *ScheduleCollectionGetParams {
+	o.SetOrderByQueryParameter(orderBy)
 	return o
 }
 
-// SetOrderBy adds the orderBy to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetOrderBy(orderBy []string) {
-	o.OrderBy = orderBy
+// SetOrderByQueryParameter adds the orderBy to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
+	o.OrderByQueryParameter = orderBy
 }
 
-// WithReturnRecords adds the returnRecords to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithReturnRecords(returnRecords *bool) *ScheduleCollectionGetParams {
-	o.SetReturnRecords(returnRecords)
+// WithReturnRecordsQueryParameter adds the returnRecords to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ScheduleCollectionGetParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
 	return o
 }
 
-// SetReturnRecords adds the returnRecords to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetReturnRecords(returnRecords *bool) {
-	o.ReturnRecords = returnRecords
+// SetReturnRecordsQueryParameter adds the returnRecords to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
-// WithReturnTimeout adds the returnTimeout to the schedule collection get params
-func (o *ScheduleCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *ScheduleCollectionGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ScheduleCollectionGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the schedule collection get params
-func (o *ScheduleCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithTypeQueryParameter adds the typeVar to the schedule collection get params
@@ -530,7 +530,7 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -558,13 +558,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.MaxRecords != nil {
+	if o.MaxRecordsQueryParameter != nil {
 
 		// query param max_records
 		var qrMaxRecords int64
 
-		if o.MaxRecords != nil {
-			qrMaxRecords = *o.MaxRecords
+		if o.MaxRecordsQueryParameter != nil {
+			qrMaxRecords = *o.MaxRecordsQueryParameter
 		}
 		qMaxRecords := swag.FormatInt64(qrMaxRecords)
 		if qMaxRecords != "" {
@@ -592,7 +592,7 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.OrderBy != nil {
+	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
 		joinedOrderBy := o.bindParamOrderBy(reg)
@@ -603,13 +603,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnRecords != nil {
+	if o.ReturnRecordsQueryParameter != nil {
 
 		// query param return_records
 		var qrReturnRecords bool
 
-		if o.ReturnRecords != nil {
-			qrReturnRecords = *o.ReturnRecords
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
 		}
 		qReturnRecords := swag.FormatBool(qrReturnRecords)
 		if qReturnRecords != "" {
@@ -620,13 +620,13 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -679,7 +679,7 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 
 // bindParamScheduleCollectionGet binds the parameter fields
 func (o *ScheduleCollectionGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string
@@ -696,7 +696,7 @@ func (o *ScheduleCollectionGetParams) bindParamFields(formats strfmt.Registry) [
 
 // bindParamScheduleCollectionGet binds the parameter order_by
 func (o *ScheduleCollectionGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderBy
+	orderByIR := o.OrderByQueryParameter
 
 	var orderByIC []string
 	for _, orderByIIR := range orderByIR { // explode []string

@@ -89,6 +89,7 @@ func NewNvmeSubsystemHostCreateDefault(code int) *NvmeSubsystemHostCreateDefault
 | 72089771 | The NQN is invalid. A non-empty qualifier is required after the prefix. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089772 | The NQN is invalid. Add the prefix _'nqn'_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
 | 72089773 | The NQN is invalid. The date field must be formatted _yyyy-mm_. An example of a valid NQN is _nqn.1992-01.com.example:string_. |
+| 72090001 | The NVMe subsystem does not exist. |
 | 72090002 | The POST request of hosts to an NVMe subsystem can only contain an 'nqn' property or 'records' property, but not both. |
 | 72090003 | The elements in the records array for a POST of hosts to an NVMe subsystem must contain only the nqn property. |
 

@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -139,6 +140,8 @@ type VscanOnAccessScope struct {
 
 	// List of file extensions for which scanning is not performed.
 	// Example: ["mp*","txt"]
+	// Max Items: 16
+	// Min Items: 1
 	ExcludeExtensions []string `json:"exclude_extensions,omitempty"`
 
 	// List of file paths for which scanning must not be performed.
@@ -147,6 +150,8 @@ type VscanOnAccessScope struct {
 
 	// List of file extensions to be scanned.
 	// Example: ["mp*","txt"]
+	// Max Items: 16
+	// Min Items: 1
 	IncludeExtensions []string `json:"include_extensions,omitempty"`
 
 	// Maximum file size, in bytes, allowed for scanning.
@@ -169,6 +174,18 @@ type VscanOnAccessScope struct {
 func (m *VscanOnAccessScope) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateExcludeExtensions(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExcludePaths(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIncludeExtensions(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateMaxFileSize(formats); err != nil {
 		res = append(res, err)
 	}
@@ -176,6 +193,62 @@ func (m *VscanOnAccessScope) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VscanOnAccessScope) validateExcludeExtensions(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExcludeExtensions) { // not required
+		return nil
+	}
+
+	iExcludeExtensionsSize := int64(len(m.ExcludeExtensions))
+
+	if err := validate.MinItems("scope"+"."+"exclude_extensions", "body", iExcludeExtensionsSize, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("scope"+"."+"exclude_extensions", "body", iExcludeExtensionsSize, 16); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VscanOnAccessScope) validateExcludePaths(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExcludePaths) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ExcludePaths); i++ {
+
+		if err := validate.MinLength("scope"+"."+"exclude_paths"+"."+strconv.Itoa(i), "body", m.ExcludePaths[i], 1); err != nil {
+			return err
+		}
+
+		if err := validate.MaxLength("scope"+"."+"exclude_paths"+"."+strconv.Itoa(i), "body", m.ExcludePaths[i], 255); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VscanOnAccessScope) validateIncludeExtensions(formats strfmt.Registry) error {
+	if swag.IsZero(m.IncludeExtensions) { // not required
+		return nil
+	}
+
+	iIncludeExtensionsSize := int64(len(m.IncludeExtensions))
+
+	if err := validate.MinItems("scope"+"."+"include_extensions", "body", iIncludeExtensionsSize, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("scope"+"."+"include_extensions", "body", iIncludeExtensionsSize, 16); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -217,5 +290,3 @@ func (m *VscanOnAccessScope) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

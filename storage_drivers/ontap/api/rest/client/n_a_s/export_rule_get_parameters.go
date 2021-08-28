@@ -64,7 +64,7 @@ type ExportRuleGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* Index.
 
@@ -131,15 +131,15 @@ func (o *ExportRuleGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the export rule get params
-func (o *ExportRuleGetParams) WithFields(fields []string) *ExportRuleGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the export rule get params
+func (o *ExportRuleGetParams) WithFieldsQueryParameter(fields []string) *ExportRuleGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the export rule get params
-func (o *ExportRuleGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the export rule get params
+func (o *ExportRuleGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithIndexPathParameter adds the index to the export rule get params
@@ -172,7 +172,7 @@ func (o *ExportRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -201,7 +201,7 @@ func (o *ExportRuleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 // bindParamExportRuleGet binds the parameter fields
 func (o *ExportRuleGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

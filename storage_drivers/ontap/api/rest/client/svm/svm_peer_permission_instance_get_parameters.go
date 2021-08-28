@@ -70,7 +70,7 @@ type SvmPeerPermissionInstanceGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* ReturnTimeout.
 
@@ -78,7 +78,7 @@ type SvmPeerPermissionInstanceGetParams struct {
 
 	   Default: 15
 	*/
-	ReturnTimeout *int64
+	ReturnTimeoutQueryParameter *int64
 
 	/* SvmUUID.
 
@@ -104,11 +104,11 @@ func (o *SvmPeerPermissionInstanceGetParams) WithDefaults() *SvmPeerPermissionIn
 // All values with no default are reset to their zero value.
 func (o *SvmPeerPermissionInstanceGetParams) SetDefaults() {
 	var (
-		returnTimeoutDefault = int64(15)
+		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SvmPeerPermissionInstanceGetParams{
-		ReturnTimeout: &returnTimeoutDefault,
+		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -161,26 +161,26 @@ func (o *SvmPeerPermissionInstanceGetParams) SetClusterPeerUUIDPathParameter(clu
 	o.ClusterPeerUUIDPathParameter = clusterPeerUUID
 }
 
-// WithFields adds the fields to the svm peer permission instance get params
-func (o *SvmPeerPermissionInstanceGetParams) WithFields(fields []string) *SvmPeerPermissionInstanceGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the svm peer permission instance get params
+func (o *SvmPeerPermissionInstanceGetParams) WithFieldsQueryParameter(fields []string) *SvmPeerPermissionInstanceGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the svm peer permission instance get params
-func (o *SvmPeerPermissionInstanceGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the svm peer permission instance get params
+func (o *SvmPeerPermissionInstanceGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
-// WithReturnTimeout adds the returnTimeout to the svm peer permission instance get params
-func (o *SvmPeerPermissionInstanceGetParams) WithReturnTimeout(returnTimeout *int64) *SvmPeerPermissionInstanceGetParams {
-	o.SetReturnTimeout(returnTimeout)
+// WithReturnTimeoutQueryParameter adds the returnTimeout to the svm peer permission instance get params
+func (o *SvmPeerPermissionInstanceGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SvmPeerPermissionInstanceGetParams {
+	o.SetReturnTimeoutQueryParameter(returnTimeout)
 	return o
 }
 
-// SetReturnTimeout adds the returnTimeout to the svm peer permission instance get params
-func (o *SvmPeerPermissionInstanceGetParams) SetReturnTimeout(returnTimeout *int64) {
-	o.ReturnTimeout = returnTimeout
+// SetReturnTimeoutQueryParameter adds the returnTimeout to the svm peer permission instance get params
+func (o *SvmPeerPermissionInstanceGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
+	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
 // WithSVMUUIDPathParameter adds the svmUUID to the svm peer permission instance get params
@@ -207,7 +207,7 @@ func (o *SvmPeerPermissionInstanceGetParams) WriteToRequest(r runtime.ClientRequ
 		return err
 	}
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -218,13 +218,13 @@ func (o *SvmPeerPermissionInstanceGetParams) WriteToRequest(r runtime.ClientRequ
 		}
 	}
 
-	if o.ReturnTimeout != nil {
+	if o.ReturnTimeoutQueryParameter != nil {
 
 		// query param return_timeout
 		var qrReturnTimeout int64
 
-		if o.ReturnTimeout != nil {
-			qrReturnTimeout = *o.ReturnTimeout
+		if o.ReturnTimeoutQueryParameter != nil {
+			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
 		}
 		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
 		if qReturnTimeout != "" {
@@ -248,7 +248,7 @@ func (o *SvmPeerPermissionInstanceGetParams) WriteToRequest(r runtime.ClientRequ
 
 // bindParamSvmPeerPermissionInstanceGet binds the parameter fields
 func (o *SvmPeerPermissionInstanceGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

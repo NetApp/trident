@@ -64,19 +64,19 @@ type SnapshotPolicyScheduleGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
+
+	/* ScheduleUUID.
+
+	   Snapshot copy policy schedule ID
+	*/
+	ScheduleUUIDPathParameter string
 
 	/* SnapshotPolicyUUID.
 
 	   Snapshot copy policy UUID
 	*/
 	SnapshotPolicyUUIDPathParameter string
-
-	/* UUID.
-
-	   Snapshot copy policy schedule ID
-	*/
-	UUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -131,15 +131,26 @@ func (o *SnapshotPolicyScheduleGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the snapshot policy schedule get params
-func (o *SnapshotPolicyScheduleGetParams) WithFields(fields []string) *SnapshotPolicyScheduleGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the snapshot policy schedule get params
+func (o *SnapshotPolicyScheduleGetParams) WithFieldsQueryParameter(fields []string) *SnapshotPolicyScheduleGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the snapshot policy schedule get params
-func (o *SnapshotPolicyScheduleGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the snapshot policy schedule get params
+func (o *SnapshotPolicyScheduleGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
+}
+
+// WithScheduleUUIDPathParameter adds the scheduleUUID to the snapshot policy schedule get params
+func (o *SnapshotPolicyScheduleGetParams) WithScheduleUUIDPathParameter(scheduleUUID string) *SnapshotPolicyScheduleGetParams {
+	o.SetScheduleUUIDPathParameter(scheduleUUID)
+	return o
+}
+
+// SetScheduleUUIDPathParameter adds the scheduleUuid to the snapshot policy schedule get params
+func (o *SnapshotPolicyScheduleGetParams) SetScheduleUUIDPathParameter(scheduleUUID string) {
+	o.ScheduleUUIDPathParameter = scheduleUUID
 }
 
 // WithSnapshotPolicyUUIDPathParameter adds the snapshotPolicyUUID to the snapshot policy schedule get params
@@ -153,17 +164,6 @@ func (o *SnapshotPolicyScheduleGetParams) SetSnapshotPolicyUUIDPathParameter(sna
 	o.SnapshotPolicyUUIDPathParameter = snapshotPolicyUUID
 }
 
-// WithUUIDPathParameter adds the uuid to the snapshot policy schedule get params
-func (o *SnapshotPolicyScheduleGetParams) WithUUIDPathParameter(uuid string) *SnapshotPolicyScheduleGetParams {
-	o.SetUUIDPathParameter(uuid)
-	return o
-}
-
-// SetUUIDPathParameter adds the uuid to the snapshot policy schedule get params
-func (o *SnapshotPolicyScheduleGetParams) SetUUIDPathParameter(uuid string) {
-	o.UUIDPathParameter = uuid
-}
-
 // WriteToRequest writes these params to a swagger request
 func (o *SnapshotPolicyScheduleGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -172,7 +172,7 @@ func (o *SnapshotPolicyScheduleGetParams) WriteToRequest(r runtime.ClientRequest
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -183,13 +183,13 @@ func (o *SnapshotPolicyScheduleGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
-	// path param snapshot-policy.uuid
-	if err := r.SetPathParam("snapshot-policy.uuid", o.SnapshotPolicyUUIDPathParameter); err != nil {
+	// path param schedule.uuid
+	if err := r.SetPathParam("schedule.uuid", o.ScheduleUUIDPathParameter); err != nil {
 		return err
 	}
 
-	// path param uuid
-	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+	// path param snapshot_policy.uuid
+	if err := r.SetPathParam("snapshot_policy.uuid", o.SnapshotPolicyUUIDPathParameter); err != nil {
 		return err
 	}
 
@@ -201,7 +201,7 @@ func (o *SnapshotPolicyScheduleGetParams) WriteToRequest(r runtime.ClientRequest
 
 // bindParamSnapshotPolicyScheduleGet binds the parameter fields
 func (o *SnapshotPolicyScheduleGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

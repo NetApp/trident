@@ -75,9 +75,9 @@ func NewSecurityCertificateDeleteDefault(code int) *SecurityCertificateDeleteDef
 | Error Code | Description |
 | ---------- | ----------- |
 | 3735644    | Cannot delete server-chain certificate. Reason: There is a corresponding server certificate for it. |
-| 3735679    | Cannot delete pre-installed server-ca certificates through REST. Use CLI or ZAPI. |
-| 3735650    | Deleting this client-ca certificate directly is not supported. Delete the corresponding root-ca certificate using type `root_ca` to delete the root, client, and server certificates. |
-| 3735627    | Deleting this server-ca certificate directly is not supported. Delete the corresponding root-ca certificate using type `root_ca` to delete the root, client, and server certificates. |
+| 3735679    | Cannot delete pre-installed server_ca certificates through REST. Use CLI or ZAPI. |
+| 3735650    | Deleting this client_ca certificate directly is not supported. Delete the corresponding root-ca certificate using type `root_ca` to delete the root, client, and server certificates. |
+| 3735627    | Deleting this server_ca certificate directly is not supported. Delete the corresponding root-ca certificate using type `root_ca` to delete the root, client, and server certificates. |
 | 3735589    | Cannot delete certificate. |
 | 3735590    | Cannot delete certificate. Failed to remove SSL configuration for the certificate. |
 | 3735683    | Cannot remove this certificate while external key manager is configured. |

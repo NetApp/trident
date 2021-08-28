@@ -26,11 +26,14 @@ type SecurityKeyManager struct {
 	// external
 	External *SecurityKeyManagerExternal `json:"external,omitempty"`
 
-	// Indicates whether default data-at-rest encryption is disabled in the cluster.
+	// Indicates whether default data-at-rest encryption is disabled in the cluster. This field is deprecated in ONTAP 9.8 and later. Use the "software_data_encryption.disabled_by_default" of /api/security endpoint.
 	IsDefaultDataAtRestEncryptionDisabled *bool `json:"is_default_data_at_rest_encryption_disabled,omitempty"`
 
 	// onboard
 	Onboard *SecurityKeyManagerOnboard `json:"onboard,omitempty"`
+
+	// Security policy associated with the key manager. This value is currently ignored if specified for the onboard key manager.
+	Policy string `json:"policy,omitempty"`
 
 	// scope
 	Scope NetworkScopeReadonly `json:"scope,omitempty"`
@@ -576,6 +579,10 @@ type SecurityKeyManagerExternalClientCertificate struct {
 	// links
 	Links *SecurityKeyManagerExternalClientCertificateLinks `json:"_links,omitempty"`
 
+	// Certificate name
+	// Example: cert1
+	Name string `json:"name,omitempty"`
+
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID string `json:"uuid,omitempty"`
@@ -751,6 +758,10 @@ type SecurityKeyManagerExternalServerCaCertificatesItems0 struct {
 
 	// links
 	Links *SecurityKeyManagerExternalServerCaCertificatesItems0Links `json:"_links,omitempty"`
+
+	// Certificate name
+	// Example: cert1
+	Name string `json:"name,omitempty"`
 
 	// Certificate UUID
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
@@ -1150,13 +1161,8 @@ func (m *SecurityKeyManagerStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this security key manager status based on the context it is used
+// ContextValidate validates this security key manager status based on context it is used
 func (m *SecurityKeyManagerStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
@@ -1383,13 +1389,8 @@ func (m *SecurityKeyManagerVolumeEncryption) Validate(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this security key manager volume encryption based on the context it is used
+// ContextValidate validates this security key manager volume encryption based on context it is used
 func (m *SecurityKeyManagerVolumeEncryption) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
@@ -1410,5 +1411,3 @@ func (m *SecurityKeyManagerVolumeEncryption) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
-
-// HELLO RIPPY

@@ -82,7 +82,7 @@ func NewCloudStoreCreateDefault(code int) *CloudStoreCreateDefault {
 
 /* CloudStoreCreateDefault describes a response with status code -1, with default header values.
 
-CloudStoreCreateDefault cloud store create default
+Error
 */
 type CloudStoreCreateDefault struct {
 	_statusCode int

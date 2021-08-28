@@ -64,7 +64,7 @@ type NetworkEthernetPortGetParams struct {
 
 	   Specify the fields to return.
 	*/
-	Fields []string
+	FieldsQueryParameter []string
 
 	/* UUID.
 
@@ -125,15 +125,15 @@ func (o *NetworkEthernetPortGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithFields adds the fields to the network ethernet port get params
-func (o *NetworkEthernetPortGetParams) WithFields(fields []string) *NetworkEthernetPortGetParams {
-	o.SetFields(fields)
+// WithFieldsQueryParameter adds the fields to the network ethernet port get params
+func (o *NetworkEthernetPortGetParams) WithFieldsQueryParameter(fields []string) *NetworkEthernetPortGetParams {
+	o.SetFieldsQueryParameter(fields)
 	return o
 }
 
-// SetFields adds the fields to the network ethernet port get params
-func (o *NetworkEthernetPortGetParams) SetFields(fields []string) {
-	o.Fields = fields
+// SetFieldsQueryParameter adds the fields to the network ethernet port get params
+func (o *NetworkEthernetPortGetParams) SetFieldsQueryParameter(fields []string) {
+	o.FieldsQueryParameter = fields
 }
 
 // WithUUIDPathParameter adds the uuid to the network ethernet port get params
@@ -155,7 +155,7 @@ func (o *NetworkEthernetPortGetParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
-	if o.Fields != nil {
+	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
 		joinedFields := o.bindParamFields(reg)
@@ -179,7 +179,7 @@ func (o *NetworkEthernetPortGetParams) WriteToRequest(r runtime.ClientRequest, r
 
 // bindParamNetworkEthernetPortGet binds the parameter fields
 func (o *NetworkEthernetPortGetParams) bindParamFields(formats strfmt.Registry) []string {
-	fieldsIR := o.Fields
+	fieldsIR := o.FieldsQueryParameter
 
 	var fieldsIC []string
 	for _, fieldsIIR := range fieldsIR { // explode []string

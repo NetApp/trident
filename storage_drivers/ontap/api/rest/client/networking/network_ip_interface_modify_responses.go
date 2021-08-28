@@ -72,7 +72,14 @@ func NewNetworkIPInterfaceModifyDefault(code int) *NetworkIPInterfaceModifyDefau
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376963 | Duplicate IP address. |
+| 1376997 | Interface failed to migrate because the node hosting the port is not healthy. |
+| 1376998 | The specified location.node does not own any ports in the same broadcast domain as the home port of the interface. |
+| 1377607 | The specified location.port is not in the same broadcast domain as the home port of the interface. |
 | 1966138 | The same IP address may not be used for both a mgmt interface and a gateway address. |
+| 1966141 | Invalid DNS zone name. |
+| 1966142 | Only data LIFs can be assigned a DNS zone. |
+| 1966267 | IPv6 addresses must have a prefix length between 1 and 127. |
+| 1966269 | IPv4 addresses must have a prefix length between 1 and 32. |
 | 1967106 | The specified location.home_port.name does not match the specified port name of location.home_port.uuid. |
 | 1967107 | The specified location.home_port.uuid is not valid. |
 | 1967111 | A home node must be specified by at least one location.home_node, location.home_port, or location.broadcast_domain field. |
@@ -103,7 +110,12 @@ func NewNetworkIPInterfaceModifyDefault(code int) *NetworkIPInterfaceModifyDefau
 | 1967380 | Cannot patch home_port for a VIP interface. The specified parameter location.home_port.node.name is not valid. Consider using location.home_node.name instead. |
 | 1967386 | Cannot patch port for a VIP interface. The specified parameter location.port.node.name is not valid. Consider using location.node.name instead. |
 | 1967387 | The specified IP address is in use by a subnet in this IPspace. |
+| 1967389 | Cannot patch a LIF revert. The specified parameter location.is_home |
+| 1967390 | Cannot patch a LIF revert as it requires an effective cluster version of 9.9.1 or later. |
+| 1967391 | Patching the DNS zone requires an effective cluster version of 9.9.1 or later. |
+| 1967392 | Patching the DDNS enable parameter requires an effective cluster version of 9.9.1 or later. |
 | 53281065 | The service_policy does not exist in the SVM. |
+| 53281086 | LIF would exceed the maximum number of supported intercluster LIFs in IPspace. |
 
 */
 type NetworkIPInterfaceModifyDefault struct {
