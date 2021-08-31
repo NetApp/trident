@@ -109,12 +109,12 @@ func NewDriver(config ClientConfig) *Client {
 }
 
 // Init runs startup logic after allocating the driver resources
-func (d *Client) Init(ctx context.Context, pools map[string]*storage.Pool) (err error) {
+func (d *Client) Init(ctx context.Context, pools map[string]storage.Pool) (err error) {
 
 	// Map vpools to backend
-	d.SDKClient.AzureResources.StoragePoolMap = make(map[string]*storage.Pool)
+	d.SDKClient.AzureResources.StoragePoolMap = make(map[string]storage.Pool)
 	for _, p := range pools {
-		d.registerStoragePool(*p)
+		d.registerStoragePool(p)
 	}
 
 	// Find out what we have to work with in Azure
@@ -360,8 +360,7 @@ func (d *Client) getVolumesFromPool(
 		poolName = *cookie.CapacityPoolName
 	}
 
-	volumeList, err := d.SDKClient.VolumesClient.List(ctx,
-		*cookie.ResourceGroup, *cookie.NetAppAccount, poolName)
+	volumeList, err := d.SDKClient.VolumesClient.List(ctx, *cookie.ResourceGroup, *cookie.NetAppAccount, poolName)
 	if err != nil {
 		Logc(ctx).Errorf("Error fetching volumes from pool %s: %s", poolName, err)
 		return nil, err
@@ -726,8 +725,9 @@ func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequ
 	// code.  Will ignore this struct for the time being, but we may want to look
 	// into what interesting features the Azure method may provide.
 	// TBD
-	if _, err = d.SDKClient.VolumesClient.CreateOrUpdate(ctx, newVol,
-		resourceGroup, netAppAccount, cpoolName, request.Name); err != nil {
+	if _, err = d.SDKClient.VolumesClient.CreateOrUpdate(
+		ctx, newVol, resourceGroup, netAppAccount, cpoolName, request.Name,
+	); err != nil {
 		return nil, err
 	}
 
@@ -745,7 +745,7 @@ func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequ
 }
 
 // RenameVolume is probably not supported on Azure?
-func (d *Client) RenameVolume(filesystem *FileSystem, newName string) (*FileSystem, error) {
+func (d *Client) RenameVolume(*FileSystem, string) (*FileSystem, error) {
 	return nil, fmt.Errorf("unimplemented")
 }
 
@@ -803,8 +803,9 @@ func (d *Client) RelabelVolume(
 		"tags":          nv.Tags,
 	}).Info("Relabeling filesystem.")
 
-	if _, err = d.SDKClient.VolumesClient.CreateOrUpdate(ctx, nv, *cookie.ResourceGroup,
-		*cookie.NetAppAccount, filesystem.CapacityPoolName, filesystem.Name); err != nil {
+	if _, err = d.SDKClient.VolumesClient.CreateOrUpdate(
+		ctx, nv, *cookie.ResourceGroup, *cookie.NetAppAccount, filesystem.CapacityPoolName, filesystem.Name,
+	); err != nil {
 		return nil, err
 	}
 
@@ -846,8 +847,9 @@ func (d *Client) ResizeVolume(ctx context.Context, filesystem *FileSystem, newSi
 		VolumePatchProperties: &patchprop,
 	}
 
-	if _, err := d.SDKClient.VolumesClient.Update(ctx, patch, *cookie.ResourceGroup,
-		*cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name); err != nil {
+	if _, err := d.SDKClient.VolumesClient.Update(
+		ctx, patch, *cookie.ResourceGroup, *cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name,
+	); err != nil {
 		return nil, err
 	}
 
@@ -868,8 +870,9 @@ func (d *Client) DeleteVolume(ctx context.Context, filesystem *FileSystem) error
 			filesystem.Name, filesystem.CapacityPoolName)
 	}
 
-	if _, err = d.SDKClient.VolumesClient.Delete(ctx, *cookie.ResourceGroup,
-		*cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name); err != nil {
+	if _, err = d.SDKClient.VolumesClient.Delete(
+		ctx, *cookie.ResourceGroup, *cookie.NetAppAccount, *cookie.CapacityPoolName, filesystem.Name,
+	); err != nil {
 		return fmt.Errorf("error deleting volume: %v", err)
 	}
 
@@ -1037,8 +1040,7 @@ func (d *Client) CreateSnapshot(ctx context.Context, request *SnapshotCreateRequ
 
 	cookie, err := d.GetCookieByCapacityPoolName(fs.CapacityPoolName)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't find cookie for volume: %v on cpool %v",
-			fs.Name, fs.CapacityPoolName)
+		return nil, fmt.Errorf("couldn't find cookie for volume: %v on cpool %v", fs.Name, fs.CapacityPoolName)
 	}
 
 	var snap = netapp.Snapshot{
@@ -1047,8 +1049,9 @@ func (d *Client) CreateSnapshot(ctx context.Context, request *SnapshotCreateRequ
 	}
 
 	// This returns another "future" object..
-	if _, err = d.SDKClient.SnapshotsClient.Create(ctx, snap, *cookie.ResourceGroup,
-		*cookie.NetAppAccount, fs.CapacityPoolName, fs.Name, request.Name); err != nil {
+	if _, err = d.SDKClient.SnapshotsClient.Create(
+		ctx, snap, *cookie.ResourceGroup, *cookie.NetAppAccount, fs.CapacityPoolName, fs.Name, request.Name,
+	); err != nil {
 		return nil, err
 	}
 

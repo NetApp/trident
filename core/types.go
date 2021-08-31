@@ -2,6 +2,8 @@
 
 package core
 
+//go:generate mockgen -destination=../mocks/mock_core/mock_core.go github.com/netapp/trident/core Orchestrator
+
 import (
 	"context"
 
@@ -24,11 +26,15 @@ type Orchestrator interface {
 	GetBackend(ctx context.Context, backend string) (*storage.BackendExternal, error)
 	GetBackendByBackendUUID(ctx context.Context, backendUUID string) (*storage.BackendExternal, error)
 	ListBackends(ctx context.Context) ([]*storage.BackendExternal, error)
-	UpdateBackend(ctx context.Context, backendName, configJSON, configRef string) (storageBackendExternal *storage.
-		BackendExternal, err error)
-	UpdateBackendByBackendUUID(ctx context.Context, backendName, configJSON, backendUUID,
-		configRef string) (storageBackendExternal *storage.BackendExternal, err error)
-	UpdateBackendState(ctx context.Context, backendName, backendState string) (storageBackendExternal *storage.BackendExternal, err error)
+	UpdateBackend(
+		ctx context.Context, backendName, configJSON, configRef string,
+	) (storageBackendExternal *storage.BackendExternal, err error)
+	UpdateBackendByBackendUUID(
+		ctx context.Context, backendName, configJSON, backendUUID, configRef string,
+	) (storageBackendExternal *storage.BackendExternal, err error)
+	UpdateBackendState(
+		ctx context.Context, backendName, backendState string,
+	) (storageBackendExternal *storage.BackendExternal, err error)
 	RemoveBackendConfigRef(ctx context.Context, backendUUID, configRef string) (err error)
 
 	AddVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
@@ -39,7 +45,10 @@ type Orchestrator interface {
 	GetVolume(ctx context.Context, volume string) (*storage.VolumeExternal, error)
 	GetVolumeExternal(ctx context.Context, volumeName string, backendName string) (*storage.VolumeExternal, error)
 	GetVolumeType(ctx context.Context, vol *storage.VolumeExternal) (config.VolumeType, error)
-	LegacyImportVolume(ctx context.Context, volumeConfig *storage.VolumeConfig, backendName string, notManaged bool, createPVandPVC VolumeCallback) (*storage.VolumeExternal, error)
+	LegacyImportVolume(
+		ctx context.Context, volumeConfig *storage.VolumeConfig, backendName string, notManaged bool,
+		createPVandPVC VolumeCallback,
+	) (*storage.VolumeExternal, error)
 	ImportVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	ListVolumes(ctx context.Context) ([]*storage.VolumeExternal, error)
 	ListVolumesByPlugin(ctx context.Context, pluginName string) ([]*storage.VolumeExternal, error)
@@ -75,7 +84,9 @@ type Orchestrator interface {
 
 	EstablishMirror(ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string) error
 	ReestablishMirror(ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string) error
-	PromoteMirror(ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, snapshotHandle string) (bool, error)
+	PromoteMirror(
+		ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, snapshotHandle string,
+	) (bool, error)
 	GetMirrorStatus(ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string) (string, error)
 	CanBackendMirror(ctx context.Context, backendUUID string) (bool, error)
 }

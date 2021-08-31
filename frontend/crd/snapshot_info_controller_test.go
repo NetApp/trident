@@ -5,15 +5,18 @@ package crd
 import (
 	"testing"
 
-	"github.com/netapp/trident/core"
-	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	mockcore "github.com/netapp/trident/mocks/mock_core"
+	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 )
 
 func TestUpdateTSI(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
 	testingCache := NewTestingCache()
-	orchestrator := core.NewMockOrchestrator()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()

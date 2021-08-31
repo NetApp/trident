@@ -27,12 +27,14 @@ import (
 type Driver interface {
 	Name() string
 	BackendName() string
-	Initialize(context.Context, tridentconfig.DriverContext, string, *drivers.CommonStorageDriverConfig,
-		map[string]string, string) error
+	Initialize(
+		context.Context, tridentconfig.DriverContext, string, *drivers.CommonStorageDriverConfig,
+		map[string]string, string,
+	) error
 	Initialized() bool
 	// Terminate tells the driver to clean up, as it won't be called again.
 	Terminate(ctx context.Context, backendUUID string)
-	Create(ctx context.Context, volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request) error
+	Create(ctx context.Context, volConfig *VolumeConfig, storagePool Pool, volAttributes map[string]sa.Request) error
 	CreatePrepare(ctx context.Context, volConfig *VolumeConfig)
 	// CreateFollowup adds necessary information for accessing the volume to VolumeConfig.
 	CreateFollowup(ctx context.Context, volConfig *VolumeConfig) error
@@ -40,7 +42,7 @@ type Driver interface {
 	// constraints present on the backend and that will be unique to Trident.
 	// The latter requirement should generally be done by prepending the
 	// value of CommonStorageDriver.SnapshotPrefix to the name.
-	CreateClone(ctx context.Context, volConfig *VolumeConfig, storagePool *Pool) error
+	CreateClone(ctx context.Context, volConfig *VolumeConfig, storagePool Pool) error
 	Import(ctx context.Context, volConfig *VolumeConfig, originalName string) error
 	Destroy(ctx context.Context, name string) error
 	Rename(ctx context.Context, name, newName string) error
@@ -87,7 +89,7 @@ type StorageBackend struct {
 	backendUUID        string
 	online             bool
 	state              BackendState
-	storage            map[string]*Pool
+	storage            map[string]Pool
 	volumes            map[string]*Volume
 	configRef          string
 	nodeAccessUpToDate bool
@@ -133,11 +135,11 @@ func (b *StorageBackend) SetState(State BackendState) {
 	b.state = State
 }
 
-func (b *StorageBackend) Storage() map[string]*Pool {
+func (b *StorageBackend) Storage() map[string]Pool {
 	return b.storage
 }
 
-func (b *StorageBackend) SetStorage(Storage map[string]*Pool) {
+func (b *StorageBackend) SetStorage(Storage map[string]Pool) {
 	b.storage = Storage
 }
 
@@ -220,7 +222,7 @@ func NewStorageBackend(ctx context.Context, driver Driver) (*StorageBackend, err
 		driver:  driver,
 		state:   Online,
 		online:  true,
-		storage: make(map[string]*Pool),
+		storage: make(map[string]Pool),
 		volumes: make(map[string]*Volume),
 	}
 
@@ -238,7 +240,7 @@ func NewFailedStorageBackend(ctx context.Context, driver Driver) Backend {
 		name:    driver.BackendName(),
 		driver:  driver,
 		state:   Failed,
-		storage: make(map[string]*Pool),
+		storage: make(map[string]Pool),
 		volumes: make(map[string]*Volume),
 	}
 
@@ -251,8 +253,8 @@ func NewFailedStorageBackend(ctx context.Context, driver Driver) Backend {
 	return &backend
 }
 
-func (b *StorageBackend) AddStoragePool(pool *Pool) {
-	b.storage[pool.Name] = pool
+func (b *StorageBackend) AddStoragePool(pool Pool) {
+	b.storage[pool.Name()] = pool
 }
 
 func (b *StorageBackend) GetPhysicalPoolNames(ctx context.Context) []string {
@@ -277,7 +279,7 @@ func (b *StorageBackend) IsCredentialsFieldSet(ctx context.Context) bool {
 }
 
 func (b *StorageBackend) AddVolume(
-	ctx context.Context, volConfig *VolumeConfig, storagePool *Pool, volAttributes map[string]sa.Request, retry bool,
+	ctx context.Context, volConfig *VolumeConfig, storagePool Pool, volAttributes map[string]sa.Request, retry bool,
 ) (*Volume, error) {
 
 	var err error
@@ -287,7 +289,7 @@ func (b *StorageBackend) AddVolume(
 		"backendUUID":    b.backendUUID,
 		"volume":         volConfig.Name,
 		"volumeInternal": volConfig.InternalName,
-		"storage_pool":   storagePool.Name,
+		"storage_pool":   storagePool.Name(),
 		"size":           volConfig.Size,
 		"storage_class":  volConfig.StorageClass,
 	}).Debug("Attempting volume create.")
@@ -345,10 +347,8 @@ func (b *StorageBackend) AddVolume(
 				Logc(ctx).WithFields(log.Fields{
 					"backend": b.name,
 					"volume":  volConfig.InternalName,
-				}).Warnf("Mapping the created volume failed "+
-					"and %s wasn't able to delete it afterwards: %s. "+
-					"Volume must be manually deleted.",
-					tridentconfig.OrchestratorName, errDestroy)
+				}).Warnf("Mapping the created volume failed and %s wasn't able to delete it afterwards: %s. "+
+					"Volume must be manually deleted.", tridentconfig.OrchestratorName, errDestroy)
 			}
 		}
 
@@ -356,7 +356,7 @@ func (b *StorageBackend) AddVolume(
 		return nil, err
 	}
 
-	vol := NewVolume(volConfig, b.backendUUID, storagePool.Name, false)
+	vol := NewVolume(volConfig, b.backendUUID, storagePool.Name(), false)
 	b.volumes[vol.Config.Name] = vol
 	return vol, nil
 }
@@ -388,7 +388,7 @@ func (b *StorageBackend) GetDebugTraceFlags(ctx context.Context) map[string]bool
 }
 
 func (b *StorageBackend) CloneVolume(
-	ctx context.Context, volConfig *VolumeConfig, storagePool *Pool, retry bool,
+	ctx context.Context, volConfig *VolumeConfig, storagePool Pool, retry bool,
 ) (*Volume, error) {
 
 	Logc(ctx).WithFields(log.Fields{
@@ -470,10 +470,8 @@ func (b *StorageBackend) CloneVolume(
 				Logc(ctx).WithFields(log.Fields{
 					"backend": b.name,
 					"volume":  volConfig.InternalName,
-				}).Warnf("Mapping the created volume failed "+
-					"and %s wasn't able to delete it afterwards: %s. "+
-					"Volume must be manually deleted.",
-					tridentconfig.OrchestratorName, errDestroy)
+				}).Warnf("Mapping the created volume failed and %s wasn't able to delete it afterwards: %s. "+
+					"Volume must be manually deleted.", tridentconfig.OrchestratorName, errDestroy)
 			}
 		}
 
@@ -487,7 +485,7 @@ func (b *StorageBackend) CloneVolume(
 	// clones of imported volumes also gets assigned to unset storage pools.
 	poolName := drivers.UnsetPool
 	if storagePool != nil {
-		poolName = storagePool.Name
+		poolName = storagePool.Name()
 	}
 
 	vol := NewVolume(volConfig, b.backendUUID, poolName, false)
@@ -757,7 +755,9 @@ func (b *StorageBackend) CreateSnapshot(
 	return b.driver.CreateSnapshot(ctx, snapConfig)
 }
 
-func (b *StorageBackend) RestoreSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error {
+func (b *StorageBackend) RestoreSnapshot(
+	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
+) error {
 
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.name,
@@ -780,7 +780,9 @@ func (b *StorageBackend) RestoreSnapshot(ctx context.Context, snapConfig *Snapsh
 	return b.driver.RestoreSnapshot(ctx, snapConfig)
 }
 
-func (b *StorageBackend) DeleteSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error {
+func (b *StorageBackend) DeleteSnapshot(
+	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
+) error {
 
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.name,
@@ -1061,8 +1063,9 @@ func (p *BackendPersistent) GetBackendCredentials() (string, string, error) {
 // From the clone it builds a map of secret data it contains (username, password, etc.),
 // replaces those fields with the correct secret name, and returns the clone,
 // the secret data map (or empty map if using credentials field) and usingTridentSecretName field.
-func (p *BackendPersistent) ExtractBackendSecrets(secretName string) (*BackendPersistent, map[string]string,
-	bool, error) {
+func (p *BackendPersistent) ExtractBackendSecrets(
+	secretName string,
+) (*BackendPersistent, map[string]string, bool, error) {
 
 	var secretType string
 	var credentialsFieldSet, usingTridentSecretName bool
@@ -1154,7 +1157,9 @@ func (b *StorageBackend) ReestablishMirror(ctx context.Context, localVolumeHandl
 	return mirrorDriver.ReestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle)
 }
 
-func (b *StorageBackend) GetMirrorStatus(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) (string, error) {
+func (b *StorageBackend) GetMirrorStatus(
+	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
+) (string, error) {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
 		return "", utils.UnsupportedError(fmt.Sprintf(

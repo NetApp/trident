@@ -33,8 +33,8 @@ type NASFlexGroupStorageDriver struct {
 	API         *api.Client
 	Telemetry   *Telemetry
 
-	physicalPool *storage.Pool
-	virtualPools map[string]*storage.Pool
+	physicalPool storage.Pool
+	virtualPools map[string]storage.Pool
 }
 
 func (d *NASFlexGroupStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
@@ -148,8 +148,8 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 	// Get list of media types supported by the Vserver aggregates
 	mediaOffers, err := d.getVserverAggrMediaType(ctx, vserverAggrs)
 	if len(mediaOffers) > 1 {
-		Logc(ctx).Info("All the aggregates do not have same media type, " +
-			"which is desirable for consistent FlexGroup performance.")
+		Logc(ctx).Info(
+			"All the aggregates do not have same media type, which is desirable for consistent FlexGroup performance.")
 	}
 
 	// Define physical pools
@@ -161,41 +161,41 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 	// merely means that pools supports these capabilities like
 	// encryption, cloning, thick/thin provisioning
 	for attrName, offer := range d.getStoragePoolAttributes() {
-		pool.Attributes[attrName] = offer
+		pool.Attributes()[attrName] = offer
 	}
 
 	if config.Region != "" {
-		pool.Attributes[sa.Region] = sa.NewStringOffer(config.Region)
+		pool.Attributes()[sa.Region] = sa.NewStringOffer(config.Region)
 	}
 	if config.Zone != "" {
-		pool.Attributes[sa.Zone] = sa.NewStringOffer(config.Zone)
+		pool.Attributes()[sa.Zone] = sa.NewStringOffer(config.Zone)
 	}
 
-	pool.Attributes[sa.Labels] = sa.NewLabelOffer(config.Labels)
+	pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels)
 
 	if len(mediaOffers) > 0 {
-		pool.Attributes[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
-		pool.InternalAttributes[Media] = pool.Attributes[sa.Media].ToString()
+		pool.Attributes()[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
+		pool.InternalAttributes()[Media] = pool.Attributes()[sa.Media].ToString()
 	}
 
-	pool.InternalAttributes[Size] = config.Size
-	pool.InternalAttributes[Region] = config.Region
-	pool.InternalAttributes[Zone] = config.Zone
-	pool.InternalAttributes[SpaceReserve] = config.SpaceReserve
-	pool.InternalAttributes[SnapshotPolicy] = config.SnapshotPolicy
-	pool.InternalAttributes[SnapshotReserve] = config.SnapshotReserve
-	pool.InternalAttributes[Encryption] = config.Encryption
-	pool.InternalAttributes[UnixPermissions] = config.UnixPermissions
-	pool.InternalAttributes[SnapshotDir] = config.SnapshotDir
-	pool.InternalAttributes[ExportPolicy] = config.ExportPolicy
-	pool.InternalAttributes[SecurityStyle] = config.SecurityStyle
-	pool.InternalAttributes[TieringPolicy] = config.TieringPolicy
-	pool.InternalAttributes[QosPolicy] = config.QosPolicy
-	pool.InternalAttributes[AdaptiveQosPolicy] = config.AdaptiveQosPolicy
+	pool.InternalAttributes()[Size] = config.Size
+	pool.InternalAttributes()[Region] = config.Region
+	pool.InternalAttributes()[Zone] = config.Zone
+	pool.InternalAttributes()[SpaceReserve] = config.SpaceReserve
+	pool.InternalAttributes()[SnapshotPolicy] = config.SnapshotPolicy
+	pool.InternalAttributes()[SnapshotReserve] = config.SnapshotReserve
+	pool.InternalAttributes()[Encryption] = config.Encryption
+	pool.InternalAttributes()[UnixPermissions] = config.UnixPermissions
+	pool.InternalAttributes()[SnapshotDir] = config.SnapshotDir
+	pool.InternalAttributes()[ExportPolicy] = config.ExportPolicy
+	pool.InternalAttributes()[SecurityStyle] = config.SecurityStyle
+	pool.InternalAttributes()[TieringPolicy] = config.TieringPolicy
+	pool.InternalAttributes()[QosPolicy] = config.QosPolicy
+	pool.InternalAttributes()[AdaptiveQosPolicy] = config.AdaptiveQosPolicy
 
 	d.physicalPool = pool
 
-	d.virtualPools = make(map[string]*storage.Pool)
+	d.virtualPools = make(map[string]storage.Pool)
 
 	if len(d.Config.Storage) != 0 {
 		Logc(ctx).Debug("Defining Virtual Pools based on Virtual Pools definition in the backend file.")
@@ -278,46 +278,45 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 			// merely means that pools supports these capabilities like
 			// encryption, cloning, thick/thin provisioning
 			for attrName, offer := range d.getStoragePoolAttributes() {
-				pool.Attributes[attrName] = offer
+				pool.Attributes()[attrName] = offer
 			}
 
-			pool.Attributes[sa.Labels] = sa.NewLabelOffer(config.Labels, vpool.Labels)
+			pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels, vpool.Labels)
 
 			if region != "" {
-				pool.Attributes[sa.Region] = sa.NewStringOffer(region)
+				pool.Attributes()[sa.Region] = sa.NewStringOffer(region)
 			}
 			if zone != "" {
-				pool.Attributes[sa.Zone] = sa.NewStringOffer(zone)
+				pool.Attributes()[sa.Zone] = sa.NewStringOffer(zone)
 			}
 			if len(mediaOffers) > 0 {
-				pool.Attributes[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
-				pool.InternalAttributes[Media] = pool.Attributes[sa.Media].ToString()
+				pool.Attributes()[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
+				pool.InternalAttributes()[Media] = pool.Attributes()[sa.Media].ToString()
 			}
 			if encryption != "" {
 				enableEncryption, err := strconv.ParseBool(encryption)
 				if err != nil {
-					return fmt.Errorf("invalid boolean value for encryption: %v in virtual pool: %s", err,
-						pool.Name)
+					return fmt.Errorf("invalid boolean value for encryption: %v in virtual pool: %s", err, pool.Name())
 				}
-				pool.Attributes[sa.Encryption] = sa.NewBoolOffer(enableEncryption)
-				pool.InternalAttributes[Encryption] = encryption
+				pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(enableEncryption)
+				pool.InternalAttributes()[Encryption] = encryption
 			}
 
-			pool.InternalAttributes[Size] = size
-			pool.InternalAttributes[Region] = region
-			pool.InternalAttributes[Zone] = zone
-			pool.InternalAttributes[SpaceReserve] = spaceReserve
-			pool.InternalAttributes[SnapshotPolicy] = snapshotPolicy
-			pool.InternalAttributes[SnapshotReserve] = snapshotReserve
-			pool.InternalAttributes[UnixPermissions] = unixPermissions
-			pool.InternalAttributes[SnapshotDir] = snapshotDir
-			pool.InternalAttributes[ExportPolicy] = exportPolicy
-			pool.InternalAttributes[SecurityStyle] = securityStyle
-			pool.InternalAttributes[TieringPolicy] = tieringPolicy
-			pool.InternalAttributes[QosPolicy] = qosPolicy
-			pool.InternalAttributes[AdaptiveQosPolicy] = adaptiveQosPolicy
+			pool.InternalAttributes()[Size] = size
+			pool.InternalAttributes()[Region] = region
+			pool.InternalAttributes()[Zone] = zone
+			pool.InternalAttributes()[SpaceReserve] = spaceReserve
+			pool.InternalAttributes()[SnapshotPolicy] = snapshotPolicy
+			pool.InternalAttributes()[SnapshotReserve] = snapshotReserve
+			pool.InternalAttributes()[UnixPermissions] = unixPermissions
+			pool.InternalAttributes()[SnapshotDir] = snapshotDir
+			pool.InternalAttributes()[ExportPolicy] = exportPolicy
+			pool.InternalAttributes()[SecurityStyle] = securityStyle
+			pool.InternalAttributes()[TieringPolicy] = tieringPolicy
+			pool.InternalAttributes()[QosPolicy] = qosPolicy
+			pool.InternalAttributes()[AdaptiveQosPolicy] = adaptiveQosPolicy
 
-			d.virtualPools[pool.Name] = pool
+			d.virtualPools[pool.Name()] = pool
 		}
 	}
 
@@ -411,8 +410,8 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 	}
 
 	// Create a list `physicalPools` containing 1 entry
-	var physicalPools = map[string]*storage.Pool{
-		d.physicalPool.Name: d.physicalPool,
+	var physicalPools = map[string]storage.Pool{
+		d.physicalPool.Name(): d.physicalPool,
 	}
 	if err := ValidateStoragePools(ctx, physicalPools, d.virtualPools, d, api.MaxNASLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
@@ -423,7 +422,7 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 
 // Create a volume with the specified options
 func (d *NASFlexGroupStorageDriver) Create(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
 
 	name := volConfig.InternalName
@@ -474,18 +473,19 @@ func (d *NASFlexGroupStorageDriver) Create(
 
 	// get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
-	spaceReserve := utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes[SpaceReserve])
-	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes[SnapshotPolicy])
-	snapshotReserve := utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes[SnapshotReserve])
-	unixPermissions := utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes[UnixPermissions])
-	snapshotDir := utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes[SnapshotDir])
-	exportPolicy := utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes[ExportPolicy])
-	securityStyle := utils.GetV(opts, "securityStyle", storagePool.InternalAttributes[SecurityStyle])
-	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
-	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
-	qosPolicy := storagePool.InternalAttributes[QosPolicy]
-	adaptiveQosPolicy := storagePool.InternalAttributes[AdaptiveQosPolicy]
-
+	var (
+		spaceReserve      = utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
+		snapshotPolicy    = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
+		snapshotReserve   = utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
+		unixPermissions   = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
+		snapshotDir       = utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
+		exportPolicy      = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+		securityStyle     = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
+		encryption        = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
+		tieringPolicy     = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
+		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
+	)
 	// limits checks are not currently applicable to the Flexgroups driver, omitted here on purpose
 
 	enableSnapshotDir, err := strconv.ParseBool(snapshotDir)
@@ -514,7 +514,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 	// get the flexvol size based on the snapshot reserve
 	flexvolSize := calculateFlexvolSize(ctx, name, sizeBytes, snapshotReserveInt)
-	sizeBytes, err = GetVolumeSize(flexvolSize, storagePool.InternalAttributes[Size])
+	sizeBytes, err = GetVolumeSize(flexvolSize, storagePool.InternalAttributes()[Size])
 	if err != nil {
 		return err
 	}
@@ -528,7 +528,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 
 	if d.Config.AutoExportPolicy {
-		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID())
+		exportPolicy = getExportPolicyName(storagePool.Backend().BackendUUID())
 	}
 
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
@@ -555,7 +555,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
-	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name)
+	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name())
 
 	labels, err := storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxNASLabelLength)
 	if err != nil {
@@ -574,7 +574,8 @@ func (d *NASFlexGroupStorageDriver) Create(
 	volumeCreateNotify := func(err error, duration time.Duration) {
 		Logc(ctx).WithFields(log.Fields{
 			"name":      name,
-			"increment": duration}).Debug("FlexGroup not yet created, waiting.")
+			"increment": duration,
+		}).Debug("FlexGroup not yet created, waiting.")
 	}
 
 	volumeBackoff := backoff.NewExponentialBackOff()
@@ -586,7 +587,8 @@ func (d *NASFlexGroupStorageDriver) Create(
 
 	// Run the volume check using an exponential backoff
 	if err := backoff.RetryNotify(checkVolumeCreated, volumeBackoff, volumeCreateNotify); err != nil {
-		createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error creating FlexGroup %v: %v", storagePool.Name, name, err))
+		createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error creating FlexGroup %v: %v",
+			storagePool.Name(), name, err))
 		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 	}
 
@@ -594,7 +596,9 @@ func (d *NASFlexGroupStorageDriver) Create(
 	if !enableSnapshotDir {
 		_, err := d.API.FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx, name)
 		if err != nil {
-			createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v", storagePool.Name, name, err))
+			createErrors = append(createErrors, fmt.Errorf(
+				"ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v",
+				storagePool.Name(), name, err))
 			return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 		}
 	}
@@ -602,7 +606,8 @@ func (d *NASFlexGroupStorageDriver) Create(
 	// Mount the volume at the specified junction
 	mountResponse, err := d.API.VolumeMount(name, "/"+name)
 	if err = api.GetError(ctx, mountResponse, err); err != nil {
-		createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error mounting volume %s to junction: %v", storagePool.Name, name, err))
+		createErrors = append(createErrors, fmt.Errorf(
+			"ONTAP-NAS-FLEXGROUP pool %s; error mounting volume %s to junction: %v", storagePool.Name(), name, err))
 		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 	}
 
@@ -611,7 +616,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 
 // CreateClone creates a flexgroup clone
 func (d *NASFlexGroupStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
 	sourceLabel := ""
 
@@ -696,7 +701,8 @@ func (d *NASFlexGroupStorageDriver) Import(
 		}
 		modifyUnixPermResponse, err := d.API.FlexGroupModifyUnixPermissions(ctx, volConfig.InternalName, unixPerms)
 		if err = api.GetError(ctx, modifyUnixPermResponse, err); err != nil {
-			Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, modifying unix permissions failed: %v", err)
+			Logc(ctx).WithField("originalName", originalName).Errorf(
+				"Could not import volume, modifying unix permissions failed: %v", err)
 			return fmt.Errorf("volume %s modify failed: %v", originalName, err)
 		}
 	}
@@ -919,12 +925,12 @@ func (d *NASFlexGroupStorageDriver) GetStorageBackendSpecs(_ context.Context, ba
 	virtual := len(d.virtualPools) > 0
 
 	if !virtual {
-		d.physicalPool.Backend = backend
+		d.physicalPool.SetBackend(backend)
 		backend.AddStoragePool(d.physicalPool)
 	}
 
 	for _, pool := range d.virtualPools {
-		pool.Backend = backend
+		pool.SetBackend(backend)
 		if virtual {
 			backend.AddStoragePool(pool)
 		}
@@ -936,7 +942,7 @@ func (d *NASFlexGroupStorageDriver) GetStorageBackendSpecs(_ context.Context, ba
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *NASFlexGroupStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	physicalPoolNames := make([]string, 0)
-	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name)
+	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name())
 	return physicalPoolNames
 }
 
@@ -1068,8 +1074,7 @@ func (d *NASFlexGroupStorageDriver) GetVolumeExternalWrappers(
 // getVolumeExternal is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
-func (d *NASFlexGroupStorageDriver) getVolumeExternal(
-	volumeAttrs *azgo.VolumeAttributesType) *storage.VolumeExternal {
+func (d *NASFlexGroupStorageDriver) getVolumeExternal(volumeAttrs *azgo.VolumeAttributesType) *storage.VolumeExternal {
 
 	volumeExportAttrs := volumeAttrs.VolumeExportAttributesPtr
 	volumeIDAttrs := volumeAttrs.VolumeIdAttributesPtr

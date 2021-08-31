@@ -20,38 +20,85 @@ import (
 // TODO: Try moving all ProvisioningLabelTag related code here
 const ProvisioningLabelTag = "provisioning"
 
-type Pool struct {
-	Name string
+type StoragePool struct {
+	name string
 	// A Trident storage pool can potentially satisfy more than one storage class.
-	StorageClasses      []string
-	Backend             Backend
-	Attributes          map[string]sa.Offer // These attributes are used to match storage classes
-	InternalAttributes  map[string]string   // These attributes are defined & used internally by storage drivers
-	SupportedTopologies []map[string]string
+	storageClasses      []string
+	backend             Backend
+	attributes          map[string]sa.Offer // These attributes are used to match storage classes
+	internalAttributes  map[string]string   // These attributes are defined & used internally by storage drivers
+	supportedTopologies []map[string]string
 }
 
-func NewStoragePool(backend Backend, name string) *Pool {
-	return &Pool{
-		Name:               name,
-		StorageClasses:     make([]string, 0),
-		Backend:            backend,
-		Attributes:         make(map[string]sa.Offer),
-		InternalAttributes: make(map[string]string),
+func (p *StoragePool) Name() string {
+	return p.name
+}
+
+func (p *StoragePool) SetName(name string) {
+	p.name = name
+}
+
+func (p *StoragePool) StorageClasses() []string {
+	return p.storageClasses
+}
+
+func (p *StoragePool) SetStorageClasses(storageClasses []string) {
+	p.storageClasses = storageClasses
+}
+
+func (p *StoragePool) Backend() Backend {
+	return p.backend
+}
+
+func (p *StoragePool) SetBackend(backend Backend) {
+	p.backend = backend
+}
+
+func (p *StoragePool) Attributes() map[string]sa.Offer {
+	return p.attributes
+}
+
+func (p *StoragePool) SetAttributes(attributes map[string]sa.Offer) {
+	p.attributes = attributes
+}
+
+func (p *StoragePool) InternalAttributes() map[string]string {
+	return p.internalAttributes
+}
+
+func (p *StoragePool) SetInternalAttributes(internalAttributes map[string]string) {
+	p.internalAttributes = internalAttributes
+}
+
+func (p *StoragePool) SupportedTopologies() []map[string]string {
+	return p.supportedTopologies
+}
+
+func (p *StoragePool) SetSupportedTopologies(supportedTopologies []map[string]string) {
+	p.supportedTopologies = supportedTopologies
+}
+
+func NewStoragePool(backend Backend, name string) *StoragePool {
+	return &StoragePool{
+		name:               name,
+		storageClasses:     make([]string, 0),
+		backend:            backend,
+		attributes:         make(map[string]sa.Offer),
+		internalAttributes: make(map[string]string),
 	}
 }
 
-func (pool *Pool) AddStorageClass(class string) {
+func (p *StoragePool) AddStorageClass(class string) {
 	// Note that this function should get called once per storage class
 	// affecting the volume; thus, we don't need to check for duplicates.
-	pool.StorageClasses = append(pool.StorageClasses, class)
+	p.storageClasses = append(p.storageClasses, class)
 }
 
-func (pool *Pool) RemoveStorageClass(class string) bool {
+func (p *StoragePool) RemoveStorageClass(class string) bool {
 	found := false
-	for i, name := range pool.StorageClasses {
+	for i, name := range p.storageClasses {
 		if name == class {
-			pool.StorageClasses = append(pool.StorageClasses[:i],
-				pool.StorageClasses[i+1:]...)
+			p.storageClasses = append(p.storageClasses[:i], p.storageClasses[i+1:]...)
 			found = true
 			break
 		}
@@ -62,17 +109,17 @@ func (pool *Pool) RemoveStorageClass(class string) bool {
 type PoolExternal struct {
 	Name           string   `json:"name"`
 	StorageClasses []string `json:"storageClasses"`
-	//TODO: can't have an interface here for unmarshalling
+	// TODO: can't have an interface here for unmarshalling
 	Attributes          map[string]sa.Offer `json:"storageAttributes"`
 	SupportedTopologies []map[string]string `json:"supportedTopologies"`
 }
 
-func (pool *Pool) ConstructExternal() *PoolExternal {
+func (p *StoragePool) ConstructExternal() *PoolExternal {
 	external := &PoolExternal{
-		Name:                pool.Name,
-		StorageClasses:      pool.StorageClasses,
-		Attributes:          pool.Attributes,
-		SupportedTopologies: pool.SupportedTopologies,
+		Name:                p.name,
+		StorageClasses:      p.storageClasses,
+		Attributes:          p.attributes,
+		SupportedTopologies: p.supportedTopologies,
 	}
 
 	// We want to sort these so that the output remains consistent;
@@ -84,9 +131,9 @@ func (pool *Pool) ConstructExternal() *PoolExternal {
 // GetLabelsJSON returns a JSON-formatted string containing the labels on this pool, suitable
 // for a label set on a storage volume.  The outer key may be customized.  For example:
 // {"provisioning":{"cloud":"anf","clusterName":"dev-test-cluster-1"}}
-func (pool *Pool) GetLabelsJSON(ctx context.Context, key string, labelLimit int) (string, error) {
+func (p *StoragePool) GetLabelsJSON(ctx context.Context, key string, labelLimit int) (string, error) {
 
-	labelOffer, ok := pool.Attributes[sa.Labels].(sa.LabelOffer)
+	labelOffer, ok := p.attributes[sa.Labels].(sa.LabelOffer)
 	if !ok {
 		return "", nil
 	}
@@ -118,7 +165,8 @@ func (pool *Pool) GetLabelsJSON(ctx context.Context, key string, labelLimit int)
 		Logc(ctx).WithFields(log.Fields{
 			"labelsJSON":       labelsJSON,
 			"labelsJSONLength": len(labelsJSON),
-			"maxLabelLength":   labelLimit}).Error("label length exceeds the character limit")
+			"maxLabelLength":   labelLimit,
+		}).Error("label length exceeds the character limit")
 		return "", fmt.Errorf("label length %v exceeds the character limit of %v characters", len(labelsJSON),
 			labelLimit)
 	}
@@ -171,6 +219,6 @@ func DeleteProvisioningLabels(volumeLabels []string) []string {
 	return newLabels
 }
 
-func IsStoragePoolUnset(storagePool *Pool) bool {
-	return storagePool == nil || storagePool.Name == drivers.UnsetPool
+func IsStoragePoolUnset(storagePool Pool) bool {
+	return storagePool == nil || storagePool.Name() == drivers.UnsetPool
 }

@@ -71,8 +71,10 @@ func TestAttributeMatches(t *testing.T) {
 					sa.ProvisioningType: sa.NewStringRequest("thin"),
 				},
 			}),
-			expectedPools: []string{tu.FastSmall, tu.FastThinOnly,
-				tu.FastUniqueAttr},
+			expectedPools: []string{
+				tu.FastSmall, tu.FastThinOnly,
+				tu.FastUniqueAttr,
+			},
 		},
 		{
 			// This tests the correctness of matching string requests, using
@@ -114,8 +116,10 @@ func TestAttributeMatches(t *testing.T) {
 					sa.ProvisioningType: sa.NewStringRequest("thin"),
 				},
 			}),
-			expectedPools: []string{tu.FastSmall, tu.FastThinOnly,
-				tu.FastUniqueAttr, tu.MediumOverlap},
+			expectedPools: []string{
+				tu.FastSmall, tu.FastThinOnly,
+				tu.FastUniqueAttr, tu.MediumOverlap,
+			},
 		},
 		// BEGIN Failure tests
 		{
@@ -165,30 +169,24 @@ func TestAttributeMatches(t *testing.T) {
 		unmatched := make([]string, 0)
 		matched := make([]string, 0)
 		for _, vc := range test.sc.Pools() {
-			if _, ok := expectedMap[vc.Name]; !ok {
-				unmatched = append(unmatched, vc.Name)
+			if _, ok := expectedMap[vc.Name()]; !ok {
+				unmatched = append(unmatched, vc.Name())
 			} else {
-				delete(expectedMap, vc.Name)
-				matched = append(matched, vc.Name)
+				delete(expectedMap, vc.Name())
+				matched = append(matched, vc.Name())
 			}
 		}
 		if len(unmatched) > 0 {
-			t.Errorf("%s:\n\tFailed to match pools: %s\n\tMatched:  %s",
-				test.name,
-				strings.Join(unmatched, ", "),
-				strings.Join(matched, ", "),
-			)
+			t.Errorf("%s:\n\tFailed to match pools: %s\n\tMatched:  %s", test.name, strings.Join(unmatched, ", "),
+				strings.Join(matched, ", "))
 		}
 		if len(expectedMap) > 0 {
 			expectedMatches := make([]string, 0)
 			for k := range expectedMap {
 				expectedMatches = append(expectedMatches, k)
 			}
-			t.Errorf("%s:\n\tExpected additional matches:  %s\n\tMatched: %s",
-				test.name,
-				strings.Join(expectedMatches, ", "),
-				strings.Join(matched, ", "),
-			)
+			t.Errorf("%s:\n\tExpected additional matches:  %s\n\tMatched: %s", test.name,
+				strings.Join(expectedMatches, ", "), strings.Join(matched, ", "))
 		}
 	}
 }
@@ -284,19 +282,16 @@ func TestAttributeMatchesWithVirtualPools(t *testing.T) {
 		unmatched := make([]string, 0)
 		matched := make([]string, 0)
 		for _, vc := range test.sc.Pools() {
-			if _, ok := expectedMap[vc.Name]; !ok {
-				unmatched = append(unmatched, vc.Name)
+			if _, ok := expectedMap[vc.Name()]; !ok {
+				unmatched = append(unmatched, vc.Name())
 			} else {
-				delete(expectedMap, vc.Name)
-				matched = append(matched, vc.Name)
+				delete(expectedMap, vc.Name())
+				matched = append(matched, vc.Name())
 			}
 		}
 		if len(unmatched) > 0 {
 			t.Errorf("%s:\n\tFailed to match pools: %s\n\tMatched:  %s",
-				test.name,
-				strings.Join(unmatched, ", "),
-				strings.Join(matched, ", "),
-			)
+				test.name, strings.Join(unmatched, ", "), strings.Join(matched, ", "))
 		}
 		if len(expectedMap) > 0 {
 			expectedMatches := make([]string, 0)
@@ -304,10 +299,7 @@ func TestAttributeMatchesWithVirtualPools(t *testing.T) {
 				expectedMatches = append(expectedMatches, k)
 			}
 			t.Errorf("%s:\n\tExpected additional matches:  %s\n\tMatched: %s",
-				test.name,
-				strings.Join(expectedMatches, ", "),
-				strings.Join(matched, ", "),
-			)
+				test.name, strings.Join(expectedMatches, ", "), strings.Join(matched, ", "))
 		}
 	}
 }
@@ -319,12 +311,18 @@ func TestSpecificBackends(t *testing.T) {
 		name      string
 		poolNames []string
 	}{
-		{name: "fast-a",
-			poolNames: []string{tu.FastSmall, tu.FastThinOnly}},
-		{name: "fast-b",
-			poolNames: []string{tu.FastThinOnly, tu.FastUniqueAttr}},
-		{name: "slow",
-			poolNames: []string{tu.SlowSnapshots, tu.SlowNoSnapshots, tu.MediumOverlap}},
+		{
+			name:      "fast-a",
+			poolNames: []string{tu.FastSmall, tu.FastThinOnly},
+		},
+		{
+			name:      "fast-b",
+			poolNames: []string{tu.FastThinOnly, tu.FastUniqueAttr},
+		},
+		{
+			name:      "slow",
+			poolNames: []string{tu.SlowSnapshots, tu.SlowNoSnapshots, tu.MediumOverlap},
+		},
 	} {
 		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
 		for _, poolName := range c.poolNames {
@@ -390,15 +388,14 @@ func TestSpecificBackends(t *testing.T) {
 		for _, protocol := range []config.Protocol{config.File, config.Block} {
 			for _, vc := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol) {
 				nameFound := false
-				for _, scName := range vc.StorageClasses {
+				for _, scName := range vc.StorageClasses() {
 					if scName == test.sc.GetName() {
 						nameFound = true
 						break
 					}
 				}
 				if !nameFound {
-					t.Errorf("%s: Storage class name not found in storage "+
-						"pool %s", test.name, vc.Name)
+					t.Errorf("%s: Storage class name not found in storage pool %s", test.name, vc.Name())
 				}
 				matchIndex := -1
 				for i, e := range test.expected {
@@ -409,13 +406,12 @@ func TestSpecificBackends(t *testing.T) {
 				}
 				if matchIndex >= 0 {
 					// If we match, remove the match from the potential matches.
-					test.expected[matchIndex] = test.expected[len(
-						test.expected)-1]
+					test.expected[matchIndex] = test.expected[len(test.expected)-1]
 					test.expected[len(test.expected)-1] = nil
 					test.expected = test.expected[:len(test.expected)-1]
 				} else {
-					t.Errorf("%s:  Found unexpected match for storage class:  "+
-						"%s:%s", test.name, vc.Backend.Name(), vc.Name)
+					t.Errorf("%s: Found unexpected match for storage class: %s:%s", test.name, vc.Backend().Name(),
+						vc.Name())
 				}
 			}
 		}
@@ -437,12 +433,18 @@ func TestRegex(t *testing.T) {
 		backendName string
 		poolNames   []string
 	}{
-		{backendName: "fast-a",
-			poolNames: []string{tu.FastSmall, tu.FastThinOnly}},
-		{backendName: "fast-b",
-			poolNames: []string{tu.FastThinOnly, tu.FastUniqueAttr}},
-		{backendName: "slow",
-			poolNames: []string{tu.SlowSnapshots, tu.SlowNoSnapshots, tu.MediumOverlap}},
+		{
+			backendName: "fast-a",
+			poolNames:   []string{tu.FastSmall, tu.FastThinOnly},
+		},
+		{
+			backendName: "fast-b",
+			poolNames:   []string{tu.FastThinOnly, tu.FastUniqueAttr},
+		},
+		{
+			backendName: "slow",
+			poolNames:   []string{tu.SlowSnapshots, tu.SlowNoSnapshots, tu.MediumOverlap},
+		},
 	} {
 		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
 		for _, poolName := range c.poolNames {
@@ -615,14 +617,14 @@ func TestRegex(t *testing.T) {
 		for _, protocol := range []config.Protocol{config.File, config.Block} {
 			for _, pool := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol) {
 				nameFound := false
-				for _, scName := range pool.StorageClasses {
+				for _, scName := range pool.StorageClasses() {
 					if scName == test.sc.GetName() {
 						nameFound = true
 						break
 					}
 				}
 				if !nameFound {
-					t.Errorf("%s: Storage class name not found in storage pool: %s", test.description, pool.Name)
+					t.Errorf("%s: Storage class name not found in storage pool: %s", test.description, pool.Name())
 				}
 				matchIndex := -1
 				for i, e := range test.expected {
@@ -638,7 +640,7 @@ func TestRegex(t *testing.T) {
 					test.expected = test.expected[:len(test.expected)-1]
 				} else {
 					t.Errorf("%s:  Found unexpected match for storage class: %s:%s", test.description,
-						pool.Backend.Name(), pool.Name)
+						pool.Backend().Name(), pool.Name())
 				}
 			}
 		}
@@ -647,7 +649,8 @@ func TestRegex(t *testing.T) {
 			for i, e := range test.expected {
 				expectedNames[i] = e.String()
 			}
-			t.Errorf("%s:  Storage class failed to match storage pools %s", test.description, strings.Join(expectedNames, ", "))
+			t.Errorf("%s:  Storage class failed to match storage pools %s", test.description,
+				strings.Join(expectedNames, ", "))
 		}
 	}
 }
@@ -660,14 +663,22 @@ func TestRegex2(t *testing.T) {
 		backendName string
 		poolNames   []string
 	}{
-		{backendName: "fast-a",
-			poolNames: []string{tu.FastSmall, tu.FastThinOnly}},
-		{backendName: "fast-b",
-			poolNames: []string{tu.FastThinOnly, tu.FastUniqueAttr}},
-		{backendName: "slow",
-			poolNames: []string{tu.SlowSnapshots, tu.SlowNoSnapshots, tu.MediumOverlap}},
-		{backendName: "slower",
-			poolNames: []string{tu.FastThinOnly}},
+		{
+			backendName: "fast-a",
+			poolNames:   []string{tu.FastSmall, tu.FastThinOnly},
+		},
+		{
+			backendName: "fast-b",
+			poolNames:   []string{tu.FastThinOnly, tu.FastUniqueAttr},
+		},
+		{
+			backendName: "slow",
+			poolNames:   []string{tu.SlowSnapshots, tu.SlowNoSnapshots, tu.MediumOverlap},
+		},
+		{
+			backendName: "slower",
+			poolNames:   []string{tu.FastThinOnly},
+		},
 	} {
 		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
 		for _, poolName := range c.poolNames {
@@ -741,14 +752,14 @@ func TestRegex2(t *testing.T) {
 		for _, protocol := range []config.Protocol{config.File, config.Block} {
 			for _, pool := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol) {
 				nameFound := false
-				for _, scName := range pool.StorageClasses {
+				for _, scName := range pool.StorageClasses() {
 					if scName == test.sc.GetName() {
 						nameFound = true
 						break
 					}
 				}
 				if !nameFound {
-					t.Errorf("%s: Storage class name not found in storage pool: %s", test.description, pool.Name)
+					t.Errorf("%s: Storage class name not found in storage pool: %s", test.description, pool.Name())
 				}
 				matchIndex := -1
 				for i, e := range test.expected {
@@ -764,7 +775,7 @@ func TestRegex2(t *testing.T) {
 					test.expected = test.expected[:len(test.expected)-1]
 				} else {
 					t.Errorf("%s:  Found unexpected match for storage class: %s:%s", test.description,
-						pool.Backend.Name(), pool.Name)
+						pool.Backend().Name(), pool.Name())
 				}
 			}
 		}

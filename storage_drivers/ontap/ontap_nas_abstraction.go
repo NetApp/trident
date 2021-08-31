@@ -21,25 +21,25 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-////////////////////////////////////////////////////////////////////////////////////////////
-///             _____________________
-///            |   <<Interface>>    |
-///            |       ONTAPI       |
-///            |____________________|
-///                ^             ^
-///     Implements |             | Implements
-///   ____________________    ____________________
-///  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
-///  |___________________|   |___________________|
-///  | +API: RestClient  |   | +API: *Client     |
-///  |___________________|   |___________________|
-///
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
+// /             _____________________
+// /            |   <<Interface>>    |
+// /            |       ONTAPI       |
+// /            |____________________|
+// /                ^             ^
+// /     Implements |             | Implements
+// /   ____________________    ____________________
+// /  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
+// /  |___________________|   |___________________|
+// /  | +API: RestClient  |   | +API: *Client     |
+// /  |___________________|   |___________________|
+// /
+// //////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
 // Drivers that offer dual support are to call ONTAP REST or ZAPI's
 // via abstraction layer (ONTAPI interface)
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
 
 // NASStorageDriver is for NFS storage provisioning
 type NASStorageDriverAbstraction struct {
@@ -48,8 +48,8 @@ type NASStorageDriverAbstraction struct {
 	API         api.OntapAPI
 	Telemetry   *TelemetryAbstraction
 
-	physicalPools map[string]*storage.Pool
-	virtualPools  map[string]*storage.Pool
+	physicalPools map[string]storage.Pool
+	virtualPools  map[string]storage.Pool
 }
 
 func (d *NASStorageDriverAbstraction) GetConfig() *drivers.OntapStorageDriverConfig {
@@ -165,7 +165,9 @@ func (d *NASStorageDriverAbstraction) validate(ctx context.Context) error {
 	if err := ValidateStoragePrefix(*d.Config.StoragePrefix); err != nil {
 		return err
 	}
-	if err := ValidateStoragePoolsAbstraction(ctx, d.physicalPools, d.virtualPools, d, api.MaxNASLabelLength); err != nil {
+	if err := ValidateStoragePoolsAbstraction(
+		ctx, d.physicalPools, d.virtualPools, d, api.MaxNASLabelLength,
+	); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -174,7 +176,7 @@ func (d *NASStorageDriverAbstraction) validate(ctx context.Context) error {
 
 // Create a volume with the specified options
 func (d *NASStorageDriverAbstraction) Create(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
 
 	name := volConfig.InternalName
@@ -213,17 +215,19 @@ func (d *NASStorageDriverAbstraction) Create(
 
 	// get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
-	spaceReserve := utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes[SpaceReserve])
-	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes[SnapshotPolicy])
-	snapshotReserve := utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes[SnapshotReserve])
-	unixPermissions := utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes[UnixPermissions])
-	snapshotDir := utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes[SnapshotDir])
-	exportPolicy := utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes[ExportPolicy])
-	securityStyle := utils.GetV(opts, "securityStyle", storagePool.InternalAttributes[SecurityStyle])
-	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
-	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
-	qosPolicy := storagePool.InternalAttributes[QosPolicy]
-	adaptiveQosPolicy := storagePool.InternalAttributes[AdaptiveQosPolicy]
+	var (
+		spaceReserve      = utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
+		snapshotPolicy    = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
+		snapshotReserve   = utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
+		unixPermissions   = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
+		snapshotDir       = utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
+		exportPolicy      = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+		securityStyle     = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
+		encryption        = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
+		tieringPolicy     = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
+		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
+	)
 
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
 	if err != nil {
@@ -239,7 +243,7 @@ func (d *NASStorageDriverAbstraction) Create(
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
-	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes[Size])
+	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes()[Size])
 
 	// Get the flexvol size based on the snapshot reserve
 	flexvolSize := calculateFlexvolSize(ctx, name, sizeBytes, snapshotReserveInt)
@@ -249,12 +253,14 @@ func (d *NASStorageDriverAbstraction) Create(
 	size := strconv.FormatUint(flexvolSize, 10)
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
@@ -273,7 +279,7 @@ func (d *NASStorageDriverAbstraction) Create(
 	}
 
 	if d.Config.AutoExportPolicy {
-		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID())
+		exportPolicy = getExportPolicyName(storagePool.Backend().BackendUUID())
 	}
 
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
@@ -303,12 +309,13 @@ func (d *NASStorageDriverAbstraction) Create(
 	physicalPoolNames := make([]string, 0)
 
 	for _, physicalPool := range physicalPools {
-		aggregate := physicalPool.Name
+		aggregate := physicalPool.Name()
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimitsAbstraction(
-			ctx, aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
-			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error: %v", storagePool.Name, aggregate, aggrLimitsErr)
+			ctx, aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI(),
+		); aggrLimitsErr != nil {
+			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
 			continue
@@ -345,7 +352,7 @@ func (d *NASStorageDriverAbstraction) Create(
 				return nil
 			}
 
-			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error creating volume %s: %v", storagePool.Name,
+			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error creating volume %s: %v", storagePool.Name(),
 				aggregate, name, err)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
@@ -374,7 +381,7 @@ func (d *NASStorageDriverAbstraction) Create(
 
 // CreateClone creates a volume clone
 func (d *NASStorageDriverAbstraction) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
 
 	sourceLabel := ""
@@ -438,7 +445,9 @@ func (d *NASStorageDriverAbstraction) Destroy(ctx context.Context, name string) 
 	return nil
 }
 
-func (d *NASStorageDriverAbstraction) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
+func (d *NASStorageDriverAbstraction) Import(
+	ctx context.Context, volConfig *storage.VolumeConfig, originalName string,
+) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -508,7 +517,9 @@ func (d *NASStorageDriverAbstraction) Import(ctx context.Context, volConfig *sto
 			unixPerms = d.Config.UnixPermissions
 		}
 
-		if _, err := d.API.VolumeModifyUnixPermissions(ctx, volConfig.InternalName, originalName, unixPerms); err != nil {
+		if _, err := d.API.VolumeModifyUnixPermissions(
+			ctx, volConfig.InternalName, originalName, unixPerms,
+		); err != nil {
 			return err
 		}
 	}
@@ -766,7 +777,9 @@ func (d *NASStorageDriverAbstraction) GetExternalConfig(ctx context.Context) int
 // GetVolumeExternal queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
 // representation of the volume.
-func (d *NASStorageDriverAbstraction) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
+func (d *NASStorageDriverAbstraction) GetVolumeExternal(
+	ctx context.Context, name string,
+) (*storage.VolumeExternal, error) {
 
 	volume, _, err := d.API.VolumeInfo(ctx, name)
 	if err != nil {
@@ -780,7 +793,9 @@ func (d *NASStorageDriverAbstraction) GetVolumeExternal(ctx context.Context, nam
 // container volumes managed by this driver.  It then writes a VolumeExternal
 // representation of each volume to the supplied channel, closing the channel
 // when finished.
-func (d *NASStorageDriverAbstraction) GetVolumeExternalWrappers(ctx context.Context, channel chan *storage.VolumeExternalWrapper) {
+func (d *NASStorageDriverAbstraction) GetVolumeExternalWrappers(
+	ctx context.Context, channel chan *storage.VolumeExternalWrapper,
+) {
 
 	// Let the caller know we're done by closing the channel
 	defer close(channel)
@@ -802,7 +817,8 @@ func (d *NASStorageDriverAbstraction) GetVolumeExternalWrappers(ctx context.Cont
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
 func (d *NASStorageDriverAbstraction) getVolumeExternal(
-	volume api.Volume) *storage.VolumeExternal {
+	volume api.Volume,
+) *storage.VolumeExternal {
 
 	internalName := volume.Name
 	name := internalName
@@ -882,7 +898,9 @@ func (d *NASStorageDriverAbstraction) GetUpdateType(ctx context.Context, driverO
 }
 
 // Resize expands the volume size.
-func (d *NASStorageDriverAbstraction) Resize(ctx context.Context, volConfig *storage.VolumeConfig, requestedSizeBytes uint64) error {
+func (d *NASStorageDriverAbstraction) Resize(
+	ctx context.Context, volConfig *storage.VolumeConfig, requestedSizeBytes uint64,
+) error {
 
 	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
@@ -914,12 +932,14 @@ func (d *NASStorageDriverAbstraction) Resize(ctx context.Context, volConfig *sto
 	newFlexvolSize := calculateFlexvolSize(ctx, name, requestedSizeBytes, snapshotReserveInt)
 
 	if aggrLimitsErr := checkAggregateLimitsForFlexvolAbstraction(
-		ctx, name, newFlexvolSize, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+		ctx, name, newFlexvolSize, d.Config, d.GetAPI(),
+	); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, requestedSizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, requestedSizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
@@ -931,7 +951,9 @@ func (d *NASStorageDriverAbstraction) Resize(ctx context.Context, volConfig *sto
 	return nil
 }
 
-func (d *NASStorageDriverAbstraction) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, backendUUID string) error {
+func (d *NASStorageDriverAbstraction) ReconcileNodeAccess(
+	ctx context.Context, nodes []*utils.Node, backendUUID string,
+) error {
 
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {

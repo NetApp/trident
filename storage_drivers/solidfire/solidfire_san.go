@@ -56,7 +56,7 @@ type SANStorageDriver struct {
 	DefaultMinIOPS   int64
 	DefaultMaxIOPS   int64
 
-	virtualPools map[string]*storage.Pool
+	virtualPools map[string]storage.Pool
 }
 
 type Telemetry struct {
@@ -118,9 +118,7 @@ func (d *SANStorageDriver) BackendName() string {
 // poolName constructs the name of the pool reported by this driver instance
 func (d *SANStorageDriver) poolName(name string) string {
 
-	return fmt.Sprintf("%s_%s",
-		d.BackendName(),
-		strings.Replace(name, "-", "", -1))
+	return fmt.Sprintf("%s_%s", d.BackendName(), strings.Replace(name, "-", "", -1))
 }
 
 // Initialize from the provided config
@@ -335,7 +333,8 @@ func (d *SANStorageDriver) getEndpoint(
 	minimumVersion := utils.MustParseGeneric(sfMinimumAPIVersion)
 
 	if !endpointVersion.AtLeast(minimumVersion) {
-		Logc(ctx).WithField("minVersion", sfMinimumAPIVersion).Warn("Overriding config file with minimum SF API version.")
+		Logc(ctx).WithField("minVersion", sfMinimumAPIVersion).Warn(
+			"Overriding config file with minimum SF API version.")
 		return paramsMap["endpoint"] + sfMinimumAPIVersion, nil
 	} else {
 		Logc(ctx).WithField("version", paramsMap["version"]).Debug("Using SF API version from config file.")
@@ -443,7 +442,7 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 	//													base level or in a Virtual Pool, QoS value is set to default
 	//													for those Virtual pool(s).
 
-	d.virtualPools = make(map[string]*storage.Pool)
+	d.virtualPools = make(map[string]storage.Pool)
 
 	typesDefined := d.Client.VolumeTypes != nil
 	virtualPoolsDefined := len(d.Config.Storage) != 0
@@ -476,34 +475,34 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 		for _, storageVolPool := range storageVolPools {
 			pool := storage.NewStoragePool(nil, storageVolPool.Type)
 
-			pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
+			pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
 
-			pool.Attributes[sa.IOPS] = sa.NewIntOffer(int(storageVolPool.QOS.MinIOPS),
+			pool.Attributes()[sa.IOPS] = sa.NewIntOffer(int(storageVolPool.QOS.MinIOPS),
 				int(storageVolPool.QOS.MaxIOPS))
-			pool.Attributes[sa.Snapshots] = sa.NewBoolOffer(true)
-			pool.Attributes[sa.Clones] = sa.NewBoolOffer(true)
-			pool.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
-			pool.Attributes[sa.ProvisioningType] = sa.NewStringOffer(sa.Thin)
-			pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
+			pool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+			pool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+			pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+			pool.Attributes()[sa.ProvisioningType] = sa.NewStringOffer(sa.Thin)
+			pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
 
 			if d.Config.Region != "" {
-				pool.Attributes[sa.Region] = sa.NewStringOffer(d.Config.Region)
+				pool.Attributes()[sa.Region] = sa.NewStringOffer(d.Config.Region)
 			}
 			if d.Config.Zone != "" {
-				pool.Attributes[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
+				pool.Attributes()[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
 			}
 
 			// Solidfire supports only "ssd" media types
-			pool.Attributes[sa.Media] = sa.NewStringOffer(sa.SSD)
+			pool.Attributes()[sa.Media] = sa.NewStringOffer(sa.SSD)
 
-			pool.InternalAttributes[Size] = d.Config.Size
-			pool.InternalAttributes[Region] = d.Config.Region
-			pool.InternalAttributes[Zone] = d.Config.Zone
-			pool.InternalAttributes[QoSType] = storageVolPool.Type
-			pool.InternalAttributes[Media] = sa.SSD
-			pool.SupportedTopologies = d.Config.SupportedTopologies
+			pool.InternalAttributes()[Size] = d.Config.Size
+			pool.InternalAttributes()[Region] = d.Config.Region
+			pool.InternalAttributes()[Zone] = d.Config.Zone
+			pool.InternalAttributes()[QoSType] = storageVolPool.Type
+			pool.InternalAttributes()[Media] = sa.SSD
+			pool.SetSupportedTopologies(d.Config.SupportedTopologies)
 
-			d.virtualPools[pool.Name] = pool
+			d.virtualPools[pool.Name()] = pool
 		}
 	} else {
 
@@ -538,46 +537,47 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 
 			pool := storage.NewStoragePool(nil, d.poolName(fmt.Sprintf("pool_%d", index)))
 
-			pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
-			pool.Attributes[sa.Snapshots] = sa.NewBoolOffer(true)
-			pool.Attributes[sa.Clones] = sa.NewBoolOffer(true)
-			pool.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
-			pool.Attributes[sa.ProvisioningType] = sa.NewStringOffer(sa.Thin)
-			pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
+			pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
+			pool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+			pool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+			pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+			pool.Attributes()[sa.ProvisioningType] = sa.NewStringOffer(sa.Thin)
+			pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
 
 			if region != "" {
-				pool.Attributes[sa.Region] = sa.NewStringOffer(region)
+				pool.Attributes()[sa.Region] = sa.NewStringOffer(region)
 			}
 			if zone != "" {
-				pool.Attributes[sa.Zone] = sa.NewStringOffer(zone)
+				pool.Attributes()[sa.Zone] = sa.NewStringOffer(zone)
 			}
 
 			if qosType == "" {
-				Logc(ctx).Debugf("Vpool %s has no type defined, assigning default IOPS value.", pool.Name)
+				Logc(ctx).Debugf("Vpool %s has no type defined, assigning default IOPS value.", pool.Name())
 
 				qosType = defaultQoSType.Type
-				pool.Attributes[sa.IOPS] = sa.NewIntOffer(int(defaultQoSType.QOS.MinIOPS), int(defaultQoSType.QOS.MaxIOPS))
+				pool.Attributes()[sa.IOPS] = sa.NewIntOffer(int(defaultQoSType.QOS.MinIOPS),
+					int(defaultQoSType.QOS.MaxIOPS))
 			} else {
 				// Make sure pool's QoS type is a valid type.
 				qos, err := parseType(ctx, storageVolPools, qosType)
 				if err != nil {
-					return fmt.Errorf("invalid QoS type: %s in pool %s", qosType, pool.Name)
+					return fmt.Errorf("invalid QoS type: %s in pool %s", qosType, pool.Name())
 				}
 
-				pool.Attributes[sa.IOPS] = sa.NewIntOffer(int(qos.MinIOPS), int(qos.MaxIOPS))
+				pool.Attributes()[sa.IOPS] = sa.NewIntOffer(int(qos.MinIOPS), int(qos.MaxIOPS))
 			}
 
 			// Solidfire supports only "ssd" media types
-			pool.Attributes[sa.Media] = sa.NewStringOffer(sa.SSD)
+			pool.Attributes()[sa.Media] = sa.NewStringOffer(sa.SSD)
 
-			pool.InternalAttributes[Size] = size
-			pool.InternalAttributes[Region] = region
-			pool.InternalAttributes[Zone] = zone
-			pool.InternalAttributes[QoSType] = qosType
-			pool.InternalAttributes[Media] = sa.SSD
-			pool.SupportedTopologies = supportedTopologies
+			pool.InternalAttributes()[Size] = size
+			pool.InternalAttributes()[Region] = region
+			pool.InternalAttributes()[Zone] = zone
+			pool.InternalAttributes()[QoSType] = qosType
+			pool.InternalAttributes()[Media] = sa.SSD
+			pool.SetSupportedTopologies(supportedTopologies)
 
-			d.virtualPools[pool.Name] = pool
+			d.virtualPools[pool.Name()] = pool
 		}
 	}
 
@@ -673,8 +673,9 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 				}
 			}
 		} else if len(d.Config.AccessGroups) > 4 {
-			err = fmt.Errorf("the maximum number of allowed Volume Access Groups per config is 4 but your "+
-				"config has specified %d", len(d.Config.AccessGroups))
+			err = fmt.Errorf(
+				"the maximum number of allowed Volume Access Groups per config is 4 but your config has specified %d",
+				len(d.Config.AccessGroups))
 			return err
 		} else {
 			// We only need this in the case that AccessGroups were specified, if it was zero and we
@@ -711,14 +712,14 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 	// Validate pool-level attributes
 	for _, pool := range d.virtualPools {
 		// Validate default size
-		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes[Size]); err != nil {
-			return fmt.Errorf("invalid value for default volume size in pool %s: %v", pool.Name, err)
+		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size]); err != nil {
+			return fmt.Errorf("invalid value for default volume size in pool %s: %v", pool.Name(), err)
 		}
 
 		// Validate pool label sizes
 		_, err := pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, MaxLabelLength)
 		if err != nil {
-			return fmt.Errorf("invalid value for label in pool %s: %v", pool.Name, err)
+			return fmt.Errorf("invalid value for label in pool %s: %v", pool.Name(), err)
 		}
 	}
 
@@ -744,7 +745,9 @@ func MakeSolidFireName(name string) string {
 }
 
 // setProvisioningLabels sets the labels in the metadata map
-func (d *SANStorageDriver) setProvisioningLabels(ctx context.Context, storagePool *storage.Pool, meta map[string]string) error {
+func (d *SANStorageDriver) setProvisioningLabels(
+	ctx context.Context, storagePool storage.Pool, meta map[string]string,
+) error {
 	labels, err := storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, MaxLabelLength)
 	if err != nil {
 		return err
@@ -756,7 +759,8 @@ func (d *SANStorageDriver) setProvisioningLabels(ctx context.Context, storagePoo
 
 // Create a SolidFire volume
 func (d *SANStorageDriver) Create(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
+	volAttributes map[string]sa.Request,
 ) error {
 
 	name := volConfig.InternalName
@@ -785,9 +789,9 @@ func (d *SANStorageDriver) Create(
 	if storagePool == nil {
 		return errors.New("pool not specified")
 	}
-	pool, ok := d.virtualPools[storagePool.Name]
+	pool, ok := d.virtualPools[storagePool.Name()]
 	if !ok {
-		return fmt.Errorf("pool %s does not exist", storagePool.Name)
+		return fmt.Errorf("pool %s does not exist", storagePool.Name())
 	}
 
 	exists, err := d.VolumeExists(ctx, name)
@@ -809,7 +813,7 @@ func (d *SANStorageDriver) Create(
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {
-		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes[Size])
+		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size])
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if sizeBytes < MinimumVolumeSizeBytes {
@@ -817,7 +821,8 @@ func (d *SANStorageDriver) Create(
 			sizeBytes, MinimumVolumeSizeBytes)
 	}
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
@@ -905,7 +910,7 @@ func (d *SANStorageDriver) Create(
 
 // CreateClone creates a volume clone
 func (d *SANStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
 
 	name := volConfig.InternalName
@@ -947,8 +952,8 @@ func (d *SANStorageDriver) CreateClone(
 	if typeOpt != "" {
 		doModify = true
 		if qos.MinIOPS != 0 {
-			Logc(ctx).Warning("qos values appear to have been set using -o qos, but type is set as well, " +
-				"overriding with type option")
+			Logc(ctx).Warning(
+				"qos values appear to have been set using -o qos, but type is set as well, overriding with type option")
 		}
 
 		// First need to check if storage pool has a default QoS type assigned
@@ -1013,11 +1018,10 @@ func (d *SANStorageDriver) CreateClone(
 
 	if storage.IsStoragePoolUnset(storagePool) {
 		// Set the base label
-		storagePoolTemp := &storage.Pool{
-			Attributes: map[string]sa.Offer{
-				sa.Labels: sa.NewLabelOffer(d.Config.Labels),
-			},
-		}
+		storagePoolTemp := &storage.StoragePool{}
+		storagePoolTemp.SetAttributes(map[string]sa.Offer{
+			sa.Labels: sa.NewLabelOffer(d.Config.Labels),
+		})
 		labels, err := storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, MaxLabelLength)
 		if err != nil {
 			return err
@@ -1583,7 +1587,7 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend sto
 	virtual := len(d.virtualPools) > 0
 
 	for _, pool := range d.virtualPools {
-		pool.Backend = backend
+		pool.SetBackend(backend)
 		if virtual {
 			backend.AddStoragePool(pool)
 		}
@@ -1711,7 +1715,7 @@ func (d *SANStorageDriver) mapSolidfireLun(ctx context.Context, volConfig *stora
 }
 
 func (d *SANStorageDriver) GetVolumeOpts(
-	volConfig *storage.VolumeConfig, pool *storage.Pool, _ map[string]sa.Request,
+	volConfig *storage.VolumeConfig, pool storage.Pool, _ map[string]sa.Request,
 ) (map[string]string, error) {
 
 	opts := make(map[string]string)
@@ -1732,7 +1736,7 @@ func (d *SANStorageDriver) GetVolumeOpts(
 	// if QosType is empty as well as QoS and pool information has been provided
 	// then use the pool's QoS Type
 	if qosType == "" && volConfig.Qos == "" && pool != nil {
-		qosType = pool.InternalAttributes[QoSType]
+		qosType = pool.InternalAttributes()[QoSType]
 	}
 
 	opts["type"] = qosType
@@ -1862,8 +1866,7 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 // getExternalVolume is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
-func (d *SANStorageDriver) getVolumeExternal(
-	externalName string, volumeAttrs *api.Volume) *storage.VolumeExternal {
+func (d *SANStorageDriver) getVolumeExternal(externalName string, volumeAttrs *api.Volume) *storage.VolumeExternal {
 
 	volumeConfig := &storage.VolumeConfig{
 		Version:         tridentconfig.OrchestratorAPIVersion,
@@ -1974,7 +1977,8 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 

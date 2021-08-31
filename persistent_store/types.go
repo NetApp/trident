@@ -2,6 +2,8 @@
 
 package persistentstore
 
+//go:generate mockgen -destination=../mocks/mock_persistent_store/mock_persistent_store.go -mock_names Client=MockStoreClient github.com/netapp/trident/persistent_store Client
+
 import (
 	"context"
 	"crypto/tls"

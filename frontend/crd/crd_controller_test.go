@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	fakesnapshots "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned/fake"
@@ -18,7 +19,7 @@ import (
 	k8stesting "k8s.io/client-go/testing"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/core"
+	mockcore "github.com/netapp/trident/mocks/mock_core"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	crdFake "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
@@ -227,9 +228,9 @@ func addCrdTestReactors(crdFakeClient *crdFake.Clientset, testingCache *TestingC
 }
 
 func TestCrdController(t *testing.T) {
-
+	mockCtrl := gomock.NewController(t)
 	testingCache := NewTestingCache()
-	orchestrator := core.NewMockOrchestrator()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()
@@ -274,20 +275,16 @@ func TestCrdController(t *testing.T) {
 	fakeBackend.SetDriver(&driver)
 	fakeBackend.SetName("fake1")
 	fakeBackend.SetBackendUUID(uuid.New().String())
-	orchestrator.AddFakeBackend(ctx(), fakeBackend)
-	fakeBackendFound, err := orchestrator.GetBackend(ctx(), fakeBackend.Name())
-	if err != nil {
-		t.Fatalf("cannot find backend in orchestrator '%v' error: %v", "fake1", err.Error())
-	}
 
-	configJSON, jsonErr := newFakeStorageDriverConfigJSON(fakeBackendFound.Name)
+	configJSON, jsonErr := newFakeStorageDriverConfigJSON(fakeBackend.Name())
 	if jsonErr != nil {
 		t.Fatalf("cannot generate JSON %v", jsonErr.Error())
 	}
 	commonConfig := fakeConfig.Config.CommonStorageDriverConfig
 
-	if initializeErr := fakeBackend.Driver().Initialize(ctx(), "testing", configJSON, commonConfig, nil,
-		uuid.New().String()); initializeErr != nil {
+	if initializeErr := fakeBackend.Driver().Initialize(
+		ctx(), "testing", configJSON, commonConfig, nil, uuid.New().String(),
+	); initializeErr != nil {
 		t.Fatalf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, initializeErr)
 	}
 	fakeBackend.SetOnline(true)
@@ -392,9 +389,9 @@ func TestCrdController(t *testing.T) {
 }
 
 func TestCrdController2(t *testing.T) {
-
+	mockCtrl := gomock.NewController(t)
 	testingCache := NewTestingCache()
-	orchestrator := core.NewMockOrchestrator()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()
@@ -439,19 +436,15 @@ func TestCrdController2(t *testing.T) {
 	fakeBackend.SetDriver(&storageDriver)
 	fakeBackend.SetName("fake1")
 	fakeBackend.SetBackendUUID(uuid.New().String())
-	orchestrator.AddFakeBackend(ctx(), fakeBackend)
-	fakeBackendFound, err := orchestrator.GetBackend(ctx(), fakeBackend.Name())
-	if err != nil {
-		t.Fatalf("cannot find backend in orchestrator '%v' error: %v", "fake1", err.Error())
-	}
 
-	configJSON, jsonErr := newFakeStorageDriverConfigJSON(fakeBackendFound.Name)
+	configJSON, jsonErr := newFakeStorageDriverConfigJSON(fakeBackend.Name())
 	if jsonErr != nil {
 		t.Fatalf("cannot generate JSON %v", jsonErr.Error())
 	}
 	commonConfig := fakeConfig.Config.CommonStorageDriverConfig
-	if initializeErr := fakeBackend.Driver().Initialize(ctx(), "testing", configJSON, commonConfig, nil,
-		uuid.New().String()); initializeErr != nil {
+	if initializeErr := fakeBackend.Driver().Initialize(
+		ctx(), "testing", configJSON, commonConfig, nil, uuid.New().String(),
+	); initializeErr != nil {
 		t.Fatalf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, initializeErr)
 	}
 	fakeBackend.SetOnline(true)

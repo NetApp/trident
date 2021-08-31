@@ -26,8 +26,8 @@ type PoolMatch struct {
 	Pool    string
 }
 
-func (p *PoolMatch) Matches(pool *storage.Pool) bool {
-	return pool.Name == p.Pool && pool.Backend.Name() == p.Backend
+func (p *PoolMatch) Matches(pool storage.Pool) bool {
+	return pool.Name() == p.Pool && pool.Backend().Name() == p.Backend
 }
 
 func (p *PoolMatch) String() string {

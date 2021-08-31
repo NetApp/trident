@@ -50,8 +50,7 @@ func getFakeVolumeWithName(name string, fakeBackend *storage.StorageBackend) *st
 		InternalName: name + "_internal",
 	}
 
-	return storage.NewVolume(volumeConfig, fakeBackend.BackendUUID(),
-		fakeBackend.Storage()["pool-0"].Name, false)
+	return storage.NewVolume(volumeConfig, fakeBackend.BackendUUID(), fakeBackend.Storage()["pool-0"].Name(), false)
 }
 
 func getFakeVolumeTransaction() *storage.VolumeTransaction {

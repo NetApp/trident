@@ -29,8 +29,8 @@ type NASStorageDriver struct {
 	API         *api.Client
 	Telemetry   *Telemetry
 
-	physicalPools map[string]*storage.Pool
-	virtualPools  map[string]*storage.Pool
+	physicalPools map[string]storage.Pool
+	virtualPools  map[string]storage.Pool
 }
 
 func (d *NASStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
@@ -159,7 +159,7 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 
 // Create a volume with the specified options
 func (d *NASStorageDriver) Create(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
 	volAttributes map[string]sa.Request,
 ) error {
 
@@ -206,17 +206,19 @@ func (d *NASStorageDriver) Create(
 
 	// get options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
-	spaceReserve := utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes[SpaceReserve])
-	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes[SnapshotPolicy])
-	snapshotReserve := utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes[SnapshotReserve])
-	unixPermissions := utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes[UnixPermissions])
-	snapshotDir := utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes[SnapshotDir])
-	exportPolicy := utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes[ExportPolicy])
-	securityStyle := utils.GetV(opts, "securityStyle", storagePool.InternalAttributes[SecurityStyle])
-	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
-	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
-	qosPolicy := storagePool.InternalAttributes[QosPolicy]
-	adaptiveQosPolicy := storagePool.InternalAttributes[AdaptiveQosPolicy]
+	var (
+		spaceReserve      = utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
+		snapshotPolicy    = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
+		snapshotReserve   = utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
+		unixPermissions   = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
+		snapshotDir       = utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
+		exportPolicy      = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+		securityStyle     = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
+		encryption        = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
+		tieringPolicy     = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
+		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
+	)
 
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
 	if err != nil {
@@ -232,7 +234,7 @@ func (d *NASStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
-	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes[Size])
+	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes()[Size])
 
 	// Get the flexvol size based on the snapshot reserve
 	flexvolSize := calculateFlexvolSize(ctx, name, sizeBytes, snapshotReserveInt)
@@ -262,7 +264,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	if d.Config.AutoExportPolicy {
-		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID())
+		exportPolicy = getExportPolicyName(storagePool.Backend().BackendUUID())
 	}
 
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
@@ -292,13 +294,13 @@ func (d *NASStorageDriver) Create(
 	physicalPoolNames := make([]string, 0)
 
 	for _, physicalPool := range physicalPools {
-		aggregate := physicalPool.Name
+		aggregate := physicalPool.Name()
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(
 			ctx, aggregate, spaceReserve, flexvolSize, d.Config, d.GetAPI(),
 		); aggrLimitsErr != nil {
-			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error: %v", storagePool.Name, aggregate, aggrLimitsErr)
+			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
 			continue
@@ -318,13 +320,13 @@ func (d *NASStorageDriver) Create(
 			if zerr, ok := err.(api.ZapiError); ok {
 				// Handle case where the Create is passed to every Docker Swarm node
 				if zerr.Code() == azgo.EAPIERROR && strings.HasSuffix(strings.TrimSpace(zerr.Reason()), "Job exists") {
-					Logc(ctx).WithField("volume", name).Warn("Volume create job already exists, " +
-						"skipping volume create on this node.")
+					Logc(ctx).WithField("volume", name).Warn(
+						"Volume create job already exists, skipping volume create on this node.")
 					return nil
 				}
 			}
 
-			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error creating volume %s: %v", storagePool.Name,
+			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error creating volume %s: %v", storagePool.Name(),
 				aggregate, name, err)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
@@ -358,7 +360,7 @@ func (d *NASStorageDriver) Create(
 
 // CreateClone creates a volume clone
 func (d *NASStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
 
 	sourceLabel := ""
@@ -497,8 +499,8 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		}
 		modifyUnixPermResponse, err := d.API.VolumeModifyUnixPermissions(volConfig.InternalName, unixPerms)
 		if err = api.GetError(ctx, modifyUnixPermResponse, err); err != nil {
-			Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, "+
-				"modifying unix permissions failed: %v", err)
+			Logc(ctx).WithField("originalName", originalName).Errorf(
+				"Could not import volume, modifying unix permissions failed: %v", err)
 			return fmt.Errorf("volume %s modify failed: %v", originalName, err)
 		}
 	}

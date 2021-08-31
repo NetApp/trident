@@ -22,9 +22,9 @@ import (
 )
 
 const (
-	PServiceLevel = "serviceLevel"
-	PLocation     = "location"
-	PSubnet       = "subnet"
+	PServiceLevel  = "serviceLevel"
+	PLocation      = "location"
+	PSubnet        = "subnet"
 	PCapacityPools = "capacityPools"
 
 	// Reload Azure resources every n minutes
@@ -75,15 +75,15 @@ type ResourceGroup struct {
 // AzureResources is the toplevel cache for the set of things we discover about our Azure environment
 type AzureResources struct {
 	ResourceGroups []ResourceGroup
-	StoragePoolMap map[string]*storage.Pool
+	StoragePoolMap map[string]storage.Pool
 	m              *sync.Mutex
 }
 
-/////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////
 // Cookie management routines
 // This is the primary entry point for the rest of the SDK code to make
 // queries of discovered resources.
-/////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////
 
 // createCookie generates a handle for accessing capacity pools from the require tuple values
 func createCookie(rg string, naa string, cpool string, spool string) *AzureCapacityPoolCookie {
@@ -100,7 +100,7 @@ func createCookie(rg string, naa string, cpool string, spool string) *AzureCapac
 
 // RegisterStoragePool makes a note of pools defined by the driver for later mapping
 func (d *Client) registerStoragePool(spool storage.Pool) {
-	d.SDKClient.AzureResources.StoragePoolMap[spool.Name] = &spool
+	d.SDKClient.AzureResources.StoragePoolMap[spool.Name()] = spool
 }
 
 // GetCookieByCapacityPoolName searches for a matching capacity pool name and returns an access cookie
@@ -124,8 +124,9 @@ func (d *Client) GetCookieByCapacityPoolName(poolname string) (*AzureCapacityPoo
 }
 
 // GetCookieByStoragePoolName searches for a cookie with a matching storage pool name
-func (d *Client) GetCookieByStoragePoolName(ctx context.Context, spoolname,
-	serviceLevel string) (*AzureCapacityPoolCookie, error) {
+func (d *Client) GetCookieByStoragePoolName(
+	ctx context.Context, spoolname, serviceLevel string,
+) (*AzureCapacityPoolCookie, error) {
 	spool := d.SDKClient.AzureResources.StoragePoolMap[spoolname]
 	if spool == nil {
 		return nil, fmt.Errorf("no pool '%s' registered", spoolname)
@@ -148,9 +149,9 @@ func (d *Client) GetCookieByStoragePoolName(ctx context.Context, spoolname,
 	return createCookie(cpool.ResourceGroup, cpool.NetAppAccount, cpool.Name, spoolname), nil
 }
 
-/////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////
 // Internal functions to do discovery
-/////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////
 
 func (d *Client) discoverResourceGroups(ctx context.Context) (*[]string, error) {
 
@@ -196,14 +197,16 @@ func (d *Client) discoverCapacityPools(ctx context.Context, rgroup string, naa s
 		p := list.Value()
 
 		if exists, _ := d.capacityPoolWithName(*p.Name); exists != nil {
-			Logc(ctx).Errorf("Ignoring discovered capacity pool '%s' in resource group '%s' because its "+
-				"name is not unique", exists.Name, rgroup)
+			Logc(ctx).Errorf(
+				"Ignoring discovered capacity pool '%s' in resource group '%s' because its name is not unique",
+				exists.Name, rgroup)
 			continue
 		}
 
 		if p.QosType == netapp.QosTypeManual {
-			Logc(ctx).Warningf("Ignoring discovered capacity pool '%s' in resource group '%s' because it "+
-				"uses manual QoS", *p.Name, rgroup)
+			Logc(ctx).Warningf(
+				"Ignoring discovered capacity pool '%s' in resource group '%s' because it uses manual QoS",
+				*p.Name, rgroup)
 			continue
 		}
 
@@ -320,7 +323,8 @@ func (d *Client) discoverVirtualNetworks(ctx context.Context, rgroup string) (*[
 		}
 
 		if otherRG, _ := d.resourceGroupForVirtualNetwork(vn.Name); otherRG != nil && *otherRG != rgroup {
-			Logc(ctx).Errorf("duplicate virtual network '%s' in resource group '%s' ignored during discovery; unique names required",
+			Logc(ctx).Errorf(
+				"duplicate virtual network '%s' in resource group '%s' ignored during discovery; unique names required",
 				vn.Name, *otherRG)
 			continue
 		}
@@ -341,9 +345,9 @@ func (d *Client) discoverVirtualNetworks(ctx context.Context, rgroup string) (*[
 	return &vnets, nil
 }
 
-/////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////
 // Top level init functions
-/////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////
 
 func (d *Client) discoverAzureResources(ctx context.Context) (returnError error) {
 
@@ -492,9 +496,9 @@ func (d *Client) refreshAzureResources(ctx context.Context) error {
 
 			// This condition ensures that the capacity pool that does exist also matches pool's
 			// attributes such as location, service level and subnet
-			cpoolsWithAttr, filterErr := d.filterCpoolBasedOnAttributesAndCpoolNames(ctx, pool.InternalAttributes[PLocation],
-				pool.InternalAttributes[PServiceLevel], pool.InternalAttributes[PSubnet], poolName,
-				realCpoolNamesFilter)
+			cpoolsWithAttr, filterErr := d.filterCpoolBasedOnAttributesAndCpoolNames(
+				ctx, pool.InternalAttributes()[PLocation], pool.InternalAttributes()[PServiceLevel],
+				pool.InternalAttributes()[PSubnet], poolName, realCpoolNamesFilter)
 			if filterErr != nil {
 				msg := fmt.Sprintf("Unable to get list of capacity pools based on location, "+
 					"service level, subnet and capacity pool name filters for the pool %v: %v", poolName, filterErr)
@@ -579,9 +583,9 @@ func (d *Client) discoveryInit(ctx context.Context) error {
 	return nil
 }
 
-/////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////
 // internal API functions to match/search cached values
-/////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////
 
 // getNetAppAccountsForResourceGroup returns a list of all NetAppAccounts in a Resource Group
 func (d *Client) getNetAppAccountsForResourceGroup(rgroup string) *[]NetAppAccount {
@@ -871,7 +875,7 @@ func (d *Client) commonSet(c1 *[]CapacityPool, c2 *[]CapacityPool) *[]CapacityPo
 // filterRealCapacityPools verifies the names of the capacity pool name filters (if set) in the storage pool are
 // still valid or not, and returns list of the valid capacity pool name filters.
 // If storage pool has no capacity pool specified then all the real capacity pools names are returned
-func (d *Client) filterRealCapacityPools(ctx context.Context, pool *storage.Pool) []string {
+func (d *Client) filterRealCapacityPools(ctx context.Context, pool storage.Pool) []string {
 	var realCpoolNamesFilter []string
 
 	allCpools := d.GetCapacityPoolNames()
@@ -882,11 +886,11 @@ func (d *Client) filterRealCapacityPools(ctx context.Context, pool *storage.Pool
 
 	// This condition lets us know if a capacity pool name that is mentioned
 	// in the storage pool exists or not
-	cpoolList := utils.SplitString(ctx, pool.InternalAttributes[PCapacityPools], ",")
+	cpoolList := utils.SplitString(ctx, pool.InternalAttributes()[PCapacityPools], ",")
 	if len(cpoolList) != 0 {
 		for _, capacityPool := range cpoolList {
 			if !utils.SliceContainsString(allCpools, capacityPool) {
-				Logc(ctx).Errorf("Invalid value for capacity pool %s in pool %s", capacityPool, pool.Name)
+				Logc(ctx).Errorf("Invalid value for capacity pool %s in pool %s", capacityPool, pool.Name())
 			} else {
 				realCpoolNamesFilter = append(realCpoolNamesFilter, capacityPool)
 			}
@@ -899,8 +903,7 @@ func (d *Client) filterRealCapacityPools(ctx context.Context, pool *storage.Pool
 }
 
 // filterCpoolBasedOnAttributes returns all capacity pools that match specified attributes
-func (d *Client) filterCpoolBasedOnAttributes(location, servicelevel, subnet string) (
-	*[]CapacityPool, error) {
+func (d *Client) filterCpoolBasedOnAttributes(location, servicelevel, subnet string) (*[]CapacityPool, error) {
 
 	var withLocs *[]CapacityPool
 	var withLevs *[]CapacityPool
@@ -921,7 +924,6 @@ func (d *Client) filterCpoolBasedOnAttributes(location, servicelevel, subnet str
 		withNets, _ = d.capacityPoolsWithSubnet(subnet)
 	}
 
-
 	var common *[]CapacityPool
 	haveLocBasedCpools := withLocs != nil && len(*withLocs) > 0
 	haveServiceLevelBasedCpools := withLevs != nil && len(*withLevs) > 0
@@ -933,7 +935,7 @@ func (d *Client) filterCpoolBasedOnAttributes(location, servicelevel, subnet str
 		return common, nil
 	}
 
-	cpoolFilterLists := []*[]CapacityPool {withLocs, withLevs, withNets}
+	cpoolFilterLists := []*[]CapacityPool{withLocs, withLevs, withNets}
 
 	for _, filteredList := range cpoolFilterLists {
 		if filteredList != nil && len(*filteredList) > 0 {
@@ -951,7 +953,7 @@ func (d *Client) filterCpoolBasedOnAttributes(location, servicelevel, subnet str
 // filterCpoolBasedOnAttributesAndCpoolNames returns all capacity pools that match specified attributes and cpool names
 func (d *Client) filterCpoolBasedOnAttributesAndCpoolNames(
 	ctx context.Context, location, servicelevel, subnet, poolName string, cpoolNamesFilter []string,
-	) (*[]CapacityPool, error) {
+) (*[]CapacityPool, error) {
 
 	cpools, err := d.filterCpoolBasedOnAttributes(location, servicelevel, subnet)
 	if err != nil {
@@ -965,8 +967,9 @@ func (d *Client) filterCpoolBasedOnAttributesAndCpoolNames(
 			if utils.SliceContainsString(cpoolNamesFilter, poolShortname(cp.Name)) {
 				filteredCpools = append(filteredCpools, cp)
 			} else {
-				Logc(ctx).Debugf("Skipping capacity pool '%s' as it is not part of the listed capacity pools '%v" +
-					"' for the storage pool '%v'", poolShortname(cp.Name), strings.Join(cpoolNamesFilter,","), poolName)
+				Logc(ctx).Debugf("Skipping capacity pool '%s' as it is not part of the listed capacity pools '%v"+
+					"' for the storage pool '%v'", poolShortname(cp.Name), strings.Join(cpoolNamesFilter, ","),
+					poolName)
 			}
 		}
 
@@ -978,8 +981,9 @@ func (d *Client) filterCpoolBasedOnAttributesAndCpoolNames(
 
 // randomCapacityPoolWithStoragePoolAttributes searches for a capacity pool that matches any
 // passed-in attributes
-func (d *Client) randomCapacityPoolWithStoragePoolAttributes(ctx context.Context, spool *storage.Pool,
-	serviceLevel string) (*CapacityPool, error) {
+func (d *Client) randomCapacityPoolWithStoragePoolAttributes(
+	ctx context.Context, spool storage.Pool, serviceLevel string,
+) (*CapacityPool, error) {
 
 	var cp *CapacityPool
 
@@ -987,16 +991,14 @@ func (d *Client) randomCapacityPoolWithStoragePoolAttributes(ctx context.Context
 	realCpoolNamesFilter := d.filterRealCapacityPools(ctx, spool)
 
 	if len(realCpoolNamesFilter) == 0 {
-		Logc(ctx).Errorf("No valid capacity pool name found in the storage pool %s", spool.Name)
+		Logc(ctx).Errorf("No valid capacity pool name found in the storage pool %s", spool.Name())
 		return cp, nil
 	}
 
-	cpools, err := d.filterCpoolBasedOnAttributesAndCpoolNames(ctx,
-		spool.InternalAttributes[PLocation],
-		serviceLevel,
-		spool.InternalAttributes[PSubnet],
-		spool.Name,
-		utils.SplitString(ctx, spool.InternalAttributes[PCapacityPools], ","))
+	cpools, err := d.filterCpoolBasedOnAttributesAndCpoolNames(
+		ctx, spool.InternalAttributes()[PLocation], serviceLevel, spool.InternalAttributes()[PSubnet], spool.Name(),
+		utils.SplitString(ctx, spool.InternalAttributes()[PCapacityPools], ","),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -1005,7 +1007,7 @@ func (d *Client) randomCapacityPoolWithStoragePoolAttributes(ctx context.Context
 
 		cpoolNames := d.ExtractCapacityPoolNames(cpools)
 		Logc(ctx).Debugf("Capacity Pool(s) '%s' discovered for the storage pool '%s'.", strings.Join(cpoolNames, ","),
-			spool.Name)
+			spool.Name())
 
 		rnd := 0
 		max := len(*cpools)

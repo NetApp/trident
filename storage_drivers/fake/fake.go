@@ -61,8 +61,8 @@ type StorageDriver struct {
 	DestroyedVolumes map[string]bool
 
 	fakePools     map[string]*fake.StoragePool
-	physicalPools map[string]*storage.Pool
-	virtualPools  map[string]*storage.Pool
+	physicalPools map[string]storage.Pool
+	virtualPools  map[string]storage.Pool
 
 	// Snapshots saves info about Snapshots created on this driver
 	Snapshots map[string]map[string]*storage.Snapshot // map[volumeName]map[snapshotName]snapshot
@@ -86,7 +86,9 @@ func (d StorageDriver) GoString() string {
 	return d.String()
 }
 
-func NewFakeStorageBackend(ctx context.Context, configJSON string, backendUUID string) (sb *storage.StorageBackend, err error) {
+func NewFakeStorageBackend(
+	ctx context.Context, configJSON string, backendUUID string,
+) (sb *storage.StorageBackend, err error) {
 
 	// Parse the common config struct from JSON
 	commonConfig, err := drivers.ValidateCommonSettings(ctx, configJSON)
@@ -97,10 +99,10 @@ func NewFakeStorageBackend(ctx context.Context, configJSON string, backendUUID s
 
 	storageDriver := &StorageDriver{}
 
-	if initializeErr := storageDriver.Initialize(ctx, tridentconfig.CurrentDriverContext, configJSON, commonConfig,
-		nil, backendUUID); initializeErr != nil {
-		err = fmt.Errorf("problem initializing storage driver '%s': %v",
-			commonConfig.StorageDriverName, initializeErr)
+	if initializeErr := storageDriver.Initialize(
+		ctx, tridentconfig.CurrentDriverContext, configJSON, commonConfig, nil, backendUUID,
+	); initializeErr != nil {
+		err = fmt.Errorf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, initializeErr)
 		return nil, err
 	}
 
@@ -233,8 +235,9 @@ func NewFakeStorageDriverConfigJSONWithVirtualPools(
 	return string(jsonBytes), nil
 }
 
-func NewFakeStorageDriverConfigJSONWithDebugTraceFlags(name string, protocol tridentconfig.Protocol,
-	debugTraceFlags map[string]bool, storagePrefix string) (string, error) {
+func NewFakeStorageDriverConfigJSONWithDebugTraceFlags(
+	name string, protocol tridentconfig.Protocol, debugTraceFlags map[string]bool, storagePrefix string,
+) (string, error) {
 
 	jsonBytes, err := json.Marshal(
 		&drivers.FakeStorageDriverConfig{
@@ -321,7 +324,7 @@ func (d *StorageDriver) Initialize(
 
 	for _, volume := range d.Config.Volumes {
 
-		var requestedPool *storage.Pool
+		var requestedPool storage.Pool
 		if pool, ok := d.virtualPools[volume.RequestedPool]; ok {
 			requestedPool = pool
 		} else if pool, ok = d.physicalPools[volume.RequestedPool]; ok {
@@ -400,8 +403,8 @@ func (d *StorageDriver) initializeStoragePools() error {
 		d.fakePools[fakePoolName] = fakePool.ConstructClone()
 	}
 
-	d.physicalPools = make(map[string]*storage.Pool)
-	d.virtualPools = make(map[string]*storage.Pool)
+	d.physicalPools = make(map[string]storage.Pool)
+	d.virtualPools = make(map[string]storage.Pool)
 
 	snapshotOffers := make([]sa.Offer, 0)
 	cloneOffers := make([]sa.Offer, 0)
@@ -414,39 +417,39 @@ func (d *StorageDriver) initializeStoragePools() error {
 
 		pool := storage.NewStoragePool(nil, name)
 
-		pool.Attributes = fakeStoragePool.Attrs
-		pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
-		pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
+		pool.SetAttributes(fakeStoragePool.Attrs)
+		pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
+		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
 		if d.Config.Region != "" {
-			pool.Attributes[sa.Region] = sa.NewStringOffer(d.Config.Region)
+			pool.Attributes()[sa.Region] = sa.NewStringOffer(d.Config.Region)
 		}
 		if d.Config.Zone != "" {
-			pool.Attributes[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
+			pool.Attributes()[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
 		}
 
-		if snapshotOffer, ok := pool.Attributes[sa.Snapshots]; ok {
+		if snapshotOffer, ok := pool.Attributes()[sa.Snapshots]; ok {
 			snapshotOffers = append(snapshotOffers, snapshotOffer)
 		}
-		if cloneOffer, ok := pool.Attributes[sa.Clones]; ok {
+		if cloneOffer, ok := pool.Attributes()[sa.Clones]; ok {
 			cloneOffers = append(cloneOffers, cloneOffer)
 		}
-		if encryptionOffer, ok := pool.Attributes[sa.Encryption]; ok {
+		if encryptionOffer, ok := pool.Attributes()[sa.Encryption]; ok {
 			encryptionOffers = append(encryptionOffers, encryptionOffer)
 		}
-		if provisioningTypeOffer, ok := pool.Attributes[sa.ProvisioningType]; ok {
+		if provisioningTypeOffer, ok := pool.Attributes()[sa.ProvisioningType]; ok {
 			provisioningTypeOffers = append(provisioningTypeOffers, provisioningTypeOffer)
 		}
-		if mediaOffer, ok := pool.Attributes[sa.Media]; ok {
+		if mediaOffer, ok := pool.Attributes()[sa.Media]; ok {
 			mediaOffers = append(mediaOffers, mediaOffer)
 		}
 
-		pool.InternalAttributes[Size] = d.Config.Size
-		pool.InternalAttributes[Region] = d.Config.Region
-		pool.InternalAttributes[Zone] = d.Config.Zone
+		pool.InternalAttributes()[Size] = d.Config.Size
+		pool.InternalAttributes()[Region] = d.Config.Region
+		pool.InternalAttributes()[Zone] = d.Config.Zone
 
-		pool.SupportedTopologies = d.Config.SupportedTopologies
+		pool.SetSupportedTopologies(d.Config.SupportedTopologies)
 
-		d.physicalPools[pool.Name] = pool
+		d.physicalPools[pool.Name()] = pool
 	}
 
 	// Define virtual pools
@@ -474,35 +477,35 @@ func (d *StorageDriver) initializeStoragePools() error {
 
 		pool := storage.NewStoragePool(nil, d.poolName(fmt.Sprintf(region+"_pool_%d", index)))
 
-		pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
-		pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
-		pool.Attributes[sa.Region] = sa.NewStringOffer(region)
+		pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
+		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
+		pool.Attributes()[sa.Region] = sa.NewStringOffer(region)
 		if zone != "" {
-			pool.Attributes[sa.Zone] = sa.NewStringOffer(zone)
+			pool.Attributes()[sa.Zone] = sa.NewStringOffer(zone)
 		}
 
 		if len(snapshotOffers) > 0 {
-			pool.Attributes[sa.Snapshots] = sa.NewBoolOfferFromOffers(snapshotOffers...)
+			pool.Attributes()[sa.Snapshots] = sa.NewBoolOfferFromOffers(snapshotOffers...)
 		}
 		if len(cloneOffers) > 0 {
-			pool.Attributes[sa.Clones] = sa.NewBoolOfferFromOffers(cloneOffers...)
+			pool.Attributes()[sa.Clones] = sa.NewBoolOfferFromOffers(cloneOffers...)
 		}
 		if len(encryptionOffers) > 0 {
-			pool.Attributes[sa.Encryption] = sa.NewBoolOfferFromOffers(encryptionOffers...)
+			pool.Attributes()[sa.Encryption] = sa.NewBoolOfferFromOffers(encryptionOffers...)
 		}
 		if len(provisioningTypeOffers) > 0 {
-			pool.Attributes[sa.ProvisioningType] = sa.NewStringOfferFromOffers(provisioningTypeOffers...)
+			pool.Attributes()[sa.ProvisioningType] = sa.NewStringOfferFromOffers(provisioningTypeOffers...)
 		}
 		if len(mediaOffers) > 0 {
-			pool.Attributes[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
+			pool.Attributes()[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
 		}
 
-		pool.InternalAttributes[Size] = size
-		pool.InternalAttributes[Region] = region
-		pool.InternalAttributes[Zone] = zone
-		pool.SupportedTopologies = supportedTopologies
+		pool.InternalAttributes()[Size] = size
+		pool.InternalAttributes()[Region] = region
+		pool.InternalAttributes()[Zone] = zone
+		pool.SetSupportedTopologies(supportedTopologies)
 
-		d.virtualPools[pool.Name] = pool
+		d.virtualPools[pool.Name()] = pool
 	}
 
 	return nil
@@ -520,7 +523,7 @@ func (d *StorageDriver) validate(ctx context.Context) error {
 	// Validate driver-level attributes
 
 	// Validate pool-level attributes
-	allPools := make([]*storage.Pool, 0, len(d.physicalPools)+len(d.virtualPools))
+	allPools := make([]storage.Pool, 0, len(d.physicalPools)+len(d.virtualPools))
 
 	for _, pool := range d.physicalPools {
 		allPools = append(allPools, pool)
@@ -532,8 +535,8 @@ func (d *StorageDriver) validate(ctx context.Context) error {
 	for _, pool := range allPools {
 
 		// Validate default size
-		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes[Size]); err != nil {
-			return fmt.Errorf("invalid value for default volume size in pool %s: %v", pool.Name, err)
+		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size]); err != nil {
+			return fmt.Errorf("invalid value for default volume size in pool %s: %v", pool.Name(), err)
 		}
 	}
 
@@ -541,7 +544,7 @@ func (d *StorageDriver) validate(ctx context.Context) error {
 }
 
 func (d *StorageDriver) Create(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
 
 	name := volConfig.InternalName
@@ -582,10 +585,10 @@ func (d *StorageDriver) Create(
 
 	for _, physicalPool := range physicalPools {
 
-		fakePoolName := physicalPool.Name
+		fakePoolName := physicalPool.Name()
 		physicalPoolNames = append(physicalPoolNames, fakePoolName)
 
-		fakePool, ok := d.fakePools[physicalPool.Name]
+		fakePool, ok := d.fakePools[physicalPool.Name()]
 		if !ok {
 			errMessage := fmt.Sprintf("fake pool %s not found.", fakePoolName)
 			Logc(ctx).Error(errMessage)
@@ -594,8 +597,9 @@ func (d *StorageDriver) Create(
 		}
 
 		if sizeBytes > fakePool.Bytes {
-			errMessage := fmt.Sprintf("requested volume is too large, requested %d bytes, "+
-				"have %d available in pool %s", sizeBytes, fakePool.Bytes, fakePoolName)
+			errMessage := fmt.Sprintf(
+				"requested volume is too large, requested %d bytes, have %d available in pool %s",
+				sizeBytes, fakePool.Bytes, fakePoolName)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, errors.New(errMessage))
 			continue
@@ -607,7 +611,7 @@ func (d *StorageDriver) Create(
 
 		d.Volumes[name] = fake.Volume{
 			Name:          name,
-			RequestedPool: storagePool.Name,
+			RequestedPool: storagePool.Name(),
 			PhysicalPool:  fakePoolName,
 			SizeBytes:     sizeBytes,
 		}
@@ -618,7 +622,7 @@ func (d *StorageDriver) Create(
 		Logc(ctx).WithFields(log.Fields{
 			"backend":       d.Config.InstanceName,
 			"name":          name,
-			"requestedPool": storagePool.Name,
+			"requestedPool": storagePool.Name(),
 			"physicalPool":  fakePoolName,
 			"sizeBytes":     sizeBytes,
 		}).Debug("Created fake volume.")
@@ -631,18 +635,17 @@ func (d *StorageDriver) Create(
 }
 
 func (d *StorageDriver) getPoolsForCreate(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
-	volAttributes map[string]sa.Request,
-) ([]*storage.Pool, error) {
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
+) ([]storage.Pool, error) {
 
 	// If a physical pool was requested, just use it
-	if _, ok := d.physicalPools[storagePool.Name]; ok {
-		return []*storage.Pool{storagePool}, nil
+	if _, ok := d.physicalPools[storagePool.Name()]; ok {
+		return []storage.Pool{storagePool}, nil
 	}
 
 	// If a virtual pool was requested, find a physical pool to satisfy it
-	if _, ok := d.virtualPools[storagePool.Name]; !ok {
-		return nil, fmt.Errorf("could not find pool %s", storagePool.Name)
+	if _, ok := d.virtualPools[storagePool.Name()]; !ok {
+		return nil, fmt.Errorf("could not find pool %s", storagePool.Name())
 	}
 
 	// Make a storage class from the volume attributes to simplify pool matching
@@ -654,7 +657,7 @@ func (d *StorageDriver) getPoolsForCreate(
 	storageClass := sc.NewFromAttributes(attributesCopy)
 
 	// Find matching pools
-	candidatePools := make([]*storage.Pool, 0)
+	candidatePools := make([]storage.Pool, 0)
 
 	for _, pool := range d.physicalPools {
 		if storageClass.Matches(ctx, pool) {
@@ -677,7 +680,7 @@ func (d *StorageDriver) getPoolsForCreate(
 
 func (d *StorageDriver) BootstrapVolume(ctx context.Context, volume *storage.Volume) {
 
-	var pool *storage.Pool
+	var pool storage.Pool
 
 	// If a physical pool was requested, just use it
 	if ppool, ok := d.physicalPools[volume.Pool]; ok {
@@ -711,9 +714,7 @@ func (d *StorageDriver) BootstrapVolume(ctx context.Context, volume *storage.Vol
 	}
 }
 
-func (d *StorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, _ *storage.Pool,
-) error {
+func (d *StorageDriver) CreateClone(ctx context.Context, volConfig *storage.VolumeConfig, _ storage.Pool) error {
 
 	name := volConfig.InternalName
 	source := volConfig.CloneSourceVolumeInternal
@@ -1049,14 +1050,14 @@ func (d *StorageDriver) GetStorageBackendSpecs(_ context.Context, backend storag
 	virtual := len(d.virtualPools) > 0
 
 	for _, pool := range d.physicalPools {
-		pool.Backend = backend
+		pool.SetBackend(backend)
 		if !virtual {
 			backend.AddStoragePool(pool)
 		}
 	}
 
 	for _, pool := range d.virtualPools {
-		pool.Backend = backend
+		pool.SetBackend(backend)
 		if virtual {
 			backend.AddStoragePool(pool)
 		}

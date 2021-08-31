@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -12,9 +12,9 @@ import (
 )
 
 func TestGetLabelsJSONNoCharacterLimitSuccess(t *testing.T) {
-	pool := Pool{}
-	pool.Attributes = make(map[string]sa.Offer)
-	pool.Attributes["labels"] = sa.NewLabelOffer(map[string]string{
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"cloud":       "anf",
 		"clusterName": "dev-test-cluster-1",
 	})
@@ -28,9 +28,9 @@ func TestGetLabelsJSONNoCharacterLimitSuccess(t *testing.T) {
 }
 
 func TestGetLabelsJSONNoLabelSuccess(t *testing.T) {
-	pool := Pool{}
-	pool.Attributes = make(map[string]sa.Offer)
-	pool.Attributes["labels"] = sa.NewLabelOffer(nil)
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(nil)
 
 	label, err := pool.GetLabelsJSON(context.TODO(), "provisioning", 1023)
 
@@ -39,9 +39,9 @@ func TestGetLabelsJSONNoLabelSuccess(t *testing.T) {
 }
 
 func TestGetLabelsJSONEmptyLabelSuccess(t *testing.T) {
-	pool := Pool{}
-	pool.Attributes = make(map[string]sa.Offer)
-	pool.Attributes["labels"] = sa.NewLabelOffer(map[string]string{})
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{})
 
 	label, err := pool.GetLabelsJSON(context.TODO(), "provisioning", 1023)
 
@@ -50,9 +50,9 @@ func TestGetLabelsJSONEmptyLabelSuccess(t *testing.T) {
 }
 
 func TestGetLabelsJSONLessThanLimitSuccess(t *testing.T) {
-	pool := Pool{}
-	pool.Attributes = make(map[string]sa.Offer)
-	pool.Attributes["labels"] = sa.NewLabelOffer(map[string]string{
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"cloud":       "anf",
 		"clusterName": "dev-test-cluster-1",
 	})
@@ -66,9 +66,9 @@ func TestGetLabelsJSONLessThanLimitSuccess(t *testing.T) {
 }
 
 func TestGetLabelsJSONExactLimitSuccess(t *testing.T) {
-	pool := Pool{}
-	pool.Attributes = make(map[string]sa.Offer)
-	pool.Attributes["labels"] = sa.NewLabelOffer(map[string]string{
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"labelName1": "labelValue1",
 		"labelName2": "labelValue2",
 	})
@@ -82,9 +82,9 @@ func TestGetLabelsJSONExactLimitSuccess(t *testing.T) {
 }
 
 func TestGetLabelsJSONExceedsCharacterLimitFail(t *testing.T) {
-	pool := Pool{}
-	pool.Attributes = make(map[string]sa.Offer)
-	pool.Attributes["labels"] = sa.NewLabelOffer(map[string]string{
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"cloud":       "anf",
 		"clusterName": "dev-test-cluster-1",
 	})
@@ -94,14 +94,13 @@ func TestGetLabelsJSONExceedsCharacterLimitFail(t *testing.T) {
 	_, err := pool.GetLabelsJSON(context.TODO(), "provisioning", 31)
 
 	assert.NotNil(t, err, "Error is nil")
-	assert.Contains(t, err.Error(), "exceeds the character limit", "character limit exceeded "+
-		"error not raised")
+	assert.Contains(t, err.Error(), "exceeds the character limit", "character limit exceeded error not raised")
 }
 
 func TestAllowLabelOverwriteInternalTrue(t *testing.T) {
-	pool := Pool{}
-	pool.Attributes = make(map[string]sa.Offer)
-	pool.Attributes["labels"] = sa.NewLabelOffer(map[string]string{
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"cloud":       "anf",
 		"clusterName": "dev-test-cluster-1",
 	})
@@ -117,9 +116,9 @@ func TestAllowLabelOverwriteInternalTrue(t *testing.T) {
 }
 
 func TestAllowLabelOverwriteEmptyFalse(t *testing.T) {
-	pool := Pool{}
-	pool.Attributes = make(map[string]sa.Offer)
-	pool.Attributes["labels"] = sa.NewLabelOffer(map[string]string{})
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{})
 
 	label, err := pool.GetLabelsJSON(context.TODO(), "provisioning", 0)
 
@@ -132,9 +131,9 @@ func TestAllowLabelOverwriteEmptyFalse(t *testing.T) {
 }
 
 func TestAllowLabelOverwriteExternalValidJSONFalse(t *testing.T) {
-	pool := Pool{}
-	pool.Attributes = make(map[string]sa.Offer)
-	pool.Attributes["labels"] = sa.NewLabelOffer(map[string]string{
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"cloud": "insights",
 	})
 
@@ -196,21 +195,24 @@ func TestUpdateProvisionNotFoundSuccess(t *testing.T) {
 
 func TestDeleteProvisioningLabelsFoundFirstSuccess(t *testing.T) {
 	newLabels := DeleteProvisioningLabels([]string{
-		`{"provisioning":{"labelName1":"labelValue1","labelName2":"labelValue2"}}`, "foo", "bar"})
+		`{"provisioning":{"labelName1":"labelValue1","labelName2":"labelValue2"}}`, "foo", "bar",
+	})
 
 	assert.Equal(t, []string{"foo", "bar"}, newLabels, "Label is not deleted correctly")
 }
 
 func TestDeleteProvisioningLabelsFoundMiddleSuccess(t *testing.T) {
-	newLabels := DeleteProvisioningLabels([]string{"foo",
-		`{"provisioning":{"labelName1":"labelValue1","labelName2":"labelValue2"}}`, "bar"})
+	newLabels := DeleteProvisioningLabels([]string{
+		"foo", `{"provisioning":{"labelName1":"labelValue1","labelName2":"labelValue2"}}`, "bar",
+	})
 
 	assert.Equal(t, []string{"foo", "bar"}, newLabels, "Label is not deleted correctly")
 }
 
 func TestDeleteProvisioningLabelsFoundLastSuccess(t *testing.T) {
 	newLabels := DeleteProvisioningLabels([]string{
-		"foo", "bar", `{"provisioning":{"labelName1":"labelValue1","labelName2":"labelValue2"}}`})
+		"foo", "bar", `{"provisioning":{"labelName1":"labelValue1","labelName2":"labelValue2"}}`,
+	})
 
 	assert.Equal(t, []string{"foo", "bar"}, newLabels, "Label is not deleted correctly")
 }

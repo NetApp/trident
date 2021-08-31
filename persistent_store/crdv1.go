@@ -234,14 +234,17 @@ func (k *CRDClientV1) addBackendPersistent(ctx context.Context, backendPersisten
 		secret := k.makeBackendSecret(secretName, crd, secretMap)
 
 		if _, err = k.k8sClient.CreateSecret(secret); err != nil {
-			Logc(ctx).WithField("secret", secretName).Error("Could not create backend secret, will delete backend resource.")
+			Logc(ctx).WithField("secret", secretName).Error(
+				"Could not create backend secret, will delete backend resource.")
 
 			// If secret creation failed, clean up by deleting the backend we just created
 			deleteErr := k.crdClient.TridentV1().TridentBackends(k.namespace).Delete(ctx, crd.Name, k.deleteOpts())
 			if deleteErr != nil {
-				Logc(ctx).WithField("backend", crd.Name).Error("Could not delete backend resource after secret create failure.")
+				Logc(ctx).WithField("backend", crd.Name).Error(
+					"Could not delete backend resource after secret create failure.")
 			} else {
-				Logc(ctx).WithField("backend", crd.Name).Warning("Deleted backend resource after secret create failure.")
+				Logc(ctx).WithField("backend", crd.Name).Warning(
+					"Deleted backend resource after secret create failure.")
 			}
 
 			return err
@@ -628,8 +631,9 @@ func (k *CRDClientV1) DeleteBackend(ctx context.Context, b storage.Backend) (err
 		logFields["resource"] = backend.Name
 
 		// Delete the backend resource
-		if err := k.crdClient.TridentV1().TridentBackends(k.namespace).Delete(ctx, backend.Name,
-			k.deleteOpts()); err != nil {
+		if err := k.crdClient.TridentV1().TridentBackends(k.namespace).Delete(
+			ctx, backend.Name, k.deleteOpts(),
+		); err != nil {
 			return err
 		}
 
@@ -685,8 +689,9 @@ func (k *CRDClientV1) removeBackendFinalizer(ctx context.Context, b storage.Back
 
 		backendCopy := backend.DeepCopy()
 		backendCopy.RemoveTridentFinalizers()
-		if _, err := k.crdClient.TridentV1().TridentBackends(backend.Namespace).Update(ctx, backendCopy,
-			updateOpts); err != nil {
+		if _, err := k.crdClient.TridentV1().TridentBackends(backend.Namespace).Update(
+			ctx, backendCopy, updateOpts,
+		); err != nil {
 			Logc(ctx).WithFields(logFields).Errorf("Problem removing finalizers: %v", err)
 			return err
 		}
@@ -882,12 +887,14 @@ func (k *CRDClientV1) ReplaceBackendAndUpdateVolumes(
 		// Update the secret
 		if _, err := k.k8sClient.UpdateSecret(secret); err != nil {
 
-			Logc(ctx).WithField("secret", secretName).Error("Could not update backend secret, will unroll backend update.")
+			Logc(ctx).WithField("secret", secretName).Error(
+				"Could not update backend secret, will unroll backend update.")
 
 			// If the secret update failed, unroll the backend update
 			_, updateErr := k.crdClient.TridentV1().TridentBackends(k.namespace).Update(ctx, origCRDCopy, updateOpts)
 			if updateErr != nil {
-				Logc(ctx).WithField("backend", origCRD.Name).Error("Could not restore backend after secret update failure.")
+				Logc(ctx).WithField("backend", origCRD.Name).Error(
+					"Could not restore backend after secret update failure.")
 			} else {
 				Logc(ctx).WithField("backend", origCRD.Name).Warning("Restored backend after secret update failure.")
 			}
@@ -1015,12 +1022,14 @@ func (k *CRDClientV1) UpdateVolumePersistent(ctx context.Context, update *storag
 }
 
 func (k *CRDClientV1) DeleteVolume(ctx context.Context, volume *storage.Volume) error {
-	return k.crdClient.TridentV1().TridentVolumes(k.namespace).Delete(ctx, v1.NameFix(volume.Config.Name), k.deleteOpts())
+	return k.crdClient.TridentV1().TridentVolumes(k.namespace).Delete(ctx, v1.NameFix(volume.Config.Name),
+		k.deleteOpts())
 }
 
 func (k *CRDClientV1) DeleteVolumeIgnoreNotFound(ctx context.Context, volume *storage.Volume) error {
 
-	err := k.crdClient.TridentV1().TridentVolumes(k.namespace).Delete(ctx, v1.NameFix(volume.Config.Name), k.deleteOpts())
+	err := k.crdClient.TridentV1().TridentVolumes(k.namespace).Delete(ctx, v1.NameFix(volume.Config.Name),
+		k.deleteOpts())
 
 	if errors.IsNotFound(err) {
 		return nil
@@ -1178,7 +1187,8 @@ func (k *CRDClientV1) GetExistingVolumeTransaction(
 }
 
 func (k *CRDClientV1) DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
-	return k.crdClient.TridentV1().TridentTransactions(k.namespace).Delete(ctx, v1.NameFix(volTxn.Name()), k.deleteOpts())
+	return k.crdClient.TridentV1().TridentTransactions(k.namespace).Delete(ctx, v1.NameFix(volTxn.Name()),
+		k.deleteOpts())
 }
 
 func (k *CRDClientV1) AddStorageClass(ctx context.Context, sc *storageclass.StorageClass) error {
@@ -1267,7 +1277,8 @@ func (k *CRDClientV1) GetStorageClasses(ctx context.Context) ([]*storageclass.Pe
 }
 
 func (k *CRDClientV1) DeleteStorageClass(ctx context.Context, sc *storageclass.StorageClass) error {
-	return k.crdClient.TridentV1().TridentStorageClasses(k.namespace).Delete(ctx, v1.NameFix(sc.GetName()), k.deleteOpts())
+	return k.crdClient.TridentV1().TridentStorageClasses(k.namespace).Delete(ctx, v1.NameFix(sc.GetName()),
+		k.deleteOpts())
 }
 
 func (k *CRDClientV1) AddOrUpdateNode(ctx context.Context, node *utils.Node) error {

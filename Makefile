@@ -65,7 +65,7 @@ GO_MACOS = ${DR_MACOS} ${GO_CMD}
 
 DR_HELM = docker run --rm -v "${ROOT}":"/apps" $(HELM_IMAGE)
 
-.PHONY = default build trident_build trident_build_all tridentctl_build dist dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet
+.PHONY: default build trident_build trident_build_all tridentctl_build dist dist_tar dist_tag test test_core test_other test_coverage_report clean fmt install vet install-lint lint-precommit lint-prepush mocks
 
 default: dist
 
@@ -223,10 +223,13 @@ k8s_codegen:
 k8s_codegen_operator:
 	cd operator && $(MAKE) k8s_codegen
 
+mocks:
+	@go install github.com/golang/mock/mockgen@v1.6.0
+	@go generate ./...
+
 .git/hooks:
 	mkdir -p $@
 
-.PHONY: install-lint lint-precommit lint-prepush
 install-lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin ${GOLANGCI-LINT_VERSION}
 
@@ -235,3 +238,4 @@ lint-precommit: .git/hooks install-lint
 
 lint-prepush: .git/hooks install-lint .git/hooks/pre-push
 	cp hooks/golangci-lint.sh .git/hooks/pre-push
+

@@ -2,6 +2,8 @@
 
 package storage
 
+//go:generate mockgen -destination=../mocks/mock_storage/mock_storage.go github.com/netapp/trident/storage Backend,Pool
+
 import (
 	"context"
 
@@ -23,25 +25,23 @@ type Backend interface {
 	SetOnline(Online bool)
 	State() BackendState
 	SetState(State BackendState)
-	Storage() map[string]*Pool
-	SetStorage(Storage map[string]*Pool)
+	Storage() map[string]Pool
+	SetStorage(Storage map[string]Pool)
 	Volumes() map[string]*Volume
 	SetVolumes(Volumes map[string]*Volume)
 	ConfigRef() string
 	SetConfigRef(ConfigRef string)
-	AddStoragePool(pool *Pool)
+	AddStoragePool(pool Pool)
 	GetPhysicalPoolNames(ctx context.Context) []string
 	GetDriverName() string
 	GetProtocol(ctx context.Context) config.Protocol
 	IsCredentialsFieldSet(ctx context.Context) bool
 	AddVolume(
-		ctx context.Context, volConfig *VolumeConfig, storagePool *Pool,
+		ctx context.Context, volConfig *VolumeConfig, storagePool Pool,
 		volAttributes map[string]storageattribute.Request, retry bool,
 	) (*Volume, error)
 	GetDebugTraceFlags(ctx context.Context) map[string]bool
-	CloneVolume(
-		ctx context.Context, volConfig *VolumeConfig, storagePool *Pool, retry bool,
-	) (*Volume, error)
+	CloneVolume(ctx context.Context, volConfig *VolumeConfig, storagePool Pool, retry bool) (*Volume, error)
 	PublishVolume(
 		ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
 	) error
@@ -67,4 +67,23 @@ type Backend interface {
 	ConstructExternal(ctx context.Context) *BackendExternal
 	ConstructPersistent(ctx context.Context) *BackendPersistent
 	CanMirror() bool
+}
+
+type Pool interface {
+	Name() string
+	SetName(name string)
+	StorageClasses() []string
+	SetStorageClasses(storageClasses []string)
+	Backend() Backend
+	SetBackend(backend Backend)
+	Attributes() map[string]storageattribute.Offer
+	SetAttributes(attributes map[string]storageattribute.Offer)
+	InternalAttributes() map[string]string
+	SetInternalAttributes(internalAttributes map[string]string)
+	SupportedTopologies() []map[string]string
+	SetSupportedTopologies(supportedTopologies []map[string]string)
+	AddStorageClass(class string)
+	RemoveStorageClass(class string) bool
+	ConstructExternal() *PoolExternal
+	GetLabelsJSON(ctx context.Context, key string, labelLimit int) (string, error)
 }

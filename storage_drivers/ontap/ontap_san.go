@@ -34,8 +34,8 @@ type SANStorageDriver struct {
 	API         *api.Client
 	Telemetry   *Telemetry
 
-	physicalPools map[string]*storage.Pool
-	virtualPools  map[string]*storage.Pool
+	physicalPools map[string]storage.Pool
+	virtualPools  map[string]storage.Pool
 }
 
 func (d *SANStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
@@ -179,8 +179,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 
 // Create a volume+LUN with the specified options
 func (d *SANStorageDriver) Create(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
-	volAttributes map[string]sa.Request,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
 
 	name := volConfig.InternalName
@@ -230,18 +229,20 @@ func (d *SANStorageDriver) Create(
 	// see also: ontap_common.go#PopulateConfigurationDefaults
 
 	spaceAllocation, _ := strconv.ParseBool(
-		utils.GetV(opts, "spaceAllocation", storagePool.InternalAttributes[SpaceAllocation]))
-	spaceReserve := utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes[SpaceReserve])
-	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes[SnapshotPolicy])
-	snapshotReserve := utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes[SnapshotReserve])
-	unixPermissions := utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes[UnixPermissions])
-	snapshotDir := "false"
-	exportPolicy := utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes[ExportPolicy])
-	securityStyle := utils.GetV(opts, "securityStyle", storagePool.InternalAttributes[SecurityStyle])
-	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
-	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
-	qosPolicy := storagePool.InternalAttributes[QosPolicy]
-	adaptiveQosPolicy := storagePool.InternalAttributes[AdaptiveQosPolicy]
+		utils.GetV(opts, "spaceAllocation", storagePool.InternalAttributes()[SpaceAllocation]))
+	var (
+		spaceReserve      = utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
+		snapshotPolicy    = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
+		snapshotReserve   = utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
+		unixPermissions   = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
+		snapshotDir       = "false"
+		exportPolicy      = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+		securityStyle     = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
+		encryption        = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
+		tieringPolicy     = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
+		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
+	)
 
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
 	if err != nil {
@@ -257,7 +258,7 @@ func (d *SANStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
-	lunSizeBytes, err := GetVolumeSize(requestedSizeBytes, storagePool.InternalAttributes[Size])
+	lunSizeBytes, err := GetVolumeSize(requestedSizeBytes, storagePool.InternalAttributes()[Size])
 	if err != nil {
 		return err
 	}
@@ -281,7 +282,7 @@ func (d *SANStorageDriver) Create(
 	}
 
 	fstype, err = drivers.CheckSupportedFilesystem(
-		ctx, utils.GetV(opts, "fstype|fileSystemType", storagePool.InternalAttributes[FileSystemType]), name)
+		ctx, utils.GetV(opts, "fstype|fileSystemType", storagePool.InternalAttributes()[FileSystemType]), name)
 	if err != nil {
 		return err
 	}
@@ -318,13 +319,13 @@ func (d *SANStorageDriver) Create(
 	physicalPoolNames := make([]string, 0)
 
 	for _, physicalPool := range physicalPools {
-		aggregate := physicalPool.Name
+		aggregate := physicalPool.Name()
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(
 			ctx, aggregate, spaceReserve, flexvolBufferSize, d.Config, d.GetAPI(),
 		); aggrLimitsErr != nil {
-			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error: %v", storagePool.Name, aggregate, aggrLimitsErr)
+			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
 
@@ -338,10 +339,9 @@ func (d *SANStorageDriver) Create(
 		}
 
 		// Create the volume
-		volCreateResponse, err := d.API.VolumeCreate(
-			ctx, name, aggregate, volumeSize, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy,
-			securityStyle, tieringPolicy, labels, api.QosPolicyGroup{}, enableEncryption, snapshotReserveInt,
-			volConfig.IsMirrorDestination)
+		volCreateResponse, err := d.API.VolumeCreate(ctx, name, aggregate, volumeSize, spaceReserve, snapshotPolicy,
+			unixPermissions, exportPolicy, securityStyle, tieringPolicy, labels, api.QosPolicyGroup{},
+			enableEncryption, snapshotReserveInt, volConfig.IsMirrorDestination)
 
 		if err = api.GetError(ctx, volCreateResponse, err); err != nil {
 			if zerr, ok := err.(api.ZapiError); ok {
@@ -353,7 +353,7 @@ func (d *SANStorageDriver) Create(
 				}
 			}
 
-			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error creating volume %s: %v", storagePool.Name,
+			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error creating volume %s: %v", storagePool.Name(),
 				aggregate, name, err)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
@@ -372,7 +372,7 @@ func (d *SANStorageDriver) Create(
 			lunCreateResponse, err := d.API.LunCreate(lunPath, int(lunSizeBytes), osType, qosPolicyGroup, false,
 				spaceAllocation)
 			if err = api.GetError(ctx, lunCreateResponse, err); err != nil {
-				errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error creating LUN %s: %v", storagePool.Name,
+				errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error creating LUN %s: %v", storagePool.Name(),
 					aggregate, name, err)
 				Logc(ctx).Error(errMessage)
 				createErrors = append(createErrors, fmt.Errorf(errMessage))
@@ -394,7 +394,7 @@ func (d *SANStorageDriver) Create(
 			if err = api.GetError(ctx, attrResponse, err); err != nil {
 
 				errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error saving file system type for LUN %s: %v",
-					storagePool.Name, aggregate, name, err)
+					storagePool.Name(), aggregate, name, err)
 				Logc(ctx).Error(errMessage)
 				createErrors = append(createErrors, fmt.Errorf(errMessage))
 
@@ -431,7 +431,7 @@ func (d *SANStorageDriver) Create(
 
 // CreateClone creates a volume clone
 func (d *SANStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
 
 	name := volConfig.InternalName
@@ -467,18 +467,17 @@ func (d *SANStorageDriver) CreateClone(
 	labels := ""
 	if storage.IsStoragePoolUnset(storagePool) {
 		// Set the base label
-		storagePoolTemp := &storage.Pool{
-			Attributes: map[string]sa.Offer{
-				sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
-			},
-		}
+		storagePoolTemp := &storage.StoragePool{}
+		storagePoolTemp.SetAttributes(map[string]sa.Offer{
+			sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
+		})
 		labels, err = storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxSANLabelLength)
 		if err != nil {
 			return err
 		}
 
 	} else {
-		storagePoolSplitOnCloneVal = storagePool.InternalAttributes[SplitOnClone]
+		storagePoolSplitOnCloneVal = storagePool.InternalAttributes()[SplitOnClone]
 
 		// Ensure the volume exists
 		flexvol, err := d.API.VolumeGet(volConfig.CloneSourceVolumeInternal)
@@ -513,8 +512,8 @@ func (d *SANStorageDriver) CreateClone(
 	}
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	if err := CreateOntapClone(ctx, name, source, snapshot, labels, split, &d.Config, d.API, false,
-		api.QosPolicyGroup{},
+	if err := CreateOntapClone(
+		ctx, name, source, snapshot, labels, split, &d.Config, d.API, false, api.QosPolicyGroup{},
 	); err != nil {
 		return err
 	}

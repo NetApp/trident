@@ -56,8 +56,8 @@ type NASQtreeStorageDriver struct {
 	emptyFlexvolDeferredDeletePeriod time.Duration
 	qtreesPerFlexvol                 int
 
-	physicalPools map[string]*storage.Pool
-	virtualPools  map[string]*storage.Pool
+	physicalPools map[string]storage.Pool
+	virtualPools  map[string]storage.Pool
 }
 
 func (d *NASQtreeStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
@@ -179,8 +179,8 @@ func (d *NASQtreeStorageDriver) Initialize(
 	// Start periodic housekeeping tasks like cleaning up unused Flexvols
 	d.housekeepingWaitGroup = &sync.WaitGroup{}
 	d.housekeepingTasks = make(map[string]*HousekeepingTask, 2)
-	//pruneTasks := []func(){d.pruneUnusedFlexvols, d.reapDeletedQtrees}
-	//d.housekeepingTasks[pruneTask] = NewPruneTask(d, pruneTasks)
+	// pruneTasks := []func(){d.pruneUnusedFlexvols, d.reapDeletedQtrees}
+	// d.housekeepingTasks[pruneTask] = NewPruneTask(d, pruneTasks)
 	resizeTasks := []func(context.Context){d.resizeQuotas}
 	d.housekeepingTasks[resizeTask] = NewResizeTask(ctx, d, resizeTasks)
 	for _, task := range d.housekeepingTasks {
@@ -265,7 +265,7 @@ func (d *NASQtreeStorageDriver) validate(ctx context.Context) error {
 
 // Create a qtree-backed volume with the specified options
 func (d *NASQtreeStorageDriver) Create(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
 
 	name := volConfig.InternalName
@@ -314,7 +314,7 @@ func (d *NASQtreeStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
-	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes[Size])
+	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes()[Size])
 	if err != nil {
 		return err
 	}
@@ -332,18 +332,19 @@ func (d *NASQtreeStorageDriver) Create(
 
 	// Get Flexvol options with default fallback values
 	// see also: ontap_common.go#PopulateConfigurationDefaults
-	spaceReserve := utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes[SpaceReserve])
-	snapshotPolicy := utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes[SnapshotPolicy])
-	snapshotDir := utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes[SnapshotDir])
-	encryption := utils.GetV(opts, "encryption", storagePool.InternalAttributes[Encryption])
-	snapshotReserve := storagePool.InternalAttributes[SnapshotReserve]
-	qosPolicy := storagePool.InternalAttributes[QosPolicy]
-
-	// Get qtree options with default fallback values
-	unixPermissions := utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes[UnixPermissions])
-	exportPolicy := utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes[ExportPolicy])
-	securityStyle := utils.GetV(opts, "securityStyle", storagePool.InternalAttributes[SecurityStyle])
-	tieringPolicy := utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes[TieringPolicy])
+	var (
+		spaceReserve    = utils.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
+		snapshotPolicy  = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
+		snapshotDir     = utils.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
+		encryption      = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
+		snapshotReserve = storagePool.InternalAttributes()[SnapshotReserve]
+		qosPolicy       = storagePool.InternalAttributes()[QosPolicy]
+		// Get qtree options with default fallback values
+		unixPermissions = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
+		exportPolicy    = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+		securityStyle   = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
+		tieringPolicy   = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
+	)
 
 	enableSnapshotDir, err := strconv.ParseBool(snapshotDir)
 	if err != nil {
@@ -360,7 +361,7 @@ func (d *NASQtreeStorageDriver) Create(
 	}
 
 	if d.Config.AutoExportPolicy {
-		exportPolicy = getExportPolicyName(storagePool.Backend.BackendUUID())
+		exportPolicy = getExportPolicyName(storagePool.Backend().BackendUUID())
 	}
 
 	volConfig.QosPolicy = qosPolicy
@@ -369,12 +370,13 @@ func (d *NASQtreeStorageDriver) Create(
 	physicalPoolNames := make([]string, 0)
 
 	for _, physicalPool := range physicalPools {
-		aggregate := physicalPool.Name
+		aggregate := physicalPool.Name()
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(
-			ctx, aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
-			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; error: %v", storagePool.Name, aggregate,
+			ctx, aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI(),
+		); aggrLimitsErr != nil {
+			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; error: %v", storagePool.Name(), aggregate,
 				aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
@@ -387,7 +389,7 @@ func (d *NASQtreeStorageDriver) Create(
 			d.Config, snapshotReserve, exportPolicy)
 		if err != nil {
 			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Flexvol location/creation failed %s: %v",
-				storagePool.Name, aggregate, name, err)
+				storagePool.Name(), aggregate, name, err)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
 			continue
@@ -396,7 +398,7 @@ func (d *NASQtreeStorageDriver) Create(
 		// Grow or shrink the Flexvol as needed
 		err = d.resizeFlexvol(ctx, flexvol, sizeBytes)
 		if err != nil {
-			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Flexvol resize failed %s/%s: %v", storagePool.Name,
+			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Flexvol resize failed %s/%s: %v", storagePool.Name(),
 				aggregate, flexvol, name, err)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
@@ -406,7 +408,7 @@ func (d *NASQtreeStorageDriver) Create(
 		// Create the qtree
 		qtreeResponse, err := d.API.QtreeCreate(name, flexvol, unixPermissions, exportPolicy, securityStyle, qosPolicy)
 		if err = api.GetError(ctx, qtreeResponse, err); err != nil {
-			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Qtree creation failed %s/%s: %v", storagePool.Name,
+			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Qtree creation failed %s/%s: %v", storagePool.Name(),
 				aggregate, flexvol, name, err)
 			Logc(ctx).Error(errMessage)
 			createErrors = append(createErrors, fmt.Errorf(errMessage))
@@ -417,7 +419,7 @@ func (d *NASQtreeStorageDriver) Create(
 		err = d.setQuotaForQtree(ctx, name, flexvol, sizeBytes)
 		if err != nil {
 			Logc(ctx).Errorf("Qtree quota definition failed. %v", err)
-			return fmt.Errorf("ONTAP-NAS-QTREE pool %s/%s; Qtree quota definition failed %s/%s: %v", storagePool.Name,
+			return fmt.Errorf("ONTAP-NAS-QTREE pool %s/%s; Qtree quota definition failed %s/%s: %v", storagePool.Name(),
 				aggregate, flexvol, name, err)
 		}
 
@@ -430,7 +432,7 @@ func (d *NASQtreeStorageDriver) Create(
 
 // CreateClone creates a volume clone
 func (d *NASQtreeStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, _ *storage.Pool,
+	ctx context.Context, volConfig *storage.VolumeConfig, _ storage.Pool,
 ) error {
 
 	name := volConfig.InternalName
@@ -878,7 +880,8 @@ func (d *NASQtreeStorageDriver) getFlexvolForQtree(
 					continue
 				}
 				if sizeWithRequest > flexvolQuotaSizeLimit {
-					Logc(ctx).Debugf("Flexvol quota size for %v is over the limit of %v", volName, flexvolQuotaSizeLimit)
+					Logc(ctx).Debugf("Flexvol quota size for %v is over the limit of %v", volName,
+						flexvolQuotaSizeLimit)
 					continue
 				}
 			}
@@ -1178,7 +1181,10 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 		qtreeCount, err := d.API.QtreeCount(ctx, flexvol)
 		if err != nil {
 			// Couldn't count qtrees, so remove Flexvol from deletion map as a precaution
-			Logc(ctx).WithFields(log.Fields{"flexvol": flexvol, "error": err}).Warning("Could not count qtrees in Flexvol.")
+			Logc(ctx).WithFields(log.Fields{
+				"flexvol": flexvol,
+				"error":   err,
+			}).Warning("Could not count qtrees in Flexvol.")
 			delete(d.emptyFlexvolMap, flexvol)
 		} else if qtreeCount == 0 {
 			// No qtrees exist, so add Flexvol to map if it isn't there already
@@ -1200,7 +1206,8 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 
 		// If Flexvol is no longer known to the driver, remove from map and move on
 		if !utils.StringInSlice(flexvol, flexvols) {
-			Logc(ctx).WithField("flexvol", flexvol).Debug("Flexvol no longer extant, removing from delete deferral map.")
+			Logc(ctx).WithField("flexvol", flexvol).Debug(
+				"Flexvol no longer extant, removing from delete deferral map.")
 			delete(d.emptyFlexvolMap, flexvol)
 			continue
 		}
@@ -1294,8 +1301,7 @@ func (d *NASQtreeStorageDriver) ensureDefaultExportPolicyRule(ctx context.Contex
 		rules := []string{"0.0.0.0/0", "::/0"}
 		for _, rule := range rules {
 			ruleResponse, err := d.API.ExportRuleCreate(
-				d.flexvolExportPolicy, rule,
-				[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
+				d.flexvolExportPolicy, rule, []string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
 			if err = api.GetError(ctx, ruleResponse, err); err != nil {
 				return fmt.Errorf("error creating export rule: %v", err)
 			}
@@ -1526,8 +1532,8 @@ func (d *NASQtreeStorageDriver) GetVolumeExternalWrappers(
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
 func (d *NASQtreeStorageDriver) getVolumeExternal(
-	qtreeAttrs *azgo.QtreeInfoType, volumeAttrs *azgo.VolumeAttributesType,
-	quotaAttrs *azgo.QuotaEntryType) *storage.VolumeExternal {
+	qtreeAttrs *azgo.QtreeInfoType, volumeAttrs *azgo.VolumeAttributesType, quotaAttrs *azgo.QuotaEntryType,
+) *storage.VolumeExternal {
 
 	volumeIDAttrs := volumeAttrs.VolumeIdAttributesPtr
 	volumeSnapshotAttrs := volumeAttrs.VolumeSnapshotAttributesPtr
@@ -1785,12 +1791,14 @@ func (d *NASQtreeStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 	deltaQuotaSize := sizeBytes - quotaSize
 
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
-		ctx, flexvol, sizeBytes, d.Config, d.GetAPI()); aggrLimitsErr != nil {
+		ctx, flexvol, sizeBytes, d.Config, d.GetAPI(),
+	); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 

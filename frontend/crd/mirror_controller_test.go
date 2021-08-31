@@ -7,15 +7,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/netapp/trident/core"
+	mockcore "github.com/netapp/trident/mocks/mock_core"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 )
 
 func TestUpdateMirrorRelationshipNoUpdateNeeded(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
 	testingCache := NewTestingCache()
-	orchestrator := core.NewMockOrchestrator()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()
@@ -64,8 +66,9 @@ func TestUpdateMirrorRelationshipNoUpdateNeeded(t *testing.T) {
 }
 
 func TestUpdateMirrorRelationshipNeedsUpdate(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
 	testingCache := NewTestingCache()
-	orchestrator := core.NewMockOrchestrator()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()

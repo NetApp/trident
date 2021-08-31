@@ -47,8 +47,8 @@ type SANStorageDriver struct {
 	Config      drivers.ESeriesStorageDriverConfig
 	API         *api.Client
 
-	physicalPools map[string]*storage.Pool
-	virtualPools  map[string]*storage.Pool
+	physicalPools map[string]storage.Pool
+	virtualPools  map[string]storage.Pool
 }
 
 func (d *SANStorageDriver) Name() string {
@@ -272,8 +272,8 @@ func (d *SANStorageDriver) populateConfigurationDefaults(
 
 func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 
-	d.physicalPools = make(map[string]*storage.Pool)
-	d.virtualPools = make(map[string]*storage.Pool)
+	d.physicalPools = make(map[string]storage.Pool)
+	d.virtualPools = make(map[string]storage.Pool)
 
 	// To identify list of media types supported by physical pools
 	mediaOffers := make([]sa.Offer, 0)
@@ -289,42 +289,42 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 
 		pool := storage.NewStoragePool(nil, physicalStoragePool.Label)
 
-		pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
+		pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
 
 		if d.Config.Region != "" {
-			pool.Attributes[sa.Region] = sa.NewStringOffer(d.Config.Region)
+			pool.Attributes()[sa.Region] = sa.NewStringOffer(d.Config.Region)
 		}
 		if d.Config.Zone != "" {
-			pool.Attributes[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
+			pool.Attributes()[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
 		}
 
 		// E-series supports both "hdd" and "ssd" media types
 		switch physicalStoragePool.DriveMediaType {
 		case "hdd":
-			pool.Attributes[sa.Media] = sa.NewStringOffer(sa.HDD)
-			pool.InternalAttributes[Media] = sa.HDD
+			pool.Attributes()[sa.Media] = sa.NewStringOffer(sa.HDD)
+			pool.InternalAttributes()[Media] = sa.HDD
 		case "ssd":
-			pool.Attributes[sa.Media] = sa.NewStringOffer(sa.SSD)
-			pool.InternalAttributes[Media] = sa.SSD
+			pool.Attributes()[sa.Media] = sa.NewStringOffer(sa.SSD)
+			pool.InternalAttributes()[Media] = sa.SSD
 		}
 
-		if mediaOffer, ok := pool.Attributes[sa.Media]; ok {
+		if mediaOffer, ok := pool.Attributes()[sa.Media]; ok {
 			mediaOffers = append(mediaOffers, mediaOffer)
 		}
 
-		pool.Attributes[sa.Snapshots] = sa.NewBoolOffer(false)
-		pool.Attributes[sa.Clones] = sa.NewBoolOffer(false)
-		pool.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
-		pool.Attributes[sa.ProvisioningType] = sa.NewStringOffer(sa.Thick)
-		pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
+		pool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(false)
+		pool.Attributes()[sa.Clones] = sa.NewBoolOffer(false)
+		pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+		pool.Attributes()[sa.ProvisioningType] = sa.NewStringOffer(sa.Thick)
+		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
 
-		pool.InternalAttributes[Size] = d.Config.Size
-		pool.InternalAttributes[Region] = d.Config.Region
-		pool.InternalAttributes[Zone] = d.Config.Zone
+		pool.InternalAttributes()[Size] = d.Config.Size
+		pool.InternalAttributes()[Region] = d.Config.Region
+		pool.InternalAttributes()[Zone] = d.Config.Zone
 
-		pool.SupportedTopologies = d.Config.SupportedTopologies
+		pool.SetSupportedTopologies(d.Config.SupportedTopologies)
 
-		d.physicalPools[pool.Name] = pool
+		d.physicalPools[pool.Name()] = pool
 	}
 
 	// Define virtual pools
@@ -352,31 +352,31 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 
 		pool := storage.NewStoragePool(nil, d.poolName(fmt.Sprintf("pool_%d", index)))
 
-		pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
-		pool.Attributes[sa.Snapshots] = sa.NewBoolOffer(false)
-		pool.Attributes[sa.Clones] = sa.NewBoolOffer(false)
-		pool.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
-		pool.Attributes[sa.ProvisioningType] = sa.NewStringOffer(sa.Thick)
-		pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
+		pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
+		pool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(false)
+		pool.Attributes()[sa.Clones] = sa.NewBoolOffer(false)
+		pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+		pool.Attributes()[sa.ProvisioningType] = sa.NewStringOffer(sa.Thick)
+		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
 
 		if region != "" {
-			pool.Attributes[sa.Region] = sa.NewStringOffer(region)
+			pool.Attributes()[sa.Region] = sa.NewStringOffer(region)
 		}
 		if zone != "" {
-			pool.Attributes[sa.Zone] = sa.NewStringOffer(zone)
+			pool.Attributes()[sa.Zone] = sa.NewStringOffer(zone)
 		}
 		if len(mediaOffers) > 0 {
-			pool.Attributes[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
-			pool.InternalAttributes[sa.Media] = pool.Attributes[sa.Media].ToString()
+			pool.Attributes()[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
+			pool.InternalAttributes()[sa.Media] = pool.Attributes()[sa.Media].ToString()
 		}
 
-		pool.InternalAttributes[Size] = size
-		pool.InternalAttributes[Region] = region
-		pool.InternalAttributes[Zone] = zone
+		pool.InternalAttributes()[Size] = size
+		pool.InternalAttributes()[Region] = region
+		pool.InternalAttributes()[Zone] = zone
 
-		pool.SupportedTopologies = supportedTopologies
+		pool.SetSupportedTopologies(supportedTopologies)
 
-		d.virtualPools[pool.Name] = pool
+		d.virtualPools[pool.Name()] = pool
 	}
 
 	return nil
@@ -405,7 +405,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 	}
 
 	// Validate pool-level attributes
-	allPools := make([]*storage.Pool, 0, len(d.physicalPools)+len(d.virtualPools))
+	allPools := make([]storage.Pool, 0, len(d.physicalPools)+len(d.virtualPools))
 
 	for _, pool := range d.physicalPools {
 		allPools = append(allPools, pool)
@@ -417,18 +417,18 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 	for _, pool := range allPools {
 
 		// Validate default size
-		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes[Size]); err != nil {
-			return fmt.Errorf("invalid value for default volume size in pool %s: %v", pool.Name, err)
+		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size]); err != nil {
+			return fmt.Errorf("invalid value for default volume size in pool %s: %v", pool.Name(), err)
 		}
 
 		// Validate media type
-		if pool.InternalAttributes[Media] != "" {
-			for _, mediaType := range strings.Split(pool.InternalAttributes[Media], ",") {
+		if pool.InternalAttributes()[Media] != "" {
+			for _, mediaType := range strings.Split(pool.InternalAttributes()[Media], ",") {
 				switch mediaType {
 				case sa.HDD, sa.SSD:
 					break
 				default:
-					Logc(ctx).Errorf("invalid media type in pool %s: %s", pool.Name, mediaType)
+					Logc(ctx).Errorf("invalid media type in pool %s: %s", pool.Name(), mediaType)
 				}
 			}
 		}
@@ -437,11 +437,12 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 	return nil
 }
 
-// Create is called by Docker to create a container volume. Besides the volume name, a few optional parameters such as size
-// and disk media type may be provided in the opts map. If more than one pool on the storage controller can satisfy the request, the
-// one with the most free space is selected.
+// Create is called by Docker to create a container volume. Besides the volume name,
+// a few optional parameters such as size and disk media type may be provided in the opts map.
+// If more than one pool on the storage controller can satisfy the request,
+// the one with the most free space is selected.
 func (d *SANStorageDriver) Create(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
 
 	name := volConfig.InternalName
@@ -492,7 +493,8 @@ func (d *SANStorageDriver) Create(
 			sizeBytes, MinimumVolumeSizeBytes)
 	}
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
@@ -516,7 +518,7 @@ func (d *SANStorageDriver) Create(
 
 	for _, physicalPool := range physicalPools {
 
-		poolName := physicalPool.Name
+		poolName := physicalPool.Name()
 		physicalPoolNames = append(physicalPoolNames, poolName)
 
 		// expect pool of size 1
@@ -558,18 +560,17 @@ func (d *SANStorageDriver) Create(
 
 // getPoolsForCreate returns candidate storage pools for creating volumes
 func (d *SANStorageDriver) getPoolsForCreate(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
-	volAttributes map[string]sa.Request,
-) ([]*storage.Pool, error) {
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
+) ([]storage.Pool, error) {
 
 	// If a physical pool was requested, just use it
-	if _, ok := d.physicalPools[storagePool.Name]; ok {
-		return []*storage.Pool{storagePool}, nil
+	if _, ok := d.physicalPools[storagePool.Name()]; ok {
+		return []storage.Pool{storagePool}, nil
 	}
 
 	// If a virtual pool was requested, find a physical pool to satisfy it
-	if _, ok := d.virtualPools[storagePool.Name]; !ok {
-		return nil, fmt.Errorf("could not find pool %s", storagePool.Name)
+	if _, ok := d.virtualPools[storagePool.Name()]; !ok {
+		return nil, fmt.Errorf("could not find pool %s", storagePool.Name())
 	}
 
 	// Make a storage class from the volume attributes to simplify pool matching
@@ -581,7 +582,7 @@ func (d *SANStorageDriver) getPoolsForCreate(
 	storageClass := sc.NewFromAttributes(attributesCopy)
 
 	// Find matching pools
-	candidatePools := make([]*storage.Pool, 0)
+	candidatePools := make([]storage.Pool, 0)
 
 	for _, pool := range d.physicalPools {
 		if storageClass.Matches(ctx, pool) {
@@ -963,11 +964,9 @@ func (d *SANStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *stora
 	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
-// CreateClone creates a new volume from the named volume, either by direct clone or from the named snapshot. The E-series volume plugin
-// does not support cloning or snapshots, so this method always returns an error.
-func (d *SANStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, _ *storage.Pool,
-) error {
+// CreateClone creates a new volume from the named volume, either by direct clone or from the named snapshot.
+// The E-series volume plugin does not support cloning or snapshots, so this method always returns an error.
+func (d *SANStorageDriver) CreateClone(ctx context.Context, volConfig *storage.VolumeConfig, _ storage.Pool) error {
 
 	name := volConfig.InternalName
 	source := volConfig.CloneSourceVolumeInternal
@@ -1037,14 +1036,14 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend sto
 	virtual := len(d.virtualPools) > 0
 
 	for _, pool := range d.physicalPools {
-		pool.Backend = backend
+		pool.SetBackend(backend)
 		if !virtual {
 			backend.AddStoragePool(pool)
 		}
 	}
 
 	for _, pool := range d.virtualPools {
-		pool.Backend = backend
+		pool.SetBackend(backend)
 		if virtual {
 			backend.AddStoragePool(pool)
 		}
@@ -1101,7 +1100,7 @@ func (d *SANStorageDriver) GetInternalVolumeName(ctx context.Context, name strin
 func (d *SANStorageDriver) GetVolumeOpts(
 	ctx context.Context,
 	volConfig *storage.VolumeConfig,
-	pool *storage.Pool,
+	pool storage.Pool,
 	requests map[string]sa.Request,
 ) (map[string]string, error) {
 
@@ -1109,7 +1108,7 @@ func (d *SANStorageDriver) GetVolumeOpts(
 
 	// Include the pool so that Trident's pool selection is honored by nDVP
 	if pool != nil {
-		opts["pool"] = pool.Name
+		opts["pool"] = pool.Name()
 	}
 
 	// Include mediaType request if present
@@ -1233,10 +1232,13 @@ func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.ESeriesStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
-	cloneConfig.Username = drivers.REDACTED                                                                           // redact the username
-	cloneConfig.Password = drivers.REDACTED                                                                           // redact the password
-	cloneConfig.PasswordArray = drivers.REDACTED                                                                      // redact the password
-	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED} // redact the credentials
+	cloneConfig.Username = drivers.REDACTED      // redact the username
+	cloneConfig.Password = drivers.REDACTED      // redact the password
+	cloneConfig.PasswordArray = drivers.REDACTED // redact the password
+	cloneConfig.Credentials = map[string]string{
+		drivers.KeyName: drivers.REDACTED,
+		drivers.KeyType: drivers.REDACTED,
+	} // redact the credentials
 	return cloneConfig
 }
 
@@ -1341,8 +1343,7 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 // getExternalVolume is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
-func (d *SANStorageDriver) getVolumeExternal(
-	volumeAttrs *api.VolumeEx) *storage.VolumeExternal {
+func (d *SANStorageDriver) getVolumeExternal(volumeAttrs *api.VolumeEx) *storage.VolumeExternal {
 
 	internalName := volumeAttrs.Label
 	name := internalName
@@ -1429,7 +1430,8 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	volConfig.Size = strconv.FormatUint(volSizeBytes, 10)
-	sameSize, err := utils.VolumeSizeWithinTolerance(int64(sizeBytes), int64(volSizeBytes), tridentconfig.SANResizeDelta)
+	sameSize, err := utils.VolumeSizeWithinTolerance(int64(sizeBytes), int64(volSizeBytes),
+		tridentconfig.SANResizeDelta)
 	if err != nil {
 		return err
 	}
@@ -1440,7 +1442,8 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 			"currentVolumeSize": volSizeBytes,
 			"name":              name,
 			"delta":             tridentconfig.SANResizeDelta,
-		}).Info("Requested size and current volume size are within the delta and therefore considered the same size for SAN resize operations.")
+		}).Info("Requested size and current volume size are within the delta and therefore considered the same size" +
+			" for SAN resize operations.")
 		return nil
 	}
 
@@ -1450,7 +1453,8 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig); checkVolumeSizeLimitsError != nil {
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 

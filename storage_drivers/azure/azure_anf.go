@@ -63,7 +63,7 @@ type NFSStorageDriver struct {
 	Config              drivers.AzureNFSStorageDriverConfig
 	SDK                 *sdk.Client
 	tokenRegexp         *regexp.Regexp
-	pools               map[string]*storage.Pool
+	pools               map[string]storage.Pool
 	volumeCreateTimeout time.Duration
 }
 
@@ -280,7 +280,7 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 // initializeStoragePools defines the pools reported to Trident, whether physical or virtual.
 func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 
-	d.pools = make(map[string]*storage.Pool)
+	d.pools = make(map[string]storage.Pool)
 
 	if len(d.Config.Storage) == 0 {
 
@@ -289,31 +289,31 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 		// No vpools defined, so report region/zone as a single pool
 		pool := storage.NewStoragePool(nil, d.poolName("pool"))
 
-		pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
-		pool.Attributes[sa.Snapshots] = sa.NewBoolOffer(true)
-		pool.Attributes[sa.Clones] = sa.NewBoolOffer(true)
-		pool.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
-		pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
+		pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
+		pool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+		pool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+		pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
 
 		if d.Config.Region != "" {
-			pool.Attributes[sa.Region] = sa.NewStringOffer(d.Config.Region)
+			pool.Attributes()[sa.Region] = sa.NewStringOffer(d.Config.Region)
 		}
 		if d.Config.Zone != "" {
-			pool.Attributes[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
+			pool.Attributes()[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
 		}
 
-		pool.InternalAttributes[Size] = d.Config.Size
-		pool.InternalAttributes[ServiceLevel] = strings.Title(d.Config.ServiceLevel)
-		pool.InternalAttributes[SnapshotDir] = d.Config.SnapshotDir
-		pool.InternalAttributes[ExportRule] = d.Config.ExportRule
-		pool.InternalAttributes[Location] = d.Config.Location
-		pool.InternalAttributes[VirtualNetwork] = d.Config.VirtualNetwork
-		pool.InternalAttributes[Subnet] = d.Config.Subnet
-		pool.InternalAttributes[CapacityPools] = strings.Join(d.Config.CapacityPools, ",")
+		pool.InternalAttributes()[Size] = d.Config.Size
+		pool.InternalAttributes()[ServiceLevel] = strings.Title(d.Config.ServiceLevel)
+		pool.InternalAttributes()[SnapshotDir] = d.Config.SnapshotDir
+		pool.InternalAttributes()[ExportRule] = d.Config.ExportRule
+		pool.InternalAttributes()[Location] = d.Config.Location
+		pool.InternalAttributes()[VirtualNetwork] = d.Config.VirtualNetwork
+		pool.InternalAttributes()[Subnet] = d.Config.Subnet
+		pool.InternalAttributes()[CapacityPools] = strings.Join(d.Config.CapacityPools, ",")
 
-		pool.SupportedTopologies = d.Config.SupportedTopologies
+		pool.SetSupportedTopologies(d.Config.SupportedTopologies)
 
-		d.pools[pool.Name] = pool
+		d.pools[pool.Name()] = pool
 	} else {
 
 		Logc(ctx).Debug("One or more vpools defined.")
@@ -378,30 +378,30 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 
 			pool := storage.NewStoragePool(nil, d.poolName(fmt.Sprintf("pool_%d", index)))
 
-			pool.Attributes[sa.BackendType] = sa.NewStringOffer(d.Name())
-			pool.Attributes[sa.Snapshots] = sa.NewBoolOffer(true)
-			pool.Attributes[sa.Clones] = sa.NewBoolOffer(true)
-			pool.Attributes[sa.Encryption] = sa.NewBoolOffer(false)
-			pool.Attributes[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
+			pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
+			pool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
+			pool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
+			pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+			pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
 			if region != "" {
-				pool.Attributes[sa.Region] = sa.NewStringOffer(region)
+				pool.Attributes()[sa.Region] = sa.NewStringOffer(region)
 			}
 			if zone != "" {
-				pool.Attributes[sa.Zone] = sa.NewStringOffer(zone)
+				pool.Attributes()[sa.Zone] = sa.NewStringOffer(zone)
 			}
 
-			pool.InternalAttributes[Size] = size
-			pool.InternalAttributes[ServiceLevel] = strings.Title(serviceLevel)
-			pool.InternalAttributes[SnapshotDir] = snapshotDir
-			pool.InternalAttributes[ExportRule] = exportRule
-			pool.InternalAttributes[Location] = location
-			pool.InternalAttributes[VirtualNetwork] = vnet
-			pool.InternalAttributes[Subnet] = subnet
-			pool.InternalAttributes[CapacityPools] = strings.Join(capacityPools, ",")
+			pool.InternalAttributes()[Size] = size
+			pool.InternalAttributes()[ServiceLevel] = strings.Title(serviceLevel)
+			pool.InternalAttributes()[SnapshotDir] = snapshotDir
+			pool.InternalAttributes()[ExportRule] = exportRule
+			pool.InternalAttributes()[Location] = location
+			pool.InternalAttributes()[VirtualNetwork] = vnet
+			pool.InternalAttributes()[Subnet] = subnet
+			pool.InternalAttributes()[CapacityPools] = strings.Join(capacityPools, ",")
 
-			pool.SupportedTopologies = supportedTopologies
+			pool.SetSupportedTopologies(supportedTopologies)
 
-			d.pools[pool.Name] = pool
+			d.pools[pool.Name()] = pool
 		}
 	}
 
@@ -410,7 +410,9 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 
 // initializeAzureConfig parses the Azure config, mixing in the specified common config.
 func (d *NFSStorageDriver) initializeAzureConfig(
-	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string) (*drivers.AzureNFSStorageDriverConfig, error) {
+	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	backendSecret map[string]string,
+) (*drivers.AzureNFSStorageDriverConfig, error) {
 
 	if commonConfig.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "initializeAzureConfig", "Type": "NFSStorageDriver"}
@@ -487,16 +489,16 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 	for poolName, pool := range d.pools {
 
 		// Validate service level (it is allowed to be blank)
-		switch pool.InternalAttributes[ServiceLevel] {
+		switch pool.InternalAttributes()[ServiceLevel] {
 		case sdk.ServiceLevelStandard, sdk.ServiceLevelPremium, sdk.ServiceLevelUltra, "":
 			break
 		default:
 			return fmt.Errorf("invalid service level in pool %s: %s",
-				poolName, pool.InternalAttributes[ServiceLevel])
+				poolName, pool.InternalAttributes()[ServiceLevel])
 		}
 
 		// Validate export rules
-		for _, rule := range strings.Split(pool.InternalAttributes[ExportRule], ",") {
+		for _, rule := range strings.Split(pool.InternalAttributes()[ExportRule], ",") {
 			ipAddr := net.ParseIP(rule)
 			_, netAddr, _ := net.ParseCIDR(rule)
 			if ipAddr == nil && netAddr == nil {
@@ -505,15 +507,15 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 		}
 
 		// Validate snapshot dir
-		if pool.InternalAttributes[SnapshotDir] != "" {
-			_, err := strconv.ParseBool(pool.InternalAttributes[SnapshotDir])
+		if pool.InternalAttributes()[SnapshotDir] != "" {
+			_, err := strconv.ParseBool(pool.InternalAttributes()[SnapshotDir])
 			if err != nil {
 				return fmt.Errorf("invalid value for snapshotDir in pool %s: %v", poolName, err)
 			}
 		}
 
 		// Validate default size
-		if _, err = utils.ConvertSizeToBytes(pool.InternalAttributes[Size]); err != nil {
+		if _, err = utils.ConvertSizeToBytes(pool.InternalAttributes()[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s: %v", poolName, err)
 		}
 
@@ -522,8 +524,8 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 		}
 
 		// Validate that the Capacity Pools values are valid
-		if pool.InternalAttributes[CapacityPools] != "" {
-			capacityPoolList := utils.SplitString(ctx, pool.InternalAttributes[CapacityPools], ",")
+		if pool.InternalAttributes()[CapacityPools] != "" {
+			capacityPoolList := utils.SplitString(ctx, pool.InternalAttributes()[CapacityPools], ",")
 			discoveredCapacityPoolNames := d.SDK.GetCapacityPoolNames()
 
 			for _, capacityPool := range capacityPoolList {
@@ -539,7 +541,7 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 
 // Create a volume with the specified options
 func (d *NFSStorageDriver) Create(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool, volAttributes map[string]sa.Request,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
 
 	name := volConfig.InternalName
@@ -564,9 +566,9 @@ func (d *NFSStorageDriver) Create(
 	if storagePool == nil {
 		return errors.New("pool not specified")
 	}
-	pool, ok := d.pools[storagePool.Name]
+	pool, ok := d.pools[storagePool.Name()]
 	if !ok {
-		return fmt.Errorf("pool %s does not exist", storagePool.Name)
+		return fmt.Errorf("pool %s does not exist", storagePool.Name())
 	}
 
 	// If the volume already exists, bail out
@@ -599,7 +601,7 @@ func (d *NFSStorageDriver) Create(
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {
-		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes[Size])
+		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size])
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if sizeBytes < MinimumVolumeSizeBytes {
@@ -626,13 +628,13 @@ func (d *NFSStorageDriver) Create(
 	// Take service level from volume config first (handles Docker case), then from pool
 	serviceLevel := strings.Title(volConfig.ServiceLevel)
 	if serviceLevel == "" {
-		serviceLevel = pool.InternalAttributes[ServiceLevel]
+		serviceLevel = pool.InternalAttributes()[ServiceLevel]
 	}
 
 	// Take snapshot directory from volume config first (handles Docker case), then from pool
 	snapshotDir := volConfig.SnapshotDir
 	if snapshotDir == "" {
-		snapshotDir = pool.InternalAttributes[SnapshotDir]
+		snapshotDir = pool.InternalAttributes()[SnapshotDir]
 	}
 	snapshotDirBool, err := strconv.ParseBool(snapshotDir)
 	if err != nil {
@@ -665,7 +667,7 @@ func (d *NFSStorageDriver) Create(
 	}
 
 	apiExportRule := sdk.ExportRule{
-		AllowedClients: pool.InternalAttributes[ExportRule],
+		AllowedClients: pool.InternalAttributes()[ExportRule],
 		Cifs:           cifsAccess,
 		Nfsv3:          nfsV3Access,
 		Nfsv41:         nfsV41Access,
@@ -697,13 +699,13 @@ func (d *NFSStorageDriver) Create(
 
 	createRequest := &sdk.FilesystemCreateRequest{
 		Name:              volConfig.Name,
-		Location:          pool.InternalAttributes[Location],
-		VirtualNetwork:    pool.InternalAttributes[VirtualNetwork],
-		Subnet:            pool.InternalAttributes[Subnet],
+		Location:          pool.InternalAttributes()[Location],
+		VirtualNetwork:    pool.InternalAttributes()[VirtualNetwork],
+		Subnet:            pool.InternalAttributes()[Subnet],
 		CreationToken:     name,
 		ExportPolicy:      exportPolicy,
 		Labels:            labels,
-		PoolID:            storagePool.Name,
+		PoolID:            storagePool.Name(),
 		ProtocolTypes:     protocolTypes,
 		QuotaInBytes:      int64(sizeBytes),
 		ServiceLevel:      serviceLevel,
@@ -722,7 +724,7 @@ func (d *NFSStorageDriver) Create(
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
 func (d *NFSStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool *storage.Pool,
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
 
 	name := volConfig.InternalName
@@ -773,10 +775,10 @@ func (d *NFSStorageDriver) CreateClone(
 	}
 
 	// Check if storage pool's list of capacity pools (if any) contains source volume's capacity pool
-	if storagePool.Name != "" {
-		if !containsCpool(ctx, storagePool.InternalAttributes[CapacityPools], sourceVolume.CapacityPoolName) {
+	if storagePool.Name() != "" {
+		if !containsCpool(ctx, storagePool.InternalAttributes()[CapacityPools], sourceVolume.CapacityPoolName) {
 			return fmt.Errorf("source volume's capacity pool '%s' not part of storage pool '%s'",
-				sourceVolume.CapacityPoolName, storagePool.Name)
+				sourceVolume.CapacityPoolName, storagePool.Name())
 		}
 	} else {
 		if err = d.ensureVolPartOfValidCpool(ctx, sourceVolume.CapacityPoolName); err != nil {
@@ -861,11 +863,10 @@ func (d *NFSStorageDriver) CreateClone(
 
 	if storage.IsStoragePoolUnset(storagePool) {
 		// Set the base label
-		storagePoolTemp := &storage.Pool{
-			Attributes: map[string]sa.Offer{
-				sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
-			},
-		}
+		storagePoolTemp := &storage.StoragePool{}
+		storagePoolTemp.SetAttributes(map[string]sa.Offer{
+			sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
+		})
 		poolLabels, err := storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, sdk.MaxLabelLength)
 		if err != nil {
 			return err
@@ -1379,7 +1380,8 @@ func (d *NFSStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *stora
 
 	// Wait for snapshot deletion to complete
 	if err := d.SDK.WaitForSnapshotState(
-		ctx, snapshot, extantVolume, sdk.StateDeleted, []string{sdk.StateError}, sdk.SnapshotTimeout); err != nil {
+		ctx, snapshot, extantVolume, sdk.StateDeleted, []string{sdk.StateError}, sdk.SnapshotTimeout,
+	); err != nil {
 		return err
 	}
 
@@ -1501,12 +1503,12 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 }
 
 // GetStorageBackendSpecs retrieves storage capabilities and register pools with specified backend.
-func (d *NFSStorageDriver) GetStorageBackendSpecs(ctx context.Context, backend storage.Backend) error {
+func (d *NFSStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
 
 	backend.SetName(d.BackendName())
 
 	for _, pool := range d.pools {
-		pool.Backend = backend
+		pool.SetBackend(backend)
 		backend.AddStoragePool(pool)
 	}
 
@@ -1587,8 +1589,10 @@ func (d *NFSStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	var cloneConfig drivers.AzureNFSStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
 	cloneConfig.ClientSecret = drivers.REDACTED // redact the Secret
-	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED,
-		drivers.KeyType: drivers.REDACTED} // redact the credentials
+	cloneConfig.Credentials = map[string]string{
+		drivers.KeyName: drivers.REDACTED,
+		drivers.KeyType: drivers.REDACTED,
+	} // redact the credentials
 	return cloneConfig
 }
 
@@ -1745,15 +1749,15 @@ func (d NFSStorageDriver) ensureVolPartOfValidCpool(ctx context.Context, volumeC
 	// else ensure cpool name must exist in one of the vpool's cpool lists
 	var volInValidCpool bool
 	for _, vpool := range d.pools {
-		if containsCpool(ctx, vpool.InternalAttributes[CapacityPools], volumeCpoolName) {
+		if containsCpool(ctx, vpool.InternalAttributes()[CapacityPools], volumeCpoolName) {
 			volInValidCpool = true
 			break
 		}
 	}
 
 	if !volInValidCpool {
-		return utils.NotFoundError(fmt.Sprintf("volume is part of another capacity pool not referenced by the backend" +
-			" %s", d.BackendName()))
+		return utils.NotFoundError(
+			fmt.Sprintf("volume is part of another capacity pool not referenced by the backend %s", d.BackendName()))
 	}
 
 	return nil

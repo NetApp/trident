@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package storageclass
 
@@ -9,11 +9,11 @@ import (
 
 type StorageClass struct {
 	config *Config
-	pools  []*storage.Pool
+	pools  []storage.Pool
 }
 
 type Config struct {
-	//NOTE:  Ensure that any changes made to this data structure are reflected
+	// NOTE:  Ensure that any changes made to this data structure are reflected
 	// in the Unmarshal method of config.go
 	Version         string                              `json:"version" hash:"ignore"`
 	Name            string                              `json:"name" hash:"ignore"`

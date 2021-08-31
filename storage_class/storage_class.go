@@ -20,7 +20,7 @@ import (
 )
 
 type BackendPoolInfo struct {
-	Pools             []*storage.Pool
+	Pools             []storage.Pool
 	PhysicalPoolNames map[string]struct{}
 }
 
@@ -30,7 +30,7 @@ func New(c *Config) *StorageClass {
 	}
 	return &StorageClass{
 		config: c,
-		pools:  make([]*storage.Pool, 0),
+		pools:  make([]storage.Pool, 0),
 	}
 }
 
@@ -58,12 +58,12 @@ func NewFromAttributes(attributes map[string]storageattribute.Request) *StorageC
 	}
 	return &StorageClass{
 		config: cfg,
-		pools:  make([]*storage.Pool, 0),
+		pools:  make([]storage.Pool, 0),
 	}
 }
 
 func (s *StorageClass) regexMatcherImpl(
-	ctx context.Context, storagePool *storage.Pool, storagePoolBackendName string, storagePoolList []string,
+	ctx context.Context, storagePool storage.Pool, storagePoolBackendName string, storagePoolList []string,
 ) bool {
 
 	if storagePool == nil {
@@ -85,19 +85,19 @@ func (s *StorageClass) regexMatcherImpl(
 
 	poolsMatch := false
 	for _, storagePoolName := range storagePoolList {
-		backendMatch, err := regexp.MatchString(storagePoolBackendName, storagePool.Backend.Name())
+		backendMatch, err := regexp.MatchString(storagePoolBackendName, storagePool.Backend().Name())
 		if err != nil {
 			Logc(ctx).WithFields(log.Fields{
 				"storagePoolName":          storagePoolName,
-				"storagePool.Name":         storagePool.Name,
-				"storagePool.Backend.Name": storagePool.Backend.Name,
+				"storagePool.Name":         storagePool.Name(),
+				"storagePool.Backend.Name": storagePool.Backend().Name(),
 				"storagePoolBackendName":   storagePoolBackendName,
 				"err":                      err,
 			}).Warning("Error comparing backend names in regexMatcher.")
 			continue
 		}
 		Logc(ctx).WithFields(log.Fields{
-			"storagePool.Backend.Name": storagePool.Backend.Name,
+			"storagePool.Backend.Name": storagePool.Backend().Name(),
 			"storagePoolBackendName":   storagePoolBackendName,
 			"backendMatch":             backendMatch,
 		}).Debug("Compared backend names in regexMatcher.")
@@ -105,12 +105,12 @@ func (s *StorageClass) regexMatcherImpl(
 			continue
 		}
 
-		matched, err := regexp.MatchString(storagePoolName, storagePool.Name)
+		matched, err := regexp.MatchString(storagePoolName, storagePool.Name())
 		if err != nil {
 			Logc(ctx).WithFields(log.Fields{
 				"storagePoolName":          storagePoolName,
-				"storagePool.Name":         storagePool.Name,
-				"storagePool.Backend.Name": storagePool.Backend.Name,
+				"storagePool.Name":         storagePool.Name(),
+				"storagePool.Backend.Name": storagePool.Backend().Name(),
 				"poolsMatch":               poolsMatch,
 				"err":                      err,
 			}).Warning("Error comparing pool names in regexMatcher.")
@@ -121,15 +121,15 @@ func (s *StorageClass) regexMatcherImpl(
 		}
 		Logc(ctx).WithFields(log.Fields{
 			"storagePoolName":          storagePoolName,
-			"storagePool.Name":         storagePool.Name,
-			"storagePool.Backend.Name": storagePool.Backend.Name,
+			"storagePool.Name":         storagePool.Name(),
+			"storagePool.Backend.Name": storagePool.Backend().Name(),
 			"poolsMatch":               poolsMatch,
 		}).Debug("Compared pool names in regexMatcher.")
 	}
 	return poolsMatch
 }
 
-func (s *StorageClass) regexMatcher(ctx context.Context, storagePool *storage.Pool, poolMap map[string][]string) bool {
+func (s *StorageClass) regexMatcher(ctx context.Context, storagePool storage.Pool, poolMap map[string][]string) bool {
 	poolsMatch := false
 	if len(poolMap) > 0 {
 		for storagePoolBackendName, storagePoolList := range poolMap {
@@ -142,13 +142,13 @@ func (s *StorageClass) regexMatcher(ctx context.Context, storagePool *storage.Po
 	return poolsMatch
 }
 
-func (s *StorageClass) Matches(ctx context.Context, storagePool *storage.Pool) bool {
+func (s *StorageClass) Matches(ctx context.Context, storagePool storage.Pool) bool {
 
 	Logc(ctx).WithFields(log.Fields{
 		"storageClass": s.GetName(),
 		"config":       s.config,
-		"pool":         storagePool.Name,
-		"poolBackend":  storagePool.Backend.Name,
+		"pool":         storagePool.Name(),
+		"poolBackend":  storagePool.Backend().Name(),
 	}).Debug("Checking if storage pool matches.")
 
 	// Check excludeStoragePools first, since it can reject a match
@@ -170,7 +170,7 @@ func (s *StorageClass) Matches(ctx context.Context, storagePool *storage.Pool) b
 		if len(s.config.Attributes) == 0 && len(s.config.Pools) == 0 {
 			Logc(ctx).WithFields(log.Fields{
 				"storageClass": s.GetName(),
-				"pool":         storagePool.Name,
+				"pool":         storagePool.Name(),
 			}).Debug("Pool failed to match storage class additionalStoragePools attribute.")
 			return false
 		}
@@ -187,12 +187,12 @@ func (s *StorageClass) Matches(ctx context.Context, storagePool *storage.Pool) b
 			name = "labels"
 		}
 
-		if offer, ok := storagePool.Attributes[name]; !ok || !offer.Matches(request) {
+		if offer, ok := storagePool.Attributes()[name]; !ok || !offer.Matches(request) {
 			Logc(ctx).WithFields(log.Fields{
 				"offer":        offer,
 				"request":      request,
 				"storageClass": s.GetName(),
-				"pool":         storagePool.Name,
+				"pool":         storagePool.Name(),
 				"attribute":    name,
 				"found":        ok,
 			}).Debug("Attribute for storage pool failed to match storage class.")
@@ -215,7 +215,7 @@ func (s *StorageClass) Matches(ctx context.Context, storagePool *storage.Pool) b
 		"attributesMatch": attributesMatch,
 		"poolsMatch":      poolsMatch,
 		"match":           result,
-		"pool":            storagePool.Name,
+		"pool":            storagePool.Name(),
 		"storageClass":    s.GetName(),
 	}).Debug("Result of pool match for storage class.")
 
@@ -244,7 +244,7 @@ func (s *StorageClass) CheckAndAddBackend(ctx context.Context, b storage.Backend
 			storagePool.AddStorageClass(s.GetName())
 			added++
 			Logc(ctx).WithFields(log.Fields{
-				"pool":         storagePool.Name,
+				"pool":         storagePool.Name(),
 				"storageClass": s.GetName(),
 			}).Debug("Storage class added to the storage pool.")
 		}
@@ -255,7 +255,7 @@ func (s *StorageClass) CheckAndAddBackend(ctx context.Context, b storage.Backend
 func (s *StorageClass) IsAddedToBackend(backend storage.Backend, storageClassName string) bool {
 
 	for _, storagePool := range backend.Storage() {
-		for _, storageClass := range storagePool.StorageClasses {
+		for _, storageClass := range storagePool.StorageClasses() {
 			if storageClass == storageClassName {
 				return true
 			}
@@ -266,9 +266,9 @@ func (s *StorageClass) IsAddedToBackend(backend storage.Backend, storageClassNam
 }
 
 func (s *StorageClass) RemovePoolsForBackend(backend storage.Backend) {
-	newStoragePools := make([]*storage.Pool, 0)
+	newStoragePools := make([]storage.Pool, 0)
 	for _, storagePool := range s.pools {
-		if storagePool.Backend != backend {
+		if storagePool.Backend() != backend {
 			newStoragePools = append(newStoragePools, storagePool)
 		}
 	}
@@ -291,11 +291,11 @@ func (s *StorageClass) GetAdditionalStoragePools() map[string][]string {
 	return s.config.AdditionalPools
 }
 
-func (s *StorageClass) GetStoragePoolsForProtocol(ctx context.Context, p config.Protocol) []*storage.Pool {
-	ret := make([]*storage.Pool, 0, len(s.pools))
+func (s *StorageClass) GetStoragePoolsForProtocol(ctx context.Context, p config.Protocol) []storage.Pool {
+	ret := make([]storage.Pool, 0, len(s.pools))
 	// TODO:  Change this to work with indices of backends?
 	for _, storagePool := range s.pools {
-		if p == config.ProtocolAny || storagePool.Backend.GetProtocol(ctx) == p {
+		if p == config.ProtocolAny || storagePool.Backend().GetProtocol(ctx) == p {
 			ret = append(ret, storagePool)
 		}
 	}
@@ -303,9 +303,9 @@ func (s *StorageClass) GetStoragePoolsForProtocol(ctx context.Context, p config.
 }
 
 // isTopologySupportedByPool returns whether the specific pool can create volumes accessible by the given topology
-func isTopologySupportedByPool(_ context.Context, pool *storage.Pool, topology map[string]string) bool {
+func isTopologySupportedByPool(_ context.Context, pool storage.Pool, topology map[string]string) bool {
 	requisiteFound := false
-	for _, supported := range pool.SupportedTopologies {
+	for _, supported := range pool.SupportedTopologies() {
 		eachFound := true
 		for k, v := range topology {
 			if sup, ok := supported[k]; ok && sup != v {
@@ -322,16 +322,16 @@ func isTopologySupportedByPool(_ context.Context, pool *storage.Pool, topology m
 
 // FilterPoolsOnTopology returns a subset of the provided pools that can support any of the requisiteTopologies.
 func FilterPoolsOnTopology(
-	ctx context.Context, pools []*storage.Pool, requisiteTopologies []map[string]string,
-) []*storage.Pool {
-	filteredPools := make([]*storage.Pool, 0)
+	ctx context.Context, pools []storage.Pool, requisiteTopologies []map[string]string,
+) []storage.Pool {
+	filteredPools := make([]storage.Pool, 0)
 
 	if len(requisiteTopologies) == 0 {
 		return pools
 	}
 
 	for _, pool := range pools {
-		if len(pool.SupportedTopologies) > 0 {
+		if len(pool.SupportedTopologies()) > 0 {
 			for _, topology := range requisiteTopologies {
 				if isTopologySupportedByPool(ctx, pool, topology) {
 					filteredPools = append(filteredPools, pool)
@@ -350,16 +350,16 @@ func FilterPoolsOnTopology(
 // the provided list of preferredTopologies. If 2 or more pools can support a given preferredTopology, they are shuffled
 // randomly within that segment of the list, in order to prevent hotspots.
 func SortPoolsByPreferredTopologies(
-	ctx context.Context, pools []*storage.Pool, preferredTopologies []map[string]string,
-) []*storage.Pool {
-	remainingPools := make([]*storage.Pool, len(pools))
+	ctx context.Context, pools []storage.Pool, preferredTopologies []map[string]string,
+) []storage.Pool {
+	remainingPools := make([]storage.Pool, len(pools))
 	copy(remainingPools, pools)
-	orderedPools := make([]*storage.Pool, 0)
+	orderedPools := make([]storage.Pool, 0)
 
 	for _, preferred := range preferredTopologies {
 
-		newRemainingPools := make([]*storage.Pool, 0)
-		poolBucket := make([]*storage.Pool, 0)
+		newRemainingPools := make([]storage.Pool, 0)
+		poolBucket := make([]storage.Pool, 0)
 
 		for _, pool := range remainingPools {
 			// If it supports topology, pop it and add to bucket. Otherwise, add it to newRemaining pools to be
@@ -372,7 +372,7 @@ func SortPoolsByPreferredTopologies(
 		}
 
 		// make new list of remaining pools
-		remainingPools = make([]*storage.Pool, len(newRemainingPools))
+		remainingPools = make([]storage.Pool, len(newRemainingPools))
 		copy(remainingPools, newRemainingPools)
 
 		// shuffle bucket
@@ -395,10 +395,10 @@ func SortPoolsByPreferredTopologies(
 // each pool matches the supplied protocol.
 func (s *StorageClass) GetStoragePoolsForProtocolByBackend(
 	ctx context.Context, p config.Protocol, requisiteTopologies, preferredTopologies []map[string]string,
-) []*storage.Pool {
+) []storage.Pool {
 
 	// Get all matching pools
-	var pools []*storage.Pool
+	var pools []storage.Pool
 
 	poolsForProtocol := s.GetStoragePoolsForProtocol(ctx, p)
 	if len(poolsForProtocol) == 0 {
@@ -413,7 +413,7 @@ func (s *StorageClass) GetStoragePoolsForProtocolByBackend(
 	return pools
 }
 
-func (s *StorageClass) Pools() []*storage.Pool {
+func (s *StorageClass) Pools() []storage.Pool {
 	return s.pools
 }
 
@@ -424,24 +424,24 @@ func (s *StorageClass) ConstructExternal(ctx context.Context) *External {
 		StoragePools: make(map[string][]string),
 	}
 	for _, storagePool := range s.pools {
-		backendName := storagePool.Backend.Name()
+		backendName := storagePool.Backend().Name()
 		if storagePoolList, ok := ret.StoragePools[backendName]; ok {
 			Logc(ctx).WithFields(log.Fields{
 				"storageClass": s.GetName(),
-				"pool":         storagePool.Name,
+				"pool":         storagePool.Name(),
 				"Backend":      backendName,
 				"Method":       "ConstructExternal",
 			}).Debug("Appending to existing storage pool list for backend.")
-			ret.StoragePools[backendName] = append(storagePoolList, storagePool.Name)
+			ret.StoragePools[backendName] = append(storagePoolList, storagePool.Name())
 		} else {
 			Logc(ctx).WithFields(log.Fields{
 				"storageClass": s.GetName(),
-				"pool":         storagePool.Name,
+				"pool":         storagePool.Name(),
 				"Backend":      backendName,
 				"Method":       "ConstructExternal",
 			}).Debug("Creating new storage pool list for backend.")
 			ret.StoragePools[backendName] = make([]string, 1)
-			ret.StoragePools[backendName][0] = storagePool.Name
+			ret.StoragePools[backendName][0] = storagePool.Name()
 		}
 	}
 	for _, list := range ret.StoragePools {

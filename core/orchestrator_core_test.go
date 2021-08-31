@@ -21,7 +21,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/mocks"
+	mockpersistentstore "github.com/netapp/trident/mocks/mock_persistent_store"
+	mockstorage "github.com/netapp/trident/mocks/mock_storage"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
@@ -302,14 +303,14 @@ func validateStorageClass(
 	for _, protocol := range []config.Protocol{config.File, config.Block} {
 		for _, pool := range sc.GetStoragePoolsForProtocol(ctx(), protocol) {
 			nameFound := false
-			for _, scName := range pool.StorageClasses {
+			for _, scName := range pool.StorageClasses() {
 				if scName == name {
 					nameFound = true
 					break
 				}
 			}
 			if !nameFound {
-				t.Errorf("%s: Storage class name not found in storage pool %s", name, pool.Name)
+				t.Errorf("%s: Storage class name not found in storage pool %s", name, pool.Name())
 			}
 			matchIndex := -1
 			for i, r := range remaining {
@@ -324,7 +325,8 @@ func validateStorageClass(
 				remaining[len(remaining)-1] = nil
 				remaining = remaining[:len(remaining)-1]
 			} else {
-				t.Errorf("%s: Found unexpected match for storage class: %s:%s", name, pool.Backend.Name(), pool.Name)
+				t.Errorf("%s: Found unexpected match for storage class: %s:%s", name, pool.Backend().Name(),
+					pool.Name())
 			}
 		}
 	}
@@ -410,10 +412,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 		}
 		persistentBackend, err := orchestrator.storeClient.GetBackend(ctx(), c.name)
 		if err != nil {
-			t.Fatalf(
-				"Unable to get backend %s from persistent store: %v",
-				c.name, err,
-			)
+			t.Fatalf("Unable to get backend %s from persistent store: %v", c.name, err)
 		} else if !reflect.DeepEqual(backend.ConstructPersistent(ctx()), persistentBackend) {
 			t.Error("Wrong data stored for backend ", c.name)
 		}
@@ -797,7 +796,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 					poolMatch.Backend)
 				continue
 			}
-			for _, sc := range p.StorageClasses {
+			for _, sc := range p.StorageClasses() {
 				if sc == s.config.Name {
 					t.Errorf("%s delete: storage class name not removed from backend %s, storage pool %s",
 						s.config.Name, poolMatch.Backend, poolMatch.Pool)
@@ -1302,13 +1301,13 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		foundNewBackend := false
 		for _, pool := range pools {
 			for i, b := range previousBackends {
-				if pool.Backend == b {
+				if pool.Backend() == b {
 					t.Errorf(
 						"%s: backend %d not cleared from storage class",
 						c.name, i+1,
 					)
 				}
-				if pool.Backend == newBackend {
+				if pool.Backend() == newBackend {
 					foundNewBackend = true
 				}
 			}
@@ -1321,9 +1320,9 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 			t.Errorf("%s: storage pool for volume not found", c.name)
 			continue
 		}
-		if len(matchingPool.StorageClasses) != 1 {
+		if len(matchingPool.StorageClasses()) != 1 {
 			t.Errorf("%s: unexpected number of storage classes for main storage pool: %d", c.name,
-				len(matchingPool.StorageClasses))
+				len(matchingPool.StorageClasses()))
 		}
 		volumeBackend, err := orchestrator.getBackendByBackendUUID(volume.BackendUUID)
 		if volumeBackend == nil || err != nil {
@@ -1342,7 +1341,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		if volumeBackend != newBackend {
 			t.Errorf("%s: volume backend does not point to the new backend", c.name)
 		}
-		if volume.Pool != matchingPool.Name {
+		if volume.Pool != matchingPool.Name() {
 			t.Errorf("%s: volume does not point to the right storage pool.", c.name)
 		}
 		persistentBackend, err := orchestrator.storeClient.GetBackend(ctx(), backendName)
@@ -3083,7 +3082,7 @@ func TestGetBackend(t *testing.T) {
 	}
 
 	// Create a mocked backend
-	mockBackend := mocks.NewMockBackend(mockCtrl)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
 	// Set backend behavior we don't care about for this testcase
 	mockBackend.EXPECT().Name().Return(backendName).AnyTimes()        // Always return the fake name
 	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes() // Always return the fake uuid
@@ -3117,7 +3116,7 @@ func TestGetBackendByBackendUUID(t *testing.T) {
 	}
 
 	// Create mocked backend that returns the expected object
-	mockBackend := mocks.NewMockBackend(mockCtrl)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
 	mockBackend.EXPECT().ConstructExternal(gomock.Any()).Times(1).Return(expectedBackendExternal)
 
 	// Create an instance of the orchestrator
@@ -3150,9 +3149,9 @@ func TestListBackends(t *testing.T) {
 	expectedBackendList := []*storage.BackendExternal{expectedBackendExternal1, expectedBackendExternal2}
 
 	// Create 2 mocked backends that each return one of the expected fake objects when called
-	mockBackend1 := mocks.NewMockBackend(mockCtrl)
+	mockBackend1 := mockstorage.NewMockBackend(mockCtrl)
 	mockBackend1.EXPECT().ConstructExternal(gomock.Any()).Return(expectedBackendExternal1)
-	mockBackend2 := mocks.NewMockBackend(mockCtrl)
+	mockBackend2 := mockstorage.NewMockBackend(mockCtrl)
 	mockBackend2.EXPECT().ConstructExternal(gomock.Any()).Return(expectedBackendExternal2)
 
 	// Create an instance of the orchestrator for this test
@@ -3178,21 +3177,21 @@ func TestDeleteBackend(t *testing.T) {
 	backendUUID := "1234"
 
 	// Create a mocked storage backend
-	mockBackend := mocks.NewMockBackend(mockCtrl)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
 	// Set backend behavior we don't care about for this testcase
-	mockBackend.EXPECT().Name().Return(backendName).AnyTimes()                   // Always return the fake name
-	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()            // Always return the fake UUID
-	mockBackend.EXPECT().ConfigRef().Return("").AnyTimes()                       // Always return an empty configRef
-	mockBackend.EXPECT().GetDriverName().Return("baz").AnyTimes()                // Always return a fake driver name
-	mockBackend.EXPECT().Storage().Return(map[string]*storage.Pool{}).AnyTimes() // Always return an empty storage list
-	mockBackend.EXPECT().HasVolumes().Return(false).AnyTimes()                   // Always return no volumes
+	mockBackend.EXPECT().Name().Return(backendName).AnyTimes()                  // Always return the fake name
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()           // Always return the fake UUID
+	mockBackend.EXPECT().ConfigRef().Return("").AnyTimes()                      // Always return an empty configRef
+	mockBackend.EXPECT().GetDriverName().Return("baz").AnyTimes()               // Always return a fake driver name
+	mockBackend.EXPECT().Storage().Return(map[string]storage.Pool{}).AnyTimes() // Always return an empty storage list
+	mockBackend.EXPECT().HasVolumes().Return(false).AnyTimes()                  // Always return no volumes
 	// Set the backend behavior we do care about for this testcase
 	mockBackend.EXPECT().SetState(storage.Deleting) // The backend should be set to deleting
 	mockBackend.EXPECT().SetOnline(false)           // The backend should be set offline
 	mockBackend.EXPECT().Terminate(gomock.Any())    // The backend should be terminated
 
 	// Create a mocked persistent store client
-	mockStoreClient := mocks.NewMockStoreClient(mockCtrl)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 	// Set the store client behavior we don't care about for this testcase
 	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
 	// Set the store client behavior we do care about for this testcase
