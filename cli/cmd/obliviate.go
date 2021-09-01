@@ -72,9 +72,7 @@ func initClients() error {
 			return errors.New("obliviation canceled")
 		}
 
-		resetNamespace = clients.Namespace
-
-		log.WithField("namespace", resetNamespace).Debug("Running in a pod.")
+		log.Debug("Running in a pod.")
 
 	} else {
 
@@ -86,12 +84,7 @@ func initClients() error {
 			}
 		}
 
-		resetNamespace = TridentPodNamespace
-		if resetNamespace == "" {
-			resetNamespace = k8sClient.Namespace()
-		}
-
-		log.WithField("namespace", resetNamespace).Debug("Running outside a pod.")
+		log.Debug("Running outside a pod.")
 	}
 
 	return nil

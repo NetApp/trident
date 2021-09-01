@@ -992,5 +992,5 @@ func (i *Installer) RemoveMultiplePods(unwantedPods []v1.Pod) error {
 }
 
 func (i *Installer) ObliviateCRDs() error {
-	return cmd.ObliviateCRDs(i.client, i.tridentCRDClient, i.namespace, k8sTimeout)
+	return cmd.ObliviateCRDs(i.client, i.tridentCRDClient, k8sTimeout)
 }
