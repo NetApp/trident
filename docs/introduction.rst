@@ -10,7 +10,7 @@ applications' persistence demands using industry-standard interfaces, such as th
 Trident deploys in Kubernetes clusters as pods and provides dynamic storage
 orchestration services for your Kubernetes workloads. It enables your
 containerized applications to quickly and easily consume persistent storage from
-NetApp’s broad portfolio that includes `ONTAP`_ (AFF/FAS/Select/Cloud/Amazon FSx for ONTAP), `Element Software`_
+NetApp’s broad portfolio that includes `ONTAP`_ (AFF/FAS/Select/Cloud/Amazon FSx for NetApp ONTAP), `Element Software`_
 (NetApp HCI/SolidFire), as
 well as the `Azure NetApp Files`_ service, `Cloud Volumes Service on Google Cloud`_,
 and the `Cloud Volumes Service on AWS`_.

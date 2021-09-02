@@ -1,11 +1,11 @@
-Using Trident with Amazon FSx for ONTAP
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using Trident with Amazon FSx for NetApp ONTAP
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`Amazon FSx for ONTAP <https://www.docs.aws.amazon.com/fsx/latest/ONTAPGuide/what-is-fsx-ontap.html>`_, is a fully managed AWS service that enables customers to launch and run file systems powered by NetApp’s ONTAP storage operating system. Amazon FSx for ONTAP enables customers to leverage NetApp features, performance, and administrative capabilities they’re familiar with, while taking advantage of the simplicity, agility, security, and scalability of storing data on AWS. FSx for ONTAP supports many of ONTAP’s file system features and administration APIs.
+`Amazon FSx for NetApp ONTAP <https://www.docs.aws.amazon.com/fsx/latest/ONTAPGuide/what-is-fsx-ontap.html>`_, is a fully managed AWS service that enables customers to launch and run file systems powered by NetApp’s ONTAP storage operating system. Amazon FSx for NetApp ONTAP enables customers to leverage NetApp features, performance, and administrative capabilities they’re familiar with, while taking advantage of the simplicity, agility, security, and scalability of storing data on AWS. FSx supports many of ONTAP’s file system features and administration APIs.
 
-A file system is the primary resource in Amazon FSx, analogous to an ONTAP cluster on premises. Within each SVM you can create one or multiple volumes, which are data containers that store the files and folders in your file system. With Amazon FSx for ONTAP, Data ONTAP will be provided as a managed file system in the cloud. The new file system type is called **NetApp ONTAP**.
+A file system is the primary resource in Amazon FSx, analogous to an ONTAP cluster on premises. Within each SVM you can create one or multiple volumes, which are data containers that store the files and folders in your file system. With Amazon FSx for NetApp ONTAP, Data ONTAP will be provided as a managed file system in the cloud. The new file system type is called **NetApp ONTAP**.
 
-By using `Trident <https://netapp.io/persistent-storage-provisioner-for-kubernetes/>`_ with Amazon FSx for ONTAP, customers can ensure that their Kubernetes clusters running in Amazon Elastic Kubernetes Service (EKS) can provision Block and File persistent volumes backed by ONTAP.
+By using `Trident <https://netapp.io/persistent-storage-provisioner-for-kubernetes/>`_ with Amazon FSx for NetApp ONTAP, customers can ensure that their Kubernetes clusters running in Amazon Elastic Kubernetes Service (EKS) can provision Block and File persistent volumes backed by ONTAP.
 
 Learn about Trident
 -------------------
@@ -16,17 +16,17 @@ If you are new to Trident, familiarize yourself by using the links provided belo
 * `Requirements for using Trident <https://netapp-trident.readthedocs.io/en/latest/support/requirements.html>`_
 * `Deploying Trident <https://netapp-trident.readthedocs.io/en/latest/kubernetes/deploying/index.html>`_
 * `Perform post-deployment tasks <https://netapp-trident.readthedocs.io/en/latest/kubernetes/deploying/operator-deploy.html#post-deployment-steps>`_
-* `Best practices for configuring ONTAP, Cloud Volumes ONTAP, and Amazon FSx for ONTAP <https://netapp-trident.readthedocs.io/en/latest/dag/kubernetes/storage_configuration_trident.html#best-practices-for-configuring-ontap-cloud-volumes-ontap-and-amazon-fsx-for-ontap>`_
+* `Best practices for configuring ONTAP, Cloud Volumes ONTAP, and Amazon FSx <https://netapp-trident.readthedocs.io/en/latest/dag/kubernetes/storage_configuration_trident.html#best-practices-for-configuring-ontap-cloud-volumes-ontap-and-amazon-fsx-for-ontap>`_
 * `Integrating Trident <https://netapp-trident.readthedocs.io/en/latest/dag/kubernetes/integrating_trident.html>`_
 * `ONTAP backend configuration <https://netapp-trident.readthedocs.io/en/latest/kubernetes/operations/tasks/backends/ontap/index.html>`_
 
-You can integrate Trident with Amazon FSx for ONTAP by using the following drivers:
+You can integrate Trident with Amazon FSx for NetApp ONTAP by using the following drivers:
 
-* ``ontap-san``: Each PV provisioned is a LUN within its own Amazon FSx for ONTAP volume.
-* ``ontap-san-economy``: Each PV provisioned is a LUN with a configurable number of LUNs per Amazon FSx for ONTAP volume.
-* ``ontap-nas``: Each PV provisioned is a full Amazon FSx for ONTAP volume.
-* ``ontap-nas-economy``: Each PV provisioned is a qtree, with a configurable number of qtrees per Amazon FSx for ONTAP volume.
-* ``ontap-nas-flexgroup``: Each PV provisioned is a full Amazon FSx for ONTAP FlexGroup volume.
+* ``ontap-san``: Each PV provisioned is a LUN within its own Amazon FSx for NetApp ONTAP volume.
+* ``ontap-san-economy``: Each PV provisioned is a LUN with a configurable number of LUNs per Amazon FSx for NetApp ONTAP volume.
+* ``ontap-nas``: Each PV provisioned is a full Amazon FSx for NetApp ONTAP volume.
+* ``ontap-nas-economy``: Each PV provisioned is a qtree, with a configurable number of qtrees per Amazon FSx for NetApp ONTAP volume.
+* ``ontap-nas-flexgroup``: Each PV provisioned is a full Amazon FSx for NetApp ONTAP FlexGroup volume.
 
 Learn more about driver capabilities `here <https://netapp-trident.readthedocs.io/en/latest/dag/kubernetes/integrating_trident.html>`_.
 
@@ -39,14 +39,14 @@ Trident offers two modes of authentication:
 1.	Credential-based: You can use the ``fsxadmin`` user for your file system or the ``vsadmin`` user configured for your SVM. We recommend using the ``vsadmin`` user to configure your backend. Trident will communicate with the FSx file system using this username and password.
 2.	Certificate-based: Trident will communicate with the SVM on your FSx file system using a certificate installed on your SVM.
 
-Deployment and Configuration of Trident on EKS with Amazon FSx for ONTAP
-------------------------------------------------------------------------
+Deployment and Configuration of Trident on EKS with Amazon FSx for NetApp ONTAP
+-------------------------------------------------------------------------------
 
 Prerequisites
 ~~~~~~~~~~~~~
 
 1. An existing `Amazon EKS cluster <https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html>`_ or self-managed Kubernetes cluster with ``kubectl`` installed.
-2. An existing Amazon FSx for ONTAP file system and storage virtual machine (SVM) that is reachable from your cluster's worker nodes.
+2. An existing Amazon FSx for NetApp ONTAP file system and storage virtual machine (SVM) that is reachable from your cluster's worker nodes.
 3. Worker nodes that are prepared for `NFS <https://netapp-trident.readthedocs.io/en/latest/kubernetes/operations/tasks/worker.html#nfs>`_ and/or `iSCSI <https://netapp-trident.readthedocs.io/en/latest/kubernetes/operations/tasks/worker.html#iscsi>`_
 
 Deployment
@@ -94,6 +94,6 @@ Configuration
 
 .. warning::
 
-  When using Amazon FSx for ONTAP with Trident, the ``limitAggregateUsage`` parameter will not work with the ``vsadmin`` and ``fsxadmin`` user accounts. The configuration operation will fail if you specify this parameter.
+  When using Amazon FSx for NetApp ONTAP with Trident, the ``limitAggregateUsage`` parameter will not work with the ``vsadmin`` and ``fsxadmin`` user accounts. The configuration operation will fail if you specify this parameter.
 
 After deployment, perform the steps to `create a storage class, provision a volume, and mount the volume in a pod <https://netapp-trident.readthedocs.io/en/latest/kubernetes/deploying/operator-deploy.html#post-deployment-steps>`_.
