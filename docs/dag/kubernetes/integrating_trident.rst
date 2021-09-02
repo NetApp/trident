@@ -71,6 +71,11 @@ As we can see in the above tables, much of the functionality between the ``ontap
 Cloud Volumes ONTAP provides data control along with enterprise-class storage features for various use cases, including file shares and block-level storage serving NAS and SAN protocols (NFS, SMB / CIFS, and iSCSI). The compatible drivers for Cloud Volume ONTAP are ``ontap-nas``, ``ontap-nas-economy``, ``ontap-san`` and
 ``ontap-san-economy``. These are applicable for Cloud Volume ONTAP for AWS, Cloud Volume ONTAP for Azure, Cloud Volume ONTAP for GCP.
 
+**Choosing a backend driver for Amazon FSx for ONTAP**
+
+Amazon FSx for ONTAP enables customers to leverage NetApp features, performance, and administrative capabilities they’re familiar with, while taking advantage of the simplicity, agility, security, and scalability of storing data on AWS. FSx for ONTAP supports many of ONTAP’s file system features and administration APIs. The compatible drivers for Cloud Volume ONTAP are ``ontap-nas``, ``ontap-nas-economy``, ``ontap-nas-flexgroup``, ``ontap-san`` and
+``ontap-san-economy``.
+
 
 Element Software (NetApp HCI/SolidFire)
 ---------------------------------------

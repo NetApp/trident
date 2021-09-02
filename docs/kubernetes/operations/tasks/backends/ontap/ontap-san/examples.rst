@@ -10,6 +10,10 @@ These examples are classified into two types:
 
 2. Backends with Virtual Storage Pools.
 
+.. note::
+
+   If you are using Amazon FSx on ONTAP with Trident, the recommendation is to specify DNS names for LIFs instead of IP addresses.
+
 Minimal backend configuration for ontap drivers
 -----------------------------------------------
 

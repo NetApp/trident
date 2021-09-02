@@ -4,40 +4,44 @@
 ONTAP SAN Backend Configuration
 ###############################
 
-========================= ================================================================================================= ================================================
-Parameter                 Description                                                                                       Default
-========================= ================================================================================================= ================================================
+========================= ==================================================================================================================================== ================================================
+Parameter                 Description                                                                                                                          Default
+========================= ==================================================================================================================================== ================================================
 version                   Always 1
 storageDriverName         "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", "ontap-san", "ontap-san-economy"
-backendName               Custom name for the storage backend                                                               Driver name + "_" + dataLIF
-managementLIF             IP address of a cluster or SVM management LIF                                                     "10.0.0.1", "[2001:1234:abcd::fefe]"
-dataLIF                   IP address of protocol LIF. **Use square brackets for IPv6**. Once set this **cannot be updated** Derived by the SVM unless specified
-useCHAP                   Use CHAP to authenticate iSCSI for ONTAP SAN drivers [Boolean]                                    false
-chapInitiatorSecret       CHAP initiator secret. Required if ``useCHAP=true``                                               ""
-labels                    Set of arbitrary JSON-formatted labels to apply on volumes.                                       ""
-chapTargetInitiatorSecret CHAP target initiator secret. Required if ``useCHAP=true``                                        ""
-chapUsername              Inbound username. Required if ``useCHAP=true``                                                    ""
-chapTargetUsername        Target username. Required if ``useCHAP=true``                                                     ""
-clientCertificate         Base64-encoded value of client certificate. Used for certificate-based auth.                      ""
-clientPrivateKey          Base64-encoded value of client private key. Used for certificate-based auth.                      ""
-trustedCACertificate      Base64-encoded value of trusted CA certificate. Optional. Used for certificate-based auth.        ""
+backendName               Custom name for the storage backend                                                                                                  Driver name + "_" + dataLIF
+managementLIF             IP address of a cluster or SVM management LIF                                                                                        "10.0.0.1", "[2001:1234:abcd::fefe]"
+dataLIF                   IP address of protocol LIF. **Use square brackets for IPv6**. Once set this **cannot be updated**                                    Derived by the SVM unless specified
+useCHAP                   Use CHAP to authenticate iSCSI for ONTAP SAN drivers [Boolean]                                                                       false
+chapInitiatorSecret       CHAP initiator secret. Required if ``useCHAP=true``                                                                                  ""
+labels                    Set of arbitrary JSON-formatted labels to apply on volumes.                                                                          ""
+chapTargetInitiatorSecret CHAP target initiator secret. Required if ``useCHAP=true``                                                                           ""
+chapUsername              Inbound username. Required if ``useCHAP=true``                                                                                       ""
+chapTargetUsername        Target username. Required if ``useCHAP=true``                                                                                        ""
+clientCertificate         Base64-encoded value of client certificate. Used for certificate-based auth.                                                         ""
+clientPrivateKey          Base64-encoded value of client private key. Used for certificate-based auth.                                                         ""
+trustedCACertificate      Base64-encoded value of trusted CA certificate. Optional. Used for certificate-based auth.                                           ""
 username                  Username to connect to the cluster/SVM. Used for credential-based auth.
 password                  Password to connect to the cluster/SVM. Used for credential-based auth.
-svm                       Storage virtual machine to use                                                                    Derived if an SVM managementLIF is specified
-igroupName                Name of the igroup for SAN volumes to use                                                         "trident-<backend-UUID>"
+svm                       Storage virtual machine to use                                                                                                       Derived if an SVM managementLIF is specified
+igroupName                Name of the igroup for SAN volumes to use                                                                                            "trident-<backend-UUID>"
 username                  Username to connect to the cluster/SVM
 password                  Password to connect to the cluster/SVM
-storagePrefix             Prefix used when provisioning new volumes in the SVM. Once set this **cannot be updated**         "trident"
-limitAggregateUsage       Fail provisioning if usage is above this percentage                                               "" (not enforced by default)
-limitVolumeSize           Fail provisioning if requested volume size is above this value for the economy driver             "" (not enforced by default)
-lunsPerFlexvol            Maximum LUNs per Flexvol, must be in range [50, 200]                                              "100"
-debugTraceFlags           Debug flags to use when troubleshooting. E.g.: {"api":false, "method":true}                       null
-========================= ================================================================================================= ================================================
+storagePrefix             Prefix used when provisioning new volumes in the SVM. Once set this **cannot be updated**                                            "trident"
+limitAggregateUsage       Fail provisioning if usage is above this percentage. **Does not apply to Amazon FSx for ONTAP**                                      "" (not enforced by default)
+limitVolumeSize           Fail provisioning if requested volume size is above this value for the economy driver.                                               "" (not enforced by default)
+lunsPerFlexvol            Maximum LUNs per Flexvol, must be in range [50, 200]                                                                                 "100"
+debugTraceFlags           Debug flags to use when troubleshooting. E.g.: {"api":false, "method":true}                                                          null
+========================= ==================================================================================================================================== ================================================
 
 To communicate with the ONTAP cluster, Trident must be provided with authentication
 parameters. This could be the username/password to a security login (OR) an
 installed certificate. This is fully documented in the
 :ref:`Authentication Guide <ontap-san-authentication>`.
+
+.. warning::
+
+  If you are using an Amazon FSx for ONTAP backend, do not specify the ``limitAggregateUsage`` parameter. The ``fsxadmin`` and ``vsadmin`` roles provided by Amazon FSx for ONTAP do not contain the required access permissions to retrieve aggregate usage and limit it through Trident.
 
 .. warning::
 
