@@ -1,7 +1,7 @@
 Using Trident with Amazon FSx for NetApp ONTAP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`Amazon FSx for NetApp ONTAP <https://www.docs.aws.amazon.com/fsx/latest/ONTAPGuide/what-is-fsx-ontap.html>`_, is a fully managed AWS service that enables customers to launch and run file systems powered by NetApp’s ONTAP storage operating system. Amazon FSx for NetApp ONTAP enables customers to leverage NetApp features, performance, and administrative capabilities they’re familiar with, while taking advantage of the simplicity, agility, security, and scalability of storing data on AWS. FSx supports many of ONTAP’s file system features and administration APIs.
+`Amazon FSx for NetApp ONTAP <https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/what-is-fsx-ontap.html>`_, is a fully managed AWS service that enables customers to launch and run file systems powered by NetApp’s ONTAP storage operating system. Amazon FSx for NetApp ONTAP enables customers to leverage NetApp features, performance, and administrative capabilities they’re familiar with, while taking advantage of the simplicity, agility, security, and scalability of storing data on AWS. FSx supports many of ONTAP’s file system features and administration APIs.
 
 A file system is the primary resource in Amazon FSx, analogous to an ONTAP cluster on premises. Within each SVM you can create one or multiple volumes, which are data containers that store the files and folders in your file system. With Amazon FSx for NetApp ONTAP, Data ONTAP will be provided as a managed file system in the cloud. The new file system type is called **NetApp ONTAP**.
 
