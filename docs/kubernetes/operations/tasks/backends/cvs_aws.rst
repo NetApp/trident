@@ -213,7 +213,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     kind: StorageClass
     metadata:
       name: cvs-extreme-extra-protection
-    provisioner: csi.trident.netapp.io
+    provisioner: netapp.io/trident
     parameters:
       selector: "performance=extreme; protection=extra"
     allowVolumeExpansion: true
@@ -222,7 +222,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     kind: StorageClass
     metadata:
       name: cvs-extreme-standard-protection
-    provisioner: csi.trident.netapp.io
+    provisioner: netapp.io/trident
     parameters:
       selector: "performance=extreme; protection=standard"
     allowVolumeExpansion: true
@@ -231,7 +231,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     kind: StorageClass
     metadata:
       name: cvs-premium-extra-protection
-    provisioner: csi.trident.netapp.io
+    provisioner: netapp.io/trident
     parameters:
       selector: "performance=premium; protection=extra"
     allowVolumeExpansion: true
@@ -240,7 +240,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     kind: StorageClass
     metadata:
       name: cvs-premium
-    provisioner: csi.trident.netapp.io
+    provisioner: netapp.io/trident
     parameters:
       selector: "performance=premium; protection=standard"
     allowVolumeExpansion: true
@@ -249,7 +249,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     kind: StorageClass
     metadata:
       name: cvs-standard
-    provisioner: csi.trident.netapp.io
+    provisioner: netapp.io/trident
     parameters:
       selector: "performance=standard"
     allowVolumeExpansion: true
@@ -258,7 +258,7 @@ The first StorageClass (``cvs-extreme-extra-protection``) will map to the first 
     kind: StorageClass
     metadata:
       name: cvs-extra-protection
-    provisioner: csi.trident.netapp.io
+    provisioner: netapp.io/trident
     parameters:
       selector: "protection=extra"
     allowVolumeExpansion: true
