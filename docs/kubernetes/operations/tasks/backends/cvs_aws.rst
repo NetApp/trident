@@ -115,7 +115,6 @@ This example shows a backend file that applies the same aspects to all Trident c
         "secretKey": "rR0rUmWXfNioN1KhtHisiSAnoTherboGuskey6pU",
         "proxyURL": "http://proxy-server-hostname/",
         "nfsMountOptions": "nfsvers=3,proto=tcp,timeo=600",
-        "limitVolumeSize": "50Gi",
         "serviceLevel": "premium",
         "defaults": {
             "snapshotDir": "true",
