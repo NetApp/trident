@@ -94,7 +94,7 @@ func newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName s
 	}
 
 	nasDriver.API = api.NewClient(clientConfig)
-	nasDriver.Telemetry = &Telemetry{
+	nasDriver.telemetry = &Telemetry{
 		Plugin:        nasDriver.Name(),
 		SVM:           nasDriver.GetConfig().SVM,
 		StoragePrefix: *nasDriver.GetConfig().StoragePrefix,

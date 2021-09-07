@@ -48,6 +48,7 @@ const MinimumVolumeSizeBytes = 1000000000 // 1 GB
 type SANStorageDriver struct {
 	initialized      bool
 	Config           drivers.SolidfireStorageDriverConfig
+	telemetry        *Telemetry
 	Client           *api.Client
 	AccountID        int64
 	AccessGroups     []int64
@@ -94,10 +95,7 @@ func parseType(ctx context.Context, vTypes []api.VolType, typeName string) (qos 
 }
 
 func (d SANStorageDriver) getTelemetry() *Telemetry {
-	return &Telemetry{
-		Telemetry: tridentconfig.OrchestratorTelemetry,
-		Plugin:    d.Name(),
-	}
+	return d.telemetry
 }
 
 // Name is for returning the name of this driver
@@ -124,7 +122,7 @@ func (d *SANStorageDriver) poolName(name string) string {
 // Initialize from the provided config
 func (d *SANStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -287,6 +285,13 @@ func (d *SANStorageDriver) Initialize(
 
 	// log cluster node serial numbers asynchronously since the API can take a long time
 	go d.getNodeSerialNumbers(ctx, config.CommonStorageDriverConfig)
+
+	telemetry := tridentconfig.OrchestratorTelemetry
+	telemetry.TridentBackendUUID = backendUUID
+	d.telemetry = &Telemetry{
+		Telemetry: telemetry,
+		Plugin:    d.Name(),
+	}
 
 	d.initialized = true
 	return nil

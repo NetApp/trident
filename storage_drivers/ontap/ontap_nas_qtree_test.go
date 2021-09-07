@@ -43,7 +43,7 @@ func newNASQtreeStorageDriver() *NASQtreeStorageDriver {
 	}
 
 	nasqtreeDriver.API = api.NewClient(clientConfig)
-	nasqtreeDriver.Telemetry = &Telemetry{
+	nasqtreeDriver.telemetry = &Telemetry{
 		Plugin:        nasqtreeDriver.Name(),
 		SVM:           nasqtreeDriver.GetConfig().SVM,
 		StoragePrefix: *nasqtreeDriver.GetConfig().StoragePrefix,

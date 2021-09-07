@@ -80,7 +80,7 @@ func (d *SANStorageDriver) Protocol() string {
 // Initialize from the provided config
 func (d *SANStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 
 	// Trace logging hasn't been set up yet, so always do it here
@@ -128,6 +128,7 @@ func (d *SANStorageDriver) Initialize(
 
 	telemetry := make(map[string]string)
 	telemetry["version"] = tridentconfig.OrchestratorVersion.ShortString()
+	telemetry["backendUUID"] = backendUUID
 	telemetry["plugin"] = d.Name()
 	telemetry["storagePrefix"] = *d.Config.StoragePrefix
 

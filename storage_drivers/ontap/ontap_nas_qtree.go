@@ -45,7 +45,7 @@ type NASQtreeStorageDriver struct {
 	initialized                      bool
 	Config                           drivers.OntapStorageDriverConfig
 	API                              *api.Client
-	Telemetry                        *Telemetry
+	telemetry                        *Telemetry
 	quotaResizeMap                   map[string]bool
 	flexvolNamePrefix                string
 	flexvolExportPolicy              string
@@ -69,8 +69,7 @@ func (d *NASQtreeStorageDriver) GetAPI() *api.Client {
 }
 
 func (d *NASQtreeStorageDriver) GetTelemetry() *Telemetry {
-	d.Telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
-	return d.Telemetry
+	return d.telemetry
 }
 
 // Name is for returning the name of this driver
@@ -95,7 +94,7 @@ func (d *NASQtreeStorageDriver) FlexvolNamePrefix() string {
 // Initialize from the provided config
 func (d *NASQtreeStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -188,8 +187,10 @@ func (d *NASQtreeStorageDriver) Initialize(
 	}
 
 	// Set up the autosupport heartbeat
-	d.Telemetry = NewOntapTelemetry(ctx, d)
-	d.Telemetry.Start(ctx)
+	d.telemetry = NewOntapTelemetry(ctx, d)
+	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
+	d.telemetry.TridentBackendUUID = backendUUID
+	d.telemetry.Start(ctx)
 
 	d.initialized = true
 	return nil
@@ -220,8 +221,8 @@ func (d *NASQtreeStorageDriver) Terminate(ctx context.Context, backendUUID strin
 		}
 	}
 
-	if d.Telemetry != nil {
-		d.Telemetry.Stop()
+	if d.telemetry != nil {
+		d.telemetry.Stop()
 	}
 
 	if d.housekeepingWaitGroup != nil {

@@ -56,6 +56,7 @@ type NFSStorageDriver struct {
 	initialized         bool
 	Config              drivers.AWSNFSStorageDriverConfig
 	API                 *api.Client
+	telemetry           *Telemetry
 	apiVersion          *utils.Version
 	sdeVersion          *utils.Version
 	tokenRegexp         *regexp.Regexp
@@ -79,10 +80,7 @@ func (d *NFSStorageDriver) GetAPI() *api.Client {
 }
 
 func (d *NFSStorageDriver) getTelemetry() *Telemetry {
-	return &Telemetry{
-		Telemetry: tridentconfig.OrchestratorTelemetry,
-		Plugin:    d.Name(),
-	}
+	return d.telemetry
 }
 
 // Name returns the name of this driver
@@ -144,7 +142,7 @@ func (d *NFSStorageDriver) defaultTimeout() time.Duration {
 // Initialize initializes this driver from the provided config
 func (d *NFSStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -178,6 +176,13 @@ func (d *NFSStorageDriver) Initialize(
 
 	if err = d.validate(ctx); err != nil {
 		return fmt.Errorf("error validating %s driver. %v", d.Name(), err)
+	}
+
+	telemetry := tridentconfig.OrchestratorTelemetry
+	telemetry.TridentBackendUUID = backendUUID
+	d.telemetry = &Telemetry{
+		Telemetry: telemetry,
+		Plugin:    d.Name(),
 	}
 
 	d.initialized = true

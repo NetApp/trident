@@ -196,7 +196,7 @@ func newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrNam
 	}
 
 	sanEcoDriver.API = api.NewClient(clientConfig)
-	sanEcoDriver.Telemetry = &Telemetry{
+	sanEcoDriver.telemetry = &Telemetry{
 		Plugin:        sanEcoDriver.Name(),
 		SVM:           sanEcoDriver.GetConfig().SVM,
 		StoragePrefix: *sanEcoDriver.GetConfig().StoragePrefix,
@@ -489,7 +489,7 @@ func TestOntapSanEconomyTerminate(t *testing.T) {
 
 			sanEcoStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, port, vserverAggrName)
 			sanEcoStorageDriver.Config.IgroupName = driverInfo.igroupName
-			sanEcoStorageDriver.Telemetry = nil
+			sanEcoStorageDriver.telemetry = nil
 			ontapSanDrivers = append(ontapSanDrivers, *sanEcoStorageDriver)
 		}
 

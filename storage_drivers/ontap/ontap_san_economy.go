@@ -198,7 +198,7 @@ type SANEconomyStorageDriver struct {
 	Config            drivers.OntapStorageDriverConfig
 	ips               []string
 	API               *api.Client
-	Telemetry         *Telemetry
+	telemetry         *Telemetry
 	flexvolNamePrefix string
 	helper            *LUNHelper
 	lunsPerFlexvol    int
@@ -216,8 +216,7 @@ func (d *SANEconomyStorageDriver) GetAPI() *api.Client {
 }
 
 func (d *SANEconomyStorageDriver) GetTelemetry() *Telemetry {
-	d.Telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
-	return d.Telemetry
+	return d.telemetry
 }
 
 // Name is for returning the name of this driver
@@ -332,8 +331,10 @@ func (d *SANEconomyStorageDriver) Initialize(
 	}
 
 	// Set up the autosupport heartbeat
-	d.Telemetry = NewOntapTelemetry(ctx, d)
-	d.Telemetry.Start(ctx)
+	d.telemetry = NewOntapTelemetry(ctx, d)
+	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
+	d.telemetry.TridentBackendUUID = backendUUID
+	d.telemetry.Start(ctx)
 
 	d.initialized = true
 	return nil
@@ -356,8 +357,8 @@ func (d *SANEconomyStorageDriver) Terminate(ctx context.Context, _ string) {
 		cleanIgroups(ctx, d.API, d.Config.IgroupName)
 	}
 
-	if d.Telemetry != nil {
-		d.Telemetry.Stop()
+	if d.telemetry != nil {
+		d.telemetry.Stop()
 	}
 
 	d.initialized = false

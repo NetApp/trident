@@ -43,7 +43,7 @@ func newTestOntapNASFGDriver() *NASFlexGroupStorageDriver {
 	}
 
 	nasfgDriver.API = api.NewClient(clientConfig)
-	nasfgDriver.Telemetry = &Telemetry{
+	nasfgDriver.telemetry = &Telemetry{
 		Plugin:        nasfgDriver.Name(),
 		SVM:           nasfgDriver.GetConfig().SVM,
 		StoragePrefix: *nasfgDriver.GetConfig().StoragePrefix,

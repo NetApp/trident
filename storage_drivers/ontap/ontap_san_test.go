@@ -91,7 +91,7 @@ func newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName s
 	}
 
 	sanDriver.API = api.NewClient(clientConfig)
-	sanDriver.Telemetry = &Telemetry{
+	sanDriver.telemetry = &Telemetry{
 		Plugin:        sanDriver.Name(),
 		SVM:           sanDriver.GetConfig().SVM,
 		StoragePrefix: *sanDriver.GetConfig().StoragePrefix,
@@ -336,7 +336,7 @@ func TestOntapSanTerminate(t *testing.T) {
 
 			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName)
 			sanStorageDriver.Config.IgroupName = driverInfo.igroupName
-			sanStorageDriver.Telemetry = nil
+			sanStorageDriver.telemetry = nil
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
 		}
 

@@ -121,7 +121,7 @@ func newTestOntapNASDriverAbstraction(vserverAdminHost, vserverAdminPort, vserve
 	}
 
 	nasDriver.API = ontapAPI
-	nasDriver.Telemetry = &TelemetryAbstraction{
+	nasDriver.telemetry = &TelemetryAbstraction{
 		Plugin:        nasDriver.Name(),
 		SVM:           nasDriver.GetConfig().SVM,
 		StoragePrefix: *nasDriver.GetConfig().StoragePrefix,

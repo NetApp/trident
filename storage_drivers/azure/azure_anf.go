@@ -61,6 +61,7 @@ var (
 type NFSStorageDriver struct {
 	initialized         bool
 	Config              drivers.AzureNFSStorageDriverConfig
+	telemetry           *Telemetry
 	SDK                 *sdk.Client
 	tokenRegexp         *regexp.Regexp
 	pools               map[string]storage.Pool
@@ -81,10 +82,7 @@ func (d *NFSStorageDriver) GetSDK() *sdk.Client {
 }
 
 func (d *NFSStorageDriver) getTelemetry() *Telemetry {
-	return &Telemetry{
-		Telemetry: tridentconfig.OrchestratorTelemetry,
-		Plugin:    d.Name(),
-	}
+	return d.telemetry
 }
 
 // Name returns the name of this driver
@@ -149,7 +147,7 @@ func (d *NFSStorageDriver) defaultTimeout() time.Duration {
 // Initialize initializes this driver from the provided config
 func (d *NFSStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -195,6 +193,13 @@ func (d *NFSStorageDriver) Initialize(
 		volumeCreateTimeout = time.Duration(i) * time.Second
 	}
 	d.volumeCreateTimeout = volumeCreateTimeout
+
+	telemetry := tridentconfig.OrchestratorTelemetry
+	telemetry.TridentBackendUUID = backendUUID
+	d.telemetry = &Telemetry{
+		Telemetry: telemetry,
+		Plugin:    d.Name(),
+	}
 
 	Logc(ctx).WithFields(log.Fields{
 		"StoragePrefix":              *config.StoragePrefix,

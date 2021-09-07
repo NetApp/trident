@@ -21,9 +21,10 @@ type DriverContext string
 type Platform string
 
 type Telemetry struct {
-	TridentVersion  string `json:"version"`
-	Platform        string `json:"platform"`
-	PlatformVersion string `json:"platformVersion"`
+	TridentVersion     string `json:"version"`
+	TridentBackendUUID string `json:"backendUUID"`
+	Platform           string `json:"platform"`
+	PlatformVersion    string `json:"platformVersion"`
 }
 
 type PersistentStateVersion struct {

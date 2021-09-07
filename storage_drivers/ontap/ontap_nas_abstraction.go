@@ -46,7 +46,7 @@ type NASStorageDriverAbstraction struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
 	API         api.OntapAPI
-	Telemetry   *TelemetryAbstraction
+	telemetry   *TelemetryAbstraction
 
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
@@ -61,8 +61,7 @@ func (d *NASStorageDriverAbstraction) GetAPI() api.OntapAPI {
 }
 
 func (d *NASStorageDriverAbstraction) GetTelemetry() *TelemetryAbstraction {
-	d.Telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
-	return d.Telemetry
+	return d.telemetry
 }
 
 // Name is for returning the name of this driver
@@ -83,7 +82,7 @@ func (d *NASStorageDriverAbstraction) BackendName() string {
 // Initialize from the provided config
 func (d *NASStorageDriverAbstraction) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -118,8 +117,10 @@ func (d *NASStorageDriverAbstraction) Initialize(
 	}
 
 	// Set up the autosupport heartbeat
-	d.Telemetry = NewOntapTelemetryAbstraction(ctx, d)
-	d.Telemetry.Start(ctx)
+	d.telemetry = NewOntapTelemetryAbstraction(ctx, d)
+	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
+	d.telemetry.TridentBackendUUID = backendUUID
+	d.telemetry.Start(ctx)
 
 	d.initialized = true
 	return nil
@@ -143,8 +144,8 @@ func (d *NASStorageDriverAbstraction) Terminate(ctx context.Context, backendUUID
 			Logc(ctx).Warn(err)
 		}
 	}
-	if d.Telemetry != nil {
-		d.Telemetry.Stop()
+	if d.telemetry != nil {
+		d.telemetry.Stop()
 	}
 	d.initialized = false
 }
