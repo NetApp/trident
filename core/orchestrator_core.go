@@ -2958,7 +2958,7 @@ func (o *TridentOrchestrator) PublishVolume(
 	if err != nil {
 		return err
 	}
-	if o.updateVolumeOnPersistentStore(ctx, volume); err != nil {
+	if err := o.updateVolumeOnPersistentStore(ctx, volume); err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"volume": volume.Config.Name,
 		}).Error("Unable to update the volume in persistent store.")

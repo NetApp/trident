@@ -3211,3 +3211,69 @@ func TestDeleteBackend(t *testing.T) {
 	_, ok := orchestrator.backends[backendUUID]
 	assert.False(t, ok, "Backend was not properly deleted")
 }
+
+func TestPublishVolume(t *testing.T) {
+	// Boilerplate mocking code
+	mockCtrl := gomock.NewController(t)
+
+	// Set fake values
+	backendUUID := "1234"
+
+	// Create mocked backend that returns the expected object
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend.EXPECT().PublishVolume(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Times(1).Return(nil)
+
+	// Create an instance of the orchestrator
+	orchestrator := getOrchestrator(t)
+	orchestrator.storeClient = mockStoreClient
+	// Add the mocked backend to the orchestrator
+	orchestrator.backends[backendUUID] = mockBackend
+	volConfig := tu.GenerateVolumeConfig("fake-volume", 1, "fast", config.File)
+	orchestrator.volumes["fake-volume"] = &storage.Volume{BackendUUID: backendUUID, Config: volConfig}
+
+	// Run the test
+	err := orchestrator.PublishVolume(ctx(), "fake-volume", &utils.VolumePublishInfo{})
+
+	// Verify the results
+	assert.Nilf(t, err, "Error publishing volume; %v", err)
+}
+
+func TestPublishVolumeFailedToUpdatePersistentStore(t *testing.T) {
+	// Boilerplate mocking code
+	mockCtrl := gomock.NewController(t)
+
+	// Set fake values
+	backendUUID := "1234"
+	expectedError := fmt.Errorf("Failure")
+
+	// Create mocked backend that returns the expected object
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend.EXPECT().PublishVolume(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Times(1).Return(expectedError)
+
+	// Create an instance of the orchestrator
+	orchestrator := getOrchestrator(t)
+	orchestrator.storeClient = mockStoreClient
+	// Add the mocked backend to the orchestrator
+	orchestrator.backends[backendUUID] = mockBackend
+	volConfig := tu.GenerateVolumeConfig("fake-volume", 1, "fast", config.File)
+	orchestrator.volumes["fake-volume"] = &storage.Volume{BackendUUID: backendUUID, Config: volConfig}
+
+	// Run the test
+	err := orchestrator.PublishVolume(ctx(), "fake-volume", &utils.VolumePublishInfo{})
+
+	// Verify the results
+	if err != expectedError {
+		t.Log("Did not get expected error from Publish Volume")
+		t.Fail()
+	}
+}
