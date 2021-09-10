@@ -211,9 +211,7 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 			Logc(ctx).WithFields(errorLogFields).Warn("Problem adding backend.")
 
 			if newBackendExternal != nil {
-				newBackend, _ := o.validateAndCreateBackendFromConfig(ctx, serializedConfig, b.BackendUUID)
-				newBackend.SetBackendUUID(b.BackendUUID)
-				newBackend.SetConfigRef(b.ConfigRef)
+				newBackend, _ := o.validateAndCreateBackendFromConfig(ctx, serializedConfig, b.ConfigRef, b.BackendUUID)
 				newBackend.SetName(b.Name)
 				newBackendExternal.Name = b.Name // have to set it explicitly, so it's not ""
 				o.backends[newBackendExternal.BackendUUID] = newBackend
@@ -866,11 +864,7 @@ func (o *TridentOrchestrator) addBackend(
 		}
 	}()
 
-	backend, err = o.validateAndCreateBackendFromConfig(ctx, configJSON, backendUUID)
-	if backend != nil {
-		backend.SetBackendUUID(backendUUID)
-		backend.SetConfigRef(configRef)
-	}
+	backend, err = o.validateAndCreateBackendFromConfig(ctx, configJSON, configRef, backendUUID)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"err":         err.Error(),
@@ -957,7 +951,7 @@ func (o *TridentOrchestrator) addBackend(
 
 // validateAndCreateBackendFromConfig validates config and creates backend based on Config
 func (o *TridentOrchestrator) validateAndCreateBackendFromConfig(
-	ctx context.Context, configJSON string, backendUUID string,
+	ctx context.Context, configJSON string, configRef string, backendUUID string,
 ) (backendExternal storage.Backend, err error) {
 
 	var backendSecret map[string]string
@@ -990,7 +984,7 @@ func (o *TridentOrchestrator) validateAndCreateBackendFromConfig(
 		}
 	}
 
-	return factory.NewStorageBackendForConfig(ctx, configInJSON, backendUUID, commonConfig, backendSecret)
+	return factory.NewStorageBackendForConfig(ctx, configInJSON, configRef, backendUUID, commonConfig, backendSecret)
 }
 
 // UpdateBackend updates an existing backend.
@@ -1148,12 +1142,10 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	Logc(ctx).WithFields(logFields).Debug(">>>>>> updateBackendByBackendUUID")
 
 	// Second, validate the update.
-	backend, err = o.validateAndCreateBackendFromConfig(ctx, configJSON, backendUUID)
+	backend, err = o.validateAndCreateBackendFromConfig(ctx, configJSON, callingConfigRef, backendUUID)
 	if err != nil {
 		return nil, err
 	}
-	backend.SetBackendUUID(backendUUID)
-	backend.SetConfigRef(callingConfigRef)
 	if err = o.validateBackendUpdate(originalBackend, backend); err != nil {
 		return nil, err
 	}

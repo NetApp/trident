@@ -62,7 +62,7 @@ func ValidateCommonSettings(ctx context.Context, configJSON string) (commonConfi
 	return commonConfig, configInJSON, nil
 }
 
-func NewStorageBackendForConfig(ctx context.Context, configJSON, backendUUID string,
+func NewStorageBackendForConfig(ctx context.Context, configJSON, configRef, backendUUID string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string) (sb storage.Backend,
 	err error) {
 
@@ -126,24 +126,28 @@ func NewStorageBackendForConfig(ctx context.Context, configJSON, backendUUID str
 
 		Logc(ctx).WithField("error", err).Error("Could not initialize storage driver.")
 
-		return storage.NewFailedStorageBackend(ctx, storageDriver),
-			fmt.Errorf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, err)
+		sb = storage.NewFailedStorageBackend(ctx, storageDriver)
+		err = fmt.Errorf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, err)
 	} else {
 		Logc(ctx).WithField("driver", commonConfig.StorageDriverName).Info("Storage driver initialized.")
+
+		// Create the backend object.  If this calls the driver and fails, return a 'failed' backend object.
+		if sb, err = storage.NewStorageBackend(ctx, storageDriver); err != nil {
+
+			Logc(ctx).WithField("error", err).Error("Could not create storage backend.")
+
+			sb = storage.NewFailedStorageBackend(ctx, storageDriver)
+			err = fmt.Errorf("problem creating storage backend '%s': %v", commonConfig.StorageDriverName, err)
+		} else {
+			Logc(ctx).WithField("backend", sb).Info("Created new storage backend.")
+		}
 	}
 
-	// Create the backend object.  If this calls the driver and fails, return a 'failed' backend object.
-	if sb, err = storage.NewStorageBackend(ctx, storageDriver); err != nil {
-
-		Logc(ctx).WithField("error", err).Error("Could not create storage backend.")
-
-		return storage.NewFailedStorageBackend(ctx, storageDriver),
-			fmt.Errorf("problem creating storage backend '%s': %v", commonConfig.StorageDriverName, err)
-	} else {
-		Logc(ctx).WithField("backend", sb).Info("Created new storage backend.")
+	if err == nil {
+		sb.SetState(storage.Online)
 	}
-
-	sb.SetState(storage.Online)
+	sb.SetBackendUUID(backendUUID)
+	sb.SetConfigRef(configRef)
 
 	return sb, err
 }

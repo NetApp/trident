@@ -26,10 +26,8 @@ func TestSupportsFeature(t *testing.T) {
 		plugin := Plugin{kubeVersion: &tc.versionInfo}
 		supported := plugin.SupportsFeature(context.Background(), csi.ExpandCSIVolumes)
 		if tc.expected {
-			print("bluh\n")
 			assert.True(t, supported, "Expected true")
 		} else {
-			print("bar\n")
 			assert.False(t, supported, "Expected false")
 		}
 	}
