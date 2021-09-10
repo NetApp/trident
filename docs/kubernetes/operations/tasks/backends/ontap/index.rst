@@ -1,6 +1,6 @@
-############################
-ONTAP (AFF/FAS/Select/Cloud)
-############################
+#################################################
+ONTAP (AFF/FAS/Select/Cloud/Amazon FSx for ONTAP)
+#################################################
 
 This section of the documentation tells you all you need to know on
 creating an ONTAP backend. These instructions apply for all ONTAP

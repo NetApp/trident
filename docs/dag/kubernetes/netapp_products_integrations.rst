@@ -18,13 +18,17 @@ For more information about Trident, visit `ThePub <https://netapp.io/persistent-
 ONTAP
 -----
 
-ONTAP is NetApp’s multiprotocol, unified storage operating system that provides advanced data management capabilities for any application. ONTAP systems may have all-flash, hybrid, or all-HDD configurations and offer many different deployment models, including engineered hardware (FAS and AFF), white-box (ONTAP Select), and cloud-only (Cloud Volumes ONTAP). Trident supports all the above mentioned ONTAP deployment models.
+ONTAP is NetApp’s multiprotocol, unified storage operating system that provides advanced data management capabilities for any application. ONTAP systems may have all-flash, hybrid, or all-HDD configurations and offer many different deployment models, including engineered hardware (FAS and AFF), white-box (ONTAP Select), cloud-only (Cloud Volumes ONTAP) and running as a file system in the cloud (Amazon FSx for ONTAP). Trident supports all the above mentioned ONTAP deployment models.
 
 Cloud Volumes ONTAP
 ===================
 
 `Cloud Volumes ONTAP <http://cloud.netapp.com/ontap-cloud?utm_source=GitHub&utm_campaign=Trident>`_ is a software-only storage appliance that runs the ONTAP data management software in the cloud. You can use Cloud Volumes ONTAP for production workloads, disaster recovery, DevOps, file shares, and database management.It extends enterprise storage to the cloud by offering storage efficiencies, high availability, data replication, data tiering and application consistency.
 
+Amazon FSx for ONTAP
+====================
+
+`Amazon FSx for ONTAP <https://www.docs.aws.amazon.com/fsx/latest/ONTAPGuide/what-is-fsx-ontap.html>`_ is a fully managed AWS service that enables customers to launch and run file systems powered by NetApp’s ONTAP storage operating system. FSx for ONTAP enables customers to leverage NetApp features, performance, and administrative capabilities they’re familiar with, while taking advantage of the simplicity, agility, security, and scalability of storing data on AWS. FSx for ONTAP supports many of ONTAP’s file system features and administration APIs.
 
 Element Software
 ----------------

@@ -4,7 +4,7 @@ Trident for Kubernetes
 Trident integrates natively with `Kubernetes`_ and its
 `Persistent Volume framework`_ to seamlessly provision and manage volumes
 from systems running any combination of NetApp's
-`ONTAP`_ (AFF/FAS/Select/Cloud),
+`ONTAP`_ (AFF/FAS/Select/Cloud/Amazon FSx for NetApp ONTAP),
 `Element Software`_ (NetApp HCI/SolidFire),
 plus our
 `Azure NetApp Files`_ service in Azure,
@@ -101,6 +101,7 @@ and is a great way to get started on the Trident journey.
     upgrades/index
     deploying/index
     operations/tasks/index
+    fsx
     concepts/index
     known-issues
     troubleshooting

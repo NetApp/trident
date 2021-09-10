@@ -1,8 +1,8 @@
 .. _storage_configuration_trident:
 
 *********************************
-*********************************
 Storage Configuration for Trident
+*********************************
 
 Each storage platform in NetApp's portfolio has unique capabilities that benefit applications, containerized or not. Trident works with each of the following platforms: ONTAP, Element Software, Cloud Volumes ONTAP, Cloud Volumes Service for AWS and Google Cloud, and Azure NetApp Files.  There is not one platform which is better suited for all applications and scenarios than another, however, the needs of the application and the team administering the device should be taken into account when choosing a platform.
 
@@ -33,8 +33,8 @@ Some example application best practices guides:
 
 Not all applications will have specific guidelines, it's important to work with your NetApp team and to refer to the `library <https://www.netapp.com/us/search/index.aspx?i=1&q1=Documents&x1=t1>`_ for the most up-to-date recommendations and guides.
 
-Best practices for configuring ONTAP and Cloud Volumes ONTAP
-============================================================
+Best practices for configuring ONTAP, Cloud Volumes ONTAP, and Amazon FSx for ONTAP
+===================================================================================
 
 The following recommendations are guidelines for configuring ONTAP for containerized workloads which consume volumes that are dynamically provisioned by Trident. Each should be considered and evaluated for appropriateness in your environment.
 
@@ -82,6 +82,9 @@ In addition to controlling the volume count at the storage array, Kubernetes cap
 
 Limit the maximum size of volumes created by Trident
 ----------------------------------------------------
+
+.. note::
+   This does not apply to Cloud Volumes ONTAP and Amazon FSx for ONTAP.
 
 To configure the maximum size for volumes that can be created by Trident, use the ``limitVolumeSize`` parameter in your
 ``backend.json`` definition.

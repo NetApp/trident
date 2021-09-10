@@ -4,31 +4,31 @@
 ONTAP NAS Backend Configuration
 ###############################
 
-========================= ================================================================================================= ================================================
-Parameter                 Description                                                                                       Default
-========================= ================================================================================================= ================================================
+========================= =========================================================================================================== ================================================
+Parameter                 Description                                                                                                 Default
+========================= =========================================================================================================== ================================================
 version                   Always 1
 storageDriverName         "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", "ontap-san", "ontap-san-economy"
-backendName               Custom name for the storage backend                                                               Driver name + "_" + dataLIF
-managementLIF             IP address of a cluster or SVM management LIF                                                     "10.0.0.1", "[2001:1234:abcd::fefe]"
-dataLIF                   IP address of protocol LIF. **Use square brackets for IPv6**. Once set this **cannot be updated** Derived by the SVM unless specified
-svm                       Storage virtual machine to use                                                                    Derived if an SVM managementLIF is specified
-labels                    Set of arbitrary JSON-formatted labels to apply on volumes.                                       ""
-autoExportPolicy          Enable automatic export policy creation and updating [Boolean]                                    false
-autoExportCIDRs           List of CIDRs to filter Kubernetes' node IPs against when autoExportPolicy is enabled             ["0.0.0.0/0", "::/0"]
-clientCertificate         Base64-encoded value of client certificate. Used for certificate-based auth.                      ""
-clientPrivateKey          Base64-encoded value of client private key. Used for certificate-based auth.                      ""
-trustedCACertificate      Base64-encoded value of trusted CA certificate. Optional. Used for certificate-based auth.        ""
+backendName               Custom name for the storage backend                                                                         Driver name + "_" + dataLIF
+managementLIF             IP address of a cluster or SVM management LIF                                                               "10.0.0.1", "[2001:1234:abcd::fefe]"
+dataLIF                   IP address of protocol LIF. **Use square brackets for IPv6**. Once set this **cannot be updated**           Derived by the SVM unless specified
+svm                       Storage virtual machine to use                                                                              Derived if an SVM managementLIF is specified
+labels                    Set of arbitrary JSON-formatted labels to apply on volumes.                                                 ""
+autoExportPolicy          Enable automatic export policy creation and updating [Boolean]                                              false
+autoExportCIDRs           List of CIDRs to filter Kubernetes' node IPs against when autoExportPolicy is enabled                       ["0.0.0.0/0", "::/0"]
+clientCertificate         Base64-encoded value of client certificate. Used for certificate-based auth.                                ""
+clientPrivateKey          Base64-encoded value of client private key. Used for certificate-based auth.                                ""
+trustedCACertificate      Base64-encoded value of trusted CA certificate. Optional. Used for certificate-based auth.                  ""
 username                  Username to connect to the cluster/SVM. Used for credential-based auth.
 password                  Password to connect to the cluster/SVM. Used for credential-based auth.
-storagePrefix             Prefix used when provisioning new volumes in the SVM. Once set this **cannot be updated**         "trident"
-limitAggregateUsage       Fail provisioning if usage is above this percentage                                               "" (not enforced by default)
-limitVolumeSize           Fail provisioning if requested volume size is above this value                                    "" (not enforced by default)
-nfsMountOptions           Comma-separated list of NFS mount options                                                         ""
-qtreesPerFlexvol          Maximum qtrees per FlexVol, must be in range [50, 300]                                            "200"
-debugTraceFlags           Debug flags to use when troubleshooting. E.g.: {"api":false, "method":true}                       null
-useREST                   Boolean parameter to use ONTAP REST APIs. **Tech-preview**                                            false
-========================= ================================================================================================= ================================================
+storagePrefix             Prefix used when provisioning new volumes in the SVM. Once set this **cannot be updated**                   "trident"
+limitAggregateUsage       Fail provisioning if usage is above this percentage. **Does not apply to Amazon FSx for ONTAP**             "" (not enforced by default)
+limitVolumeSize           Fail provisioning if requested volume size is above this value.                                             "" (not enforced by default)
+nfsMountOptions           Comma-separated list of NFS mount options                                                                   ""
+qtreesPerFlexvol          Maximum qtrees per FlexVol, must be in range [50, 300]                                                      "200"
+debugTraceFlags           Debug flags to use when troubleshooting. E.g.: {"api":false, "method":true}                                 null
+useREST                   Boolean parameter to use ONTAP REST APIs. **Tech-preview**                                                  false
+========================= =========================================================================================================== ================================================
 
 .. note::
 
@@ -38,6 +38,10 @@ To communicate with the ONTAP cluster, Trident must be provided with authenticat
 parameters. This could be the username/password to a security login (OR) an
 installed certificate. This is fully documented in the
 :ref:`Authentication Guide <ontap-nas-authentication>`.
+
+.. warning::
+
+   If you are using an Amazon FSx for ONTAP backend, do not specify the ``limitAggregateUsage`` parameter. The ``fsxadmin`` and ``vsadmin`` roles provided by Amazon FSx for ONTAP do not contain the required access permissions to retrieve aggregate usage and limit it through Trident.
 
 .. warning::
 
