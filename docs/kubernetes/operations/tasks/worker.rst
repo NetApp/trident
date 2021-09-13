@@ -135,7 +135,8 @@ Keep in mind the following considerations when using iSCSI volumes:
 
      sudo tee /etc/multipath.conf <<-'EOF'
      defaults {
-         user_friendly_names yes
+         .
+         .
          find_multipaths no
      }
      EOF

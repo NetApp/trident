@@ -81,7 +81,8 @@ iSCSI
 
        sudo tee /etc/multipath.conf <<-'EOF'
        defaults {
-           user_friendly_names yes
+           .
+           .
            find_multipaths no
        }
        EOF
