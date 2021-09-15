@@ -46,12 +46,31 @@ type OntapAPI interface {
 		computerName string, eventDescription string, eventID int, eventSource string, logLevel int)
 
 	ExportPolicyCreate(ctx context.Context, policy string) error
-	ExportPolicyDestroy(ctx context.Context, policy string) (*APIResponse, error)
+	ExportPolicyDestroy(ctx context.Context, policy string) error
 	ExportPolicyExists(ctx context.Context, policyName string) (bool, error)
-	ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRule string) (*APIResponse, error)
-	ExportRuleDestroy(ctx context.Context, policyName string, ruleIndex int) (*APIResponse, error)
+	ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRule string) error
+	ExportRuleDestroy(ctx context.Context, policyName string, ruleIndex int) error
 	ExportRuleList(ctx context.Context, policyName string) (map[string]int, error)
 
+	FlexgroupCreate(ctx context.Context, volume Volume) error
+	FlexgroupExists(ctx context.Context, volumeName string) (bool, error)
+	FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error)
+	FlexgroupDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error
+	FlexgroupSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error
+	FlexgroupModifyUnixPermissions(ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string) error
+	FlexgroupMount(ctx context.Context, name, junctionPath string) error
+	FlexgroupListByPrefix(ctx context.Context, prefix string) (Volumes, error)
+	FlexgroupDestroy(ctx context.Context, volumeName string, force bool) error
+	FlexgroupSetSize(ctx context.Context, name, newSize string) error
+	FlexgroupSize(ctx context.Context, volumeName string) (uint64, error)
+	FlexgroupUnmount(ctx context.Context, name string, force bool) error
+	FlexgroupUsedSize(ctx context.Context, volumeName string) (int, error)
+	FlexgroupModifyExportPolicy(ctx context.Context, volumeName, policyName string) error
+	FlexgroupSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error
+	FlexgroupSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) error
+	FlexgroupCloneSplitStart(ctx context.Context, cloneName string) error
+	FlexgroupSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error)
+	FlexgroupSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error
 	GetSVMAggregateAttributes(ctx context.Context) (map[string]string, error)
 	GetSVMAggregateNames(ctx context.Context) ([]string, error)
 	GetSVMAggregateSpace(ctx context.Context, aggregate string) ([]SVMAggregateSpace, error)
@@ -59,36 +78,37 @@ type OntapAPI interface {
 	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 
-	SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) (*APIResponse, error)
+	SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) error
 	IsSVMDRCapable(ctx context.Context) (bool, error)
 
-	SnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) (*APIResponse, error)
-	SnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) (*APIResponse, error)
-	SnapshotList(ctx context.Context, sourceVolume string) (Snapshots, *APIResponse, error)
-	SnapshotRestoreVolume(ctx context.Context, snapshotName, sourceVolume string) (*APIResponse, error)
+	SnapshotRestoreVolume(ctx context.Context, snapshotName, sourceVolume string) error
+	SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, sourceVolume string) error
 
 	SupportsFeature(ctx context.Context, feature feature) bool
 	ValidateAPIVersion(ctx context.Context) error
 
-	VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) (*APIResponse, error)
-	VolumeCloneSplitStart(ctx context.Context, cloneName string) (*APIResponse, error)
+	VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error
+	VolumeCloneSplitStart(ctx context.Context, cloneName string) error
 
-	VolumeCreate(ctx context.Context, volume Volume) (*APIResponse, error)
-	VolumeDestroy(ctx context.Context, volumeName string, force bool) (*APIResponse, error)
-	VolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) (*APIResponse, error)
+	VolumeCreate(ctx context.Context, volume Volume) error
+	VolumeDestroy(ctx context.Context, volumeName string, force bool) error
+	VolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
-	VolumeInfo(ctx context.Context, volumeName string) (*Volume, *APIResponse, error)
-	VolumeListByPrefix(ctx context.Context, prefix string) (Volumes, *APIResponse, error)
-	VolumeListBySnapshotParent(ctx context.Context, snapshotName, sourceVolume string) (VolumeNameList, *APIResponse, error)
-	VolumeModifyExportPolicy(ctx context.Context, volumeName, policyName string) (*APIResponse, error)
-	VolumeModifyUnixPermissions(ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string) (*APIResponse, error)
-	VolumeMount(ctx context.Context, name, junctionPath string) (*APIResponse, error)
+	VolumeInfo(ctx context.Context, volumeName string) (*Volume, error)
+	VolumeListByPrefix(ctx context.Context, prefix string) (Volumes, error)
+	VolumeListBySnapshotParent(ctx context.Context, snapshotName, sourceVolume string) (VolumeNameList, error)
+	VolumeModifyExportPolicy(ctx context.Context, volumeName, policyName string) error
+	VolumeModifyUnixPermissions(ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string) error
+	VolumeMount(ctx context.Context, name, junctionPath string) error
 	VolumeRename(ctx context.Context, originalName, newName string) error
 	VolumeSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error
-	VolumeSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) (*APIResponse, error)
-	VolumeSetSize(ctx context.Context, name, newSize string) (*APIResponse, error)
-	VolumeSize(ctx context.Context, volumeName string) (int, error)
+	VolumeSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) error
+	VolumeSetSize(ctx context.Context, name, newSize string) error
+	VolumeSize(ctx context.Context, volumeName string) (uint64, error)
 	VolumeUsedSize(ctx context.Context, volumeName string) (int, error)
+	VolumeSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error
+	VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error)
+	VolumeSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error
 
 	TieringPolicyValue(ctx context.Context) string
 }

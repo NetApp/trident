@@ -168,17 +168,24 @@ func NewRestClientFromOntapConfig(ctx context.Context, ontapConfig *drivers.Onta
 		DebugTraceFlags:      ontapConfig.DebugTraceFlags,
 	})
 
+	if err != nil {
+		return nil, fmt.Errorf("unable to get REST client for ontap: %v", err)
+	}
+
+	if client == nil {
+		return nil, fmt.Errorf("unable to get REST client for ontap: unexpected error")
+	}
+
 	apiREST, err := NewOntapAPIREST(*client)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get zapi client for ontap: %v", err)
+		return nil, fmt.Errorf("unable to get REST API client for ontap: %v", err)
 	}
 
 	return apiREST, nil
 }
 
 var (
-	//MinimumONTAPVersion = utils.MustParseSemantic("9.8.0") // TODO switch to 9.8.0
-	MinimumONTAPVersion = utils.MustParseSemantic("9.7.0") // TODO switch to 9.8.0
+	MinimumONTAPVersion = utils.MustParseSemantic("9.8.0")
 )
 
 // SupportsFeature returns true if the Ontap version supports the supplied feature
@@ -262,7 +269,7 @@ func WithNextLink(next *models.Href) func(*runtime.ClientOperation) {
 	}
 }
 
-// HasNextLink checks if restResul.Links.Next exists using reflection
+// HasNextLink checks if restResult.Links.Next exists using reflection
 func HasNextLink(restResult interface{}) (result bool) {
 
 	//
@@ -320,18 +327,55 @@ func HasNextLink(restResult interface{}) (result bool) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// VOLUME operations
+// NAS VOLUME operations by style (flexgroup and flexvol)
 //////////////////////////////////////////////////////////////////////////////
 
-func paginate() {
+func (d RestClient) getAllVolumePayloadRecords(payload *models.VolumeResponse,
+	params *storage.VolumeCollectionGetParams) (*models.VolumeResponse, error) {
 
+	if HasNextLink(payload) {
+		nextLink := payload.Links.Next
+
+		for true {
+			resultNext, errNext := d.api.Storage.VolumeCollectionGet(params, d.authInfo, WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil {
+				break
+			}
+
+			payload.NumRecords += resultNext.Payload.NumRecords
+			payload.Records = append(resultNext.Payload.Records, resultNext.Payload.Records...)
+
+			if !HasNextLink(resultNext.Payload) {
+				break
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+	return payload, nil
 }
 
-// VolumeList returns the names of all Flexvols whose names match the supplied pattern
-func (d *RestClient) VolumeList(
-	ctx context.Context,
-	pattern string,
-) (*storage.VolumeCollectionGetOK, error) {
+//getAllVolumesByPatternAndStyle returns all relevant details for all volumes of the style specified whose names match the supplied prefix
+func (d RestClient) getAllVolumesByPatternStyleAndState(ctx context.Context, pattern, style, state string) (*storage.VolumeCollectionGetOK, error) {
+
+	if style != models.VolumeStyleFlexvol && style != models.VolumeStyleFlexgroup {
+		return nil, fmt.Errorf("unknown volume style %s", style)
+	}
+
+	validStates := map[string]struct{}{
+		models.VolumeStateOnline:  {},
+		models.VolumeStateOffline: {},
+		models.VolumeStateMixed:   {},
+		models.VolumeStateError:   {},
+		"":                        {},
+	}
+
+	if _, ok := validStates[state]; !ok {
+		return nil, fmt.Errorf("unknown volume state %s", state)
+	}
 
 	params := storage.NewVolumeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
@@ -341,13 +385,14 @@ func (d *RestClient) VolumeList(
 
 	params.SVMNameQueryParameter = &d.config.SVM
 	params.SetNameQueryParameter(ToStringPointer(pattern))
-	params.SetStateQueryParameter(ToStringPointer(models.VolumeStateOnline))
-	params.SetStyleQueryParameter(ToStringPointer(models.VolumeStyleFlexvol))
+	if state != "" {
+		params.SetStateQueryParameter(ToStringPointer(state))
+	}
+	params.SetStyleQueryParameter(ToStringPointer(style))
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.Storage.VolumeCollectionGet(params, d.authInfo)
 
-	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
 	}
@@ -355,33 +400,423 @@ func (d *RestClient) VolumeList(
 		return nil, nil
 	}
 
-	if HasNextLink(result.Payload) {
-		nextLink := result.Payload.Links.Next
-		done := false
-	NEXT_LOOP:
-		for !done {
-			resultNext, errNext := d.api.Storage.VolumeCollectionGet(params, d.authInfo,
-				WithNextLink(nextLink))
-			if errNext != nil {
-				return nil, errNext
-			}
-			if resultNext == nil {
-				done = true
-				continue NEXT_LOOP
-			}
+	result.Payload, err = d.getAllVolumePayloadRecords(result.Payload, params)
+	if err != nil {
+		return result, err
+	}
 
-			result.Payload.NumRecords += resultNext.Payload.NumRecords
-			result.Payload.Records = append(result.Payload.Records, resultNext.Payload.Records...)
+	return result, nil
+}
 
-			if !HasNextLink(resultNext.Payload) {
-				done = true
-				continue NEXT_LOOP
-			} else {
-				nextLink = resultNext.Payload.Links.Next
-			}
+// checkVolumeExistsByNameAndStyle tests for the existence of a volume of the style and name specified
+func (d RestClient) checkVolumeExistsByNameAndStyle(ctx context.Context, volumeName, style string) (bool, error) {
+	volume, err := d.getVolumeByNameAndStyle(ctx, volumeName, style)
+	if err != nil {
+		return false, err
+	}
+	if volume == nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// getVolumeByNameAndStyle gets the volume of the style and name specified
+func (d RestClient) getVolumeByNameAndStyle(
+	ctx context.Context,
+	volumeName string,
+	style string,
+) (*models.Volume, error) {
+
+	result, err := d.getAllVolumesByPatternStyleAndState(ctx, volumeName, style, models.VolumeStateOnline)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil || result.Payload == nil || result.Payload.NumRecords == 0 {
+		return nil, nil
+	}
+	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
+		return result.Payload.Records[0], nil
+	}
+	return nil, fmt.Errorf("could not find unique volume with name '%v'; found %d matching volumes", volumeName, result.Payload.NumRecords)
+}
+
+// getVolumeInAnyStateByNameAndStyle gets the volume of the style and name specified
+func (d RestClient) getVolumeInAnyStateByNameAndStyle(
+	ctx context.Context,
+	volumeName string,
+	style string,
+) (*models.Volume, error) {
+
+	result, err := d.getAllVolumesByPatternStyleAndState(ctx, volumeName, style, "")
+	if err != nil {
+		return nil, err
+	}
+	if result == nil || result.Payload == nil || result.Payload.NumRecords == 0 {
+		return nil, nil
+	}
+	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
+		return result.Payload.Records[0], nil
+	}
+	return nil, fmt.Errorf("could not find unique volume with name '%v'; found %d matching volumes", volumeName, result.Payload.NumRecords)
+}
+
+// getVolumeSizeByNameAndStyle retrieves the size of the volume of the style and name specified
+func (d RestClient) getVolumeSizeByNameAndStyle(ctx context.Context, volumeName, style string) (uint64, error) {
+
+	volume, err := d.getVolumeByNameAndStyle(ctx, volumeName, style)
+	if err != nil {
+		return 0, err
+	}
+	if volume == nil {
+		return 0, fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	return uint64(volume.Size), nil
+}
+
+// getVolumeUsedSizeByNameAndStyle retrieves the used bytes of the the volume of the style and name specified
+func (d RestClient) getVolumeUsedSizeByNameAndStyle(ctx context.Context, volumeName, style string) (int, error) {
+
+	volume, err := d.getVolumeByNameAndStyle(ctx, volumeName, style)
+	if err != nil {
+		return 0, err
+	}
+	if volume == nil {
+		return 0, fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	if volume.Space == nil {
+		return 0, fmt.Errorf("could not find space attributes for volume %v", volumeName)
+	}
+
+	if volume.Space.Snapshot == nil {
+		return 0, fmt.Errorf("could not find snapshot space attributes for volume %v", volumeName)
+	}
+
+	return int(volume.Space.Used - volume.Space.Snapshot.Used), nil
+}
+
+// setVolumeSizeByNameAndStyle sets the size of the specified volume of given style
+func (d RestClient) setVolumeSizeByNameAndStyle(
+	ctx context.Context,
+	volumeName, newSize, style string,
+) error {
+
+	volume, err := d.getVolumeByNameAndStyle(ctx, volumeName, style)
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	uuid := volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	sizeBytesStr, _ := utils.ConvertSizeToBytes(newSize)
+	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+
+	volumeInfo := &models.Volume{
+		Size: int64(sizeBytes),
+	}
+
+	params.SetInfo(volumeInfo)
+
+	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+}
+
+// mountVolumeByNameAndStyle mounts a volume at the specified junction
+func (d RestClient) mountVolumeByNameAndStyle(
+	ctx context.Context,
+	volumeName, junctionPath, style string,
+) error {
+
+	volume, err := d.getVolumeByNameAndStyle(ctx, volumeName, style)
+
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	if volume.Nas != nil && volume.Nas.Path != nil {
+		if *volume.Nas.Path == junctionPath {
+			Logc(ctx).Debug("already mounted to the correct junction path, nothing to do")
+			return nil
 		}
 	}
-	return result, nil
+
+	uuid := volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	volumeInfo := &models.Volume{
+		Nas: &models.VolumeNas{Path: ToStringPointer(junctionPath)},
+	}
+	params.SetInfo(volumeInfo)
+
+	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+}
+
+// unmountVolumeByNameAndStyle umounts a volume
+func (d RestClient) unmountVolumeByNameAndStyle(
+	ctx context.Context,
+	volumeName, style string,
+) error {
+
+	volume, err := d.getVolumeInAnyStateByNameAndStyle(ctx, volumeName, style)
+
+	if err != nil {
+		return err
+	}
+
+	if volume == nil {
+		Logc(ctx).WithField("volume", volumeName).Warn("Volume does not exist.")
+		return err
+	}
+
+	if volume.Nas != nil && volume.Nas.Path != nil {
+		if *volume.Nas.Path == "" {
+			Logc(ctx).Debug("already unmounted, nothing to do")
+			return nil
+		}
+	}
+
+	uuid := volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	volumeInfo := &models.Volume{
+		Nas: &models.VolumeNas{Path: ToStringPointer("")},
+	}
+	params.SetInfo(volumeInfo)
+
+	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+}
+
+// RenameVolumeByNameAndStyle changes the name of a FlexVol (but not a FlexGroup!)
+func (d RestClient) renameVolumeByNameAndStyle(
+	ctx context.Context,
+	volumeName, newVolumeName, style string,
+) error {
+
+	volume, err := d.getVolumeByNameAndStyle(ctx, volumeName, style)
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	uuid := volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	volumeInfo := &models.Volume{
+		Name: newVolumeName,
+	}
+
+	params.SetInfo(volumeInfo)
+
+	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+}
+
+// destroyVolumeByNameAndStyle destroys a volume
+func (d RestClient) destroyVolumeByNameAndStyle(
+	ctx context.Context, name, style string,
+) error {
+
+	volume, err := d.getVolumeByNameAndStyle(ctx, name, style)
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find volume: %v", name)
+	}
+
+	params := storage.NewVolumeDeleteParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = volume.UUID
+
+	volumeDeleteAccepted, err := d.api.Storage.VolumeDelete(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeDeleteAccepted == nil {
+		return fmt.Errorf("unexpected response from volume create")
+	}
+
+	return d.PollJobStatus(ctx, volumeDeleteAccepted.Payload)
+}
+
+func (d RestClient) modifyVolumeExportPolicyByNameAndStyle(
+	ctx context.Context,
+	volumeName, exportPolicyName, style string,
+) error {
+
+	volume, err := d.getVolumeByNameAndStyle(ctx, volumeName, style)
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	uuid := volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	exportPolicy := &models.VolumeNasExportPolicy{Name: exportPolicyName}
+	nasInfo := &models.VolumeNas{ExportPolicy: exportPolicy}
+	volumeInfo := &models.Volume{Nas: nasInfo}
+	params.SetInfo(volumeInfo)
+
+	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+}
+
+func (d RestClient) modifyVolumeUnixPermissionsByNameAndStyle(
+	ctx context.Context,
+	volumeName, unixPermissions, style string,
+) error {
+
+	if unixPermissions == "" {
+		return fmt.Errorf("missing new unix permissions value")
+	}
+
+	volume, err := d.getVolumeByNameAndStyle(ctx, volumeName, style)
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	uuid := volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	// handle NAS options
+	volumeNas := &models.VolumeNas{}
+	unixPermissions = convertUnixPermissions(unixPermissions)
+	volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
+	if parseErr != nil {
+		return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
+	}
+	volumeNas.UnixPermissions = volumePermissions
+
+	volumeInfo := &models.Volume{}
+	volumeInfo.Nas = volumeNas
+	params.SetInfo(volumeInfo)
+
+	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+}
+
+// setVolumeCommentByNameAndStyle sets a volume's comment to the supplied value
+// equivalent to filer::> volume modify -vserver iscsi_vs -volume v -comment newVolumeComment
+func (d RestClient) setVolumeCommentByNameAndStyle(
+	ctx context.Context,
+	volumeName, newVolumeComment, style string,
+) error {
+
+	volume, err := d.getVolumeByNameAndStyle(ctx, volumeName, style)
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	uuid := volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	volumeInfo := &models.Volume{
+		Comment: ToStringPointer(newVolumeComment),
+	}
+
+	params.SetInfo(volumeInfo)
+
+	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
 }
 
 // convertUnixPermissions turns "rwx" into "7" and so on, if possible, otherwise returns the string
@@ -425,32 +860,220 @@ func convertUnixPermissions(s string) string {
 	return strings.Join(a, "")
 }
 
-// VolumeCreate creates a volume with the specified options
-// equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
-func (d *RestClient) VolumeCreate(
+// setVolumeQosPolicyGroupNameByNameAndStyle sets the QoS Policy Group for volume clones since
+// we can't set adaptive policy groups directly during volume clone creation.
+func (d RestClient) setVolumeQosPolicyGroupNameByNameAndStyle(
 	ctx context.Context,
-	name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
+	volumeName string,
+	qosPolicyGroup QosPolicyGroup,
+	style string,
+) error {
+
+	volume, err := d.getVolumeByNameAndStyle(ctx, volumeName, style)
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	uuid := volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	volumeInfo := &models.Volume{}
+	if qosPolicyGroup.Kind != InvalidQosPolicyGroupKind {
+		if qosPolicyGroup.Name != "" {
+			volumeInfo.Qos = &models.VolumeQos{
+				Policy: &models.VolumeQosPolicy{Name: qosPolicyGroup.Name},
+			}
+		} else {
+			return fmt.Errorf("missing QoS policy group name")
+		}
+	} else {
+		return fmt.Errorf("invalid QoS policy group")
+	}
+	params.SetInfo(volumeInfo)
+
+	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+}
+
+// startCloneSplitByNameAndStyle starts splitting the clone
+func (d RestClient) startCloneSplitByNameAndStyle(
+	ctx context.Context,
+	volumeName, style string,
+) error {
+
+	volume, err := d.getVolumeByNameAndStyle(ctx, volumeName, style)
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	uuid := volume.UUID
+
+	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	volumeInfo := &models.Volume{
+		Clone: &models.VolumeClone{SplitInitiated: true},
+	}
+	//volumeInfo.Svm = &models.VolumeSvm{Name: d.config.SVM}
+
+	params.SetInfo(volumeInfo)
+
+	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+}
+
+// restoreSnapshotByNameAndStyle restores a volume to a snapshot as a non-blocking operation
+func (d RestClient) restoreSnapshotByNameAndStyle(
+	ctx context.Context,
+	snapshotName, volumeName, style string,
+) error {
+
+	volume, err := d.getVolumeByNameAndStyle(ctx, volumeName, style)
+	if err != nil {
+		return err
+	}
+	if volume == nil {
+		return fmt.Errorf("could not find volume with name %v", volumeName)
+	}
+
+	// restore
+	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = volume.UUID
+	params.RestoreToSnapshotNameQueryParameter = &snapshotName
+
+	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from volume modify")
+	}
+
+	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+}
+
+func (d RestClient) createCloneNAS(
+	ctx context.Context,
+	cloneName, sourceVolumeName, snapshotName string,
+) (*storage.VolumeCreateAccepted, error) {
+	params := storage.NewVolumeCreateParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+
+	cloneInfo := &models.VolumeClone{
+		ParentVolume: &models.VolumeCloneParentVolume{
+			Name: sourceVolumeName,
+		},
+		IsFlexclone: true,
+	}
+	if snapshotName != "" {
+		cloneInfo.ParentSnapshot = &models.SnapshotReference{Name: snapshotName}
+	}
+
+	volumeInfo := &models.Volume{
+		Name:  cloneName,
+		Clone: cloneInfo,
+	}
+	volumeInfo.Svm = &models.VolumeSvm{Name: d.config.SVM}
+
+	params.SetInfo(volumeInfo)
+
+	return d.api.Storage.VolumeCreate(params, d.authInfo)
+}
+
+// listAllVolumeNamesBackedBySnapshot returns the names of all volumes backed by the specified snapshot
+func (d RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) (
+	[]string, error) {
+
+	params := storage.NewVolumeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+
+	params.SVMNameQueryParameter = &d.config.SVM
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+
+	params.SetCloneParentVolumeNameQueryParameter(ToStringPointer(volumeName))
+	params.SetCloneParentSnapshotNameQueryParameter(ToStringPointer(snapshotName))
+
+	result, err := d.api.Storage.VolumeCollectionGet(params, d.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	result.Payload, err = d.getAllVolumePayloadRecords(result.Payload, params)
+	if err != nil {
+		return nil, err
+	}
+
+	volumeNames := make([]string, 0)
+	for _, vol := range result.Payload.Records {
+		if vol.Clone != nil && vol.Clone.IsFlexclone {
+			if vol.Clone.ParentSnapshot != nil && vol.Clone.ParentSnapshot.Name == snapshotName &&
+				vol.Clone.ParentVolume != nil && vol.Clone.ParentVolume.Name == volumeName {
+				volumeNames = append(volumeNames, vol.Name)
+			}
+		}
+	}
+	return volumeNames, nil
+}
+
+// createVolumeByStyle creates a volume with the specified options
+// equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
+func (d *RestClient) createVolumeByStyle(
+	ctx context.Context,
+	name string, sizeInBytes int64, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions,
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool,
-	snapshotReserve int,
+	snapshotReserve int, style string,
 ) error {
 
 	params := storage.NewVolumeCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
 
-	sizeBytesStr, _ := utils.ConvertSizeToBytes(size)
-	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
-
 	volumeInfo := &models.Volume{
-		Name: name,
-		Aggregates: []*models.VolumeAggregatesItems0{
-			{Name: aggregateName},
-		},
-		Size:           int64(sizeBytes),
+		Name:           name,
+		Size:           sizeInBytes,
 		Guarantee:      &models.VolumeGuarantee{Type: spaceReserve},
 		SnapshotPolicy: &models.VolumeSnapshotPolicy{Name: snapshotPolicy},
 		Comment:        ToStringPointer(comment),
 		State:          models.VolumeStateOnline,
+		Style:          style,
+	}
+
+	volumeInfoAggregates := ToSliceVolumeAggregatesItems(aggrs)
+	if len(volumeInfoAggregates) > 0 {
+		volumeInfo.Aggregates = volumeInfoAggregates
 	}
 
 	if snapshotReserve != NumericalValueNotSet {
@@ -460,7 +1083,6 @@ func (d *RestClient) VolumeCreate(
 			},
 		}
 	}
-
 	volumeInfo.Svm = &models.VolumeSvm{Name: d.config.SVM}
 
 	if encrypt {
@@ -510,155 +1132,65 @@ func (d *RestClient) VolumeCreate(
 	return d.PollJobStatus(ctx, volumeCreateAccepted.Payload)
 }
 
-// VolumeDelete deletes the volume with the specified uuid
-func (d RestClient) VolumeDelete(
+//////////////////////////////////////////////////////////////////////////////
+// NAS VOLUME by style operations end
+//////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////
+// VOLUME operations
+//////////////////////////////////////////////////////////////////////////////
+
+// VolumeList returns the names of all Flexvols whose names match the supplied pattern
+func (d *RestClient) VolumeList(
 	ctx context.Context,
-	uuid string,
+	pattern string,
+) (*storage.VolumeCollectionGetOK, error) {
+
+	return d.getAllVolumesByPatternStyleAndState(ctx, pattern, models.VolumeStyleFlexvol, models.VolumeStateOnline)
+}
+
+// VolumeCreate creates a volume with the specified options
+// equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
+func (d *RestClient) VolumeCreate(
+	ctx context.Context,
+	name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
+	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool,
+	snapshotReserve int,
 ) error {
 
-	params := storage.NewVolumeDeleteParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-	params.UUIDPathParameter = uuid
+	sizeBytesStr, _ := utils.ConvertSizeToBytes(size)
+	sizeInBytes, _ := strconv.ParseInt(sizeBytesStr, 10, 64)
 
-	volumeDeleteAccepted, err := d.api.Storage.VolumeDelete(params, d.authInfo)
-	if err != nil {
-		return err
-	}
-	if volumeDeleteAccepted == nil {
-		return fmt.Errorf("unexpected response from volume create")
-	}
-
-	return d.PollJobStatus(ctx, volumeDeleteAccepted.Payload)
+	return d.createVolumeByStyle(ctx, name, sizeInBytes, []string{aggregateName}, spaceReserve, snapshotPolicy,
+		unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
+		snapshotReserve, models.VolumeStyleFlexvol)
 }
 
-// VolumeGet gets the volume with the specified uuid
-func (d RestClient) VolumeGet(
-	ctx context.Context,
-	uuid string,
-) (*storage.VolumeGetOK, error) {
-
-	params := storage.NewVolumeGetParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-	params.UUIDPathParameter = uuid
-
-	return d.api.Storage.VolumeGet(params, d.authInfo)
+// VolumeExists tests for the existence of a flexvol
+func (d RestClient) VolumeExists(ctx context.Context, volumeName string) (bool, error) {
+	return d.checkVolumeExistsByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 }
 
-// VolumeExists tests for the existence of a Flexvol
-func (d RestClient) VolumeExists(ctx context.Context,
-	volumeName string,
-) (bool, error) {
-	volume, err := d.VolumeGetByName(ctx, volumeName)
-	if err != nil {
-		return false, err
-	}
-	if volume == nil {
-		return false, err
-	}
-	return true, nil
+// VolumeGetByName gets the flexvol with the specified name
+func (d RestClient) VolumeGetByName(ctx context.Context, volumeName string) (*models.Volume, error) {
+	return d.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 }
 
-// VolumeGetByName gets the volume with the specified name
-func (d RestClient) VolumeGetByName(
-	ctx context.Context,
-	volumeName string,
-) (*models.Volume, error) {
-
-	result, err := d.VolumeList(ctx, volumeName)
-	if err != nil {
-		return nil, err
-	}
-	if result == nil || result.Payload == nil || result.Payload.NumRecords == 0 {
-		return nil, nil
-	}
-	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
-		return result.Payload.Records[0], nil
-	}
-	return nil, fmt.Errorf("could not find unique volume with name '%v'; found %d matching volumes", volumeName, result.Payload.NumRecords)
-}
-
-// VolumeMount mounts a volume at the specified junction
+// VolumeMount mounts a flexvol at the specified junction
 func (d RestClient) VolumeMount(
 	ctx context.Context,
 	volumeName, junctionPath string,
 ) error {
-
-	volume, err := d.VolumeGetByName(ctx, volumeName)
-	if err != nil {
-		return err
-	}
-	if volume == nil {
-		return fmt.Errorf("could not find volume with name %v", volumeName)
-	}
-
-	if volume.Nas != nil {
-		if volume.Nas.Path != nil && *volume.Nas.Path == junctionPath {
-			Logc(ctx).Debug("already mounted to the correct junction path, nothing to do")
-			return nil
-		}
-	}
-
-	uuid := volume.UUID
-
-	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-	params.UUIDPathParameter = uuid
-
-	volumeInfo := &models.Volume{
-		Nas: &models.VolumeNas{Path: ToStringPointer(junctionPath)},
-	}
-	params.SetInfo(volumeInfo)
-
-	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
-	if err != nil {
-		return err
-	}
-	if volumeModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from volume modify")
-	}
-
-	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	return d.mountVolumeByNameAndStyle(ctx, volumeName, junctionPath, models.VolumeStyleFlexvol)
 }
 
-// VolumeRename changes the name of a FlexVol (but not a FlexGroup!)
+// VolumeRename changes the name of a flexvol
 func (d RestClient) VolumeRename(
 	ctx context.Context,
 	volumeName, newVolumeName string,
 ) error {
 
-	volume, err := d.VolumeGetByName(ctx, volumeName)
-	if err != nil {
-		return err
-	}
-	if volume == nil {
-		return fmt.Errorf("could not find volume with name %v", volumeName)
-	}
-
-	uuid := volume.UUID
-
-	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-	params.UUIDPathParameter = uuid
-
-	volumeInfo := &models.Volume{
-		Name: newVolumeName,
-	}
-
-	params.SetInfo(volumeInfo)
-
-	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
-	if err != nil {
-		return err
-	}
-	if volumeModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from volume modify")
-	}
-
-	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	return d.renameVolumeByNameAndStyle(ctx, volumeName, newVolumeName, models.VolumeStyleFlexvol)
 }
 
 func (d RestClient) VolumeModifyExportPolicy(
@@ -666,116 +1198,24 @@ func (d RestClient) VolumeModifyExportPolicy(
 	volumeName, exportPolicyName string,
 ) error {
 
-	volume, err := d.VolumeGetByName(ctx, volumeName)
-	if err != nil {
-		return err
-	}
-	if volume == nil {
-		return fmt.Errorf("could not find volume with name %v", volumeName)
-	}
-
-	uuid := volume.UUID
-
-	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-	params.UUIDPathParameter = uuid
-
-	exportPolicy := &models.VolumeNasExportPolicy{Name: exportPolicyName}
-	nasInfo := &models.VolumeNas{ExportPolicy: exportPolicy}
-	volumeInfo := &models.Volume{Nas: nasInfo}
-	params.SetInfo(volumeInfo)
-
-	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
-	if err != nil {
-		return err
-	}
-	if volumeModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from volume modify")
-	}
-
-	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	return d.modifyVolumeExportPolicyByNameAndStyle(ctx, volumeName, exportPolicyName, models.VolumeStyleFlexvol)
 }
 
-// VolumeSize retrieves the size of the specified volume
-func (d RestClient) VolumeSize(
-	ctx context.Context,
-	volumeName string,
-) (int, error) {
-
-	volume, err := d.VolumeGetByName(ctx, volumeName)
-	if err != nil {
-		return 0, err
-	}
-	if volume == nil {
-		return 0, fmt.Errorf("could not find volume with name %v", volumeName)
-	}
-
-	// TODO validate/improve this logic? int64 vs int
-	return int(volume.Size), nil
+// VolumeSize retrieves the size of the specified flexvol
+func (d RestClient) VolumeSize(ctx context.Context, volumeName string,
+) (uint64, error) {
+	return d.getVolumeSizeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 }
 
 // VolumeUsedSize retrieves the used bytes of the specified volume
 func (d RestClient) VolumeUsedSize(ctx context.Context, volumeName string) (int, error) {
-
-	volume, err := d.VolumeGetByName(ctx, volumeName)
-	if err != nil {
-		return 0, err
-	}
-	if volume == nil {
-		return 0, fmt.Errorf("could not find volume with name %v", volumeName)
-	}
-
-	if volume.Space == nil {
-		return 0, fmt.Errorf("could not find space attributes for volume %v", volumeName)
-	}
-
-	if volume.Space.Snapshot == nil {
-		return 0, fmt.Errorf("could not find snapshot space attributes for volume %v", volumeName)
-	}
-
-	return int(volume.Space.Used - volume.Space.Snapshot.Used), nil
+	return d.getVolumeUsedSizeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 }
 
-// VolumeSetSize sets the size of the specified volume
-func (d RestClient) VolumeSetSize(
-	ctx context.Context,
-	volumeName, newSize string,
+// VolumeSetSize sets the size of the specified flexvol
+func (d RestClient) VolumeSetSize(ctx context.Context, volumeName, newSize string,
 ) error {
-
-	volume, err := d.VolumeGetByName(ctx, volumeName)
-	if err != nil {
-		return err
-	}
-	if volume == nil {
-		return fmt.Errorf("could not find volume with name %v", volumeName)
-	}
-
-	uuid := volume.UUID
-
-	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-	params.UUIDPathParameter = uuid
-
-	sizeBytesStr, _ := utils.ConvertSizeToBytes(newSize)
-	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
-
-	volumeInfo := &models.Volume{
-		Size: int64(sizeBytes),
-	}
-
-	params.SetInfo(volumeInfo)
-
-	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
-	if err != nil {
-		return err
-	}
-	if volumeModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from volume modify")
-	}
-
-	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	return d.setVolumeSizeByNameAndStyle(ctx, volumeName, newSize, models.VolumeStyleFlexvol)
 }
 
 func (d RestClient) VolumeModifyUnixPermissions(
@@ -783,173 +1223,36 @@ func (d RestClient) VolumeModifyUnixPermissions(
 	volumeName, unixPermissions string,
 ) error {
 
-	if unixPermissions == "" {
-		return fmt.Errorf("missing new unix permissions value")
-	}
-
-	volume, err := d.VolumeGetByName(ctx, volumeName)
-	if err != nil {
-		return err
-	}
-	if volume == nil {
-		return fmt.Errorf("could not find volume with name %v", volumeName)
-	}
-
-	uuid := volume.UUID
-
-	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-	params.UUIDPathParameter = uuid
-
-	// handle NAS options
-	volumeNas := &models.VolumeNas{}
-	unixPermissions = convertUnixPermissions(unixPermissions)
-	volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
-	if parseErr != nil {
-		return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
-	}
-	volumeNas.UnixPermissions = volumePermissions
-
-	volumeInfo := &models.Volume{}
-	volumeInfo.Nas = volumeNas
-	params.SetInfo(volumeInfo)
-
-	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
-	if err != nil {
-		return err
-	}
-	if volumeModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from volume modify")
-	}
-
-	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	return d.modifyVolumeUnixPermissionsByNameAndStyle(ctx, volumeName, unixPermissions, models.VolumeStyleFlexvol)
 }
 
-// VolumeSetComment sets a volume's comment to the supplied value
+// VolumeSetComment sets a flexvol's comment to the supplied value
 // equivalent to filer::> volume modify -vserver iscsi_vs -volume v -comment newVolumeComment
-func (d RestClient) VolumeSetComment(
-	ctx context.Context,
-	volumeName, newVolumeComment string,
+func (d RestClient) VolumeSetComment(ctx context.Context, volumeName, newVolumeComment string,
 ) error {
-
-	volume, err := d.VolumeGetByName(ctx, volumeName)
-	if err != nil {
-		return err
-	}
-	if volume == nil {
-		return fmt.Errorf("could not find volume with name %v", volumeName)
-	}
-
-	uuid := volume.UUID
-
-	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-	params.UUIDPathParameter = uuid
-
-	volumeInfo := &models.Volume{
-		Comment: ToStringPointer(newVolumeComment),
-	}
-
-	params.SetInfo(volumeInfo)
-
-	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
-	if err != nil {
-		return err
-	}
-	if volumeModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from volume modify")
-	}
-
-	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	return d.setVolumeCommentByNameAndStyle(ctx, volumeName, newVolumeComment, models.VolumeStyleFlexvol)
 }
 
-// Use this to set the QoS Policy Group for volume clones since
+// VolumeSetQosPolicyGroupName sets the QoS Policy Group for volume clones since
 // we can't set adaptive policy groups directly during volume clone creation.
-func (d RestClient) VolumeSetQosPolicyGroupName(
-	ctx context.Context,
-	volumeName string,
-	qosPolicyGroup QosPolicyGroup,
+func (d RestClient) VolumeSetQosPolicyGroupName(ctx context.Context, volumeName string, qosPolicyGroup QosPolicyGroup,
 ) error {
-
-	volume, err := d.VolumeGetByName(ctx, volumeName)
-	if err != nil {
-		return err
-	}
-	if volume == nil {
-		return fmt.Errorf("could not find volume with name %v", volumeName)
-	}
-
-	uuid := volume.UUID
-
-	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-	params.UUIDPathParameter = uuid
-
-	volumeInfo := &models.Volume{}
-	if qosPolicyGroup.Kind != InvalidQosPolicyGroupKind {
-		if qosPolicyGroup.Name != "" {
-			volumeInfo.Qos = &models.VolumeQos{
-				Policy: &models.VolumeQosPolicy{Name: qosPolicyGroup.Name},
-			}
-		} else {
-			return fmt.Errorf("missing QoS policy group name")
-		}
-	} else {
-		return fmt.Errorf("invalid QoS policy group")
-	}
-	params.SetInfo(volumeInfo)
-
-	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
-	if err != nil {
-		return err
-	}
-	if volumeModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from volume modify")
-	}
-
-	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+	return d.setVolumeQosPolicyGroupNameByNameAndStyle(ctx, volumeName, qosPolicyGroup, models.VolumeStyleFlexvol)
 }
 
-// VolumeRename changes the name of a FlexVol (but not a FlexGroup!)
+// VolumeCloneSplitStart starts splitting theflexvol clone
 func (d RestClient) VolumeCloneSplitStart(
 	ctx context.Context,
 	volumeName string,
 ) error {
+	return d.startCloneSplitByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
+}
 
-	volume, err := d.VolumeGetByName(ctx, volumeName)
-	if err != nil {
-		return err
-	}
-	if volume == nil {
-		return fmt.Errorf("could not find volume with name %v", volumeName)
-	}
-
-	uuid := volume.UUID
-
-	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-	params.UUIDPathParameter = uuid
-
-	volumeInfo := &models.Volume{
-		Clone: &models.VolumeClone{SplitInitiated: true},
-	}
-	//volumeInfo.Svm = &models.VolumeSvm{Name: d.config.SVM}
-
-	params.SetInfo(volumeInfo)
-
-	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
-	if err != nil {
-		return err
-	}
-	if volumeModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from volume modify")
-	}
-
-	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+// VolumeDestroy destroys a flexvol
+func (d RestClient) VolumeDestroy(
+	ctx context.Context, name string,
+) error {
+	return d.destroyVolumeByNameAndStyle(ctx, name, models.VolumeStyleFlexvol)
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -957,11 +1260,8 @@ func (d RestClient) VolumeCloneSplitStart(
 //////////////////////////////////////////////////////////////////////////////
 
 // SnapshotCreate creates a snapshot
-func (d *RestClient) SnapshotCreate(
-	ctx context.Context,
-	volumeUUID, snapshotName string,
-) (*storage.SnapshotCreateAccepted, error) {
-
+func (d *RestClient) SnapshotCreate(ctx context.Context, volumeUUID, snapshotName string) (
+	*storage.SnapshotCreateAccepted, error) {
 	params := storage.NewSnapshotCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
@@ -980,10 +1280,7 @@ func (d *RestClient) SnapshotCreate(
 }
 
 // SnapshotCreateAndWait creates a snapshot and waits on the job to complete
-func (d *RestClient) SnapshotCreateAndWait(
-	ctx context.Context,
-	volumeUUID, snapshotName string,
-) error {
+func (d *RestClient) SnapshotCreateAndWait(ctx context.Context, volumeUUID, snapshotName string) error {
 	snapshotCreateResult, err := d.SnapshotCreate(ctx, volumeUUID, snapshotName)
 	if err != nil {
 		return fmt.Errorf("could not create snapshot: %v", err)
@@ -996,11 +1293,7 @@ func (d *RestClient) SnapshotCreateAndWait(
 }
 
 // SnapshotList lists snapshots
-func (d *RestClient) SnapshotList(
-	ctx context.Context,
-	volumeUUID string,
-) (*storage.SnapshotCollectionGetOK, error) {
-
+func (d *RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*storage.SnapshotCollectionGetOK, error) {
 	params := storage.NewSnapshotCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
@@ -1050,11 +1343,8 @@ func (d *RestClient) SnapshotList(
 }
 
 // SnapshotListByName lists snapshots by name
-func (d *RestClient) SnapshotListByName(
-	ctx context.Context,
-	volumeUUID, snapshotName string,
-) (*storage.SnapshotCollectionGetOK, error) {
-
+func (d *RestClient) SnapshotListByName(ctx context.Context, volumeUUID, snapshotName string) (
+	*storage.SnapshotCollectionGetOK, error) {
 	params := storage.NewSnapshotCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
@@ -1069,11 +1359,7 @@ func (d *RestClient) SnapshotListByName(
 }
 
 // SnapshotGet returns info on the snapshot
-func (d *RestClient) SnapshotGet(
-	ctx context.Context,
-	volumeUUID, snapshotUUID string,
-) (*storage.SnapshotGetOK, error) {
-
+func (d *RestClient) SnapshotGet(ctx context.Context, volumeUUID, snapshotUUID string) (*storage.SnapshotGetOK, error) {
 	params := storage.NewSnapshotGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
@@ -1085,10 +1371,7 @@ func (d *RestClient) SnapshotGet(
 }
 
 // SnapshotGetByName finds the snapshot by name
-func (d RestClient) SnapshotGetByName(
-	ctx context.Context,
-	volumeUUID, snapshotName string,
-) (*models.Snapshot, error) {
+func (d RestClient) SnapshotGetByName(ctx context.Context, volumeUUID, snapshotName string) (*models.Snapshot, error) {
 
 	// TODO improve this
 	result, err := d.SnapshotListByName(ctx, volumeUUID, snapshotName)
@@ -1115,45 +1398,18 @@ func (d *RestClient) SnapshotDelete(
 }
 
 // SnapshotRestoreVolume restores a volume to a snapshot as a non-blocking operation
-func (d RestClient) SnapshotRestoreVolume(
-	ctx context.Context,
-	snapshotName, volumeName string,
-) error {
+func (d RestClient) SnapshotRestoreVolume(ctx context.Context, snapshotName, volumeName string) error {
+	return d.restoreSnapshotByNameAndStyle(ctx, snapshotName, volumeName, models.VolumeStyleFlexvol)
+}
 
-	volume, err := d.VolumeGetByName(ctx, volumeName)
-	if err != nil {
-		return err
-	}
-	if volume == nil {
-		return fmt.Errorf("could not find volume with name %v", volumeName)
-	}
-
-	// restore
-	params := storage.NewVolumeModifyParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-	params.UUIDPathParameter = volume.UUID
-	params.RestoreToSnapshotNameQueryParameter = &snapshotName
-	//params.RestoreToSnapshotUUIDQueryParameter = &snapshot.UUID
-
-	volumeModifyAccepted, err := d.api.Storage.VolumeModify(params, d.authInfo)
-	if err != nil {
-		return err
-	}
-	if volumeModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from volume modify")
-	}
-
-	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
+// SnapshotRestoreFlexgroup restores a volume to a snapshot as a non-blocking operation
+func (d RestClient) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, volumeName string) error {
+	return d.restoreSnapshotByNameAndStyle(ctx, snapshotName, volumeName, models.VolumeStyleFlexgroup)
 }
 
 // VolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
 // Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (d RestClient) VolumeDisableSnapshotDirectoryAccess(
-	ctx context.Context,
-	volumeName string,
-) error {
-
+func (d RestClient) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error {
 	result, err := d.CliPassthroughVolumePatch(ctx, volumeName, `{
 		"snapdir-access": "false"
 }`)
@@ -1168,68 +1424,9 @@ func (d RestClient) VolumeDisableSnapshotDirectoryAccess(
 }
 
 // VolumeListAllBackedBySnapshot returns the names of all FlexVols backed by the specified snapshot
-func (d RestClient) VolumeListAllBackedBySnapshot(
-	ctx context.Context,
-	volumeName, snapshotName string,
-) ([]string, error) {
-
-	params := storage.NewVolumeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-
-	params.SVMNameQueryParameter = &d.config.SVM
-	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
-
-	params.SetCloneParentVolumeNameQueryParameter(ToStringPointer(volumeName))
-	params.SetCloneParentSnapshotNameQueryParameter(ToStringPointer(snapshotName))
-
-	result, err := d.api.Storage.VolumeCollectionGet(params, d.authInfo)
-
-	// TODO refactor to remove duplication
-	if err != nil {
-		return nil, err
-	}
-	if result == nil {
-		return nil, nil
-	}
-
-	if HasNextLink(result.Payload) {
-		nextLink := result.Payload.Links.Next
-		done := false
-	NEXT_LOOP:
-		for !done {
-			resultNext, errNext := d.api.Storage.VolumeCollectionGet(params, d.authInfo,
-				WithNextLink(nextLink))
-			if errNext != nil {
-				return nil, errNext
-			}
-			if resultNext == nil {
-				done = true
-				continue NEXT_LOOP
-			}
-
-			result.Payload.NumRecords += resultNext.Payload.NumRecords
-			result.Payload.Records = append(result.Payload.Records, resultNext.Payload.Records...)
-
-			if !HasNextLink(resultNext.Payload) {
-				done = true
-				continue NEXT_LOOP
-			} else {
-				nextLink = resultNext.Payload.Links.Next
-			}
-		}
-	}
-
-	volumeNames := make([]string, 0)
-	for _, vol := range result.Payload.Records {
-		if vol.Clone != nil && vol.Clone.IsFlexclone {
-			if vol.Clone.ParentSnapshot != nil && vol.Clone.ParentSnapshot.Name == snapshotName &&
-				vol.Clone.ParentVolume != nil && vol.Clone.ParentVolume.Name == volumeName {
-				volumeNames = append(volumeNames, vol.Name)
-			}
-		}
-	}
-	return volumeNames, nil
+func (d RestClient) VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) ([]string,
+	error) {
+	return d.listAllVolumeNamesBackedBySnapshot(ctx, volumeName, snapshotName)
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1238,49 +1435,14 @@ func (d RestClient) VolumeListAllBackedBySnapshot(
 
 // VolumeCloneCreate creates a clone
 // see also: https://library.netapp.com/ecmdocs/ECMLP2858435/html/resources/volume.html#creating-a-flexclone-and-specifying-its-properties-using-post
-func (d RestClient) VolumeCloneCreate(
-	ctx context.Context,
-	cloneName, sourceVolumeName, snapshotName string,
-) (*storage.VolumeCreateAccepted, error) {
-	return d.volumeCloneCreate(ctx, cloneName, sourceVolumeName, snapshotName)
-}
-
-func (d RestClient) volumeCloneCreate(
-	ctx context.Context,
-	cloneName, sourceVolumeName, snapshotName string,
-) (*storage.VolumeCreateAccepted, error) {
-	params := storage.NewVolumeCreateParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-
-	cloneInfo := &models.VolumeClone{
-		ParentVolume: &models.VolumeCloneParentVolume{
-			Name: sourceVolumeName,
-		},
-		IsFlexclone: true,
-	}
-	if snapshotName != "" {
-		cloneInfo.ParentSnapshot = &models.SnapshotReference{Name: snapshotName}
-	}
-
-	volumeInfo := &models.Volume{
-		Name:  cloneName,
-		Clone: cloneInfo,
-	}
-	volumeInfo.Svm = &models.VolumeSvm{Name: d.config.SVM}
-
-	params.SetInfo(volumeInfo)
-
-	return d.api.Storage.VolumeCreate(params, d.authInfo)
+func (d RestClient) VolumeCloneCreate(ctx context.Context, cloneName, sourceVolumeName, snapshotName string) (
+	*storage.VolumeCreateAccepted, error) {
+	return d.createCloneNAS(ctx, cloneName, sourceVolumeName, snapshotName)
 }
 
 // VolumeCloneCreateAsync clones a volume from a snapshot
-func (d RestClient) VolumeCloneCreateAsync(
-	ctx context.Context,
-	cloneName, sourceVolumeName, snapshot string,
-) error {
-
-	cloneCreateResult, err := d.volumeCloneCreate(ctx, cloneName, sourceVolumeName, snapshot)
+func (d RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourceVolumeName, snapshot string) error {
+	cloneCreateResult, err := d.createCloneNAS(ctx, cloneName, sourceVolumeName, snapshot)
 	if err != nil {
 		return fmt.Errorf("could not create clone: %v", err)
 	}
@@ -1296,10 +1458,7 @@ func (d RestClient) VolumeCloneCreateAsync(
 
 // IgroupCreate creates the specified initiator group
 // equivalent to filer::> igroup create docker -vserver iscsi_vs -protocol iscsi -ostype linux
-func (d RestClient) IgroupCreate(
-	ctx context.Context,
-	initiatorGroupName, initiatorGroupType, osType string) error {
-
+func (d RestClient) IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error {
 	params := san.NewIgroupCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
@@ -1850,7 +2009,7 @@ func (d RestClient) PollJobStatus(
 	jobStatusBackoff.InitialInterval = 1 * time.Second
 	jobStatusBackoff.Multiplier = 2
 	jobStatusBackoff.RandomizationFactor = 0.1
-	jobStatusBackoff.MaxElapsedTime = 30 * time.Second
+	jobStatusBackoff.MaxElapsedTime = 2 * time.Minute
 
 	// Run the job status check using an exponential backoff
 	if err := backoff.RetryNotify(checkJobStatus, jobStatusBackoff, jobStatusNotify); err != nil {
@@ -2734,251 +2893,111 @@ func ToSliceVolumeAggregatesItems(aggrs []string) []*models.VolumeAggregatesItem
 }
 
 // FlexGroupCreate creates a FlexGroup with the specified options
-// equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size  -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
-func (d RestClient) FlexGroupCreate(
-	ctx context.Context, name string, size int, aggrs []string, spaceReserve, snapshotPolicy,
-	unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup,
-	encrypt bool, snapshotReserve int,
-) error {
+// equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size
+// -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none
+// -security-style unix -encrypt false
+func (d RestClient) FlexGroupCreate(ctx context.Context, name string, size int, aggrs []string, spaceReserve,
+	snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
+	qosPolicyGroup QosPolicyGroup, encrypt bool, snapshotReserve int) error {
+	return d.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions,
+		exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt,
+		snapshotReserve, models.VolumeStyleFlexgroup)
+}
 
-	params := storage.NewVolumeCreateParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-
-	// TODO merge this with VolumeCreate as much as possible, Style is the main difference between the two
-	volumeInfo := &models.Volume{
-		Name:           name,
-		Size:           int64(size),
-		Guarantee:      &models.VolumeGuarantee{Type: spaceReserve},
-		SnapshotPolicy: &models.VolumeSnapshotPolicy{Name: snapshotPolicy},
-		Comment:        ToStringPointer(comment),
-		State:          models.VolumeStateOnline,
-		Style:          models.VolumeStyleFlexgroup,
-	}
-
-	volumeInfoAggregates := ToSliceVolumeAggregatesItems(aggrs)
-	if len(volumeInfoAggregates) > 0 {
-		volumeInfo.Aggregates = volumeInfoAggregates
-	}
-
-	if snapshotReserve != NumericalValueNotSet {
-		volumeInfo.Space = &models.VolumeSpace{
-			Snapshot: &models.VolumeSpaceSnapshot{
-				ReservePercent: ToInt64Pointer(snapshotReserve),
-			},
-		}
-	}
-
-	volumeInfo.Svm = &models.VolumeSvm{Name: d.config.SVM}
-
-	if encrypt {
-		volumeInfo.Encryption = &models.VolumeEncryption{Enabled: true}
-	}
-	if qosPolicyGroup.Kind != InvalidQosPolicyGroupKind {
-		if qosPolicyGroup.Name != "" {
-			volumeInfo.Qos = &models.VolumeQos{
-				Policy: &models.VolumeQosPolicy{Name: qosPolicyGroup.Name},
-			}
-		}
-	}
-
-	if tieringPolicy != "" {
-		volumeInfo.Tiering = &models.VolumeTiering{Policy: tieringPolicy}
-	}
-
-	// handle NAS options
-	volumeNas := &models.VolumeNas{}
-	if securityStyle != "" {
-		volumeNas.SecurityStyle = ToStringPointer(securityStyle)
-		volumeInfo.Nas = volumeNas
-	}
-	if unixPermissions != "" {
-		unixPermissions = convertUnixPermissions(unixPermissions)
-		volumePermissions, parseErr := strconv.ParseInt(unixPermissions, 10, 64)
-		if parseErr != nil {
-			return fmt.Errorf("cannot process unix permissions value %v", unixPermissions)
-		}
-		volumeNas.UnixPermissions = volumePermissions
-		volumeInfo.Nas = volumeNas
-	}
-	if exportPolicy != "" {
-		volumeNas.ExportPolicy = &models.VolumeNasExportPolicy{Name: exportPolicy}
-		volumeInfo.Nas = volumeNas
-	}
-
-	params.SetInfo(volumeInfo)
-
-	volumeCreateAccepted, err := d.api.Storage.VolumeCreate(params, d.authInfo)
-	if err != nil {
-		return err
-	}
-	if volumeCreateAccepted == nil {
-		return fmt.Errorf("unexpected response from volume create")
-	}
-
-	return d.PollJobStatus(ctx, volumeCreateAccepted.Payload)
+// FlexgroupCloneSplitStart starts splitting the flexgroup clone
+func (d RestClient) FlexgroupCloneSplitStart(ctx context.Context, volumeName string) error {
+	return d.startCloneSplitByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupDestroy destroys a FlexGroup
-func (d RestClient) FlexGroupDestroy(
-	ctx context.Context, name string,
-) error {
+func (d RestClient) FlexGroupDestroy(ctx context.Context, name string) error {
 	volume, err := d.FlexGroupGetByName(ctx, name)
 	if err != nil {
 		return err
 	}
-	if volume == nil {
-		return fmt.Errorf("could not find volume: %v", name)
+	params := storage.NewVolumeDeleteParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = volume.UUID
+
+	volumeDeleteAccepted, err := d.api.Storage.VolumeDelete(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if volumeDeleteAccepted == nil {
+		return fmt.Errorf("unexpected response from volume delete")
 	}
 
-	// TODO ensure this is appropriate for deletes that take a long time
-	//
-	// GET /api/cluster/jobs/e95ec57d-f066-11eb-b8e0-00a0986e75a0?fields=%2A%2A HTTP/1.1
-	// Host: 10.63.171.241
-	// User-Agent: Go-http-client/1.1
-	// Accept: application/hal+json
-	// Accept: application/json
-	// Authorization: Basic YWRtaW46TmV0YXBwMTIz
-	// Accept-Encoding: gzip
-	//
-	//
-	// HTTP/1.1 200 OK
-	// Content-Length: 324
-	// Cache-Control: no-cache,no-store,must-revalidate
-	// Content-Type: application/hal+json
-	// Date: Thu, 29 Jul 2021 12:17:30 GMT
-	// Server: libzapid-httpd
-	// X-Content-Type-Options: nosniff
-	//
-	// {
-	//   "uuid": "e95ec57d-f066-11eb-b8e0-00a0986e75a0",
-	//   "description": "DELETE /api/storage/volumes/65566050-f066-11eb-b8e0-00a0986e75a0",
-	//   "state": "running",
-	//   "start_time": "2021-07-29T08:17:15-04:00",
-	//   "_links": {
-	// 	"self": {
-	// 	  "href": "/api/cluster/jobs/e95ec57d-f066-11eb-b8e0-00a0986e75a0?fields=**"
-	// 	}
-	//   }
-	// }
-	// WARN[40739] Job not completed after 30.00 seconds.        UUID=e95ec57d-f066-11eb-b8e0-00a0986e75a0 requestID="<nil>" requestSource="<nil>"
-	// error: job e95ec57d-f066-11eb-b8e0-00a0986e75a0 not yet done
-
-	return d.VolumeDelete(ctx, volume.UUID)
+	return d.PollJobStatus(ctx, volumeDeleteAccepted.Payload)
 }
 
 // FlexGroupExists tests for the existence of a FlexGroup
-func (d RestClient) FlexGroupExists(ctx context.Context, name string) (bool, error) {
-	return d.VolumeExists(ctx, name)
+func (d RestClient) FlexGroupExists(ctx context.Context, volumeName string) (bool, error) {
+	return d.checkVolumeExistsByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup)
 }
 
-// FlexGroupSize retrieves the size of the specified volume
-func (d RestClient) FlexGroupSize(ctx context.Context, name string) (int, error) {
-	return d.VolumeSize(ctx, name)
+// FlexGroupSize retrieves the size of the specified flexgroup
+func (d RestClient) FlexGroupSize(ctx context.Context, volumeName string) (uint64, error) {
+	return d.getVolumeSizeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup)
+}
+
+// FlexGroupUsedSize retrieves the used space of the specified volume
+func (d RestClient) FlexGroupUsedSize(ctx context.Context, volumeName string) (int, error) {
+	return d.getVolumeUsedSizeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupSetSize sets the size of the specified FlexGroup
-func (d RestClient) FlexGroupSetSize(ctx context.Context, name, newSize string) error {
-	return d.VolumeSetSize(ctx, name, newSize)
+func (d RestClient) FlexGroupSetSize(ctx context.Context, volumeName, newSize string) error {
+	return d.setVolumeSizeByNameAndStyle(ctx, volumeName, newSize, models.VolumeStyleFlexgroup)
+}
+
+// FlexgroupSetQosPolicyGroupName note: we can't set adaptive policy groups directly during volume clone creation.
+func (d RestClient) FlexgroupSetQosPolicyGroupName(
+	ctx context.Context, volumeName string, qosPolicyGroup QosPolicyGroup,
+) error {
+	return d.setVolumeQosPolicyGroupNameByNameAndStyle(ctx, volumeName, qosPolicyGroup, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
 // Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (d RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(
-	ctx context.Context, name string,
-) error {
+func (d RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error {
 	return d.VolumeDisableSnapshotDirectoryAccess(ctx, name)
 }
 
-func (d RestClient) FlexGroupModifyUnixPermissions(
-	ctx context.Context, volumeName, unixPermissions string,
-) error {
-	return d.VolumeModifyUnixPermissions(ctx, volumeName, unixPermissions)
+func (d RestClient) FlexGroupModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error {
+	return d.modifyVolumeUnixPermissionsByNameAndStyle(ctx, volumeName, unixPermissions, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupSetComment sets a flexgroup's comment to the supplied value
 func (d RestClient) FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) error {
-	return d.VolumeSetComment(ctx, volumeName, newVolumeComment)
-}
-
-// FlexGroupGet returns all relevant details for a single FlexGroup
-func (d RestClient) FlexGroupGet(ctx context.Context, name string) (*models.Volume, error) {
-	return d.FlexGroupGetByName(ctx, name)
+	return d.setVolumeCommentByNameAndStyle(ctx, volumeName, newVolumeComment, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupGetByName gets the flexgroup with the specified name
-func (d RestClient) FlexGroupGetByName(
-	ctx context.Context,
-	volumeName string,
-) (*models.Volume, error) {
-
-	result, err := d.FlexGroupGetAll(ctx, volumeName)
-	if err != nil {
-		return nil, err
-	}
-	if result == nil || result.Payload == nil || result.Payload.NumRecords == 0 {
-		return nil, nil
-	}
-	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
-		return result.Payload.Records[0], nil
-	}
-	return nil, fmt.Errorf("could not find unique volume with name '%v'; found %d matching volumes", volumeName, result.Payload.NumRecords)
+func (d RestClient) FlexGroupGetByName(ctx context.Context, volumeName string) (*models.Volume, error) {
+	return d.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup)
 }
 
 // FlexGroupGetAll returns all relevant details for all FlexGroups whose names match the supplied prefix
 func (d RestClient) FlexGroupGetAll(ctx context.Context, pattern string) (*storage.VolumeCollectionGetOK, error) {
-
-	params := storage.NewVolumeCollectionGetParamsWithTimeout(d.httpClient.Timeout)
-	params.Context = ctx
-	params.HTTPClient = d.httpClient
-
-	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
-
-	params.SVMNameQueryParameter = &d.config.SVM
-	params.SetNameQueryParameter(ToStringPointer(pattern))
-	params.SetStateQueryParameter(ToStringPointer(models.VolumeStateOnline))
-	params.SetStyleQueryParameter(ToStringPointer(models.VolumeStyleFlexgroup))
-	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
-
-	result, err := d.api.Storage.VolumeCollectionGet(params, d.authInfo)
-
-	// TODO refactor to remove duplication
-	if err != nil {
-		return nil, err
-	}
-	if result == nil {
-		return nil, nil
-	}
-
-	if HasNextLink(result.Payload) {
-		nextLink := result.Payload.Links.Next
-		done := false
-	NEXT_LOOP:
-		for !done {
-			resultNext, errNext := d.api.Storage.VolumeCollectionGet(params, d.authInfo,
-				WithNextLink(nextLink))
-			if errNext != nil {
-				return nil, errNext
-			}
-			if resultNext == nil {
-				done = true
-				continue NEXT_LOOP
-			}
-
-			result.Payload.NumRecords += resultNext.Payload.NumRecords
-			result.Payload.Records = append(result.Payload.Records, resultNext.Payload.Records...)
-
-			if !HasNextLink(resultNext.Payload) {
-				done = true
-				continue NEXT_LOOP
-			} else {
-				nextLink = resultNext.Payload.Links.Next
-			}
-		}
-	}
-	return result, nil
+	return d.getAllVolumesByPatternStyleAndState(ctx, pattern, models.VolumeStyleFlexgroup, models.VolumeStateOnline)
 }
 
+// FlexGroupMount mounts a flexgroup at the specified junction
+func (d RestClient) FlexGroupMount(ctx context.Context, volumeName, junctionPath string) error {
+	return d.mountVolumeByNameAndStyle(ctx, volumeName, junctionPath, models.VolumeStyleFlexgroup)
+}
+
+// FlexgroupUnmount unmounts the flexgroup
+func (d RestClient) FlexgroupUnmount(ctx context.Context, volumeName string) error {
+	return d.unmountVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup)
+}
+
+func (d RestClient) FlexgroupModifyExportPolicy(ctx context.Context, volumeName, exportPolicyName string) error {
+	return d.modifyVolumeExportPolicyByNameAndStyle(ctx, volumeName, exportPolicyName, models.VolumeStyleFlexgroup)
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // FlexGroup operations END
 /////////////////////////////////////////////////////////////////////////////
 

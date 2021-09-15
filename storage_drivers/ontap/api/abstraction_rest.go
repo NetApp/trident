@@ -110,7 +110,7 @@ func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 	return nil
 }
 
-func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) (*APIResponse, error) {
+func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
 
 	if d.API.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -126,48 +126,40 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) (*APIResp
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
 		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
 	if creationErr != nil {
-		return nil, fmt.Errorf("error creating volume: %v", creationErr)
+		return fmt.Errorf("error creating volume: %v", creationErr)
 	}
 
-	return APIResponsePassed, nil
+	return nil
 }
 
-func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, _ bool) (*APIResponse, error) {
+func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, _ bool) error {
 
-	volume, _, err := d.VolumeInfo(ctx, name)
-	if err != nil {
-		return nil, fmt.Errorf("error looking up source volume: %v", err)
-	}
-	if volume == nil {
-		return nil, fmt.Errorf("error looking up source volume: %v", name)
-	}
-
-	deletionErr := d.API.VolumeDelete(ctx, volume.UUID)
+	deletionErr := d.API.VolumeDestroy(ctx, name)
 	if deletionErr != nil {
-		return nil, fmt.Errorf("error destroying volume %v: %v", name, deletionErr)
+		return fmt.Errorf("error destroying volume %v: %v", name, deletionErr)
 	}
-	return APIResponsePassed, nil
+	return nil
 }
 
-func (d OntapAPIREST) VolumeInfo(ctx context.Context, name string) (*Volume, *APIResponse, error) {
+func (d OntapAPIREST) VolumeInfo(ctx context.Context, name string) (*Volume, error) {
 
 	volumeGetResponse, err := d.API.VolumeGetByName(ctx, name)
 	if err != nil {
 		Logc(ctx).Errorf("Could not find volume with name: %v, error: %v", name, err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 
 	if volumeGetResponse == nil {
 		Logc(ctx).Errorf("Could not find volume with name: %v", name)
-		return nil, nil, VolumeReadError(fmt.Sprintf("could not find volume with name %s", name))
+		return nil, VolumeReadError(fmt.Sprintf("could not find volume with name %s", name))
 	}
 
 	volumeInfo, err := VolumeInfoFromRestAttrsHelper(volumeGetResponse)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return volumeInfo, APIResponsePassed, nil
+	return volumeInfo, nil
 }
 
 func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, error) {
@@ -286,6 +278,237 @@ func (d OntapAPIREST) EmsAutosupportLog(
 	// TODO
 }
 
+func (d OntapAPIREST) FlexgroupExists(ctx context.Context, volumeName string) (bool, error) {
+	return d.API.FlexGroupExists(ctx, volumeName)
+}
+
+func (d OntapAPIREST) FlexgroupCreate(ctx context.Context, volume Volume) error {
+	if d.API.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "FlexgroupCreate",
+			"Type":   "OntapAPIREST",
+			"spec":   volume,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> FlexgroupCreate")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< FlexgroupCreate")
+	}
+
+	volumeSize, _ := strconv.ParseUint(volume.Size, 10, 64)
+
+	creationErr := d.API.FlexGroupCreate(ctx, volume.Name, int(volumeSize), volume.Aggregates, volume.SpaceReserve,
+		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
+		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
+	if creationErr != nil {
+		return fmt.Errorf("error creating volume: %v", creationErr)
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupCloneSplitStart(ctx context.Context, cloneName string) error {
+	if err := d.API.FlexgroupCloneSplitStart(ctx, cloneName); err != nil {
+		return fmt.Errorf("error splitting clone: %v", err)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error {
+
+	if err := d.API.FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx, volumeName); err != nil {
+		return fmt.Errorf("error disabling snapshot directory access: %v", err)
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error) {
+
+	volumeGetResponse, err := d.API.FlexGroupGetByName(ctx, volumeName)
+	if err != nil {
+		Logc(ctx).Errorf("Could not find volume with name: %v, error: %v", volumeName, err.Error())
+		return nil, err
+	}
+
+	if volumeGetResponse == nil {
+		Logc(ctx).Errorf("Could not find volume with name: %v", volumeName)
+		return nil, VolumeReadError(fmt.Sprintf("could not find volume with name %s", volumeName))
+	}
+
+	volumeInfo, err := VolumeInfoFromRestAttrsHelper(volumeGetResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return volumeInfo, nil
+}
+
+func (d OntapAPIREST) FlexgroupSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error {
+	if err := d.API.FlexGroupSetComment(ctx, volumeNameInternal, comment); err != nil {
+		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Modifying comment failed: %v", err)
+		return fmt.Errorf("volume %s modify failed: %v", volumeNameExternal, err)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) error {
+	if err := d.API.FlexgroupSetQosPolicyGroupName(ctx, name, qos); err != nil {
+		return fmt.Errorf("error setting quality of service policy: %v", err)
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error {
+	volume, err := d.FlexgroupInfo(ctx, sourceVolume)
+	if err != nil {
+		return fmt.Errorf("error looking up source volume %v: %v", sourceVolume, err)
+	}
+	if volume == nil {
+		return fmt.Errorf("error looking up source volume: %v", sourceVolume)
+	}
+
+	if err = d.API.SnapshotCreateAndWait(ctx, volume.UUID, snapshotName); err != nil {
+		return fmt.Errorf("could not create snapshot: %v", err)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {
+
+	volume, err := d.FlexgroupInfo(ctx, sourceVolume)
+	if err != nil {
+		return nil, fmt.Errorf("error looking up source volume: %v", err)
+	}
+	if volume == nil {
+		return nil, fmt.Errorf("error looking up source volume: %v", sourceVolume)
+	}
+
+	snapListResponse, err := d.API.SnapshotList(ctx, volume.UUID)
+	if err != nil {
+		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
+	}
+	if snapListResponse == nil {
+		return nil, fmt.Errorf("error enumerating snapshots")
+	}
+	snapshots := Snapshots{}
+
+	for _, snap := range snapListResponse.Payload.Records {
+		snapshots = append(snapshots, Snapshot{
+			CreateTime: snap.CreateTime.String(), // TODO do we need to format this?
+			Name:       snap.Name,
+		})
+	}
+
+	Logc(ctx).Debugf("Returned %v snapshots.", snapListResponse.Payload.NumRecords)
+
+	return snapshots, nil
+}
+
+func (d OntapAPIREST) FlexgroupModifyUnixPermissions(ctx context.Context, volumeNameInternal, volumeNameExternal,
+	unixPermissions string) error {
+	err := d.API.FlexGroupModifyUnixPermissions(ctx, volumeNameInternal, unixPermissions)
+	if err != nil {
+		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Could not import volume, "+
+			"modifying unix permissions failed: %v", err)
+		return fmt.Errorf("volume %s modify failed: %v", volumeNameExternal, err)
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupMount(ctx context.Context, name, junctionPath string) error {
+	// Mount the volume at the specified junction
+	if err := d.API.FlexGroupMount(ctx, name, junctionPath); err != nil {
+		return fmt.Errorf("error mounting volume %v to junction %v: %v", name, junctionPath, err)
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupDestroy(ctx context.Context, volumeName string, force bool) error {
+	if err := d.FlexgroupUnmount(ctx, volumeName, true); err != nil {
+		return fmt.Errorf("error unmounting volume %v: %v", volumeName, err)
+	}
+
+	// TODO: If this is the parent of one or more clones, those clones have to split from this
+	// volume before it can be deleted, which means separate copies of those volumes.
+	// If there are a lot of clones on this volume, that could seriously balloon the amount of
+	// utilized space. Is that what we want? Or should we just deny the delete, and force the
+	// user to keep the volume around until all of the clones are gone? If we do that, need a
+	// way to list the clones. Maybe volume inspect.
+	deletionErr := d.API.FlexGroupDestroy(ctx, volumeName)
+	if deletionErr != nil {
+		return fmt.Errorf("error destroying volume %v: %v", volumeName, deletionErr)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupListByPrefix(ctx context.Context, prefix string) (Volumes, error) {
+
+	// TODO handle this higher? or just leave this here? i think here is OK
+	if !strings.HasSuffix(prefix, "*") {
+		// append the "*" to our prefix if it's missing
+		prefix += "*"
+	}
+
+	volumesResponse, err := d.API.FlexGroupGetAll(ctx, prefix)
+	if err != nil {
+		return nil, err
+	}
+
+	volumes := Volumes{}
+
+	if volumesResponse.Payload.Records != nil {
+		for _, volume := range volumesResponse.Payload.Records {
+			volumeInfo, err := VolumeInfoFromRestAttrsHelper(volume)
+			if err != nil {
+				return nil, err
+			}
+			volumes = append(volumes, *volumeInfo)
+		}
+	}
+
+	return volumes, nil
+
+}
+
+func (d OntapAPIREST) FlexgroupSetSize(ctx context.Context, name, newSize string) error {
+	if err := d.API.FlexGroupSetSize(ctx, name, newSize); err != nil {
+		Logc(ctx).WithField("error", err).Error("Volume resize failed.")
+		return fmt.Errorf("volume resize failed")
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupSize(ctx context.Context, volumeName string) (uint64, error) {
+	return d.API.FlexGroupSize(ctx, volumeName)
+}
+
+func (d OntapAPIREST) FlexgroupUsedSize(ctx context.Context, volumeName string) (int, error) {
+	return d.API.FlexGroupUsedSize(ctx, volumeName)
+}
+
+func (d OntapAPIREST) FlexgroupModifyExportPolicy(ctx context.Context, volumeName, policyName string) error {
+	err := d.API.FlexgroupModifyExportPolicy(ctx, volumeName, policyName)
+	if err != nil {
+		err = fmt.Errorf("error updating export policy on volume %s: %v", volumeName, err)
+		Logc(ctx).Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupUnmount(ctx context.Context, name string, _ bool) error {
+	// Setting an empty path should deactivate and unmount the volume
+	if err := d.API.FlexgroupUnmount(ctx, name); err != nil {
+		return fmt.Errorf("error unmounting volume %v: %v", name, err)
+	}
+
+	return nil
+}
+
 func (d OntapAPIREST) GetSVMAggregateAttributes(ctx context.Context) (aggrList map[string]string, err error) {
 
 	// Handle panics from the API layer
@@ -309,16 +532,16 @@ func (d OntapAPIREST) GetSVMAggregateAttributes(ctx context.Context) (aggrList m
 	return aggrList, nil
 }
 
-func (d OntapAPIREST) ExportPolicyDestroy(ctx context.Context, policy string) (*APIResponse, error) {
+func (d OntapAPIREST) ExportPolicyDestroy(ctx context.Context, policy string) error {
 	exportPolicyDestroyResult, err := d.API.ExportPolicyDestroy(ctx, policy)
 	if err != nil {
-		return nil, fmt.Errorf("error deleting export policy: %v", err)
+		return fmt.Errorf("error deleting export policy: %v", err)
 	}
 	if exportPolicyDestroyResult == nil {
-		return nil, fmt.Errorf("error deleting export policy")
+		return fmt.Errorf("error deleting export policy")
 	}
 
-	return APIResponsePassed, err
+	return err
 }
 
 func (d OntapAPIREST) VolumeExists(ctx context.Context, volumeName string) (bool, error) {
@@ -368,22 +591,22 @@ func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string
 	return svmAggregateSpaceList, nil
 }
 
-func (d OntapAPIREST) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) (*APIResponse, error) {
+func (d OntapAPIREST) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error {
 
 	if err := d.API.VolumeDisableSnapshotDirectoryAccess(ctx, name); err != nil {
-		return nil, fmt.Errorf("error disabling snapshot directory access: %v", err)
+		return fmt.Errorf("error disabling snapshot directory access: %v", err)
 	}
 
-	return APIResponsePassed, nil
+	return nil
 }
 
-func (d OntapAPIREST) VolumeMount(ctx context.Context, name, junctionPath string) (*APIResponse, error) {
+func (d OntapAPIREST) VolumeMount(ctx context.Context, name, junctionPath string) error {
 	// Mount the volume at the specified junction
 	if err := d.API.VolumeMount(ctx, name, junctionPath); err != nil {
-		return nil, fmt.Errorf("error mounting volume %v to junction %v: %v", name, junctionPath, err)
+		return fmt.Errorf("error mounting volume %v to junction %v: %v", name, junctionPath, err)
 	}
 
-	return APIResponsePassed, nil
+	return nil
 }
 
 func (d OntapAPIREST) VolumeRename(ctx context.Context, originalName, newName string) error {
@@ -421,7 +644,7 @@ func (d OntapAPIREST) ExportPolicyCreate(ctx context.Context, policy string) err
 	return err
 }
 
-func (d OntapAPIREST) VolumeSize(ctx context.Context, volumeName string) (int, error) {
+func (d OntapAPIREST) VolumeSize(ctx context.Context, volumeName string) (uint64, error) {
 	return d.API.VolumeSize(ctx, volumeName)
 }
 
@@ -429,28 +652,28 @@ func (d OntapAPIREST) VolumeUsedSize(ctx context.Context, volumeName string) (in
 	return d.API.VolumeUsedSize(ctx, volumeName)
 }
 
-func (d OntapAPIREST) VolumeSetSize(ctx context.Context, name, newSize string) (*APIResponse, error) {
+func (d OntapAPIREST) VolumeSetSize(ctx context.Context, name, newSize string) error {
 	if err := d.API.VolumeSetSize(ctx, name, newSize); err != nil {
 		Logc(ctx).WithField("error", err).Error("Volume resize failed.")
-		return nil, fmt.Errorf("volume resize failed")
+		return fmt.Errorf("volume resize failed")
 	}
 
-	return APIResponsePassed, nil
+	return nil
 }
 
 func (d OntapAPIREST) VolumeModifyUnixPermissions(ctx context.Context, volumeNameInternal, volumeNameExternal,
-	unixPermissions string) (*APIResponse, error) {
+	unixPermissions string) error {
 	err := d.API.VolumeModifyUnixPermissions(ctx, volumeNameInternal, unixPermissions)
 	if err != nil {
 		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Could not import volume, "+
 			"modifying unix permissions failed: %v", err)
-		return nil, fmt.Errorf("volume %s modify failed: %v", volumeNameExternal, err)
+		return fmt.Errorf("volume %s modify failed: %v", volumeNameExternal, err)
 	}
 
-	return APIResponsePassed, nil
+	return nil
 }
 
-func (d OntapAPIREST) VolumeListByPrefix(ctx context.Context, prefix string) (Volumes, *APIResponse, error) {
+func (d OntapAPIREST) VolumeListByPrefix(ctx context.Context, prefix string) (Volumes, error) {
 
 	// TODO handle this higher? or just leave this here? i think here is OK
 	if !strings.HasSuffix(prefix, "*") {
@@ -460,7 +683,7 @@ func (d OntapAPIREST) VolumeListByPrefix(ctx context.Context, prefix string) (Vo
 
 	volumesResponse, err := d.API.VolumeList(ctx, prefix)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	volumes := Volumes{}
@@ -469,16 +692,16 @@ func (d OntapAPIREST) VolumeListByPrefix(ctx context.Context, prefix string) (Vo
 		for _, volume := range volumesResponse.Payload.Records {
 			volumeInfo, err := VolumeInfoFromRestAttrsHelper(volume)
 			if err != nil {
-				return nil, nil, err
+				return nil, err
 			}
 			volumes = append(volumes, *volumeInfo)
 		}
 	}
 
-	return volumes, APIResponsePassed, nil
+	return volumes, nil
 }
 
-func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRules string) (*APIResponse, error) {
+func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRules string) error {
 	if d.API.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":             "ExportRuleCreate",
@@ -501,17 +724,17 @@ func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredP
 				"ExportPolicy": policyName,
 				"ClientMatch":  desiredPolicyRule,
 			}).Error(err)
-			return nil, err
+			return err
 		}
 		if ruleResponse == nil {
-			return nil, fmt.Errorf("unexpected response")
+			return fmt.Errorf("unexpected response")
 		}
 	}
 
-	return APIResponsePassed, nil
+	return nil
 }
 
-func (d OntapAPIREST) ExportRuleDestroy(ctx context.Context, policyName string, ruleIndex int) (*APIResponse, error) {
+func (d OntapAPIREST) ExportRuleDestroy(ctx context.Context, policyName string, ruleIndex int) error {
 	ruleDestroyResponse, err := d.API.ExportRuleDestroy(ctx, policyName, ruleIndex)
 	if err != nil {
 		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v",
@@ -523,20 +746,20 @@ func (d OntapAPIREST) ExportRuleDestroy(ctx context.Context, policyName string, 
 	}
 
 	if ruleDestroyResponse == nil {
-		return nil, fmt.Errorf("unexpected response")
+		return fmt.Errorf("unexpected response")
 	}
-	return APIResponsePassed, nil
+	return nil
 }
 
-func (d OntapAPIREST) VolumeModifyExportPolicy(ctx context.Context, volumeName, policyName string) (*APIResponse, error) {
+func (d OntapAPIREST) VolumeModifyExportPolicy(ctx context.Context, volumeName, policyName string) error {
 	err := d.API.VolumeModifyExportPolicy(ctx, volumeName, policyName)
 	if err != nil {
 		err = fmt.Errorf("error updating export policy on volume %s: %v", volumeName, err)
 		Logc(ctx).Error(err)
-		return nil, err
+		return err
 	}
 
-	return APIResponsePassed, nil
+	return nil
 }
 
 func (d OntapAPIREST) ExportPolicyExists(ctx context.Context, policyName string) (bool, error) {
@@ -571,47 +794,46 @@ func (d OntapAPIREST) ExportRuleList(ctx context.Context, policyName string) (ma
 	return rules, nil
 }
 
-func (d OntapAPIREST) SnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) (*APIResponse, error) {
+func (d OntapAPIREST) VolumeSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error {
 
-	volume, _, err := d.VolumeInfo(ctx, sourceVolume)
+	volume, err := d.VolumeInfo(ctx, sourceVolume)
 	if err != nil {
-		return nil, fmt.Errorf("error looking up source volume %v: %v", sourceVolume, err)
+		return fmt.Errorf("error looking up source volume %v: %v", sourceVolume, err)
+	}
+	if volume == nil {
+		return fmt.Errorf("error looking up source volume: %v", sourceVolume)
+	}
+
+	if err = d.API.SnapshotCreateAndWait(ctx, volume.UUID, snapshotName); err != nil {
+		return fmt.Errorf("could not create snapshot: %v", err)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, _ bool) error {
+	err := d.API.VolumeCloneCreateAsync(ctx, cloneName, sourceName, snapshot)
+	if err != nil {
+		return fmt.Errorf("error creating clone: %v", err)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {
+
+	volume, err := d.VolumeInfo(ctx, sourceVolume)
+	if err != nil {
+		return nil, fmt.Errorf("error looking up source volume: %v", err)
 	}
 	if volume == nil {
 		return nil, fmt.Errorf("error looking up source volume: %v", sourceVolume)
 	}
 
-	if err = d.API.SnapshotCreateAndWait(ctx, volume.UUID, snapshotName); err != nil {
-		return nil, fmt.Errorf("could not create snapshot: %v", err)
-	}
-	return APIResponsePassed, nil
-}
-
-func (d OntapAPIREST) VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, _ bool) (
-	*APIResponse, error) {
-	err := d.API.VolumeCloneCreateAsync(ctx, cloneName, sourceName, snapshot)
-	if err != nil {
-		return nil, fmt.Errorf("error creating clone: %v", err)
-	}
-	return APIResponsePassed, nil
-}
-
-func (d OntapAPIREST) SnapshotList(ctx context.Context, sourceVolume string) (Snapshots, *APIResponse, error) {
-
-	volume, _, err := d.VolumeInfo(ctx, sourceVolume)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error looking up source volume: %v", err)
-	}
-	if volume == nil {
-		return nil, nil, fmt.Errorf("error looking up source volume: %v", sourceVolume)
-	}
-
 	snapListResponse, err := d.API.SnapshotList(ctx, volume.UUID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error enumerating snapshots: %v", err)
+		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
 	if snapListResponse == nil {
-		return nil, nil, fmt.Errorf("error enumerating snapshots")
+		return nil, fmt.Errorf("error enumerating snapshots")
 	}
 	snapshots := Snapshots{}
 
@@ -624,61 +846,60 @@ func (d OntapAPIREST) SnapshotList(ctx context.Context, sourceVolume string) (Sn
 
 	Logc(ctx).Debugf("Returned %v snapshots.", snapListResponse.Payload.NumRecords)
 
-	return snapshots, APIResponsePassed, nil
+	return snapshots, nil
 }
 
-func (d OntapAPIREST) VolumeSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) (*APIResponse,
-	error) {
+func (d OntapAPIREST) VolumeSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) error {
 
 	if err := d.API.VolumeSetQosPolicyGroupName(ctx, name, qos); err != nil {
-		return nil, fmt.Errorf("error setting quality of service policy: %v", err)
+		return fmt.Errorf("error setting quality of service policy: %v", err)
 	}
 
-	return APIResponsePassed, nil
+	return nil
 }
 
-func (d OntapAPIREST) VolumeCloneSplitStart(ctx context.Context, cloneName string) (*APIResponse, error) {
+func (d OntapAPIREST) VolumeCloneSplitStart(ctx context.Context, cloneName string) error {
 	if err := d.API.VolumeCloneSplitStart(ctx, cloneName); err != nil {
-		return nil, fmt.Errorf("error splitting clone: %v", err)
+		return fmt.Errorf("error splitting clone: %v", err)
 	}
-	return APIResponsePassed, nil
+	return nil
 }
 
-func (d OntapAPIREST) SnapshotRestoreVolume(ctx context.Context, snapshotName, sourceVolume string) (*APIResponse, error) {
+func (d OntapAPIREST) SnapshotRestoreVolume(ctx context.Context, snapshotName, sourceVolume string) error {
 	if err := d.API.SnapshotRestoreVolume(ctx, snapshotName, sourceVolume); err != nil {
-		return nil, fmt.Errorf("error restoring snapshot: %v", err)
+		return fmt.Errorf("error restoring snapshot: %v", err)
 	}
 
-	return APIResponsePassed, nil
+	return nil
 }
-func (d OntapAPIREST) SnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) (*APIResponse, error) {
 
-	volume, _, err := d.VolumeInfo(ctx, sourceVolume)
-	if err != nil {
-		return nil, fmt.Errorf("error looking up source volume: %v", err)
+func (d OntapAPIREST) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, sourceVolume string) error {
+	if err := d.API.SnapshotRestoreFlexgroup(ctx, snapshotName, sourceVolume); err != nil {
+		return fmt.Errorf("error restoring snapshot: %v", err)
 	}
-	if volume == nil {
-		return nil, fmt.Errorf("error looking up source volume: %v", sourceVolume)
-	}
-	volumeUUID := volume.UUID
 
+	return nil
+}
+
+func (d OntapAPIREST) SnapshotDeleteByNameAndStyle(ctx context.Context, snapshotName, sourceVolume,
+	sourceVolumeUUID string) error {
 	// GET the snapshot by name
-	snapshot, err := d.API.SnapshotGetByName(ctx, volumeUUID, snapshotName)
+	snapshot, err := d.API.SnapshotGetByName(ctx, sourceVolumeUUID, snapshotName)
 	if err != nil {
-		return nil, fmt.Errorf("error checking for snapshot: %v", err)
+		return fmt.Errorf("error checking for snapshot: %v", err)
 	}
 	if snapshot == nil {
-		return nil, fmt.Errorf("error looking up snapshot: %v", snapshotName)
+		return fmt.Errorf("error looking up snapshot: %v", snapshotName)
 	}
 	snapshotUUID := snapshot.UUID
 
 	// DELETE the snapshot
-	snapshotDeleteResult, err := d.API.SnapshotDelete(ctx, volumeUUID, snapshotUUID)
+	snapshotDeleteResult, err := d.API.SnapshotDelete(ctx, sourceVolumeUUID, snapshotUUID)
 	if err != nil {
-		return nil, fmt.Errorf("error while deleting snapshot: %v", err)
+		return fmt.Errorf("error while deleting snapshot: %v", err)
 	}
 	if snapshotDeleteResult == nil {
-		return nil, fmt.Errorf("error while deleting snapshot: %v", snapshotName)
+		return fmt.Errorf("error while deleting snapshot: %v", snapshotName)
 	}
 
 	// check snapshot delete job status
@@ -692,18 +913,44 @@ func (d OntapAPIREST) SnapshotDelete(ctx context.Context, snapshotName, sourceVo
 			if restErr.IsSnapshotBusy() {
 				Logc(ctx).Debug("Snapshot was busy, going to split it")
 				// Start a split here before returning the error so a subsequent delete attempt may succeed.
-				return nil, SnapshotBusyError(fmt.Sprintf("snapshot %s backing volume %s is busy", snapshotName,
+				return SnapshotBusyError(fmt.Sprintf("snapshot %s backing volume %s is busy", snapshotName,
 					sourceVolume))
 			}
 		}
-		return nil, snapshotDeleteErr
+		return snapshotDeleteErr
 	}
 
-	return APIResponsePassed, nil
+	return nil
+}
+
+func (d OntapAPIREST) FlexgroupSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error {
+	volume, err := d.FlexgroupInfo(ctx, sourceVolume)
+	if err != nil {
+		return fmt.Errorf("error looking up source volume: %v", err)
+	}
+	if volume == nil {
+		return fmt.Errorf("error looking up source volume: %v", sourceVolume)
+	}
+	volumeUUID := volume.UUID
+
+	return d.SnapshotDeleteByNameAndStyle(ctx, snapshotName, sourceVolume, volumeUUID)
+}
+
+func (d OntapAPIREST) VolumeSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error {
+	volume, err := d.VolumeInfo(ctx, sourceVolume)
+	if err != nil {
+		return fmt.Errorf("error looking up source volume: %v", err)
+	}
+	if volume == nil {
+		return fmt.Errorf("error looking up source volume: %v", sourceVolume)
+	}
+	volumeUUID := volume.UUID
+
+	return d.SnapshotDeleteByNameAndStyle(ctx, snapshotName, sourceVolume, volumeUUID)
 }
 
 func (d OntapAPIREST) VolumeListBySnapshotParent(ctx context.Context, snapshotName, sourceVolume string) (
-	VolumeNameList, *APIResponse, error) {
+	VolumeNameList, error) {
 
 	childVolumes, err := d.API.VolumeListAllBackedBySnapshot(ctx, sourceVolume, snapshotName)
 	if err != nil {
@@ -712,29 +959,21 @@ func (d OntapAPIREST) VolumeListBySnapshotParent(ctx context.Context, snapshotNa
 			"parentVolumeName": sourceVolume,
 			"error":            err,
 		}).Error("Could not list volumes backed by snapshot.")
-		return nil, nil, err
+		return nil, err
 	} else if len(childVolumes) == 0 {
-		return nil, nil, nil
+		return nil, nil
 	}
 
 	// We're going to start a single split operation, but there could be multiple children, so we
 	// sort the volumes by name to not have more than one split operation running at a time.
 	sort.Strings(childVolumes)
 
-	return childVolumes, APIResponsePassed, nil
+	return childVolumes, nil
 }
 
-func (d OntapAPIREST) SnapmirrorDeleteViaDestination(_, _ string) (*APIResponse, error) {
+func (d OntapAPIREST) SnapmirrorDeleteViaDestination(_, _ string) error {
 	// TODO implement
-	return nil, nil // nothing to do yet for REST
-
-	// TODO @ameade/ @rippy
-	// return &APIResponse{
-	// 	apiName: apiName,
-	// 	status:  "failed",
-	// 	reason:  "not implemented",
-	// 	errno:   "",
-	// }, nil
+	return nil // nothing to do yet for REST
 }
 
 func (d OntapAPIREST) IsSVMDRCapable(_ context.Context) (bool, error) {

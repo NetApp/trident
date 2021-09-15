@@ -30,8 +30,8 @@ import (
 type NASFlexGroupStorageDriver struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
-	API         *api.Client
-	telemetry   *Telemetry
+	API         api.OntapAPI
+	telemetry   *TelemetryAbstraction
 
 	physicalPool storage.Pool
 	virtualPools map[string]storage.Pool
@@ -41,11 +41,11 @@ func (d *NASFlexGroupStorageDriver) GetConfig() *drivers.OntapStorageDriverConfi
 	return &d.Config
 }
 
-func (d *NASFlexGroupStorageDriver) GetAPI() *api.Client {
+func (d *NASFlexGroupStorageDriver) GetAPI() api.OntapAPI {
 	return d.API
 }
 
-func (d *NASFlexGroupStorageDriver) GetTelemetry() *Telemetry {
+func (d *NASFlexGroupStorageDriver) GetTelemetry() *TelemetryAbstraction {
 	return d.telemetry
 }
 
@@ -83,7 +83,7 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.API, err = InitializeOntapDriver(ctx, config)
+	d.API, err = InitializeOntapDriverAbstraction(ctx, config)
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
@@ -100,7 +100,7 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 	}
 
 	// Set up the autosupport heartbeat
-	d.telemetry = NewOntapTelemetry(ctx, d)
+	d.telemetry = NewOntapTelemetryAbstraction(ctx, d)
 	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	d.telemetry.TridentBackendUUID = backendUUID
 	d.telemetry.Start(ctx)
@@ -122,7 +122,7 @@ func (d *NASFlexGroupStorageDriver) Terminate(ctx context.Context, backendUUID s
 	}
 	if d.Config.AutoExportPolicy {
 		policyName := getExportPolicyName(backendUUID)
-		if err := deleteExportPolicy(ctx, policyName, d.API); err != nil {
+		if err := d.API.ExportPolicyDestroy(ctx, policyName); err != nil {
 			Logc(ctx).Warn(err)
 		}
 	}
@@ -136,7 +136,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 
 	config := d.GetConfig()
 
-	vserverAggrs, err := d.vserverAggregates(config.SVM)
+	vserverAggrs, err := d.vserverAggregates(ctx, config.SVM)
 	if err != nil {
 		return err
 	}
@@ -188,6 +188,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 	pool.InternalAttributes()[Encryption] = config.Encryption
 	pool.InternalAttributes()[UnixPermissions] = config.UnixPermissions
 	pool.InternalAttributes()[SnapshotDir] = config.SnapshotDir
+	pool.InternalAttributes()[SplitOnClone] = config.SplitOnClone
 	pool.InternalAttributes()[ExportPolicy] = config.ExportPolicy
 	pool.InternalAttributes()[SecurityStyle] = config.SecurityStyle
 	pool.InternalAttributes()[TieringPolicy] = config.TieringPolicy
@@ -230,6 +231,11 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 			snapshotReserve := config.SnapshotReserve
 			if vpool.SnapshotReserve != "" {
 				snapshotReserve = vpool.SnapshotReserve
+			}
+
+			splitOnClone := config.SplitOnClone
+			if vpool.SplitOnClone != "" {
+				splitOnClone = vpool.SplitOnClone
 			}
 
 			unixPermissions := config.UnixPermissions
@@ -309,6 +315,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 			pool.InternalAttributes()[SpaceReserve] = spaceReserve
 			pool.InternalAttributes()[SnapshotPolicy] = snapshotPolicy
 			pool.InternalAttributes()[SnapshotReserve] = snapshotReserve
+			pool.InternalAttributes()[SplitOnClone] = splitOnClone
 			pool.InternalAttributes()[UnixPermissions] = unixPermissions
 			pool.InternalAttributes()[SnapshotDir] = snapshotDir
 			pool.InternalAttributes()[ExportPolicy] = exportPolicy
@@ -344,20 +351,13 @@ func (d *NASFlexGroupStorageDriver) getVserverAggrMediaType(
 		}
 	}()
 
-	result, err := d.GetAPI().VserverShowAggrGetIterRequest()
+	aggrList, err := d.GetAPI().GetSVMAggregateAttributes(ctx)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	if zerr := api.NewZapiError(result.Result); !zerr.IsPassed() {
-		err = zerr
-		return
-	}
-
-	if result.Result.AttributesListPtr != nil {
-		for _, aggr := range result.Result.AttributesListPtr.ShowAggregatesPtr {
-			aggrName := aggr.AggregateName()
-			aggrType := aggr.AggregateType()
+	if aggrList != nil {
+		for aggrName, aggrType := range aggrList {
 
 			// Find matching aggregate.
 			_, ok := aggrMap[aggrName]
@@ -402,7 +402,7 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 		return fmt.Errorf("ONTAP version does not support FlexGroups")
 	}
 
-	if err := ValidateNASDriver(ctx, d.API, &d.Config); err != nil {
+	if err := ValidateNASDriverAbstraction(ctx, d.API, &d.Config); err != nil {
 		return fmt.Errorf("driver validation failed: %v", err)
 	}
 
@@ -414,7 +414,7 @@ func (d *NASFlexGroupStorageDriver) validate(ctx context.Context) error {
 	var physicalPools = map[string]storage.Pool{
 		d.physicalPool.Name(): d.physicalPool,
 	}
-	if err := ValidateStoragePools(ctx, physicalPools, d.virtualPools, d, api.MaxNASLabelLength); err != nil {
+	if err := ValidateStoragePoolsAbstraction(ctx, physicalPools, d.virtualPools, d, api.MaxNASLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -440,7 +440,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 
 	// If the volume already exists, bail out
-	volExists, err := d.API.FlexGroupExists(ctx, name)
+	volExists, err := d.API.FlexgroupExists(ctx, name)
 	if err != nil {
 		return fmt.Errorf("error checking for existing FlexGroup: %v", err)
 	}
@@ -449,7 +449,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 
 	// Get the aggregates assigned to the SVM.  There must be at least one!
-	vserverAggrs, err := d.API.SVMGetAggregateNames()
+	vserverAggrs, err := d.API.GetSVMAggregateNames(ctx)
 	if err != nil {
 		return err
 	}
@@ -513,9 +513,9 @@ func (d *NASFlexGroupStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
-	// get the flexvol size based on the snapshot reserve
-	flexvolSize := calculateFlexvolSize(ctx, name, sizeBytes, snapshotReserveInt)
-	sizeBytes, err = GetVolumeSize(flexvolSize, storagePool.InternalAttributes()[Size])
+	// get the flexgroup size based on the snapshot reserve
+	flexgroupSize := calculateFlexvolSize(ctx, name, sizeBytes, snapshotReserveInt)
+	sizeBytes, err = GetVolumeSize(flexgroupSize, storagePool.InternalAttributes()[Size])
 	if err != nil {
 		return err
 	}
@@ -565,10 +565,24 @@ func (d *NASFlexGroupStorageDriver) Create(
 
 	// Create the FlexGroup
 	checkVolumeCreated := func() error {
-		_, err = d.API.FlexGroupCreate(
-			ctx, name, size, vserverAggrNames, spaceReserve, snapshotPolicy, unixPermissions,
-			exportPolicy, securityStyle, tieringPolicy, labels, qosPolicyGroup, enableEncryption, snapshotReserveInt)
-
+		// Create the FlexGroup
+		err = d.API.FlexgroupCreate(
+			ctx, api.Volume{
+				Aggregates:      vserverAggrNames,
+				Comment:         labels,
+				Encrypt:         enableEncryption,
+				ExportPolicy:    exportPolicy,
+				Name:            name,
+				Qos:             qosPolicyGroup,
+				Size:            strconv.FormatUint(sizeBytes, 10),
+				SpaceReserve:    spaceReserve,
+				SnapshotPolicy:  snapshotPolicy,
+				SecurityStyle:   securityStyle,
+				SnapshotReserve: snapshotReserveInt,
+				TieringPolicy:   tieringPolicy,
+				UnixPermissions: unixPermissions,
+				DPVolume:        volConfig.IsMirrorDestination,
+			})
 		return err
 	}
 
@@ -595,21 +609,85 @@ func (d *NASFlexGroupStorageDriver) Create(
 
 	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 	if !enableSnapshotDir {
-		_, err := d.API.FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx, name)
-		if err != nil {
-			createErrors = append(createErrors, fmt.Errorf(
-				"ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v",
-				storagePool.Name(), name, err))
+		if err := d.API.FlexgroupDisableSnapshotDirectoryAccess(ctx, name); err != nil {
+			createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v", storagePool.Name(), name, err))
 			return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 		}
 	}
 
 	// Mount the volume at the specified junction
-	mountResponse, err := d.API.VolumeMount(name, "/"+name)
-	if err = api.GetError(ctx, mountResponse, err); err != nil {
-		createErrors = append(createErrors, fmt.Errorf(
-			"ONTAP-NAS-FLEXGROUP pool %s; error mounting volume %s to junction: %v", storagePool.Name(), name, err))
+	if err := d.API.FlexgroupMount(ctx, name, "/"+name); err != nil {
+		createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error mounting volume %s to junction: %v; %v", storagePool.Name(), name, "/"+name, err))
 		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
+	}
+
+	return nil
+}
+
+// cloneFlexgroup creates a flexgroup clone
+func cloneFlexgroup(
+	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI, useAsync bool, qosPolicyGroup api.QosPolicyGroup,
+) error {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":   "cloneFlexgroup",
+			"Type":     "NASFlexgroupStorageDriver",
+			"name":     name,
+			"source":   source,
+			"snapshot": snapshot,
+			"split":    split,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> cloneFlexgroup")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< cloneFlexgroup")
+	}
+
+	// If the specified volume already exists, return an error
+	volExists, err := client.FlexgroupExists(ctx, name)
+	if err != nil {
+		return fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if volExists {
+		return fmt.Errorf("volume %s already exists", name)
+	}
+
+	// If no specific snapshot was requested, create one
+	if snapshot == "" {
+		snapshot = time.Now().UTC().Format(storage.SnapshotNameFormat)
+		if err = client.FlexgroupSnapshotCreate(ctx, snapshot, source); err != nil {
+			return err
+		}
+	}
+
+	// Create the clone based on a snapshot
+	if err = client.VolumeCloneCreate(ctx, name, source, snapshot, useAsync); err != nil {
+		return err
+	}
+
+	if err = client.FlexgroupSetComment(ctx, name, name, labels); err != nil {
+		return err
+	}
+
+	if config.StorageDriverName == drivers.OntapNASStorageDriverName {
+		// Mount the new volume
+		if err = client.FlexgroupMount(ctx, name, "/"+name); err != nil {
+			return err
+		}
+	}
+
+	// Set the QoS Policy if necessary
+	if qosPolicyGroup.Kind != api.InvalidQosPolicyGroupKind {
+		if err := client.FlexgroupSetQosPolicyGroupName(ctx, name, qosPolicyGroup); err != nil {
+			return err
+		}
+	}
+
+	// Split the clone if requested
+	if split {
+		if err := client.FlexgroupCloneSplitStart(ctx, name); err != nil {
+			return fmt.Errorf("error splitting clone: %v", err)
+		}
 	}
 
 	return nil
@@ -619,23 +697,84 @@ func (d *NASFlexGroupStorageDriver) Create(
 func (d *NASFlexGroupStorageDriver) CreateClone(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
-	sourceLabel := ""
 
 	// Ensure the volume exists
-	flexgroup, err := d.API.FlexGroupGet(volConfig.CloneSourceVolumeInternal)
+	flexgroup, err := d.API.FlexgroupInfo(ctx, volConfig.CloneSourceVolumeInternal)
 	if err != nil {
 		return err
 	} else if flexgroup == nil {
 		return fmt.Errorf("volume %s not found", volConfig.CloneSourceVolumeInternal)
 	}
 
-	// Get the source flexgroup's label
-	if flexgroup.VolumeIdAttributesPtr != nil {
-		volumeIdAttrs := flexgroup.VolumeIdAttributes()
-		sourceLabel = volumeIdAttrs.Comment()
+	// if cloning a FlexGroup, useAsync will be true
+	if !d.GetAPI().SupportsFeature(ctx, api.NetAppFlexGroupsClone) {
+		return errors.New("the ONTAPI version does not support FlexGroup cloning")
 	}
 
-	return CreateCloneNAS(ctx, d, volConfig, storagePool, sourceLabel, api.MaxNASLabelLength, true)
+	if d.GetConfig().DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":      "CreateClone",
+			"Type":        "NASStorageDriver",
+			"name":        volConfig.InternalName,
+			"source":      volConfig.CloneSourceVolumeInternal,
+			"snapshot":    volConfig.CloneSourceSnapshot,
+			"storagePool": storagePool,
+		}
+
+		Logc(ctx).WithFields(fields).Debug(">>>> CreateClone")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
+	}
+
+	opts, err := d.GetVolumeOpts(context.Background(), volConfig, make(map[string]sa.Request))
+	if err != nil {
+		return err
+	}
+
+	// How "splitOnClone" value gets set:
+	// In the Core we first check clone's VolumeConfig for splitOnClone value
+	// If it is not set then (again in Core) we check source PV's VolumeConfig for splitOnClone value
+	// If we still don't have splitOnClone value then HERE we check for value in the source PV's Storage/Virtual Pool
+	// If the value for "splitOnClone" is still empty then HERE we set it to backend config's SplitOnClone value
+
+	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
+	var storagePoolSplitOnCloneVal string
+
+	labels := flexgroup.Comment
+
+	if storage.IsStoragePoolUnset(storagePool) {
+		// Set the base label
+		storagePoolTemp := &storage.StoragePool{}
+		storagePoolTemp.SetAttributes(map[string]sa.Offer{
+			sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
+		})
+		labels, err = storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxNASLabelLength)
+		if err != nil {
+			return err
+		}
+	} else {
+		storagePoolSplitOnCloneVal = storagePool.InternalAttributes()[SplitOnClone]
+	}
+
+	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value
+	if storagePoolSplitOnCloneVal == "" {
+		storagePoolSplitOnCloneVal = d.GetConfig().SplitOnClone
+	}
+
+	split, err := strconv.ParseBool(utils.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
+	if err != nil {
+		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
+	}
+
+	qosPolicy := utils.GetV(opts, "qosPolicy", "")
+	adaptiveQosPolicy := utils.GetV(opts, "adaptiveQosPolicy", "")
+	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
+	if err != nil {
+		return err
+	}
+
+	return cloneFlexgroup(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+		volConfig.CloneSourceSnapshot, labels, split, d.GetConfig(), d.GetAPI(), true,
+		qosPolicyGroup)
 }
 
 // Import brings an existing volume under trident's control
@@ -654,41 +793,30 @@ func (d *NASFlexGroupStorageDriver) Import(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Import")
 	}
 
-	// Ensure the volume exists
-	flexgroup, err := d.API.FlexGroupGet(originalName)
+	flexgroup, err := d.API.FlexgroupInfo(ctx, originalName)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not import volume; %v", err)
 	} else if flexgroup == nil {
 		return fmt.Errorf("could not import volume %s, volume not found", originalName)
 	}
 
 	// Validate the volume is what it should be
-	if flexgroup.VolumeIdAttributesPtr != nil {
-		volumeIdAttrs := flexgroup.VolumeIdAttributes()
-		if volumeIdAttrs.TypePtr != nil && volumeIdAttrs.Type() != "rw" {
-			Logc(ctx).WithField("originalName", originalName).Error("Could not import volume, type is not rw.")
-			return fmt.Errorf("could not import volume %s, type is %s, not rw", originalName, volumeIdAttrs.Type())
-		}
+	if flexgroup.AccessType != "rw" {
+		Logc(ctx).WithField("originalName", originalName).Error("Could not import volume, type is not rw.")
+		return fmt.Errorf("could not import volume %s, type is %s, not rw", originalName, flexgroup.AccessType)
 	}
 
 	// Get the volume size
-	if flexgroup.VolumeSpaceAttributesPtr == nil || flexgroup.VolumeSpaceAttributesPtr.SizePtr == nil {
-		Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, size not available")
-		return fmt.Errorf("could not import volume %s, size not available", originalName)
-	}
-	volConfig.Size = strconv.FormatInt(int64(flexgroup.VolumeSpaceAttributesPtr.Size()), 10)
+	volConfig.Size = flexgroup.Size
 
 	// We cannot rename flexgroups, so internal name should match the imported originalName
 	volConfig.InternalName = originalName
 
 	// Update the volume labels if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
-		volumeIdAttrs := flexgroup.VolumeIdAttributes()
-		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, volumeIdAttrs.Comment()) {
-			modifyCommentResponse, err := d.API.FlexGroupSetComment(ctx, volConfig.InternalName, "")
-			if err = api.GetError(ctx, modifyCommentResponse, err); err != nil {
-				Logc(ctx).WithField("originalName", originalName).Errorf("Modifying comment failed: %v", err)
-				return fmt.Errorf("volume %s modify failed: %v", originalName, err)
+		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, flexgroup.Comment) {
+			if err := d.API.FlexgroupSetComment(ctx, volConfig.InternalName, originalName, ""); err != nil {
+				return err
 			}
 		}
 	}
@@ -700,20 +828,14 @@ func (d *NASFlexGroupStorageDriver) Import(
 		if unixPerms == "" {
 			unixPerms = d.Config.UnixPermissions
 		}
-		modifyUnixPermResponse, err := d.API.FlexGroupModifyUnixPermissions(ctx, volConfig.InternalName, unixPerms)
-		if err = api.GetError(ctx, modifyUnixPermResponse, err); err != nil {
-			Logc(ctx).WithField("originalName", originalName).Errorf(
-				"Could not import volume, modifying unix permissions failed: %v", err)
-			return fmt.Errorf("volume %s modify failed: %v", originalName, err)
+		if err := d.API.FlexgroupModifyUnixPermissions(ctx, volConfig.InternalName, originalName, unixPerms); err != nil {
+			return err
 		}
 	}
 
 	// Make sure we're not importing a volume without a junction path when not managed
 	if volConfig.ImportNotManaged {
-		if flexgroup.VolumeIdAttributesPtr == nil {
-			return fmt.Errorf("unable to read volume id attributes of volume %s", originalName)
-		} else if flexgroup.VolumeIdAttributesPtr.JunctionPathPtr == nil || flexgroup.VolumeIdAttributesPtr.
-			JunctionPath() == "" {
+		if flexgroup.JunctionPath == "" {
 			return fmt.Errorf("junction path is not set for volume %s", originalName)
 		}
 	}
@@ -740,25 +862,11 @@ func (d *NASFlexGroupStorageDriver) Destroy(ctx context.Context, name string) er
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Destroy")
 	}
 
-	// Needed once FlexGroups support clones
-	// TODO: If this is the parent of one or more clones, those clones have to split from this
-	// volume before it can be deleted, which means separate copies of those volumes.
-	// If there are a lot of clones on this volume, that could seriously balloon the amount of
-	// utilized space. Is that what we want? Or should we just deny the delete, and force the
-	// user to keep the volume around until all of the clones are gone? If we do that, need a
-	// way to list the clones. Maybe volume inspect.
-
-	if volExists, err := UnmountAndOfflineVolume(ctx, d.GetAPI(), name); err != nil {
-		return err
-	} else if !volExists {
-		return nil
-	}
-
 	// This call is async, but we will receive an immediate error back for anything but very rare volume deletion
 	// failures. Failures in this category are almost certainly likely to be beyond our capability to fix or even
 	// diagnose, so we defer to the ONTAP cluster admin
-	if _, err := d.API.FlexGroupDestroy(ctx, name, true); err != nil {
-		return fmt.Errorf("error destroying FlexGroup %v: %v", name, err)
+	if err := d.API.FlexgroupDestroy(ctx, name, true); err != nil {
+		return err
 	}
 
 	return nil
@@ -795,7 +903,58 @@ func (d *NASFlexGroupStorageDriver) Publish(
 	publishInfo.FilesystemType = "nfs"
 	publishInfo.MountOptions = mountOptions
 
-	return publishFlexVolShare(ctx, d.API, &d.Config, publishInfo, name)
+	return publishFlexVolShareAbstraction(ctx, d.API, &d.Config, publishInfo, name, d.API.FlexgroupModifyExportPolicy)
+}
+
+// getFlexgroupSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
+func getFlexgroupSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI) (*storage.Snapshot, error) {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "getFlexgroupSnapshot",
+			"Type":         "NASFlexGroupStorageDriver",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> getFlexgroupSnapshot")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< getFlexgroupSnapshot")
+	}
+
+	size, err := client.FlexgroupUsedSize(ctx, snapConfig.VolumeInternalName)
+	if err != nil {
+		return nil, fmt.Errorf("error reading volume size: %v", err)
+	}
+
+	snapshots, err := client.FlexgroupSnapshotList(ctx, snapConfig.VolumeInternalName)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, snap := range snapshots {
+		Logc(ctx).WithFields(log.Fields{
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
+			"created":      snap.CreateTime,
+		}).Debug("Found snapshot.")
+		if snap.Name == snapConfig.InternalName {
+			return &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   snap.CreateTime,
+				SizeBytes: int64(size),
+				State:     storage.SnapshotStateOnline,
+			}, nil
+		}
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}).Warning("Snapshot not found.")
+
+	return nil, nil
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
@@ -820,7 +979,60 @@ func (d *NASFlexGroupStorageDriver) GetSnapshot(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	return GetSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.FlexGroupUsedSize)
+	return getFlexgroupSnapshot(ctx, snapConfig, &d.Config, d.API)
+}
+
+// getFlexgroupSnapshotList returns the list of snapshots associated with the named volume.
+func getFlexgroupSnapshotList(
+	ctx context.Context, volConfig *storage.VolumeConfig, config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
+) ([]*storage.Snapshot, error) {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":     "getFlexgroupSnapshotList",
+			"Type":       "NASFlexGroupStorageDriver",
+			"volumeName": volConfig.InternalName,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> getFlexgroupSnapshotList")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< getFlexgroupSnapshotList")
+	}
+
+	size, err := client.FlexgroupUsedSize(ctx, volConfig.InternalName)
+	if err != nil {
+		return nil, fmt.Errorf("error reading volume size: %v", err)
+	}
+
+	snapshots, err := client.FlexgroupSnapshotList(ctx, volConfig.InternalName)
+	if err != nil {
+		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
+	}
+
+	result := make([]*storage.Snapshot, 0)
+
+	for _, snap := range snapshots {
+
+		Logc(ctx).WithFields(log.Fields{
+			"name":       snap.Name,
+			"accessTime": snap.CreateTime,
+		}).Debug("Snapshot")
+
+		snapshot := &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Version:            tridentconfig.OrchestratorAPIVersion,
+				Name:               snap.Name,
+				InternalName:       snap.Name,
+				VolumeName:         volConfig.Name,
+				VolumeInternalName: volConfig.InternalName,
+			},
+			Created:   snap.CreateTime,
+			SizeBytes: int64(size),
+			State:     storage.SnapshotStateOnline,
+		}
+
+		result = append(result, snapshot)
+	}
+
+	return result, nil
 }
 
 // GetSnapshots returns the list of snapshots associated with the specified volume
@@ -838,7 +1050,62 @@ func (d *NASFlexGroupStorageDriver) GetSnapshots(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
 	}
 
-	return GetSnapshots(ctx, volConfig, &d.Config, d.API, d.API.FlexGroupUsedSize)
+	return getFlexgroupSnapshotList(ctx, volConfig, &d.Config, d.API)
+}
+
+// createFlexgroupSnapshot creates a snapshot for the given flexgroup.
+func createFlexgroupSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "createFlexgroupSnapshot",
+			"Type":         "NASFlexGroupStorageDriver",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> createFlexgroupSnapshot")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< createFlexgroupSnapshot")
+	}
+
+	// If the specified volume doesn't exist, return error
+	volExists, err := client.FlexgroupExists(ctx, internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if !volExists {
+		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
+	}
+
+	size, err := client.FlexgroupUsedSize(ctx, internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error reading volume size: %v", err)
+	}
+
+	if err := client.FlexgroupSnapshotCreate(ctx, internalSnapName, internalVolName); err != nil {
+		return nil, err
+	}
+
+	snapshots, err := client.FlexgroupSnapshotList(ctx, internalVolName)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, snap := range snapshots {
+		if snap.Name == internalSnapName {
+			return &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   snap.CreateTime,
+				SizeBytes: int64(size),
+				State:     storage.SnapshotStateOnline,
+			}, nil
+		}
+	}
+	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", internalSnapName, internalVolName)
 }
 
 // CreateSnapshot creates a snapshot for the given volume
@@ -860,7 +1127,7 @@ func (d *NASFlexGroupStorageDriver) CreateSnapshot(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return CreateSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.FlexGroupUsedSize)
+	return createFlexgroupSnapshot(ctx, snapConfig, &d.Config, d.API)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -877,7 +1144,16 @@ func (d *NASFlexGroupStorageDriver) RestoreSnapshot(ctx context.Context, snapCon
 		defer Logc(ctx).WithFields(fields).Debug("<<<< RestoreSnapshot")
 	}
 
-	return RestoreSnapshot(ctx, snapConfig, &d.Config, d.API)
+	if err := d.API.SnapshotRestoreFlexgroup(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName); err != nil {
+		return err
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}).Debug("Restored snapshot.")
+
+	return nil
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
@@ -894,7 +1170,28 @@ func (d *NASFlexGroupStorageDriver) DeleteSnapshot(ctx context.Context, snapConf
 		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
 	}
 
-	return DeleteSnapshot(ctx, snapConfig, &d.Config, d.API)
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "DeleteSnapshot",
+			"Type":         "ontap_common",
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
+	}
+
+	if err := d.API.FlexgroupSnapshotDelete(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName); err != nil {
+		if api.IsSnapshotBusyError(err) {
+			// Start a split here before returning the error so a subsequent delete attempt may succeed.
+			_ = SplitVolumeFromBusySnapshotAbstraction(ctx, snapConfig, &d.Config, d.API, d.API.FlexgroupCloneSplitStart)
+		}
+		// we must return the err, even if we started a split, so the snapshot delete is retried
+		return err
+	}
+
+	Logc(ctx).WithField("snapshotName", snapConfig.InternalName).Debug("Deleted snapshot.")
+	return nil
 }
 
 // Get tests the existence of a FlexGroup. Returns nil if the FlexGroup
@@ -907,7 +1204,7 @@ func (d *NASFlexGroupStorageDriver) Get(ctx context.Context, name string) error 
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Get")
 	}
 
-	volExists, err := d.API.FlexGroupExists(ctx, name)
+	volExists, err := d.API.FlexgroupExists(ctx, name)
 	if err != nil {
 		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
@@ -947,10 +1244,10 @@ func (d *NASFlexGroupStorageDriver) GetStorageBackendPhysicalPoolNames(context.C
 	return physicalPoolNames
 }
 
-func (d *NASFlexGroupStorageDriver) vserverAggregates(svmName string) ([]string, error) {
+func (d *NASFlexGroupStorageDriver) vserverAggregates(ctx context.Context, svmName string) ([]string, error) {
 	var err error
 	// Get the aggregates assigned to the SVM.  There must be at least one!
-	vserverAggrs, err := d.API.SVMGetAggregateNames()
+	vserverAggrs, err := d.API.GetSVMAggregateNames(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -994,25 +1291,21 @@ func (d *NASFlexGroupStorageDriver) CreateFollowup(ctx context.Context, volConfi
 	volConfig.FileSystem = ""
 
 	// Set correct junction path
-	flexgroup, err := d.API.FlexGroupGet(volConfig.InternalName)
+	flexgroup, err := d.API.FlexgroupInfo(ctx, volConfig.InternalName)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create volume; %v", err)
 	} else if flexgroup == nil {
 		return fmt.Errorf("could not create volume %s, volume not found", volConfig.InternalName)
 	}
 
-	if flexgroup.VolumeIdAttributesPtr == nil {
-		return errors.New("error reading volume id attributes")
-	}
-	if flexgroup.VolumeIdAttributesPtr.JunctionPathPtr == nil || flexgroup.VolumeIdAttributesPtr.JunctionPath() == "" {
+	if flexgroup.JunctionPath == "" {
 		// Flexgroup is not mounted, we need to mount it
 		volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
-		mountResponse, err := d.API.VolumeMount(volConfig.InternalName, volConfig.AccessInfo.NfsPath)
-		if err = api.GetError(ctx, mountResponse, err); err != nil {
+		if err := d.API.FlexgroupMount(ctx, volConfig.InternalName, volConfig.AccessInfo.NfsPath); err != nil {
 			return fmt.Errorf("error mounting volume to junction %s; %v", volConfig.AccessInfo.NfsPath, err)
 		}
 	} else {
-		volConfig.AccessInfo.NfsPath = flexgroup.VolumeIdAttributesPtr.JunctionPath()
+		volConfig.AccessInfo.NfsPath = flexgroup.JunctionPath
 	}
 
 	return nil
@@ -1034,16 +1327,15 @@ func (d *NASFlexGroupStorageDriver) GetExternalConfig(ctx context.Context) inter
 // GetVolumeExternal queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
 // representation of the volume.
-func (d *NASFlexGroupStorageDriver) GetVolumeExternal(_ context.Context, name string) (
+func (d *NASFlexGroupStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
 	*storage.VolumeExternal, error,
 ) {
-
-	volumeAttributes, err := d.API.FlexGroupGet(name)
+	flexgroup, err := d.API.FlexgroupInfo(ctx, name)
 	if err != nil {
 		return nil, err
 	}
 
-	return d.getVolumeExternal(volumeAttributes), nil
+	return getVolumeExternalCommon(*flexgroup, *d.Config.StoragePrefix, d.Config.SVM), nil
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about
@@ -1058,17 +1350,15 @@ func (d *NASFlexGroupStorageDriver) GetVolumeExternalWrappers(
 	defer close(channel)
 
 	// Get all volumes matching the storage prefix
-	volumesResponse, err := d.API.FlexGroupGetAll(*d.Config.StoragePrefix)
-	if err = api.GetError(ctx, volumesResponse, err); err != nil {
+	volumes, err := d.API.FlexgroupListByPrefix(ctx, *d.Config.StoragePrefix)
+	if err != nil {
 		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
 		return
 	}
 
 	// Convert all volumes to VolumeExternal and write them to the channel
-	if volumesResponse.Result.AttributesListPtr != nil {
-		for _, volume := range volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr {
-			channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(&volume), Error: nil}
-		}
+	for _, volume := range volumes {
+		channel <- &storage.VolumeExternalWrapper{Volume: getVolumeExternalCommon(volume, *d.Config.StoragePrefix, d.Config.SVM), Error: nil}
 	}
 }
 
@@ -1162,27 +1452,25 @@ func (d *NASFlexGroupStorageDriver) Resize(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
 	}
 
-	flexvolSize, err := resizeValidation(ctx, name, requestedSizeBytes, d.API.FlexGroupExists, d.API.FlexGroupSize)
+	flexgroupSize, err := resizeValidationAbstraction(ctx, name, requestedSizeBytes, d.API.FlexgroupExists, d.API.FlexgroupSize)
 	if err != nil {
 		return err
 	}
 
-	volConfig.Size = strconv.FormatUint(flexvolSize, 10)
-	if flexvolSize == requestedSizeBytes {
+	volConfig.Size = strconv.FormatUint(flexgroupSize, 10)
+	if flexgroupSize == requestedSizeBytes {
 		return nil
 	}
 
-	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, d.API.FlexGroupGet)
+	snapshotReserveInt, err := getSnapshotReserveFromOntapAbstraction(ctx, name, d.API.FlexgroupInfo)
 	if err != nil {
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
 	}
 
-	newFlexvolSize := calculateFlexvolSize(ctx, name, requestedSizeBytes, snapshotReserveInt)
+	newFlexgroupSize := calculateFlexvolSize(ctx, name, requestedSizeBytes, snapshotReserveInt)
 
-	_, err = d.API.FlexGroupSetSize(ctx, name, strconv.FormatUint(newFlexvolSize, 10))
-	if err != nil {
-		Logc(ctx).WithField("error", err).Error("FlexGroup resize failed.")
-		return fmt.Errorf("flexgroup resize failed")
+	if err := d.API.FlexgroupSetSize(ctx, name, strconv.FormatUint(newFlexgroupSize, 10)); err != nil {
+		return err
 	}
 
 	volConfig.Size = strconv.FormatUint(requestedSizeBytes, 10)
@@ -1209,7 +1497,7 @@ func (d *NASFlexGroupStorageDriver) ReconcileNodeAccess(
 
 	policyName := getExportPolicyName(backendUUID)
 
-	return reconcileNASNodeAccess(ctx, nodes, &d.Config, d.API, policyName)
+	return reconcileNASNodeAccessAbstraction(ctx, nodes, &d.Config, d.API, policyName)
 }
 
 // String makes NASFlexGroupStorageDriver satisfy the Stringer interface.
