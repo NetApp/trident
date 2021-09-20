@@ -5,17 +5,17 @@ package installer
 import (
 	"fmt"
 
-	"github.com/netapp/trident/utils"
-
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/policy/v1beta1"
 	v12 "k8s.io/api/rbac/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	v1beta12 "k8s.io/api/storage/v1beta1"
 
 	"github.com/netapp/trident/cli/cmd"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
+	"github.com/netapp/trident/utils"
 )
 
 func (i *Installer) isTridentInstalled() (installed bool, namespace string, err error) {
@@ -118,8 +118,14 @@ func (i *Installer) UninstallTrident() error {
 		return err
 	}
 
-	if err := i.deleteTridentCSIDriverCR(); err != nil {
-		return err
+	if i.client.ServerVersion().AtLeast(KubernetesVersionMinV1CSIDriver) {
+		if err := i.deleteTridentCSIDriverCR(); err != nil {
+			return err
+		}
+	} else {
+		if err := i.deleteTridentBetaCSIDriverCR(); err != nil {
+			return err
+		}
 	}
 
 	if err := i.removeRBACObjects(); err != nil {
@@ -601,6 +607,81 @@ func (i *Installer) RemoveMultiplePodSecurityPolicies(unwantedPSPs []v1beta1.Pod
 	return nil
 }
 
+func (i *Installer) deleteTridentBetaCSIDriverCR() error {
+
+	// TODO (cknight): remove when 1.18 is our minimum version
+
+	CSIDriverName := getCSIDriverName()
+
+	if csiDrivers, err := i.client.GetBetaCSIDriversByLabel(appLabel); err != nil {
+		log.WithField("label", appLabel).Errorf("Unable to get list of CSI driver CRs by label.")
+		return fmt.Errorf("unable to get list of CSI driver CRs by label")
+	} else if len(csiDrivers) == 0 {
+		log.WithFields(log.Fields{
+			"label": appLabel,
+			"error": err,
+		}).Warning("CSI driver CR not found.")
+
+		log.Debug("Deleting unlabeled Trident CSI Driver by name as it may have been created outside of the Trident" +
+			" Operator.")
+		if err = i.client.DeleteBetaCSIDriver(CSIDriverName); err != nil {
+			if !utils.IsResourceNotFoundError(err) {
+				log.WithField("error", err).Warning("Could not delete Trident CSI driver custom resource.")
+			}
+		} else {
+			log.WithField("CSIDriver", CSIDriverName).Info("Deleted unlabeled Trident CSI driver custom resource.")
+		}
+	} else {
+		if len(csiDrivers) == 1 {
+			log.WithFields(log.Fields{
+				"CSIDriver": csiDrivers[0].Name,
+				"namespace": csiDrivers[0].Namespace,
+			}).Info("Trident CSI driver CR found by label.")
+		} else {
+			log.WithField("label", appLabel).Warnf("Multiple CSI driver CRs found matching label; removing all.")
+		}
+
+		if err = i.RemoveMultipleBetaCSIDriverCRs(csiDrivers); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (i *Installer) RemoveMultipleBetaCSIDriverCRs(unwantedCSIDriverCRs []v1beta12.CSIDriver) error {
+
+	// TODO (cknight): remove when 1.18 is our minimum version
+
+	var err error
+	var anyError bool
+	var undeletedCSIDriverCRs []string
+
+	if len(unwantedCSIDriverCRs) > 0 {
+		// Delete the CSI driver CRs
+		for _, CSIDriverCRToRemove := range unwantedCSIDriverCRs {
+			if err = i.client.DeleteBetaCSIDriver(CSIDriverCRToRemove.Name); err != nil {
+				log.WithFields(log.Fields{
+					"CSIDriver": CSIDriverCRToRemove.Name,
+					"label":     appLabel,
+					"error":     err,
+				}).Warning("Could not delete CSI driver CR.")
+
+				anyError = true
+				undeletedCSIDriverCRs = append(undeletedCSIDriverCRs, fmt.Sprintf("%v", CSIDriverCRToRemove.Name))
+			} else {
+				log.WithField("csiDriver", CSIDriverCRToRemove.Name).Infof("Deleted CSI driver.")
+			}
+		}
+	}
+
+	if anyError {
+		return fmt.Errorf("unable to delete CSI driver CR(s): %v", undeletedCSIDriverCRs)
+	}
+
+	return nil
+}
+
 func (i *Installer) deleteTridentCSIDriverCR() error {
 
 	CSIDriverName := getCSIDriverName()
@@ -621,8 +702,7 @@ func (i *Installer) deleteTridentCSIDriverCR() error {
 				log.WithField("error", err).Warning("Could not delete Trident CSI driver custom resource.")
 			}
 		} else {
-			log.WithField("CSIDriver", CSIDriverName).Info(
-				"Deleted unlabeled Trident CSI driver custom resource.")
+			log.WithField("CSIDriver", CSIDriverName).Info("Deleted unlabeled Trident CSI driver custom resource.")
 		}
 	} else {
 		if len(csiDrivers) == 1 {
@@ -642,7 +722,7 @@ func (i *Installer) deleteTridentCSIDriverCR() error {
 	return nil
 }
 
-func (i *Installer) RemoveMultipleCSIDriverCRs(unwantedCSIDriverCRs []v1beta12.CSIDriver) error {
+func (i *Installer) RemoveMultipleCSIDriverCRs(unwantedCSIDriverCRs []storagev1.CSIDriver) error {
 	var err error
 	var anyError bool
 	var undeletedCSIDriverCRs []string

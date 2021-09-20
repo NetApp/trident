@@ -21,6 +21,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/policy/v1beta1"
 	v13 "k8s.io/api/rbac/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	v1beta12 "k8s.io/api/storage/v1beta1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextension "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -152,11 +153,17 @@ type Interface interface {
 	DeleteClusterRoleBindingByLabel(label string) error
 	DeleteClusterRoleBinding(name string) error
 	PatchClusterRoleBindingByLabel(label string, patchBytes []byte, patchType types.PatchType) error
-	GetCSIDriverByLabel(label string) (*v1beta12.CSIDriver, error)
-	GetCSIDriversByLabel(label string) ([]v1beta12.CSIDriver, error)
+	GetBetaCSIDriverByLabel(label string) (*v1beta12.CSIDriver, error)
+	GetCSIDriverByLabel(label string) (*storagev1.CSIDriver, error)
+	GetBetaCSIDriversByLabel(label string) ([]v1beta12.CSIDriver, error)
+	GetCSIDriversByLabel(label string) ([]storagev1.CSIDriver, error)
+	CheckBetaCSIDriverExistsByLabel(label string) (bool, string, error)
 	CheckCSIDriverExistsByLabel(label string) (bool, string, error)
+	DeleteBetaCSIDriverByLabel(label string) error
 	DeleteCSIDriverByLabel(label string) error
+	DeleteBetaCSIDriver(name string) error
 	DeleteCSIDriver(name string) error
+	PatchBetaCSIDriverByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	PatchCSIDriverByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	CheckNamespaceExists(namespace string) (bool, error)
 	CreateSecret(secret *v1.Secret) (*v1.Secret, error)
@@ -1770,8 +1777,25 @@ func (k *KubeClient) PatchClusterRoleBindingByLabel(label string, patchBytes []b
 	return nil
 }
 
+// GetBetaCSIDriverByLabel returns a CSI driver object matching the specified label if it is unique
+func (k *KubeClient) GetBetaCSIDriverByLabel(label string) (*v1beta12.CSIDriver, error) {
+
+	CSIDrivers, err := k.GetBetaCSIDriversByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(CSIDrivers) == 1 {
+		return &CSIDrivers[0], nil
+	} else if len(CSIDrivers) > 1 {
+		return nil, fmt.Errorf("multiple CSI drivers have the label %s", label)
+	} else {
+		return nil, utils.NotFoundError(fmt.Sprintf("no CSI drivers have the label %s", label))
+	}
+}
+
 // GetCSIDriverByLabel returns a CSI driver object matching the specified label if it is unique
-func (k *KubeClient) GetCSIDriverByLabel(label string) (*v1beta12.CSIDriver, error) {
+func (k *KubeClient) GetCSIDriverByLabel(label string) (*storagev1.CSIDriver, error) {
 
 	CSIDrivers, err := k.GetCSIDriversByLabel(label)
 	if err != nil {
@@ -1787,8 +1811,8 @@ func (k *KubeClient) GetCSIDriverByLabel(label string) (*v1beta12.CSIDriver, err
 	}
 }
 
-// GetCSIDriversByLabel returns all CSI driver objects matching the specified label
-func (k *KubeClient) GetCSIDriversByLabel(label string) ([]v1beta12.CSIDriver, error) {
+// GetBetaCSIDriversByLabel returns all CSI driver objects matching the specified label
+func (k *KubeClient) GetBetaCSIDriversByLabel(label string) ([]v1beta12.CSIDriver, error) {
 
 	listOptions, err := k.listOptionsFromLabel(label)
 	if err != nil {
@@ -1803,7 +1827,42 @@ func (k *KubeClient) GetCSIDriversByLabel(label string) ([]v1beta12.CSIDriver, e
 	return CSIDriverList.Items, nil
 }
 
-// GetCSIDriversByLabel returns true if one or more CSI Driver objects
+// GetCSIDriversByLabel returns all CSI driver objects matching the specified label
+func (k *KubeClient) GetCSIDriversByLabel(label string) ([]storagev1.CSIDriver, error) {
+
+	listOptions, err := k.listOptionsFromLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	CSIDriverList, err := k.clientset.StorageV1().CSIDrivers().List(ctx(), listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return CSIDriverList.Items, nil
+}
+
+// CheckBetaCSIDriverExistsByLabel returns true if one or more CSI Driver objects
+// matching the specified label exist.
+func (k *KubeClient) CheckBetaCSIDriverExistsByLabel(label string) (bool, string, error) {
+
+	CSIDrivers, err := k.GetBetaCSIDriversByLabel(label)
+	if err != nil {
+		return false, "", err
+	}
+
+	switch len(CSIDrivers) {
+	case 0:
+		return false, "", nil
+	case 1:
+		return true, CSIDrivers[0].Namespace, nil
+	default:
+		return true, "<multiple>", nil
+	}
+}
+
+// CheckCSIDriverExistsByLabel returns true if one or more CSI Driver objects
 // matching the specified label exist.
 func (k *KubeClient) CheckCSIDriverExistsByLabel(label string) (bool, string, error) {
 
@@ -1822,11 +1881,11 @@ func (k *KubeClient) CheckCSIDriverExistsByLabel(label string) (bool, string, er
 	}
 }
 
-// DeleteCSIDriverByLabel deletes a CSI Driver object matching the specified label
+// DeleteBetaCSIDriverByLabel deletes a CSI Driver object matching the specified label
 // in the namespace of the client.
-func (k *KubeClient) DeleteCSIDriverByLabel(label string) error {
+func (k *KubeClient) DeleteBetaCSIDriverByLabel(label string) error {
 
-	CSIDriver, err := k.GetCSIDriverByLabel(label)
+	CSIDriver, err := k.GetBetaCSIDriverByLabel(label)
 	if err != nil {
 		return err
 	}
@@ -1843,8 +1902,29 @@ func (k *KubeClient) DeleteCSIDriverByLabel(label string) error {
 	return nil
 }
 
-// DeleteCSIDriver deletes a CSI Driver object matching the specified name
-func (k *KubeClient) DeleteCSIDriver(name string) error {
+// DeleteCSIDriverByLabel deletes a CSI Driver object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) DeleteCSIDriverByLabel(label string) error {
+
+	CSIDriver, err := k.GetCSIDriverByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	if err = k.clientset.StorageV1().CSIDrivers().Delete(ctx(), CSIDriver.Name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":       label,
+		"CSIDriverCR": CSIDriver.Name,
+	}).Debug("Deleted CSI driver.")
+
+	return nil
+}
+
+// DeleteBetaCSIDriver deletes a CSI Driver object matching the specified name
+func (k *KubeClient) DeleteBetaCSIDriver(name string) error {
 
 	if err := k.clientset.StorageV1beta1().CSIDrivers().Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
@@ -1853,6 +1933,42 @@ func (k *KubeClient) DeleteCSIDriver(name string) error {
 	log.WithFields(log.Fields{
 		"CSIDriverCR": name,
 	}).Debug("Deleted CSI driver.")
+
+	return nil
+}
+
+// DeleteCSIDriver deletes a CSI Driver object matching the specified name
+func (k *KubeClient) DeleteCSIDriver(name string) error {
+
+	if err := k.clientset.StorageV1().CSIDrivers().Delete(ctx(), name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"CSIDriverCR": name,
+	}).Debug("Deleted CSI driver.")
+
+	return nil
+}
+
+// PatchBetaCSIDriverByLabel patches a deployment object matching the specified label
+// in the namespace of the client.
+func (k *KubeClient) PatchBetaCSIDriverByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
+
+	csiDriver, err := k.GetBetaCSIDriverByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.StorageV1beta1().CSIDrivers().Patch(ctx(), csiDriver.Name,
+		patchType, patchBytes, patchOpts); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":      label,
+		"deployment": csiDriver.Name,
+	}).Debug("Patched Kubernetes CSI driver.")
 
 	return nil
 }
@@ -1866,7 +1982,7 @@ func (k *KubeClient) PatchCSIDriverByLabel(label string, patchBytes []byte, patc
 		return err
 	}
 
-	if _, err = k.clientset.StorageV1beta1().CSIDrivers().Patch(ctx(), csiDriver.Name,
+	if _, err = k.clientset.StorageV1().CSIDrivers().Patch(ctx(), csiDriver.Name,
 		patchType, patchBytes, patchOpts); err != nil {
 		return err
 	}
@@ -2664,7 +2780,7 @@ func (k *KubeClient) GetSnapshotterCRDVersion() (snapshotterCRDVersion string) {
 		snapshotterCRDVersion = versionBeta
 	}
 
-	log.WithField("CRD", snapshotterCRDName).Debugf("VolumeSnapshot CRD version '%s' found.",snapshotterCRDVersion)
+	log.WithField("CRD", snapshotterCRDName).Debugf("VolumeSnapshot CRD version '%s' found.", snapshotterCRDVersion)
 
 	return
 }
