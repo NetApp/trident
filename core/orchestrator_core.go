@@ -16,6 +16,7 @@ import (
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
+	"go.uber.org/multierr"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
@@ -1672,7 +1673,7 @@ func (o *TridentOrchestrator) addVolumeInitial(
 
 	Logc(ctx).WithField("volume", volumeConfig.Name).Debugf("Looking through %d storage pools.", len(pools))
 
-	errorMessages := make([]string, 0)
+	volumeCreationErrors := make([]error, 0)
 	ineligibleBackends := make(map[string]struct{})
 
 	// The pool lists are already shuffled, so just try them in order.
@@ -1724,9 +1725,10 @@ func (o *TridentOrchestrator) addVolumeInitial(
 
 			// Log failure and continue for loop to find a pool that can create the volume.
 			Logc(ctx).WithFields(logFields).Warn("Failed to create the volume on this pool.")
-			errorMessages = append(errorMessages,
-				fmt.Sprintf("[Failed to create volume %s on storage pool %s from backend %s: %s]",
-					volumeConfig.Name, pool.Name(), backend.Name(), err.Error()))
+
+			volumeCreationErrors = append(volumeCreationErrors,
+				fmt.Errorf("[Failed to create volume %s on storage pool %s from backend %s: %w]",
+					volumeConfig.Name, pool.Name(), backend.Name(), err))
 
 			// If this backend cannot handle the new volume on any pool, remove it from further consideration.
 			if drivers.IsBackendIneligibleError(err) {
@@ -1739,11 +1741,13 @@ func (o *TridentOrchestrator) addVolumeInitial(
 	}
 
 	externalVol = nil
-	if len(errorMessages) == 0 {
+	if len(volumeCreationErrors) == 0 {
 		err = fmt.Errorf("no suitable %s backend with \"%s\" storage class and %s of free space was found",
 			protocol, volumeConfig.StorageClass, volumeConfig.Size)
 	} else {
-		err = fmt.Errorf("encountered error(s) in creating the volume: %s", strings.Join(errorMessages, ", "))
+		// combine all errors within the list into a single err
+		multiErr := multierr.Combine(volumeCreationErrors...)
+		err = fmt.Errorf("encountered error(s) in creating the volume: %w", multiErr)
 	}
 	return nil, err
 }

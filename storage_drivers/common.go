@@ -187,11 +187,22 @@ func CheckVolumeSizeLimits(
 	}).Debugf("Comparing limits")
 
 	if requestedSize > float64(volumeSizeLimit) {
-		return true, volumeSizeLimit, fmt.Errorf(
-			"requested size: %1.f > the size limit: %d", requestedSize, volumeSizeLimit)
+		return true, volumeSizeLimit, utils.UnsupportedCapacityRangeError(fmt.Errorf(
+			"requested size: %1.f > the size limit: %d", requestedSize, volumeSizeLimit))
 	}
 
 	return true, volumeSizeLimit, nil
+}
+
+// CheckMinVolumeSize returns UnsupportedCapacityRangeError if the requested volume size is less than the minimum
+// volume size
+func CheckMinVolumeSize(requestedSizeBytes uint64, minVolumeSizeBytes uint64) error {
+	if requestedSizeBytes < minVolumeSizeBytes {
+		return utils.UnsupportedCapacityRangeError(fmt.Errorf("requested volume size (" +
+			"%d bytes) is too small; the minimum volume size is %d bytes",
+			requestedSizeBytes, minVolumeSizeBytes))
+	}
+	return nil
 }
 
 // Clone will create a copy of the source object and store it into the destination object (which must be a pointer)

@@ -609,9 +609,9 @@ func (d *NFSStorageDriver) Create(
 		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size])
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
-	if sizeBytes < MinimumVolumeSizeBytes {
-		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
-			sizeBytes, MinimumVolumeSizeBytes)
+	if checkMinVolumeSizeError := drivers.CheckMinVolumeSize(sizeBytes,
+		MinimumVolumeSizeBytes); checkMinVolumeSizeError != nil {
+		return checkMinVolumeSizeError
 	}
 
 	// TODO: remove this code once ANF can handle smaller volumes

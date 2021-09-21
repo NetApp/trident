@@ -305,7 +305,8 @@ func resizeValidationAbstraction(
 	volSizeBytes := uint64(volSize)
 
 	if sizeBytes < volSizeBytes {
-		return 0, fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSize)
+		return 0, utils.UnsupportedCapacityRangeError(fmt.Errorf(
+			"requested size %d is less than existing volume size %d", sizeBytes, volSize))
 	}
 
 	return volSizeBytes, nil

@@ -489,9 +489,9 @@ func (d *SANStorageDriver) Create(
 		defaultSize, _ := utils.ConvertSizeToBytes(d.Config.Size)
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
-	if sizeBytes < MinimumVolumeSizeBytes {
-		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
-			sizeBytes, MinimumVolumeSizeBytes)
+	if checkMinVolumeSizeError := drivers.CheckMinVolumeSize(sizeBytes,
+		MinimumVolumeSizeBytes); checkMinVolumeSizeError != nil {
+		return checkMinVolumeSizeError
 	}
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
 		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
@@ -1449,8 +1449,8 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	if sizeBytes < volSizeBytes {
-
-		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes)
+		return utils.UnsupportedCapacityRangeError(fmt.Errorf(
+			"requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes))
 	}
 
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(

@@ -519,8 +519,9 @@ func (d *NASFlexGroupStorageDriver) Create(
 	if err != nil {
 		return err
 	}
+
 	if sizeBytes > math.MaxInt64 {
-		return errors.New("invalid size requested")
+		return utils.UnsupportedCapacityRangeError(errors.New("invalid size requested"))
 	}
 	size := int(sizeBytes)
 

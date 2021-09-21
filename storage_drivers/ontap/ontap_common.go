@@ -1698,9 +1698,9 @@ func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) (uint64, error
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if sizeBytes < MinimumVolumeSizeBytes {
-		return 0, fmt.Errorf(
+		return 0, utils.UnsupportedCapacityRangeError(fmt.Errorf(
 			"requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
-			sizeBytes, MinimumVolumeSizeBytes)
+			sizeBytes, MinimumVolumeSizeBytes))
 	}
 	return sizeBytes, nil
 }
@@ -2732,7 +2732,8 @@ func ValidateStoragePools(
 		} else {
 			sizeBytes, _ := strconv.ParseUint(defaultSize, 10, 64)
 			if sizeBytes < MinimumVolumeSizeBytes {
-				return fmt.Errorf("invalid value for size in pool %s. Requested volume size ("+
+				return fmt.Errorf("invalid value for size in pool %s. "+
+					"Requested volume size ("+
 					"%d bytes) is too small; the minimum volume size is %d bytes", poolName, sizeBytes,
 					MinimumVolumeSizeBytes)
 			}
@@ -3004,7 +3005,8 @@ func resizeValidation(
 	volSizeBytes := uint64(volSize)
 
 	if sizeBytes < volSizeBytes {
-		return 0, fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volSize)
+		return 0, utils.UnsupportedCapacityRangeError(fmt.Errorf(
+			"requested size %d is less than existing volume size %d", sizeBytes, volSize))
 	}
 
 	return volSizeBytes, nil

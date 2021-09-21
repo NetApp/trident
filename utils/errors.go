@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -366,4 +367,33 @@ func IsInvalidInputError(err error) bool {
 	}
 	_, ok := err.(*invalidInputError)
 	return ok
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// unsupportedCapacityRangeError
+/////////////////////////////////////////////////////////////////////////////
+
+type unsupportedCapacityRangeError struct {
+	err     error
+	message string
+}
+
+func (e *unsupportedCapacityRangeError) Unwrap() error { return e.err }
+
+func (e *unsupportedCapacityRangeError) Error() string { return e.message }
+
+func UnsupportedCapacityRangeError(err error) error {
+	return &unsupportedCapacityRangeError{
+		err, fmt.Sprintf("unsupported capacity range; %s",
+			err.Error()),
+	}
+}
+
+func HasUnsupportedCapacityRangeError(err error) (bool, *unsupportedCapacityRangeError) {
+	if err == nil {
+		return false, nil
+	}
+	var unsupportedCapacityRangeErrorPtr *unsupportedCapacityRangeError
+	ok := errors.As(err, &unsupportedCapacityRangeErrorPtr)
+	return ok, unsupportedCapacityRangeErrorPtr
 }

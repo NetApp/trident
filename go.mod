@@ -23,7 +23,7 @@ require (
 	github.com/go-openapi/strfmt v0.20.1
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.2
-	github.com/golang/mock v1.6.0 // indirect
+	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.6
 	github.com/google/uuid v1.3.0
@@ -40,6 +40,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/vishvananda/netlink v1.1.0
 	github.com/zcalusic/sysinfo v0.0.0-20210609180555-aff387a52b3a
+	go.uber.org/multierr v1.6.0
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // github.com/golang/crypto
 	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914 // github.com/golang/oauth2
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // github.com/golang/sys

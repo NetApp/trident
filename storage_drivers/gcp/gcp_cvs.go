@@ -692,9 +692,9 @@ func (d *NFSStorageDriver) Create(
 		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size])
 		requestedSizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
-	if requestedSizeBytes < MinimumVolumeSizeBytes {
-		return fmt.Errorf("requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
-			requestedSizeBytes, MinimumVolumeSizeBytes)
+	if checkMinVolumeSizeError := drivers.CheckMinVolumeSize(requestedSizeBytes,
+		MinimumVolumeSizeBytes); checkMinVolumeSizeError != nil {
+		return checkMinVolumeSizeError
 	}
 
 	// Apply volume size rules
@@ -1975,7 +1975,9 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 
 	// Make sure we're not shrinking the volume
 	if int64(sizeBytes) < volume.QuotaInBytes {
-		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, volume.QuotaInBytes)
+		return utils.UnsupportedCapacityRangeError(fmt.Errorf("requested size %d is less than existing volume size %d",
+			sizeBytes,
+			volume.QuotaInBytes))
 	}
 
 	// Make sure the request isn't above the configured maximum volume size (if any)
@@ -1986,7 +1988,8 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	// Make were we're not crossing the CVS-SO size gap (delete this when no longer necessary)
 	if volConfig.CVSStorageClass == api.StorageClassSoftware &&
 		!d.validateVolumeResizeSW(uint64(volume.QuotaInBytes), sizeBytes) {
-		return fmt.Errorf("requested size %d is to large for volume %s", sizeBytes, name)
+		return utils.UnsupportedCapacityRangeError(fmt.Errorf("requested size %d is to large for volume %s", sizeBytes,
+			name))
 	}
 
 	// Resize the volume

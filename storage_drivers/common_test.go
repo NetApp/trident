@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils"
 )
 
 func TestAreSameCredentials(t *testing.T) {
@@ -86,6 +88,46 @@ func TestEnsureJoinedStringContainsElem(t *testing.T) {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			actual := ensureJoinedStringContainsElem(test.joined, test.elem, test.sep)
 			assert.Equal(t, test.expected, actual)
+		})
+	}
+}
+
+func TestCheckMinVolumeSize(t *testing.T) {
+
+	tests := []struct {
+		requestedSizeBytes  uint64
+		minimumVolSizeBytes uint64
+		expected            error
+	}{
+		{
+			requestedSizeBytes:  1000000000,
+			minimumVolSizeBytes: 999999999,
+			expected:            nil,
+		},
+		{
+			requestedSizeBytes:  1000000000,
+			minimumVolSizeBytes: 1000000000,
+			expected:            nil,
+		},
+		{
+			requestedSizeBytes:  1000000000,
+			minimumVolSizeBytes: 1000000001,
+			expected:            utils.UnsupportedCapacityRangeError(fmt.Errorf("test")),
+		},
+		{
+			requestedSizeBytes:  1000000000,
+			minimumVolSizeBytes: 1000000001,
+			expected: fmt.Errorf("wrapping the UnsuppportedCapacityError; %w", utils.UnsupportedCapacityRangeError(
+				fmt.Errorf("test"))),
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("CheckMinimumVolSize: %d", i), func(t *testing.T) {
+			actualErr := CheckMinVolumeSize(test.requestedSizeBytes, test.minimumVolSizeBytes)
+			actualIsUnsupportedCapError, _ := utils.HasUnsupportedCapacityRangeError(actualErr)
+			expectedIsUnsupportedCapError, _ := utils.HasUnsupportedCapacityRangeError(test.expected)
+			assert.Equal(t, actualIsUnsupportedCapError, expectedIsUnsupportedCapError)
 		})
 	}
 }

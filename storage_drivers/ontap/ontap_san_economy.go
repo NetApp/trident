@@ -1918,7 +1918,8 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 					"lunPath":    lunPath,
 				},
 			).Error("Requested size is larger than LUN's maximum capacity.")
-			return fmt.Errorf("volume resize failed as requested size is larger than LUN's maximum capacity")
+			return utils.UnsupportedCapacityRangeError(fmt.Errorf(
+				"volume resize failed as requested size is larger than LUN's maximum capacity"))
 		}
 	}
 

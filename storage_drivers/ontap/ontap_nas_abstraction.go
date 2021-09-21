@@ -260,12 +260,6 @@ func (d *NASStorageDriverAbstraction) Create(
 		return checkVolumeSizeLimitsError
 	}
 
-	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
-	); checkVolumeSizeLimitsError != nil {
-		return checkVolumeSizeLimitsError
-	}
-
 	enableSnapshotDir, err := strconv.ParseBool(snapshotDir)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)

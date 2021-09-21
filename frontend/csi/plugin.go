@@ -316,6 +316,8 @@ func (p *Plugin) getCSIErrorForOrchestratorError(err error) error {
 		return status.Error(codes.FailedPrecondition, err.Error())
 	} else if utils.IsNotFoundError(err) {
 		return status.Error(codes.NotFound, err.Error())
+	} else if ok, errPtr := utils.HasUnsupportedCapacityRangeError(err); ok && errPtr != nil {
+		return status.Error(codes.OutOfRange, errPtr.Error())
 	} else {
 		return status.Error(codes.Unknown, err.Error())
 	}
