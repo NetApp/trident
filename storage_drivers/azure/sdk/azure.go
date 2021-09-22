@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sync"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-04-01/netapp"
@@ -81,6 +82,9 @@ func NewSDKClient(config *ClientConfig) (c *AzureClient) {
 	c.ResourcesClient = resources.NewClient(config.SubscriptionID)
 	c.VirtualNetworksClient = network.NewVirtualNetworksClient(config.SubscriptionID)
 	c.SubnetsClient = network.NewSubnetsClient(config.SubscriptionID)
+
+	c.AzureResources.m = &sync.Mutex{}
+
 	return
 }
 

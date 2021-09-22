@@ -349,7 +349,7 @@ func (d *Client) discoverVirtualNetworks(ctx context.Context, rgroup string) (*[
 // Top level init functions
 // ///////////////////////////////////////////////////////////////////////////////
 
-func (d *Client) discoverAzureResources(ctx context.Context) (returnError error) {
+func (d *Client) DiscoverAzureResources(ctx context.Context) (returnError error) {
 
 	// Start from scratch each time we are called.  All discovered resources are
 	// nested under ResourceGroups.
@@ -472,7 +472,7 @@ func (d *Client) refreshAzureResources(ctx context.Context) error {
 
 	var discoveryErrors []string
 
-	err := d.discoverAzureResources(ctx)
+	err := d.DiscoverAzureResources(ctx)
 	if err != nil {
 		Logc(ctx).Errorf("error discovering resources: %v", err)
 	}
@@ -563,7 +563,6 @@ func (d *Client) refreshTimer(ctx context.Context) {
 
 // discoveryInit initializes the discovery pieces at startup
 func (d *Client) discoveryInit(ctx context.Context) error {
-	d.SDKClient.AzureResources.m = &sync.Mutex{}
 
 	// Discover resources at startup synchronously, then kick off the refresh timer thread
 	errCh := make(chan error, 1)
@@ -825,6 +824,13 @@ func (d *Client) capacityPoolsWithServiceLevel(level string) (*[]CapacityPool, e
 	}
 
 	return &cpools, nil
+}
+
+// HasCapacityPoolForServiceLevel returns true if there is one or more capacity pool with the specified service level.
+func (d *Client) HasCapacityPoolForServiceLevel(level string) bool {
+
+	pools, _ := d.capacityPoolsWithServiceLevel(level)
+	return len(*pools) > 0
 }
 
 // capacityPoolsWithSubnet returns all capacity pools that .. okay, capacity pools don't
