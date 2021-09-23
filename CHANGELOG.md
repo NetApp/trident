@@ -7,6 +7,11 @@
 **Fixes:**
 - Fixed custom YAML installer issue with different image (Issue [#613](https://github.com/NetApp/trident/issues/613)).
 - Fixed snapshot size calculation (Issue [#611](https://github.com/NetApp/trident/issues/611)).
+- Fixed issue where clones of XFS volumes could not be mounted on the same node as the source volume (Issue [#514](https://github.com/NetApp/trident/issues/514)).
+
+**Enhancements:**
+- **Kubernetes:** Added support for Kubernetes 1.22.
+- **Kubernetes:** Enabled the Trident operator and Helm chart to work with Kubernetes 1.22 (Issue [#628](https://github.com/NetApp/trident/issues/628)).
 
 ## v21.07.0
 

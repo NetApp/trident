@@ -16,15 +16,39 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/policy/v1beta1"
 	v12 "k8s.io/api/rbac/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	v1beta12 "k8s.io/api/storage/v1beta1"
 )
 
-func (i *Installer) patchK8sCSIDriver(currentK8sCSIDriver *v1beta12.CSIDriver, newK8sCSIDriverYAML []byte) error {
+func (i *Installer) patchK8sBetaCSIDriver(currentK8sCSIDriver *v1beta12.CSIDriver, newK8sCSIDriverYAML []byte) error {
+
+	// TODO (cknight): remove when 1.18 is our minimum version
 
 	patchType := types.MergePatchType
 
 	// Identify the deltas
 	patchBytes, err := i.genericPatch(currentK8sCSIDriver, newK8sCSIDriverYAML, &v1beta12.CSIDriver{}, patchType)
+	if err != nil {
+		return fmt.Errorf("error in creating the two-way merge patch for current CSI driver %q: %v",
+			currentK8sCSIDriver.Name, err)
+	}
+
+	// Apply the patch to the current CSI driver
+	err = i.client.PatchBetaCSIDriverByLabel(appLabel, patchBytes, patchType)
+	if err != nil {
+		return fmt.Errorf("could not patch Trident CSI driver; %v", err)
+	}
+	log.Debug("Patched Trident CSI driver.")
+
+	return nil
+}
+
+func (i *Installer) patchK8sCSIDriver(currentK8sCSIDriver *storagev1.CSIDriver, newK8sCSIDriverYAML []byte) error {
+
+	patchType := types.MergePatchType
+
+	// Identify the deltas
+	patchBytes, err := i.genericPatch(currentK8sCSIDriver, newK8sCSIDriverYAML, &storagev1.CSIDriver{}, patchType)
 	if err != nil {
 		return fmt.Errorf("error in creating the two-way merge patch for current CSI driver %q: %v",
 			currentK8sCSIDriver.Name, err)

@@ -8,12 +8,12 @@ Supported frontends (orchestrators)
 Trident supports multiple container engines and orchestrators, including:
 
 * Mirantis Kubernetes Engine 3.4
-* Kubernetes 1.17 or later (latest: 1.21)
+* Kubernetes 1.17 or later (latest: 1.22)
 * OpenShift 4.4, 4.5, 4.6 [4.6.8+], 4.7, 4.8 (latest 4.8)
 
 The Trident Operator is supported with these releases:
 
-* Kubernetes 1.17 or later (latest: 1.21)
+* Kubernetes 1.17 or later (latest: 1.22)
 * OpenShift 4.4, 4.5, 4.6 [4.6.8+], 4.7, 4.8 (latest 4.8)
 
 .. important::
@@ -176,10 +176,27 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+
+| v1.22.0                | netapp/trident:21.07.0                                      |
++------------------------+-------------------------------------------------------------+
+|                        | netapp/trident-operator:21.07.0                             |
++------------------------+-------------------------------------------------------------+
+|                        | netapp/trident-autosupport:21.01                            |
++------------------------+-------------------------------------------------------------+
+|                        | k8s.gcr.io/sig-storage/csi-provisioner:v2.1.1               |
++------------------------+-------------------------------------------------------------+
+|                        | k8s.gcr.io/sig-storage/csi-attacher:v3.1.0                  |
++------------------------+-------------------------------------------------------------+
+|                        | k8s.gcr.io/sig-storage/csi-resizer:v1.1.0                   |
++------------------------+-------------------------------------------------------------+
+|                        | k8s.gcr.io/sig-storage/csi-snapshotter:v4.1.1               |
++------------------------+-------------------------------------------------------------+
+|                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
++------------------------+-------------------------------------------------------------+
+
 
 .. Note::
 
-  On Kubernetes version 1.20 and later, use the validated ``k8s.gcr.io/sig-storage/csi-snapshotter:v4.x``
-  image if only ``v1`` version is serving ``volumesnapshots.snapshot.storage.k8s.io`` CRD. If the
-  ``v1beta1`` version is serving the CRD with/without the ``v1`` version, use the validated
-  ``k8s.gcr.io/sig-storage/csi-snapshotter:v3.x`` image.
+  On Kubernetes version 1.20 and later, use the validated ``k8s.gcr.io/sig-storage/csi-snapshotter:v3.x``
+  image if only ``v1beta1`` version is serving ``volumesnapshots.snapshot.storage.k8s.io`` CRD. If the
+  ``v1`` version is serving the CRD with/without the ``v1beta1`` version, use the validated
+  ``k8s.gcr.io/sig-storage/csi-snapshotter:v4.x`` image.
