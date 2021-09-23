@@ -23,6 +23,8 @@ operatorImage: ""
 operatorImageTag: ""
 
 
+# tridentOrchestratorCreate: toggle the creation of a TridentOrchestrator resource
+tridentOrchestratorCreate: true
 
 # tridentDebug allows enabling debug logging from the Trident deployment.
 tridentDebug: false

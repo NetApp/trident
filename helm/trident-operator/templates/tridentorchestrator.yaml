@@ -1,3 +1,4 @@
+{{- if .Values.tridentOrchestratorCreate -}}
 apiVersion: trident.netapp.io/v1
 kind: TridentOrchestrator
 metadata:
@@ -22,3 +23,4 @@ spec:
   {{- toYaml . | nindent 2 }}
   {{- end }}
   enableNodePrep: {{ include "trident.enableNodePrep" $ }}
+{{- end }}
