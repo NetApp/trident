@@ -88,13 +88,13 @@ If you are unsure as to how Trident is installed, here is a simple test to run:
   +----------------+----------------+
   | SERVER VERSION | CLIENT VERSION |
   +----------------+----------------+
-  | 21.07.1        | 21.07.1        |
+  | 21.07.2        | 21.07.2        |
   +----------------+----------------+
 
   $ kubectl describe pod trident-csi-79df798bdc-2jzpq -n trident | grep "Image" -A 2 -B 2 | head -4
   trident-main:
     Container ID:  docker://e088b1ffc7017ddba8144d334cbc1eb646bf3491be031ef583a3f189ed965213
-    Image:         netapp/trident:21.07.1
+    Image:         netapp/trident:21.07.2
     Image ID:      docker-pullable://netapp/trident@sha256:28095a20d8cfffaaaaakkkkkeeeeeec4925ac5d652341b6eaa2ea9352f1e0
 
   #Is the version of Trident being used >=21.01? If yes, check if a ``tridentorchestrator`` is present.
@@ -107,7 +107,7 @@ If you are unsure as to how Trident is installed, here is a simple test to run:
   Message:                Trident installed
   Namespace:              trident
   Status:                 Installed
-  Version:                v21.07.1
+  Version:                v21.07.2
 
   #Is the version of Trident being used in the range [20.04 - 20.10]? If yes, check if a ``tridentprovisioner`` is present.
   #If yes, then you have installed Trident using the operator.
