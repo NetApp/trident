@@ -336,7 +336,7 @@ func (d RestClient) getAllVolumePayloadRecords(payload *models.VolumeResponse,
 	if HasNextLink(payload) {
 		nextLink := payload.Links.Next
 
-		for true {
+		for {
 			resultNext, errNext := d.api.Storage.VolumeCollectionGet(params, d.authInfo, WithNextLink(nextLink))
 			if errNext != nil {
 				return nil, errNext
@@ -980,6 +980,7 @@ func (d RestClient) restoreSnapshotByNameAndStyle(
 	return d.PollJobStatus(ctx, volumeModifyAccepted.Payload)
 }
 
+// TODO: change name
 func (d RestClient) createCloneNAS(
 	ctx context.Context,
 	cloneName, sourceVolumeName, snapshotName string,
@@ -1454,7 +1455,149 @@ func (d RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourc
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// IGROUP operations BEGIN
+// iSCSI initiator operations
+/////////////////////////////////////////////////////////////////////////////
+
+// IscsiInitiatorGetDefaultAuth returns the authorization details for the default initiator
+// equivalent to filer::> vserver iscsi security show -vserver SVM -initiator-name default
+func (d RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.IscsiCredentialsCollectionGetOK, error) {
+
+	params := san.NewIscsiCredentialsCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecordsQueryParameter = ToBoolPointer(true)
+
+	//params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+
+	params.SVMNameQueryParameter = ToStringPointer(d.config.SVM)
+	params.InitiatorQueryParameter = ToStringPointer("default") // TODO use a constant?
+
+	// TODO Limit the returned data to only the disk limit
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := d.api.San.IscsiCredentialsCollectionGet(params, d.authInfo)
+
+	if err != nil {
+		return nil, err
+	}
+	if result.Payload == nil {
+		return nil, nil
+	}
+
+	return result, nil
+}
+
+// IscsiInterfaceGet returns information about the vserver's  iSCSI interfaces
+func (d RestClient) IscsiInterfaceGet(ctx context.Context, svm string) (*san.IscsiServiceCollectionGetOK,
+	error) {
+
+	params := san.NewIscsiServiceCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecordsQueryParameter = ToBoolPointer(true)
+	params.SVMNameQueryParameter = &svm
+
+	// TODO Limit the returned data to only the disk limit
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := d.api.San.IscsiServiceCollectionGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	return result, nil
+}
+
+// IscsiInitiatorSetDefaultAuth sets the authorization details for the default initiator
+// equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
+//                           -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
+func (d RestClient) IscsiInitiatorSetDefaultAuth(ctx context.Context, authType, userName, passphrase,
+	outbountUserName, outboundPassphrase string,
+	) error {
+
+	getDefaultAuthResponse, err := d.IscsiInitiatorGetDefaultAuth(ctx)
+	if err != nil{
+		return err
+	}
+	if getDefaultAuthResponse == nil {
+		return fmt.Errorf("could not get the default iscsi initiator")
+	}
+	if getDefaultAuthResponse.Payload.NumRecords != 1 {
+		return fmt.Errorf("should only be one default iscsi initiator")
+	}
+
+	params := san.NewIscsiCredentialsModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+
+
+	outboundInfo := &models.IscsiCredentialsChapOutbound{}
+	if outbountUserName != "" && outboundPassphrase != "" {
+		outboundInfo.Password = outboundPassphrase
+		outboundInfo.User = outbountUserName
+	}
+	inboundInfo := &models.IscsiCredentialsChapInbound{
+		Password: passphrase,
+		User:     userName,
+	}
+	chapInfo := &models.IscsiCredentialsChap{
+		Inbound:  inboundInfo,
+		Outbound: outboundInfo,
+	}
+	authInfo := &models.IscsiCredentials{
+		AuthenticationType: authType,
+		Chap:               chapInfo,
+		Initiator:          getDefaultAuthResponse.Payload.Records[0].Initiator,
+	}
+
+	params.SetInfo(authInfo)
+
+	_, err = d.api.San.IscsiCredentialsModify(params, d.authInfo)
+
+	return err
+}
+
+// IscsiNodeGetName returns information about the vserver's iSCSI node name
+func (d RestClient) IscsiNodeGetName(ctx context.Context) (*san.IscsiServiceGetOK,
+	error) {
+
+	svm, err := d.SvmGetByName(ctx, d.config.SVM)
+	if err != nil {
+		return nil, err
+	}
+	if svm == nil {
+		return nil, fmt.Errorf("could not find SVM %s", d.config.SVM)
+	}
+
+	params := san.NewIscsiServiceGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.SVMUUIDPathParameter = svm.UUID
+
+	// TODO Limit the returned data to only the disk limit
+	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := d.api.San.IscsiServiceGet(params, d.authInfo)
+
+	// TODO refactor to remove duplication
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	return result, nil
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// IGROUP operations
+/////////////////////////////////////////////////////////////////////////////
 
 // IgroupCreate creates the specified initiator group
 // equivalent to filer::> igroup create docker -vserver iscsi_vs -protocol iscsi -ostype linux
@@ -1462,6 +1605,7 @@ func (d RestClient) IgroupCreate(ctx context.Context, initiatorGroupName, initia
 	params := san.NewIgroupCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
+	params.ReturnRecordsQueryParameter = ToBoolPointer(true)
 
 	igroupInfo := &models.Igroup{
 		Name:     initiatorGroupName,
@@ -1475,6 +1619,7 @@ func (d RestClient) IgroupCreate(ctx context.Context, initiatorGroupName, initia
 
 	igroupCreateAccepted, err := d.api.San.IgroupCreate(params, d.authInfo)
 	if err != nil {
+
 		return err
 	}
 	if igroupCreateAccepted == nil {
@@ -1485,7 +1630,8 @@ func (d RestClient) IgroupCreate(ctx context.Context, initiatorGroupName, initia
 		return fmt.Errorf("unexpected response from igroup create, payload was nil")
 	} else {
 		if igroupCreateAccepted.Payload.NumRecords != 1 {
-			return fmt.Errorf("unexpected response from igroup create, created %v igroups", igroupCreateAccepted.Payload.NumRecords)
+			return fmt.Errorf("unexpected response from igroup create, created %v igroups",
+				igroupCreateAccepted.Payload.NumRecords)
 		}
 	}
 
@@ -1493,7 +1639,8 @@ func (d RestClient) IgroupCreate(ctx context.Context, initiatorGroupName, initia
 }
 
 // IgroupAdd adds an initiator to an initiator group
-// equivalent to filer::> igroup add -vserver iscsi_vs -igroup docker -initiator iqn.1993-08.org.debian:01:9031309bbebd
+// equivalent to filer::> lun igroup add -vserver iscsi_vs -igroup docker -initiator iqn.1993-08.org.
+// debian:01:9031309bbebd
 func (d RestClient) IgroupAdd(
 	ctx context.Context,
 	initiatorGroupName, initiator string) error {
@@ -1513,7 +1660,7 @@ func (d RestClient) IgroupAdd(
 	params.IgroupUUIDPathParameter = igroupUUID
 
 	igroupInitiator := &models.IgroupInitiator{
-		Name: initiator,
+		Name:    initiator,
 	}
 
 	params.SetInfo(igroupInitiator)
@@ -1663,14 +1810,14 @@ func (d RestClient) IgroupGetByName(
 
 	// TODO improve this
 	result, err := d.IgroupList(ctx, initiatorGroupName)
+	if err != nil {
+		return nil, err
+	}
 	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
 		return result.Payload.Records[0], nil
 	}
 	return nil, err
 }
-
-// IGROUP operations END
-/////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
 // LUN operations
@@ -1679,21 +1826,25 @@ func (d RestClient) IgroupGetByName(
 // LunCreate creates a LUN
 func (d RestClient) LunCreate(
 	ctx context.Context,
-	lunName, size string,
+	lunPath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup,
 ) error {
+
+	if strings.Contains(lunPath, failureLUNCreate) {
+		return errors.New("injected error")
+	}
 
 	params := san.NewLunCreateParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
 
-	sizeBytesStr, _ := utils.ConvertSizeToBytes(size)
-	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
-
 	lunInfo := &models.Lun{
-		Name:   lunName, // example:  /vol/myVolume/myLun1
-		OsType: models.LunOsTypeLinux,
-		Space: &models.LunSpace{
-			Size: int64(sizeBytes),
+		Name:   lunPath, // example:  /vol/myVolume/myLun1
+		OsType: osType,
+		Space:  &models.LunSpace{
+			Size: sizeInBytes,
+		},
+		QosPolicy: &models.LunQosPolicy{
+			Name:  qosPolicyGroup.Name,
 		},
 	}
 	lunInfo.Svm = &models.LunSvm{Name: d.config.SVM}
@@ -1706,14 +1857,6 @@ func (d RestClient) LunCreate(
 	}
 	if lunCreateAccepted == nil {
 		return fmt.Errorf("unexpected response from lun create")
-	}
-
-	if lunCreateAccepted.Payload == nil {
-		return fmt.Errorf("unexpected response from lun create, payload was nil")
-	} else {
-		if lunCreateAccepted.Payload.NumRecords != 1 {
-			return fmt.Errorf("unexpected response from lun create, created %v luns", lunCreateAccepted.Payload.NumRecords)
-		}
 	}
 
 	return nil
@@ -1741,6 +1884,9 @@ func (d RestClient) LunGetByName(
 
 	// TODO improve this
 	result, err := d.LunList(ctx, name)
+	if err != nil || result.Payload == nil {
+		return nil, err
+	}
 	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
 		return result.Payload.Records[0], nil
 	}
@@ -1820,6 +1966,399 @@ func (d RestClient) LunDelete(
 	}
 
 	return nil
+}
+
+// TODO: Change this for LUN Attributes when available
+// LunGetComment gets the comment for a given LUN.
+// This is in place of the fstype and context attributes from ZAPI
+func (d RestClient) LunGetComment(
+	ctx context.Context,
+	lunPath string,
+) (string, error) {
+
+	lun, err := d.LunGetByName(ctx, lunPath)
+	if err != nil {
+		return "", err
+	}
+	if lun == nil {
+		return "", fmt.Errorf("could not find lun with name %v", lunPath)
+	}
+	if lun.Comment == nil {
+		return "", fmt.Errorf("lun did not have a comment")
+	}
+
+	return *lun.Comment, nil
+}
+
+// LunSetComment sets the comment for a given LUN.
+// This is in place of the fstype and context attributes from ZAPI
+func (d RestClient) LunSetComment(
+	ctx context.Context,
+	lunPath, comment string,
+) error {
+
+	lun, err := d.LunGetByName(ctx, lunPath)
+	if err != nil {
+		return err
+	}
+	if lun == nil {
+		return fmt.Errorf("could not find lun with name %v", lunPath)
+	}
+
+	uuid := lun.UUID
+
+	params := san.NewLunModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	lunInfo := &models.Lun{
+		Comment:      &comment,
+	}
+
+	params.SetInfo(lunInfo)
+
+	lunModifyOK, err := d.api.San.LunModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if lunModifyOK == nil {
+		return fmt.Errorf("unexpected response from LUN modify")
+	}
+
+	return nil
+}
+
+// LunSetComment sets the comment for a given LUN.
+func (d RestClient) LunSetQosPolicyGroup(
+	ctx context.Context,
+	lunPath, qosPolicyGroup string,
+	) error {
+
+	lun, err := d.LunGetByName(ctx, lunPath)
+	if err != nil {
+		return err
+	}
+	if lun == nil {
+		return fmt.Errorf("could not find lun with name %v", lunPath)
+	}
+
+	uuid := lun.UUID
+
+	params := san.NewLunModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	qosPolicy := &models.LunQosPolicy{
+		Name:  qosPolicyGroup,
+	}
+	lunInfo := &models.Lun{
+		QosPolicy:    qosPolicy,
+	}
+
+	params.SetInfo(lunInfo)
+
+	lunModifyOK, err := d.api.San.LunModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if lunModifyOK == nil {
+		return fmt.Errorf("unexpected response from LUN modify")
+	}
+
+	return nil
+}
+
+// LunRename changes the name of a LUN
+func (d RestClient) LunRename(
+	ctx context.Context,
+	lunPath, newLunPath string,
+) error {
+
+	lun, err := d.LunGetByName(ctx, lunPath)
+	if err != nil {
+		return err
+	}
+	if lun == nil {
+		return fmt.Errorf("could not find lun with name %v", lunPath)
+	}
+
+	uuid := lun.UUID
+
+	params := san.NewLunModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	lunInfo := &models.Lun{
+		Name:         newLunPath,
+	}
+
+	params.SetInfo(lunInfo)
+
+	lunModifyOK, err := d.api.San.LunModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if lunModifyOK == nil {
+		return fmt.Errorf("unexpected response from LUN modify")
+	}
+
+	return nil
+}
+
+// LunMapInfo gets the LUN maping information for the specified LUN
+func (d RestClient) LunMapInfo(
+	ctx context.Context,
+	initiatorGroupName, lunPath string,
+) (*san.LunMapCollectionGetOK, error) {
+
+	params := san.NewLunMapCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.LunNameQueryParameter = &lunPath
+	if initiatorGroupName != "" {
+		params.IgroupNameQueryParameter = &initiatorGroupName
+	}
+
+	return d.api.San.LunMapCollectionGet(params, d.authInfo)
+}
+
+// LunUnmap deletes the lun mapping for the given LUN path and igroup
+// equivalent to filer::> lun mapping delete -vserver iscsi_vs -path /vol/v/lun0 -igroup group
+func (d RestClient) LunUnmap(
+	ctx context.Context,
+	initiatorGroupName, lunPath string,
+	) error {
+
+	lunMapResponse, err := d.LunMapInfo(ctx, initiatorGroupName, lunPath)
+	if err != nil {
+		return fmt.Errorf("problem reading maps for LUN %s: %v", lunPath, err)
+	} else if lunMapResponse.Payload == nil {
+		return fmt.Errorf("problem reading maps for LUN %s", lunPath)
+	}
+	igroupUUID := lunMapResponse.Payload.Records[0].Igroup.UUID
+
+	lun, err := d.LunGetByName(ctx, lunPath)
+	if err != nil {
+		return err
+	}
+	if lun == nil {
+		return fmt.Errorf("could not find lun with name %v", lunPath)
+	}
+	lunUUID := lun.UUID
+
+	params := san.NewLunMapDeleteParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.IgroupUUIDPathParameter = igroupUUID
+	params.LunUUIDPathParameter = lunUUID
+
+	_, err = d.api.San.LunMapDelete(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// LunMap maps a LUN to an id in an initiator group
+// equivalent to filer::> lun map -vserver iscsi_vs -path /vol/v/lun1 -igroup docker -lun-id 0
+func (d RestClient) LunMap(
+	ctx context.Context,
+	initiatorGroupName, lunPath string,
+	lunID int,
+) (*san.LunMapCreateCreated, error) {
+
+	lun, err := d.LunGetByName(ctx, lunPath)
+	if err != nil {
+		return nil, err
+	}
+	if lun == nil {
+		return nil, fmt.Errorf("could not find lun with name %v", lunPath)
+	}
+	uuid := lun.UUID
+
+	params := san.NewLunMapCreateParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.ReturnRecordsQueryParameter = ToBoolPointer(true)
+
+	igroupInfo := &models.LunMapIgroup{
+		Name:       initiatorGroupName,
+	}
+	lunInfo := &models.LunMapLun{
+		Name:  lunPath,
+		UUID:  uuid,
+	}
+	lunSVM := &models.LunMapSvm{
+		Name:  d.config.SVM,
+	}
+	lunMapInfo := &models.LunMap{
+		Igroup: igroupInfo,
+		Lun:    lunInfo,
+		Svm:    lunSVM,
+	}
+	if lunID != -1 {
+		lunMapInfo.LogicalUnitNumber = ToInt64Pointer(lunID)
+	}
+	params.SetInfo(lunMapInfo)
+
+	result, err := d.api.San.LunMapCreate(params, d.authInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (d *RestClient) CliPassthroughLunMappingGet(
+	ctx context.Context,
+	initiatorGroupName, lunPath string,
+) (*CliPassthroughResult, error) {
+	// See also:
+	//   https://docs.netapp.com/us-en/ontap-automation/accessing_the_ontap_cli_through_the_rest_api.html
+	//   https://library.netapp.com/ecmdocs/ECMLP2858435/html/resources/cli.html
+
+	url := fmt.Sprintf(
+		`https://%v/api/private/cli/lun/mapping?vserver=%v&igroup=%v&path=%v&fields=%v`,
+		d.config.ManagementLIF,
+		d.config.SVM,
+		initiatorGroupName,
+		url.QueryEscape(lunPath), // lunPath
+		"vserver,path,volume,qtree,lun,igroup,reporting-nodes",
+	)
+
+	fmt.Printf("GET %v\n", url)
+
+	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req.Header.Set("Content-Type", "application/json")
+	if d.config.Username != "" && d.config.Password != "" {
+		req.SetBasicAuth(d.config.Username, d.config.Password)
+	}
+
+	// certs will have been parsed and configured already, if needed, as part of the RestClient init
+	tr := d.tr
+
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
+	}
+
+	response, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	} else if response.StatusCode == 401 {
+		return nil, errors.New("response code 401 (Unauthorized): incorrect or missing credentials")
+	}
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"body": string(body),
+	}).Debug("CliPassthroughResult")
+
+	result := &CliPassthroughResult{}
+	unmarshalErr := json.Unmarshal(body, result)
+	if unmarshalErr != nil {
+		log.WithField("body", string(body)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())
+		return nil, unmarshalErr
+	}
+
+	return result, nil
+}
+
+type LunMappingGetCliPassthroughResult struct {
+	Igroup         string   `json:"igroup"`
+	Lun            string   `json:"lun"`
+	Path           string   `json:"path"`
+	Qtree          string   `json:"qtree"`
+	ReportingNodes []string `json:"reporting_nodes"`
+	Volume         string   `json:"volume"`
+	Vserver        string   `json:"vserver"`
+}
+
+type LunGeometryCliPassthroughResult struct {
+	// http://json2struct.mervine.net
+	BytesPerSector     int64  `json:"bytes_per_sector"`
+	CylSize            int64  `json:"cyl_size"`
+	Cylinders          int64  `json:"cylinders"`
+	DevSize            int64  `json:"dev_size"`
+	Lun                string `json:"lun"`
+	MaxResizeSize      int    `json:"max_resize_size"`
+	Path               string `json:"path"`
+	Qtree              string `json:"qtree"`
+	Sectors            int64  `json:"sectors"`
+	SectorsPerCylinder int64  `json:"sectors_per_cylinder"`
+	SectorsPerTrack    int64  `json:"sectors_per_track"`
+	Size               int64  `json:"size"`
+	Volume             string `json:"volume"`
+	Vserver            string `json:"vserver"`
+}
+
+// LunSize gets the size for a given LUN.
+func (d RestClient) LunSize(
+	ctx context.Context,
+	lunPath string,
+) (int, error) {
+
+	lun, err := d.LunGetByName(ctx, lunPath)
+	if err != nil {
+		return 0, err
+	}
+	if lun == nil {
+		return 0, fmt.Errorf("could not find lun with name %v", lunPath)
+	}
+
+	// TODO validate/improve this logic? int64 vs int
+	return int(lun.Space.Size), nil
+}
+
+// LunSetSize sets the size for a given LUN.
+func (d RestClient) LunSetSize(
+	ctx context.Context,
+	lunPath, newSize string,
+) (uint64, error) {
+
+	lun, err := d.LunGetByName(ctx, lunPath)
+	if err != nil {
+		return 0, err
+	}
+	if lun == nil {
+		return 0, fmt.Errorf("could not find lun with name %v", lunPath)
+	}
+
+	uuid := lun.UUID
+
+	params := san.NewLunModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.UUIDPathParameter = uuid
+
+	sizeBytesStr, _ := utils.ConvertSizeToBytes(newSize)
+	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+	spaceInfo := &models.LunSpace{
+		Size:      int64(sizeBytes),
+	}
+	lunInfo := &models.Lun{
+		Space:        spaceInfo,
+	}
+
+	params.SetInfo(lunInfo)
+
+	lunModifyOK, err := d.api.San.LunModify(params, d.authInfo)
+	if err != nil {
+		return 0, err
+	}
+	if lunModifyOK == nil {
+		return 0, fmt.Errorf("unexpected response from LUN modify")
+	}
+
+	return sizeBytes, nil
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2378,7 +2917,17 @@ type CliPassthroughResult struct {
 		} `json:"_links,omitempty"`
 		UUID string `json:"uuid,omitempty"`
 	} `json:"jobs,omitempty"`
-	NumRecords *int64 `json:"num_records,omitempty"`
+	Links struct {
+		Self struct {
+			Href string `json:"href,omitempty"`
+		} `json:"self,omitempty"`
+		Next struct {
+			Href string `json:"href,omitempty"`
+		} `json:"next,omitempty"`
+	} `json:"_links,omitempty"`
+	//Records    map[string]json.RawMessage `json:"records,omitempty"`
+	Records    []json.RawMessage `json:"records,omitempty"`
+	NumRecords *int64            `json:"num_records,omitempty"`
 }
 
 func (d *RestClient) CliPassthroughVolumePatch(

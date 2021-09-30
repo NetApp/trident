@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
+	"github.com/netapp/trident/utils"
 	log "github.com/sirupsen/logrus"
 
 	. "github.com/netapp/trident/logger"
@@ -251,6 +252,550 @@ func (d OntapAPIZAPI) NodeListSerialNumbers(ctx context.Context) ([]string, erro
 
 type OntapAPIZAPI struct {
 	API *Client
+}
+
+func (d OntapAPIZAPI) SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error) {
+	return d.API.SnapmirrorPolicyExists(ctx, policyName)
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIZAPI) SnapmirrorPolicyGet(ctx context.Context, policyName string) (
+	*azgo.SnapmirrorPolicyInfoType, error,
+) {
+	return d.API.SnapmirrorPolicyGet(ctx, policyName)
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIZAPI) JobScheduleExists(ctx context.Context, jobName string) (bool, error) {
+	return d.API.JobScheduleExists(ctx, jobName)
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIZAPI) GetPeeredVservers(ctx context.Context) ([]string, error) {
+	return d.API.GetPeeredVservers(ctx)
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIZAPI) VolumeGetType(name string) (string, error) {
+	return d.API.VolumeGetType(name)
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIZAPI) SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorGetResponse, error,
+) {
+	return d.API.SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIZAPI) SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (
+	*azgo.SnapmirrorCreateResponse, error,
+) {
+	return d.API.SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule)
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIZAPI) SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorInitializeResponse, error,
+) {
+	return d.API.SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIZAPI) SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorResyncResponse, error,
+) {
+	return d.API.SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIZAPI) SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorDestroyResponse, error,
+) {
+	return d.API.SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIZAPI) SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorQuiesceResponse, error,
+) {
+	return d.API.SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIZAPI) SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorAbortResponse, error,
+) {
+	return d.API.SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIZAPI) SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorBreakResponse, error,
+) {
+	return d.API.SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+}
+
+func (d OntapAPIZAPI) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error {
+	return d.API.SnapmirrorRelease(sourceFlexvolName, sourceSVMName)
+}
+
+func (d OntapAPIZAPI) ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error) {
+	// ParseLunComment shouldn't be called as it isn't needed for ZAPI
+	Logc(ctx).Info("Not implemented")
+	return nil, nil
+}
+
+func (d OntapAPIZAPI) LunList(ctx context.Context, pattern string) (Luns, error) {
+	lunResponse, err := d.API.LunGetAll(pattern)
+	if err = GetError(ctx, lunResponse, err); err != nil {
+		return nil, err
+	}
+
+	luns := Luns{}
+
+	if lunResponse.Result.AttributesListPtr != nil {
+		for _, lun := range lunResponse.Result.AttributesListPtr.LunInfoPtr {
+			lunInfo, err := lunInfoFromZapiAttrsHelper(lun)
+			if err != nil {
+				return nil, err
+			}
+			luns = append(luns, *lunInfo)
+		}
+	}
+
+	return luns, nil
+}
+
+func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
+	if d.API.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "LunCreate",
+			"Type":   "OntapAPIZAPI",
+			"spec":   lun,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> LunCreate")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< LunCreate")
+	}
+
+	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
+	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+
+	lunCreateResponse, err := d.API.LunCreate(lun.Name, int(sizeBytes), lun.OsType, lun.Qos, *lun.SpaceReserved,
+		*lun.SpaceAllocated)
+
+	if err != nil {
+		return fmt.Errorf("error creating LUN: %v", err)
+	}
+
+	if lunCreateResponse == nil {
+		return fmt.Errorf("missing LUN create response")
+	}
+
+	if err = GetError(ctx, lunCreateResponse, err); err != nil {
+		if zerr, ok := err.(ZapiError); ok {
+			// Handle case where the Create is passed to every Docker Swarm node
+			if zerr.Code() == azgo.EAPIERROR && strings.HasSuffix(strings.TrimSpace(zerr.Reason()), "Job exists") {
+				Logc(ctx).WithField("LUN", lun.Name).Warn("LUN create job already exists, " +
+					"skipping LUN create on this node.")
+				err = VolumeCreateJobExistsError(fmt.Sprintf("LUN create job already exists, %s", lun.Name))
+			}
+		}
+	}
+
+	return err
+}
+
+func (d OntapAPIZAPI) LunDestroy(ctx context.Context, lunPath string) error {
+	_, err := d.API.LunDestroy(lunPath)
+	return err
+}
+
+func (d OntapAPIZAPI) LunGetComment(ctx context.Context, lunPath string) (string, bool, error) {
+	// TODO: refactor, this is specifically for getting the fstype
+	var fstype string
+	parse := false
+	LUNAttributeFSType := "com.netapp.ndvp.fstype"
+	attrResponse, err := d.API.LunGetAttribute(lunPath, LUNAttributeFSType)
+	if err = GetError(ctx, attrResponse, err); err != nil {
+		return "", parse, err
+	} else {
+		fstype = attrResponse.Result.Value()
+		Logc(ctx).WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+	}
+	return fstype, parse, nil
+}
+
+func (d OntapAPIZAPI) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context string) error {
+	var attrResponse interface{}
+	var err error
+	if fstype != "" {
+		attrResponse, err = d.API.LunSetAttribute(lunPath, attribute, fstype)
+	}
+	if err = GetError(ctx, attrResponse, err); err != nil {
+		return err
+	}
+
+	if context != "" {
+		attrResponse, err = d.API.LunSetAttribute(lunPath, "context", context)
+	}
+	if err = GetError(ctx, attrResponse, err); err != nil {
+		Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the driver context attribute for new LUN.")
+	}
+
+	return nil
+}
+
+func (d OntapAPIZAPI) LunSetQosPolicyGroup(ctx context.Context, lunPath string, qosPolicyGroup QosPolicyGroup) error {
+	qosResponse, err := d.API.LunSetQosPolicyGroup(lunPath, qosPolicyGroup)
+	if err = GetError(ctx, qosResponse, err); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d OntapAPIZAPI) LunGetByName(ctx context.Context, name string) (*Lun, error) {
+	if d.API.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":  "LunGetByName",
+			"Type":    "OntapAPIZAPI",
+			"LunPath": name,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> LunGetByName")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< LunGetByName")
+	}
+	lunResponse, err := d.API.LunGet(name)
+	if err != nil || lunResponse == nil {
+		return nil, fmt.Errorf("could not get LUN by name %v, error: %v", name, err)
+	}
+
+	lun, err := lunInfoFromZapiAttrsHelper(*lunResponse)
+	if err != nil {
+		return nil, err
+	}
+	return lun, nil
+}
+
+func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
+	var responseComment string
+	var responseName string
+	var responseQos string
+	var responseSize string
+	var responseMapped bool
+	var responseUUID string
+	var responseSerial string
+	var responseState string
+	var responseVolumeName string
+	var responseSpaceReserved bool
+	var responseSpaceAllocated bool
+
+	if lunResponse.CommentPtr != nil {
+		responseComment = lunResponse.Comment()
+	}
+
+	if lunResponse.PathPtr != nil {
+		responseName = lunResponse.Path()
+	}
+
+	if lunResponse.QosPolicyGroupPtr != nil {
+		responseQos = lunResponse.QosPolicyGroup()
+	}
+
+	if lunResponse.SizePtr != nil {
+		responseSize = strconv.FormatUint(uint64(lunResponse.Size()), 10)
+	}
+
+	if lunResponse.MappedPtr != nil {
+		responseMapped = lunResponse.Mapped()
+	}
+
+	if lunResponse.UuidPtr != nil {
+		responseUUID = lunResponse.Uuid()
+	}
+
+	if lunResponse.SerialNumberPtr != nil {
+		responseSerial = lunResponse.SerialNumber()
+	}
+
+	if lunResponse.OnlinePtr != nil {
+		if lunResponse.Online() {
+			responseState = "online"
+		} else {
+			responseState = "offline"
+		}
+	}
+
+	if lunResponse.VolumePtr != nil {
+		responseVolumeName = lunResponse.Volume()
+	}
+
+	if lunResponse.IsSpaceReservationEnabledPtr != nil {
+		responseSpaceReserved = lunResponse.IsSpaceReservationEnabled()
+	}
+
+	if lunResponse.IsSpaceAllocEnabledPtr != nil {
+		responseSpaceAllocated = lunResponse.IsSpaceAllocEnabled()
+	}
+
+	lunInfo := &Lun{
+		Comment:        responseComment,
+		Name:           responseName,
+		Qos:            QosPolicyGroup{Name: responseQos},
+		Size:           responseSize,
+		Mapped:         responseMapped,
+		UUID:           responseUUID,
+		SerialNumber:   responseSerial,
+		State:          responseState,
+		VolumeName:     responseVolumeName,
+		SpaceReserved:  ToBoolPointer(responseSpaceReserved),
+		SpaceAllocated: ToBoolPointer(responseSpaceAllocated),
+	}
+	return lunInfo, nil
+}
+
+func (d OntapAPIZAPI) LunRename(ctx context.Context, lunPath, newLunPath string) error {
+	renameResponse, err := d.API.LunRename(lunPath, newLunPath)
+	if err = GetError(ctx, renameResponse, err); err != nil {
+		Logc(ctx).WithField("originalName", lunPath).Errorf("renaming LUN failed: %v", err)
+		return fmt.Errorf("LUN %s rename failed: %v", lunPath, err)
+	}
+
+	return nil
+}
+
+func (d OntapAPIZAPI) LunMapInfo(ctx context.Context, initiatorGroupName, lunPath string) (int, error) {
+	lunID := -1
+	lunMapResponse, err := d.API.LunMapListInfo(lunPath)
+	if err = GetError(ctx, lunMapResponse, err); err != nil {
+		return lunID, err
+	}
+	if lunMapResponse.Result.InitiatorGroupsPtr != nil {
+		for _, lunMapResponse := range lunMapResponse.Result.InitiatorGroupsPtr.InitiatorGroupInfoPtr {
+			if lunMapResponse.InitiatorGroupName() == initiatorGroupName {
+				lunID = lunMapResponse.LunId()
+			}
+		}
+	}
+	return lunID, nil
+}
+
+func (d OntapAPIZAPI) EnsureLunMapped(
+	ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool,
+) (int, error) {
+	return d.API.LunMapIfNotMapped(ctx, initiatorGroupName, lunPath, importNotManaged)
+}
+
+func (d OntapAPIZAPI) LunSize(ctx context.Context, flexvolName string) (int, error) {
+	size, err := d.API.LunSize(flexvolName)
+	if err != nil {
+		return 0, err
+	}
+	return size, nil
+}
+
+func (d OntapAPIZAPI) LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error) {
+	sizeBytesStr, err := utils.ConvertSizeToBytes(newSize)
+	if err != nil {
+		return 0, err
+	}
+	sizeBytes, err := strconv.ParseUint(sizeBytesStr, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return d.API.LunResize(lunPath, int(sizeBytes))
+}
+
+func (d OntapAPIZAPI) LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) (
+	[]string, error,
+) {
+	var results []string
+	lunMapGetResponse, err := d.API.LunMapGet(initiatorGroupName, lunPath)
+	if err != nil {
+		return nil, fmt.Errorf("could not get iSCSI reported nodes: %v", err)
+	}
+	if lunMapGetResponse.Result.AttributesListPtr != nil {
+		for _, lunMapInfo := range lunMapGetResponse.Result.AttributesListPtr {
+			for _, reportingNode := range lunMapInfo.ReportingNodes() {
+				results = append(results, reportingNode)
+			}
+		}
+	}
+
+	return results, nil
+}
+
+func (d OntapAPIZAPI) IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiInitiatorAuth, error) {
+	authInfo := IscsiInitiatorAuth{}
+	apiResponse, err := d.API.IscsiInitiatorGetDefaultAuth()
+	err = GetError(ctx, apiResponse, err)
+	if err != nil {
+		return authInfo, err
+	}
+
+	if apiResponse.Result.AuthTypePtr != nil {
+		authInfo.AuthType = apiResponse.Result.AuthType()
+	}
+
+	if apiResponse.Result.UserNamePtr != nil {
+		authInfo.ChapUser = apiResponse.Result.UserName()
+	}
+
+	if apiResponse.Result.OutboundUserNamePtr != nil {
+		authInfo.ChapOutboundUser = apiResponse.Result.OutboundUserName()
+	}
+
+	return authInfo, nil
+}
+
+func (d OntapAPIZAPI) IscsiInitiatorSetDefaultAuth(
+	ctx context.Context, authType, userName, passphrase, outbountUserName, outboundPassphrase string,
+) error {
+	response, err := d.API.IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, outbountUserName,
+		outboundPassphrase)
+	err = GetError(ctx, response, err)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d OntapAPIZAPI) IscsiInterfaceGet(ctx context.Context, svm string) ([]string, error) {
+	var iSCSIInterfaces []string
+	interfaceResponse, err := d.API.IscsiInterfaceGetIterRequest()
+	err = GetError(ctx, interfaceResponse, err)
+	if err != nil {
+		Logc(ctx).Debugf("could not get SVM iSCSI interfaces: %v", err)
+		return nil, err
+	}
+	if interfaceResponse.Result.AttributesListPtr != nil {
+		for _, iscsiAttrs := range interfaceResponse.Result.AttributesListPtr.IscsiInterfaceListEntryInfoPtr {
+			if !iscsiAttrs.IsInterfaceEnabled() {
+				continue
+			}
+			iSCSIInterface := fmt.Sprintf("%s:%d", iscsiAttrs.IpAddress(), iscsiAttrs.IpPort())
+			iSCSIInterfaces = append(iSCSIInterfaces, iSCSIInterface)
+		}
+	}
+	if len(iSCSIInterfaces) == 0 {
+		return nil, fmt.Errorf("SVM %s has no active iSCSI interfaces", svm)
+	}
+	return iSCSIInterfaces, nil
+}
+
+func (d OntapAPIZAPI) IscsiNodeGetNameRequest(ctx context.Context) (string, error) {
+	nodeNameResponse, err := d.API.IscsiNodeGetNameRequest()
+	if err != nil {
+		return "", err
+	}
+	return nodeNameResponse.Result.NodeName(), nil
+}
+
+func (d OntapAPIZAPI) IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error {
+	response, err := d.API.IgroupCreate(initiatorGroupName, initiatorGroupType, osType)
+	err = GetError(ctx, response, err)
+	zerr, zerrOK := err.(ZapiError)
+	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_INITGROUP) {
+		Logc(ctx).WithField("igroup", initiatorGroupName).Debug("No such initiator group (igroup).")
+	} else if zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_EXISTS {
+		Logc(ctx).WithField("igroup", initiatorGroupName).Info("Initiator group (igroup) already exists.")
+	} else {
+		Logc(ctx).WithFields(log.Fields{
+			"igroup": initiatorGroupName,
+			"error":  err.Error(),
+		}).Error("Initiator group (igroup) could not be created.")
+		return err
+	}
+	return nil
+}
+
+// Same functionality as cleanIgroups from ontap_common.go
+func (d OntapAPIZAPI) IgroupDestroy(ctx context.Context, initiatorGroupName string) error {
+	response, err := d.API.IgroupDestroy(initiatorGroupName)
+	err = GetError(ctx, response, err)
+	zerr, zerrOK := err.(ZapiError)
+	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_INITGROUP) {
+		Logc(ctx).WithField("igroup", initiatorGroupName).Debug("No such initiator group (igroup).")
+	} else if zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_MAPS_EXIST {
+		Logc(ctx).WithField("igroup", initiatorGroupName).Info("Initiator group (igroup) currently in use.")
+	} else {
+		Logc(ctx).WithFields(log.Fields{
+			"igroup": initiatorGroupName,
+			"error":  err.Error(),
+		}).Error("Initiator group (igroup) could not be deleted.")
+		return err
+	}
+	return nil
+}
+
+func (d OntapAPIZAPI) EnsureIgroupAdded(ctx context.Context, initiatorGroupName, initiator string) error {
+	response, err := d.API.IgroupAdd(initiatorGroupName, initiator)
+	err = GetError(ctx, response, err)
+	zerr, zerrOK := err.(ZapiError)
+	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
+		Logc(ctx).WithFields(log.Fields{
+			"IQN":    initiator,
+			"igroup": initiatorGroupName,
+		}).Debug("Host IQN already in igroup.")
+	} else {
+		return fmt.Errorf("error adding IQN %v to igroup %v: %v", initiator, initiatorGroupName, err)
+	}
+	return nil
+}
+
+func (d OntapAPIZAPI) IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error {
+	response, err := d.API.IgroupRemove(initiatorGroupName, initiator, force)
+	err = GetError(ctx, response, err)
+	zerr, zerrOK := err.(ZapiError)
+	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NODE_NOT_IN_INITGROUP) {
+		Logc(ctx).WithFields(log.Fields{
+			"IQN":    initiator,
+			"igroup": initiatorGroupName,
+		}).Debug("Host IQN not in igroup.")
+	} else {
+		return fmt.Errorf("error removing IQN %v from igroup %v: %v", initiator, initiatorGroupName, err)
+	}
+
+	return nil
+}
+
+func (d OntapAPIZAPI) IgroupGetByName(ctx context.Context, initiatorGroupName string) (
+	map[string]bool, error,
+) {
+	response, err := d.API.IgroupGet(initiatorGroupName)
+	if err != nil {
+		return nil, err
+	}
+	mappedIQNs := make(map[string]bool)
+	if response.InitiatorsPtr != nil {
+		if response.InitiatorsPtr.InitiatorInfoPtr != nil {
+			initiators := response.InitiatorsPtr.InitiatorInfo()
+			for _, initiator := range initiators {
+				if initiator.InitiatorNamePtr != nil {
+					mappedIQNs[initiator.InitiatorName()] = true
+				}
+			}
+		}
+	}
+	return mappedIQNs, nil
+}
+
+func (d OntapAPIZAPI) GetReportedDataLifs(ctx context.Context) (string, []string, error) {
+	var reportedDataLIFs []string
+	var currentNode string
+	response, err := d.API.NetInterfaceGet()
+	if err != nil {
+		return currentNode, nil, nil
+	}
+	if response.Result.AttributesListPtr != nil && response.Result.AttributesListPtr.NetInterfaceInfoPtr != nil {
+		for _, netInterface := range response.Result.AttributesListPtr.NetInterfaceInfo() {
+			if netInterface.CurrentNodePtr != nil {
+				currentNode = netInterface.CurrentNode()
+			}
+			reportedDataLIFs = append(reportedDataLIFs, netInterface.Address())
+		}
+	}
+
+	return currentNode, reportedDataLIFs, nil
 }
 
 func NewOntapAPIZAPI(zapiClient *Client) (OntapAPIZAPI, error) {

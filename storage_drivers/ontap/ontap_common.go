@@ -1261,7 +1261,7 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 
 // ValidateSANDriver contains the validation logic shared between ontap-san and ontap-san-economy.
 func ValidateSANDriver(
-	ctx context.Context, _ *api.Client, config *drivers.OntapStorageDriverConfig, ips []string,
+	ctx context.Context, config *drivers.OntapStorageDriverConfig, ips []string,
 ) error {
 
 	if config.DebugTraceFlags["method"] {

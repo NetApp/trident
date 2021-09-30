@@ -3,13 +3,18 @@
 package api
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
 
+	// snapmirror interface requires this import for now
+	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	log "github.com/sirupsen/logrus"
 
 	. "github.com/netapp/trident/logger"
@@ -81,6 +86,106 @@ func (e RestError) Code() string {
 
 type OntapAPIREST struct {
 	API RestClient
+}
+
+
+func (d OntapAPIREST) SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error) {
+	// TODO implement
+	return false, fmt.Errorf("not implemented for REST")
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIREST) SnapmirrorPolicyGet(ctx context.Context, policyName string) (
+	*azgo.SnapmirrorPolicyInfoType, error,
+) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) JobScheduleExists(ctx context.Context, jobName string) (bool, error) {
+	// TODO implement
+	return false, fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) GetPeeredVservers(ctx context.Context) ([]string, error) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) VolumeGetType(name string) (string, error) {
+	// TODO implement
+	return "", fmt.Errorf("not implemented for REST")
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIREST) SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorGetResponse, error,
+) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIREST) SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (
+	*azgo.SnapmirrorCreateResponse, error,
+) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIREST) SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorInitializeResponse, error,
+) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIREST) SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorResyncResponse, error,
+) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIREST) SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorDestroyResponse, error,
+) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIREST) SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorQuiesceResponse, error,
+) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIREST) SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorAbortResponse, error,
+) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
+}
+
+// TODO: these should be refactored to support REST
+func (d OntapAPIREST) SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+	*azgo.SnapmirrorBreakResponse, error,
+) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error {
+	// TODO @ameade/ @rippy
+	// TODO implement
+	// return fmt.Errorf("not implemented for REST")
+	return nil
 }
 
 func NewOntapAPIREST(restClient RestClient) (OntapAPIREST, error) {
@@ -241,6 +346,68 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 		UUID:            volumeGetResponse.UUID,
 	}
 	return volumeInfo, nil
+}
+
+func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
+	var responseComment string
+	var responseLunMaps []LunMap
+	var responseQos string
+	var responseSize string
+	var responseMapped bool
+	var responseVolName string
+
+	if lunGetResponse == nil {
+		return nil, fmt.Errorf("lun response is nil")
+	}
+	if lunGetResponse.Comment != nil {
+		responseComment = *lunGetResponse.Comment
+	}
+
+	var lunMap LunMap
+	if lunGetResponse.LunMaps != nil {
+		for _, record := range lunGetResponse.LunMaps {
+			lunMap.IgroupName = record.Igroup.Name
+			lunMap.LunID = int(record.LogicalUnitNumber)
+			responseLunMaps = append(responseLunMaps, lunMap)
+		}
+	}
+
+	if lunGetResponse.Space != nil {
+		responseSize = strconv.FormatInt(lunGetResponse.Space.Size, 10)
+	}
+
+	if lunGetResponse.Comment != nil {
+		responseComment = *lunGetResponse.Comment
+	}
+
+	if lunGetResponse.QosPolicy != nil {
+		responseQos = lunGetResponse.QosPolicy.Name
+	}
+
+	if lunGetResponse.Status.Mapped != nil {
+		responseMapped = *lunGetResponse.Status.Mapped
+	}
+
+	if lunGetResponse.Location != nil {
+		if lunGetResponse.Location.Volume != nil {
+			responseVolName = lunGetResponse.Location.Volume.Name
+		}
+	}
+
+	lunInfo := &Lun{
+		Comment:      responseComment,
+		Enabled:      lunGetResponse.Enabled,
+		LunMaps:      responseLunMaps,
+		Name:         lunGetResponse.Name,
+		Qos:          QosPolicyGroup{Name: responseQos},
+		Size:         responseSize,
+		Mapped:       responseMapped,
+		UUID:         lunGetResponse.UUID,
+		SerialNumber: lunGetResponse.SerialNumber,
+		State:        lunGetResponse.Status.State,
+		VolumeName:   responseVolName,
+	}
+	return lunInfo, nil
 }
 
 func (d OntapAPIREST) APIVersion(ctx context.Context) (string, error) {
@@ -626,7 +793,7 @@ func (d OntapAPIREST) ExportPolicyCreate(ctx context.Context, policy string) err
 	// TODO use isExportPolicyExistsRest ?
 	exportPolicy, err := d.API.ExportPolicyGetByName(ctx, policy)
 	if err != nil {
-		err = fmt.Errorf("error checking for existing export policy %s: %v", policy, err)
+		Logc(ctx).Errorf("error checking for existing export policy %s: %v", policy, err)
 	}
 	if exportPolicy != nil {
 		// specified export policy already exists
@@ -980,4 +1147,569 @@ func (d OntapAPIREST) IsSVMDRCapable(_ context.Context) (bool, error) {
 
 	// TODO @ameade/ @rippy
 	return false, fmt.Errorf("not implemented")
+}
+
+func (d OntapAPIREST) LunList(ctx context.Context, pattern string) (Luns, error) {
+	lunsResponse, err := d.API.LunList(ctx, pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	luns := Luns{}
+
+	if lunsResponse.Payload.Records != nil {
+		for _, lun := range lunsResponse.Payload.Records {
+			lunInfo, err := lunInfoFromRestAttrsHelper(lun)
+			if err != nil {
+				return nil, err
+			}
+			luns = append(luns, *lunInfo)
+		}
+	}
+
+	return luns, nil
+}
+
+func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
+
+	if d.API.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "LunCreate",
+			"Type":   "OntapAPIREST",
+			"spec":   lun,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> LunCreate")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< LunCreate")
+	}
+
+	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
+	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+	creationErr := d.API.LunCreate(ctx, lun.Name, int64(sizeBytes), lun.OsType, lun.Qos)
+	if creationErr != nil {
+		return fmt.Errorf("error creating LUN %v: %v", lun.Name, creationErr)
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) LunDestroy(ctx context.Context, lunPath string) error {
+	if d.API.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "LunDestroy",
+			"Type":   "OntapAPIREST",
+			"Name":   lunPath,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> LunDestroy")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< LunDestroy")
+	}
+
+	lun, err := d.API.LunGetByName(ctx, lunPath)
+	if err != nil {
+		return fmt.Errorf("error getting LUN: %v", lunPath)
+	}
+
+	err = d.API.LunDelete(ctx, lun.UUID)
+	if err != nil {
+		return fmt.Errorf("error deleting LUN: %v", lunPath)
+	}
+
+	return nil
+}
+
+// TODO: Change this for LUN Attributes when available
+func (d OntapAPIREST) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context string) error {
+	if strings.Contains(lunPath, failureLUNSetAttr) {
+		return errors.New("injected error")
+	}
+	return d.LunSetComments(ctx, lunPath, fstype, context)
+}
+
+// TODO: Change this for LUN Attributes when available
+func (d OntapAPIREST) LunGetComment(ctx context.Context, lunPath string) (string, bool, error) {
+	parse := true
+	comment, err := d.API.LunGetComment(ctx, lunPath)
+	return comment, parse, err
+}
+
+// TODO: Change this for LUN Attributes when available
+func (d OntapAPIREST) LunSetComments(ctx context.Context, lunPath, fstype, context string) error {
+
+	setComment, err := d.GetCommentJSON(ctx, fstype, context, 254)
+	if err != nil {
+		return err
+	}
+	return d.API.LunSetComment(ctx, lunPath, setComment)
+}
+
+// TODO: Change this for LUN Attributes when available
+// GetCommentJSON returns a JSON-formatted string containing the labels on this LUN.
+// This is a temporary solution until we are able to implement LUN attributes in REST
+// For example: {"lunAttributes":{"fstype":"xfs","driverContext":"csi"}}
+func (d OntapAPIREST) GetCommentJSON(ctx context.Context, fstype, context string, commentLimit int) (string,
+	error) {
+
+	lunCommentMap := make(map[string]map[string]string)
+	newcommentMap := make(map[string]string)
+	newcommentMap["fstype"] = fstype
+	newcommentMap["driverContext"] = context
+	lunCommentMap["lunAttributes"] = newcommentMap
+
+	lunCommentJSON, err := json.Marshal(lunCommentMap)
+	if err != nil {
+		Logc(ctx).Errorf("Failed to marshal lun comments: %+v", lunCommentMap)
+		return "", err
+	}
+
+	commentsJsonBytes := new(bytes.Buffer)
+	err = json.Compact(commentsJsonBytes, lunCommentJSON)
+	if err != nil {
+		Logc(ctx).Errorf("Failed to compact lun comments: %s", string(lunCommentJSON))
+		return "", err
+	}
+
+	commentsJSON := commentsJsonBytes.String()
+
+	if commentLimit != 0 && len(commentsJSON) > commentLimit {
+		Logc(ctx).WithFields(log.Fields{
+			"commentsJSON":       commentsJSON,
+			"commentsJSONLength": len(commentsJSON),
+			"maxCommentLength":   commentLimit}).Error("comment length exceeds the character limit")
+		return "", fmt.Errorf("comment length %v exceeds the character limit of %v characters", len(commentsJSON),
+			commentLimit)
+	}
+
+	return commentsJSON, nil
+}
+
+func (d OntapAPIREST) ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error) {
+	var lunComment map[string]map[string]string
+	err := json.Unmarshal([]byte(commentJSON), &lunComment)
+	if err != nil {
+		return nil, err
+	}
+	lunAttrs := lunComment["lunAttributes"]
+
+	return lunAttrs, nil
+}
+
+func (d OntapAPIREST) LunSetQosPolicyGroup(ctx context.Context, lunPath string, qosPolicyGroup QosPolicyGroup) error {
+	return d.API.LunSetQosPolicyGroup(ctx, lunPath, qosPolicyGroup.Name)
+}
+
+func (d OntapAPIREST) LunGetByName(ctx context.Context, name string) (*Lun, error) {
+	if d.API.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":  "LunGetByName",
+			"Type":    "OntapAPIREST",
+			"LunPath": name,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> LunGetByName")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< LunGetByName")
+	}
+
+	lunResponse, err := d.API.LunGetByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	lun, err := lunInfoFromRestAttrsHelper(lunResponse)
+	if err != nil {
+		return nil, err
+	}
+	return lun, nil
+}
+
+func (d OntapAPIREST) LunRename(ctx context.Context, lunPath, newLunPath string) error {
+	if d.API.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":     "LunRename",
+			"Type":       "OntapAPIREST",
+			"OldLunName": lunPath,
+			"NewLunName": newLunPath,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> LunRename")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< LunRename")
+	}
+	return d.API.LunRename(ctx, lunPath, newLunPath)
+}
+
+func (d OntapAPIREST) LunMapInfo(ctx context.Context, initiatorGroupName, lunPath string) (int, error,) {
+	lunID := -1
+	info, err := d.API.LunMapInfo(ctx, initiatorGroupName, lunPath)
+	if err != nil {
+		return lunID, fmt.Errorf("error reading LUN maps for volume %s: %v", lunPath, err)
+	}
+
+	if info.Payload != nil {
+		for _, lunMapResponse := range info.Payload.Records {
+			if lunMapResponse.Igroup.Name == initiatorGroupName {
+				if lunMapResponse.LogicalUnitNumber != nil {
+					lunID = int(*lunMapResponse.LogicalUnitNumber)
+				}
+			}
+		}
+	}
+	return lunID, nil
+}
+
+func (d OntapAPIREST) isLunMapped(
+	ctx context.Context, lunPath, initiatorGroupName string, importNotManaged bool,
+) (bool, int, error) {
+	alreadyMapped := false
+	lunID := -1
+
+	lunMapResponse, err := d.API.LunMapInfo(ctx, "", lunPath)
+	if err != nil {
+		return alreadyMapped, lunID, fmt.Errorf("problem reading maps for LUN %s: %v", lunPath, err)
+	}
+	if lunMapResponse == nil || lunMapResponse.Payload == nil || lunMapResponse.Payload.Records == nil {
+		return alreadyMapped, lunID, fmt.Errorf("problem reading maps for LUN %s", lunPath)
+	}
+
+	for _, record := range lunMapResponse.Payload.Records {
+		if record.Igroup != nil {
+			if record.Igroup.Name != initiatorGroupName && !importNotManaged {
+				Logc(ctx).Debugf("deleting existing LUN mapping")
+				err = d.API.LunUnmap(ctx, record.Igroup.Name, lunPath)
+				if err != nil {
+					return alreadyMapped, lunID, fmt.Errorf("problem deleting map for LUN %s", lunPath)
+				}
+			}
+			if record.Igroup.Name == initiatorGroupName || importNotManaged {
+				if record.LogicalUnitNumber != nil {
+					lunID = int(*record.LogicalUnitNumber)
+					alreadyMapped = true
+
+					Logc(ctx).WithFields(
+						log.Fields{
+							"lun":    lunPath,
+							"igroup": initiatorGroupName,
+							"id":     lunID,
+						},
+					).Debug("LUN already mapped.")
+					break
+				} else {
+					lun, err := d.API.LunGetByName(ctx, lunPath)
+					if err != nil {
+						return alreadyMapped, lunID, err
+					}
+					if lun != nil || lun.LunMaps != nil {
+						lunID = int(lun.LunMaps[0].LogicalUnitNumber)
+						alreadyMapped = true
+
+						Logc(ctx).WithFields(
+							log.Fields{
+								"lun":    lunPath,
+								"igroup": initiatorGroupName,
+								"id":     lunID,
+							},
+						).Debug("LUN already mapped when checking LUN.")
+						break
+					}
+				}
+			}
+		}
+	}
+	return alreadyMapped, lunID, nil
+}
+
+func (d OntapAPIREST) EnsureLunMapped(
+	ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool,
+) (int, error) {
+	alreadyMapped, lunID, err := d.isLunMapped(ctx, lunPath, initiatorGroupName, importNotManaged)
+	if err != nil {
+		return -1, err
+	}
+
+	// Map IFF not already mapped
+	if !alreadyMapped {
+		lunMapResponse, err := d.API.LunMap(ctx, initiatorGroupName, lunPath, lunID)
+		if err != nil {
+			return -1, fmt.Errorf("err not nil, problem mapping LUN %s: %s", lunPath, err.Error())
+		}
+		if lunMapResponse == nil || lunMapResponse.Payload == nil || lunMapResponse.Payload.Records == nil {
+			return -1, fmt.Errorf("response nil, problem mapping LUN %s: %v", lunPath, err)
+		}
+		if lunMapResponse.Payload.NumRecords == 1 {
+			if lunMapResponse.Payload.Records[0].LogicalUnitNumber != nil {
+				lunID = int(*lunMapResponse.Payload.Records[0].LogicalUnitNumber)
+			}
+		}
+
+		Logc(ctx).WithFields(log.Fields{
+			"lun":    lunPath,
+			"igroup": initiatorGroupName,
+			"id":     lunID,
+		}).Debug("LUN mapped.")
+	}
+
+	return lunID, nil
+}
+
+// LunMapGetReportingNodes returns a list of LUN map details
+// equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
+func (d OntapAPIREST) LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) (
+	[]string, error,
+) {
+	cliPassthroughResult, err := d.API.CliPassthroughLunMappingGet(ctx, initiatorGroupName, lunPath)
+	fmt.Printf("cliPassthroughResult: %v \n", cliPassthroughResult)
+	fmt.Printf("err: %v \n", err)
+
+	var results []string
+	for _, rawJson := range cliPassthroughResult.Records {
+
+		result := &LunMappingGetCliPassthroughResult{}
+		unmarshalErr := json.Unmarshal(rawJson, result)
+		if unmarshalErr != nil {
+			log.WithField("body", string(rawJson)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())
+			return nil, unmarshalErr
+		}
+
+		results = append(results, result.ReportingNodes...)
+	}
+	return results, err
+}
+
+func (d OntapAPIREST) LunSize(ctx context.Context, flexvolName string) (int, error) {
+	lunPath := fmt.Sprintf("/vol/%v/lun0", flexvolName)
+	return d.API.LunSize(ctx, lunPath)
+}
+
+func (d OntapAPIREST) LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error) {
+	if d.API.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":  "LunSetSize",
+			"Type":    "OntapAPIREST",
+			"Name":    lunPath,
+			"NewSize": newSize,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> LunSetSize")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< LunSetSize")
+	}
+	return d.API.LunSetSize(ctx, lunPath, newSize)
+}
+
+func (d OntapAPIREST) IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiInitiatorAuth, error) {
+	authInfo := IscsiInitiatorAuth{}
+	response, err := d.API.IscsiInitiatorGetDefaultAuth(ctx)
+	if err != nil {
+		return authInfo, err
+	}
+
+	if response.Payload.Records == nil {
+		return authInfo, fmt.Errorf("iSCSI initiator response is nil")
+	}
+
+	if response.Payload.NumRecords == 0 {
+		return authInfo, fmt.Errorf("iSCSI initiator response has no records")
+	}
+
+	if response.Payload.NumRecords > 1 {
+		return authInfo, fmt.Errorf("iSCSI initiator response has too many records")
+	}
+
+	record := response.Payload.Records[0]
+	if record.Svm != nil {
+		authInfo.SVMName = record.Svm.Name
+	}
+
+	if record.Chap != nil {
+		if record.Chap.Inbound != nil {
+			authInfo.ChapUser = record.Chap.Inbound.User
+			authInfo.ChapPassphrase = record.Chap.Inbound.Password
+		}
+
+		if record.Chap.Outbound != nil {
+			authInfo.ChapOutboundUser = record.Chap.Outbound.User
+			authInfo.ChapOutboundPassphrase = record.Chap.Outbound.Password
+		}
+	}
+
+	authInfo.Initiator = record.Initiator
+	authInfo.AuthType = record.AuthenticationType
+
+	return authInfo, nil
+}
+
+func (d OntapAPIREST) IscsiInitiatorSetDefaultAuth(
+	ctx context.Context, authType, userName, passphrase, outbountUserName, outboundPassphrase string,
+) error {
+	return d.API.IscsiInitiatorSetDefaultAuth(ctx, authType, userName, passphrase, outbountUserName, outboundPassphrase)
+}
+
+func (d OntapAPIREST) IscsiInterfaceGet(ctx context.Context, svm string) ([]string, error) {
+
+	var iSCSINodeNames []string
+	interfaceResponse, err := d.API.IscsiInterfaceGet(ctx, svm)
+	if err != nil {
+		return nil, fmt.Errorf("could not get SVM iSCSI node name: %v", err)
+	}
+	if interfaceResponse.Payload == nil {
+		return nil, nil
+	}
+	// Get the IQN and ensure it is enabled
+	for _, record := range interfaceResponse.Payload.Records {
+		if *record.Enabled {
+			iSCSINodeNames = append(iSCSINodeNames, record.Target.Name)
+		}
+	}
+
+	if len(iSCSINodeNames) == 0 {
+		return nil, fmt.Errorf(
+			"SVM %s has no active iSCSI interfaces", interfaceResponse.Payload.Records[0].Svm.Name)
+	}
+
+	return iSCSINodeNames, nil
+}
+
+func (d OntapAPIREST) IscsiNodeGetNameRequest(ctx context.Context) (string, error) {
+	result, err := d.API.IscsiNodeGetName(ctx)
+	if err != nil {
+		return "", err
+	}
+	if result == nil {
+		return "", fmt.Errorf("iSCSI node name response is empty")
+	}
+	if result.Payload == nil {
+		return "", fmt.Errorf("iSCSI node name payload is empty")
+	}
+	if result.Payload.Target == nil {
+		return "", fmt.Errorf("could not get iSCSI node name target")
+	}
+	return result.Payload.Target.Name, nil
+}
+
+func (d OntapAPIREST) IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error {
+	if d.API.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":             "IgroupCreate",
+			"Type":               "OntapAPIREST",
+			"InitiatorGroupName": initiatorGroupName,
+			"InitiatorGroupType": initiatorGroupType,
+			"OsType":             osType,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> IgroupCreate")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< IgroupCreate")
+	}
+	igroup, err := d.API.IgroupGetByName(ctx, initiatorGroupName)
+	if err != nil {
+		return err
+	}
+	if igroup == nil {
+		Logc(ctx).Debugf("igroup %s does not exist, creating new igroup now", initiatorGroupName)
+		err = d.API.IgroupCreate(ctx, initiatorGroupName, initiatorGroupType, osType)
+		if err != nil {
+			if strings.Contains(err.Error(), "[409]") {
+				return nil
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) IgroupDestroy(ctx context.Context, initiatorGroupName string) error {
+	if d.API.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":             "IgroupDestroy",
+			"Type":               "OntapAPIREST",
+			"InitiatorGroupName": initiatorGroupName,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> IgroupDestroy")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< IgroupDestroy")
+	}
+	return d.API.IgroupDestroy(ctx, initiatorGroupName)
+}
+
+func (d OntapAPIREST) EnsureIgroupAdded(
+	ctx context.Context, initiatorGroupName, initiator string,
+) error {
+	if d.API.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":             "EnsureIgroupAdded",
+			"Type":               "OntapAPIREST",
+			"InitiatorGroupName": initiatorGroupName,
+			"IQN":                initiator,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> EnsureIgroupAdded")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< EnsureIgroupAdded")
+	}
+	alreadyAdded, err := d.isIgroupAdded(ctx, initiator, initiatorGroupName)
+	if err != nil {
+		return err
+	}
+
+	if !alreadyAdded {
+		Logc(ctx).Debugf("IQN %s not in igroup %s, adding now.", initiator, initiatorGroupName)
+		return d.API.IgroupAdd(ctx, initiatorGroupName, initiator)
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) isIgroupAdded(ctx context.Context, initiator, initiatorGroupName string) (bool, error) {
+	alreadyAdded := false
+	igroup, err := d.API.IgroupGetByName(ctx, initiatorGroupName)
+	if err != nil {
+		return alreadyAdded, err
+	}
+	if igroup != nil || igroup.Initiators != nil {
+		for _, i := range igroup.Initiators {
+			if i.Name == initiator {
+				Logc(ctx).Debugf("Initiator %v already in Igroup %v", initiator, initiatorGroupName)
+				alreadyAdded = true
+				break
+			}
+		}
+	}
+	return alreadyAdded, nil
+}
+
+func (d OntapAPIREST) IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error {
+	if d.API.config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":             "IgroupRemove",
+			"Type":               "OntapAPIREST",
+			"InitiatorGroupName": initiatorGroupName,
+			"IQN":                initiator,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> IgroupRemove")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< IgroupRemove")
+	}
+	return d.API.IgroupRemove(ctx, initiatorGroupName, initiator)
+}
+
+func (d OntapAPIREST) IgroupGetByName(ctx context.Context, initiatorGroupName string) (map[string]bool,
+	error) {
+	// Discover mapped initiators
+	iGroupResponse, err := d.API.IgroupGetByName(ctx, initiatorGroupName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read igroup info; %v", err)
+	}
+	mappedIQNs := make(map[string]bool)
+	if iGroupResponse != nil {
+		initiators := iGroupResponse.Initiators
+		for _, initiator := range initiators {
+			mappedIQNs[initiator.Name] = true
+		}
+	}
+	return mappedIQNs, nil
+}
+
+func (d OntapAPIREST) GetReportedDataLifs(ctx context.Context) (string, []string, error) {
+	var reportedDataLIFs []string
+	var currentNode string
+	netInterfaces, err := d.API.NetworkIPInterfacesList(ctx)
+	if err != nil {
+		return currentNode, nil, err
+	}
+	if netInterfaces.Payload.Records != nil {
+		for _, netInterface := range netInterfaces.Payload.Records {
+			if netInterface.State == "up" {
+				reportedDataLIFs = append(reportedDataLIFs, string(netInterface.IP.Address))
+			}
+			currentNode = netInterface.Location.Node.Name
+		}
+	}
+	return currentNode, reportedDataLIFs, nil
 }

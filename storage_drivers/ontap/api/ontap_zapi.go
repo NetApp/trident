@@ -32,9 +32,6 @@ const (
 	NumericalValueNotSet = -1
 	maxFlexGroupWait     = 30 * time.Second
 
-	failureLUNCreate  = "failure_65dc2f4b_adbe_4ed3_8b73_6c61d5eac054"
-	failureLUNSetAttr = "failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b"
-
 	MaxNASLabelLength = 1023
 	MaxSANLabelLength = 254
 

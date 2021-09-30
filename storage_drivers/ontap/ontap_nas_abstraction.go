@@ -8,7 +8,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/RoaringBitmap/roaring"
 	log "github.com/sirupsen/logrus"
@@ -374,75 +373,6 @@ func (d *NASStorageDriverAbstraction) Create(
 	return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 }
 
-// cloneFlexvol creates a volume clone
-func cloneFlexvol(
-	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
-	client api.OntapAPI, qosPolicyGroup api.QosPolicyGroup,
-) error {
-
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":   "cloneFlexvol",
-			"Type":     "NASStorageDriver",
-			"name":     name,
-			"source":   source,
-			"snapshot": snapshot,
-			"split":    split,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> cloneFlexvol")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< cloneFlexvol")
-	}
-
-	// If the specified volume already exists, return an error
-	volExists, err := client.VolumeExists(ctx, name)
-	if err != nil {
-		return fmt.Errorf("error checking for existing volume: %v", err)
-	}
-	if volExists {
-		return fmt.Errorf("volume %s already exists", name)
-	}
-
-	// If no specific snapshot was requested, create one
-	if snapshot == "" {
-		snapshot = time.Now().UTC().Format(storage.SnapshotNameFormat)
-		if err = client.VolumeSnapshotCreate(ctx, snapshot, source); err != nil {
-			return err
-		}
-	}
-
-	// Create the clone based on a snapshot
-	if err = client.VolumeCloneCreate(ctx, name, source, snapshot, false); err != nil {
-		return err
-	}
-
-	if err = client.VolumeSetComment(ctx, name, name, labels); err != nil {
-		return err
-	}
-
-	if config.StorageDriverName == drivers.OntapNASStorageDriverName {
-		// Mount the new volume
-		if err = client.VolumeMount(ctx, name, "/"+name); err != nil {
-			return err
-		}
-	}
-
-	// Set the QoS Policy if necessary
-	if qosPolicyGroup.Kind != api.InvalidQosPolicyGroupKind {
-		if err := client.VolumeSetQosPolicyGroupName(ctx, name, qosPolicyGroup); err != nil {
-			return err
-		}
-	}
-
-	// Split the clone if requested
-	if split {
-		if err := client.VolumeCloneSplitStart(ctx, name); err != nil {
-			return fmt.Errorf("error splitting clone: %v", err)
-		}
-	}
-
-	return nil
-}
-
 // CreateClone creates a volume clone
 func (d *NASStorageDriverAbstraction) CreateClone(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
@@ -702,169 +632,6 @@ func (d *NASStorageDriverAbstraction) CanSnapshot(_ context.Context, _ *storage.
 	return nil
 }
 
-// getVolumeSnapshotHelper gets a snapshot.  To distinguish between an API error reading the snapshot
-// and a non-existent snapshot, this method may return (nil, nil).
-func getVolumeSnapshotHelper(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client api.OntapAPI) (*storage.Snapshot, error) {
-
-	internalSnapName := snapConfig.InternalName
-	internalVolName := snapConfig.VolumeInternalName
-
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "getVolumeSnapshotHelper",
-			"Type":         "NASStorageDriver",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
-	}
-
-	size, err := client.VolumeUsedSize(ctx, internalVolName)
-	if err != nil {
-		return nil, fmt.Errorf("error reading volume size: %v", err)
-	}
-
-	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, snap := range snapshots {
-		Logc(ctx).WithFields(log.Fields{
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-			"created":      snap.CreateTime,
-		}).Debug("Found snapshot.")
-		if snap.Name == internalSnapName {
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   snap.CreateTime,
-				SizeBytes: int64(size),
-				State:     storage.SnapshotStateOnline,
-			}, nil
-		}
-	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"snapshotName": internalSnapName,
-		"volumeName":   internalVolName,
-	}).Warning("Snapshot not found.")
-
-	return nil, nil
-}
-
-// getVolumeSnapshotListHelper returns the list of snapshots associated with the named volume.
-func getVolumeSnapshotListHelper(
-	ctx context.Context, volConfig *storage.VolumeConfig, config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
-) ([]*storage.Snapshot, error) {
-
-	internalVolName := volConfig.InternalName
-
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":     "getVolumeSnapshotListHelper",
-			"Type":       "NASStorageDriver",
-			"volumeName": internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> getVolumeSnapshotListHelper")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< getVolumeSnapshotListHelper")
-	}
-
-	size, err := client.VolumeUsedSize(ctx, internalVolName)
-	if err != nil {
-		return nil, fmt.Errorf("error reading volume size: %v", err)
-	}
-
-	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
-	if err != nil {
-		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
-	}
-
-	result := make([]*storage.Snapshot, 0)
-
-	for _, snap := range snapshots {
-
-		Logc(ctx).WithFields(log.Fields{
-			"name":       snap.Name,
-			"accessTime": snap.CreateTime,
-		}).Debug("Snapshot")
-
-		snapshot := &storage.Snapshot{
-			Config: &storage.SnapshotConfig{
-				Version:            tridentconfig.OrchestratorAPIVersion,
-				Name:               snap.Name,
-				InternalName:       snap.Name,
-				VolumeName:         volConfig.Name,
-				VolumeInternalName: volConfig.InternalName,
-			},
-			Created:   snap.CreateTime,
-			SizeBytes: int64(size),
-			State:     storage.SnapshotStateOnline,
-		}
-
-		result = append(result, snapshot)
-	}
-
-	return result, nil
-}
-
-// CreateSnapshot creates a snapshot for the given volume.
-func createFlexvolSnapshotHelper(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client api.OntapAPI) (*storage.Snapshot, error) {
-
-	internalSnapName := snapConfig.InternalName
-	internalVolName := snapConfig.VolumeInternalName
-
-	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{
-			"Method":       "CreateSnapshot",
-			"Type":         "ontap_common",
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-		}
-		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
-	}
-
-	// If the specified volume doesn't exist, return error
-	volExists, err := client.VolumeExists(ctx, internalVolName)
-	if err != nil {
-		return nil, fmt.Errorf("error checking for existing volume: %v", err)
-	}
-	if !volExists {
-		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
-	}
-
-	size, err := client.VolumeUsedSize(ctx, internalVolName)
-	if err != nil {
-		return nil, fmt.Errorf("error reading volume size: %v", err)
-	}
-
-	if err := client.VolumeSnapshotCreate(ctx, internalSnapName, internalVolName); err != nil {
-		return nil, err
-	}
-
-	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, snap := range snapshots {
-		if snap.Name == internalSnapName {
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   snap.CreateTime,
-				SizeBytes: int64(size),
-				State:     storage.SnapshotStateOnline,
-			}, nil
-		}
-	}
-	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", internalSnapName, internalVolName)
-}
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
@@ -883,7 +650,7 @@ func (d *NASStorageDriverAbstraction) GetSnapshot(ctx context.Context, snapConfi
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
 	}
 
-	return getVolumeSnapshotHelper(ctx, snapConfig, &d.Config, d.API)
+	return getVolumeSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeUsedSize)
 }
 
 // GetSnapshots returns the list of snapshots associated with the specified volume
@@ -901,7 +668,7 @@ func (d *NASStorageDriverAbstraction) GetSnapshots(ctx context.Context, volConfi
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshots")
 	}
 
-	return getVolumeSnapshotListHelper(ctx, volConfig, &d.Config, d.API)
+	return getVolumeSnapshotList(ctx, volConfig, &d.Config, d.API, d.API.VolumeUsedSize)
 }
 
 // CreateSnapshot creates a snapshot for the given volume
@@ -923,7 +690,7 @@ func (d *NASStorageDriverAbstraction) CreateSnapshot(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
 	}
 
-	return createFlexvolSnapshotHelper(ctx, snapConfig, &d.Config, d.API)
+	return createFlexvolSnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeUsedSize)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.

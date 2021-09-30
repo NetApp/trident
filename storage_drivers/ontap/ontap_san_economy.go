@@ -373,7 +373,7 @@ func (d *SANEconomyStorageDriver) validate(ctx context.Context) error {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
 	}
 
-	if err := ValidateSANDriver(ctx, d.API, &d.Config, d.ips); err != nil {
+	if err := ValidateSANDriver(ctx, &d.Config, d.ips); err != nil {
 		return fmt.Errorf("error driver validation failed: %v", err)
 	}
 

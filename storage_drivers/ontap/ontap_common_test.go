@@ -399,7 +399,7 @@ func TestOntapSanInitializeDriverIgroupNameCSI(t *testing.T) {
 			2. CSI driver context
 			3. the config's backendUUID is set to a unique string
 			*/
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false)
 			sanStorageDriver.Config.IgroupName = igroupName
 			sanStorageDriver.Config.DriverContext = tridentconfig.ContextCSI
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
@@ -422,7 +422,7 @@ func TestOntapSanInitializeDriverIgroupNameCSI(t *testing.T) {
 		for i, ontapSanDriver := range ontapSanDrivers {
 
 			output := captureOutput(func() {
-				_ = InitializeSANDriver(ctx, ontapSanDriver.Config.DriverContext, ontapSanDriver.API,
+				_ = InitializeSANDriverAbstraction(ctx, ontapSanDriver.Config.DriverContext, ontapSanDriver.API,
 					&ontapSanDriver.Config, func(context.Context) error { return nil }, backendUUIDs[i])
 			})
 
@@ -575,7 +575,7 @@ func TestOntapSanInitializeDriverIgroupNameDocker(t *testing.T) {
 			2. CSI driver context
 			3. the config's backendUUID is set to a unique string
 			*/
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false)
 			sanStorageDriver.Config.IgroupName = igroupName
 			sanStorageDriver.Config.DriverContext = tridentconfig.ContextDocker
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
@@ -592,7 +592,7 @@ func TestOntapSanInitializeDriverIgroupNameDocker(t *testing.T) {
 		for i, ontapSanDriver := range ontapSanDrivers {
 
 			output := captureOutput(func() {
-				_ = InitializeSANDriver(ctx, ontapSanDriver.Config.DriverContext, ontapSanDriver.API,
+				_ = InitializeSANDriverAbstraction(ctx, ontapSanDriver.Config.DriverContext, ontapSanDriver.API,
 					&ontapSanDriver.Config, func(context.Context) error { return nil }, backendUUIDs[i])
 			})
 

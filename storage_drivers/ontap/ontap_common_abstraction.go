@@ -313,29 +313,20 @@ func resizeValidationAbstraction(
 }
 
 func reconcileSANNodeAccessAbstraction(
-	ctx context.Context, clientAPI *api.Client, igroupName string, nodeIQNs []string,
+	ctx context.Context, clientAPI api.OntapAPI, igroupName string,
+	nodeIQNs []string,
 ) error {
 
-	err := ensureIGroupExists(clientAPI, igroupName)
+	err := ensureIGroupExistsAbstraction(ctx, clientAPI, igroupName)
 	if err != nil {
 		return err
 	}
 
 	// Discover mapped initiators
-	var initiators []azgo.InitiatorInfoType
-	iGroup, err := clientAPI.IgroupGet(igroupName)
+	mappedIQNs, err := clientAPI.IgroupGetByName(ctx, igroupName)
 	if err != nil {
-		Logc(ctx).WithField("igroup", igroupName).Errorf("failed to read igroup info; %v", err)
-		return fmt.Errorf("failed to read igroup info; err")
-	}
-	if iGroup.InitiatorsPtr != nil {
-		initiators = iGroup.InitiatorsPtr.InitiatorInfo()
-	} else {
-		initiators = make([]azgo.InitiatorInfoType, 0)
-	}
-	mappedIQNs := make(map[string]bool)
-	for _, initiator := range initiators {
-		mappedIQNs[initiator.InitiatorName()] = true
+		Logc(ctx).WithField("igroup", igroupName)
+		return fmt.Errorf("failed to read igroup info; %v", err)
 	}
 
 	// Add missing initiators
@@ -345,15 +336,8 @@ func reconcileSANNodeAccessAbstraction(
 			delete(mappedIQNs, iqn)
 		} else {
 			// IQN isn't mapped and should be; add it
-			response, err := clientAPI.IgroupAdd(igroupName, iqn)
-			err = api.GetError(ctx, response, err)
-			zerr, zerrOK := err.(api.ZapiError)
-			if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
-				Logc(ctx).WithFields(log.Fields{
-					"IQN":    iqn,
-					"igroup": igroupName,
-				}).Debug("Host IQN already in igroup.")
-			} else {
+			err = clientAPI.EnsureIgroupAdded(ctx, igroupName, iqn)
+			if err != nil {
 				return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
 			}
 		}
@@ -361,15 +345,8 @@ func reconcileSANNodeAccessAbstraction(
 
 	// mappedIQNs is now a list of mapped IQNs that we have no nodes for; remove them
 	for iqn := range mappedIQNs {
-		response, err := clientAPI.IgroupRemove(igroupName, iqn, true)
-		err = api.GetError(ctx, response, err)
-		zerr, zerrOK := err.(api.ZapiError)
-		if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NODE_NOT_IN_INITGROUP) {
-			Logc(ctx).WithFields(log.Fields{
-				"IQN":    iqn,
-				"igroup": igroupName,
-			}).Debug("Host IQN not in igroup.")
-		} else {
+		err = clientAPI.IgroupRemove(ctx, igroupName, iqn, false)
+		if err != nil {
 			return fmt.Errorf("error removing IQN %v from igroup %v: %v", iqn, igroupName, err)
 		}
 	}
@@ -396,36 +373,29 @@ func cleanIgroupsAbstraction(ctx context.Context, client *api.Client, igroupName
 
 // GetISCSITargetInfo returns the iSCSI node name and iSCSI interfaces using the provided client's SVM.
 func GetISCSITargetInfoAbstraction(
-	clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
+	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig,
 ) (iSCSINodeName string, iSCSIInterfaces []string, returnError error) {
 
 	// Get the SVM iSCSI IQN
-	nodeNameResponse, err := clientAPI.IscsiNodeGetNameRequest()
+	iSCSINodeName, err := clientAPI.IscsiNodeGetNameRequest(ctx)
 	if err != nil {
 		returnError = fmt.Errorf("could not get SVM iSCSI node name: %v", err)
 		return
 	}
-	iSCSINodeName = nodeNameResponse.Result.NodeName()
 
-	// Get the SVM iSCSI interfaces
-	interfaceResponse, err := clientAPI.IscsiInterfaceGetIterRequest()
+	// Get the SVM iSCSI interface with enabled IQNs
+	iscsiInterfaces, err := clientAPI.IscsiInterfaceGet(ctx, config.SVM)
 	if err != nil {
-		returnError = fmt.Errorf("could not get SVM iSCSI interfaces: %v", err)
+		returnError = fmt.Errorf("could not get SVM iSCSI node name: %v", err)
 		return
 	}
-	if interfaceResponse.Result.AttributesListPtr != nil {
-		for _, iscsiAttrs := range interfaceResponse.Result.AttributesListPtr.IscsiInterfaceListEntryInfoPtr {
-			if !iscsiAttrs.IsInterfaceEnabled() {
-				continue
-			}
-			iSCSIInterface := fmt.Sprintf("%s:%d", iscsiAttrs.IpAddress(), iscsiAttrs.IpPort())
-			iSCSIInterfaces = append(iSCSIInterfaces, iSCSIInterface)
-		}
-	}
-	if len(iSCSIInterfaces) == 0 {
+	// Get the IQN
+	if iscsiInterfaces == nil {
 		returnError = fmt.Errorf("SVM %s has no active iSCSI interfaces", config.SVM)
 		return
 	}
+
+
 
 	return
 }
@@ -433,37 +403,25 @@ func GetISCSITargetInfoAbstraction(
 // PopulateOntapLunMapping helper function to fill in volConfig with its LUN mapping values.
 // This function assumes that the list of data LIFs has not changed since driver initialization and volume creation
 func PopulateOntapLunMappingAbstraction(
-	ctx context.Context, clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
+	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig,
 	ips []string, volConfig *storage.VolumeConfig, lunID int, lunPath, igroupName string,
 ) error {
 
 	var (
 		targetIQN string
 	)
-	response, err := clientAPI.IscsiServiceGetIterRequest()
-	if err != nil || (response != nil && response.Result.ResultStatusAttr != "passed") {
-		return fmt.Errorf("problem retrieving iSCSI services: %v, %v", err, response.Result.ResultErrnoAttr)
-	}
-	if response.Result.AttributesListPtr != nil {
-		for _, serviceInfo := range response.Result.AttributesListPtr.IscsiServiceInfoPtr {
-			if serviceInfo.Vserver() == config.SVM {
-				targetIQN = serviceInfo.NodeName()
-				Logc(ctx).WithFields(log.Fields{
-					"volume":    volConfig.Name,
-					"targetIQN": targetIQN,
-				}).Debug("Discovered target IQN for volume.")
-				break
-			}
-		}
+	targetIQN, err := clientAPI.IscsiNodeGetNameRequest(ctx)
+	if err != nil {
+		return fmt.Errorf("problem retrieving iSCSI services: %v", err)
 	}
 
-	lunSerialResponse, err := clientAPI.LunGetSerialNumber(lunPath)
-	if err != nil || "passed" != lunSerialResponse.Result.ResultStatusAttr {
-		return fmt.Errorf("problem retrieving LUN info: %v, %v", err, lunSerialResponse.Result.ResultErrnoAttr)
+	lunResponse, err := clientAPI.LunGetByName(ctx, lunPath)
+	if err != nil || lunResponse == nil {
+		return fmt.Errorf("problem retrieving LUN info: %v", err)
 	}
-	serial := lunSerialResponse.Result.SerialNumber()
+	serial := lunResponse.SerialNumber
 
-	filteredIPs, err := getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName)
+	filteredIPs, err := getISCSIDataLIFsForReportingNodesAbstraction(ctx, clientAPI, ips, lunPath, igroupName)
 	if err != nil {
 		return err
 	}
@@ -497,7 +455,7 @@ func PopulateOntapLunMappingAbstraction(
 // This function assumes that the list of data LIF IP addresses does not change between driver initialization
 // and publish
 func PublishLUNAbstraction(
-	ctx context.Context, clientAPI *api.Client, config *drivers.OntapStorageDriverConfig, ips []string,
+	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig, ips []string,
 	publishInfo *utils.VolumePublishInfo, lunPath, igroupName string, iSCSINodeName string,
 ) error {
 
@@ -506,9 +464,11 @@ func PublishLUNAbstraction(
 			"Method":  "PublishLUN",
 			"Type":    "ontap_common",
 			"lunPath": lunPath,
+			"iSCSINodeName": iSCSINodeName,
+			"publishInfo": publishInfo,
 		}
-		Logc(ctx).WithFields(fields).Debug(">>>> PublishLUN")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< PublishLUN")
+		Logc(ctx).WithFields(fields).Debug(">>>> PublishLUNAbstraction")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< PublishLUNAbstraction")
 	}
 
 	var iqn string
@@ -536,15 +496,22 @@ func PublishLUNAbstraction(
 
 	// Get the fstype
 	fstype := drivers.DefaultFileSystemType
-	attrResponse, err := clientAPI.LunGetAttribute(lunPath, LUNAttributeFSType)
-	if err = api.GetError(ctx, attrResponse, err); err != nil {
+	lunComment, parse, err := clientAPI.LunGetComment(ctx, lunPath)
+	if err != nil || lunComment == "" {
 		Logc(ctx).WithFields(log.Fields{
 			"LUN":    lunPath,
 			"fstype": fstype,
 		}).Warn("LUN attribute fstype not found, using default.")
-	} else {
-		fstype = attrResponse.Result.Value()
+		parse = false
+	}
+	if parse {
+		lunAttrs, err := clientAPI.ParseLunComment(ctx, lunComment)
+		if err == nil && lunAttrs != nil {
+			fstype = lunAttrs["fstype"]
+		}
 		Logc(ctx).WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
+	} else if lunComment != "" {
+		fstype = lunComment
 	}
 
 	allowEmptyIQN := false
@@ -575,16 +542,8 @@ func PublishLUNAbstraction(
 	if !publishInfo.Unmanaged {
 		if iqn != "" {
 			// Add IQN to igroup
-			igroupAddResponse, err := clientAPI.IgroupAdd(igroupName, iqn)
-			err = api.GetError(ctx, igroupAddResponse, err)
-			zerr, zerrOK := err.(api.ZapiError)
-			if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
-				Logc(ctx).WithFields(
-					log.Fields{
-						"IQN":    iqn,
-						"igroup": igroupName,
-					}).Debug("Host IQN already in igroup.")
-			} else {
+			err = clientAPI.EnsureIgroupAdded(ctx, igroupName, iqn)
+			if err != nil {
 				return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
 			}
 		} else if !allowEmptyIQN {
@@ -595,12 +554,12 @@ func PublishLUNAbstraction(
 	}
 
 	// Map LUN (it may already be mapped)
-	lunID, err := clientAPI.LunMapIfNotMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged)
+	lunID, err := clientAPI.EnsureLunMapped(ctx, igroupName, lunPath, publishInfo.Unmanaged)
 	if err != nil {
 		return err
 	}
 
-	filteredIPs, err := getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName)
+	filteredIPs, err := getISCSIDataLIFsForReportingNodesAbstraction(ctx, clientAPI, ips, lunPath, igroupName)
 	if err != nil {
 		return err
 	}
@@ -633,55 +592,57 @@ func PublishLUNAbstraction(
 
 // getISCSIDataLIFsForReportingNodes finds the data LIFs for the reporting nodes for the LUN.
 func getISCSIDataLIFsForReportingNodesAbstraction(
-	ctx context.Context, clientAPI *api.Client, ips []string, lunPath string, igroupName string,
+	ctx context.Context, clientAPI api.OntapAPI, ips []string, lunPath string, igroupName string,
 ) ([]string, error) {
 
-	lunMapGetResponse, err := clientAPI.LunMapGet(igroupName, lunPath)
+	reportingNodes, err := clientAPI.LunMapGetReportingNodes(ctx, igroupName, lunPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not get iSCSI reported nodes: %v", err)
 	}
 
 	reportingNodeNames := make(map[string]struct{})
-	if lunMapGetResponse.Result.AttributesListPtr != nil {
-		for _, lunMapInfo := range lunMapGetResponse.Result.AttributesListPtr {
-			for _, reportingNode := range lunMapInfo.ReportingNodes() {
-				Logc(ctx).WithField("reportingNode", reportingNode).Debug("Reporting node found.")
-				reportingNodeNames[reportingNode] = struct{}{}
+	if reportingNodes != nil {
+		for _, reportingNode := range reportingNodes {
+			Logc(ctx).WithField("reportingNode", reportingNode).Debug("Reporting node found.")
+			reportingNodeNames[reportingNode] = struct{}{}
+		}
+	}
+
+	currentNode, reportedDataLIFs, err := clientAPI.GetReportedDataLifs(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var dataLIFs []string
+	for _, ip := range ips {
+		if _, ok := reportingNodeNames[currentNode]; ok {
+			for _, lif := range reportedDataLIFs {
+				if lif == ip {
+					dataLIFs = append(dataLIFs, ip)
+				}
 			}
 		}
 	}
 
-	var reportedDataLIFs []string
-	for _, ip := range ips {
-		currentNodeName, err := clientAPI.NetInterfaceGetDataLIFsNode(ctx, ip)
-		if err != nil {
-			return nil, err
-		}
-		if _, ok := reportingNodeNames[currentNodeName]; ok {
-			reportedDataLIFs = append(reportedDataLIFs, ip)
-		}
-	}
-
-	Logc(ctx).WithField("reportedDataLIFs", reportedDataLIFs).Debug("Data LIFs with reporting nodes")
-	return reportedDataLIFs, nil
+	return dataLIFs, nil
 }
 
 // ValidateBidrectionalChapCredentials validates the bidirectional CHAP settings
 func ValidateBidrectionalChapCredentialsAbstraction(
-	getDefaultAuthResponse *azgo.IscsiInitiatorGetDefaultAuthResponse, config *drivers.OntapStorageDriverConfig,
+	defaultAuth api.IscsiInitiatorAuth,
+	config *drivers.OntapStorageDriverConfig,
 ) (*ChapCredentials, error) {
 
-	isDefaultAuthTypeNone, err := IsDefaultAuthTypeNone(getDefaultAuthResponse)
+	isDefaultAuthTypeNone, err := IsDefaultAuthTypeNoneAbstraction(defaultAuth)
 	if err != nil {
 		return nil, fmt.Errorf("error checking default initiator's auth type: %v", err)
 	}
 
-	isDefaultAuthTypeCHAP, err := IsDefaultAuthTypeCHAP(getDefaultAuthResponse)
+	isDefaultAuthTypeCHAP, err := IsDefaultAuthTypeCHAPAbstraction(defaultAuth)
 	if err != nil {
 		return nil, fmt.Errorf("error checking default initiator's auth type: %v", err)
 	}
 
-	isDefaultAuthTypeDeny, err := IsDefaultAuthTypeDeny(getDefaultAuthResponse)
+	isDefaultAuthTypeDeny, err := IsDefaultAuthTypeDenyAbstraction(defaultAuth)
 	if err != nil {
 		return nil, fmt.Errorf("error checking default initiator's auth type: %v", err)
 	}
@@ -716,13 +677,12 @@ func ValidateBidrectionalChapCredentialsAbstraction(
 
 	// if CHAP is already enabled, make sure the usernames match
 	if isDefaultAuthTypeCHAP {
-		if getDefaultAuthResponse.Result.UserNamePtr == nil ||
-			getDefaultAuthResponse.Result.OutboundUserNamePtr == nil {
+		if defaultAuth.ChapUser == "" || defaultAuth.ChapOutboundUser == "" {
 			return nil, fmt.Errorf("error checking default initiator's credentials")
 		}
 
-		if config.ChapUsername != getDefaultAuthResponse.Result.UserName() ||
-			config.ChapTargetUsername != getDefaultAuthResponse.Result.OutboundUserName() {
+		if config.ChapUsername != defaultAuth.ChapUser ||
+			config.ChapTargetUsername != defaultAuth.ChapOutboundUser {
 			return nil, fmt.Errorf("provided CHAP usernames do not match default initiator's usernames")
 		}
 	}
@@ -739,38 +699,31 @@ func ValidateBidrectionalChapCredentialsAbstraction(
 
 // isDefaultAuthTypeOfType returns true if the default initiator's auth-type field is set to the provided authType value
 func isDefaultAuthTypeOfTypeAbstraction(
-	response *azgo.IscsiInitiatorGetDefaultAuthResponse, authType string,
+	response api.IscsiInitiatorAuth, authType string,
 ) (bool, error) {
-	if response == nil {
-		return false, fmt.Errorf("response is nil")
-	}
-
-	if response.Result.AuthTypePtr == nil {
-		return false, fmt.Errorf("response's auth-type is nil")
-	}
 
 	// case insensitive compare
-	return strings.EqualFold(response.Result.AuthType(), authType), nil
+	return strings.EqualFold(response.AuthType, authType), nil
 }
 
 // IsDefaultAuthTypeNone returns true if the default initiator's auth-type field is set to the value "none"
-func IsDefaultAuthTypeNoneAbstraction(response *azgo.IscsiInitiatorGetDefaultAuthResponse) (bool, error) {
-	return isDefaultAuthTypeOfType(response, "none")
+func IsDefaultAuthTypeNoneAbstraction(response api.IscsiInitiatorAuth) (bool, error) {
+	return isDefaultAuthTypeOfTypeAbstraction(response, "none")
 }
 
 // IsDefaultAuthTypeCHAP returns true if the default initiator's auth-type field is set to the value "CHAP"
-func IsDefaultAuthTypeCHAPAbstraction(response *azgo.IscsiInitiatorGetDefaultAuthResponse) (bool, error) {
-	return isDefaultAuthTypeOfType(response, "CHAP")
+func IsDefaultAuthTypeCHAPAbstraction(response api.IscsiInitiatorAuth) (bool, error) {
+	return isDefaultAuthTypeOfTypeAbstraction(response, "CHAP")
 }
 
 // IsDefaultAuthTypeDeny returns true if the default initiator's auth-type field is set to the value "deny"
-func IsDefaultAuthTypeDenyAbstraction(response *azgo.IscsiInitiatorGetDefaultAuthResponse) (bool, error) {
-	return isDefaultAuthTypeOfType(response, "deny")
+func IsDefaultAuthTypeDenyAbstraction(response api.IscsiInitiatorAuth) (bool, error) {
+	return isDefaultAuthTypeOfTypeAbstraction(response, "deny")
 }
 
 // InitializeSANDriver performs common ONTAP SAN driver initialization.
 func InitializeSANDriverAbstraction(
-	ctx context.Context, driverContext tridentconfig.DriverContext, clientAPI *api.Client,
+	ctx context.Context, driverContext tridentconfig.DriverContext, clientAPI api.OntapAPI,
 	config *drivers.OntapStorageDriverConfig, validate func(context.Context) error, backendUUID string,
 ) error {
 
@@ -790,22 +743,22 @@ func InitializeSANDriverAbstraction(
 	}
 
 	// Create igroup
-	err := ensureIGroupExists(clientAPI, config.IgroupName)
+	err := ensureIGroupExistsAbstraction(ctx, clientAPI, config.IgroupName)
 	if err != nil {
 		return err
 	}
 
-	getDefaultAuthResponse, err := clientAPI.IscsiInitiatorGetDefaultAuth()
+	getDefaultAuthResponse, err := clientAPI.IscsiInitiatorGetDefaultAuth(ctx)
 	Logc(ctx).WithFields(log.Fields{
 		"getDefaultAuthResponse": getDefaultAuthResponse,
 		"err":                    err,
 	}).Debug("IscsiInitiatorGetDefaultAuth result")
 
-	if zerr := api.NewZapiError(getDefaultAuthResponse); !zerr.IsPassed() {
-		return fmt.Errorf("error checking default initiator's auth type: %v", zerr)
+	if err != nil {
+		return fmt.Errorf("error checking default initiator's auth type: %v", err)
 	}
 
-	isDefaultAuthTypeNone, err := IsDefaultAuthTypeNone(getDefaultAuthResponse)
+	isDefaultAuthTypeNone, err := IsDefaultAuthTypeNoneAbstraction(getDefaultAuthResponse)
 	if err != nil {
 		return fmt.Errorf("error checking default initiator's auth type: %v", err)
 	}
@@ -820,32 +773,23 @@ func InitializeSANDriverAbstraction(
 		Logc(ctx).Debug("Using CHAP credentials")
 
 		if isDefaultAuthTypeNone {
-			lunsResponse, lunsResponseErr := clientAPI.LunGetAllForVserver(config.SVM)
+			lunsResponse, lunsResponseErr := clientAPI.LunList(ctx, fmt.Sprintf("svm=%s", config.SVM))
 			if lunsResponseErr != nil {
-				return lunsResponseErr
-			}
-			if lunsResponseErr = api.GetError(ctx, lunsResponse, lunsResponseErr); lunsResponseErr != nil {
 				return fmt.Errorf("error enumerating LUNs for SVM %v: %v", config.SVM, lunsResponseErr)
 			}
 
-			if lunsResponse.Result.AttributesListPtr != nil &&
-				lunsResponse.Result.AttributesListPtr.LunInfoPtr != nil {
-				if len(lunsResponse.Result.AttributesListPtr.LunInfoPtr) > 0 {
-					return fmt.Errorf(
-						"will not enable CHAP for SVM %v; %v exisiting LUNs would lose access",
-						config.SVM, len(lunsResponse.Result.AttributesListPtr.LunInfoPtr))
-				}
+			if len(lunsResponse) > 0 {
+				return fmt.Errorf(
+					"will not enable CHAP for SVM %v; %v exisiting LUNs would lose access",
+					config.SVM, len(lunsResponse))
 			}
 		}
 
-		setDefaultAuthResponse, err := clientAPI.IscsiInitiatorSetDefaultAuth(
-			authType, chapCredentials.ChapUsername, chapCredentials.ChapInitiatorSecret,
-			chapCredentials.ChapTargetUsername, chapCredentials.ChapTargetInitiatorSecret)
+		err = clientAPI.IscsiInitiatorSetDefaultAuth(ctx, authType, chapCredentials.ChapUsername,
+			chapCredentials.ChapInitiatorSecret, chapCredentials.ChapTargetUsername,
+			chapCredentials.ChapTargetInitiatorSecret)
 		if err != nil {
 			return fmt.Errorf("error setting CHAP credentials: %v", err)
-		}
-		if zerr := api.NewZapiError(setDefaultAuthResponse); !zerr.IsPassed() {
-			return fmt.Errorf("error setting CHAP credentials: %v", zerr)
 		}
 		config.ChapUsername = chapCredentials.ChapUsername
 		config.ChapInitiatorSecret = chapCredentials.ChapInitiatorSecret
@@ -862,16 +806,10 @@ func InitializeSANDriverAbstraction(
 	return nil
 }
 
-func ensureIGroupExistsAbstraction(clientAPI *api.Client, igroupName string) error {
-	igroupResponse, err := clientAPI.IgroupCreate(igroupName, "iscsi", "linux")
+func ensureIGroupExistsAbstraction(ctx context.Context, clientAPI api.OntapAPI, igroupName string) error {
+	err := clientAPI.IgroupCreate(ctx, igroupName, "iscsi", "linux")
 	if err != nil {
 		return fmt.Errorf("error creating igroup: %v", err)
-	}
-	if zerr := api.NewZapiError(igroupResponse); !zerr.IsPassed() {
-		// Handle case where the igroup already exists
-		if zerr.Code() != azgo.EVDISK_ERROR_INITGROUP_EXISTS {
-			return fmt.Errorf("error creating igroup %v: %v", igroupName, zerr)
-		}
 	}
 	return nil
 }
@@ -944,9 +882,10 @@ func InitializeOntapAPIAbstraction(
 	var err error
 
 	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "InitializeOntapAPI", "Type": "ontap_common"}
-		Logc(ctx).WithFields(fields).Debug(">>>> InitializeOntapAPI")
-		defer Logc(ctx).WithFields(fields).Debug("<<<< InitializeOntapAPI")
+		fields := log.Fields{"Method": "InitializeOntapAPIAbstraction", "Type": "ontap_common",
+			"useREST": config.UseREST }
+		Logc(ctx).WithFields(fields).Debug(">>>> InitializeOntapAPIAbstraction")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< InitializeOntapAPIAbstraction")
 	}
 
 	// When running in Docker context we want to request MAX number of records from ZAPI for Volume, LUNs and Qtrees
@@ -971,7 +910,7 @@ func InitializeOntapAPIAbstraction(
 
 // ValidateSANDriver contains the validation logic shared between ontap-san and ontap-san-economy.
 func ValidateSANDriverAbstraction(
-	ctx context.Context, _ *api.Client, config *drivers.OntapStorageDriverConfig, ips []string,
+	ctx context.Context, config *drivers.OntapStorageDriverConfig, ips []string,
 ) error {
 
 	if config.DebugTraceFlags["method"] {
@@ -1937,3 +1876,254 @@ func getSnapshotReserveFromOntapAbstraction(
 
 	return snapshotReserveInt, nil
 }
+
+func isFlexvolRWAbstraction(ctx context.Context, ontap api.OntapAPI, name string) (bool, error) {
+	flexvol, err := ontap.VolumeInfo(ctx, name)
+	if err != nil {
+		Logc(ctx).Error(err)
+		return false, fmt.Errorf("could not get volume %v", name)
+	}
+
+	if flexvol.AccessType == VolTypeRW {
+		return true, nil
+	}
+	return false, nil
+}
+
+// getVolumeSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
+func getVolumeSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI, sizeGetter func(context.Context, string) (int, error),
+	) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "getVolumeSnapshot",
+			"Type":         "NASStorageDriver",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
+	}
+
+	size, err := sizeGetter(ctx, internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error reading volume size: %v", err)
+	}
+
+	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, snap := range snapshots {
+		Logc(ctx).WithFields(log.Fields{
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+			"created":      snap.CreateTime,
+		}).Debug("Found snapshot.")
+		if snap.Name == internalSnapName {
+			return &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   snap.CreateTime,
+				SizeBytes: int64(size),
+				State:     storage.SnapshotStateOnline,
+			}, nil
+		}
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+	}).Warning("Snapshot not found.")
+
+	return nil, nil
+}
+
+// getVolumeSnapshotList returns the list of snapshots associated with the named volume.
+func getVolumeSnapshotList(
+	ctx context.Context, volConfig *storage.VolumeConfig, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI, sizeGetter func(context.Context, string) (int, error),
+) ([]*storage.Snapshot, error) {
+
+	internalVolName := volConfig.InternalName
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":     "getVolumeSnapshotList",
+			"Type":       "NASStorageDriver",
+			"volumeName": internalVolName,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> getVolumeSnapshotList")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< getVolumeSnapshotList")
+	}
+
+	size, err := sizeGetter(ctx, internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error reading volume size: %v", err)
+	}
+
+	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
+	}
+
+	result := make([]*storage.Snapshot, 0)
+
+	for _, snap := range snapshots {
+
+		Logc(ctx).WithFields(log.Fields{
+			"name":       snap.Name,
+			"accessTime": snap.CreateTime,
+		}).Debug("Snapshot")
+
+		snapshot := &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Version:            tridentconfig.OrchestratorAPIVersion,
+				Name:               snap.Name,
+				InternalName:       snap.Name,
+				VolumeName:         volConfig.Name,
+				VolumeInternalName: volConfig.InternalName,
+			},
+			Created:   snap.CreateTime,
+			SizeBytes: int64(size),
+			State:     storage.SnapshotStateOnline,
+		}
+
+		result = append(result, snapshot)
+	}
+
+	return result, nil
+}
+
+// CreateSnapshot creates a snapshot for the given volume.
+func createFlexvolSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI, sizeGetter func(context.Context, string) (int, error),
+) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateSnapshot",
+			"Type":         "ontap_common",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
+	}
+
+	// If the specified volume doesn't exist, return error
+	volExists, err := client.VolumeExists(ctx, internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if !volExists {
+		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
+	}
+
+	size, err := sizeGetter(ctx, internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error reading volume size: %v", err)
+	}
+
+	if err := client.VolumeSnapshotCreate(ctx, internalSnapName, internalVolName); err != nil {
+		return nil, err
+	}
+
+	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, snap := range snapshots {
+		if snap.Name == internalSnapName {
+			return &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   snap.CreateTime,
+				SizeBytes: int64(size),
+				State:     storage.SnapshotStateOnline,
+			}, nil
+		}
+	}
+	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", internalSnapName, internalVolName)
+}
+
+// cloneFlexvol creates a volume clone
+func cloneFlexvol(
+	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI, qosPolicyGroup api.QosPolicyGroup,
+) error {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":   "cloneFlexvol",
+			"Type":     "ontap_common",
+			"name":     name,
+			"source":   source,
+			"snapshot": snapshot,
+			"split":    split,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> cloneFlexvol")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< cloneFlexvol")
+	}
+
+	// If the specified volume already exists, return an error
+	volExists, err := client.VolumeExists(ctx, name)
+	if err != nil {
+		return fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if volExists {
+		return fmt.Errorf("volume %s already exists", name)
+	}
+
+	// If no specific snapshot was requested, create one
+	if snapshot == "" {
+		snapshot = time.Now().UTC().Format(storage.SnapshotNameFormat)
+		if err = client.VolumeSnapshotCreate(ctx, snapshot, source); err != nil {
+			return err
+		}
+	}
+
+	// Create the clone based on a snapshot
+	if err = client.VolumeCloneCreate(ctx, name, source, snapshot, false); err != nil {
+		return err
+	}
+
+	if err = client.VolumeSetComment(ctx, name, name, labels); err != nil {
+		return err
+	}
+
+	if config.StorageDriverName == drivers.OntapNASStorageDriverName {
+		// Mount the new volume
+		if err = client.VolumeMount(ctx, name, "/"+name); err != nil {
+			return err
+		}
+	}
+
+	// Set the QoS Policy if necessary
+	if qosPolicyGroup.Kind != api.InvalidQosPolicyGroupKind {
+		if err := client.VolumeSetQosPolicyGroupName(ctx, name, qosPolicyGroup); err != nil {
+			return err
+		}
+	}
+
+	// Split the clone if requested
+	if split {
+		if err := client.VolumeCloneSplitStart(ctx, name); err != nil {
+			return fmt.Errorf("error splitting clone: %v", err)
+		}
+	}
+
+	return nil
+}
+
+

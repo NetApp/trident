@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	. "github.com/netapp/trident/logger"
+	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -35,8 +36,9 @@ import (
 // Abstraction layer
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var (
-	APIResponsePassed = NewAPIResponse("passed", "", "")
+const (
+	failureLUNCreate  = "failure_65dc2f4b_adbe_4ed3_8b73_6c61d5eac054"
+	failureLUNSetAttr = "failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b"
 )
 
 type OntapAPI interface {
@@ -71,18 +73,62 @@ type OntapAPI interface {
 	FlexgroupCloneSplitStart(ctx context.Context, cloneName string) error
 	FlexgroupSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error)
 	FlexgroupSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error
+
+	LunList(ctx context.Context, pattern string) (Luns, error)
+	LunCreate(ctx context.Context, lun Lun) error
+	LunDestroy(ctx context.Context, lunPath string) error
+	LunGetComment(ctx context.Context, lunPath string) (string, bool, error)
+	LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context string) error
+	ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error)
+	LunSetQosPolicyGroup(ctx context.Context, lunPath string, qosPolicyGroup QosPolicyGroup) error
+	LunGetByName(ctx context.Context, name string) (*Lun, error)
+	LunRename(ctx context.Context, lunPath, newLunPath string) error
+	LunMapInfo(ctx context.Context, initiatorGroupName, lunPath string) (int, error)
+	EnsureLunMapped(ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool) (int, error)
+	LunSize(ctx context.Context, lunPath string) (int, error)
+	LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error)
+	LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) ([]string, error)
+
+	IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiInitiatorAuth, error)
+	IscsiInitiatorSetDefaultAuth(ctx context.Context, authType, userName, passphrase, outbountUserName,
+		outboundPassphrase string) error
+	IscsiInterfaceGet(ctx context.Context, svm string) ([]string, error)
+	IscsiNodeGetNameRequest(ctx context.Context) (string, error)
+
+	IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error
+	IgroupDestroy(ctx context.Context, initiatorGroupName string) error
+	EnsureIgroupAdded(ctx context.Context, initiatorGroupName, initiator string) error
+	IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error
+	IgroupGetByName(ctx context.Context, initiatorGroupName string) (map[string]bool, error)
+
 	GetSVMAggregateAttributes(ctx context.Context) (map[string]string, error)
 	GetSVMAggregateNames(ctx context.Context) ([]string, error)
 	GetSVMAggregateSpace(ctx context.Context, aggregate string) ([]SVMAggregateSpace, error)
 
+	GetReportedDataLifs(ctx context.Context) (string, []string, error)
 	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 
+	// TODO: these should be refactored to support REST
 	SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) error
 	IsSVMDRCapable(ctx context.Context) (bool, error)
+	SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error)
+	SnapmirrorPolicyGet(ctx context.Context, policyName string) (*azgo.SnapmirrorPolicyInfoType, error)
+	JobScheduleExists(ctx context.Context, jobName string) (bool, error)
+	GetPeeredVservers(ctx context.Context) ([]string, error)
+	VolumeGetType(name string) (string, error)
+	SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorGetResponse, error)
+	SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (*azgo.SnapmirrorCreateResponse, error)
+	SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorInitializeResponse, error)
+	SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorResyncResponse, error)
+	SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorDestroyResponse, error)
+	SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorQuiesceResponse, error)
+	SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorAbortResponse, error)
+	SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorBreakResponse, error)
 
 	SnapshotRestoreVolume(ctx context.Context, snapshotName, sourceVolume string) error
 	SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, sourceVolume string) error
+	SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 
 	SupportsFeature(ctx context.Context, feature feature) bool
 	ValidateAPIVersion(ctx context.Context) error

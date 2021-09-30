@@ -24,7 +24,8 @@ func TestOntapSanStorageDriverConfigString(t *testing.T) {
 
 	var ontapSanDrivers = []SANStorageDriver{
 
-		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName),
+		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, true),
+		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false),
 	}
 
 	sensitiveIncludeList := map[string]string{
@@ -59,7 +60,7 @@ func TestOntapSanStorageDriverConfigString(t *testing.T) {
 	}
 }
 
-func newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName string) *SANStorageDriver {
+func newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName string, useREST bool) *SANStorageDriver {
 	config := &drivers.OntapStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
 
@@ -75,23 +76,26 @@ func newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName s
 	config.Password = "password1!"
 	config.StorageDriverName = "ontap-san"
 	config.StoragePrefix = sp("test_")
+	config.UseREST = useREST
 
 	sanDriver := &SANStorageDriver{}
 	sanDriver.Config = *config
 
-	// ClientConfig holds the configuration data for Client objects
-	clientConfig := api.ClientConfig{
-		ManagementLIF:           config.ManagementLIF,
-		SVM:                     "SVM1",
-		Username:                "client_username",
-		Password:                "client_password",
-		DriverContext:           tridentconfig.ContextCSI,
-		ContextBasedZapiRecords: 100,
-		DebugTraceFlags:         config.CommonStorageDriverConfig.DebugTraceFlags,
+	numRecords := api.DefaultZapiRecords
+	if config.DriverContext == tridentconfig.ContextDocker {
+		numRecords = api.MaxZapiRecords
 	}
 
-	sanDriver.API = api.NewClient(clientConfig)
-	sanDriver.telemetry = &Telemetry{
+	var ontapAPI api.OntapAPI
+
+	if config.UseREST {
+		ontapAPI, _ = api.NewRestClientFromOntapConfig(context.TODO(), config)
+	} else {
+		ontapAPI, _ = api.NewZAPIClientFromOntapConfig(context.TODO(), config, numRecords)
+	}
+
+	sanDriver.API = ontapAPI
+	sanDriver.telemetry = &TelemetryAbstraction{
 		Plugin:        sanDriver.Name(),
 		SVM:           sanDriver.GetConfig().SVM,
 		StoragePrefix: *sanDriver.GetConfig().StoragePrefix,
@@ -257,7 +261,7 @@ func TestOntapSanReconcileNodeAccess(t *testing.T) {
 
 			api.FakeIgroups[driverInfo.igroupName] = igroupsIQNMap
 
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false)
 			sanStorageDriver.Config.IgroupName = driverInfo.igroupName
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
 		}
@@ -334,7 +338,7 @@ func TestOntapSanTerminate(t *testing.T) {
 
 			api.FakeIgroups[driverInfo.igroupName] = igroupsIQNMap
 
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false)
 			sanStorageDriver.Config.IgroupName = driverInfo.igroupName
 			sanStorageDriver.telemetry = nil
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
