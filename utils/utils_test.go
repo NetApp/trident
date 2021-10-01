@@ -602,3 +602,72 @@ func TestMinInt64(t *testing.T) {
 	assert.Equal(t, int64(0), MinInt64(0, 0))
 	assert.Equal(t, int64(2), MinInt64(2, 2))
 }
+
+func TestValidateCIDRSet(t *testing.T) {
+	ctx := context.TODO()
+
+	validIPv4CIDR := "0.0.0.0/0"
+	validIPv6CIDR := "::/0"
+	invalidIPv4CIDR := "subnet/invalid-cidr"
+	invalidIPv6CIDR := "subnet:1234::/invalid-cidr"
+	validIPv4InvalidCIDR := "0.0.0.0"
+	validIPv6InvalidCIDR := "2001:0db8:0000:0000:0000:ff00:0042:8329"
+
+	validCIDRSet := []string{
+		validIPv4CIDR,
+		validIPv6CIDR,
+	}
+
+	invalidCIDRSet := []string{
+		"",
+		" ",
+		invalidIPv4CIDR,
+		invalidIPv6CIDR,
+		validIPv4InvalidCIDR,
+		validIPv6InvalidCIDR,
+	}
+
+	invalidCIDRWithinSet := []string{
+		validIPv4CIDR,
+		invalidIPv4CIDR,
+		validIPv4CIDR,
+		invalidIPv6CIDR,
+	}
+
+	// Tests the positive case, where no invalid CIDR blocks are in the config
+	t.Run("should not return an error for a set of valid CIDR blocks", func(t *testing.T) {
+		assert.Equal(t, nil, ValidateCIDRs(ctx, validCIDRSet))
+	})
+
+	// Tests that the error contains all the invalid CIDR blocks
+	t.Run("should return an error containing which CIDR blocks were invalid",
+		func(t *testing.T) {
+			err := ValidateCIDRs(ctx, invalidCIDRWithinSet)
+			assert.Contains(t, err.Error(), invalidIPv4CIDR)
+			assert.Contains(t, err.Error(), invalidIPv6CIDR)
+		})
+
+	// Tests invalid CIDR combinations
+	tests := []struct {
+		name        string
+		cidrs       []string
+		expected    bool
+	}{
+		{
+			name:   "should return err from a list containing only invalid CIDR blocks",
+			cidrs:  invalidCIDRSet,
+			expected: true,
+		},
+		{
+			name:   "should return err from a list containing valid and invalid CIDR blocks",
+			cidrs:  invalidCIDRWithinSet,
+			expected: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.expected, assert.Error(t, ValidateCIDRs(ctx, test.cidrs)))
+		})
+	}
+}

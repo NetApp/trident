@@ -992,6 +992,11 @@ func ValidateNASDriverAbstraction(
 		}
 	}
 
+	// Ensure config has a set of valid autoExportCIDRs
+	if err := utils.ValidateCIDRs(ctx, config.AutoExportCIDRs); err != nil {
+		return fmt.Errorf("failed to validate auto-export CIDR(s): %w", err)
+	}
+
 	return nil
 }
 

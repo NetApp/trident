@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"go.uber.org/multierr"
 
 	. "github.com/netapp/trident/logger"
 )
@@ -434,6 +435,29 @@ func ReplaceImageRegistry(image, registry string) string {
 		return remainder
 	}
 	return registry + "/" + remainder
+}
+
+// ValidateCIDRs checks if a list of CIDR blocks are valid and returns a multi error containing all errors
+// which may occur during the parsing process.
+func ValidateCIDRs(ctx context.Context, cidrs []string) error {
+
+	var err error
+	// needed to capture all issues within the CIDR set
+	errors := make([]error, 0)
+	for _, cidr := range cidrs {
+		_, _, err := net.ParseCIDR(cidr)
+		if err != nil {
+			errors = append(errors, err)
+			Logc(ctx).WithError(err).Error("Found an invalid CIDR.")
+		}
+	}
+
+	if len(errors) != 0 {
+		err = multierr.Combine(errors...)
+		return err
+	}
+
+	return err
 }
 
 // FilterIPs takes a list of IPs and CIDRs and returns the sorted list of IPs that are contained by one or more of the
