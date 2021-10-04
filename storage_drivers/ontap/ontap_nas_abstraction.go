@@ -18,28 +18,29 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
 )
 
-////////////////////////////////////////////////////////////////////////////////////////////
-///             _____________________
-///            |   <<Interface>>    |
-///            |       ONTAPI       |
-///            |____________________|
-///                ^             ^
-///     Implements |             | Implements
-///   ____________________    ____________________
-///  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
-///  |___________________|   |___________________|
-///  | +API: RestClient  |   | +API: *Client     |
-///  |___________________|   |___________________|
-///
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
+// /             _____________________
+// /            |   <<Interface>>    |
+// /            |       ONTAPI       |
+// /            |____________________|
+// /                ^             ^
+// /     Implements |             | Implements
+// /   ____________________    ____________________
+// /  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
+// /  |___________________|   |___________________|
+// /  | +API: RestClient  |   | +API: *Client     |
+// /  |___________________|   |___________________|
+// /
+// //////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
 // Drivers that offer dual support are to call ONTAP REST or ZAPI's
 // via abstraction layer (ONTAPI interface)
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
 
 // NASStorageDriver is for NFS storage provisioning
 type NASStorageDriverAbstraction struct {
@@ -247,7 +248,7 @@ func (d *NASStorageDriverAbstraction) Create(
 	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes()[Size])
 
 	// Get the flexvol size based on the snapshot reserve
-	flexvolSize := calculateFlexvolSize(ctx, name, sizeBytes, snapshotReserveInt)
+	flexvolSize := calculateFlexvolSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
 	if err != nil {
 		return err
 	}
@@ -517,7 +518,7 @@ func (d *NASStorageDriverAbstraction) Import(
 
 	// Validate the volume is what it should be
 	if !api.IsVolumeIdAttributesReadError(err) {
-		if flexvol.AccessType != "" && flexvol.AccessType != "rw" {
+		if flexvol.AccessType != "" && flexvol.AccessType != models.VolumeTypeRw {
 			Logc(ctx).WithField("originalName", originalName).Error("Could not import volume, type is not rw.")
 			return fmt.Errorf("volume %s type is %s, not rw", originalName, flexvol.AccessType)
 		}
@@ -624,14 +625,13 @@ func (d *NASStorageDriverAbstraction) Publish(
 	publishInfo.FilesystemType = "nfs"
 	publishInfo.MountOptions = mountOptions
 
-	return publishFlexVolShareAbstraction(ctx, d.API, &d.Config, publishInfo, name, d.API.VolumeModifyExportPolicy)
+	return publishShareAbstraction(ctx, d.API, &d.Config, publishInfo, name, d.API.VolumeModifyExportPolicy)
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
 func (d *NASStorageDriverAbstraction) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
 	return nil
 }
-
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
@@ -885,9 +885,7 @@ func (d *NASStorageDriverAbstraction) GetVolumeExternalWrappers(
 // getVolumeExternal is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
-func (d *NASStorageDriverAbstraction) getVolumeExternal(
-	volume api.Volume,
-) *storage.VolumeExternal {
+func (d *NASStorageDriverAbstraction) getVolumeExternal(volume *api.Volume) *storage.VolumeExternal {
 
 	internalName := volume.Name
 	name := internalName
@@ -998,7 +996,7 @@ func (d *NASStorageDriverAbstraction) Resize(
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
 	}
 
-	newFlexvolSize := calculateFlexvolSize(ctx, name, requestedSizeBytes, snapshotReserveInt)
+	newFlexvolSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 
 	if aggrLimitsErr := checkAggregateLimitsForFlexvolAbstraction(
 		ctx, name, newFlexvolSize, d.Config, d.GetAPI(),

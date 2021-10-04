@@ -19,6 +19,11 @@ import (
 // swagger:model ndmp_reason
 type NdmpReason string
 
+func NewNdmpReason(value NdmpReason) *NdmpReason {
+	v := value
+	return &v
+}
+
 const (
 
 	// NdmpReasonAborted captures enum value "aborted"

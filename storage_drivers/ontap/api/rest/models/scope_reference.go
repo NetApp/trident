@@ -19,6 +19,11 @@ import (
 // swagger:model scope_reference
 type ScopeReference string
 
+func NewScopeReference(value ScopeReference) *ScopeReference {
+	v := value
+	return &v
+}
+
 const (
 
 	// ScopeReferenceCluster captures enum value "cluster"

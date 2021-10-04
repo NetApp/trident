@@ -4,37 +4,37 @@ package ontap
 
 import (
 	"context"
-	"net"
 	"testing"
 
-	"github.com/prometheus/common/log"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
 	tridentconfig "github.com/netapp/trident/config"
+	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 )
 
-////////////////////////////////////////////////////////////////////////////////////////////
-///             _____________________
-///            |   <<Interface>>    |
-///            |       ONTAPI       |
-///            |____________________|
-///                ^             ^
-///     Implements |             | Implements
-///   ____________________    ____________________
-///  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
-///  |___________________|   |___________________|
-///  | +API: RestClient  |   | +API: *Client     |
-///  |___________________|   |___________________|
-///
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
+// /             _____________________
+// /            |   <<Interface>>    |
+// /            |       ONTAPI       |
+// /            |____________________|
+// /                ^             ^
+// /     Implements |             | Implements
+// /   ____________________    ____________________
+// /  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
+// /  |___________________|   |___________________|
+// /  | +API: RestClient  |   | +API: *Client     |
+// /  |___________________|   |___________________|
+// /
+// //////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
 // Drivers that offer dual support are to call ONTAP REST or ZAPI's
 // via abstraction layer (ONTAPI interface)
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
 
 func TestOntapNasAbstractionStorageDriverConfigString(t *testing.T) {
 
@@ -70,23 +70,20 @@ func TestOntapNasAbstractionStorageDriverConfigString(t *testing.T) {
 
 	for _, ontapNasDriver := range ontapNasDrivers {
 		for key, val := range externalIncludeList {
-			assert.Contains(t, ontapNasDriver.String(), val,
-				"ontap-nas driver does not contain %v", key)
-			assert.Contains(t, ontapNasDriver.GoString(), val,
-				"ontap-nas driver does not contain %v", key)
+			assert.Contains(t, ontapNasDriver.String(), val, "ontap-nas driver does not contain %v", key)
+			assert.Contains(t, ontapNasDriver.GoString(), val, "ontap-nas driver does not contain %v", key)
 		}
 
 		for key, val := range sensitiveIncludeList {
-			assert.NotContains(t, ontapNasDriver.String(), val,
-				"ontap-nas driver contains %v", key)
-			assert.NotContains(t, ontapNasDriver.GoString(), val,
-				"ontap-nas driver contains %v", key)
+			assert.NotContains(t, ontapNasDriver.String(), val, "ontap-nas driver contains %v", key)
+			assert.NotContains(t, ontapNasDriver.GoString(), val, "ontap-nas driver contains %v", key)
 		}
 	}
 }
 
-func newTestOntapNASDriverAbstraction(vserverAdminHost, vserverAdminPort, vserverAggrName string,
-	driverContext tridentconfig.DriverContext, useREST bool) *NASStorageDriverAbstraction {
+func newTestOntapNASDriverAbstraction(
+	vserverAdminHost, vserverAdminPort, vserverAggrName string, driverContext tridentconfig.DriverContext, useREST bool,
+) *NASStorageDriverAbstraction {
 	config := &drivers.OntapStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
 
@@ -107,18 +104,7 @@ func newTestOntapNASDriverAbstraction(vserverAdminHost, vserverAdminPort, vserve
 	nasDriver := &NASStorageDriverAbstraction{}
 	nasDriver.Config = *config
 
-	numRecords := api.DefaultZapiRecords
-	if config.DriverContext == tridentconfig.ContextDocker {
-		numRecords = api.MaxZapiRecords
-	}
-
 	var ontapAPI api.OntapAPI
-
-	if config.UseREST == true {
-		ontapAPI, _ = api.NewRestClientFromOntapConfig(context.TODO(), config)
-	} else {
-		ontapAPI, _ = api.NewZAPIClientFromOntapConfig(context.TODO(), config, numRecords)
-	}
 
 	nasDriver.API = ontapAPI
 	nasDriver.telemetry = &TelemetryAbstraction{
@@ -135,32 +121,28 @@ func TestInitializeStoragePoolsLabelsAbstraction(t *testing.T) {
 
 	ctx := context.Background()
 
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	server := api.NewFakeUnstartedVserver(ctx, vserverAdminHost, vserverAggrName)
-	server.StartTLS()
-
-	_, port, err := net.SplitHostPort(server.Listener.Addr().String())
-	assert.Nil(t, err, "Unable to get Web host port %s", port)
-
-	defer func() {
-		if r := recover(); r != nil {
-			server.Close()
-			log.Error("Panic in fake filer", r)
-		}
-	}()
-
-	d := newTestOntapNASDriverAbstraction(vserverAdminHost, port, vserverAggrName, tridentconfig.DriverContext("CSI"),
+	d := newTestOntapNASDriverAbstraction(vserverAdminHost, "443", vserverAggrName, tridentconfig.DriverContext("CSI"),
 		false)
+	d.API = mockAPI
 	d.Config.Storage = []drivers.OntapStorageDriverPool{
 		{
 			Region: "us_east_1",
 			Zone:   "us_east_1a",
-			SupportedTopologies: []map[string]string{{
-				"topology.kubernetes.io/region": "us_east_1",
-				"topology.kubernetes.io/zone":   "us_east_1a",
-			},
+			SupportedTopologies: []map[string]string{
+				{
+					"topology.kubernetes.io/region": "us_east_1",
+					"topology.kubernetes.io/zone":   "us_east_1a",
+				},
 			},
 		},
 	}
@@ -211,7 +193,8 @@ func TestInitializeStoragePoolsLabelsAbstraction(t *testing.T) {
 	for _, c := range cases {
 		d.Config.Labels = c.physicalPoolLabels
 		d.Config.Storage[0].Labels = c.virtualPoolLabels
-		physicalPools, virtualPools, err := InitializeStoragePoolsCommonAbstraction(ctx, d, poolAttributes, c.backendName)
+		physicalPools, virtualPools, err := InitializeStoragePoolsCommonAbstraction(ctx, d, poolAttributes,
+			c.backendName)
 		assert.Nil(t, err, "Error is not nil")
 
 		physicalPool := physicalPools["data"]

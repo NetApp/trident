@@ -27,25 +27,25 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-////////////////////////////////////////////////////////////////////////////////////////////
-///             _____________________
-///            |   <<Interface>>    |
-///            |       ONTAPI       |
-///            |____________________|
-///                ^             ^
-///     Implements |             | Implements
-///   ____________________    ____________________
-///  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
-///  |___________________|   |___________________|
-///  | +API: RestClient  |   | +API: *Client     |
-///  |___________________|   |___________________|
-///
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
+// /             _____________________
+// /            |   <<Interface>>    |
+// /            |       ONTAPI       |
+// /            |____________________|
+// /                ^             ^
+// /     Implements |             | Implements
+// /   ____________________    ____________________
+// /  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
+// /  |___________________|   |___________________|
+// /  | +API: RestClient  |   | +API: *Client     |
+// /  |___________________|   |___________________|
+// /
+// //////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
 // Drivers that offer dual support are to call ONTAP REST or ZAPI's
 // via abstraction layer (ONTAPI interface)
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
 
 type TelemetryAbstraction struct {
 	tridentconfig.Telemetry
@@ -164,15 +164,24 @@ func (t TelemetryAbstraction) GoString() string {
 	return t.String()
 }
 
+func deleteExportPolicyAbstraction(ctx context.Context, policy string, clientAPI api.OntapAPI) error {
+	err := clientAPI.ExportPolicyDestroy(ctx, policy)
+	if err != nil {
+		err = fmt.Errorf("error deleting export policy: %s", err.Error())
+	}
+	return err
+}
+
 func ensureExportPolicyExistsAbstraction(ctx context.Context, policyName string, clientAPI api.OntapAPI) error {
 	return clientAPI.ExportPolicyCreate(ctx, policyName)
 }
 
-// publishFlexVolShare ensures that the volume has the correct export policy applied.
-func publishFlexVolShareAbstraction(
+// publishShareAbstraction ensures that the volume has the correct export policy applied.
+func publishShareAbstraction(
 	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig,
 	publishInfo *utils.VolumePublishInfo, volumeName string,
-	ModifyVolumeExportPolicy func(ctx context.Context, volumeName string, policyName string) error) error {
+	ModifyVolumeExportPolicy func(ctx context.Context, volumeName string, policyName string) error,
+) error {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -395,8 +404,6 @@ func GetISCSITargetInfoAbstraction(
 		return
 	}
 
-
-
 	return
 }
 
@@ -461,11 +468,11 @@ func PublishLUNAbstraction(
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
-			"Method":  "PublishLUN",
-			"Type":    "ontap_common",
-			"lunPath": lunPath,
+			"Method":        "PublishLUN",
+			"Type":          "ontap_common",
+			"lunPath":       lunPath,
 			"iSCSINodeName": iSCSINodeName,
-			"publishInfo": publishInfo,
+			"publishInfo":   publishInfo,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> PublishLUNAbstraction")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< PublishLUNAbstraction")
@@ -882,8 +889,10 @@ func InitializeOntapAPIAbstraction(
 	var err error
 
 	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "InitializeOntapAPIAbstraction", "Type": "ontap_common",
-			"useREST": config.UseREST }
+		fields := log.Fields{
+			"Method": "InitializeOntapAPIAbstraction", "Type": "ontap_common",
+			"useREST": config.UseREST,
+		}
 		Logc(ctx).WithFields(fields).Debug(">>>> InitializeOntapAPIAbstraction")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< InitializeOntapAPIAbstraction")
 	}
@@ -1002,7 +1011,8 @@ func ValidateNASDriverAbstraction(
 
 func checkAggregateLimitsForFlexvolAbstraction(
 	ctx context.Context, flexvol string, requestedSizeInt uint64, config drivers.OntapStorageDriverConfig,
-	client api.OntapAPI) error {
+	client api.OntapAPI,
+) error {
 
 	volInfo, err := client.VolumeInfo(ctx, flexvol)
 	if err != nil {
@@ -1013,7 +1023,8 @@ func checkAggregateLimitsForFlexvolAbstraction(
 		return fmt.Errorf("aggregate info not available from Flexvol %s", flexvol)
 	}
 
-	return checkAggregateLimitsAbstraction(ctx, volInfo.Aggregates[0], volInfo.SpaceReserve, requestedSizeInt, config, client)
+	return checkAggregateLimitsAbstraction(ctx, volInfo.Aggregates[0], volInfo.SpaceReserve, requestedSizeInt, config,
+		client)
 }
 
 func checkAggregateLimitsAbstraction(
@@ -1119,6 +1130,243 @@ func EMSHeartbeatAbstraction(ctx context.Context, driver StorageDriverAbstractio
 
 }
 
+// Create a volume clone
+func CreateOntapCloneAbstraction(
+	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI, useAsync bool, qosPolicyGroup api.QosPolicyGroup,
+) error {
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":   "CreateOntapClone",
+			"Type":     "ontap_common",
+			"name":     name,
+			"source":   source,
+			"snapshot": snapshot,
+			"split":    split,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> CreateOntapClone")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateOntapClone")
+	}
+
+	// If the specified volume already exists, return an error
+	volExists, err := client.VolumeExists(ctx, name)
+	if err != nil {
+		return fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if volExists {
+		return fmt.Errorf("volume %s already exists", name)
+	}
+
+	// If no specific snapshot was requested, create one
+	if snapshot == "" {
+		snapshot = time.Now().UTC().Format(storage.SnapshotNameFormat)
+		if err = client.VolumeSnapshotCreate(ctx, snapshot, source); err != nil {
+			return err
+		}
+	}
+
+	// Create the clone based on a snapshot
+	if err = client.VolumeCloneCreate(ctx, name, source, snapshot, useAsync); err != nil {
+		return err
+	}
+
+	if err = client.VolumeSetComment(ctx, name, name, labels); err != nil {
+		return err
+	}
+
+	if config.StorageDriverName == drivers.OntapNASStorageDriverName {
+		// Mount the new volume
+		if err = client.VolumeMount(ctx, name, "/"+name); err != nil {
+			return err
+		}
+	}
+
+	// Set the QoS Policy if necessary
+	if qosPolicyGroup.Kind != api.InvalidQosPolicyGroupKind {
+		if err := client.VolumeSetQosPolicyGroupName(ctx, name, qosPolicyGroup); err != nil {
+			return err
+		}
+	}
+
+	// Split the clone if requested
+	if split {
+		err := client.VolumeCloneSplitStart(ctx, name)
+		if err != nil {
+			return fmt.Errorf("error splitting clone: %s", err.Error())
+		}
+	}
+
+	return nil
+}
+
+// GetSnapshotAbstraction gets a snapshot. To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
+func GetSnapshotAbstraction(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI, sizeGetter func(context.Context, string) (int, error),
+) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "GetSnapshot",
+			"Type":         "ontap_common",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshot")
+	}
+
+	size, err := sizeGetter(ctx, internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error reading volume size: %v", err)
+	}
+
+	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, snap := range snapshots {
+		Logc(ctx).WithFields(log.Fields{
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+			"created":      snap.CreateTime,
+		}).Debug("Found snapshot.")
+		if snap.Name == internalSnapName {
+			return &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   snap.CreateTime,
+				SizeBytes: int64(size),
+				State:     storage.SnapshotStateOnline,
+			}, nil
+		}
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+	}).Warning("Snapshot not found.")
+
+	return nil, nil
+}
+
+// GetSnapshotsAbstraction returns the list of snapshots associated with the named volume.
+func GetSnapshotsAbstraction(
+	ctx context.Context, volConfig *storage.VolumeConfig, config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
+	sizeGetter func(context.Context, string) (int, error),
+) ([]*storage.Snapshot, error) {
+
+	internalVolName := volConfig.InternalName
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":     "GetSnapshotList",
+			"Type":       "ontap_common",
+			"volumeName": internalVolName,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshotList")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< GetSnapshotList")
+	}
+
+	size, err := sizeGetter(ctx, internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error reading volume size: %v", err)
+	}
+
+	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error enumerating snapshots: %s", err.Error())
+	}
+
+	result := make([]*storage.Snapshot, 0)
+
+	for _, snap := range snapshots {
+
+		Logc(ctx).WithFields(log.Fields{
+			"name":       snap.Name,
+			"accessTime": snap.CreateTime,
+		}).Debug("Snapshot")
+
+		snapshot := &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Version:            tridentconfig.OrchestratorAPIVersion,
+				Name:               snap.Name,
+				InternalName:       snap.Name,
+				VolumeName:         volConfig.Name,
+				VolumeInternalName: volConfig.InternalName,
+			},
+			Created:   snap.CreateTime,
+			SizeBytes: int64(size),
+			State:     storage.SnapshotStateOnline,
+		}
+
+		result = append(result, snapshot)
+	}
+
+	return result, nil
+}
+
+// CreateSnapshotAbstraction creates a snapshot for the given volume.
+func CreateSnapshotAbstraction(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI, sizeGetter func(context.Context, string) (int, error),
+) (*storage.Snapshot, error) {
+
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	if config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method":       "CreateSnapshot",
+			"Type":         "ontap_common",
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
+	}
+
+	// If the specified volume doesn't exist, return error
+	volExists, err := client.VolumeExists(ctx, internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if !volExists {
+		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
+	}
+
+	size, err := sizeGetter(ctx, internalVolName)
+	if err != nil {
+		return nil, fmt.Errorf("error reading volume size: %v", err)
+	}
+
+	if err := client.VolumeSnapshotCreate(ctx, internalSnapName, internalVolName); err != nil {
+		return nil, err
+	}
+
+	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, snap := range snapshots {
+		if snap.Name == internalSnapName {
+			return &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   snap.CreateTime,
+				SizeBytes: int64(size),
+				State:     storage.SnapshotStateOnline,
+			}, nil
+		}
+	}
+	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", internalSnapName, internalVolName)
+}
+
 // RestoreSnapshotAbstraction restores a volume (in place) from a snapshot.
 func RestoreSnapshotAbstraction(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
@@ -1155,7 +1403,8 @@ func RestoreSnapshotAbstraction(
 // a split operation on the first one (sorted by volume name).
 func SplitVolumeFromBusySnapshotAbstraction(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error) error {
+	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error,
+) error {
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "SplitVolumeFromBusySnapshot",
@@ -1197,7 +1446,8 @@ func SplitVolumeFromBusySnapshotAbstraction(
 // getVolumeExternal is a method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
-func getVolumeExternalCommon(volume api.Volume, storagePrefix, svmName string,
+func getVolumeExternalCommon(
+	volume api.Volume, storagePrefix, svmName string,
 ) *storage.VolumeExternal {
 
 	internalName := volume.Name
@@ -1825,16 +2075,14 @@ func getVolumeOptsCommonAbstraction(
 }
 
 func calculateOptimalSizeForFlexvolAbstraction(
-	ctx context.Context, flexvol string, volAttrs *azgo.VolumeAttributesType, newLunOrQtreeSizeBytes,
-	totalDiskLimitBytes uint64,
+	ctx context.Context, flexvol string, volAttrs *api.Volume, newLunOrQtreeSizeBytes, totalDiskLimitBytes uint64,
 ) uint64 {
-	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
-	snapReserveDivisor := 1.0 - (float64(volSpaceAttrs.PercentageSnapshotReserve()) / 100.0)
-	snapshotSizeBytes := float64(volSpaceAttrs.SizeUsedBySnapshots())
+	snapReserveDivisor := 1.0 - (float64(volAttrs.SnapshotReserve) / 100.0)
+	snapshotSizeBytes := float64(volAttrs.SnapshotSpaceUsed)
 
 	usableSpaceBytes := float64(newLunOrQtreeSizeBytes + totalDiskLimitBytes)
 	usableSpaceWithSnapshots := usableSpaceBytes + snapshotSizeBytes
-	usableSpaceSnapReserve := usableSpaceBytes / snapReserveDivisor
+	usableSpaceSnapReserve := float64(usableSpaceBytes / snapReserveDivisor)
 
 	var flexvolSizeBytes uint64
 	if usableSpaceSnapReserve < usableSpaceWithSnapshots {
@@ -1845,7 +2093,7 @@ func calculateOptimalSizeForFlexvolAbstraction(
 
 	Logc(ctx).WithFields(log.Fields{
 		"flexvol":                flexvol,
-		"snapshotReserve":        volSpaceAttrs.PercentageSnapshotReserve(),
+		"snapshotReserve":        volAttrs.SnapshotReserve,
 		"snapReserveDivisor":     snapReserveDivisor,
 		"snapshotSizeBytes":      snapshotSizeBytes,
 		"totalDiskLimitBytes":    totalDiskLimitBytes,
@@ -1860,8 +2108,11 @@ func calculateOptimalSizeForFlexvolAbstraction(
 
 // getSnapshotReserveFromOntap takes a volume name and retrieves the snapshot policy and snapshot reserve
 func getSnapshotReserveFromOntapAbstraction(
-	ctx context.Context, name string, GetVolumeInfo func(ctx context.Context,
-		volumeName string) (volume *api.Volume, err error)) (int, error) {
+	ctx context.Context, name string, GetVolumeInfo func(
+		ctx context.Context,
+		volumeName string,
+	) (volume *api.Volume, err error),
+) (int, error) {
 
 	snapshotPolicy := ""
 	snapshotReserveInt := 0
@@ -1900,7 +2151,7 @@ func isFlexvolRWAbstraction(ctx context.Context, ontap api.OntapAPI, name string
 func getVolumeSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI, sizeGetter func(context.Context, string) (int, error),
-	) (*storage.Snapshot, error) {
+) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -2130,5 +2381,3 @@ func cloneFlexvol(
 
 	return nil
 }
-
-

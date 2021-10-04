@@ -19,6 +19,11 @@ import (
 // swagger:model network_scope_readonly
 type NetworkScopeReadonly string
 
+func NewNetworkScopeReadonly(value NetworkScopeReadonly) *NetworkScopeReadonly {
+	v := value
+	return &v
+}
+
 const (
 
 	// NetworkScopeReadonlySvm captures enum value "svm"

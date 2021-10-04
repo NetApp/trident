@@ -14,8 +14,9 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	"github.com/netapp/trident/utils"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/netapp/trident/utils"
 
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
@@ -42,7 +43,7 @@ func (d OntapAPIZAPI) ValidateAPIVersion(ctx context.Context) error {
 
 func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
 
-	if d.API.config.DebugTraceFlags["method"] {
+	if d.api.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "VolumeCreate",
 			"Type":   "OntapAPIZAPI",
@@ -52,25 +53,24 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< VolumeCreate")
 	}
 
-	volCreateResponse, err := d.API.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
-		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
-		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume)
+	volCreateResponse, err := d.api.VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size,
+		volume.SpaceReserve, volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy,
+		volume.SecurityStyle, volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt,
+		volume.SnapshotReserve, volume.DPVolume)
 	if err != nil {
 		return fmt.Errorf("error creating volume: %v", err)
 	}
-
 	if volCreateResponse == nil {
 		return fmt.Errorf("missing volume create response")
 	}
-
 	if err = GetError(ctx, volCreateResponse, err); err != nil {
 		if zerr, ok := err.(ZapiError); ok {
 			// Handle case where the Create is passed to every Docker Swarm node
 			if zerr.Code() == azgo.EAPIERROR && strings.HasSuffix(strings.TrimSpace(zerr.Reason()), "Job exists") {
-				Logc(ctx).WithField("volume", volume.Name).Warn("Volume create job already exists, " +
-					"skipping volume create on this node.")
-				err = VolumeCreateJobExistsError(fmt.Sprintf("volume create job already exists, %s",
-					volume.Name))
+				Logc(ctx).WithField("volume", volume.Name).Warn(
+					"Volume create job already exists, skipping volume create on this node.",
+				)
+				err = VolumeCreateJobExistsError(fmt.Sprintf("volume create job already exists, %s", volume.Name))
 			}
 		}
 	}
@@ -80,7 +80,7 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
 
 func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force bool) error {
 
-	volDestroyResponse, err := d.API.VolumeDestroy(name, force)
+	volDestroyResponse, err := d.api.VolumeDestroy(name, force)
 	if err != nil {
 		return fmt.Errorf("error destroying volume %v: %v", name, err)
 	}
@@ -100,7 +100,7 @@ func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force bool
 
 func (d OntapAPIZAPI) VolumeInfo(ctx context.Context, name string) (*Volume, error) {
 
-	if d.API.config.DebugTraceFlags["method"] {
+	if d.api.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "VolumeInfo",
 			"Type":   "OntapAPIZAPI",
@@ -111,13 +111,13 @@ func (d OntapAPIZAPI) VolumeInfo(ctx context.Context, name string) (*Volume, err
 	}
 
 	// Get Flexvol by name
-	volumeGetResponse, err := d.API.VolumeGet(name)
+	volumeGetResponse, err := d.api.VolumeGet(name)
 
 	Logc(ctx).WithFields(log.Fields{
 		"volumeGetResponse": volumeGetResponse,
 		"name":              name,
 		"err":               err,
-	}).Debug("d.API.VolumeGet")
+	}).Debug("d.api.VolumeGet")
 
 	if err != nil {
 		Logc(ctx).Errorf("Could not find volume with name: %v; error: %v", name, err.Error())
@@ -143,16 +143,16 @@ func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType)
 	var responseSnapdirAccessEnabled bool
 	var responseSnapshotPolicy string
 	var responseSnapshotReserveInt int
+	var responseSnapshotSpaceUsed int
 	var responseSpaceReserve string
 	var responseUnixPermissions string
 
 	if volumeGetResponse.VolumeIdAttributesPtr != nil {
 		volumeIdAttributes := volumeGetResponse.VolumeIdAttributes()
 
+		responseAggregates = []string{}
 		if volumeIdAttributes.ContainingAggregateNamePtr != nil {
-			responseAggregates = []string{
-				volumeIdAttributes.ContainingAggregateName(),
-			}
+			responseAggregates = append(responseAggregates, volumeIdAttributes.ContainingAggregateName())
 		}
 
 		if volumeGetResponse.VolumeIdAttributesPtr.TypePtr != nil {
@@ -171,8 +171,9 @@ func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType)
 			responseJunctionPath = volumeIdAttributes.JunctionPath()
 		}
 	} else {
-		return nil, VolumeIdAttributesReadError(fmt.Sprintf("error reading id attributes for volume %s",
-			responseName))
+		return nil, VolumeIdAttributesReadError(
+			fmt.Sprintf("error reading id attributes for volume %s", responseName),
+		)
 	}
 
 	if volumeGetResponse.VolumeSpaceAttributesPtr != nil {
@@ -180,7 +181,9 @@ func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType)
 		if volumeSpaceAttrs.PercentageSnapshotReservePtr != nil {
 			responseSnapshotReserveInt = volumeSpaceAttrs.PercentageSnapshotReserve()
 		}
-
+		if volumeSpaceAttrs.SizeUsedBySnapshotsPtr != nil {
+			responseSnapshotSpaceUsed = volumeSpaceAttrs.SizeUsedBySnapshots()
+		}
 		if volumeGetResponse.VolumeSpaceAttributesPtr.SpaceGuaranteePtr != nil {
 			responseSpaceReserve = volumeGetResponse.VolumeSpaceAttributesPtr.SpaceGuarantee()
 		}
@@ -189,9 +192,6 @@ func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType)
 		} else {
 			return nil, VolumeSpaceAttributesReadError(fmt.Sprintf("volume %s size not available", responseName))
 		}
-	} else {
-		return nil, VolumeSpaceAttributesReadError(fmt.Sprintf("error reading space attributes for volume %s",
-			responseName))
 	}
 
 	if volumeGetResponse.VolumeExportAttributesPtr != nil {
@@ -222,122 +222,124 @@ func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType)
 	}
 
 	volumeInfo := &Volume{
-		AccessType:      responseAccessType,
-		Aggregates:      responseAggregates,
-		Comment:         responseComment,
-		ExportPolicy:    responseExportPolicy,
-		JunctionPath:    responseJunctionPath,
-		Name:            responseName,
-		Size:            responseSize,
-		SnapshotDir:     responseSnapdirAccessEnabled,
-		SnapshotPolicy:  responseSnapshotPolicy,
-		SnapshotReserve: responseSnapshotReserveInt,
-		SpaceReserve:    responseSpaceReserve,
-		UnixPermissions: responseUnixPermissions,
+		AccessType:        responseAccessType,
+		Aggregates:        responseAggregates,
+		Comment:           responseComment,
+		ExportPolicy:      responseExportPolicy,
+		JunctionPath:      responseJunctionPath,
+		Name:              responseName,
+		Size:              responseSize,
+		SnapshotDir:       responseSnapdirAccessEnabled,
+		SnapshotPolicy:    responseSnapshotPolicy,
+		SnapshotReserve:   responseSnapshotReserveInt,
+		SnapshotSpaceUsed: responseSnapshotSpaceUsed,
+		SpaceReserve:      responseSpaceReserve,
+		UnixPermissions:   responseUnixPermissions,
 	}
 	return volumeInfo, nil
 }
 
 func (d OntapAPIZAPI) APIVersion(ctx context.Context) (string, error) {
-	return d.API.SystemGetOntapiVersion(ctx)
+	return d.api.SystemGetOntapiVersion(ctx)
 }
 
-func (d OntapAPIZAPI) SupportsFeature(ctx context.Context, feature feature) bool {
-	return d.API.SupportsFeature(ctx, feature)
+func (d OntapAPIZAPI) SupportsFeature(ctx context.Context, feature Feature) bool {
+	return d.api.SupportsFeature(ctx, feature)
 }
 
 func (d OntapAPIZAPI) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
-	return d.API.NodeListSerialNumbers(ctx)
+	return d.api.NodeListSerialNumbers(ctx)
 }
 
 type OntapAPIZAPI struct {
-	API *Client
+	api *Client
 }
 
 func (d OntapAPIZAPI) SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error) {
-	return d.API.SnapmirrorPolicyExists(ctx, policyName)
+	return d.api.SnapmirrorPolicyExists(ctx, policyName)
 }
 
 // TODO: these should be refactored to support REST
 func (d OntapAPIZAPI) SnapmirrorPolicyGet(ctx context.Context, policyName string) (
 	*azgo.SnapmirrorPolicyInfoType, error,
 ) {
-	return d.API.SnapmirrorPolicyGet(ctx, policyName)
+	return d.api.SnapmirrorPolicyGet(ctx, policyName)
 }
 
 // TODO: these should be refactored to support REST
 func (d OntapAPIZAPI) JobScheduleExists(ctx context.Context, jobName string) (bool, error) {
-	return d.API.JobScheduleExists(ctx, jobName)
+	return d.api.JobScheduleExists(ctx, jobName)
 }
 
 // TODO: these should be refactored to support REST
 func (d OntapAPIZAPI) GetPeeredVservers(ctx context.Context) ([]string, error) {
-	return d.API.GetPeeredVservers(ctx)
+	return d.api.GetPeeredVservers(ctx)
 }
 
 // TODO: these should be refactored to support REST
 func (d OntapAPIZAPI) VolumeGetType(name string) (string, error) {
-	return d.API.VolumeGetType(name)
+	return d.api.VolumeGetType(name)
 }
 
 // TODO: these should be refactored to support REST
 func (d OntapAPIZAPI) SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
 	*azgo.SnapmirrorGetResponse, error,
 ) {
-	return d.API.SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return d.api.SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 // TODO: these should be refactored to support REST
 func (d OntapAPIZAPI) SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (
 	*azgo.SnapmirrorCreateResponse, error,
 ) {
-	return d.API.SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule)
+	return d.api.SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy,
+		repSchedule)
 }
 
 // TODO: these should be refactored to support REST
 func (d OntapAPIZAPI) SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
 	*azgo.SnapmirrorInitializeResponse, error,
 ) {
-	return d.API.SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return d.api.SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 // TODO: these should be refactored to support REST
 func (d OntapAPIZAPI) SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
 	*azgo.SnapmirrorResyncResponse, error,
 ) {
-	return d.API.SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return d.api.SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 // TODO: these should be refactored to support REST
 func (d OntapAPIZAPI) SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
 	*azgo.SnapmirrorDestroyResponse, error,
 ) {
-	return d.API.SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return d.api.SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 // TODO: these should be refactored to support REST
 func (d OntapAPIZAPI) SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
 	*azgo.SnapmirrorQuiesceResponse, error,
 ) {
-	return d.API.SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return d.api.SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 // TODO: these should be refactored to support REST
 func (d OntapAPIZAPI) SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
 	*azgo.SnapmirrorAbortResponse, error,
 ) {
-	return d.API.SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return d.api.SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 // TODO: these should be refactored to support REST
 func (d OntapAPIZAPI) SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
 	*azgo.SnapmirrorBreakResponse, error,
 ) {
-	return d.API.SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return d.api.SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 func (d OntapAPIZAPI) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error {
-	return d.API.SnapmirrorRelease(sourceFlexvolName, sourceSVMName)
+	return d.api.SnapmirrorRelease(sourceFlexvolName, sourceSVMName)
 }
 
 func (d OntapAPIZAPI) ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error) {
@@ -347,7 +349,7 @@ func (d OntapAPIZAPI) ParseLunComment(ctx context.Context, commentJSON string) (
 }
 
 func (d OntapAPIZAPI) LunList(ctx context.Context, pattern string) (Luns, error) {
-	lunResponse, err := d.API.LunGetAll(pattern)
+	lunResponse, err := d.api.LunGetAll(pattern)
 	if err = GetError(ctx, lunResponse, err); err != nil {
 		return nil, err
 	}
@@ -368,7 +370,7 @@ func (d OntapAPIZAPI) LunList(ctx context.Context, pattern string) (Luns, error)
 }
 
 func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
-	if d.API.config.DebugTraceFlags["method"] {
+	if d.api.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "LunCreate",
 			"Type":   "OntapAPIZAPI",
@@ -381,7 +383,7 @@ func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
 
-	lunCreateResponse, err := d.API.LunCreate(lun.Name, int(sizeBytes), lun.OsType, lun.Qos, *lun.SpaceReserved,
+	lunCreateResponse, err := d.api.LunCreate(lun.Name, int(sizeBytes), lun.OsType, lun.Qos, *lun.SpaceReserved,
 		*lun.SpaceAllocated)
 
 	if err != nil {
@@ -407,7 +409,7 @@ func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
 }
 
 func (d OntapAPIZAPI) LunDestroy(ctx context.Context, lunPath string) error {
-	_, err := d.API.LunDestroy(lunPath)
+	_, err := d.api.LunDestroy(lunPath)
 	return err
 }
 
@@ -416,7 +418,7 @@ func (d OntapAPIZAPI) LunGetComment(ctx context.Context, lunPath string) (string
 	var fstype string
 	parse := false
 	LUNAttributeFSType := "com.netapp.ndvp.fstype"
-	attrResponse, err := d.API.LunGetAttribute(lunPath, LUNAttributeFSType)
+	attrResponse, err := d.api.LunGetAttribute(lunPath, LUNAttributeFSType)
 	if err = GetError(ctx, attrResponse, err); err != nil {
 		return "", parse, err
 	} else {
@@ -430,14 +432,14 @@ func (d OntapAPIZAPI) LunSetAttribute(ctx context.Context, lunPath, attribute, f
 	var attrResponse interface{}
 	var err error
 	if fstype != "" {
-		attrResponse, err = d.API.LunSetAttribute(lunPath, attribute, fstype)
+		attrResponse, err = d.api.LunSetAttribute(lunPath, attribute, fstype)
 	}
 	if err = GetError(ctx, attrResponse, err); err != nil {
 		return err
 	}
 
 	if context != "" {
-		attrResponse, err = d.API.LunSetAttribute(lunPath, "context", context)
+		attrResponse, err = d.api.LunSetAttribute(lunPath, "context", context)
 	}
 	if err = GetError(ctx, attrResponse, err); err != nil {
 		Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the driver context attribute for new LUN.")
@@ -447,7 +449,7 @@ func (d OntapAPIZAPI) LunSetAttribute(ctx context.Context, lunPath, attribute, f
 }
 
 func (d OntapAPIZAPI) LunSetQosPolicyGroup(ctx context.Context, lunPath string, qosPolicyGroup QosPolicyGroup) error {
-	qosResponse, err := d.API.LunSetQosPolicyGroup(lunPath, qosPolicyGroup)
+	qosResponse, err := d.api.LunSetQosPolicyGroup(lunPath, qosPolicyGroup)
 	if err = GetError(ctx, qosResponse, err); err != nil {
 		return err
 	}
@@ -455,7 +457,7 @@ func (d OntapAPIZAPI) LunSetQosPolicyGroup(ctx context.Context, lunPath string, 
 }
 
 func (d OntapAPIZAPI) LunGetByName(ctx context.Context, name string) (*Lun, error) {
-	if d.API.config.DebugTraceFlags["method"] {
+	if d.api.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":  "LunGetByName",
 			"Type":    "OntapAPIZAPI",
@@ -464,7 +466,7 @@ func (d OntapAPIZAPI) LunGetByName(ctx context.Context, name string) (*Lun, erro
 		Logc(ctx).WithFields(fields).Debug(">>>> LunGetByName")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< LunGetByName")
 	}
-	lunResponse, err := d.API.LunGet(name)
+	lunResponse, err := d.api.LunGet(name)
 	if err != nil || lunResponse == nil {
 		return nil, fmt.Errorf("could not get LUN by name %v, error: %v", name, err)
 	}
@@ -554,7 +556,7 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 }
 
 func (d OntapAPIZAPI) LunRename(ctx context.Context, lunPath, newLunPath string) error {
-	renameResponse, err := d.API.LunRename(lunPath, newLunPath)
+	renameResponse, err := d.api.LunRename(lunPath, newLunPath)
 	if err = GetError(ctx, renameResponse, err); err != nil {
 		Logc(ctx).WithField("originalName", lunPath).Errorf("renaming LUN failed: %v", err)
 		return fmt.Errorf("LUN %s rename failed: %v", lunPath, err)
@@ -565,7 +567,7 @@ func (d OntapAPIZAPI) LunRename(ctx context.Context, lunPath, newLunPath string)
 
 func (d OntapAPIZAPI) LunMapInfo(ctx context.Context, initiatorGroupName, lunPath string) (int, error) {
 	lunID := -1
-	lunMapResponse, err := d.API.LunMapListInfo(lunPath)
+	lunMapResponse, err := d.api.LunMapListInfo(lunPath)
 	if err = GetError(ctx, lunMapResponse, err); err != nil {
 		return lunID, err
 	}
@@ -582,11 +584,11 @@ func (d OntapAPIZAPI) LunMapInfo(ctx context.Context, initiatorGroupName, lunPat
 func (d OntapAPIZAPI) EnsureLunMapped(
 	ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool,
 ) (int, error) {
-	return d.API.LunMapIfNotMapped(ctx, initiatorGroupName, lunPath, importNotManaged)
+	return d.api.LunMapIfNotMapped(ctx, initiatorGroupName, lunPath, importNotManaged)
 }
 
 func (d OntapAPIZAPI) LunSize(ctx context.Context, flexvolName string) (int, error) {
-	size, err := d.API.LunSize(flexvolName)
+	size, err := d.api.LunSize(flexvolName)
 	if err != nil {
 		return 0, err
 	}
@@ -602,14 +604,14 @@ func (d OntapAPIZAPI) LunSetSize(ctx context.Context, lunPath, newSize string) (
 	if err != nil {
 		return 0, err
 	}
-	return d.API.LunResize(lunPath, int(sizeBytes))
+	return d.api.LunResize(lunPath, int(sizeBytes))
 }
 
 func (d OntapAPIZAPI) LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) (
 	[]string, error,
 ) {
 	var results []string
-	lunMapGetResponse, err := d.API.LunMapGet(initiatorGroupName, lunPath)
+	lunMapGetResponse, err := d.api.LunMapGet(initiatorGroupName, lunPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not get iSCSI reported nodes: %v", err)
 	}
@@ -626,7 +628,7 @@ func (d OntapAPIZAPI) LunMapGetReportingNodes(ctx context.Context, initiatorGrou
 
 func (d OntapAPIZAPI) IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiInitiatorAuth, error) {
 	authInfo := IscsiInitiatorAuth{}
-	apiResponse, err := d.API.IscsiInitiatorGetDefaultAuth()
+	apiResponse, err := d.api.IscsiInitiatorGetDefaultAuth()
 	err = GetError(ctx, apiResponse, err)
 	if err != nil {
 		return authInfo, err
@@ -650,7 +652,7 @@ func (d OntapAPIZAPI) IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiIn
 func (d OntapAPIZAPI) IscsiInitiatorSetDefaultAuth(
 	ctx context.Context, authType, userName, passphrase, outbountUserName, outboundPassphrase string,
 ) error {
-	response, err := d.API.IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, outbountUserName,
+	response, err := d.api.IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, outbountUserName,
 		outboundPassphrase)
 	err = GetError(ctx, response, err)
 	if err != nil {
@@ -661,7 +663,7 @@ func (d OntapAPIZAPI) IscsiInitiatorSetDefaultAuth(
 
 func (d OntapAPIZAPI) IscsiInterfaceGet(ctx context.Context, svm string) ([]string, error) {
 	var iSCSIInterfaces []string
-	interfaceResponse, err := d.API.IscsiInterfaceGetIterRequest()
+	interfaceResponse, err := d.api.IscsiInterfaceGetIterRequest()
 	err = GetError(ctx, interfaceResponse, err)
 	if err != nil {
 		Logc(ctx).Debugf("could not get SVM iSCSI interfaces: %v", err)
@@ -683,7 +685,7 @@ func (d OntapAPIZAPI) IscsiInterfaceGet(ctx context.Context, svm string) ([]stri
 }
 
 func (d OntapAPIZAPI) IscsiNodeGetNameRequest(ctx context.Context) (string, error) {
-	nodeNameResponse, err := d.API.IscsiNodeGetNameRequest()
+	nodeNameResponse, err := d.api.IscsiNodeGetNameRequest()
 	if err != nil {
 		return "", err
 	}
@@ -691,7 +693,7 @@ func (d OntapAPIZAPI) IscsiNodeGetNameRequest(ctx context.Context) (string, erro
 }
 
 func (d OntapAPIZAPI) IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error {
-	response, err := d.API.IgroupCreate(initiatorGroupName, initiatorGroupType, osType)
+	response, err := d.api.IgroupCreate(initiatorGroupName, initiatorGroupType, osType)
 	err = GetError(ctx, response, err)
 	zerr, zerrOK := err.(ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_INITGROUP) {
@@ -710,7 +712,7 @@ func (d OntapAPIZAPI) IgroupCreate(ctx context.Context, initiatorGroupName, init
 
 // Same functionality as cleanIgroups from ontap_common.go
 func (d OntapAPIZAPI) IgroupDestroy(ctx context.Context, initiatorGroupName string) error {
-	response, err := d.API.IgroupDestroy(initiatorGroupName)
+	response, err := d.api.IgroupDestroy(initiatorGroupName)
 	err = GetError(ctx, response, err)
 	zerr, zerrOK := err.(ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_INITGROUP) {
@@ -728,7 +730,7 @@ func (d OntapAPIZAPI) IgroupDestroy(ctx context.Context, initiatorGroupName stri
 }
 
 func (d OntapAPIZAPI) EnsureIgroupAdded(ctx context.Context, initiatorGroupName, initiator string) error {
-	response, err := d.API.IgroupAdd(initiatorGroupName, initiator)
+	response, err := d.api.IgroupAdd(initiatorGroupName, initiator)
 	err = GetError(ctx, response, err)
 	zerr, zerrOK := err.(ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
@@ -743,7 +745,7 @@ func (d OntapAPIZAPI) EnsureIgroupAdded(ctx context.Context, initiatorGroupName,
 }
 
 func (d OntapAPIZAPI) IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error {
-	response, err := d.API.IgroupRemove(initiatorGroupName, initiator, force)
+	response, err := d.api.IgroupRemove(initiatorGroupName, initiator, force)
 	err = GetError(ctx, response, err)
 	zerr, zerrOK := err.(ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NODE_NOT_IN_INITGROUP) {
@@ -761,7 +763,7 @@ func (d OntapAPIZAPI) IgroupRemove(ctx context.Context, initiatorGroupName, init
 func (d OntapAPIZAPI) IgroupGetByName(ctx context.Context, initiatorGroupName string) (
 	map[string]bool, error,
 ) {
-	response, err := d.API.IgroupGet(initiatorGroupName)
+	response, err := d.api.IgroupGet(initiatorGroupName)
 	if err != nil {
 		return nil, err
 	}
@@ -782,7 +784,7 @@ func (d OntapAPIZAPI) IgroupGetByName(ctx context.Context, initiatorGroupName st
 func (d OntapAPIZAPI) GetReportedDataLifs(ctx context.Context) (string, []string, error) {
 	var reportedDataLIFs []string
 	var currentNode string
-	response, err := d.API.NetInterfaceGet()
+	response, err := d.api.NetInterfaceGet()
 	if err != nil {
 		return currentNode, nil, nil
 	}
@@ -800,7 +802,7 @@ func (d OntapAPIZAPI) GetReportedDataLifs(ctx context.Context) (string, []string
 
 func NewOntapAPIZAPI(zapiClient *Client) (OntapAPIZAPI, error) {
 	result := OntapAPIZAPI{
-		API: zapiClient,
+		api: zapiClient,
 	}
 	return result, nil
 }
@@ -825,8 +827,9 @@ func NewZAPIClient(config ClientConfig) *Client {
 	return d
 }
 
-func NewZAPIClientFromOntapConfig(ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig,
-	numRecords int) (OntapAPI, error) {
+func NewZAPIClientFromOntapConfig(
+	ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig, numRecords int,
+) (OntapAPI, error) {
 
 	client := NewZAPIClient(ClientConfig{
 		ManagementLIF:           ontapConfig.ManagementLIF,
@@ -846,7 +849,7 @@ func NewZAPIClientFromOntapConfig(ctx context.Context, ontapConfig *drivers.Onta
 			return nil, fmt.Errorf("error reading SVM details: %v", err)
 		}
 
-		client.SVMUUID = vserverResponse.Result.AttributesPtr.VserverInfoPtr.Uuid()
+		client.svmUUID = vserverResponse.Result.AttributesPtr.VserverInfoPtr.Uuid()
 
 		Logc(ctx).WithField("SVM", ontapConfig.SVM).Debug("Using specified SVM.")
 
@@ -876,7 +879,7 @@ func NewZAPIClientFromOntapConfig(ctx context.Context, ontapConfig *drivers.Onta
 			TrustedCACertificate: ontapConfig.TrustedCACertificate,
 			DebugTraceFlags:      ontapConfig.DebugTraceFlags,
 		})
-		client.SVMUUID = svmUUID
+		client.svmUUID = svmUUID
 	}
 
 	apiZAPI, err := NewOntapAPIZAPI(client)
@@ -888,11 +891,11 @@ func NewZAPIClientFromOntapConfig(ctx context.Context, ontapConfig *drivers.Onta
 }
 
 func (d OntapAPIZAPI) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
-	return d.API.NetInterfaceGetDataLIFs(ctx, protocol)
+	return d.api.NetInterfaceGetDataLIFs(ctx, protocol)
 }
 
 func (d OntapAPIZAPI) GetSVMAggregateNames(_ context.Context) ([]string, error) {
-	return d.API.SVMGetAggregateNames()
+	return d.api.SVMGetAggregateNames()
 }
 
 // EmsAutosupportLog generates an auto support message with the supplied parameters
@@ -906,10 +909,12 @@ func (d OntapAPIZAPI) EmsAutosupportLog(
 	eventDescription string,
 	eventID int,
 	eventSource string,
-	logLevel int) {
+	logLevel int,
+) {
 
-	emsResponse, err := d.API.EmsAutosupportLog(appVersion, autoSupport, category, computerName, eventDescription, eventID,
-		eventSource, logLevel)
+	emsResponse, err := d.api.EmsAutosupportLog(
+		appVersion, autoSupport, category, computerName, eventDescription, eventID, eventSource, logLevel,
+	)
 
 	if err = GetError(ctx, emsResponse, err); err != nil {
 		Logc(ctx).WithFields(log.Fields{
@@ -922,7 +927,7 @@ func (d OntapAPIZAPI) EmsAutosupportLog(
 }
 
 func (d OntapAPIZAPI) FlexgroupExists(ctx context.Context, volumeName string) (bool, error) {
-	volExists, err := d.API.FlexGroupExists(ctx, volumeName)
+	volExists, err := d.api.FlexGroupExists(ctx, volumeName)
 	if err != nil {
 		err = fmt.Errorf("error checking for existing FlexGroup: %v", err)
 	}
@@ -930,7 +935,7 @@ func (d OntapAPIZAPI) FlexgroupExists(ctx context.Context, volumeName string) (b
 }
 
 func (d OntapAPIZAPI) FlexgroupCreate(ctx context.Context, volume Volume) error {
-	if d.API.config.DebugTraceFlags["method"] {
+	if d.api.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "FlexgroupCreate",
 			"Type":   "OntapAPIZAPI",
@@ -945,7 +950,8 @@ func (d OntapAPIZAPI) FlexgroupCreate(ctx context.Context, volume Volume) error 
 		return fmt.Errorf("%v is an invalid volume size: %v", volume.Size, err)
 	}
 
-	flexgroupCreateResponse, err := d.API.FlexGroupCreate(ctx, volume.Name, int(sizeBytes), volume.Aggregates, volume.SpaceReserve,
+	flexgroupCreateResponse, err := d.api.FlexGroupCreate(ctx, volume.Name, int(sizeBytes), volume.Aggregates,
+		volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle, volume.TieringPolicy,
 		volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve)
 	if err != nil {
@@ -976,7 +982,7 @@ func (d OntapAPIZAPI) FlexgroupCloneSplitStart(ctx context.Context, cloneName st
 }
 
 func (d OntapAPIZAPI) FlexgroupDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error {
-	snapDirResponse, err := d.API.FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx, volumeName)
+	snapDirResponse, err := d.api.FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx, volumeName)
 	if err = GetError(ctx, snapDirResponse, err); err != nil {
 		return fmt.Errorf("error disabling snapshot directory access: %v", err)
 	}
@@ -985,7 +991,7 @@ func (d OntapAPIZAPI) FlexgroupDisableSnapshotDirectoryAccess(ctx context.Contex
 }
 
 func (d OntapAPIZAPI) FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error) {
-	if d.API.config.DebugTraceFlags["method"] {
+	if d.api.config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "FlexgroupInfo",
 			"Type":   "OntapAPIZAPI",
@@ -996,13 +1002,13 @@ func (d OntapAPIZAPI) FlexgroupInfo(ctx context.Context, volumeName string) (*Vo
 	}
 
 	// Get Flexvol by name
-	flexGroupGetResponse, err := d.API.FlexGroupGet(volumeName)
+	flexGroupGetResponse, err := d.api.FlexGroupGet(volumeName)
 
 	Logc(ctx).WithFields(log.Fields{
 		"flexGroupGetResponse": flexGroupGetResponse,
 		"name":                 volumeName,
 		"err":                  err,
-	}).Debug("d.API.FlexGroupGet")
+	}).Debug("d.api.FlexGroupGet")
 
 	if err != nil {
 		Logc(ctx).Errorf("Could not find volume with name: %v; error: %v", volumeName, err.Error())
@@ -1025,8 +1031,10 @@ func (d OntapAPIZAPI) FlexgroupModifyExportPolicy(ctx context.Context, volumeNam
 	return d.VolumeModifyExportPolicy(ctx, volumeName, policyName)
 }
 
-func (d OntapAPIZAPI) FlexgroupSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error {
-	modifyCommentResponse, err := d.API.FlexGroupSetComment(ctx, volumeNameInternal, comment)
+func (d OntapAPIZAPI) FlexgroupSetComment(
+	ctx context.Context, volumeNameInternal, volumeNameExternal, comment string,
+) error {
+	modifyCommentResponse, err := d.api.FlexGroupSetComment(ctx, volumeNameInternal, comment)
 	if err = GetError(ctx, modifyCommentResponse, err); err != nil {
 		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Modifying comment failed: %v", err)
 		return fmt.Errorf("volume %s modify failed: %v", volumeNameExternal, err)
@@ -1043,9 +1051,10 @@ func (d OntapAPIZAPI) FlexgroupSnapshotList(ctx context.Context, sourceVolume st
 	return d.VolumeSnapshotList(ctx, sourceVolume)
 }
 
-func (d OntapAPIZAPI) FlexgroupModifyUnixPermissions(ctx context.Context, volumeNameInternal, volumeNameExternal,
-	unixPermissions string) error {
-	modifyUnixPermResponse, err := d.API.FlexGroupModifyUnixPermissions(ctx, volumeNameInternal, unixPermissions)
+func (d OntapAPIZAPI) FlexgroupModifyUnixPermissions(
+	ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string,
+) error {
+	modifyUnixPermResponse, err := d.api.FlexGroupModifyUnixPermissions(ctx, volumeNameInternal, unixPermissions)
 	if err = GetError(ctx, modifyUnixPermResponse, err); err != nil {
 		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Could not import volume, "+
 			"modifying unix permissions failed: %v", err)
@@ -1072,7 +1081,7 @@ func (d OntapAPIZAPI) FlexgroupDestroy(ctx context.Context, volumeName string, f
 	}
 
 	// This call is sync, but not idempotent, so we check if it is already offline
-	offlineResp, offErr := d.API.VolumeOffline(volumeName)
+	offlineResp, offErr := d.api.VolumeOffline(volumeName)
 	if offErr != nil {
 		return fmt.Errorf("error taking Volume %v offline: %v", volumeName, offErr)
 	}
@@ -1088,7 +1097,7 @@ func (d OntapAPIZAPI) FlexgroupDestroy(ctx context.Context, volumeName string, f
 		}
 	}
 
-	volDestroyResponse, err := d.API.FlexGroupDestroy(ctx, volumeName, force)
+	volDestroyResponse, err := d.api.FlexGroupDestroy(ctx, volumeName, force)
 	if err != nil {
 		return fmt.Errorf("error destroying volume %v: %v", volumeName, err)
 	}
@@ -1109,7 +1118,7 @@ func (d OntapAPIZAPI) FlexgroupDestroy(ctx context.Context, volumeName string, f
 func (d OntapAPIZAPI) FlexgroupListByPrefix(ctx context.Context, prefix string) (Volumes, error) {
 
 	// Get all volumes matching the storage prefix
-	volumesResponse, err := d.API.FlexGroupGetAll(prefix)
+	volumesResponse, err := d.api.FlexGroupGetAll(prefix)
 	if err = GetError(ctx, volumesResponse, err); err != nil {
 		return nil, err
 	}
@@ -1123,7 +1132,7 @@ func (d OntapAPIZAPI) FlexgroupListByPrefix(ctx context.Context, prefix string) 
 			if err != nil {
 				return nil, err
 			}
-			volumes = append(volumes, *volumeInfo)
+			volumes = append(volumes, volumeInfo)
 		}
 	}
 
@@ -1131,7 +1140,7 @@ func (d OntapAPIZAPI) FlexgroupListByPrefix(ctx context.Context, prefix string) 
 }
 
 func (d OntapAPIZAPI) FlexgroupSetSize(ctx context.Context, name, newSize string) error {
-	_, err := d.API.FlexGroupSetSize(ctx, name, newSize)
+	_, err := d.api.FlexGroupSetSize(ctx, name, newSize)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("FlexGroup resize failed.")
 		return fmt.Errorf("flexgroup resize failed %v: %v", name, err)
@@ -1140,17 +1149,17 @@ func (d OntapAPIZAPI) FlexgroupSetSize(ctx context.Context, name, newSize string
 }
 
 func (d OntapAPIZAPI) FlexgroupSize(_ context.Context, volumeName string) (uint64, error) {
-	size, err := d.API.FlexGroupSize(volumeName)
+	size, err := d.api.FlexGroupSize(volumeName)
 	return uint64(size), err
 }
 
 func (d OntapAPIZAPI) FlexgroupUsedSize(_ context.Context, volumeName string) (int, error) {
-	return d.API.FlexGroupUsedSize(volumeName)
+	return d.api.FlexGroupUsedSize(volumeName)
 }
 
 func (d OntapAPIZAPI) FlexgroupUnmount(ctx context.Context, name string, force bool) error {
 	// This call is sync and idempotent
-	umountResp, err := d.API.VolumeUnmount(name, force)
+	umountResp, err := d.api.VolumeUnmount(name, force)
 	if err != nil {
 		return fmt.Errorf("error unmounting Volume %v: %v", name, err)
 	}
@@ -1175,7 +1184,7 @@ func (d OntapAPIZAPI) GetSVMAggregateAttributes(_ context.Context) (aggrList map
 		}
 	}()
 
-	result, err := d.API.VserverShowAggrGetIterRequest()
+	result, err := d.api.VserverShowAggrGetIterRequest()
 	if err != nil {
 		return
 	}
@@ -1197,7 +1206,7 @@ func (d OntapAPIZAPI) GetSVMAggregateAttributes(_ context.Context) (aggrList map
 }
 
 func (d OntapAPIZAPI) ExportPolicyDestroy(ctx context.Context, policy string) error {
-	response, err := d.API.ExportPolicyDestroy(policy)
+	response, err := d.api.ExportPolicyDestroy(policy)
 	if err = GetError(ctx, response, err); err != nil {
 		err = fmt.Errorf("error deleting export policy: %v", err)
 	}
@@ -1205,16 +1214,16 @@ func (d OntapAPIZAPI) ExportPolicyDestroy(ctx context.Context, policy string) er
 }
 
 func (d OntapAPIZAPI) VolumeExists(ctx context.Context, volumeName string) (bool, error) {
-	return d.API.VolumeExists(ctx, volumeName)
+	return d.api.VolumeExists(ctx, volumeName)
 }
 
 func (d OntapAPIZAPI) TieringPolicyValue(ctx context.Context) string {
-	return d.API.TieringPolicyValue(ctx)
+	return d.api.TieringPolicyValue(ctx)
 }
 
 func (d OntapAPIZAPI) GetSVMAggregateSpace(ctx context.Context, aggregate string) ([]SVMAggregateSpace, error) {
 	// lookup aggregate
-	aggrSpaceResponse, aggrSpaceErr := d.API.AggrSpaceGetIterRequest(aggregate)
+	aggrSpaceResponse, aggrSpaceErr := d.api.AggrSpaceGetIterRequest(aggregate)
 	if aggrSpaceErr != nil {
 		return nil, aggrSpaceErr
 	}
@@ -1254,7 +1263,7 @@ func (d OntapAPIZAPI) GetSVMAggregateSpace(ctx context.Context, aggregate string
 }
 
 func (d OntapAPIZAPI) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error {
-	snapDirResponse, err := d.API.VolumeDisableSnapshotDirectoryAccess(name)
+	snapDirResponse, err := d.api.VolumeDisableSnapshotDirectoryAccess(name)
 	if err = GetError(ctx, snapDirResponse, err); err != nil {
 		return fmt.Errorf("error disabling snapshot directory access: %v", err)
 	}
@@ -1264,7 +1273,7 @@ func (d OntapAPIZAPI) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, 
 
 func (d OntapAPIZAPI) VolumeMount(ctx context.Context, name, junctionPath string) error {
 
-	mountResponse, err := d.API.VolumeMount(name, junctionPath)
+	mountResponse, err := d.api.VolumeMount(name, junctionPath)
 	if err = GetError(ctx, mountResponse, err); err != nil {
 		return fmt.Errorf("error mounting volume to junction: %v", err)
 	}
@@ -1273,7 +1282,7 @@ func (d OntapAPIZAPI) VolumeMount(ctx context.Context, name, junctionPath string
 }
 
 func (d OntapAPIZAPI) VolumeRename(ctx context.Context, originalName, newName string) error {
-	renameResponse, err := d.API.VolumeRename(originalName, newName)
+	renameResponse, err := d.api.VolumeRename(originalName, newName)
 	if err = GetError(ctx, renameResponse, err); err != nil {
 		Logc(ctx).WithField("originalName", originalName).Errorf("renaming volume failed: %v", err)
 		return fmt.Errorf("volume %s rename failed: %v", originalName, err)
@@ -1282,8 +1291,10 @@ func (d OntapAPIZAPI) VolumeRename(ctx context.Context, originalName, newName st
 	return nil
 }
 
-func (d OntapAPIZAPI) VolumeSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error {
-	modifyCommentResponse, err := d.API.VolumeSetComment(ctx, volumeNameInternal, comment)
+func (d OntapAPIZAPI) VolumeSetComment(
+	ctx context.Context, volumeNameInternal, volumeNameExternal, comment string,
+) error {
+	modifyCommentResponse, err := d.api.VolumeSetComment(ctx, volumeNameInternal, comment)
 	if err = GetError(ctx, modifyCommentResponse, err); err != nil {
 		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Modifying comment failed: %v", err)
 		return fmt.Errorf("volume %s modify failed: %v", volumeNameExternal, err)
@@ -1293,7 +1304,7 @@ func (d OntapAPIZAPI) VolumeSetComment(ctx context.Context, volumeNameInternal, 
 }
 
 func (d OntapAPIZAPI) ExportPolicyCreate(ctx context.Context, policy string) error {
-	policyCreateResponse, err := d.API.ExportPolicyCreate(policy)
+	policyCreateResponse, err := d.api.ExportPolicyCreate(policy)
 	if err != nil {
 		err = fmt.Errorf("error creating export policy %s: %v", policy, err)
 	}
@@ -1308,16 +1319,16 @@ func (d OntapAPIZAPI) ExportPolicyCreate(ctx context.Context, policy string) err
 }
 
 func (d OntapAPIZAPI) VolumeSize(_ context.Context, volumeName string) (uint64, error) {
-	size, err := d.API.VolumeSize(volumeName)
+	size, err := d.api.VolumeSize(volumeName)
 	return uint64(size), err
 }
 
 func (d OntapAPIZAPI) VolumeUsedSize(_ context.Context, volumeName string) (int, error) {
-	return d.API.VolumeUsedSize(volumeName)
+	return d.api.VolumeUsedSize(volumeName)
 }
 
 func (d OntapAPIZAPI) VolumeSetSize(ctx context.Context, name, newSize string) error {
-	volumeSetSizeResponse, err := d.API.VolumeSetSize(name, newSize)
+	volumeSetSizeResponse, err := d.api.VolumeSetSize(name, newSize)
 
 	if volumeSetSizeResponse == nil {
 		if err != nil {
@@ -1336,12 +1347,13 @@ func (d OntapAPIZAPI) VolumeSetSize(ctx context.Context, name, newSize string) e
 	return nil
 }
 
-func (d OntapAPIZAPI) VolumeModifyUnixPermissions(ctx context.Context, volumeNameInternal, volumeNameExternal,
-	unixPermissions string) error {
-	modifyUnixPermResponse, err := d.API.VolumeModifyUnixPermissions(volumeNameInternal, unixPermissions)
+func (d OntapAPIZAPI) VolumeModifyUnixPermissions(
+	ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string,
+) error {
+	modifyUnixPermResponse, err := d.api.VolumeModifyUnixPermissions(volumeNameInternal, unixPermissions)
 	if err = GetError(ctx, modifyUnixPermResponse, err); err != nil {
-		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Could not import volume, "+
-			"modifying unix permissions failed: %v", err)
+		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf(
+			"Could not import volume, modifying unix permissions failed: %v", err)
 		return fmt.Errorf("volume %s modify failed: %v", volumeNameExternal, err)
 	}
 
@@ -1350,7 +1362,7 @@ func (d OntapAPIZAPI) VolumeModifyUnixPermissions(ctx context.Context, volumeNam
 
 func (d OntapAPIZAPI) VolumeListByPrefix(ctx context.Context, prefix string) (Volumes, error) {
 	// Get all volumes matching the storage prefix
-	volumesResponse, err := d.API.VolumeGetAll(prefix)
+	volumesResponse, err := d.api.VolumeGetAll(prefix)
 	if err = GetError(ctx, volumesResponse, err); err != nil {
 		return nil, err
 	}
@@ -1364,15 +1376,36 @@ func (d OntapAPIZAPI) VolumeListByPrefix(ctx context.Context, prefix string) (Vo
 			if err != nil {
 				return nil, err
 			}
-			volumes = append(volumes, *volumeInfo)
+			volumes = append(volumes, volumeInfo)
 		}
 	}
 
 	return volumes, nil
 }
+func (d OntapAPIZAPI) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) (Volumes, error) {
+	aggrs := strings.Join(volumeAttrs.Aggregates, "|")
+	response, err := d.api.VolumeListByAttrs(volumeAttrs.Name, aggrs, volumeAttrs.SpaceReserve,
+		volumeAttrs.SnapshotPolicy, volumeAttrs.TieringPolicy, volumeAttrs.SnapshotDir, volumeAttrs.Encrypt,
+		volumeAttrs.SnapshotReserve)
+	if err = GetError(ctx, response, err); err != nil {
+		return nil, err
+	}
+
+	volumes := Volumes{}
+	if response.Result.AttributesListPtr != nil {
+		for _, volume := range response.Result.AttributesListPtr.VolumeAttributesPtr {
+			volumeInfo, err := VolumeInfoFromZapiAttrsHelper(&volume)
+			if err != nil {
+				return nil, err
+			}
+			volumes = append(volumes, volumeInfo)
+		}
+	}
+	return volumes, nil
+}
 
 func (d OntapAPIZAPI) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRule string) error {
-	ruleResponse, err := d.API.ExportRuleCreate(policyName, desiredPolicyRule,
+	ruleResponse, err := d.api.ExportRuleCreate(policyName, desiredPolicyRule,
 		[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
 	if err = GetError(ctx, ruleResponse, err); err != nil {
 		err = fmt.Errorf("error creating export rule: %v", err)
@@ -1390,10 +1423,9 @@ func (d OntapAPIZAPI) ExportRuleCreate(ctx context.Context, policyName, desiredP
 }
 
 func (d OntapAPIZAPI) ExportRuleDestroy(ctx context.Context, policyName string, ruleIndex int) error {
-	ruleResponse, err := d.API.ExportRuleDestroy(policyName, ruleIndex)
+	ruleResponse, err := d.api.ExportRuleDestroy(policyName, ruleIndex)
 	if err = GetError(ctx, ruleResponse, err); err != nil {
-		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v",
-			policyName, ruleIndex, err)
+		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v", policyName, ruleIndex, err)
 		Logc(ctx).WithFields(log.Fields{
 			"ExportPolicy": policyName,
 			"RuleIndex":    ruleIndex,
@@ -1408,7 +1440,7 @@ func (d OntapAPIZAPI) ExportRuleDestroy(ctx context.Context, policyName string, 
 }
 
 func (d OntapAPIZAPI) VolumeModifyExportPolicy(ctx context.Context, volumeName, policyName string) error {
-	volumeModifyResponse, err := d.API.VolumeModifyExportPolicy(volumeName, policyName)
+	volumeModifyResponse, err := d.api.VolumeModifyExportPolicy(volumeName, policyName)
 	if err = GetError(ctx, volumeModifyResponse, err); err != nil {
 		err = fmt.Errorf("error updating export policy on volume %s: %v", volumeName, err)
 		Logc(ctx).Error(err)
@@ -1423,7 +1455,7 @@ func (d OntapAPIZAPI) VolumeModifyExportPolicy(ctx context.Context, volumeName, 
 }
 
 func (d OntapAPIZAPI) ExportPolicyExists(ctx context.Context, policyName string) (bool, error) {
-	policyGetResponse, err := d.API.ExportPolicyGet(policyName)
+	policyGetResponse, err := d.api.ExportPolicyGet(policyName)
 	if err != nil {
 		err = fmt.Errorf("error getting export policy; %v", err)
 		Logc(ctx).WithField("exportPolicy", policyName).Error(err)
@@ -1444,7 +1476,7 @@ func (d OntapAPIZAPI) ExportPolicyExists(ctx context.Context, policyName string)
 
 func (d OntapAPIZAPI) ExportRuleList(ctx context.Context, policyName string) (map[string]int, error) {
 
-	ruleListResponse, err := d.API.ExportRuleGetIterRequest(policyName)
+	ruleListResponse, err := d.api.ExportRuleGetIterRequest(policyName)
 	if err = GetError(ctx, ruleListResponse, err); err != nil {
 		return nil, fmt.Errorf("error listing export policy rules: %v", err)
 	}
@@ -1461,8 +1493,204 @@ func (d OntapAPIZAPI) ExportRuleList(ctx context.Context, policyName string) (ma
 	return rules, nil
 }
 
+func (d OntapAPIZAPI) QtreeExists(ctx context.Context, name, volumePrefix string) (bool, string, error) {
+	return d.api.QtreeExists(ctx, name, volumePrefix)
+}
+
+func (d OntapAPIZAPI) QtreeCreate(
+	ctx context.Context, name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy string,
+) error {
+	response, err := d.api.QtreeCreate(name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy)
+	return GetError(ctx, response, err)
+}
+
+func (d OntapAPIZAPI) QtreeDestroyAsync(ctx context.Context, path string, force bool) error {
+	response, err := d.api.QtreeDestroyAsync(path, force)
+	return GetError(ctx, response, err)
+}
+
+func (d OntapAPIZAPI) QtreeRename(ctx context.Context, path, newPath string) error {
+	response, err := d.api.QtreeRename(path, newPath)
+	return GetError(ctx, response, err)
+}
+
+func (d OntapAPIZAPI) QtreeModifyExportPolicy(ctx context.Context, name, volumeName, newExportPolicyName string) error {
+	response, err := d.api.QtreeModifyExportPolicy(name, volumeName, newExportPolicyName)
+	return GetError(ctx, response, err)
+}
+
+func (d OntapAPIZAPI) QtreeCount(ctx context.Context, volumeName string) (int, error) {
+	return d.api.QtreeCount(ctx, volumeName)
+}
+
+func (d OntapAPIZAPI) QuotaEntryList(ctx context.Context, volumeName string) (QuotaEntries, error) {
+	response, err := d.api.QuotaEntryList(volumeName)
+	err = GetError(ctx, response, err)
+	if err != nil {
+		return nil, err
+	}
+
+	entries := QuotaEntries{}
+	if response.Result.AttributesListPtr != nil {
+		for _, rule := range response.Result.AttributesListPtr.QuotaEntryPtr {
+			entry, err := d.convertQuota(ctx, rule)
+			if err != nil {
+				continue
+			}
+			entries = append(entries, entry)
+		}
+	}
+	return entries, nil
+}
+
+func (d OntapAPIZAPI) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, quotaType, diskLimit string) error {
+	target := ""
+	// Default quota for flexvol should have no limit and no target
+	if quotaType == "tree" && diskLimit != "" {
+		// For tree type quotas we must use the target and set the qtree to empty string
+		target = fmt.Sprintf("/vol/%s/%s", volumeName, qtreeName)
+		qtreeName = ""
+	}
+
+	response, err := d.api.QuotaSetEntry(qtreeName, volumeName, target, quotaType, diskLimit)
+	if err = GetError(ctx, response, err); err != nil {
+		msg := "error setting quota"
+		Logc(ctx).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+	return nil
+}
+
+func (d OntapAPIZAPI) QuotaStatus(ctx context.Context, volumeName string) (string, error) {
+	statusResponse, err := d.api.QuotaStatus(volumeName)
+	if err = GetError(ctx, statusResponse, err); err != nil {
+		return "", fmt.Errorf("error getting quota status for Flexvol %s: %v", volumeName, err)
+	}
+
+	return statusResponse.Result.Status(), nil
+}
+
+func (d OntapAPIZAPI) QuotaOff(ctx context.Context, volumeName string) error {
+	response, err := d.api.QuotaOff(volumeName)
+	if err = GetError(ctx, response, err); err != nil {
+		msg := "error disabling quota"
+		Logc(ctx).WithError(err).WithField("volume", volumeName).Error(msg)
+		return err
+	}
+	return nil
+}
+
+func (d OntapAPIZAPI) QuotaOn(ctx context.Context, volumeName string) error {
+	response, err := d.api.QuotaOn(volumeName)
+	if err = GetError(ctx, response, err); err != nil {
+		msg := "error enabling quota"
+		Logc(ctx).WithError(err).WithField("volume", volumeName).Error(msg)
+		return err
+	}
+	return nil
+}
+
+func (d OntapAPIZAPI) QuotaResize(ctx context.Context, volumeName string) error {
+	response, err := d.api.QuotaResize(volumeName)
+	err = GetError(ctx, response, err)
+	if zerr, ok := err.(ZapiError); ok {
+		if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
+			return utils.NotFoundError(zerr.Error())
+		}
+	}
+	return err
+}
+
+func (d OntapAPIZAPI) QtreeListByPrefix(ctx context.Context, prefix, volumePrefix string) (Qtrees, error) {
+	listResponse, err := d.api.QtreeList(prefix, volumePrefix)
+	if err = GetError(ctx, listResponse, err); err != nil {
+		msg := fmt.Sprintf("Error listing qtrees. %v", err)
+		Logc(ctx).Errorf(msg)
+		return nil, fmt.Errorf(msg)
+	}
+	qtrees := Qtrees{}
+	if listResponse.Result.AttributesListPtr != nil {
+		for _, qtree := range listResponse.Result.AttributesListPtr.QtreeInfoPtr {
+			qtrees = append(qtrees, d.convertQtree(qtree))
+		}
+	}
+	return qtrees, nil
+}
+
+func (d OntapAPIZAPI) convertQtree(qtree azgo.QtreeInfoType) *Qtree {
+	newQtree := &Qtree{}
+	if qtree.QtreePtr != nil {
+		newQtree.Name = qtree.Qtree()
+	}
+	if qtree.ExportPolicyPtr != nil {
+		newQtree.ExportPolicy = qtree.ExportPolicy()
+	}
+	if qtree.SecurityStylePtr != nil {
+		newQtree.SecurityStyle = qtree.SecurityStyle()
+	}
+	if qtree.VolumePtr != nil {
+		newQtree.Volume = qtree.Volume()
+	}
+	if qtree.VserverPtr != nil {
+		newQtree.Vserver = qtree.Vserver()
+	}
+	if qtree.ModePtr != nil {
+		newQtree.UnixPermissions = qtree.Mode()
+	}
+	return newQtree
+}
+
+func (d OntapAPIZAPI) QtreeGetByName(ctx context.Context, name, volumePrefix string) (*Qtree, error) {
+	qtree, err := d.api.QtreeGet(name, volumePrefix)
+	if err != nil {
+		msg := "error getting qtree"
+		Logc(ctx).WithError(err).Error(msg)
+		return nil, fmt.Errorf(msg)
+	}
+	return d.convertQtree(*qtree), nil
+}
+
+func (d OntapAPIZAPI) QuotaGetEntry(ctx context.Context, volumeName, qtreeName, quotaType string) (*QuotaEntry, error) {
+	target := fmt.Sprintf("/vol/%s", volumeName)
+	if qtreeName != "" {
+		target += fmt.Sprintf("/%s", qtreeName)
+	}
+
+	quota, err := d.api.QuotaGetEntry(target, quotaType)
+	if err != nil {
+		Logc(ctx).WithError(err).Error("error getting quota rule")
+	}
+
+	return d.convertQuota(ctx, *quota)
+}
+
+func (d OntapAPIZAPI) convertQuota(ctx context.Context, quota azgo.QuotaEntryType) (*QuotaEntry, error) {
+	var diskLimit int64
+	var err error
+	if quota.DiskLimitPtr != nil && quota.DiskLimit() != "-" && quota.DiskLimit() != "" {
+		diskLimit, err = strconv.ParseInt(quota.DiskLimit(), 10, 64)
+		if err != nil {
+			msg := fmt.Sprintf("could not parse diskLimit %s", quota.DiskLimit())
+			Logc(ctx).WithError(err).Error(msg)
+			return nil, fmt.Errorf(msg)
+		}
+		diskLimit *= 1024 // Convert from KB to Bytes
+	} else {
+		// No limit
+		diskLimit = -1
+	}
+	quotaEntry := &QuotaEntry{
+		Target:         fmt.Sprintf("/vol/%s", quota.Volume()),
+		DiskLimitBytes: diskLimit,
+	}
+	if quota.QuotaTargetPtr != nil && quota.QuotaTarget() != "" {
+		quotaEntry.Target = quota.QuotaTarget()
+	}
+	return quotaEntry, nil
+}
+
 func (d OntapAPIZAPI) VolumeSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error {
-	snapResponse, err := d.API.SnapshotCreate(snapshotName, sourceVolume)
+	snapResponse, err := d.api.SnapshotCreate(snapshotName, sourceVolume)
 	if err = GetError(ctx, snapResponse, err); err != nil {
 		return fmt.Errorf("error creating snapshot: %v", err)
 	}
@@ -1493,7 +1721,8 @@ func (d OntapAPIZAPI) probeForVolume(ctx context.Context, name string) error {
 
 	// Run the volume check using an exponential backoff
 	if err := backoff.RetryNotify(checkVolumeExists, volumeBackoff, volumeExistsNotify); err != nil {
-		Logc(ctx).WithField("volume", name).Warnf("Could not find volume after %3.2f seconds.", volumeBackoff.MaxElapsedTime.Seconds())
+		Logc(ctx).WithField("volume", name).Warnf("Could not find volume after %3.2f seconds.",
+			volumeBackoff.MaxElapsedTime.Seconds())
 		return fmt.Errorf("volume %v does not exist", name)
 	} else {
 		Logc(ctx).WithField("volume", name).Debug("Volume found.")
@@ -1504,13 +1733,18 @@ func (d OntapAPIZAPI) probeForVolume(ctx context.Context, name string) error {
 func (d OntapAPIZAPI) VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error {
 
 	if async {
-		cloneResponse, err := d.API.VolumeCloneCreateAsync(cloneName, sourceName, snapshot)
-		err = d.API.WaitForAsyncResponse(ctx, cloneResponse, 120*time.Second)
+		cloneResponse, err := d.api.VolumeCloneCreateAsync(cloneName, sourceName, snapshot)
+		if err != nil {
+			msg := "error creating volume clone"
+			Logc(ctx).WithError(err).Error(msg)
+			return errors.New(msg)
+		}
+		err = d.api.WaitForAsyncResponse(ctx, cloneResponse, 120*time.Second)
 		if err != nil {
 			return errors.New("waiting for async response failed")
 		}
 	} else {
-		cloneResponse, err := d.API.VolumeCloneCreate(cloneName, sourceName, snapshot)
+		cloneResponse, err := d.api.VolumeCloneCreate(cloneName, sourceName, snapshot)
 		if err != nil {
 			return fmt.Errorf("error creating clone: %v", err)
 		}
@@ -1538,7 +1772,7 @@ func (d OntapAPIZAPI) VolumeCloneCreate(ctx context.Context, cloneName, sourceNa
 }
 
 func (d OntapAPIZAPI) VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {
-	snapListResponse, err := d.API.SnapshotList(sourceVolume)
+	snapListResponse, err := d.api.SnapshotList(sourceVolume)
 	if err = GetError(ctx, snapListResponse, err); err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
@@ -1560,7 +1794,7 @@ func (d OntapAPIZAPI) VolumeSnapshotList(ctx context.Context, sourceVolume strin
 }
 
 func (d OntapAPIZAPI) VolumeSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) error {
-	qosResponse, err := d.API.VolumeSetQosPolicyGroupName(name, qos)
+	qosResponse, err := d.api.VolumeSetQosPolicyGroupName(name, qos)
 	if err = GetError(ctx, qosResponse, err); err != nil {
 		return fmt.Errorf("error setting quality of service policy: %v", err)
 	}
@@ -1568,7 +1802,7 @@ func (d OntapAPIZAPI) VolumeSetQosPolicyGroupName(ctx context.Context, name stri
 }
 
 func (d OntapAPIZAPI) VolumeCloneSplitStart(ctx context.Context, cloneName string) error {
-	splitResponse, err := d.API.VolumeCloneSplitStart(cloneName)
+	splitResponse, err := d.api.VolumeCloneSplitStart(cloneName)
 	if err = GetError(ctx, splitResponse, err); err != nil {
 		return fmt.Errorf("error splitting clone: %v", err)
 	}
@@ -1576,9 +1810,11 @@ func (d OntapAPIZAPI) VolumeCloneSplitStart(ctx context.Context, cloneName strin
 	return nil
 }
 
-func (d OntapAPIZAPI) SnapshotRestoreVolume(ctx context.Context, snapshotName, sourceVolume string) error {
+func (d OntapAPIZAPI) SnapshotRestoreVolume(
+	ctx context.Context, snapshotName, sourceVolume string,
+) error {
 
-	snapResponse, err := d.API.SnapshotRestoreVolume(snapshotName, sourceVolume)
+	snapResponse, err := d.api.SnapshotRestoreVolume(snapshotName, sourceVolume)
 
 	if err = GetError(ctx, snapResponse, err); err != nil {
 		return fmt.Errorf("error restoring snapshot: %v", err)
@@ -1591,7 +1827,7 @@ func (d OntapAPIZAPI) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName
 }
 
 func (d OntapAPIZAPI) VolumeSnapshotDelete(_ context.Context, snapshotName, sourceVolume string) error {
-	snapResponse, err := d.API.SnapshotDelete(snapshotName, sourceVolume)
+	snapResponse, err := d.api.SnapshotDelete(snapshotName, sourceVolume)
 
 	if err != nil {
 		return fmt.Errorf("error deleting snapshot: %v", err)
@@ -1611,9 +1847,10 @@ func (d OntapAPIZAPI) FlexgroupSnapshotDelete(ctx context.Context, snapshotName,
 	return d.VolumeSnapshotDelete(ctx, snapshotName, sourceVolume)
 }
 
-func (d OntapAPIZAPI) VolumeListBySnapshotParent(ctx context.Context, snapshotName, sourceVolume string) (
-	VolumeNameList, error) {
-	childVolumes, err := d.API.VolumeListAllBackedBySnapshot(ctx, sourceVolume, snapshotName)
+func (d OntapAPIZAPI) VolumeListBySnapshotParent(
+	ctx context.Context, snapshotName, sourceVolume string,
+) (VolumeNameList, error) {
+	childVolumes, err := d.api.VolumeListAllBackedBySnapshot(ctx, sourceVolume, snapshotName)
 
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
@@ -1634,13 +1871,13 @@ func (d OntapAPIZAPI) VolumeListBySnapshotParent(ctx context.Context, snapshotNa
 }
 
 func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) error {
-	snapDeleteResponse, err := d.API.SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName)
+	snapDeleteResponse, err := d.api.SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName)
 	if err != nil && snapDeleteResponse != nil && snapDeleteResponse.Result.ResultErrnoAttr != azgo.EOBJECTNOTFOUND {
 		return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localFlexvolName, err)
 	}
 
 	// Ensure no leftover snapmirror metadata
-	err = d.API.SnapmirrorRelease(localFlexvolName, localSVMName)
+	err = d.api.SnapmirrorRelease(localFlexvolName, localSVMName)
 	if err != nil {
 		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localFlexvolName, err)
 	}
@@ -1649,5 +1886,9 @@ func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMN
 }
 
 func (d OntapAPIZAPI) IsSVMDRCapable(ctx context.Context) (bool, error) {
-	return d.API.IsVserverDRCapable(ctx)
+	return d.api.IsVserverDRCapable(ctx)
+}
+
+func (d OntapAPIZAPI) GetSVMUUID() string {
+	return d.api.SVMUUID()
 }

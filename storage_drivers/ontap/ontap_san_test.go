@@ -7,10 +7,12 @@ import (
 	"net"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	tridentconfig "github.com/netapp/trident/config"
+	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
@@ -22,10 +24,13 @@ func TestOntapSanStorageDriverConfigString(t *testing.T) {
 	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
 	var ontapSanDrivers = []SANStorageDriver{
 
-		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, true),
-		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false),
+		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, true, mockAPI),
+		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, mockAPI),
 	}
 
 	sensitiveIncludeList := map[string]string{
@@ -60,7 +65,9 @@ func TestOntapSanStorageDriverConfigString(t *testing.T) {
 	}
 }
 
-func newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName string, useREST bool) *SANStorageDriver {
+func newTestOntapSANDriver(
+	vserverAdminHost, vserverAdminPort, vserverAggrName string, useREST bool, apiOverride api.OntapAPI,
+) *SANStorageDriver {
 	config := &drivers.OntapStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
 
@@ -88,10 +95,14 @@ func newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName s
 
 	var ontapAPI api.OntapAPI
 
-	if config.UseREST {
-		ontapAPI, _ = api.NewRestClientFromOntapConfig(context.TODO(), config)
+	if apiOverride != nil {
+		ontapAPI = apiOverride
 	} else {
-		ontapAPI, _ = api.NewZAPIClientFromOntapConfig(context.TODO(), config, numRecords)
+		if config.UseREST {
+			ontapAPI, _ = api.NewRestClientFromOntapConfig(context.TODO(), config)
+		} else {
+			ontapAPI, _ = api.NewZAPIClientFromOntapConfig(context.TODO(), config, numRecords)
+		}
 	}
 
 	sanDriver.API = ontapAPI
@@ -261,7 +272,7 @@ func TestOntapSanReconcileNodeAccess(t *testing.T) {
 
 			api.FakeIgroups[driverInfo.igroupName] = igroupsIQNMap
 
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false, nil)
 			sanStorageDriver.Config.IgroupName = driverInfo.igroupName
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
 		}
@@ -338,7 +349,7 @@ func TestOntapSanTerminate(t *testing.T) {
 
 			api.FakeIgroups[driverInfo.igroupName] = igroupsIQNMap
 
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false, nil)
 			sanStorageDriver.Config.IgroupName = driverInfo.igroupName
 			sanStorageDriver.telemetry = nil
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)

@@ -20,6 +20,11 @@ import (
 // swagger:model license_state
 type LicenseState string
 
+func NewLicenseState(value LicenseState) *LicenseState {
+	v := value
+	return &v
+}
+
 const (
 
 	// LicenseStateCompliant captures enum value "compliant"

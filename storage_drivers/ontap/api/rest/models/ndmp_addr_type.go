@@ -19,6 +19,11 @@ import (
 // swagger:model ndmp_addr_type
 type NdmpAddrType string
 
+func NewNdmpAddrType(value NdmpAddrType) *NdmpAddrType {
+	v := value
+	return &v
+}
+
 const (
 
 	// NdmpAddrTypeLocal captures enum value "local"

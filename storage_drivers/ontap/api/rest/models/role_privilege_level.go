@@ -20,6 +20,11 @@ import (
 // swagger:model role_privilege_level
 type RolePrivilegeLevel string
 
+func NewRolePrivilegeLevel(value RolePrivilegeLevel) *RolePrivilegeLevel {
+	v := value
+	return &v
+}
+
 const (
 
 	// RolePrivilegeLevelNone captures enum value "none"

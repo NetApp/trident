@@ -20,6 +20,11 @@ import (
 // swagger:model ip_service
 type IPService string
 
+func NewIPService(value IPService) *IPService {
+	v := value
+	return &v
+}
+
 const (
 
 	// IPServiceClusterCore captures enum value "cluster_core"

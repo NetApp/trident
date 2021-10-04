@@ -238,7 +238,7 @@ func (d *NASStorageDriver) Create(
 	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes()[Size])
 
 	// Get the flexvol size based on the snapshot reserve
-	flexvolSize := calculateFlexvolSize(ctx, name, sizeBytes, snapshotReserveInt)
+	flexvolSize := calculateFlexvolSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
 	if err != nil {
 		return err
 	}
@@ -927,7 +927,7 @@ func (d *NASStorageDriver) Resize(
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
 	}
 
-	newFlexvolSize := calculateFlexvolSize(ctx, name, requestedSizeBytes, snapshotReserveInt)
+	newFlexvolSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
 		ctx, name, newFlexvolSize, d.Config, d.GetAPI(),

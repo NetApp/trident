@@ -232,6 +232,11 @@ def remove_extra_fields_for_snmp_user_definition(d):
     d["definitions"]["snmp_user"]["properties"]["scope"].pop("example")
     d["definitions"]["snmp_user"]["properties"]["scope"].pop("readOnly")
 
+def fix_qtree_name_empty(d):
+    # Qtree name must be sent, even if ""
+    d["definitions"]["quota_rule"]["properties"]["qtree"]["properties"]["name"]["x-omitempty"] = False
+
+
 def add_unique_types_for_properties(d):
     d["definitions"]["application"]["properties"]["template"]["x-go-name"] = "ApplicationTemplateType"
 
@@ -584,6 +589,7 @@ with open('swagger_full.yaml') as input_file:
     remove_extra_fields_for_snmp_user_definition(dataMap)
     add_unique_types_for_properties(dataMap)
     make_volume_nas_path_nillable(dataMap)
+    fix_qtree_name_empty(dataMap)
 
     walk(dataMap)
 

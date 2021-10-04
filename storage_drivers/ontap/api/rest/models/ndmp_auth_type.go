@@ -19,6 +19,11 @@ import (
 // swagger:model ndmp_auth_type
 type NdmpAuthType string
 
+func NewNdmpAuthType(value NdmpAuthType) *NdmpAuthType {
+	v := value
+	return &v
+}
+
 const (
 
 	// NdmpAuthTypePlaintext captures enum value "plaintext"

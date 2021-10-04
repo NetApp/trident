@@ -170,7 +170,8 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
-	if err := ValidateStoragePoolsAbstraction(ctx, d.physicalPools, d.virtualPools, d, api.MaxSANLabelLength); err != nil {
+	if err := ValidateStoragePoolsAbstraction(ctx, d.physicalPools, d.virtualPools, d,
+		api.MaxSANLabelLength); err != nil {
 		return fmt.Errorf("storage pool validation failed: %v", err)
 	}
 
@@ -264,7 +265,7 @@ func (d *SANStorageDriver) Create(
 	}
 	lunSize := strconv.FormatUint(lunSizeBytes, 10)
 	// Get the flexvol size based on the snapshot reserve
-	flexvolSize := calculateFlexvolSize(ctx, name, lunSizeBytes, snapshotReserveInt)
+	flexvolSize := calculateFlexvolSizeBytes(ctx, name, lunSizeBytes, snapshotReserveInt)
 	// Add extra 10% to the Flexvol to account for LUN metadata
 	flexvolBufferSize := uint64(LUNMetadataBufferMultiplier * float64(flexvolSize))
 
@@ -341,8 +342,8 @@ func (d *SANStorageDriver) Create(
 		// Create the volume
 		err = d.API.VolumeCreate(
 			ctx, api.Volume{
-				AccessType:      "",
-				Aggregates:      []string{
+				AccessType: "",
+				Aggregates: []string{
 					aggregate,
 				},
 				Comment:         labels,
@@ -581,13 +582,13 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 	}
 
 	// Ensure the volume has only one LUN
-	lunInfo, err := d.API.LunGetByName(ctx, "/vol/" + originalName + "/*")
+	lunInfo, err := d.API.LunGetByName(ctx, "/vol/"+originalName+"/*")
 	if err != nil {
 		return err
 	} else if lunInfo == nil {
 		return fmt.Errorf("lun not found in volume %s", originalName)
 	}
-		targetPath := "/vol/" + originalName + "/lun0"
+	targetPath := "/vol/" + originalName + "/lun0"
 
 	// The LUN should be online
 	if lunInfo.State != "online" {
@@ -984,7 +985,8 @@ func (d *SANStorageDriver) mapOntapSANLun(ctx context.Context, volConfig *storag
 		return err
 	}
 
-	err = PopulateOntapLunMappingAbstraction(ctx, d.API, &d.Config, d.ips, volConfig, lunID, lunPath, d.Config.IgroupName)
+	err = PopulateOntapLunMappingAbstraction(ctx, d.API, &d.Config, d.ips, volConfig, lunID, lunPath,
+		d.Config.IgroupName)
 	if err != nil {
 		return fmt.Errorf("error mapping LUN for %s driver: %v", d.Name(), err)
 	}
@@ -1053,7 +1055,7 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 	if volumes != nil {
 		for _, volumeAttrs := range volumes {
 			internalName := volumeAttrs.Name
-			volumeMap[internalName] = volumeAttrs
+			volumeMap[internalName] = *volumeAttrs
 		}
 	}
 
@@ -1185,7 +1187,7 @@ func (d *SANStorageDriver) Resize(
 
 	currentLunSize, err := d.API.LunSize(ctx, name)
 	if err != nil {
-		return fmt.Errorf("error occured when checking lun size")
+		return fmt.Errorf("error occurred when checking lun size")
 	}
 
 	lunSizeBytes := uint64(currentLunSize)
@@ -1198,7 +1200,7 @@ func (d *SANStorageDriver) Resize(
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
 	}
 
-	newFlexvolSize := calculateFlexvolSize(ctx, name, requestedSizeBytes, snapshotReserveInt)
+	newFlexvolSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 	newFlexvolSize = uint64(LUNMetadataBufferMultiplier * float64(newFlexvolSize))
 
 	sameLUNSize, err := utils.VolumeSizeWithinTolerance(int64(requestedSizeBytes), int64(currentLunSize),

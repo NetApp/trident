@@ -684,7 +684,7 @@ type QuotaRuleQtree struct {
 
 	// The name of the qtree.
 	// Example: qt1
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 }
 
 // Validate validates this quota rule qtree

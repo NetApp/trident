@@ -75,12 +75,14 @@ func TestCHAP1(t *testing.T) {
 
 	// start off missing all 4 values and validate that it generates an error
 	_, err = ValidateBidrectionalChapCredentials(defaultAuthNone, config)
-	assert.EqualError(t, err, "missing value for required field(s) [ChapUsername ChapInitiatorSecret ChapTargetUsername ChapTargetInitiatorSecret]")
+	assert.EqualError(t, err,
+		"missing value for required field(s) [ChapUsername ChapInitiatorSecret ChapTargetUsername ChapTargetInitiatorSecret]")
 
 	// add a specific ChapUsername
 	config.ChapUsername = "unchanged ChapUsername"
 	_, err = ValidateBidrectionalChapCredentials(defaultAuthNone, config)
-	assert.EqualError(t, err, "missing value for required field(s) [ChapInitiatorSecret ChapTargetUsername ChapTargetInitiatorSecret]")
+	assert.EqualError(t, err,
+		"missing value for required field(s) [ChapInitiatorSecret ChapTargetUsername ChapTargetInitiatorSecret]")
 
 	// add a specific ChapInitiatorSecret
 	config.ChapUsername = "unchanged ChapUsername"
@@ -157,7 +159,8 @@ func TestCHAP4(t *testing.T) {
 
 	// start off missing all 4 values and validate that it generates an error
 	_, err = ValidateBidrectionalChapCredentials(defaultAuthCHAP, config)
-	assert.EqualError(t, err, "missing value for required field(s) [ChapUsername ChapInitiatorSecret ChapTargetUsername ChapTargetInitiatorSecret]")
+	assert.EqualError(t, err,
+		"missing value for required field(s) [ChapUsername ChapInitiatorSecret ChapTargetUsername ChapTargetInitiatorSecret]")
 
 	// add a specific ChapTargetInitiatorSecret
 	config.ChapUsername = "aChapUsername"
@@ -326,7 +329,7 @@ func TestOntapCalculateFlexvolSize(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			flexvolSize := calculateFlexvolSize(context.Background(), test.flexvol, test.requestedSize,
+			flexvolSize := calculateFlexvolSizeBytes(context.Background(), test.flexvol, test.requestedSize,
 				test.percentageSnapshotReserve)
 			assert.Equal(t, test.expectedFlexvolSize, flexvolSize)
 		})
@@ -399,7 +402,7 @@ func TestOntapSanInitializeDriverIgroupNameCSI(t *testing.T) {
 			2. CSI driver context
 			3. the config's backendUUID is set to a unique string
 			*/
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false, nil)
 			sanStorageDriver.Config.IgroupName = igroupName
 			sanStorageDriver.Config.DriverContext = tridentconfig.ContextCSI
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
@@ -575,7 +578,7 @@ func TestOntapSanInitializeDriverIgroupNameDocker(t *testing.T) {
 			2. CSI driver context
 			3. the config's backendUUID is set to a unique string
 			*/
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false, nil)
 			sanStorageDriver.Config.IgroupName = igroupName
 			sanStorageDriver.Config.DriverContext = tridentconfig.ContextDocker
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)

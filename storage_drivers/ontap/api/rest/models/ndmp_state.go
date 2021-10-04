@@ -19,6 +19,11 @@ import (
 // swagger:model ndmp_state
 type NdmpState string
 
+func NewNdmpState(value NdmpState) *NdmpState {
+	v := value
+	return &v
+}
+
 const (
 
 	// NdmpStateActive captures enum value "active"

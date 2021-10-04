@@ -12,29 +12,29 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 )
 
-////////////////////////////////////////////////////////////////////////////////////////////
-///             _____________________
-///            |   <<Interface>>    |
-///            |       ONTAPI       |
-///            |____________________|
-///                ^             ^
-///     Implements |             | Implements
-///   ____________________    ____________________
-///  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
-///  |___________________|   |___________________|
-///  | +API: RestClient  |   | +API: *Client     |
-///  |___________________|   |___________________|
-///
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
+// /             _____________________
+// /            |   <<Interface>>    |
+// /            |       ONTAPI       |
+// /            |____________________|
+// /                ^             ^
+// /     Implements |             | Implements
+// /   ____________________    ____________________
+// /  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
+// /  |___________________|   |___________________|
+// /  | +API: RestClient  |   | +API: *Client     |
+// /  |___________________|   |___________________|
+// /
+// //////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
 // Drivers that offer dual support are to call ONTAP REST or ZAPI's
 // via abstraction layer (ONTAPI interface)
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////////
 // Abstraction layer
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const (
 	failureLUNCreate  = "failure_65dc2f4b_adbe_4ed3_8b73_6c61d5eac054"
@@ -44,8 +44,10 @@ const (
 type OntapAPI interface {
 	APIVersion(context.Context) (string, error)
 
-	EmsAutosupportLog(ctx context.Context, driverName string, appVersion string, autoSupport bool, category string,
-		computerName string, eventDescription string, eventID int, eventSource string, logLevel int)
+	EmsAutosupportLog(
+		ctx context.Context, driverName string, appVersion string, autoSupport bool, category string,
+		computerName string, eventDescription string, eventID int, eventSource string, logLevel int,
+	)
 
 	ExportPolicyCreate(ctx context.Context, policy string) error
 	ExportPolicyDestroy(ctx context.Context, policy string) error
@@ -59,7 +61,9 @@ type OntapAPI interface {
 	FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error)
 	FlexgroupDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error
 	FlexgroupSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error
-	FlexgroupModifyUnixPermissions(ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string) error
+	FlexgroupModifyUnixPermissions(
+		ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string,
+	) error
 	FlexgroupMount(ctx context.Context, name, junctionPath string) error
 	FlexgroupListByPrefix(ctx context.Context, prefix string) (Volumes, error)
 	FlexgroupDestroy(ctx context.Context, volumeName string, force bool) error
@@ -90,8 +94,10 @@ type OntapAPI interface {
 	LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) ([]string, error)
 
 	IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiInitiatorAuth, error)
-	IscsiInitiatorSetDefaultAuth(ctx context.Context, authType, userName, passphrase, outbountUserName,
-		outboundPassphrase string) error
+	IscsiInitiatorSetDefaultAuth(
+		ctx context.Context, authType, userName, passphrase, outbountUserName,
+		outboundPassphrase string,
+	) error
 	IscsiInterfaceGet(ctx context.Context, svm string) ([]string, error)
 	IscsiNodeGetNameRequest(ctx context.Context) (string, error)
 
@@ -105,6 +111,27 @@ type OntapAPI interface {
 	GetSVMAggregateNames(ctx context.Context) ([]string, error)
 	GetSVMAggregateSpace(ctx context.Context, aggregate string) ([]SVMAggregateSpace, error)
 
+	GetSVMUUID() string
+
+	QtreeExists(ctx context.Context, name, volumePrefix string) (bool, string, error)
+	QtreeCreate(
+		ctx context.Context, name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy string,
+	) error
+	QtreeDestroyAsync(ctx context.Context, path string, force bool) error
+	QtreeRename(ctx context.Context, path, newPath string) error
+	QtreeModifyExportPolicy(ctx context.Context, name, volumeName, newExportPolicyName string) error
+	QtreeCount(ctx context.Context, volumeName string) (int, error)
+	QtreeListByPrefix(ctx context.Context, prefix, volumePrefix string) (Qtrees, error)
+	QtreeGetByName(ctx context.Context, name, volumePrefix string) (*Qtree, error)
+
+	QuotaEntryList(ctx context.Context, volumeName string) (QuotaEntries, error)
+	QuotaOff(ctx context.Context, volumeName string) error
+	QuotaOn(ctx context.Context, volumeName string) error
+	QuotaResize(ctx context.Context, volumeName string) error
+	QuotaStatus(ctx context.Context, volumeName string) (string, error)
+	QuotaSetEntry(ctx context.Context, qtreeName, volumeName, quotaType, diskLimit string) error
+	QuotaGetEntry(ctx context.Context, volumeName, qtreeName, quotaType string) (*QuotaEntry, error)
+
 	GetReportedDataLifs(ctx context.Context) (string, []string, error)
 	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
@@ -117,20 +144,36 @@ type OntapAPI interface {
 	JobScheduleExists(ctx context.Context, jobName string) (bool, error)
 	GetPeeredVservers(ctx context.Context) ([]string, error)
 	VolumeGetType(name string) (string, error)
-	SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorGetResponse, error)
-	SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (*azgo.SnapmirrorCreateResponse, error)
-	SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorInitializeResponse, error)
-	SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorResyncResponse, error)
-	SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorDestroyResponse, error)
-	SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorQuiesceResponse, error)
-	SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorAbortResponse, error)
-	SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorBreakResponse, error)
+	SnapmirrorGet(
+		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	) (*azgo.SnapmirrorGetResponse, error)
+	SnapmirrorCreate(
+		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string,
+	) (*azgo.SnapmirrorCreateResponse, error)
+	SnapmirrorInitialize(
+		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	) (*azgo.SnapmirrorInitializeResponse, error)
+	SnapmirrorResync(
+		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	) (*azgo.SnapmirrorResyncResponse, error)
+	SnapmirrorDelete(
+		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	) (*azgo.SnapmirrorDestroyResponse, error)
+	SnapmirrorQuiesce(
+		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	) (*azgo.SnapmirrorQuiesceResponse, error)
+	SnapmirrorAbort(
+		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	) (*azgo.SnapmirrorAbortResponse, error)
+	SnapmirrorBreak(
+		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	) (*azgo.SnapmirrorBreakResponse, error)
 
 	SnapshotRestoreVolume(ctx context.Context, snapshotName, sourceVolume string) error
 	SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, sourceVolume string) error
 	SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 
-	SupportsFeature(ctx context.Context, feature feature) bool
+	SupportsFeature(ctx context.Context, feature Feature) bool
 	ValidateAPIVersion(ctx context.Context) error
 
 	VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error
@@ -144,8 +187,11 @@ type OntapAPI interface {
 	VolumeListByPrefix(ctx context.Context, prefix string) (Volumes, error)
 	VolumeListBySnapshotParent(ctx context.Context, snapshotName, sourceVolume string) (VolumeNameList, error)
 	VolumeModifyExportPolicy(ctx context.Context, volumeName, policyName string) error
-	VolumeModifyUnixPermissions(ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string) error
+	VolumeModifyUnixPermissions(
+		ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string,
+	) error
 	VolumeMount(ctx context.Context, name, junctionPath string) error
+	VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) (Volumes, error)
 	VolumeRename(ctx context.Context, originalName, newName string) error
 	VolumeSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error
 	VolumeSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) error

@@ -1222,7 +1222,7 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 			return nil, fmt.Errorf("error reading SVM details: %v", err)
 		}
 
-		client.SVMUUID = vserverResponse.Result.AttributesPtr.VserverInfoPtr.Uuid()
+		client.SetSVMUUID(vserverResponse.Result.AttributesPtr.VserverInfoPtr.Uuid())
 
 		Logc(ctx).WithField("SVM", config.SVM).Debug("Using specified SVM.")
 		return client, nil
@@ -1253,7 +1253,7 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 		DriverContext:        config.DriverContext,
 		DebugTraceFlags:      config.DebugTraceFlags,
 	})
-	client.SVMUUID = svmUUID
+	client.SetSVMUUID(svmUUID)
 
 	Logc(ctx).WithField("SVM", config.SVM).Debug("Using derived SVM.")
 	return client, nil
@@ -3090,20 +3090,20 @@ func calculateEconomyFlexvolSize(
 	return flexvolSizeBytes
 }
 
-// calculateFlexvolSize calculates the size of the Flexvol taking into account the snapshot reserve
-func calculateFlexvolSize(
-	ctx context.Context, flexvol string, requestedSize uint64, snapshotReserve int,
+// calculateFlexvolSizeBytes calculates the size of the Flexvol taking into account the snapshot reserve
+func calculateFlexvolSizeBytes(
+	ctx context.Context, flexvol string, requestedSizeBytes uint64, snapshotReserve int,
 ) uint64 {
 	snapReserveDivisor := 1.0 - (float64(snapshotReserve) / 100.0)
 
-	sizeWithSnapReserve := float64(requestedSize) / snapReserveDivisor
+	sizeWithSnapReserve := float64(requestedSizeBytes) / snapReserveDivisor
 
 	flexvolSizeBytes := uint64(sizeWithSnapReserve)
 
 	Logc(ctx).WithFields(log.Fields{
 		"flexvol":             flexvol,
 		"snapReserveDivisor":  snapReserveDivisor,
-		"requestedSize":       requestedSize,
+		"requestedSize":       requestedSizeBytes,
 		"sizeWithSnapReserve": sizeWithSnapReserve,
 		"flexvolSizeBytes":    flexvolSizeBytes,
 	}).Debug("Calculated optimal size for Flexvol with snapshot reserve.")

@@ -19,6 +19,11 @@ import (
 // swagger:model metrocluster_diag_state
 type MetroclusterDiagState string
 
+func NewMetroclusterDiagState(value MetroclusterDiagState) *MetroclusterDiagState {
+	v := value
+	return &v
+}
+
 const (
 
 	// MetroclusterDiagStateOk captures enum value "ok"
