@@ -37,13 +37,6 @@ NetApp recommends customers consume sub-1TiB volumes for **non-production** work
  volumes using `this <https://docs.google.com/forms/d/e/1FAIpQLSc7_euiPtlV8bhsKWvwBl3gm9KUL4kOhD7lnbHC3LlQ7m02Dw/viewform>`_
  form.
 
-Volumes created by Trident for the default CVS service level will be provisioned as follows:
-
-1. PVCs that are smaller than 300 GiB will result in Trident creating a 300 GiB CVS volume.
-2. PVCs that are between 300 GiB to 600 GiB will result in Trident creating a CVS volume of the requested size.
-3. PVCs that are between 600 GiB and 1 TiB will result in Trident creating a 1TiB CVS volume.
-4. PVCs that are greater than 1 TiB will result in Trident creating a CVS volume of the requested size.
-
 Backend configuration options
 -----------------------------
 

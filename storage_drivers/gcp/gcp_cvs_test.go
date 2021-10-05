@@ -150,47 +150,27 @@ func TestApplyMinimumVolumeSizeSW(t *testing.T) {
 		{
 			Name:               "size 1",
 			RequestedSizeBytes: 1,
-			SizeBytes:          MinimumCVSVolumeSizeBytesSWLowRange,
+			SizeBytes:          MinimumCVSVolumeSizeBytesSW,
 		},
 		{
-			Name:               "size just below low range",
-			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSWLowRange - 1,
-			SizeBytes:          MinimumCVSVolumeSizeBytesSWLowRange,
+			Name:               "size smaller than minimum",
+			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSW - 1,
+			SizeBytes:          MinimumCVSVolumeSizeBytesSW,
 		},
 		{
-			Name:               "size at bottom end of low range",
-			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSWLowRange,
-			SizeBytes:          MinimumCVSVolumeSizeBytesSWLowRange,
+			Name:               "size equals minimum",
+			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSW,
+			SizeBytes:          MinimumCVSVolumeSizeBytesSW,
 		},
 		{
-			Name:               "size in low range",
-			RequestedSizeBytes: (MinimumCVSVolumeSizeBytesSWLowRange + MaximumCVSVolumeSizeBytesSWLowRange) / 2,
-			SizeBytes:          (MinimumCVSVolumeSizeBytesSWLowRange + MaximumCVSVolumeSizeBytesSWLowRange) / 2,
+			Name:               "size just above minimum",
+			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSW + 1,
+			SizeBytes:          MinimumCVSVolumeSizeBytesSW + 1,
 		},
 		{
-			Name:               "size at top end of low range",
-			RequestedSizeBytes: MaximumCVSVolumeSizeBytesSWLowRange,
-			SizeBytes:          MaximumCVSVolumeSizeBytesSWLowRange,
-		},
-		{
-			Name:               "size just above low range",
-			RequestedSizeBytes: MaximumCVSVolumeSizeBytesSWLowRange + 1,
-			SizeBytes:          MinimumCVSVolumeSizeBytesSWHighRange,
-		},
-		{
-			Name:               "size just below high range",
-			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSWHighRange - 1,
-			SizeBytes:          MinimumCVSVolumeSizeBytesSWHighRange,
-		},
-		{
-			Name:               "size at bottom end of high range",
-			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSWHighRange,
-			SizeBytes:          MinimumCVSVolumeSizeBytesSWHighRange,
-		},
-		{
-			Name:               "size in high range",
-			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSWHighRange + 1,
-			SizeBytes:          MinimumCVSVolumeSizeBytesSWHighRange + 1,
+			Name:               "size well above minimum",
+			RequestedSizeBytes: MinimumCVSVolumeSizeBytesSW * 3,
+			SizeBytes:          MinimumCVSVolumeSizeBytesSW * 3,
 		},
 	}
 
@@ -243,43 +223,6 @@ func TestApplyMinimumVolumeSizeHW(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			sizeBytes := d.applyMinimumVolumeSizeHW(test.RequestedSizeBytes)
 			assert.Equal(t, test.SizeBytes, sizeBytes, "incorrect size")
-		})
-	}
-}
-
-func TestValidateVolumeResizeSW(t *testing.T) {
-	tests := []struct {
-		Name             string
-		CurrentSizeBytes uint64
-		NewSizeBytes     uint64
-		ExpectedResult   bool
-	}{
-		{
-			Name:             "sizes within low range",
-			CurrentSizeBytes: MinimumCVSVolumeSizeBytesSWLowRange,
-			NewSizeBytes:     MaximumCVSVolumeSizeBytesSWLowRange,
-			ExpectedResult:   true,
-		},
-		{
-			Name:             "sizes escape low range",
-			CurrentSizeBytes: MaximumCVSVolumeSizeBytesSWLowRange,
-			NewSizeBytes:     MaximumCVSVolumeSizeBytesSWLowRange + 1,
-			ExpectedResult:   false,
-		},
-		{
-			Name:             "sizes within high range",
-			CurrentSizeBytes: MinimumCVSVolumeSizeBytesSWHighRange,
-			NewSizeBytes:     MinimumCVSVolumeSizeBytesSWHighRange + 1,
-			ExpectedResult:   true,
-		},
-	}
-
-	d := NFSStorageDriver{}
-
-	for _, test := range tests {
-		t.Run(test.Name, func(t *testing.T) {
-			result := d.validateVolumeResizeSW(test.CurrentSizeBytes, test.NewSizeBytes)
-			assert.Equal(t, test.ExpectedResult, result, "incorrect validation result")
 		})
 	}
 }
