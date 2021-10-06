@@ -10,6 +10,7 @@ GOLANGCI-LINT_VERSION ?= v1.31.0
 TRIDENT_VOLUME = trident_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
+OPERATOR_CONFIG_PKG = github.com/netapp/trident/operator/config
 TRIDENT_KUBERNETES_PKG = github.com/netapp/trident/persistent_store/crd
 VERSION_FILE = github.com/netapp/trident/hack/VERSION
 K8S_CODE_GENERATOR = code-generator-kubernetes-1.18.2
@@ -94,7 +95,7 @@ DEFAULT_TRIDENT_OPERATOR_IMAGE := ${DEFAULT_TRIDENT_OPERATOR_REPO}:${DEFAULT_TRI
 OPERATOR_DIST_TAG := ${DIST_REGISTRY}/${OPERATOR_IMAGE}:${TRIDENT_VERSION}
 
 # Go compiler flags need to be properly encapsulated with double quotes to handle spaces in values
-BUILD_FLAGS = "-s -w -X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${TRIDENT_CONFIG_PKG}.BuildImage=$(TRIDENT_DIST_TAG)\""
+BUILD_FLAGS = "-s -w -X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${TRIDENT_CONFIG_PKG}.BuildImage=$(TRIDENT_DIST_TAG)\" -X \"${OPERATOR_CONFIG_PKG}.BuildImage=$(OPERATOR_DIST_TAG)\""
 
 ## Trident build targets
 

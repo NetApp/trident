@@ -15,6 +15,7 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
+	operatorconfig "github.com/netapp/trident/operator/config"
 	"github.com/netapp/trident/utils"
 )
 
@@ -47,6 +48,9 @@ var getImageCmd = &cobra.Command{
 			TunnelCommand(append(command, args...))
 			return nil
 		} else {
+
+			log.SetLevel(log.WarnLevel)
+
 			// Create the Kubernetes client
 			var err error
 			if client, err = initClient(); err != nil {
@@ -136,7 +140,9 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 }
 
 func getImageNames(yaml string) []string {
+
 	var images []string
+
 	lines := strings.Split(yaml, "\n")
 	// don't get images that are empty strings
 	imageRegex := regexp.MustCompile(`\s*image:\s*(.*)`)
@@ -150,6 +156,15 @@ func getImageNames(yaml string) []string {
 			}
 		}
 	}
+
+	// Add operator image
+	switch OutputFormat {
+	case FormatJSON, FormatYAML:
+		images = append(images, operatorconfig.BuildImage)
+	default:
+		images = append(images, operatorconfig.BuildImage+" (optional)")
+	}
+
 	return images
 }
 
@@ -175,6 +190,7 @@ func writeImages(k8sVersions []string, imageMap map[string][]string) {
 
 func writeImageTable(k8sVersions []string, imageMap map[string][]string) {
 	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAutoWrapText(false)
 	table.SetHeader([]string{"Kubernetes Version", "Container Image"})
 	if OutputFormat == FormatMarkdown {
 		// print in markdown table format

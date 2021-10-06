@@ -12,6 +12,7 @@
 **Enhancements:**
 - **Kubernetes:** Added support for Kubernetes 1.22.
 - **Kubernetes:** Enabled the Trident operator and Helm chart to work with Kubernetes 1.22 (Issue [#628](https://github.com/NetApp/trident/issues/628)).
+- **Kubernetes:** Added operator image to tridentctl images command (Issue [#570](https://github.com/NetApp/trident/issues/570)).
 
 **Experimental Enhancements:**
 
