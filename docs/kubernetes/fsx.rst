@@ -81,7 +81,6 @@ Configuration
     "storageDriverName": "ontap-san",
     "backendName": "customBackendName",
     "managementLIF": "svm-XXXXXXXXXXXXXXXXX.fs-XXXXXXXXXXXXXXXXX.fsx.us-east-2.aws.internal",
-    "dataLIF": "iscsi.svm-XXXXXXXXXXXXXXXXX.fs-XXXXXXXXXXXXXXXXX.fsx.us-east-2.aws.internal",
     "svm": "svm01",
     "clientCertificate": "ZXR0ZXJwYXB...ICMgJ3BhcGVyc2",
     "clientPrivateKey": "vciwKIyAgZG...0cnksIGRlc2NyaX",
@@ -91,6 +90,10 @@ Configuration
 .. note::
 
   Ensure that you follow the `node preparation steps <https://netapp-trident.readthedocs.io/en/stable-v21.07/kubernetes/operations/tasks/worker.html>`_ required for Amazon Linux and Ubuntu `Amazon Machine Images (AMIs) <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html>`_ depending on your EKS AMI type.
+
+.. note::
+
+  We recommend not setting the ``dataLIF`` for the ``ontap-san`` and ``ontap-san-economy`` drivers to allow Trident to use multipath.
 
 .. warning::
 
