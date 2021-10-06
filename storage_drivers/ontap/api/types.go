@@ -100,3 +100,69 @@ type QuotaEntry struct {
 	DiskLimitBytes int64
 }
 type QuotaEntries []*QuotaEntry
+
+const (
+	SnapmirrorPolicyRuleAll = "all_source_snapshots"
+)
+
+type SnapmirrorState string
+
+const (
+	SnapmirrorStateUninitialized = SnapmirrorState("uninitialized")
+	SnapmirrorStateSnapmirrored  = SnapmirrorState("snapmirrored")
+	SnapmirrorStateBroken        = SnapmirrorState("broken-off")
+)
+
+func (s SnapmirrorState) IsUninitialized() bool {
+	return s == SnapmirrorStateUninitialized
+}
+
+type SnapmirrorStatus string
+
+const (
+	SnapmirrorStatusIdle         = SnapmirrorStatus("idle")
+	SnapmirrorStatusAborting     = SnapmirrorStatus("aborting")
+	SnapmirrorStatusBreaking     = SnapmirrorStatus("breaking")
+	SnapmirrorStatusQuiescing    = SnapmirrorStatus("quiescing")
+	SnapmirrorStatusTransferring = SnapmirrorStatus("transferring")
+)
+
+func (s SnapmirrorStatus) IsAborting() bool {
+	return s == SnapmirrorStatusAborting
+}
+
+func (s SnapmirrorStatus) IsIdle() bool {
+	return s == SnapmirrorStatusIdle
+}
+
+func (s SnapmirrorStatus) IsBreaking() bool {
+	return s == SnapmirrorStatusBreaking
+}
+
+type Snapmirror struct {
+	State              SnapmirrorState
+	RelationshipStatus SnapmirrorStatus
+	LastTransferType   string
+	IsHealthy          bool
+	UnhealthyReason    string
+}
+
+type SnapmirrorPolicyType string
+
+const (
+	SnapmirrorPolicyTypeSync  = SnapmirrorPolicyType("sync_mirror")
+	SnapmirrorPolicyTypeAsync = SnapmirrorPolicyType("async_mirror")
+)
+
+type SnapmirrorPolicy struct {
+	Type  SnapmirrorPolicyType
+	Rules map[string]struct{}
+}
+
+func (s SnapmirrorPolicyType) IsSnapmirrorPolicyTypeSync() bool {
+	return s == SnapmirrorPolicyTypeSync
+}
+
+func (s SnapmirrorPolicyType) IsSnapmirrorPolicyTypeAsync() bool {
+	return s == SnapmirrorPolicyTypeAsync
+}

@@ -110,3 +110,67 @@ func IsSnapshotBusyError(err error) bool {
 	_, ok := err.(*snapshotBusyError)
 	return ok
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// ApiError
+/////////////////////////////////////////////////////////////////////////////
+
+type apiError struct {
+	message string
+}
+
+func (e *apiError) Error() string { return e.message }
+
+func ApiError(message string) error {
+	return &apiError{message}
+}
+
+func IsApiError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*apiError)
+	return ok
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// notFoundError
+/////////////////////////////////////////////////////////////////////////////
+type notFoundError struct {
+	message string
+}
+
+func (e *notFoundError) Error() string { return e.message }
+
+func NotFoundError(message string) error {
+	return &notFoundError{message}
+}
+
+func IsNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*notFoundError)
+	return ok
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// snapmirrorTransferInProgress
+/////////////////////////////////////////////////////////////////////////////
+type snapmirrorTransferInProgress struct {
+	message string
+}
+
+func (e *snapmirrorTransferInProgress) Error() string { return e.message }
+
+func SnapmirrorTransferInProgress(message string) error {
+	return &snapmirrorTransferInProgress{message}
+}
+
+func IsSnapmirrorTransferInProgress(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*snapmirrorTransferInProgress)
+	return ok
+}

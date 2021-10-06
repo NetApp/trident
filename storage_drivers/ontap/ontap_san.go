@@ -158,7 +158,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
 	}
 
-	if err := ValidateReplicationConfigAbstraction(ctx, &d.Config, d.API); err != nil {
+	if err := validateReplicationConfig(ctx, d.Config.ReplicationPolicy, d.Config.ReplicationSchedule, d.API); err != nil {
 		return fmt.Errorf("replication validation failed: %v", err)
 	}
 
@@ -209,7 +209,7 @@ func (d *SANStorageDriver) Create(
 
 	// If volume shall be mirrored, check that the SVM is peered with the other side
 	if volConfig.PeerVolumeHandle != "" {
-		if err = checkSVMPeeredAbstraction(ctx, volConfig, d.GetAPI(), d.GetConfig()); err != nil {
+		if err = checkSVMPeeredAbstraction(ctx, volConfig, d.GetConfig().SVM, d.API); err != nil {
 			return err
 		}
 	}
@@ -713,15 +713,10 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, name string) error {
 	}
 
 	// If flexvol has been a snapmirror destination
-	err = d.API.SnapmirrorDeleteViaDestination(name, d.Config.SVM)
-	if err != nil {
-		return err
-	}
-
-	// Ensure no leftover snapmirror metadata
-	err = d.API.SnapmirrorRelease(name, d.Config.SVM)
-	if err != nil {
-		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", name, err)
+	if err := d.API.SnapmirrorDeleteViaDestination(name, d.Config.SVM); err != nil {
+		if !api.IsNotFoundError(err) {
+			return err
+		}
 	}
 
 	// Delete the Flexvol & LUN
@@ -1297,20 +1292,22 @@ func (d *SANStorageDriver) GoString() string {
 }
 
 // GetCommonConfig returns driver's CommonConfig
-func (d *SANStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+func (d SANStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
 }
 
 // EstablishMirror will create a new snapmirror relationship between a RW and a DP volume that have not previously
 // had a relationship
 func (d *SANStorageDriver) EstablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error {
-	return establishMirrorAbstraction(ctx, localVolumeHandle, remoteVolumeHandle, d.GetAPI(), d.GetConfig())
+	return establishMirror(ctx, localVolumeHandle, remoteVolumeHandle, d.GetConfig().ReplicationPolicy,
+		d.GetConfig().ReplicationSchedule, d.API)
 }
 
 // ReestablishMirror will attempt to resync a snapmirror relationship,
 // if and only if the relationship existed previously
 func (d *SANStorageDriver) ReestablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error {
-	return reestablishMirrorAbstraction(ctx, localVolumeHandle, remoteVolumeHandle, d.GetAPI(), d.GetConfig())
+	return reestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, d.GetConfig().ReplicationPolicy,
+		d.GetConfig().ReplicationSchedule, d.API)
 }
 
 // PromoteMirror will break the snapmirror and make the destination volume RW,
@@ -1318,12 +1315,13 @@ func (d *SANStorageDriver) ReestablishMirror(ctx context.Context, localVolumeHan
 func (d *SANStorageDriver) PromoteMirror(
 	ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotName string,
 ) (bool, error) {
-	return promoteMirrorAbstraction(ctx, localVolumeHandle, remoteVolumeHandle, snapshotName, d.GetAPI(), d.GetConfig())
+	return promoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotName, d.GetConfig().ReplicationPolicy,
+		d.API)
 }
 
 // GetMirrorStatus returns the current state of a snapmirror relationship
 func (d *SANStorageDriver) GetMirrorStatus(
 	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
 ) (string, error) {
-	return getMirrorStatusAbstraction(ctx, localVolumeHandle, remoteVolumeHandle, d.GetAPI())
+	return getMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle, d.API)
 }

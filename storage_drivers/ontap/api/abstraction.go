@@ -9,32 +9,31 @@ import (
 	"strings"
 
 	. "github.com/netapp/trident/logger"
-	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 )
 
-// //////////////////////////////////////////////////////////////////////////////////////////
-// /             _____________________
-// /            |   <<Interface>>    |
-// /            |       ONTAPI       |
-// /            |____________________|
-// /                ^             ^
-// /     Implements |             | Implements
-// /   ____________________    ____________________
-// /  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
-// /  |___________________|   |___________________|
-// /  | +API: RestClient  |   | +API: *Client     |
-// /  |___________________|   |___________________|
-// /
-// //////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+///             _____________________
+///            |   <<Interface>>    |
+///            |       ONTAPI       |
+///            |____________________|
+///                ^             ^
+///     Implements |             | Implements
+///   ____________________    ____________________
+///  |  ONTAPAPIREST     |   |  ONTAPAPIZAPI     |
+///  |___________________|   |___________________|
+///  | +API: RestClient  |   | +API: *Client     |
+///  |___________________|   |___________________|
+///
+////////////////////////////////////////////////////////////////////////////////////////////
 
-// //////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
 // Drivers that offer dual support are to call ONTAP REST or ZAPI's
 // via abstraction layer (ONTAPI interface)
-// //////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
 
-// //////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Abstraction layer
-// //////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const (
 	failureLUNCreate  = "failure_65dc2f4b_adbe_4ed3_8b73_6c61d5eac054"
@@ -110,6 +109,7 @@ type OntapAPI interface {
 	GetSVMAggregateAttributes(ctx context.Context) (map[string]string, error)
 	GetSVMAggregateNames(ctx context.Context) ([]string, error)
 	GetSVMAggregateSpace(ctx context.Context, aggregate string) ([]SVMAggregateSpace, error)
+	GetSVMPeers(ctx context.Context) ([]string, error)
 
 	GetSVMUUID() string
 
@@ -136,45 +136,25 @@ type OntapAPI interface {
 	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 
-	// TODO: these should be refactored to support REST
-	SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) error
-	IsSVMDRCapable(ctx context.Context) (bool, error)
-	SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error)
-	SnapmirrorPolicyGet(ctx context.Context, policyName string) (*azgo.SnapmirrorPolicyInfoType, error)
-	JobScheduleExists(ctx context.Context, jobName string) (bool, error)
-	GetPeeredVservers(ctx context.Context) ([]string, error)
-	VolumeGetType(name string) (string, error)
-	SnapmirrorGet(
-		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
-	) (*azgo.SnapmirrorGetResponse, error)
-	SnapmirrorCreate(
-		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string,
-	) (*azgo.SnapmirrorCreateResponse, error)
-	SnapmirrorInitialize(
-		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
-	) (*azgo.SnapmirrorInitializeResponse, error)
-	SnapmirrorResync(
-		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
-	) (*azgo.SnapmirrorResyncResponse, error)
-	SnapmirrorDelete(
-		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
-	) (*azgo.SnapmirrorDestroyResponse, error)
-	SnapmirrorQuiesce(
-		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
-	) (*azgo.SnapmirrorQuiesceResponse, error)
-	SnapmirrorAbort(
-		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
-	) (*azgo.SnapmirrorAbortResponse, error)
-	SnapmirrorBreak(
-		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
-	) (*azgo.SnapmirrorBreakResponse, error)
-
 	SnapshotRestoreVolume(ctx context.Context, snapshotName, sourceVolume string) error
 	SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, sourceVolume string) error
-	SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 
+	SnapmirrorCreate(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+		replicationPolicy, replicationSchedule string) error
+	SnapmirrorResync(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorDelete(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorGet(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
+		*Snapmirror, error)
+	SnapmirrorInitialize(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorPolicyGet(ctx context.Context, replicationPolicy string) (*SnapmirrorPolicy, error)
+	SnapmirrorQuiesce(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorAbort(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorBreak(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	JobScheduleExists(ctx context.Context, replicationSchedule string) error
 	SupportsFeature(ctx context.Context, feature Feature) bool
 	ValidateAPIVersion(ctx context.Context) error
+	SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) error
+	IsSVMDRCapable(ctx context.Context) (bool, error)
 
 	VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error
 	VolumeCloneSplitStart(ctx context.Context, cloneName string) error

@@ -15,9 +15,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	// snapmirror interface requires this import for now
-	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
-
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
@@ -87,105 +84,6 @@ func (e RestError) Code() string {
 
 type OntapAPIREST struct {
 	api RestClient
-}
-
-func (d OntapAPIREST) SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error) {
-	// TODO implement
-	return false, fmt.Errorf("not implemented for REST")
-}
-
-// TODO: these should be refactored to support REST
-func (d OntapAPIREST) SnapmirrorPolicyGet(ctx context.Context, policyName string) (
-	*azgo.SnapmirrorPolicyInfoType, error,
-) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
-}
-
-func (d OntapAPIREST) JobScheduleExists(ctx context.Context, jobName string) (bool, error) {
-	// TODO implement
-	return false, fmt.Errorf("not implemented for REST")
-}
-
-func (d OntapAPIREST) GetPeeredVservers(ctx context.Context) ([]string, error) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
-}
-
-func (d OntapAPIREST) VolumeGetType(name string) (string, error) {
-	// TODO implement
-	return "", fmt.Errorf("not implemented for REST")
-}
-
-// TODO: these should be refactored to support REST
-func (d OntapAPIREST) SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
-	*azgo.SnapmirrorGetResponse, error,
-) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
-}
-
-// TODO: these should be refactored to support REST
-func (d OntapAPIREST) SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (
-	*azgo.SnapmirrorCreateResponse, error,
-) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
-}
-
-// TODO: these should be refactored to support REST
-func (d OntapAPIREST) SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
-	*azgo.SnapmirrorInitializeResponse, error,
-) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
-}
-
-// TODO: these should be refactored to support REST
-func (d OntapAPIREST) SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
-	*azgo.SnapmirrorResyncResponse, error,
-) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
-}
-
-// TODO: these should be refactored to support REST
-func (d OntapAPIREST) SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
-	*azgo.SnapmirrorDestroyResponse, error,
-) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
-}
-
-// TODO: these should be refactored to support REST
-func (d OntapAPIREST) SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
-	*azgo.SnapmirrorQuiesceResponse, error,
-) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
-}
-
-// TODO: these should be refactored to support REST
-func (d OntapAPIREST) SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
-	*azgo.SnapmirrorAbortResponse, error,
-) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
-}
-
-// TODO: these should be refactored to support REST
-func (d OntapAPIREST) SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
-	*azgo.SnapmirrorBreakResponse, error,
-) {
-	// TODO implement
-	return nil, fmt.Errorf("not implemented for REST")
-}
-
-func (d OntapAPIREST) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error {
-	// TODO @ameade/ @rippy
-	// TODO implement
-	// return fmt.Errorf("not implemented for REST")
-	return nil
 }
 
 func NewOntapAPIREST(restClient RestClient) (OntapAPIREST, error) {
@@ -344,6 +242,7 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 		SpaceReserve:      responseSpaceReserve,
 		UnixPermissions:   responseUnixPermissions,
 		UUID:              volumeGetResponse.UUID,
+		DPVolume:          responseAccessType == "dp",
 	}
 	return volumeInfo, nil
 }
@@ -1315,13 +1214,73 @@ func (d OntapAPIREST) VolumeListBySnapshotParent(
 
 func (d OntapAPIREST) SnapmirrorDeleteViaDestination(_, _ string) error {
 	// TODO implement
-	return nil // nothing to do yet for REST
+	return nil
 }
 
 func (d OntapAPIREST) IsSVMDRCapable(_ context.Context) (bool, error) {
-
-	// TODO @ameade/ @rippy
+	// TODO implement
 	return false, fmt.Errorf("not implemented")
+}
+
+func (d OntapAPIREST) SnapmirrorCreate(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName, replicationPolicy, replicationSchedule string) error {
+	// TODO implement
+	return fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) SnapmirrorGet(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string) (*Snapmirror, error) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) SnapmirrorDelete(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string) error {
+	// TODO implement
+	return fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) SnapmirrorInitialize(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string) error {
+	// TODO implement
+	return fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) SnapmirrorResync(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string) error {
+	// TODO implement
+	return fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) SnapmirrorPolicyGet(ctx context.Context, replicationPolicy string) (*SnapmirrorPolicy, error) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) SnapmirrorQuiesce(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string) error {
+	// TODO implement
+	return fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) SnapmirrorAbort(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string) error {
+	// TODO implement
+	return fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) SnapmirrorBreak(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string) error {
+	return fmt.Errorf("not implemented for REST")
+}
+
+func (d OntapAPIREST) JobScheduleExists(ctx context.Context, replicationSchedule string) error {
+	// TODO implement
+	return fmt.Errorf("not implemented for REST")
+}
+func (d OntapAPIREST) GetSVMPeers(ctx context.Context) ([]string, error) {
+	// TODO implement
+	return nil, fmt.Errorf("not implemented for REST")
 }
 
 func (d OntapAPIREST) LunList(ctx context.Context, pattern string) (Luns, error) {
