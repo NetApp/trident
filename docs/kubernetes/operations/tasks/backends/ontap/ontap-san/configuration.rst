@@ -153,7 +153,6 @@ Here's an example with defaults defined:
    "version": 1,
    "storageDriverName": "ontap-san",
    "managementLIF": "10.0.0.1",
-   "dataLIF": "10.0.0.2",
    "svm": "trident_svm",
    "username": "admin",
    "password": "password",
