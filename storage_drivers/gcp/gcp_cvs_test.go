@@ -383,3 +383,75 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 		})
 	}
 }
+
+func TestInitializeStoragePoolsUnixPermissions(t *testing.T) {
+
+	// 1. Test with one vpool defined
+	ctx := context.Background()
+	d := newTestGCPDriver()
+
+	d.Config.UnixPermissions = "0111"
+	d.Config.Storage = []drivers.GCPNFSStorageDriverPool{
+		{
+			Region: "us_east_1",
+			Zone:   "us_east_1a",
+		},
+	}
+	err := d.initializeStoragePools(ctx)
+	assert.Nil(t, err, "Error is not nil")
+
+	virtualPool := d.pools["gcpcvs_12345_pool_0"]
+	assert.Equal(t, "0111", virtualPool.InternalAttributes()[UnixPermissions])
+
+	// 2. Test with no vpool defined
+	ctx = context.Background()
+	d = newTestGCPDriver()
+
+	d.Config.UnixPermissions = "0111"
+	err = d.initializeStoragePools(ctx)
+	assert.Nil(t, err, "Error is not nil")
+
+	virtualPool = d.pools["gcpcvs_12345_pool"]
+	assert.NotNil(t, virtualPool, "Could not find pool")
+	assert.NotNil(t, virtualPool.InternalAttributes(), "Could not find pool attributes")
+	assert.Equal(t, "0111", virtualPool.InternalAttributes()[UnixPermissions])
+
+	// 3. Test with multiple vpools defined, one with unix permissions set
+	ctx = context.Background()
+	d = newTestGCPDriver()
+
+	d.Config.UnixPermissions = "0111"
+	d.Config.Storage = []drivers.GCPNFSStorageDriverPool{
+		{
+			Region: "us_east_1",
+			Zone:   "us_east_1a",
+		},
+		{
+			GCPNFSStorageDriverConfigDefaults: drivers.GCPNFSStorageDriverConfigDefaults{UnixPermissions: "0222"},
+			Region:                            "us_east_1",
+			Zone:                              "us_east_1a",
+		},
+	}
+	err = d.initializeStoragePools(ctx)
+	assert.Nil(t, err, "Error is not nil")
+
+	virtualPool = d.pools["gcpcvs_12345_pool_0"]
+	assert.Equal(t, "0111", virtualPool.InternalAttributes()[UnixPermissions])
+
+	virtualPool2 := d.pools["gcpcvs_12345_pool_1"]
+	assert.Equal(t, "0222", virtualPool2.InternalAttributes()[UnixPermissions])
+
+	// 4. Test defaults
+	ctx = context.Background()
+	d = newTestGCPDriver()
+
+	err = d.populateConfigurationDefaults(ctx, &d.Config)
+	assert.Nil(t, err, "Error is not nil")
+	err = d.initializeStoragePools(ctx)
+	assert.Nil(t, err, "Error is not nil")
+
+	virtualPool = d.pools["gcpcvs_12345_pool"]
+	assert.NotNil(t, virtualPool, "Could not find pool")
+	assert.NotNil(t, virtualPool.InternalAttributes(), "Could not find pool attributes")
+	assert.Equal(t, "0777", virtualPool.InternalAttributes()[UnixPermissions])
+}

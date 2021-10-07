@@ -617,6 +617,48 @@ func (d *Client) RenameVolume(ctx context.Context, volume *Volume, newName strin
 	return volume, nil
 }
 
+func (d *Client) ChangeVolumeUnixPermissions(ctx context.Context, volume *Volume, newUnixPermissions string) (*Volume, error) {
+
+	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
+
+	request := &VolumeChangeUnixPermissionsRequest{
+
+		Region:          volume.Region,
+		CreationToken:   volume.CreationToken,
+		UnixPermissions: newUnixPermissions,
+		QuotaInBytes:    volume.QuotaInBytes,
+	}
+
+	jsonRequest, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal JSON request: %v; %v", request, err)
+	}
+
+	response, responseBody, err := d.InvokeAPI(ctx, jsonRequest, "PUT", d.makeURL(resourcePath))
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.getErrorFromAPIResponse(response, responseBody)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(responseBody, volume)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"name":            volume.Name,
+		"unixPermissions": newUnixPermissions,
+		"creationToken":   request.CreationToken,
+		"statusCode":      response.StatusCode,
+	}).Debug("Volume permissions changed.")
+
+	return volume, nil
+}
+
 func (d *Client) RelabelVolume(ctx context.Context, volume *Volume, labels []string) (*Volume, error) {
 
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)

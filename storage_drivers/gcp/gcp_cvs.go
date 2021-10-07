@@ -39,6 +39,7 @@ const (
 	defaultSecurityStyle   = "unix"
 	defaultSnapshotDir     = "false"
 	defaultSnapshotReserve = ""
+	defaultUnixPermissions = "0777"
 	defaultStorageClass    = api.StorageClassHardware
 	defaultLimitVolumeSize = ""
 	defaultExportRule      = "0.0.0.0/0"
@@ -54,6 +55,7 @@ const (
 	Region          = "region"
 	Zone            = "zone"
 	StorageClass    = "storageClass"
+	UnixPermissions = "unixPermissions"
 
 	// Topology label names
 	topologyZoneLabel   = drivers.TopologyLabelPrefix + "/" + Zone
@@ -285,6 +287,10 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 		config.SnapshotReserve = defaultSnapshotReserve
 	}
 
+	if config.UnixPermissions == "" {
+		config.UnixPermissions = defaultUnixPermissions
+	}
+
 	if config.LimitVolumeSize == "" {
 		config.LimitVolumeSize = defaultLimitVolumeSize
 	}
@@ -355,6 +361,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 		pool.InternalAttributes()[StorageClass] = d.Config.StorageClass
 		pool.InternalAttributes()[SnapshotDir] = d.Config.SnapshotDir
 		pool.InternalAttributes()[SnapshotReserve] = d.Config.SnapshotReserve
+		pool.InternalAttributes()[UnixPermissions] = d.Config.UnixPermissions
 		pool.InternalAttributes()[ExportRule] = d.Config.ExportRule
 		pool.InternalAttributes()[Network] = d.Config.Network
 		pool.InternalAttributes()[Region] = d.Config.Region
@@ -410,6 +417,10 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 			if vpool.SnapshotReserve != "" {
 				snapshotReserve = vpool.SnapshotReserve
 			}
+			unixPermissions := d.Config.UnixPermissions
+			if vpool.UnixPermissions != "" {
+				unixPermissions = vpool.UnixPermissions
+			}
 
 			exportRule := d.Config.ExportRule
 			if vpool.ExportRule != "" {
@@ -440,6 +451,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) error {
 			pool.InternalAttributes()[StorageClass] = storageClass
 			pool.InternalAttributes()[SnapshotDir] = snapshotDir
 			pool.InternalAttributes()[SnapshotReserve] = snapshotReserve
+			pool.InternalAttributes()[UnixPermissions] = unixPermissions
 			pool.InternalAttributes()[ExportRule] = exportRule
 			pool.InternalAttributes()[Network] = network
 			pool.InternalAttributes()[Region] = region
@@ -663,6 +675,12 @@ func (d *NFSStorageDriver) Create(
 		volConfig.CVSStorageClass = storageClass
 	}
 
+	unixPermissions := volConfig.UnixPermissions
+	if unixPermissions == "" {
+		unixPermissions = pool.InternalAttributes()[UnixPermissions]
+		volConfig.UnixPermissions = unixPermissions
+	}
+
 	// Determine volume size in bytes
 	requestedSize, err := utils.ConvertSizeToBytes(volConfig.Size)
 	if err != nil {
@@ -856,6 +874,7 @@ func (d *NFSStorageDriver) Create(
 		SnapshotDirectory: snapshotDirBool,
 		SnapshotPolicy:    snapshotPolicy,
 		SnapReserve:       snapshotReservePtr,
+		UnixPermissions:   volConfig.UnixPermissions,
 		Network:           gcpNetwork,
 		Zone:              zone,
 	}
@@ -1016,6 +1035,7 @@ func (d *NFSStorageDriver) CreateClone(
 		SnapshotPolicy:    sourceVolume.SnapshotPolicy,
 		SnapReserve:       &sourceVolume.SnapReserve,
 		SnapshotID:        sourceSnapshotID,
+		UnixPermissions:   sourceVolume.UnixPermissions,
 		BackupID:          sourceBackupID,
 		Network:           gcpNetwork,
 	}
@@ -1147,12 +1167,21 @@ func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 
 	// Update the volume labels if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
+		// unixPermissions specified in PVC annotation takes precedence over backend's unixPermissions config
+		unixPerms := volConfig.UnixPermissions
+		if unixPerms == "" {
+			unixPerms = d.Config.UnixPermissions
+		}
 		labels := d.updateTelemetryLabels(ctx, volume)
 		labels = storage.DeleteProvisioningLabels(labels)
 
 		if _, err := d.API.RelabelVolume(ctx, volume, labels); err != nil {
 			Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, relabel failed: %v", err)
 			return fmt.Errorf("could not import volume %s, relabel failed: %v", originalName, err)
+		}
+		if _, err := d.API.ChangeVolumeUnixPermissions(ctx, volume, unixPerms); err != nil {
+			Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, modifying unix permissions failed: %v", err)
+			return fmt.Errorf("could not import volume %s, modifying unix permissions failed: %v", originalName, err)
 		}
 		_, err := d.API.WaitForVolumeStates(
 			ctx, volume, []string{api.StateAvailable}, []string{api.StateError}, d.defaultTimeout())

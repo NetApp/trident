@@ -105,6 +105,8 @@ Parameter                 Description                                           
 exportRule                The export rule(s) for new volumes                              "0.0.0.0/0"
 snapshotDir               Controls visibility of the .snapshot directory                  "false"
 snapshotReserve           Percentage of volume reserved for snapshots                     "" (accept CVS default of 0)
+unixPermissions           Mode for new volumes.
+                          Only applies to volumes with    [``storageClass=hardware``]     "0777" (must be 4 character octal)
 size                      The size of new volumes                                         "100Gi"
 ========================= =============================================================== ================================================
 
@@ -206,6 +208,7 @@ region. This example also shows the usage of proxyURL config option in a backend
             "snapshotDir": "true",
             "snapshotReserve": "5",
             "exportRule": "10.0.0.0/24,10.0.1.0/24,10.0.2.100",
+            "unixPermissions": "0755",
             "size": "5Ti"
         }
     }

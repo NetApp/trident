@@ -73,6 +73,7 @@ type Volume struct {
 	SnapshotDirectory     bool           `json:"snapshotDirectory"`
 	SnapshotPolicy        SnapshotPolicy `json:"snapshotPolicy"`
 	Timezone              string         `json:"timezone,omitempty"`
+	UnixPermissions       string         `json:"unixPermissions,omitempty"`
 	UsedBytes             int            `json:"usedBytes"`
 	StorageClass          string         `json:"storageClass"`
 }
@@ -106,6 +107,7 @@ type VolumeCreateRequest struct {
 	SnapshotDirectory bool           `json:"snapshotDirectory"`
 	SnapshotPolicy    SnapshotPolicy `json:"snapshotPolicy,omitempty"`
 	Timezone          string         `json:"timezone,omitempty"`
+	UnixPermissions   string         `json:"unixPermissions,omitempty"`
 	VendorID          string         `json:"vendorID,omitempty"`
 	BackupID          string         `json:"backupId,omitempty"`
 	Network           string         `json:"network,omitempty"`
@@ -118,6 +120,14 @@ type VolumeRenameRequest struct {
 	CreationToken string `json:"creationToken"`
 	ServiceLevel  string `json:"serviceLevel"`
 	QuotaInBytes  int64  `json:"quotaInBytes"`
+}
+
+type VolumeChangeUnixPermissionsRequest struct {
+	Region          string `json:"region"`
+	CreationToken   string `json:"creationToken"`
+	UnixPermissions string `json:"unixPermissions,omitempty"`
+	QuotaInBytes    int64  `json:"quotaInBytes"`
+	ServiceLevel    string `json:"serviceLevel"`
 }
 
 type VolumeResizeRequest struct {

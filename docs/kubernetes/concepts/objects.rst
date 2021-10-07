@@ -86,7 +86,7 @@ trident.netapp.io/exportPolicy      exportPolicy      ontap-nas, ontap-nas-econo
 trident.netapp.io/snapshotPolicy    snapshotPolicy    ontap-nas, ontap-nas-economy, ontap-nas-flexgroup, ontap-san
 trident.netapp.io/snapshotReserve   snapshotReserve   ontap-nas, ontap-nas-flexgroup, ontap-san, aws-cvs, gcp-cvs
 trident.netapp.io/snapshotDirectory snapshotDirectory ontap-nas, ontap-nas-economy, ontap-nas-flexgroup
-trident.netapp.io/unixPermissions   unixPermissions   ontap-nas, ontap-nas-economy, ontap-nas-flexgroup
+trident.netapp.io/unixPermissions   unixPermissions   ontap-nas, ontap-nas-economy, ontap-nas-flexgroup, gcp-cvs (Performance volumes only)
 trident.netapp.io/blockSize         blockSize         solidfire-san
 =================================== ================= ======================================================
 

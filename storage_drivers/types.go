@@ -722,6 +722,7 @@ type GCPNFSStorageDriverConfigDefaults struct {
 	ExportRule      string `json:"exportRule"`
 	SnapshotDir     string `json:"snapshotDir"`
 	SnapshotReserve string `json:"snapshotReserve"`
+	UnixPermissions string `json:"unixPermissions"`
 	CommonStorageDriverConfigDefaults
 }
 
