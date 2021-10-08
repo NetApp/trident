@@ -24,6 +24,10 @@ Take a look at the `Astra documentation`_ to get started today.
 See `NetApp's Support site`_ for details on Trident's support policy under the
 `Trident's Release and Support Lifecycle`_ tab.
 
+.. important::
+
+  The Astra Trident documentation has a new home! Check out the content at `the new location on docs.netapp.com <https://docs.netapp.com/us-en/trident/index.html>`_. For all the latest updates, please visit the new location. We appreciate feedback on content and encourage users to take advantage of the “Request doc changes” function available on every page of the documentation. We also offer an embedded content contribution function for GitHub users using the "Edit on GitHub" option. You can edit, request a change, or even send feedback. Go to `NetApp Astra Trident documentation <https://docs.netapp.com/us-en/trident/index.html>`_ to begin.
+
 .. _open source project: https://github.com/netapp/trident
 .. _NetApp: https://www.netapp.com
 .. _Kubernetes: https://kubernetes.io
