@@ -5,4 +5,4 @@ metadata:
 spec:
   debug: true
   namespace: trident
-  tridentImage: localhost:5000/netapp/trident:21.07
+  tridentImage: localhost:5000/netapp/trident:21.10
