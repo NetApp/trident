@@ -933,9 +933,13 @@ func (p *Plugin) getCSISnapshotFromTridentSnapshot(
 		}).Error("Could not parse volume size.")
 		return nil, err
 	}
+	size := utils.MinInt64(snapshot.SizeBytes, volCapacity)
+	if size <= 0 {
+		size = volCapacity
+	}
 
 	return &csi.Snapshot{
-		SizeBytes:      utils.MinInt64(snapshot.SizeBytes, volCapacity),
+		SizeBytes:      size,
 		SnapshotId:     storage.MakeSnapshotID(snapshot.Config.VolumeName, snapshot.Config.Name),
 		SourceVolumeId: snapshot.Config.VolumeName,
 		CreationTime:   &timestamp.Timestamp{Seconds: createdSeconds.Unix()},

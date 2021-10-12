@@ -1055,7 +1055,7 @@ func (c Client) FlexGroupUsedSize(name string) (int, error) {
 	}
 
 	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
-	return volSpaceAttrs.SizeUsed() - volSpaceAttrs.SizeUsedBySnapshots(), nil
+	return volSpaceAttrs.SizeUsed(), nil
 }
 
 // FlexGroupSize retrieves the size of the specified volume
@@ -1518,7 +1518,7 @@ func (c Client) VolumeUsedSize(name string) (int, error) {
 	}
 	volSpaceAttrs := volAttrs.VolumeSpaceAttributes()
 
-	return volSpaceAttrs.SizeUsed() - volSpaceAttrs.SizeUsedBySnapshots(), nil
+	return volSpaceAttrs.SizeUsed(), nil
 }
 
 // VolumeSize retrieves the size of the specified volume

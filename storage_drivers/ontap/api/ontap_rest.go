@@ -510,11 +510,7 @@ func (c RestClient) getVolumeUsedSizeByNameAndStyle(ctx context.Context, volumeN
 		return 0, fmt.Errorf("could not find space attributes for volume %v", volumeName)
 	}
 
-	if volume.Space.Snapshot == nil {
-		return 0, fmt.Errorf("could not find snapshot space attributes for volume %v", volumeName)
-	}
-
-	return int(volume.Space.Used - volume.Space.Snapshot.Used), nil
+	return int(volume.Space.Used), nil
 }
 
 // setVolumeSizeByNameAndStyle sets the size of the specified volume of given style
