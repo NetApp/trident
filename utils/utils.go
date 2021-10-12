@@ -654,3 +654,11 @@ func MinInt64(a, b int64) int64 {
 	}
 	return b
 }
+
+// DerefString accepts a string pointer and returns the value of the string, or "" if the pointer is nil.
+func DerefString(s *string) string {
+	if s != nil {
+		return *s
+	}
+	return ""
+}

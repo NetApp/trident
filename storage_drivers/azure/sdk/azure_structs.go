@@ -33,7 +33,6 @@ type CapacityPool struct {
 	Type              string      `json:"type,omitempty"`
 	Tags              interface{} `json:"tags,omitempty"`
 	PoolID            string      `json:"poolId,omitempty"`
-	Size              int64       `json:"size,omitempty"`
 	ServiceLevel      string      `json:"serviceLevel,omitempty"`
 	ProvisioningState string      `json:"provisioningState,omitempty"`
 	QosType           string      `json:"qosType,omitempty"`

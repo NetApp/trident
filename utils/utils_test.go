@@ -649,18 +649,18 @@ func TestValidateCIDRSet(t *testing.T) {
 
 	// Tests invalid CIDR combinations
 	tests := []struct {
-		name        string
-		cidrs       []string
-		expected    bool
+		name     string
+		cidrs    []string
+		expected bool
 	}{
 		{
-			name:   "should return err from a list containing only invalid CIDR blocks",
-			cidrs:  invalidCIDRSet,
+			name:     "should return err from a list containing only invalid CIDR blocks",
+			cidrs:    invalidCIDRSet,
 			expected: true,
 		},
 		{
-			name:   "should return err from a list containing valid and invalid CIDR blocks",
-			cidrs:  invalidCIDRWithinSet,
+			name:     "should return err from a list containing valid and invalid CIDR blocks",
+			cidrs:    invalidCIDRWithinSet,
 			expected: true,
 		},
 	}
@@ -669,5 +669,24 @@ func TestValidateCIDRSet(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			assert.Equal(t, test.expected, assert.Error(t, ValidateCIDRs(ctx, test.cidrs)))
 		})
+	}
+}
+
+func TestDerefString(t *testing.T) {
+	log.Debug("Running TestDerefString...")
+
+	s := "test"
+
+	var testCases = []struct {
+		Ptr            *string
+		ExpectedResult string
+	}{
+		{nil, ""},
+		{&s, "test"},
+	}
+
+	for _, testCase := range testCases {
+		result := DerefString(testCase.Ptr)
+		assert.Equal(t, testCase.ExpectedResult, result)
 	}
 }

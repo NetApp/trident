@@ -171,7 +171,7 @@ func (d *Client) discoverResourceGroups(ctx context.Context) (*[]string, error) 
 			return nil, fmt.Errorf("error iterating resource groups: %v", err)
 		}
 
-		rg := *list.Value().Name
+		rg := utils.DerefString(list.Value().Name)
 		rgs = append(rgs, rg)
 	}
 
@@ -195,8 +195,9 @@ func (d *Client) discoverCapacityPools(ctx context.Context, rgroup string, naa s
 		}
 
 		p := list.Value()
+		poolName := utils.DerefString(p.Name)
 
-		if exists, _ := d.capacityPoolWithName(*p.Name); exists != nil {
+		if exists, _ := d.capacityPoolWithName(poolName); exists != nil {
 			Logc(ctx).Errorf(
 				"Ignoring discovered capacity pool '%s' in resource group '%s' because its name is not unique",
 				exists.Name, rgroup)
@@ -206,24 +207,23 @@ func (d *Client) discoverCapacityPools(ctx context.Context, rgroup string, naa s
 		if p.QosType == netapp.QosTypeManual {
 			Logc(ctx).Warningf(
 				"Ignoring discovered capacity pool '%s' in resource group '%s' because it uses manual QoS",
-				*p.Name, rgroup)
+				poolName, rgroup)
 			continue
 		}
 
 		cpools = append(cpools,
 			CapacityPool{
-				Location:          *p.Location,
-				ID:                *p.ID,
-				Fullname:          *p.Name,
-				Name:              poolShortname(*p.Name),
+				Location:          utils.DerefString(p.Location),
+				ID:                utils.DerefString(p.ID),
+				Fullname:          poolName,
+				Name:              poolShortname(poolName),
 				ResourceGroup:     rgroup,
 				NetAppAccount:     naa,
-				Type:              *p.Type,
+				Type:              utils.DerefString(p.Type),
 				Tags:              p.Tags,
-				PoolID:            *p.PoolID,
-				Size:              *p.PoolProperties.Size,
+				PoolID:            utils.DerefString(p.PoolID),
 				ServiceLevel:      string(p.ServiceLevel),
-				ProvisioningState: *p.PoolProperties.ProvisioningState,
+				ProvisioningState: utils.DerefString(p.PoolProperties.ProvisioningState),
 				QosType:           string(p.QosType),
 			})
 	}
@@ -249,8 +249,8 @@ func (d *Client) discoverNetAppAccounts(ctx context.Context, rgroup string) (*[]
 		naa := list.Value()
 
 		na := NetAppAccount{
-			Name:     *naa.Name,
-			Location: *naa.Location,
+			Name:     utils.DerefString(naa.Name),
+			Location: utils.DerefString(naa.Location),
 		}
 
 		// Go ahead and get the capacity pools for this rg:naa pair
@@ -288,10 +288,10 @@ func (d *Client) discoverSubnets(ctx context.Context, rgroup string, vn VirtualN
 		// readable "NetAppDelegation", so just ignore it and check the value.
 		delegations := *list.Value().Delegations
 		for _, item := range delegations {
-			if *item.ServiceName == "Microsoft.NetApp/volumes" ||
-				*item.ServiceName == "Microsoft.Netapp/volumes" {
+			serviceName := utils.DerefString(item.ServiceName)
+			if serviceName == "Microsoft.NetApp/volumes" || serviceName == "Microsoft.Netapp/volumes" {
 				sn := Subnet{
-					Name:           *list.Value().Name,
+					Name:           utils.DerefString(list.Value().Name),
 					VirtualNetwork: &vn,
 				}
 				subnets = append(subnets, sn)
@@ -317,8 +317,8 @@ func (d *Client) discoverVirtualNetworks(ctx context.Context, rgroup string) (*[
 			return nil, fmt.Errorf("error iterating virtual networks for resource group %s: %v", rgroup, err)
 		}
 		vn := VirtualNetwork{
-			Name:          *list.Value().Name,
-			Location:      *list.Value().Location,
+			Name:          utils.DerefString(list.Value().Name),
+			Location:      utils.DerefString(list.Value().Location),
 			ResourceGroup: rgroup,
 		}
 
