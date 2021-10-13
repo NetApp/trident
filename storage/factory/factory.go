@@ -99,6 +99,8 @@ func NewStorageBackendForConfig(
 		storageDriver = &aws.NFSStorageDriver{}
 	case drivers.AzureNFSStorageDriverName:
 		storageDriver = &azure.NFSStorageDriver{}
+	case drivers.AzureNASBlockStorageDriverName:
+		storageDriver = &azure.NASBlockStorageDriver{}
 	case drivers.GCPNFSStorageDriverName:
 		storageDriver = &gcp.NFSStorageDriver{}
 	case drivers.AstraDSStorageDriverName:

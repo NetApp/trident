@@ -459,3 +459,25 @@ func IsAuthError(err error) bool {
 	_, ok := err.(*authError)
 	return ok
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// tooManyRequestsError (HTTP 429)
+/////////////////////////////////////////////////////////////////////////////
+
+type tooManyRequestsError struct {
+	message string
+}
+
+func (e *tooManyRequestsError) Error() string { return e.message }
+
+func TooManyRequestsError(message string) error {
+	return &tooManyRequestsError{message}
+}
+
+func IsTooManyRequestsError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*tooManyRequestsError)
+	return ok
+}

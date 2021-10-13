@@ -169,7 +169,8 @@ func (c *PassthroughClient) unmarshalConfig(ctx context.Context, fileContents []
 		configType = "solidfire_config"
 	case drivers.AWSNFSStorageDriverName:
 		configType = "aws_config"
-	case drivers.AzureNFSStorageDriverName:
+	case drivers.AzureNFSStorageDriverName,
+	    drivers.AzureNASBlockStorageDriverName:
 		configType = "azure_config"
 	case drivers.GCPNFSStorageDriverName:
 		configType = "gcp_config"

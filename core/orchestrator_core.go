@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -1685,7 +1686,7 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		return nil, fmt.Errorf("unknown storage class: %s", volumeConfig.StorageClass)
 	}
 	pools := sc.GetStoragePoolsForProtocolByBackend(ctx, protocol, volumeConfig.RequisiteTopologies,
-		volumeConfig.PreferredTopologies)
+		volumeConfig.PreferredTopologies, volumeConfig.AccessMode)
 	if len(pools) == 0 {
 		return nil, fmt.Errorf("no available backends for storage class %s", volumeConfig.StorageClass)
 	}
@@ -2245,7 +2246,7 @@ func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeCo
 
 	// Make sure that for the Raw-block volume import we do not have ext3, ext4 or xfs filesystem specified
 	if volumeConfig.VolumeMode == config.RawBlock {
-		if volumeConfig.FileSystem != "" && volumeConfig.FileSystem != drivers.FsRaw {
+		if volumeConfig.FileSystem != "" && volumeConfig.FileSystem != config.FsRaw {
 			return fmt.Errorf("cannot create raw-block volume %s with the filesystem %s",
 				originalName, volumeConfig.FileSystem)
 		}
@@ -3165,6 +3166,25 @@ func (o *TridentOrchestrator) AttachVolume(
 
 	if publishInfo.FilesystemType == "nfs" {
 		return utils.AttachNFSVolume(ctx, volumeName, mountpoint, publishInfo)
+	} else if strings.Contains(publishInfo.FilesystemType, "nfs/") {
+		// Determine where to mount the NFS share containing publishInfo.SubvolumeName
+		mountpointDir := path.Dir(mountpoint)
+		nfsMountpoint := path.Join(mountpointDir, publishInfo.NfsPath)
+		loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
+
+		publishInfo.SubvolumeMountOptions = utils.AppendToStringList(publishInfo.SubvolumeMountOptions, "loop", ",")
+
+		// TODO: Check if Docker can do raw block volumes, if not, then remove this part
+		isRawBlock := publishInfo.FilesystemType == "nfs/"+config.FsRaw
+		if isRawBlock {
+			publishInfo.SubvolumeMountOptions = utils.AppendToStringList(publishInfo.SubvolumeMountOptions, "bind", ",")
+		}
+
+		if loopDeviceName, err := utils.AttachBlockOnFileVolume(ctx, nfsMountpoint, loopFile, publishInfo); err != nil {
+			return err
+		} else {
+			return utils.MountDevice(ctx, loopDeviceName, mountpoint, publishInfo.SubvolumeMountOptions, isRawBlock)
+		}
 	} else {
 		return utils.AttachISCSIVolume(ctx, volumeName, mountpoint, publishInfo)
 	}
@@ -3913,31 +3933,39 @@ func (o *TridentOrchestrator) resizeVolumeCleanup(
 //
 // The below truth table depicts these combinations:
 //
-//  VolumeMode/AccessType   AccessMode    Protocol(block or file)       Result Protocol
+//  VolumeMode/AccessType   AccessMode    Protocol                      Result Protocol
 //  Filesystem              Any           Any                           Any
 //  Filesystem              Any           NFS                           NFS
 //  Filesystem              Any           iSCSI                         iSCSI
+//  Filesystem              Any           NFSBlock                      NFSBlock
 //  Filesystem              RWO           Any                           Any
 //  Filesystem              RWO           NFS                           NFS
 //  Filesystem              RWO           iSCSI                         iSCSI
-//  Filesystem              ROX           Any                           Any
+//  Filesystem              RWO           NFSBlock                      NFSBlock
+//  Filesystem              ROX           Any                           **NFS**
 //  Filesystem              ROX           NFS                           NFS
-//  Filesystem              ROX           iSCSI                         iSCSI
+//  Filesystem              ROX           iSCSI                         **Error**
+//  Filesystem              ROX           NFSBlock                      **Error**
 //  Filesystem              RWX           Any                           **NFS**
 //  Filesystem              RWX           NFS                           NFS
 //  Filesystem              RWX           iSCSI                         **Error**
+//  Filesystem              RWX           NFSBlock                      **Error**
 //  RawBlock                Any           Any                           **iSCSI**
 //  RawBlock                Any           NFS                           **Error**
 //  RawBlock                Any           iSCSI                         iSCSI
+//  RawBlock                Any           NFSBlock                      **Error**
 //  RawBlock                RWO           Any                           **iSCSI**
 //  RawBlock                RWO           NFS                           **Error**
 //  RawBlock                RWO           iSCSI                         iSCSI
+//  RawBlock                RWO           NFSBlock                      **Error**
 //  RawBlock                ROX           Any                           **iSCSI**
 //  RawBlock                ROX           NFS                           **Error**
 //  RawBlock                ROX           iSCSI                         iSCSI
+//  RawBlock                ROX           NFSBlock                      **Error**
 //  RawBlock                RWX           Any                           **iSCSI**
 //  RawBlock                RWX           NFS                           **Error**
 //  RawBlock                RWX           iSCSI                         iSCSI
+//  RawBlock                RWX           NFSBlock                      **Error**
 //
 func (o *TridentOrchestrator) getProtocol(
 	ctx context.Context, volumeMode config.VolumeMode, accessMode config.AccessMode, protocol config.Protocol,
@@ -3952,30 +3980,58 @@ func (o *TridentOrchestrator) getProtocol(
 	resultProtocol := protocol
 	var err error = nil
 
+	defer Logc(ctx).WithFields(log.Fields{
+		"resultProtocol": resultProtocol,
+		"err":            err,
+	}).Debug("Orchestrator#getProtocol")
+
+	// ROX and RWX (multi-node access) has certain limitations
+	// DO NOT ALLOW:
+	// 1. Protocol: Block,          Volume Mode: filesystem                 Result: Error
+	// 2. Protocol: BlockOnFile,    Volume Mode: raw block, filesystem      Result: Error
+	// NOTE: 'BlockOnFile' protocol set via the PVC annotation with multi-node access mode
+	//
+	// ENSURE:
+	// 1. Protocol: Any,            Volume Mode: filesystem                 Result: Protocol - File
+	if accessMode == config.ReadOnlyMany || accessMode == config.ReadWriteMany {
+		if protocol == config.BlockOnFile {
+			resultProtocol = config.ProtocolAny
+			err = fmt.Errorf("incompatible access mode (%s) and protocol (%s)", accessMode, protocol)
+		} else if protocol == config.Block && volumeMode == config.Filesystem {
+			resultProtocol = config.ProtocolAny
+			err = fmt.Errorf("incompatible volume mode (%s), access mode (%s) and protocol (%s)",
+				volumeMode, accessMode, protocol)
+		} else if protocol == config.ProtocolAny && volumeMode == config.Filesystem {
+			resultProtocol = config.File
+		}
+	}
+
+	if err != nil {
+		return resultProtocol, err
+	}
+
+	// For Raw block volume, supported config:
+	// 1. Protocol File       :  -
+	// 2. Protocol Any        :  RWO, ROX, RWX (Result protocol is Block)
+	// 3. Protocol Block      :  RWO, ROX, RWX
+	// 4. Protocol BlockOnFile:  -
+	//
+	// For Filesystem volume, supported config:
+	// 1. Protocol File       :  RWO, ROX, RWX
+	// 2. Protocol Any        :  RWO, ROX, RWX (Result protocol is File)
+	// 3. Protocol Block      :  RWO
+	// 4. Protocol BlockOnFile:  RWO
 	if volumeMode == config.RawBlock {
 		// In `Block` volume-mode, Protocol: file (NFS) is unsupported i.e. we do not support raw block volumes
 		// with NFS protocol.
-		if protocol == config.File {
+		// AddRawBlockSupportOnBoF: Remove config.BlockOnFile from below if-else to support raw block on BlockOnFile
+		if protocol == config.File || protocol == config.BlockOnFile {
 			resultProtocol = config.ProtocolAny
 			err = fmt.Errorf("incompatible volume mode (%s) and protocol (%s)", volumeMode, protocol)
 		} else if protocol == config.ProtocolAny {
 			resultProtocol = config.Block
 		}
-	} else {
-		// In `Filesystem` volume-mode, Protocol: block (iSCSI), AccessMode: ReadWriteMany, is an unsupported config
-		// i.e.  RWX is only supported by file and file-like protocols only, such as NFS.
-		if accessMode == config.ReadWriteMany {
-			if protocol == config.Block {
-				resultProtocol = config.ProtocolAny
-				err = fmt.Errorf("incompatible volume mode (%s), access mode (%s) and protocol (%s)",
-					volumeMode, accessMode, protocol)
-			} else if protocol == config.ProtocolAny {
-				resultProtocol = config.File
-			}
-		}
 	}
-
-	Logc(ctx).Debugf("Result Protocol: %v", resultProtocol)
 
 	return resultProtocol, err
 }
@@ -4084,7 +4140,7 @@ func (o *TridentOrchestrator) DeleteStorageClass(ctx context.Context, scName str
 		return err
 	}
 	delete(o.storageClasses, scName)
-	for _, storagePool := range sc.GetStoragePoolsForProtocol(ctx, config.ProtocolAny) {
+	for _, storagePool := range sc.GetStoragePoolsForProtocol(ctx, config.ProtocolAny, config.ReadWriteOnce) {
 		storagePool.RemoveStorageClass(scName)
 	}
 	return nil

@@ -157,7 +157,7 @@ func (p *Plugin) CreateVolume(
 				"raw block volumes are not supported for this container orchestrator")
 		}
 		volumeMode = tridentconfig.RawBlock
-		fsType = fsRaw
+		fsType = tridentconfig.FsRaw
 	}
 
 	for _, csiAccessMode := range csiAccessModes {
@@ -393,7 +393,11 @@ func (p *Plugin) ControllerPublishVolume(
 	// VolumePublishInfo struct are completely discarded and replaced by the CSI-supplied values.
 	mount := req.VolumeCapability.GetMount()
 	if mount != nil && len(mount.MountFlags) > 0 {
-		volumePublishInfo.MountOptions = strings.Join(mount.MountFlags, ",")
+		if volume.Config.Protocol == tridentconfig.BlockOnFile {
+			volumePublishInfo.SubvolumeMountOptions = strings.Join(mount.MountFlags, ",")
+		} else {
+			volumePublishInfo.MountOptions = strings.Join(mount.MountFlags, ",")
+		}
 	}
 
 	// Build CSI controller publish info from volume publish info
@@ -427,6 +431,13 @@ func (p *Plugin) ControllerPublishVolume(
 		publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 		publishInfo["useCHAP"] = strconv.FormatBool(volumePublishInfo.UseCHAP)
 		publishInfo["sharedTarget"] = strconv.FormatBool(volumePublishInfo.SharedTarget)
+	} else if volume.Config.Protocol == tridentconfig.BlockOnFile {
+		publishInfo["subvolumeMountOptions"] = volumePublishInfo.SubvolumeMountOptions
+		publishInfo["nfsServerIp"] = volume.Config.AccessInfo.NfsServerIP
+		publishInfo["nfsPath"] = volume.Config.AccessInfo.NfsPath
+		publishInfo["subvolumeName"] = volume.Config.AccessInfo.SubvolumeName
+		publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
+		publishInfo["backendUUID"] = volumePublishInfo.BackendUUID
 	}
 
 	return &csi.ControllerPublishVolumeResponse{PublishContext: publishInfo}, nil
@@ -897,7 +908,8 @@ func (p *Plugin) ControllerExpandVolume(
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
-	nodeExpansionRequired := volume.Config.Protocol == tridentconfig.Block
+	nodeExpansionRequired := volume.Config.Protocol == tridentconfig.Block || volume.Config.
+		Protocol == tridentconfig.BlockOnFile
 
 	// Return success if the volume is already at least as large as required
 	if volumeSize, err := strconv.ParseInt(volume.Config.Size, 10, 64); err != nil {
@@ -938,7 +950,6 @@ func (p *Plugin) ControllerExpandVolume(
 			"requestedCapacity": resizedVolume.Config.Size,
 			"error":             err,
 		}).Error("Invalid type conversion.")
-
 	}
 
 	response := csi.ControllerExpandVolumeResponse{
@@ -1083,6 +1094,7 @@ func (p *Plugin) getProtocolForCSIAccessMode(
 	return protocol
 }
 
+// hasBackendForProtocol identifies if Trident has a backend with the matching protocol.
 func (p *Plugin) hasBackendForProtocol(ctx context.Context, protocol tridentconfig.Protocol) bool {
 
 	backends, err := p.orchestrator.ListBackends(ctx)
@@ -1101,4 +1113,12 @@ func (p *Plugin) hasBackendForProtocol(ctx context.Context, protocol tridentconf
 	}
 
 	return false
+}
+
+// TODO: Move this to utils once config (github.com/netapp/trident/config) has no dependency on utils.
+// containsMultiNodeAccessMode identifies if list of AccessModes contains any of the multi-node access mode type
+func (p *Plugin) containsMultiNodeAccessMode(accessModes []tridentconfig.AccessMode) bool {
+	_, hasMultiNodeAccessMode := utils.SliceContainsElements(accessModes, tridentconfig.MultiNodeAccessModes)
+
+	return hasMultiNodeAccessMode
 }

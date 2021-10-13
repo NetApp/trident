@@ -2,6 +2,8 @@
 
 package storagedrivers
 
+import "github.com/netapp/trident/config"
+
 // ConfigVersion is the expected version specified in the config file
 const ConfigVersion = 1
 
@@ -23,21 +25,14 @@ const (
 	SolidfireSANStorageDriverName      = "solidfire-san"
 	AWSNFSStorageDriverName            = "aws-cvs"
 	AzureNFSStorageDriverName          = "azure-netapp-files"
+	AzureNASBlockStorageDriverName     = "azure-netapp-files-subvolume"
 	GCPNFSStorageDriverName            = "gcp-cvs"
 	AstraDSStorageDriverName           = "astrads-nas"
 	FakeStorageDriverName              = "fake"
 )
 
-// Filesystem types
-const (
-	FsXfs  = "xfs"
-	FsExt3 = "ext3"
-	FsExt4 = "ext4"
-	FsRaw  = "raw"
-)
-
 // Default Filesystem value
-const DefaultFileSystemType = FsExt4
+const DefaultFileSystemType = config.FsExt4
 
 const UnsetPool = ""
 const DefaultVolumeSize = "1G"

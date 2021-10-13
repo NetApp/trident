@@ -226,14 +226,12 @@ func Clone(ctx context.Context, source, destination interface{}) {
 // CheckSupportedFilesystem checks for a supported file system type
 func CheckSupportedFilesystem(ctx context.Context, fs string, volumeInternalName string) (string, error) {
 
-	fstype := strings.ToLower(fs)
-	switch fstype {
-	case FsXfs, FsExt3, FsExt4, FsRaw:
-		Logc(ctx).WithFields(log.Fields{"fileSystemType": fstype, "name": volumeInternalName}).Debug("Filesystem format.")
-		return fstype, nil
-	default:
-		return fstype, fmt.Errorf("unsupported fileSystemType option: %s", fstype)
+	fsType, err := utils.VerifyFilesystemSupport(fs)
+	if err == nil {
+		Logc(ctx).WithFields(log.Fields{"fileSystemType": fsType, "name": volumeInternalName}).Debug("Filesystem format.")
 	}
+
+	return fsType, err
 }
 
 func AreSameCredentials(credentials1, credentials2 map[string]string) bool {

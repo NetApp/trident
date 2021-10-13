@@ -50,6 +50,7 @@ const (
 	ResourceGroups  = "resourceGroups"
 	NetappAccounts  = "netappAccounts"
 	CapacityPools   = "capacityPools"
+	FilePoolVolumes = "filePoolVolumes"
 
 	nfsVersion3  = "3"
 	nfsVersion4  = "4"
@@ -484,7 +485,7 @@ func (d *NFSStorageDriver) initializeAzureSDKClient(
 	if config.SDKTimeout != "" {
 		if i, parseErr := strconv.ParseUint(d.Config.SDKTimeout, 10, 64); parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.SDKTimeout).WithError(parseErr).Error(
-				"Invalid valid for SDK timeout.")
+				"Invalid value for SDK timeout.")
 			return parseErr
 		} else {
 			sdkTimeout = time.Duration(i) * time.Second
@@ -521,7 +522,7 @@ func (d *NFSStorageDriver) initializeAzureSDKClient(
 		d.SDK = client
 	}
 
-	// The storage pools should already be set up by this point.  We register the pools with the
+	// The storage pools should already be set up by this point. We register the pools with the
 	// API layer to enable matching of storage pools with discovered ANF resources.
 	return d.SDK.Init(ctx, d.pools)
 }

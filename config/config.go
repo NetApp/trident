@@ -74,6 +74,7 @@ const (
 	a Trident volume with  'file' protocol is most likely NFS, while a 'block' protocol volume is probably iSCSI. */
 	File        Protocol = "file"
 	Block       Protocol = "block"
+	BlockOnFile Protocol = "blockOnFile"
 	ProtocolAny Protocol = ""
 
 	/* Access mode constants */
@@ -88,6 +89,18 @@ const (
 	and are attached to a container as raw block devices. */
 	RawBlock   VolumeMode = "Block"
 	Filesystem VolumeMode = "Filesystem"
+
+	// Filesystem types
+	FsXfs  = "xfs"
+	FsExt3 = "ext3"
+	FsExt4 = "ext4"
+	FsRaw  = "raw"
+
+	// Block-On-File Filesystem types
+	FsNFSXfs  = "nfs/xfs"
+	FsNFSExt3 = "nfs/ext3"
+	FsNFSExt4 = "nfs/ext4"
+	FsNFSRaw  = "nfs/raw"
 
 	/* Volume type constants */
 	OntapNFS          VolumeType = "ONTAP_NFS"
@@ -136,11 +149,14 @@ const (
 )
 
 var (
-	validProtocols = map[Protocol]bool{
+	ValidProtocols = map[Protocol]bool{
 		File:        true,
 		Block:       true,
+		BlockOnFile: true,
 		ProtocolAny: true,
 	}
+
+	MultiNodeAccessModes = [...]AccessMode{ReadOnlyMany, ReadWriteMany}
 
 	// BuildHash is the git hash the binary was built from
 	BuildHash = "unknown"
@@ -178,13 +194,13 @@ var (
 )
 
 func IsValidProtocol(p Protocol) bool {
-	_, ok := validProtocols[p]
+	_, ok := ValidProtocols[p]
 	return ok
 }
 
 func GetValidProtocolNames() []string {
-	ret := make([]string, len(validProtocols))
-	for key := range validProtocols {
+	ret := make([]string, len(ValidProtocols))
+	for key := range ValidProtocols {
 		ret = append(ret, string(key))
 	}
 	return ret

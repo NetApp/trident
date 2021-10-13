@@ -26,7 +26,6 @@ import (
 
 const (
 	tridentDeviceInfoPath      = "/var/lib/trident/tracking"
-	fsRaw                      = "raw"
 	lockID                     = "csi_node_server"
 	volumePublishInfoFilename  = "volumePublishInfo.json"
 	nodePrepBreadcrumbFilename = "nodePrepInfo.json"
@@ -54,6 +53,8 @@ func (p *Plugin) NodeStageVolume(
 		return p.nodeStageNFSVolume(ctx, req)
 	case string(tridentconfig.Block):
 		return p.nodeStageISCSIVolume(ctx, req)
+	case string(tridentconfig.BlockOnFile):
+		return p.nodeStageNFSBlockVolume(ctx, req)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
@@ -106,6 +107,8 @@ func (p *Plugin) NodeUnstageVolume(
 		return p.nodeUnstageNFSVolume(ctx, req)
 	case tridentconfig.Block:
 		return p.nodeUnstageISCSIVolume(ctx, req, publishInfo)
+	case tridentconfig.BlockOnFile:
+		return p.nodeUnstageNFSBlockVolume(ctx, req, publishInfo)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
@@ -128,6 +131,8 @@ func (p *Plugin) NodePublishVolume(
 		return p.nodePublishNFSVolume(ctx, req)
 	case string(tridentconfig.Block):
 		return p.nodePublishISCSIVolume(ctx, req)
+	case string(tridentconfig.BlockOnFile):
+		return p.nodePublishNFSBlockVolume(ctx, req)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
@@ -235,7 +240,7 @@ func (p *Plugin) NodeGetVolumeStats(
 			}
 		}
 
-		isRawBlock = publishInfo.FilesystemType == fsRaw
+		isRawBlock = publishInfo.FilesystemType == tridentconfig.FsRaw
 	}
 	if isRawBlock {
 		// Return no capacity info for raw block volumes, we cannot reliably determine the capacity
@@ -363,7 +368,7 @@ func (p *Plugin) NodeExpandVolume(
 		}
 
 		// Expand filesystem
-		if publishInfo.FilesystemType != fsRaw {
+		if publishInfo.FilesystemType != tridentconfig.FsRaw {
 			filesystemSize, err := utils.ExpandISCSIFilesystem(ctx, publishInfo, stagingTargetPath)
 			if err != nil {
 				Logc(ctx).WithFields(log.Fields{
@@ -829,9 +834,7 @@ func (p *Plugin) nodePublishNFSVolume(
 	}
 
 	if req.GetReadonly() {
-		mountOptions := strings.Split(publishInfo.MountOptions, ",")
-		mountOptions = append(mountOptions, "ro")
-		publishInfo.MountOptions = strings.Join(mountOptions, ",")
+		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
 
 	err = utils.AttachNFSVolume(ctx, req.VolumeContext["internalName"], req.TargetPath, publishInfo)
@@ -898,9 +901,9 @@ func (p *Plugin) nodeStageISCSIVolume(
 		fstype = req.PublishContext["filesystemType"]
 	}
 
-	if fstype == fsRaw && mountCapability != nil {
+	if fstype == tridentconfig.FsRaw && mountCapability != nil {
 		return nil, status.Error(codes.InvalidArgument, "mount capability requested with raw blocks")
-	} else if fstype != fsRaw && blockCapability != nil {
+	} else if fstype != tridentconfig.FsRaw && blockCapability != nil {
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("block capability requested with %s", fstype))
 	}
 
@@ -1093,18 +1096,14 @@ func (p *Plugin) nodePublishISCSIVolume(
 	}
 
 	if req.GetReadonly() {
-		mountOptions := strings.Split(publishInfo.MountOptions, ",")
-		mountOptions = append(mountOptions, "ro")
-		publishInfo.MountOptions = strings.Join(mountOptions, ",")
+		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
 
-	isRawBlock := publishInfo.FilesystemType == fsRaw
+	isRawBlock := publishInfo.FilesystemType == tridentconfig.FsRaw
 	if isRawBlock {
 
 		if len(publishInfo.MountOptions) > 0 {
-			mountOptions := strings.Split(publishInfo.MountOptions, ",")
-			mountOptions = append(mountOptions, "bind")
-			publishInfo.MountOptions = strings.Join(mountOptions, ",")
+			publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "bind", ",")
 		} else {
 			publishInfo.MountOptions = "bind"
 		}
@@ -1120,6 +1119,129 @@ func (p *Plugin) nodePublishISCSIVolume(
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "unable to mount device; %s", err)
 		}
+	}
+
+	return &csi.NodePublishVolumeResponse{}, nil
+}
+
+func (p *Plugin) nodeStageNFSBlockVolume(ctx context.Context, req *csi.NodeStageVolumeRequest,
+) (*csi.NodeStageVolumeResponse, error) {
+
+	if p.nodePrep.Enabled {
+		p.nodePrepForNFS(ctx)
+	}
+
+	publishInfo := &utils.VolumePublishInfo{
+		Localhost:      true,
+	}
+
+	publishInfo.MountOptions = req.PublishContext["mountOptions"]
+	publishInfo.NfsServerIP = req.PublishContext["nfsServerIp"]
+	publishInfo.NfsPath = req.PublishContext["nfsPath"]
+	publishInfo.SubvolumeName = req.PublishContext["subvolumeName"]
+	publishInfo.BackendUUID = req.PublishContext["backendUUID"]
+	publishInfo.FilesystemType = req.PublishContext["filesystemType"]
+
+	nfsMountpoint := path.Join(tridentDeviceInfoPath, publishInfo.BackendUUID, publishInfo.NfsPath)
+	loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
+
+	loopDeviceName, err := utils.AttachBlockOnFileVolume(ctx, nfsMountpoint, loopFile, publishInfo)
+	if err != nil {
+		return nil, err
+	}
+	publishInfo.DevicePath = loopDeviceName
+
+	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Save the device info to the staging path for use in the publish & unstage calls
+	if err := p.writeStagedDeviceInfo(ctx, stagingTargetPath, publishInfo, volumeId); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &csi.NodeStageVolumeResponse{}, nil
+}
+
+func (p *Plugin) nodeUnstageNFSBlockVolume(
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo,
+) (*csi.NodeUnstageVolumeResponse, error) {
+
+	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
+	if err != nil {
+		return nil, err
+	}
+
+	nfsMountpoint := path.Join(tridentDeviceInfoPath, publishInfo.BackendUUID, publishInfo.NfsPath)
+	loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
+
+	if err = utils.DetachBlockOnFileVolume(ctx, nfsMountpoint, loopFile, publishInfo); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// This is a temporary logic in lieu of book keeping
+	time.Sleep(2 * time.Second) // losetup output takes some time to reflect the detached device, loop file.
+	safeToRemoveNFSMount, err := utils.IsSafeToUnmountNFSMountpoint(ctx, nfsMountpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	if safeToRemoveNFSMount {
+		if err = utils.RemoveMountPoint(ctx, nfsMountpoint); err != nil {
+			return nil, err
+		}
+	}
+
+	// Delete the device info we saved to the staging path so unstage can succeed
+	if err := p.clearStagedDeviceInfo(ctx, stagingTargetPath, volumeId); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &csi.NodeUnstageVolumeResponse{}, nil
+}
+
+func (p *Plugin) nodePublishNFSBlockVolume(
+	ctx context.Context, req *csi.NodePublishVolumeRequest,
+) (*csi.NodePublishVolumeResponse, error) {
+
+	// Ensure AccessMode is RWO or RWOP
+	csiAccessMode := p.getAccessForCSIAccessMode(req.GetVolumeCapability().GetAccessMode().Mode)
+	if p.containsMultiNodeAccessMode([]tridentconfig.AccessMode{csiAccessMode}) {
+		return nil, status.Errorf(codes.InvalidArgument, "volume cannot be mounted using multi-node access mode")
+	}
+
+	publishInfo, err := p.readStagedDeviceInfo(ctx, req.StagingTargetPath)
+	if err != nil {
+		if utils.IsNotFoundError(err) {
+			return nil, status.Error(codes.FailedPrecondition, err.Error())
+		} else {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	// TODO: May be consolidate this with iSCSI mounting
+	if req.GetReadonly() {
+		publishInfo.SubvolumeMountOptions = utils.AppendToStringList(publishInfo.SubvolumeMountOptions, "ro", ",")
+	}
+
+	publishInfo.SubvolumeMountOptions = utils.AppendToStringList(publishInfo.SubvolumeMountOptions, "loop", ",")
+
+	isRawBlock := publishInfo.FilesystemType == tridentconfig.FsNFSRaw
+
+	if isRawBlock {
+		publishInfo.SubvolumeMountOptions = utils.AppendToStringList(publishInfo.SubvolumeMountOptions, "bind", ",")
+	}
+
+	err = utils.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.SubvolumeMountOptions, isRawBlock)
+	if err != nil {
+		if os.IsPermission(err) {
+			return nil, status.Error(codes.PermissionDenied, err.Error())
+		}
+		if strings.Contains(err.Error(), "invalid argument") {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &csi.NodePublishVolumeResponse{}, nil
@@ -1310,12 +1432,15 @@ func (p *Plugin) clearStagedTrackingFile(ctx context.Context, volumeId string) e
 }
 
 // getVolumeProtocolFromPublishInfo examines the publish info read from the staging target path and determines
-// the protocol type from the volume (File or Block).
+// the protocol type from the volume (File or Block or Block-on-File).
 func (p *Plugin) getVolumeProtocolFromPublishInfo(
 	publishInfo *utils.VolumePublishInfo,
 ) (tridentconfig.Protocol, error) {
 
 	if publishInfo.VolumeAccessInfo.NfsServerIP != "" && publishInfo.VolumeAccessInfo.IscsiTargetIQN == "" {
+		if publishInfo.VolumeAccessInfo.SubvolumeName != "" {
+			return tridentconfig.BlockOnFile, nil
+		}
 		return tridentconfig.File, nil
 	} else if publishInfo.VolumeAccessInfo.IscsiTargetIQN != "" && publishInfo.VolumeAccessInfo.NfsServerIP == "" {
 		return tridentconfig.Block, nil
@@ -1344,3 +1469,4 @@ func (p *Plugin) getVolumeIdAndStagingPath(req RequestHandler) (string, string, 
 
 	return volumeId, stagingTargetPath, nil
 }
+

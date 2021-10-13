@@ -5,6 +5,7 @@ package utils
 type VolumeAccessInfo struct {
 	IscsiAccessInfo
 	NfsAccessInfo
+	NfsBlockAccessInfo
 	MountOptions string `json:"mountOptions,omitempty"`
 }
 
@@ -36,6 +37,11 @@ type IscsiAccessInfo struct {
 type NfsAccessInfo struct {
 	NfsServerIP string `json:"nfsServerIp,omitempty"`
 	NfsPath     string `json:"nfsPath,omitempty"`
+}
+
+type NfsBlockAccessInfo struct {
+	SubvolumeName         string `json:"subvolumeName,omitempty"`
+	SubvolumeMountOptions string `json:"subvolumeMountOptions,omitempty"`
 }
 
 type VolumePublishInfo struct {

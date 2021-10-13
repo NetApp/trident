@@ -383,6 +383,58 @@ func NewHTTPError(response *http.Response) *HTTPError {
 	return &HTTPError{response.Status, response.StatusCode}
 }
 
+// SliceContains checks to see if a slice (genericSlice) contains an item (genericElement)
+func SliceContains(genericSlice, genericElement interface{}) bool {
+	slice, elem := reflect.ValueOf(genericSlice), reflect.ValueOf(genericElement)
+
+	if slice.Kind() != reflect.Slice && slice.Kind() != reflect.Array {
+		return false
+	}
+
+	if slice.Len() > 1 {
+		if slice.Index(0).Type() != elem.Type() {
+			return false
+		}
+	}
+
+	for i := 0; i < slice.Len(); i++ {
+		if elem.Interface() == slice.Index(i).Interface() {
+			return true
+		}
+	}
+
+	return false
+}
+
+// SliceContainsElements checks to see if a slice (genericSlice) contains a list of all/some items (genericElements)
+func SliceContainsElements(genericSlice, genericElements interface{}) (bool, bool) {
+	slice, elem := reflect.ValueOf(genericSlice), reflect.ValueOf(genericElements)
+
+	if slice.Kind() != reflect.Slice && slice.Kind() != reflect.Array {
+		return false, false
+	}
+
+	if elem.Kind() != reflect.Slice && elem.Kind() != reflect.Array {
+		return false, false
+	}
+
+	containAll := true
+	containSome := false
+	for i := 0; i < elem.Len(); i++ {
+		if SliceContains(genericSlice, elem.Index(i).Interface()) {
+			containSome = true
+		} else {
+			containAll = false
+		}
+	}
+
+	if !containSome {
+		containAll = false
+	}
+
+	return containAll, containSome
+}
+
 // SliceContainsString checks to see if a []string contains a string
 func SliceContainsString(slice []string, s string) bool {
 	return SliceContainsStringConditionally(slice, s, func(val1, val2 string) bool { return val1 == val2 })
@@ -733,4 +785,43 @@ func RedactSecretsFromString(stringToSanitize string, replacements map[string]st
 	}
 
 	return stringToSanitize
+}
+
+// GetVerifiedBlockFsType retrieves and verifies the filesystem type for a BlockOnFile protocol
+func GetVerifiedBlockFsType(filesystemType string) (string, error) {
+	fsTypeSplit := strings.Split(filesystemType, "/")
+
+	if len(fsTypeSplit) != 2 {
+		return "", fmt.Errorf("unable to get filesystem type from '%v'", filesystemType)
+	}
+
+	if fsTypeSplit[0] != "nfs" {
+		return "", fmt.Errorf("unrecognized fileSystemType option: %s", filesystemType)
+	}
+
+	return VerifyFilesystemSupport(fsTypeSplit[1])
+}
+
+// VerifyFilesystemSupport checks for a supported file system type
+func VerifyFilesystemSupport(fs string) (string, error) {
+
+	fstype := strings.ToLower(fs)
+	switch fstype {
+	case fsXfs, fsExt3, fsExt4, fsRaw:
+		return fstype, nil
+	default:
+		return "", fmt.Errorf("unsupported fileSystemType option: %s", fstype)
+	}
+}
+
+// AppendToStringList appends an item to a string list with a seperator
+func AppendToStringList(stringList, newItem, sep string) string {
+	stringListItems := SplitString(context.TODO(), stringList, sep)
+
+	if len(stringListItems) == 0 {
+		return newItem
+	}
+
+	stringListItems = append(stringListItems, newItem)
+	return strings.Join(stringListItems, sep)
 }

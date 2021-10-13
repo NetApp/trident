@@ -16,7 +16,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testSlice = []string{
+var testStringSlice = []string{
+	"foo",
+	"bar",
+	"earn",
+	"baz",
+	"con:1234",
+	"silicon:1234",
+	"bigstring",
+	"verybigstring",
+	"superbingstring",
+}
+
+var testIntSlice = []int{
+	1,
+	-1,
+	9999,
+	0,
+	56355634,
+}
+
+type CustomString string
+
+var testCustomStringSlice = []CustomString{
 	"foo",
 	"bar",
 	"earn",
@@ -126,25 +148,175 @@ func TestVolumeSizeWithinTolerance(t *testing.T) {
 
 }
 
-func TestSliceContainsStringCase(t *testing.T) {
-	log.Debug("Running TestSliceContainsStringCase...")
+func TestSliceContainsString(t *testing.T) {
+	log.Debug("Running TestSliceContainsString...")
 
 	var testCases = []struct {
 		Text           string
 		ExpectedResult bool
 	}{
+		// Positive Cases
 		{"foo", true},
+		{"silicon:1234", true},
+
+		// Negative Cases
 		{"Foo", false},
 		{"foobar", false},
-		{"silicon:1234", true},
 		{"sIliCon:1234", false},
 		{"silicon:12344", false},
 		{"", false},
 	}
 
 	for _, testCase := range testCases {
-		contains := SliceContainsString(testSlice, testCase.Text)
+		contains := SliceContainsString(testStringSlice, testCase.Text)
 		assert.Equal(t, testCase.ExpectedResult, contains)
+	}
+}
+
+func TestSliceContains(t *testing.T) {
+	log.Debug("Running TestSliceContains...")
+
+	var testCases = []struct {
+		SliceName  interface{}
+		SliceValue interface{}
+		Contains   bool
+	}{
+		// Positive Cases
+		{testStringSlice, "foo", true},
+		{testStringSlice, "silicon:1234", true},
+		{testCustomStringSlice, CustomString("foo"), true},
+		{testCustomStringSlice, CustomString("silicon:1234"), true},
+		{testIntSlice, -1, true},
+		{testIntSlice, 0, true},
+		{testIntSlice, 56355634, true},
+
+		// Negative Cases
+		{testStringSlice, "Foo", false},
+		{testStringSlice, "foobar", false},
+		{testStringSlice, "sIliCon:1234", false},
+		{testStringSlice, "silicon:12344", false},
+		{testStringSlice, "", false},
+		{testCustomStringSlice, "foo", false},
+		{testCustomStringSlice, "silicon:1234", false},
+		{testCustomStringSlice, CustomString("Foo"), false},
+		{testCustomStringSlice, CustomString("foobar"), false},
+		{testCustomStringSlice, CustomString("sIliCon:1234"), false},
+		{testCustomStringSlice, CustomString("silicon:12344"), false},
+		{testCustomStringSlice, CustomString(""), false},
+		{testIntSlice, "-1", false},
+		{testIntSlice, -2, false},
+		{testIntSlice, -9999, false},
+		{testIntSlice, 100000, false},
+	}
+
+	for _, testCase := range testCases {
+		contains := SliceContains(testCase.SliceName, testCase.SliceValue)
+		assert.Equal(t, testCase.Contains, contains)
+	}
+}
+
+func TestSliceContainElements(t *testing.T) {
+	log.Debug("Running TestSliceContainElements...")
+
+	var testCases = []struct {
+		SliceName    interface{}
+		SliceValues  interface{}
+		ContainsAll  bool
+		ContainsSome bool
+	}{
+		// ContainsAll
+		{testStringSlice, testStringSlice, true, true},
+		{testStringSlice, testStringSlice[1:4], true, true},
+		{testStringSlice, append(testStringSlice, "foo"), true, true},
+		{append(testStringSlice, "foo"), testStringSlice, true, true},
+		{testStringSlice, []string{"foo", "bar"}, true, true},
+		{testStringSlice, []string{"silicon:1234"}, true, true},
+
+		{testCustomStringSlice, testCustomStringSlice, true, true},
+		{testCustomStringSlice, testCustomStringSlice[1:4], true, true},
+		{testCustomStringSlice, append(testCustomStringSlice, "foo"), true, true},
+		{append(testCustomStringSlice, "foo"), testCustomStringSlice, true, true},
+		{testCustomStringSlice, []CustomString{"foo", "bar"}, true, true},
+		{testCustomStringSlice, []CustomString{"silicon:1234"}, true, true},
+
+		{testIntSlice, testIntSlice, true, true},
+		{testIntSlice, testIntSlice[1:3], true, true},
+		{testIntSlice, append(testIntSlice, 1), true, true},
+		{append(testIntSlice, 1), testIntSlice, true, true},
+		{testIntSlice, []int{1, 56355634}, true, true},
+		{testIntSlice, []int{9999}, true, true},
+
+		// ContainsSome
+		{testStringSlice, append(testStringSlice, "new"), false, true},
+		{[]string{"foo", "bar"}, testStringSlice, false, true},
+		{testStringSlice, []string{"foo", "bar1"}, false, true},
+		{testStringSlice, []string{"", "foo"}, false, true},
+
+		{testCustomStringSlice, append(testCustomStringSlice, "new"), false, true},
+		{[]CustomString{"foo", "bar"}, testCustomStringSlice, false, true},
+		{testCustomStringSlice, []CustomString{"foo", "bar1"}, false, true},
+		{testCustomStringSlice, []CustomString{"", "foo"}, false, true},
+
+		{testIntSlice, append(testIntSlice, 2), false, true},
+		{[]int{1, 56355634}, testIntSlice, false, true},
+		{testIntSlice, []int{1, 563556341}, false, true},
+		{testIntSlice, []int{2, 56355634}, false, true},
+
+		// Negative Cases
+		{testStringSlice, []string{}, false, false},
+		{testStringSlice, "", false, false},
+		{[]string{}, testStringSlice, false, false},
+		{"", testStringSlice, false, false},
+		{"", "", false, false},
+		{testStringSlice, "foo", false, false},
+		{"foo", testStringSlice, false, false},
+		{"foo", "foo", false, false},
+		{"foo", "", false, false},
+		{testStringSlice, []string{"foo1", "bar1"}, false, false},
+		{testStringSlice, []string{"sIliCon:1234"}, false, false},
+		{testStringSlice, []string{"foobar"}, false, false},
+		{testStringSlice, testCustomStringSlice, false, false},
+		{testStringSlice, testIntSlice, false, false},
+
+		{testCustomStringSlice, []CustomString{}, false, false},
+		{testCustomStringSlice, "", false, false},
+		{[]CustomString{}, testCustomStringSlice, false, false},
+		{"", testCustomStringSlice, false, false},
+		{"", "", false, false},
+		{testCustomStringSlice, "foo", false, false},
+		{"foo", testCustomStringSlice, false, false},
+		{"foo", "foo", false, false},
+		{"foo", "", false, false},
+		{testCustomStringSlice, []CustomString{"foo1", "bar1"}, false, false},
+		{testCustomStringSlice, []CustomString{"sIliCon:1234"}, false, false},
+		{testCustomStringSlice, []CustomString{"foobar"}, false, false},
+		{testCustomStringSlice, testStringSlice, false, false},
+		{testCustomStringSlice, testIntSlice, false, false},
+
+		{testIntSlice, []int{}, false, false},
+		{testIntSlice, "", false, false},
+		{testIntSlice, 0, false, false},
+		{[]int{}, testIntSlice, false, false},
+		{"", testIntSlice, false, false},
+		{0, testIntSlice, false, false},
+		{"", "", false, false},
+		{0, 0, false, false},
+		{testIntSlice, 1, false, false},
+		{1, testIntSlice, false, false},
+		{1, 1, false, false},
+		{1, "", false, false},
+		{1, 0, false, false},
+		{testIntSlice, []int{2, -2}, false, false},
+		{testIntSlice, []int{100000}, false, false},
+		{testIntSlice, []int{-9999}, false, false},
+		{testIntSlice, testStringSlice, false, false},
+		{testIntSlice, testCustomStringSlice, false, false},
+	}
+
+	for _, testCase := range testCases {
+		containsAll, containsSome := SliceContainsElements(testCase.SliceName, testCase.SliceValues)
+		assert.Equal(t, testCase.ContainsAll, containsAll, "containsAll mismatch")
+		assert.Equal(t, testCase.ContainsSome, containsSome, "containsSome mismatch")
 	}
 }
 
@@ -181,8 +353,8 @@ func TestRemoveStringFromSlice(t *testing.T) {
 func TestRemoveStringFromSliceConditionally(t *testing.T) {
 	log.Debug("Running TestRemoveStringFromSlice...")
 
-	updatedSlice := make([]string, len(testSlice))
-	copy(updatedSlice, testSlice)
+	updatedSlice := make([]string, len(testStringSlice))
+	copy(updatedSlice, testStringSlice)
 
 	updatedSlice = RemoveStringFromSliceConditionally(updatedSlice, "foo",
 		func(val1, val2 string) bool { return val1 == val2 })
@@ -237,17 +409,20 @@ func TestSliceContainsStringCaseInsensitive(t *testing.T) {
 		Text           string
 		ExpectedResult bool
 	}{
+		// Positive Cases
 		{"foo", true},
 		{"Foo", true},
-		{"foobar", false},
 		{"silicon:1234", true},
 		{"sIliCon:1234", true},
+
+		// Negative Cases
+		{"foobar", false},
 		{"silicon:12344", false},
 		{"", false},
 	}
 
 	for _, testCase := range testCases {
-		contains := SliceContainsStringCaseInsensitive(testSlice, testCase.Text)
+		contains := SliceContainsStringCaseInsensitive(testStringSlice, testCase.Text)
 		assert.Equal(t, testCase.ExpectedResult, contains)
 	}
 }
@@ -276,7 +451,7 @@ func TestSliceContainsStringConditionally(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		contains := SliceContainsStringConditionally(testSlice, testCase.Text, testCase.MatchFunc)
+		contains := SliceContainsStringConditionally(testStringSlice, testCase.Text, testCase.MatchFunc)
 		assert.Equal(t, testCase.ExpectedResult, contains)
 	}
 }
@@ -810,5 +985,111 @@ func TestRedactSecretsFromString(t *testing.T) {
 			actualString := RedactSecretsFromString(tc.input, tc.replacements, tc.useRegex)
 			assert.Equal(t, tc.expected, actualString, tc.assertMessage)
 		})
+	}
+}
+
+func TestGetVerifiedBlockFsType(t *testing.T) {
+	log.Debug("Running TestGetVerifiedBlockFsType...")
+
+	var tests = []struct {
+		blockFsType string
+		fsType      string
+		errNotNil   bool
+	}{
+		// Positive tests
+		{"nfs/ext3", "ext3", false},
+		{"nfs/ext4", "ext4", false},
+		{"nfs/xfs", "xfs", false},
+		{"nfs/raw", "raw", false},
+
+		// Negative tests
+		{"abc/ext3", "", true},
+		{"ext4/xfs", "", true},
+		{"nfs/ext3/ext4", "", true},
+		{"ext3", "", true},
+		{"nfs/ext99", "", true},
+	}
+
+	for _, test := range tests {
+		fsType, err := GetVerifiedBlockFsType(test.blockFsType)
+
+		assert.Equal(t, test.fsType, fsType)
+		assert.Equal(t, test.errNotNil, err != nil)
+	}
+}
+
+func TestVerifyFilesystemSupport(t *testing.T) {
+	log.Debug("Running TestVerifyFilesystemSupport...")
+
+	var tests = []struct {
+		fsType       string
+		outputFsType string
+		errNotNil    bool
+	}{
+		// Positive tests
+		{"ext3", "ext3", false},
+		{"ext4", "ext4", false},
+		{"xfs", "xfs", false},
+		{"raw", "raw", false},
+
+		// Negative tests
+		{"ext99", "", true},
+		{"nfs/ext3", "", true},
+		{"nfs/ext4", "", true},
+		{"nfs/xfs", "", true},
+		{"nfs/raw", "", true},
+		{"abc/ext3", "", true},
+		{"ext4/xfs", "", true},
+		{"nfs/ext3/ext4", "", true},
+		{"nfs/ext99", "", true},
+	}
+
+	for _, test := range tests {
+		fsType, err := VerifyFilesystemSupport(test.fsType)
+
+		assert.Equal(t, test.outputFsType, fsType)
+		assert.Equal(t, test.errNotNil, err != nil)
+	}
+}
+
+func TestAppendToStringList(t *testing.T) {
+	log.Debug("Running TestAppendToStringList...")
+
+	var tests = []struct {
+		stringList    string
+		newItem       string
+		sep           string
+		newStringList string
+	}{
+		{"", "xfs", ",", "xfs"},
+		{"", "xfs", "/", "xfs"},
+		{"", "xfs", " ", "xfs"},
+		{"", "xfs", "", "xfs"},
+		{"", "", ",", ""},
+		{"", "", "/", ""},
+		{"", "", " ", ""},
+		{"", "", "", ""},
+		{"ext3", "xfs", ",", "ext3,xfs"},
+		{"ext3", "xfs", "/", "ext3/xfs"},
+		{"ext3", "xfs", " ", "ext3 xfs"},
+		{"ext3", "xfs", "", "ext3xfs"},
+		{"ext3", "xfs,raw", ",", "ext3,xfs,raw"},
+		{"ext3", "xfs, raw", "/", "ext3/xfs, raw"},
+		{"ext3", "xfs, raw", " ", "ext3 xfs, raw"},
+		{"ext3", "xfs, raw", "", "ext3xfs, raw"},
+		{"ext3,ext4", "xfs", ",", "ext3,ext4,xfs"},
+		{"ext3,ext4", "xfs", "/", "ext3,ext4/xfs"},
+		{"ext3,ext4", "xfs", " ", "ext3,ext4 xfs"},
+		{"ext3,ext4", "xfs", "", "ext3,ext4xfs"},
+		{"ext3, ext4", "xfs", ",", "ext3, ext4,xfs"},
+		{"ext3, ext4", "xfs", "/", "ext3, ext4/xfs"},
+		{"ext3, ext4", "xfs", " ", "ext3, ext4 xfs"},
+		{"ext3, ext4", "xfs", "", "ext3, ext4xfs"},
+	}
+
+	for _, test := range tests {
+		newStringList := AppendToStringList(test.stringList, test.newItem, test.sep)
+
+		assert.Equal(t, test.newStringList, newStringList)
 	}
 }

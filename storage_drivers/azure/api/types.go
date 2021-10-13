@@ -40,6 +40,20 @@ type Azure interface {
 	ResizeVolume(context.Context, *FileSystem, int64) error
 	DeleteVolume(context.Context, *FileSystem) error
 
+	Subvolumes(context.Context, []string) (*[]*Subvolume, error)
+	Subvolume(context.Context, *storage.VolumeConfig, bool) (*Subvolume, error)
+	SubvolumeExists(context.Context, *storage.VolumeConfig, []string) (bool, *Subvolume, error)
+	SubvolumeByCreationToken(context.Context, string, []string, bool) (*Subvolume, error)
+	SubvolumeExistsByCreationToken(context.Context, string, []string) (bool, *Subvolume, error)
+	SubvolumeByID(context.Context, string, bool) (*Subvolume, error)
+	SubvolumeExistsByID(context.Context, string) (bool, *Subvolume, error)
+	SubvolumeParentVolume(context.Context, *storage.VolumeConfig) (*FileSystem, error)
+	WaitForSubvolumeState(context.Context, *Subvolume, string, []string, time.Duration) (string, error)
+	CreateSubvolume(context.Context, *SubvolumeCreateRequest) (*Subvolume, error)
+	ResizeSubvolume(context.Context, *Subvolume, int64) error
+	DeleteSubvolume(context.Context, *Subvolume) error
+	ValidateFilePoolVolumes(context.Context, []string, string) ([]*FileSystem, error)
+
 	SnapshotsForVolume(context.Context, *FileSystem) (*[]*Snapshot, error)
 	SnapshotForVolume(context.Context, *FileSystem, string) (*Snapshot, error)
 	WaitForSnapshotState(context.Context, *Snapshot, *FileSystem, string, []string, time.Duration) error

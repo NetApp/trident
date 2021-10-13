@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -31,9 +32,14 @@ const (
 	iSCSIErrNoObjsFound                 = 21
 	iSCSIDeviceDiscoveryTimeoutSecs     = 90
 	multipathDeviceDiscoveryTimeoutSecs = 90
-	fsRaw                               = "raw"
 	temporaryMountDir                   = "/tmp_mnt"
 	unknownFstype                       = "<unknown>"
+
+	// Filesystem types
+	fsXfs  = "xfs"
+	fsExt3 = "ext3"
+	fsExt4 = "ext4"
+	fsRaw  = "raw"
 )
 
 var (
@@ -42,6 +48,7 @@ var (
 	portalPortPattern     = regexp.MustCompile(`.+:\d+$`)
 	pidRunningOrIdleRegex = regexp.MustCompile(`pid \d+ (running|idle)`)
 	pidRegex              = regexp.MustCompile(`^\d+$`)
+	deviceRegex           = regexp.MustCompile(`/dev/(?P<device>[\w-]+)`)
 
 	chrootPathPrefix string
 )
@@ -81,6 +88,105 @@ func AttachNFSVolume(ctx context.Context, name, mountpoint string, publishInfo *
 	}).Debug("Publishing NFS volume.")
 
 	return mountNFSPath(ctx, exportPath, mountpoint, options)
+}
+
+func AttachBlockOnFileVolume(
+	ctx context.Context, nfsMountpoint, loopFile string, publishInfo *VolumePublishInfo,
+) (string, error) {
+
+	Logc(ctx).Debug(">>>> osutils.AttachBlockOnFileVolume")
+	defer Logc(ctx).Debug("<<<< osutils.AttachBlockOnFileVolume")
+
+	var exportPath = fmt.Sprintf("%s:%s", publishInfo.NfsServerIP, publishInfo.NfsPath)
+	var options = publishInfo.MountOptions
+
+	fsType, err := GetVerifiedBlockFsType(publishInfo.FilesystemType)
+	if err != nil {
+		return "", err
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"volume":        loopFile,
+		"exportPath":    exportPath,
+		"nfsMountpoint": nfsMountpoint,
+		"filesystem":    fsType,
+		"options":       options,
+	}).Debug("Attaching block-on-file volume.")
+
+	// Determine if the NFS share is already mounted
+	nfsShareMounted, err := IsNFSShareMounted(ctx, exportPath, nfsMountpoint)
+	if err != nil {
+		return "", err
+	}
+
+	// Mount the NFS share if it isn't already mounted
+	if nfsShareMounted {
+		Logc(ctx).WithFields(log.Fields{
+			"exportPath":    exportPath,
+			"nfsMountpoint": nfsMountpoint,
+		}).Debug("NFS share already mounted.")
+	} else {
+		Logc(ctx).WithFields(log.Fields{
+			"exportPath":    exportPath,
+			"nfsMountpoint": nfsMountpoint,
+		}).Debug("Mounting NFS share.")
+
+		err := mountNFSPath(ctx, exportPath, nfsMountpoint, options)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// Attach the NFS-backed loop file to a loop device only if it isn't already attached
+	attached, loopDevice, err := isLoopDeviceFileAttached(ctx, loopFile)
+	if err != nil {
+		return "", err
+	}
+	if !attached {
+		if _, err := attachLoopDevice(ctx, loopFile); err != nil {
+			return "", err
+		}
+
+		if attached, loopDevice, err = isLoopDeviceFileAttached(ctx, loopFile); err != nil {
+			return "", err
+		} else if !attached {
+			return "", fmt.Errorf("could not detect new loop device attachment to %s", loopFile)
+		}
+	}
+
+	if fsType != fsRaw {
+		// Format device only if it isn't formatted
+		if unformatted, err := isDeviceUnformatted(ctx, loopDevice.Name); err != nil {
+			return "", err
+		} else if unformatted {
+			if err := formatVolume(ctx, loopDevice.Name, fsType); err != nil {
+				return "", err
+			}
+		}
+	}
+
+	return loopDevice.Name, nil
+}
+
+func DetachBlockOnFileVolume(ctx context.Context, nfsMountpoint, loopFile string,
+	publishInfo *VolumePublishInfo) error {
+
+	Logc(ctx).Debug(">>>> osutils.DetachBlockOnFileVolume")
+	defer Logc(ctx).Debug("<<<< osutils.DetachBlockOnFileVolume")
+
+	loopDeviceAttached, err := isLoopDeviceAttachedToFile(ctx, publishInfo.DevicePath, loopFile)
+	if err != nil {
+		return fmt.Errorf("unable to identify if loop device '%s' is attached to file '%s': %v",
+			publishInfo.DevicePath, loopFile, err)
+	}
+
+	if loopDeviceAttached {
+		if err := detachLoopDevice(ctx, publishInfo.DevicePath); err != nil {
+			return fmt.Errorf("unable to detach loop device '%s': %v", publishInfo.DevicePath, err)
+		}
+	}
+
+	return nil
 }
 
 // AttachISCSIVolume attaches the volume to the local host.  This method must be able to accomplish its task using only the data passed in.
@@ -1283,7 +1389,7 @@ func UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) e
 	// Delete the temporary mount point if it exists.
 	tmpDir := path.Join(mountPath, temporaryMountDir)
 	if _, err := os.Stat(tmpDir); err == nil {
-		if err = removeMountPoint(ctx, tmpDir); err != nil {
+		if err = RemoveMountPoint(ctx, tmpDir); err != nil {
 			return fmt.Errorf("failed to remove directory in staging target path %s; %s", tmpDir, err)
 		}
 	} else if !os.IsNotExist(err) {
@@ -1295,11 +1401,11 @@ func UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) e
 	return nil
 }
 
-// removeMountPoint attempts to unmount and remove the directory of the mountPointPath
-func removeMountPoint(ctx context.Context, mountPointPath string) error {
+// RemoveMountPoint attempts to unmount and remove the directory of the mountPointPath
+func RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 
-	Logc(ctx).Debug(">>>> osutils.removeMountPoint")
-	defer Logc(ctx).Debug("<<<< osutils.removeMountPoint")
+	Logc(ctx).Debug(">>>> osutils.RemoveMountPoint")
+	defer Logc(ctx).Debug("<<<< osutils.RemoveMountPoint")
 
 	err := Umount(ctx, mountPointPath)
 	if err != nil {
@@ -1357,7 +1463,8 @@ func ExpandISCSIFilesystem(
 	if err != nil {
 		return 0, err
 	}
-	defer removeMountPoint(ctx, tmpMountPoint) // nolint
+
+	defer RemoveMountPoint(ctx, tmpMountPoint) //nolint
 	// Don't need to verify the filesystem type as the resize utilities will throw an error if the filesystem
 	// is not the correct type.
 	var size int64
@@ -2140,6 +2247,58 @@ func GetISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 	return devices, nil
 }
 
+func IsNFSShareMounted(ctx context.Context, exportPath, mountpoint string) (bool, error) {
+
+	fields := log.Fields{
+		"exportPath": exportPath,
+		"target":     mountpoint,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.IsNFSShareMounted")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.IsNFSShareMounted")
+
+	mounts, err := GetMountInfo(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	for _, mount := range mounts {
+
+		Logc(ctx).Tracef("Mount: %+v", mount)
+
+		if mount.MountSource == exportPath && mount.MountPoint == mountpoint {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func GetMountpointsForNFSShare(ctx context.Context, exportPath string) ([]string, error) {
+
+	fields := log.Fields{
+		"exportPath": exportPath,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> osutils.GetMountpointsForNFSShare")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.GetMountpointsForNFSShare")
+
+	mounts, err := GetMountInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	mountpoints := make([]string, 0)
+	for _, mount := range mounts {
+
+		Logc(ctx).Tracef("Mount: %+v", mount)
+
+		if mount.MountSource == exportPath {
+			mountpoints = append(mountpoints, mount.MountPoint)
+		}
+	}
+
+	return mountpoints, nil
+}
+
 // IsMounted verifies if the supplied device is attached at the supplied location.
 func IsMounted(ctx context.Context, sourceDevice, mountpoint string) (bool, error) {
 
@@ -2602,11 +2761,11 @@ func formatVolume(ctx context.Context, device, fstype string) error {
 		var err error
 
 		switch fstype {
-		case "xfs":
+		case fsXfs:
 			_, err = execCommand(ctx, "mkfs.xfs", "-f", device)
-		case "ext3":
+		case fsExt3:
 			_, err = execCommand(ctx, "mkfs.ext3", "-F", device)
-		case "ext4":
+		case fsExt4:
 			_, err = execCommand(ctx, "mkfs.ext4", "-F", device)
 		default:
 			return fmt.Errorf("unsupported file system type: %s", fstype)
@@ -2932,6 +3091,136 @@ func ensureIscsiTarget(
 		"iqn":    targetIqn,
 	}).Warning("Target not discovered")
 	return fmt.Errorf("target not discovered")
+}
+
+type LoopDevicesResponse struct {
+	LoopDevices []LoopDevice `json:"loopdevices"`
+}
+
+type LoopDevice struct {
+	Name      string `json:"name"`
+	Sizelimit string `json:"sizelimit"`
+	Offset    string `json:"offset"`
+	Autoclear string `json:"autoclear"`
+	Ro        string `json:"ro"`
+	BackFile  string `json:"back-file"`
+}
+
+func getLoopDeviceInfo(ctx context.Context) ([]LoopDevice, error) {
+
+	Logc(ctx).Debug(">>>> osutils.getLoopDeviceInfo")
+	defer Logc(ctx).Debug("<<<< osutils.getLoopDeviceInfo")
+
+	out, err := execCommandWithTimeout(ctx, "losetup", 10, true, "--list", "--json")
+	if err != nil {
+		Logc(ctx).WithField("error", err).Error("losetup failed.")
+		return nil, err
+	}
+
+	if len(out) == 0 {
+		return []LoopDevice{}, nil
+	}
+
+	var loopDevicesResponse LoopDevicesResponse
+	err = json.Unmarshal(out, &loopDevicesResponse)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal loop device response: %v", err)
+	}
+
+	return loopDevicesResponse.LoopDevices, nil
+}
+
+func isLoopDeviceFileAttached(ctx context.Context, loopFile string) (bool, *LoopDevice, error) {
+
+	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> osutils.isLoopDeviceAttached")
+	defer Logc(ctx).Debug("<<<< osutils.isLoopDeviceAttached")
+
+	devices, err := getLoopDeviceInfo(ctx)
+	if err != nil {
+		return false, nil, err
+	}
+
+	for _, device := range devices {
+		if device.BackFile == loopFile {
+			return true, &device, nil
+		}
+	}
+
+	return false, nil, nil
+}
+
+func isLoopDeviceAttachedToFile(ctx context.Context, loopDevice, loopFile string) (bool, error) {
+	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> osutils.isLoopDeviceAttachedToFile")
+	defer Logc(ctx).Debug("<<<< osutils.isLoopDeviceAttachedToFile")
+
+	var isAttached bool
+	devices, err := getLoopDeviceInfo(ctx)
+	if err != nil {
+		return isAttached, err
+	}
+
+	for _, device := range devices {
+		if device.Name == loopDevice && device.BackFile == loopFile {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+// attachLoopDevice invokes losetup to attach a file to a loop device.
+func attachLoopDevice(ctx context.Context, loopFile string) (string, error) {
+
+	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> osutils.attachLoopDevice")
+	defer Logc(ctx).Debug("<<<< osutils.attachLoopDevice")
+
+	out, err := execCommandWithTimeout(ctx, "losetup", 10, true, "--find", "--show", "--direct-io", "--nooverlap",
+		loopFile)
+	if err != nil {
+		Logc(ctx).WithField("error", err).Error("losetup failed.")
+		return "", fmt.Errorf("failed to attach loop file: %v", err)
+	}
+
+	device := strings.TrimSpace(string(out))
+	if deviceRegex.MatchString(device) {
+		return device, nil
+	}
+
+	return "", fmt.Errorf("losetup returned an invalid value (%s)", device)
+}
+
+// detachLoopDevice invokes losetup to detach a file from a loop device.
+func detachLoopDevice(ctx context.Context, loopDeviceName string) error {
+
+	Logc(ctx).WithField("loopDeviceName", loopDeviceName).Debug(">>>> osutils.DetachLoopDevice")
+	defer Logc(ctx).Debug("<<<< osutils.DetachLoopDevice")
+
+	_, err := execCommandWithTimeout(ctx, "losetup", 10, true, "--detach", loopDeviceName)
+	if err != nil {
+		Logc(ctx).WithField("error", err).Error("losetup failed.")
+		return fmt.Errorf("failed to detach loop device '%s': %v", loopDeviceName, err)
+	}
+
+	return nil
+}
+
+func IsSafeToUnmountNFSMountpoint(ctx context.Context, nfsMountpoint string) (bool, error) {
+
+	Logc(ctx).WithField("nfsMountpoint", nfsMountpoint).Debug(">>>> osutils.IsSafeToUnmountNFSMountpoint")
+	defer Logc(ctx).Debug("<<<< osutils.IsSafeToUnmountNFSMountpoint")
+
+	devices, err := getLoopDeviceInfo(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	for _, device := range devices {
+		if strings.Contains(device.BackFile, nfsMountpoint) {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
 
 // loginISCSITarget logs in to an iSCSI target.

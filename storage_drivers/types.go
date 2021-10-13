@@ -50,6 +50,8 @@ func GetDriverConfigByName(driverName string) (DriverConfig, error) {
 	case AWSNFSStorageDriverName:
 		storageDriverConfig = &AWSNFSStorageDriverConfig{}
 	case AzureNFSStorageDriverName:
+		fallthrough
+	case AzureNASBlockStorageDriverName:
 		storageDriverConfig = &AzureNFSStorageDriverConfig{}
 	case GCPNFSStorageDriverName:
 		storageDriverConfig = &GCPNFSStorageDriverConfig{}
@@ -500,6 +502,7 @@ type AzureNFSStorageDriverPool struct {
 	ResourceGroups                      []string            `json:"resourceGroups"`
 	NetappAccounts                      []string            `json:"netappAccounts"`
 	CapacityPools                       []string            `json:"capacityPools"`
+	FilePoolVolumes                     []string            `json:"filePoolVolumes"`
 	AzureNFSStorageDriverConfigDefaults `json:"defaults"`
 }
 

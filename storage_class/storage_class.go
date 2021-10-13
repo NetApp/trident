@@ -291,13 +291,23 @@ func (s *StorageClass) GetAdditionalStoragePools() map[string][]string {
 	return s.config.AdditionalPools
 }
 
-func (s *StorageClass) GetStoragePoolsForProtocol(ctx context.Context, p config.Protocol) []storage.Pool {
+func (s *StorageClass) GetStoragePoolsForProtocol(ctx context.Context, p config.Protocol, accessMode config.AccessMode,
+) []storage.Pool {
 	ret := make([]storage.Pool, 0, len(s.pools))
 	// TODO:  Change this to work with indices of backends?
 	for _, storagePool := range s.pools {
-		if p == config.ProtocolAny || storagePool.Backend().GetProtocol(ctx) == p {
+		storagePoolProtocol := storagePool.Backend().GetProtocol(ctx)
+
+		if p == config.ProtocolAny || storagePoolProtocol == p {
 			ret = append(ret, storagePool)
 		}
+
+		// AddRawBlockSupportOnBoF: Add below else-if code block to allow raw block volumes on BlockOnFile
+		// Allow only RWO raw-block on Block-On-File
+
+		// else if p == config.Block && accessMode == config.ReadWriteOnce && storagePoolProtocol == config. BlockOnFile {
+		//     ret = append(ret, storagePool)
+		// }
 	}
 	return ret
 }
@@ -395,12 +405,12 @@ func SortPoolsByPreferredTopologies(
 // each pool matches the supplied protocol.
 func (s *StorageClass) GetStoragePoolsForProtocolByBackend(
 	ctx context.Context, p config.Protocol, requisiteTopologies, preferredTopologies []map[string]string,
-) []storage.Pool {
+	accessMode config.AccessMode) []storage.Pool {
 
 	// Get all matching pools
 	var pools []storage.Pool
 
-	poolsForProtocol := s.GetStoragePoolsForProtocol(ctx, p)
+	poolsForProtocol := s.GetStoragePoolsForProtocol(ctx, p, accessMode)
 	if len(poolsForProtocol) == 0 {
 		Logc(ctx).Info("no backend pools support the requisite protocol")
 	}

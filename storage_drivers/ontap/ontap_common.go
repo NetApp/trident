@@ -822,7 +822,7 @@ func PublishLUN(
 	}
 
 	// xfs volumes are always mounted with '-o nouuid' to allow clones to be mounted to the same node as the source
-	if fstype == drivers.FsXfs {
+	if fstype == tridentconfig.FsXfs {
 		publishInfo.MountOptions = drivers.EnsureMountOption(publishInfo.MountOptions, drivers.MountOptionNoUUID)
 	}
 

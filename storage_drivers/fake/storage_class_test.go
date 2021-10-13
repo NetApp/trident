@@ -385,8 +385,8 @@ func TestSpecificBackends(t *testing.T) {
 		for _, backend := range backends {
 			test.sc.CheckAndAddBackend(ctx(), backend)
 		}
-		for _, protocol := range []config.Protocol{config.File, config.Block} {
-			for _, vc := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol) {
+		for _, protocol := range []config.Protocol{config.File, config.Block, config.BlockOnFile} {
+			for _, vc := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol, config.ReadWriteOnce) {
 				nameFound := false
 				for _, scName := range vc.StorageClasses() {
 					if scName == test.sc.GetName() {
@@ -615,7 +615,7 @@ func TestRegex(t *testing.T) {
 		}
 		// validate the results for the test StorageClass
 		for _, protocol := range []config.Protocol{config.File, config.Block} {
-			for _, pool := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol) {
+			for _, pool := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol, config.ReadWriteOnce) {
 				nameFound := false
 				for _, scName := range pool.StorageClasses() {
 					if scName == test.sc.GetName() {
@@ -750,7 +750,7 @@ func TestRegex2(t *testing.T) {
 		}
 		// validate the results for the test StorageClass
 		for _, protocol := range []config.Protocol{config.File, config.Block} {
-			for _, pool := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol) {
+			for _, pool := range test.sc.GetStoragePoolsForProtocol(ctx(), protocol, config.ReadWriteOnce) {
 				nameFound := false
 				for _, scName := range pool.StorageClasses() {
 					if scName == test.sc.GetName() {

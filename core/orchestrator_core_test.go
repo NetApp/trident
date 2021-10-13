@@ -300,8 +300,8 @@ func validateStorageClass(
 	}
 	remaining := make([]*tu.PoolMatch, len(expected))
 	copy(remaining, expected)
-	for _, protocol := range []config.Protocol{config.File, config.Block} {
-		for _, pool := range sc.GetStoragePoolsForProtocol(ctx(), protocol) {
+	for _, protocol := range []config.Protocol{config.File, config.Block, config.BlockOnFile} {
+		for _, pool := range sc.GetStoragePoolsForProtocol(ctx(), protocol, config.ReadWriteOnce) {
 			nameFound := false
 			for _, scName := range pool.StorageClasses() {
 				if scName == name {
@@ -1297,7 +1297,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		if !newBackend.Driver().Initialized() {
 			t.Errorf("Updated backend %s is not initialized.", backendName)
 		}
-		pools := sc.GetStoragePoolsForProtocol(ctx(), config.File)
+		pools := sc.GetStoragePoolsForProtocol(ctx(), config.File, config.ReadWriteMany)
 		foundNewBackend := false
 		for _, pool := range pools {
 			for i, b := range previousBackends {
@@ -1373,7 +1373,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		t.Error("Created volume volume on offline backend.")
 	}
 	orchestrator.mutex.Lock()
-	pools := sc.GetStoragePoolsForProtocol(ctx(), config.File)
+	pools := sc.GetStoragePoolsForProtocol(ctx(), config.File, config.ReadWriteOnce)
 	if len(pools) == 1 {
 		t.Error("Offline backend not removed from storage pool in storage class.")
 	}
@@ -1435,7 +1435,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 				name,
 			)
 		}
-		pools = newSC.GetStoragePoolsForProtocol(ctx(), config.File)
+		pools = newSC.GetStoragePoolsForProtocol(ctx(), config.File, config.ReadOnlyMany)
 		if len(pools) == 1 {
 			t.Errorf(
 				"Offline backend readded to storage class %s after "+
@@ -3592,21 +3592,25 @@ func TestGetProtocol(t *testing.T) {
 		{config.Filesystem, config.ModeAny, config.ProtocolAny, config.ProtocolAny},
 		{config.Filesystem, config.ModeAny, config.File, config.File},
 		{config.Filesystem, config.ModeAny, config.Block, config.Block},
+		{config.Filesystem, config.ModeAny, config.BlockOnFile, config.BlockOnFile},
 		{config.Filesystem, config.ReadWriteOnce, config.ProtocolAny, config.ProtocolAny},
 		{config.Filesystem, config.ReadWriteOnce, config.File, config.File},
 		{config.Filesystem, config.ReadWriteOnce, config.Block, config.Block},
-		{config.Filesystem, config.ReadOnlyMany, config.ProtocolAny, config.ProtocolAny},
+		{config.Filesystem, config.ReadWriteOnce, config.BlockOnFile, config.BlockOnFile},
+		{config.Filesystem, config.ReadOnlyMany, config.ProtocolAny, config.File},
 		{config.Filesystem, config.ReadOnlyMany, config.File, config.File},
-		{config.Filesystem, config.ReadOnlyMany, config.Block, config.Block},
 		{config.Filesystem, config.ReadWriteMany, config.ProtocolAny, config.File},
 		{config.Filesystem, config.ReadWriteMany, config.File, config.File},
-		// {config.Filesystem, config.ReadWriteMany, config.Block, config.ProtocolAny},
+		//{config.Filesystem, config.ReadWriteMany, config.Block, config.ProtocolAny},
+		//{config.Filesystem, config.ReadWriteMany, config.BlockOnFile, config.ProtocolAny},
 		{config.RawBlock, config.ModeAny, config.ProtocolAny, config.Block},
 		// {config.RawBlock, config.ModeAny, config.File, config.ProtocolAny},
 		{config.RawBlock, config.ModeAny, config.Block, config.Block},
+		{config.RawBlock, config.ModeAny, config.BlockOnFile, config.BlockOnFile},
 		{config.RawBlock, config.ReadWriteOnce, config.ProtocolAny, config.Block},
 		// {config.RawBlock, config.ReadWriteOnce, config.File, config.ProtocolAny},
 		{config.RawBlock, config.ReadWriteOnce, config.Block, config.Block},
+		{config.RawBlock, config.ReadWriteOnce, config.BlockOnFile, config.BlockOnFile},
 		{config.RawBlock, config.ReadOnlyMany, config.ProtocolAny, config.Block},
 		// {config.RawBlock, config.ReadOnlyMany, config.File, config.ProtocolAny},
 		{config.RawBlock, config.ReadOnlyMany, config.Block, config.Block},
@@ -3616,11 +3620,16 @@ func TestGetProtocol(t *testing.T) {
 	}
 
 	var accessModesNegativeTests = []accessVariables{
+		{config.Filesystem, config.ReadOnlyMany, config.Block, config.ProtocolAny},
+		{config.Filesystem, config.ReadOnlyMany, config.BlockOnFile, config.ProtocolAny},
 		{config.Filesystem, config.ReadWriteMany, config.Block, config.ProtocolAny},
+		{config.Filesystem, config.ReadWriteMany, config.BlockOnFile, config.ProtocolAny},
 		{config.RawBlock, config.ModeAny, config.File, config.ProtocolAny},
 		{config.RawBlock, config.ReadWriteOnce, config.File, config.ProtocolAny},
 		{config.RawBlock, config.ReadOnlyMany, config.File, config.ProtocolAny},
 		{config.RawBlock, config.ReadWriteMany, config.File, config.ProtocolAny},
+		{config.RawBlock, config.ReadOnlyMany, config.BlockOnFile, config.ProtocolAny},
+		{config.RawBlock, config.ReadWriteMany, config.BlockOnFile, config.ProtocolAny},
 	}
 
 	for _, tc := range accessModesPositiveTests {

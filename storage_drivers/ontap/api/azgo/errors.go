@@ -2,6 +2,7 @@
 
 package azgo
 
+const EONTAPI_ENOENT = "2"
 const EONTAPI_EEXIST = "17"
 const EONTAPI_EVOLOPNOTSUPP = "160"
 const EVDISK_ERROR_NO_SUCH_INITGROUP = "9003"
