@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -187,7 +188,7 @@ func NewRestClientFromOntapConfig(
 
 	vserver, err := restClient.SvmGetByName(ctx, ontapConfig.SVM)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get SVM details: %v", err)
+		return nil, fmt.Errorf("unable to get details for SVM %v; %v", ontapConfig.SVM, err)
 	}
 	restClient.SetSVMUUID(vserver.UUID)
 
@@ -2699,15 +2700,70 @@ func (c *RestClient) SvmList(ctx context.Context, pattern string) (*svm.SvmColle
 	return result, nil
 }
 
+// ValidatePayloadExists returns an error if the Payload field is missing from the supplied restResult
+func ValidatePayloadExists(ctx context.Context, restResult interface{}) (errorOut error) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			Logc(ctx).Errorf("Panic in ontap_rest#ValidatePayloadExists. %v\nStack Trace: %v",
+				restResult, string(debug.Stack()))
+			errorOut = fmt.Errorf("recovered from panic")
+		}
+	}()
+
+	if restResult == nil {
+		return fmt.Errorf("result was nil")
+	}
+
+	val := reflect.ValueOf(restResult)
+	if reflect.TypeOf(restResult).Kind() == reflect.Ptr {
+		// handle being passed a pointer
+		val = reflect.Indirect(val)
+		if !val.IsValid() {
+			return fmt.Errorf("result was nil")
+		}
+	}
+
+	// safely check to see if we have restResult.Payload
+	if testPayload := val.FieldByName("Payload"); testPayload.IsValid() {
+		restResult = testPayload.Interface()
+		val = reflect.ValueOf(restResult)
+		if reflect.TypeOf(restResult).Kind() == reflect.Ptr {
+			val = reflect.Indirect(val)
+			if !val.IsValid() {
+				return fmt.Errorf("result payload was nil")
+			}
+		}
+		return nil
+	}
+
+	return fmt.Errorf("no payload field exists for type '%v'", getType(restResult))
+}
+
+func getType(i interface{}) string {
+	if t := reflect.TypeOf(i); t.Kind() == reflect.Ptr {
+		return "*" + t.Elem().Name()
+	} else {
+		return t.Name()
+	}
+}
+
 // SvmGetByName gets the volume with the specified name
 func (c *RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.Svm, error) {
 
-	// TODO validate/improve this logic?
 	result, err := c.SvmList(ctx, svmName)
+	if err != nil {
+		return nil, err
+	}
+
+	if validationErr := ValidatePayloadExists(ctx, result); validationErr != nil {
+		return nil, validationErr
+	}
+
 	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
 		return result.Payload.Records[0], nil
 	}
-	return nil, err
+	return nil, fmt.Errorf("unexpected result")
 }
 
 func (c *RestClient) SVMGetAggregateNames(
