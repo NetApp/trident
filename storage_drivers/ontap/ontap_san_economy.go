@@ -508,10 +508,17 @@ func (d *SANEconomyStorageDriver) Create(
 			continue
 		}
 
+		var (
+			ignoredVols = make(map[string]struct{})
+			bucketVol   string
+			lunPath     string
+			newVol      bool
+		)
+	prepareBucket:
 		// Make sure we have a Flexvol for the new LUN
-		bucketVol, newVol, err := d.ensureFlexvolForLUN(
+		bucketVol, newVol, err = d.ensureFlexvolForLUN(
 			ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, false, enableEncryption, sizeBytes, opts,
-			d.Config, storagePool,
+			d.Config, storagePool, ignoredVols,
 		)
 		if err != nil {
 			errMessage := fmt.Sprintf(
@@ -548,7 +555,7 @@ func (d *SANEconomyStorageDriver) Create(
 			continue
 		}
 
-		lunPath := GetLUNPathEconomy(bucketVol, name)
+		lunPath = GetLUNPathEconomy(bucketVol, name)
 		osType := "linux"
 
 		// Create the LUN
@@ -557,24 +564,33 @@ func (d *SANEconomyStorageDriver) Create(
 			lunPath, int(sizeBytes), osType, qosPolicyGroup, false, spaceAllocation,
 		)
 		if err = api.GetError(ctx, lunCreateResponse, err); err != nil {
-			errMessage := fmt.Sprintf(
-				"ONTAP-SAN-ECONOMY pool %s/%s; error creating LUN %s/%s: %v",
-				storagePool.Name(), aggregate, bucketVol, name, err,
-			)
-			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			if zerr, ok := err.(api.ZapiError); ok && zerr.Code() == azgo.EVDISK_ERROR_TOO_MANY_LUNS {
+				// The originally chosen flexvol has hit the ONTAP hard limit of LUNs per flexvol.
+				// This limit is model dependent therefore we must handle the error after-the-fact.
+				// Add the full flexvol to the ignored list and find/create a new one
+				Logc(ctx).WithError(err).Warn("ONTAP limit for LUNs/Flexvol reached; finding a new Flexvol")
+				ignoredVols[bucketVol] = struct{}{}
+				goto prepareBucket
+			} else {
+				errMessage := fmt.Sprintf(
+					"ONTAP-SAN-ECONOMY pool %s/%s; error creating LUN %s/%s: %v",
+					storagePool.Name(), aggregate, bucketVol, name, err,
+				)
+				Logc(ctx).Error(errMessage)
+				createErrors = append(createErrors, fmt.Errorf(errMessage))
 
-			// Don't leave the new Flexvol around if we just created it
-			if newVol {
-				if _, err := d.API.VolumeDestroy(bucketVol, true); err != nil {
-					Logc(ctx).WithField("volume", bucketVol).Errorf("Could not clean up volume; %v", err)
-				} else {
-					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after LUN create error.")
+				// Don't leave the new Flexvol around if we just created it
+				if newVol {
+					if _, err := d.API.VolumeDestroy(bucketVol, true); err != nil {
+						Logc(ctx).WithField("volume", bucketVol).Errorf("Could not clean up volume; %v", err)
+					} else {
+						Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after LUN create error.")
+					}
 				}
-			}
 
-			// Move on to the next pool
-			continue
+				// Move on to the next pool
+				continue
+			}
 		}
 
 		volConfig.Size = strconv.FormatUint(uint64(lunCreateResponse.Result.ActualSize()), 10)
@@ -1307,7 +1323,7 @@ func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
 func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir,
 	encrypt bool, sizeBytes uint64, opts map[string]string, config drivers.OntapStorageDriverConfig,
-	storagePool storage.Pool,
+	storagePool storage.Pool, ignoredVols map[string]struct{},
 ) (string, bool, error) {
 
 	shouldLimitVolumeSize, flexvolSizeLimit, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
@@ -1320,7 +1336,7 @@ func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 	// Check if a suitable Flexvol already exists
 	flexvol, err := d.getFlexvolForLUN(
 		ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir, encrypt, sizeBytes,
-		shouldLimitVolumeSize, flexvolSizeLimit,
+		shouldLimitVolumeSize, flexvolSizeLimit, ignoredVols,
 	)
 
 	if err != nil {
@@ -1409,7 +1425,7 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 // is returned at random.
 func (d *SANEconomyStorageDriver) getFlexvolForLUN(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir, encrypt bool,
-	sizeBytes uint64, shouldLimitFlexvolSize bool, flexvolSizeLimit uint64,
+	sizeBytes uint64, shouldLimitFlexvolSize bool, flexvolSizeLimit uint64, ignoredVols map[string]struct{},
 ) (string, error) {
 
 	// Get all volumes matching the specified attributes
@@ -1456,7 +1472,10 @@ func (d *SANEconomyStorageDriver) getFlexvolForLUN(
 			}
 
 			if count < d.lunsPerFlexvol {
-				volumes = append(volumes, volName)
+				// Only add to the list if the volume is not being explicitly ignored
+				if _, ignored := ignoredVols[volName]; !ignored {
+					volumes = append(volumes, volName)
+				}
 			}
 		}
 	}
