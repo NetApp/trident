@@ -342,7 +342,8 @@ func (d OntapAPIREST) EmsAutosupportLog(
 	logLevel int,
 ) {
 
-	// TODO
+	d.api.EmsAutosupportLog(ctx, appVersion, autoSupport, category, computerName, eventDescription, eventID,
+		eventSource, logLevel)
 }
 
 func (d OntapAPIREST) FlexgroupExists(ctx context.Context, volumeName string) (bool, error) {
