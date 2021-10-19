@@ -185,12 +185,12 @@ func (p *Plugin) NodeUnpublishVolume(
 	}
 
 	if notMountPoint {
-		return nil, status.Error(codes.NotFound, "volume not mounted")
-	}
-
-	if err = utils.WaitForUmount(ctx, targetPath, umountMaxDuration); err != nil {
-		Logc(ctx).WithFields(log.Fields{"path": targetPath, "error": err}).Error("unable to unmount volume.")
-		return nil, status.Errorf(codes.InvalidArgument, "unable to unmount volume; %s", err)
+		Logc(ctx).Debug( "Volume not mounted, proceeding to unpublish volume")
+	} else {
+		if err = utils.WaitForUmount(ctx, targetPath, umountMaxDuration); err != nil {
+			Logc(ctx).WithFields(log.Fields{"path": targetPath, "error": err}).Error("unable to unmount volume.")
+			return nil, status.Errorf(codes.InvalidArgument, "unable to unmount volume; %s", err)
+		}
 	}
 
 	// As per the CSI spec SP i.e. Trident is responsible for deleting the target path,
