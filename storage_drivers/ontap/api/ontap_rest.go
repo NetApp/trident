@@ -511,7 +511,11 @@ func (c RestClient) getVolumeUsedSizeByNameAndStyle(ctx context.Context, volumeN
 		return 0, fmt.Errorf("could not find space attributes for volume %v", volumeName)
 	}
 
-	return int(volume.Space.Used), nil
+	if volume.Space.LogicalSpace == nil {
+		return 0, fmt.Errorf("could not find logical space attributes for volume %v", volumeName)
+	}
+
+	return int(volume.Space.LogicalSpace.Used), nil
 }
 
 // setVolumeSizeByNameAndStyle sets the size of the specified volume of given style
