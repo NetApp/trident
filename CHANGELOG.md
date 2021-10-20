@@ -17,6 +17,7 @@
 - **Kubernetes:** Added operator image to tridentctl images command (Issue [#570](https://github.com/NetApp/trident/issues/570)).
 
 **Experimental Enhancements:**
+- Added tech preview REST support for the ONTAP-NAS-Flexgroup, ONTAP-SAN, and ONTAP-NAS-Economy drivers.
 
 **Deprecations:**
 
