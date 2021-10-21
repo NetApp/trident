@@ -307,7 +307,8 @@ func (k *KubeClient) discoverKubernetesFlavor() OrchestratorFlavor {
 		//	"version":  gv.Version,
 		//}).Debug("Considering dynamic resource, looking for openshift group.")
 
-		if strings.Contains(gv.Group, "openshift") {
+		// OCP will have an openshift api server we can use to determine if the environment is OCP or Kubernetes
+		if strings.Contains(gv.Group, "apiserver.openshift.io") {
 			return FlavorOpenShift
 		}
 	}
@@ -2764,7 +2765,7 @@ func (k *KubeClient) GetSnapshotterCRDVersion() (snapshotterCRDVersion string) {
 
 	var servingBeta, servingGA bool
 	for _, snapshotterVersion := range crd.Spec.Versions {
-		if snapshotterVersion.Served == true {
+		if snapshotterVersion.Served {
 			if strings.ToLower(snapshotterVersion.Name) == versionBeta {
 				servingBeta = true
 			} else if strings.ToLower(snapshotterVersion.Name) == versionGA {
