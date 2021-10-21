@@ -1099,7 +1099,7 @@ func (c *Controller) reconcileTridentPresent(key KeyItem, operatorCSIDeployments
 
 	log.WithField("controllingCR", controllingCR.Name).Debugf("Controlling CR identified.")
 
-	//Ensure Controlling CR has namespace field set
+	// Ensure Controlling CR has namespace field set
 	if controllingCR.Spec.Namespace == "" {
 		controllingCR.Spec.Namespace = metav1.NamespaceDefault
 	}
@@ -1135,7 +1135,6 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 		if deploymentExist {
 			log.WithField("controllingCR", controllingCR.Name).Warnf("Even though controlling CR has status %v, "+
 				"there exists Trident installation; re-running Trident uninstallation", controllingCR.Status.Status)
-
 		}
 
 		// This uninstallation would merely fix the state by removing deployment and match the status
@@ -1166,6 +1165,9 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 		return c.updateOtherCRs(controllingCR.Name)
 	}
 
+	// Check to see if controllingCR spec has changed and is requesting for uninstallation
+	uninstall := controllingCR.Spec.Uninstall
+
 	// Get current Version information, to update CRs with the correct version information and in K8s case
 	// identify if update might be required (for installation only) due to change in K8s version.
 	currentInstalledTridentVersion, tridentK8sConfigVersion, err := c.getCurrentTridentAndK8sVersion(controllingCR)
@@ -1175,10 +1177,24 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 			"controllingCR": controllingCR.Name,
 			"err":           err,
 		}).Errorf("Error identifying update scenario.")
-	}
 
-	// Check to see if controllingCR spec has changed and is requesting for uninstallation
-	uninstall := controllingCR.Spec.Uninstall
+		// If the orchestrator CR spec has been issued for uninstallation, allow the attempted uninstall regardless
+		if !uninstall {
+			// Update the Trident ControllingCR with a Failed status and bail out of reconciliation if the there was an
+			// error in the k8s_client, Trident resources couldn't be detected,
+			// and the controlling CR isn't scheduled for uninstallation
+			debugMessage := "Updating Trident Orchestrator CR after failing to detect Trident Deployment and/or DaemonSet."
+			statusMessage := fmt.Sprintf("Failed to detect installed Trident resources; err: %s", err.Error())
+
+			if _, crErr := c.updateTorcEventAndStatus(controllingCR, debugMessage, statusMessage, string(AppStatusFailed),
+				controllingCR.Status.Version, controllingCR.Status.Namespace, corev1.EventTypeWarning,
+				&controllingCR.Status.CurrentInstallationParams); crErr != nil {
+				log.Error(crErr)
+			}
+
+			return utils.ReconcileFailedError(err)
+		}
+	}
 
 	if uninstall {
 		if _, err := c.uninstallTridentAndUpdateStatus(*controllingCR, currentInstalledTridentVersion); err != nil {
@@ -1948,7 +1964,7 @@ func (c *Controller) getCurrentTridentAndK8sVersion(tridentCR *netappv1.TridentO
 
 	i, err := installer.NewInstaller(c.KubeConfig, tridentCR.Status.Namespace, tridentCR.Spec.K8sTimeout)
 	if err != nil {
-		return "", "", utils.ReconcileFailedError(err)
+		return "", "", err
 	}
 
 	currentDeployment, _, _, err := i.TridentDeploymentInformation(installer.TridentCSILabel)
