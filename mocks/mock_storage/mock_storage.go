@@ -638,6 +638,20 @@ func (mr *MockBackendMockRecorder) Terminate(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockBackend)(nil).Terminate), arg0)
 }
 
+// UnpublishVolume mocks base method.
+func (m *MockBackend) UnpublishVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *utils.VolumePublishInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnpublishVolume", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnpublishVolume indicates an expected call of UnpublishVolume.
+func (mr *MockBackendMockRecorder) UnpublishVolume(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnpublishVolume", reflect.TypeOf((*MockBackend)(nil).UnpublishVolume), arg0, arg1, arg2)
+}
+
 // Volumes mocks base method.
 func (m *MockBackend) Volumes() map[string]*storage.Volume {
 	m.ctrl.T.Helper()
@@ -727,6 +741,20 @@ func (m *MockPool) ConstructExternal() *storage.PoolExternal {
 func (mr *MockPoolMockRecorder) ConstructExternal() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructExternal", reflect.TypeOf((*MockPool)(nil).ConstructExternal))
+}
+
+// GetLabels mocks base method.
+func (m *MockPool) GetLabels(arg0 context.Context, arg1 string) map[string]string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLabels", arg0, arg1)
+	ret0, _ := ret[0].(map[string]string)
+	return ret0
+}
+
+// GetLabels indicates an expected call of GetLabels.
+func (mr *MockPoolMockRecorder) GetLabels(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabels", reflect.TypeOf((*MockPool)(nil).GetLabels), arg0, arg1)
 }
 
 // GetLabelsJSON mocks base method.

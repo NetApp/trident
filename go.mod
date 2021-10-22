@@ -49,4 +49,5 @@ require (
 	k8s.io/apiextensions-apiserver v0.22.2 // github.com/kubernetes/apiextensions-apiserver
 	k8s.io/apimachinery v0.22.2 // github.com/kubernetes/apimachinery
 	k8s.io/client-go v0.22.2 // github.com/kubernetes/client-go
+	sigs.k8s.io/controller-runtime v0.10.2 // github.com/kubernetes-sigs/controller-runtime
 )

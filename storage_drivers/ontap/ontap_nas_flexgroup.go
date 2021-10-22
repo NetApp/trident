@@ -1264,6 +1264,7 @@ func (d *NASFlexGroupStorageDriver) getStoragePoolAttributes() map[string]sa.Off
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
 		sa.Snapshots:        sa.NewBoolOffer(true),
 		sa.Encryption:       sa.NewBoolOffer(true),
+		sa.Replication:      sa.NewBoolOffer(false),
 		sa.Clones:           sa.NewBoolOffer(true),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}

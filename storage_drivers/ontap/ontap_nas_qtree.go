@@ -1306,6 +1306,7 @@ func (d *NASQtreeStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
 		sa.Snapshots:        sa.NewBoolOffer(false),
 		sa.Clones:           sa.NewBoolOffer(false),
 		sa.Encryption:       sa.NewBoolOffer(true),
+		sa.Replication:      sa.NewBoolOffer(false),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}
 }

@@ -422,12 +422,42 @@ func (p *Plugin) ControllerUnpublishVolume(
 		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
 	}
 
-	// Check if volume exists.  If not, return success.
-	if _, err := p.orchestrator.GetVolume(ctx, volumeID); err != nil && !utils.IsNotFoundError(err) {
-		return nil, p.getCSIErrorForOrchestratorError(err)
+	nodeID := req.GetNodeId()
+	if nodeID == "" {
+		return nil, status.Error(codes.InvalidArgument, "no node ID provided")
 	}
 
-	// Apart from validation, Trident has nothing to do for this entry point
+	// Check if volume exists.  If not, return success.
+	volume, err := p.orchestrator.GetVolume(ctx, volumeID)
+	if err != nil {
+		if utils.IsNotFoundError(err) {
+			return &csi.ControllerUnpublishVolumeResponse{}, nil
+		} else {
+			return nil, p.getCSIErrorForOrchestratorError(err)
+		}
+	}
+
+	// Get node attributes from the node ID
+	nodeInfo, err := p.orchestrator.GetNode(ctx, nodeID)
+	if err != nil {
+		Logc(ctx).WithField("node", nodeID).Error("Node info not found.")
+		return nil, status.Error(codes.NotFound, err.Error())
+	}
+
+	// Set up volume publish info with what we know about the node
+	volumePublishInfo := &utils.VolumePublishInfo{
+		Localhost: false,
+		HostIQN:   []string{nodeInfo.IQN},
+		HostIP:    nodeInfo.IPs,
+		HostName:  nodeInfo.Name,
+		Unmanaged: volume.Config.ImportNotManaged,
+	}
+
+	// Optionally update NFS export rules, remove node IQN from igroup, etc.
+	if err = p.orchestrator.UnpublishVolume(ctx, volume.Config.Name, volumePublishInfo); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
 	return &csi.ControllerUnpublishVolumeResponse{}, nil
 }
 

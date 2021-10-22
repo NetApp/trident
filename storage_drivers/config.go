@@ -25,6 +25,7 @@ const (
 	AWSNFSStorageDriverName            = "aws-cvs"
 	AzureNFSStorageDriverName          = "azure-netapp-files"
 	GCPNFSStorageDriverName            = "gcp-cvs"
+	AstraDSStorageDriverName           = "astrads-nas"
 	FakeStorageDriverName              = "fake"
 )
 

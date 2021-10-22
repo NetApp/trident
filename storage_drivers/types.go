@@ -1,4 +1,5 @@
 // Copyright 2021 NetApp, Inc. All Rights Reserved.
+
 package storagedrivers
 
 import (
@@ -55,6 +56,8 @@ func GetDriverConfigByName(driverName string) (DriverConfig, error) {
 		storageDriverConfig = &AzureNFSStorageDriverConfig{}
 	case GCPNFSStorageDriverName:
 		storageDriverConfig = &GCPNFSStorageDriverConfig{}
+	case AstraDSStorageDriverName:
+		storageDriverConfig = &AstraDSStorageDriverConfig{}
 	case FakeStorageDriverName:
 		storageDriverConfig = &FakeStorageDriverConfig{}
 	default:
@@ -798,6 +801,102 @@ func (d GCPNFSStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []
 }
 
 func (d GCPNFSStorageDriverConfig) SpecOnlyValidation() error {
+	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
+		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
+	}
+
+	if !d.HasCredentials() {
+		return fmt.Errorf("input is missing the credentials field")
+	}
+
+	return nil
+}
+
+type AstraDSStorageDriverConfig struct {
+	*CommonStorageDriverConfig
+	Kubeconfig       string   `json:"kubeconfig"`
+	Cluster          string   `json:"cluster"`
+	Namespace        string   `json:"namespace"`
+	NfsMountOptions  string   `json:"nfsMountOptions"`
+	AutoExportPolicy bool     `json:"autoExportPolicy"`
+	AutoExportCIDRs  []string `json:"autoExportCIDRs"`
+	AstraDSStorageDriverPool
+	Storage []AstraDSStorageDriverPool `json:"storage"`
+
+	// These fields are akin to serial numbers and are discovered by the driver
+	ClusterUUID    string `json:"clusterUUID,omitEmpty"`
+	KubeSystemUUID string `json:"kubeSystemUUID,omitEmpty"`
+}
+
+type AstraDSStorageDriverPool struct {
+	Labels                             map[string]string   `json:"labels"`
+	Region                             string              `json:"region"`
+	Zone                               string              `json:"zone"`
+	SupportedTopologies                []map[string]string `json:"supportedTopologies"`
+	AstraDSStorageDriverConfigDefaults `json:"defaults"`
+}
+
+type AstraDSStorageDriverConfigDefaults struct {
+	ExportPolicy    string `json:"exportPolicy"`
+	UnixPermissions string `json:"unixPermissions"`
+	SnapshotReserve string `json:"snapshotReserve"`
+	SnapshotDir     string `json:"snapshotDir"`
+	QosPolicy       string `json:"qosPolicy"`
+	CommonStorageDriverConfigDefaults
+}
+
+// Implement stringer interface for the GCPNFSStorageDriverConfig driver
+func (d AstraDSStorageDriverConfig) String() string {
+	return ToString(&d, []string{"Kubeconfig"}, nil)
+}
+
+// GoString implements the GoStringer interface for the AstraDS driver config
+func (d AstraDSStorageDriverConfig) GoString() string {
+	return d.String()
+}
+
+// InjectSecrets function replaces sensitive fields in the config with the field values in the map
+func (d *AstraDSStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
+
+	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
+
+	var ok bool
+	if d.Kubeconfig, ok = secretMap[strings.ToLower("Kubeconfig")]; !ok {
+		return injectionError("Kubeconfig")
+	}
+
+	return nil
+}
+
+// ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
+// and returns the the map.
+func (d *AstraDSStorageDriverConfig) ExtractSecrets() map[string]string {
+	return map[string]string{
+		"Kubeconfig": d.Kubeconfig,
+	}
+}
+
+// HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
+// with secretName.
+func (d *AstraDSStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
+	d.Kubeconfig = secretName
+}
+
+// GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
+// replaces those fields with secretName and returns the the map.
+func (d *AstraDSStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
+	secretMap := d.ExtractSecrets()
+	d.HideSensitiveWithSecretName(secretName)
+
+	return secretMap
+}
+
+// CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
+func (d AstraDSStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
+	return checkMapContainsAttributes(d.ExtractSecrets())
+}
+
+func (d AstraDSStorageDriverConfig) SpecOnlyValidation() error {
 	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
 		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
 	}

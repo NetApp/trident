@@ -15,9 +15,9 @@ described :ref:`here <backend-management>`.
 .. toctree::
    :maxdepth: 2
 
+   astrads.rst
    anf.rst
    cvs_aws.rst
    cvs_gcp.rst
    element.rst
    ontap/index.rst
-   santricity.rst

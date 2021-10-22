@@ -1565,6 +1565,7 @@ func (d *SANEconomyStorageDriver) getStoragePoolAttributes() map[string]sa.Offer
 		sa.Snapshots:        sa.NewBoolOffer(true),
 		sa.Clones:           sa.NewBoolOffer(true),
 		sa.Encryption:       sa.NewBoolOffer(true),
+		sa.Replication:      sa.NewBoolOffer(false),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}
 }

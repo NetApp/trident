@@ -409,6 +409,7 @@ func (d *StorageDriver) initializeStoragePools() error {
 	snapshotOffers := make([]sa.Offer, 0)
 	cloneOffers := make([]sa.Offer, 0)
 	encryptionOffers := make([]sa.Offer, 0)
+	replicationOffers := make([]sa.Offer, 0)
 	provisioningTypeOffers := make([]sa.Offer, 0)
 	mediaOffers := make([]sa.Offer, 0)
 
@@ -435,6 +436,9 @@ func (d *StorageDriver) initializeStoragePools() error {
 		}
 		if encryptionOffer, ok := pool.Attributes()[sa.Encryption]; ok {
 			encryptionOffers = append(encryptionOffers, encryptionOffer)
+		}
+		if replicationOffer, ok := pool.Attributes()[sa.Replication]; ok {
+			replicationOffers = append(replicationOffers, replicationOffer)
 		}
 		if provisioningTypeOffer, ok := pool.Attributes()[sa.ProvisioningType]; ok {
 			provisioningTypeOffers = append(provisioningTypeOffers, provisioningTypeOffer)
@@ -492,6 +496,9 @@ func (d *StorageDriver) initializeStoragePools() error {
 		}
 		if len(encryptionOffers) > 0 {
 			pool.Attributes()[sa.Encryption] = sa.NewBoolOfferFromOffers(encryptionOffers...)
+		}
+		if len(replicationOffers) > 0 {
+			pool.Attributes()[sa.Replication] = sa.NewBoolOfferFromOffers(replicationOffers...)
 		}
 		if len(provisioningTypeOffers) > 0 {
 			pool.Attributes()[sa.ProvisioningType] = sa.NewStringOfferFromOffers(provisioningTypeOffers...)

@@ -487,6 +487,7 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 			pool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
 			pool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
 			pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+			pool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
 			pool.Attributes()[sa.ProvisioningType] = sa.NewStringOffer(sa.Thin)
 			pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
 
@@ -546,6 +547,7 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 			pool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
 			pool.Attributes()[sa.Clones] = sa.NewBoolOffer(true)
 			pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
+			pool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
 			pool.Attributes()[sa.ProvisioningType] = sa.NewStringOffer(sa.Thin)
 			pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
 

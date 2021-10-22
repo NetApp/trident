@@ -53,6 +53,7 @@ type Orchestrator interface {
 	ListVolumes(ctx context.Context) ([]*storage.VolumeExternal, error)
 	ListVolumesByPlugin(ctx context.Context, pluginName string) ([]*storage.VolumeExternal, error)
 	PublishVolume(ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo) error
+	UnpublishVolume(ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo) error
 	ResizeVolume(ctx context.Context, volumeName, newSize string) error
 	SetVolumeState(ctx context.Context, volumeName string, state storage.VolumeState) error
 

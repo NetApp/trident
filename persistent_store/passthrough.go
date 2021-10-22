@@ -175,6 +175,8 @@ func (c *PassthroughClient) unmarshalConfig(ctx context.Context, fileContents []
 		configType = "azure_config"
 	case drivers.GCPNFSStorageDriverName:
 		configType = "gcp_config"
+	case drivers.AstraDSStorageDriverName:
+		configType = "astrads_config"
 	case drivers.FakeStorageDriverName:
 		configType = "fake_config"
 	default:

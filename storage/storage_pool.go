@@ -174,6 +174,26 @@ func (p *StoragePool) GetLabelsJSON(ctx context.Context, key string, labelLimit 
 	return labelsJSON, nil
 }
 
+// GetLabels returns a map containing the labels on this pool, suitable for individual
+// metadata key/value pairs set on a storage volume.  Each key may be customized with
+// a common prefix.  For example:
+// {"prefix/cloud":"anf", "prefix/clusterName":"dev-test-cluster-1"}
+func (p *StoragePool) GetLabels(_ context.Context, prefix string) map[string]string {
+
+	labelMap := make(map[string]string)
+
+	labelOffer, ok := p.attributes[sa.Labels].(sa.LabelOffer)
+	if !ok {
+		return labelMap
+	}
+
+	for key, value := range labelOffer.Labels() {
+		labelMap[prefix+key] = value
+	}
+
+	return labelMap
+}
+
 // AllowLabelOverwrite returns true if it has a key we could have set. For example:
 // {"provisioning":{"cloud":"anf","clusterName":"dev-test-cluster-1"}}
 func AllowPoolLabelOverwrite(key, originalLabel string) bool {

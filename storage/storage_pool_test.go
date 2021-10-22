@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 
 	sa "github.com/netapp/trident/storage_attribute"
@@ -95,6 +96,35 @@ func TestGetLabelsJSONExceedsCharacterLimitFail(t *testing.T) {
 
 	assert.NotNil(t, err, "Error is nil")
 	assert.Contains(t, err.Error(), "exceeds the character limit", "character limit exceeded error not raised")
+}
+
+func TestGetLabels(t *testing.T) {
+
+	labels := map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+	}
+
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(labels)
+
+	expectedLabels := map[string]string{
+		"prefix_cloud":       "anf",
+		"prefix_clusterName": "dev-test-cluster-1",
+	}
+
+	assert.True(t, cmp.Equal(expectedLabels, pool.GetLabels(context.TODO(), "prefix_")))
+}
+
+func TestGetLabelsNone(t *testing.T) {
+
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+
+	expectedLabels := map[string]string{}
+
+	assert.True(t, cmp.Equal(expectedLabels, pool.GetLabels(context.TODO(), "prefix_")))
 }
 
 func TestAllowLabelOverwriteInternalTrue(t *testing.T) {

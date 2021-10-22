@@ -795,6 +795,20 @@ func (mr *MockOrchestratorMockRecorder) SetVolumeState(arg0, arg1, arg2 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetVolumeState", reflect.TypeOf((*MockOrchestrator)(nil).SetVolumeState), arg0, arg1, arg2)
 }
 
+// UnpublishVolume mocks base method.
+func (m *MockOrchestrator) UnpublishVolume(arg0 context.Context, arg1 string, arg2 *utils.VolumePublishInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnpublishVolume", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnpublishVolume indicates an expected call of UnpublishVolume.
+func (mr *MockOrchestratorMockRecorder) UnpublishVolume(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnpublishVolume", reflect.TypeOf((*MockOrchestrator)(nil).UnpublishVolume), arg0, arg1, arg2)
+}
+
 // UpdateBackend mocks base method.
 func (m *MockOrchestrator) UpdateBackend(arg0 context.Context, arg1, arg2, arg3 string) (*storage.BackendExternal, error) {
 	m.ctrl.T.Helper()

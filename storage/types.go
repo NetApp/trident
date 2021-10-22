@@ -45,6 +45,7 @@ type Backend interface {
 	PublishVolume(
 		ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
 	) error
+	UnpublishVolume(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
 	GetVolumeExternal(ctx context.Context, volumeName string) (*VolumeExternal, error)
 	ImportVolume(ctx context.Context, volConfig *VolumeConfig) (*Volume, error)
 	ResizeVolume(ctx context.Context, volConfig *VolumeConfig, newSize string) error
@@ -54,9 +55,7 @@ type Backend interface {
 	CanSnapshot(ctx context.Context, snapConfig *SnapshotConfig) error
 	GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig) (*Snapshot, error)
 	GetSnapshots(ctx context.Context, volConfig *VolumeConfig) ([]*Snapshot, error)
-	CreateSnapshot(
-		ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
-	) (*Snapshot, error)
+	CreateSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) (*Snapshot, error)
 	RestoreSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error
 	DeleteSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error
 	GetUpdateType(ctx context.Context, origBackend Backend) *roaring.Bitmap
@@ -86,4 +85,5 @@ type Pool interface {
 	RemoveStorageClass(class string) bool
 	ConstructExternal() *PoolExternal
 	GetLabelsJSON(ctx context.Context, key string, labelLimit int) (string, error)
+	GetLabels(ctx context.Context, prefix string) map[string]string
 }

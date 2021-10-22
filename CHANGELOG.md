@@ -15,6 +15,7 @@
 - **Kubernetes:** Added support for Kubernetes 1.22.
 - **Kubernetes:** Enabled the Trident operator and Helm chart to work with Kubernetes 1.22 (Issue [#628](https://github.com/NetApp/trident/issues/628)).
 - **Kubernetes:** Added operator image to tridentctl images command (Issue [#570](https://github.com/NetApp/trident/issues/570)).
+- Added driver for Astra Data Store.
 
 **Experimental Enhancements:**
 - Added tech preview REST support for the ONTAP-NAS-Flexgroup, ONTAP-SAN, and ONTAP-NAS-Economy drivers.

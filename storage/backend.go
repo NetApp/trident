@@ -38,10 +38,6 @@ type Driver interface {
 	CreatePrepare(ctx context.Context, volConfig *VolumeConfig)
 	// CreateFollowup adds necessary information for accessing the volume to VolumeConfig.
 	CreateFollowup(ctx context.Context, volConfig *VolumeConfig) error
-	// GetInternalVolumeName will return a name that satisfies any character
-	// constraints present on the backend and that will be unique to Trident.
-	// The latter requirement should generally be done by prepending the
-	// value of CommonStorageDriver.SnapshotPrefix to the name.
 	CreateClone(ctx context.Context, volConfig *VolumeConfig, storagePool Pool) error
 	Import(ctx context.Context, volConfig *VolumeConfig, originalName string) error
 	Destroy(ctx context.Context, name string) error
@@ -73,6 +69,10 @@ type Driver interface {
 	GetUpdateType(ctx context.Context, driver Driver) *roaring.Bitmap
 	ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, backendUUID string) error
 	GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig
+}
+
+type Unpublisher interface {
+	Unpublish(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
 }
 
 // Mirrorer provides a common interface for backends that support mirror replication
@@ -518,6 +518,30 @@ func (b *StorageBackend) PublishVolume(
 	return b.driver.Publish(ctx, volConfig, publishInfo)
 }
 
+func (b *StorageBackend) UnpublishVolume(
+	ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
+) error {
+
+	Logc(ctx).WithFields(log.Fields{
+		"backend":        b.Name,
+		"backendUUID":    b.BackendUUID,
+		"volume":         volConfig.Name,
+		"volumeInternal": volConfig.InternalName,
+	}).Debug("Attempting volume unpublish.")
+
+	// Ensure backend is ready
+	if err := b.ensureOnlineOrDeleting(ctx); err != nil {
+		return err
+	}
+
+	// Call the driver if it supports Unpublish, otherwise just return success as there is nothing to do
+	if unpublisher, ok := b.driver.(Unpublisher); !ok {
+		return nil
+	} else {
+		return unpublisher.Unpublish(ctx, volConfig, publishInfo)
+	}
+}
+
 func (b *StorageBackend) GetVolumeExternal(ctx context.Context, volumeName string) (*VolumeExternal, error) {
 
 	// Ensure backend is ready
@@ -960,6 +984,7 @@ type PersistentStorageBackendConfig struct {
 	AWSConfig               *drivers.AWSNFSStorageDriverConfig    `json:"aws_config,omitempty"`
 	AzureConfig             *drivers.AzureNFSStorageDriverConfig  `json:"azure_config,omitempty"`
 	GCPConfig               *drivers.GCPNFSStorageDriverConfig    `json:"gcp_config,omitempty"`
+	AstraDSConfig           *drivers.AstraDSStorageDriverConfig   `json:"astrads_config,omitempty"`
 	FakeStorageDriverConfig *drivers.FakeStorageDriverConfig      `json:"fake_config,omitempty"`
 }
 
@@ -980,6 +1005,8 @@ func (psbc *PersistentStorageBackendConfig) GetDriverConfig() (drivers.DriverCon
 		driverConfig = psbc.AzureConfig
 	case psbc.GCPConfig != nil:
 		driverConfig = psbc.GCPConfig
+	case psbc.AstraDSConfig != nil:
+		driverConfig = psbc.AstraDSConfig
 	case psbc.FakeStorageDriverConfig != nil:
 		driverConfig = psbc.FakeStorageDriverConfig
 	default:
@@ -1013,6 +1040,7 @@ func (b *StorageBackend) ConstructPersistent(ctx context.Context) *BackendPersis
 	return persistentBackend
 }
 
+// MarshalConfig returns a persistent backend config as JSON.
 // Unfortunately, this method appears to be necessary to avoid arbitrary values
 // ending up in the json.RawMessage fields of CommonStorageDriverConfig.
 // Ideally, BackendPersistent would just store a serialized config, but
@@ -1035,6 +1063,8 @@ func (p *BackendPersistent) MarshalConfig() (string, error) {
 		bytes, err = json.Marshal(p.Config.AzureConfig)
 	case p.Config.GCPConfig != nil:
 		bytes, err = json.Marshal(p.Config.GCPConfig)
+	case p.Config.AstraDSConfig != nil:
+		bytes, err = json.Marshal(p.Config.AstraDSConfig)
 	case p.Config.FakeStorageDriverConfig != nil:
 		bytes, err = json.Marshal(p.Config.FakeStorageDriverConfig)
 	default:

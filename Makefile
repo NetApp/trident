@@ -217,8 +217,7 @@ vet:
 k8s_codegen:
 	tar zxvf ${K8S_CODE_GENERATOR}.tar.gz --no-same-owner
 	chmod +x ${K8S_CODE_GENERATOR}/generate-groups.sh
-	${K8S_CODE_GENERATOR}/generate-groups.sh all ${TRIDENT_KUBERNETES_PKG}/client \
-    ${TRIDENT_KUBERNETES_PKG}/apis "netapp:v1" -h ./hack/boilerplate.go.txt
+	${K8S_CODE_GENERATOR}/generate-groups.sh all ${TRIDENT_KUBERNETES_PKG}/client ${TRIDENT_KUBERNETES_PKG}/apis "netapp:v1" -h ./hack/boilerplate.go.txt
 	rm -rf ${K8S_CODE_GENERATOR}
 
 k8s_codegen_operator:

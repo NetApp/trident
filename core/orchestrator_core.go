@@ -2964,6 +2964,39 @@ func (o *TridentOrchestrator) PublishVolume(
 	return nil
 }
 
+func (o *TridentOrchestrator) UnpublishVolume(
+	ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo,
+) (err error) {
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	defer recordTiming("volume_unpublish", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	volume, ok := o.volumes[volumeName]
+	if !ok {
+		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+	}
+
+	nodes := make([]*utils.Node, 0)
+	for _, node := range o.nodes {
+		nodes = append(nodes, node)
+	}
+	publishInfo.Nodes = nodes
+	publishInfo.BackendUUID = volume.BackendUUID
+	backend, ok := o.backends[volume.BackendUUID]
+	if !ok {
+		// Not a not found error because this is not user input
+		return fmt.Errorf("backend %s not found", volume.BackendUUID)
+	}
+
+	return backend.UnpublishVolume(ctx, volume.Config, publishInfo)
+}
+
 // AttachVolume mounts a volume to the local host.  This method is currently only used by Docker,
 // and it should be able to accomplish its task using only the data passed in; it should not need to
 // use the storage controller API.  It may be assumed that this method always runs on the host to
@@ -3156,6 +3189,7 @@ func (o *TridentOrchestrator) CreateSnapshot(
 	}
 
 	// Complete the snapshot config
+	snapshotConfig.InternalName = snapshotConfig.Name
 	snapshotConfig.VolumeInternalName = volume.Config.InternalName
 
 	// Ensure a snapshot is even possible before creating the transaction
