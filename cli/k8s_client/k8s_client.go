@@ -308,7 +308,7 @@ func (k *KubeClient) discoverKubernetesFlavor() OrchestratorFlavor {
 		//}).Debug("Considering dynamic resource, looking for openshift group.")
 
 		// OCP will have an openshift api server we can use to determine if the environment is OCP or Kubernetes
-		if strings.Contains(gv.Group, "apiserver.openshift.io") {
+		if strings.Contains(gv.Group, "config.openshift.io") {
 			return FlavorOpenShift
 		}
 	}
