@@ -6,6 +6,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/netapp/trident/utils"
+
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/stretchr/testify/assert"
@@ -59,4 +61,10 @@ func TestPayload(t *testing.T) {
 	// pass an instance, with a minimal Payload
 	err = ValidatePayloadExists(ctx, svm.SvmCollectionGetOK{Payload: &models.SvmResponse{}})
 	assert.Nil(t, err)
+}
+
+func TestMinimumONTAPVersionIs9Point9(t *testing.T) {
+
+	var expectedMinimumONTAPVersion = utils.MustParseSemantic("9.9.0")
+	assert.Equal(t, MinimumONTAPVersion, expectedMinimumONTAPVersion, "Unexpected minimum ONTAP version")
 }

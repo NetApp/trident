@@ -201,7 +201,7 @@ func NewRestClientFromOntapConfig(
 }
 
 var (
-	MinimumONTAPVersion = utils.MustParseSemantic("9.8.0")
+	MinimumONTAPVersion = utils.MustParseSemantic("9.9.0")
 )
 
 // SupportsFeature returns true if the Ontap version supports the supplied feature
