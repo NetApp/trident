@@ -5,20 +5,28 @@
 ## Changes since v21.07.0
 
 **Fixes:**
-- **Kubernetes** Fixed incorrect calculation for snapshot restoreSize field for
-- Fixed custom YAML installer issue with different image (Issue [#613](https://github.com/NetApp/trident/issues/613)).
-- Fixed snapshot size calculation (Issue [#611](https://github.com/NetApp/trident/issues/611)).
 - Fixed issue where clones of XFS volumes could not be mounted on the same node as the source volume (Issue [#514](https://github.com/NetApp/trident/issues/514)).
+- Fixed issue where Trident logged a fatal error on shutdown (Issue [#597](https://github.com/NetApp/trident/issues/597)).
+- **Kubernetes:** Return a volume's used space as the minimum restoreSize when creating snapshots with ONTAP-NAS and ONTAP-NAS-Flexgroup drivers (Issue [#645](https://github.com/NetApp/trident/issues/645)).
+- **Kubernetes:** Fixed issue where "Failed to expand filesystem" error was logged after volume resize (Issue [#560](https://github.com/NetApp/trident/issues/560)).
+- **Kubernetes:** Fixed issue where a pod could get stuck in Terminating state (Issue [#572](https://github.com/NetApp/trident/issues/572)).
+- **Kubernetes:** Fixed the case where an ONTAP-SAN-Economy FlexVol may be full of snapshot LUNs (Issue [#533](https://github.com/NetApp/trident/issues/533)).
+- **Kubernetes:** Fixed custom YAML installer issue with different image (Issue [#613](https://github.com/NetApp/trident/issues/613)).
+- **Kubernetes:** Fixed snapshot size calculation (Issue [#611](https://github.com/NetApp/trident/issues/611)).
+- **Kubernetes:** Fixed issue where all Trident installers could identify plain Kubernetes as OpenShift (Issue [#639](https://github.com/NetApp/trident/issues/639)).
+- **Kubernetes:** Fixed the Trident operator to stop reconciliation if the Kubernetes API server is unreachable (Issue [#599](https://github.com/NetApp/trident/issues/599)).
 
 **Enhancements:**
-- Added support for 'unixPermissions' option to GCP-CVS Performance volumes
+- Added support for 'unixPermissions' option to GCP-CVS Performance volumes.
+- Added support for scale-optimized CVS volumes in GCP in the range 600 GiB to 1 TiB.
 - **Kubernetes:** Added support for Kubernetes 1.22.
 - **Kubernetes:** Enabled the Trident operator and Helm chart to work with Kubernetes 1.22 (Issue [#628](https://github.com/NetApp/trident/issues/628)).
 - **Kubernetes:** Added operator image to tridentctl images command (Issue [#570](https://github.com/NetApp/trident/issues/570)).
-- Added driver for Astra Data Store.
 
 **Experimental Enhancements:**
+- Added support for volume replication in ONTAP SAN driver.
 - Added tech preview REST support for the ONTAP-NAS-Flexgroup, ONTAP-SAN, and ONTAP-NAS-Economy drivers.
+- Added driver for Astra Data Store.
 
 **Deprecations:**
 
