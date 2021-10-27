@@ -24,7 +24,7 @@ the [Cloud Volumes Service on AWS](https://cloud.netapp.com/cloud-volumes-servic
 
 Trident is also a foundational technology for NetApp's [Astra](http://cloud.netapp.com/Astra?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident), which addresses your data protection, disaster recovery, portability, and migration use cases for Kubernetes workloads leveraging NetApp's industry-leading data management technology for snapshots, backups, replication, and cloning.  
 
-Detailed documentation for Trident can be found on [Read the Docs](https://netapp-trident.readthedocs.io).
+Detailed documentation for Trident can be found [here](https://docs.netapp.com/us-en/trident/index.html).
 
 Take a look at the [Astra documentation](https://docs.netapp.com/us-en/astra/) to get started today.
 
