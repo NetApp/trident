@@ -5,7 +5,6 @@
 bin/trident*
 trident-required-images.md
 coverage/**
-vendor/
 operator/trident-operator
 operator/operator
 trident-installer.tar.gz
