@@ -2,9 +2,16 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v21.07.0
+## Changes since v21.10.0
 
 **Fixes:**
+
+**Enhancements:**
+
+## v21.10.0
+
+**Fixes:**
+
 - Fixed issue where clones of XFS volumes could not be mounted on the same node as the source volume (Issue [#514](https://github.com/NetApp/trident/issues/514)).
 - Fixed issue where Trident logged a fatal error on shutdown (Issue [#597](https://github.com/NetApp/trident/issues/597)).
 - **Kubernetes:** Return a volume's used space as the minimum restoreSize when creating snapshots with ONTAP-NAS and ONTAP-NAS-Flexgroup drivers (Issue [#645](https://github.com/NetApp/trident/issues/645)).
@@ -17,6 +24,7 @@
 - **Kubernetes:** Fixed the Trident operator to stop reconciliation if the Kubernetes API server is unreachable (Issue [#599](https://github.com/NetApp/trident/issues/599)).
 
 **Enhancements:**
+
 - Added support for 'unixPermissions' option to GCP-CVS Performance volumes.
 - Added support for scale-optimized CVS volumes in GCP in the range 600 GiB to 1 TiB.
 - **Kubernetes:** Added support for Kubernetes 1.22.
@@ -24,6 +32,7 @@
 - **Kubernetes:** Added operator image to tridentctl images command (Issue [#570](https://github.com/NetApp/trident/issues/570)).
 
 **Experimental Enhancements:**
+
 - Added support for volume replication in ONTAP SAN driver.
 - Added tech preview REST support for the ONTAP-NAS-Flexgroup, ONTAP-SAN, and ONTAP-NAS-Economy drivers.
 - Added driver for Astra Data Store.
@@ -32,18 +41,15 @@
 
 ## v21.07.0
 
-- **IMPORTANT**: Trident has updated its recommendations for the iSCSI setup on worker nodes. Please carefully
-  read the ``Preparing the worker node`` section of the documentation. Please ensure worker node multipathing
-  configuration uses the ``find_multipaths`` value set to ``no``.
-  
-- **IMPORTANT**: In Trident versions earlier than 21.07, you could create ANF backend with no valid Capacity Pools
-  corresponding to a Service Level. As a result the volumes were provisioned in the Capacity Pool of different
-  Service Level type. This issue has been fixed but for an ANF backend, where there are no Capacity Pools
-  corresponding to a Service Level, the backend might get into a failed state. To correct this, fix the
-  `serviceLevel` in the ANF backend file or add a Capacity Pool that matches the backend's `serviceLevel`, and
-  then run the backend update operation.
+- **IMPORTANT**: Trident has updated its recommendations for the iSCSI setup on worker nodes. Please carefully read the ``Preparing the worker node`` section of the documentation. Please ensure worker node multipathing configuration uses
+  the ``find_multipaths`` value set to ``no``.
+
+- **IMPORTANT**: In Trident versions earlier than 21.07, you could create ANF backend with no valid Capacity Pools corresponding to a Service Level. As a result the volumes were provisioned in the Capacity Pool of different Service Level type. This issue
+  has been fixed but for an ANF backend, where there are no Capacity Pools corresponding to a Service Level, the backend might get into a failed state. To correct this, fix the
+  `serviceLevel` in the ANF backend file or add a Capacity Pool that matches the backend's `serviceLevel`, and then run the backend update operation.
 
 **Fixes:**
+
 - Updated the "Preparing the worker node" section of documentation to use default `find_multipaths` value for iSCSI multipathing.
 - Fixed the issue of not waiting for the multipath device to appear when discovered device count is 1 (Issue [#511](https://github.com/NetApp/trident/issues/511)).
 - Fixed ANF issue with backend creation even when there are no valid Capacity Pool corresponding to a Service Level.
@@ -54,9 +60,11 @@
 - Changed ASUP image pull policy to `IfNotPresent`.
 
 **Enhancements:**
+
 - **Kubernetes:** Updated to csi-snapshotter v4.0.0 for Kubernetes 1.20+.
 - Added ability to restrict volume provisioning to a subset of Capacity Pools using `capacityPools` field in the ANF backends.
-- ONTAP-SAN, ONTAP-NAS, and ONTAP-NAS-Flexgroup drivers now regard the `snapshotReserve` percentage as a percentage of the whole FlexVol size for new volumes (Issues [#554](https://github.com/NetApp/trident/issues/554), [#496](https://github.com/NetApp/trident/issues/496)).
+- ONTAP-SAN, ONTAP-NAS, and ONTAP-NAS-Flexgroup drivers now regard the `snapshotReserve` percentage as a percentage of the whole FlexVol size for new volumes (Issues [#554](https://github.com/NetApp/trident/issues/554)
+  , [#496](https://github.com/NetApp/trident/issues/496)).
 - ONTAP-SAN adds extra 10% to FlexVol size to account for LUN metadata (Issue [#555](https://github.com/NetApp/trident/issues/555)).
 - `tridentctl install` now shows timestamps in debug mode.
 - **Kubernetes:** Reduced HTTP timeout for CSI frontend to optimize node registration.
@@ -64,10 +72,12 @@
 - Updated minimum TLS version to 1.2.
 
 **Experimental Enhancements:**
+
 - Added tech preview REST support for the ONTAP NAS driver.
 - Added support for volume replication in ONTAP NAS driver.
 
 **Deprecations:**
+
 - **Kubernetes:** Updated minimum supported Kubernetes to 1.17.
 - Disabled E-series driver.
 - **Kubernetes:** Removed pre-CSI support.
@@ -75,6 +85,7 @@
 ## v21.04.0
 
 **Fixes:**
+
 - **OpenShift:** Fixed issue where the Trident Operator fails to patch ClusterRole and ClusterRoleBinding (Issue [#517](https://github.com/NetApp/trident/issues/517)).
 - Fixed a parsing error when iscsiadm listed target portals with a negative group tag  (Issue [#523](https://github.com/NetApp/trident/issues/523)).
 - **Docker:** Fixed issue where Docker plugin could not be upgraded from v19.10 to v21.01 (Issue [#507](https://github.com/NetApp/trident/issues/507)).
@@ -85,6 +96,7 @@
 - **Kubernetes:** Increased speed of node pod registrations.
 
 **Enhancements:**
+
 - Added support for shared VPC host projects to the GCP CVS driver (Issue [#529](https://github.com/NetApp/trident/issues/529)).
 - Added support for smaller (300 GiB) scale-optimized CVS volumes in GCP. Smaller volume support must be enabled in GCP CVS account.
 - Added snapshotDir parameter to Azure NetApp Files backend definition.
@@ -96,15 +108,14 @@
 
 ## v21.01.0
 
-- **IMPORTANT**: CSI sidecars are pulled from k8s.gcr.io/sig-storage when the Kubernetes version is 1.17 or greater, and
-                 quay.io/k8scsi otherwise. Private registries are still supported and will be used without any
-                 modification if provided.
+- **IMPORTANT**: CSI sidecars are pulled from k8s.gcr.io/sig-storage when the Kubernetes version is 1.17 or greater, and quay.io/k8scsi otherwise. Private registries are still supported and will be used without any modification if provided.
 
 **Fixes:**
+
 - **Kubernetes:** Fixed issue where the Trident node failed to register with the Trident controller (Issue [#468](https://github.com/NetApp/trident/issues/468)).
 - **Kubernetes:** Fixed issue where CHAP credentials may be logged by CSI sidecars.
 - **Kubernetes:** Fixed issue of Ownership References set by Trident Operator on cluster-scoped Trident resources
- (Issue [#474](https://github.com/NetApp/trident/issues/474)).
+  (Issue [#474](https://github.com/NetApp/trident/issues/474)).
 - **Kubernetes:** Fixed issue where the operator could leave a Trident node unregistered with kubelet (Issue [#487](https://github.com/NetApp/trident/issues/487)).
 - **Kubernetes:** Fixed issue Operator reporting Trident installation multiple times (Issue [#431](https://github.com/NetApp/trident/issues/431)).
 - Fixed issue where digits in the storage prefix were disallowed from the ONTAP economy drivers (Issue [#476](https://github.com/NetApp/trident/issues/476)).
@@ -114,6 +125,7 @@
 - **Kubernetes:** Handle the case where blkid fails to provide any output (Issue [#418](https://github.com/NetApp/trident/issues/418)).
 
 **Enhancements:**
+
 - **Kubernetes:** Added support for Kubernetes 1.20
 - **Kubernetes:** Updated CSI sidecars.
 - **Kubernetes:** Updated scope of the Trident Operator to cluster-scope.
@@ -132,9 +144,11 @@
 ## v20.10.0
 
 - **IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.07/kubernetes/upgrades/index.html).
-- **IMPORTANT** Trident relies on the [trident-autosupport](https://hub.docker.com/r/netapp/trident-autosupport) sidecar container to periodically send usage and support telemetry data to NetApp by default. Usage of the trident-autosupport project falls under the [NetApp EULA](https://www.netapp.com/us/media/enduser-license-agreement-worldwide.pdf). Automatic sending of this data can be disabled at Trident install time via the "--silence-autosupport" flag.
+- **IMPORTANT** Trident relies on the [trident-autosupport](https://hub.docker.com/r/netapp/trident-autosupport) sidecar container to periodically send usage and support telemetry data to NetApp by default. Usage of the trident-autosupport project falls
+  under the [NetApp EULA](https://www.netapp.com/us/media/enduser-license-agreement-worldwide.pdf). Automatic sending of this data can be disabled at Trident install time via the "--silence-autosupport" flag.
 
 **Fixes:**
+
 - Fixed issue of SLM portal login for iSCSI backends (Issue [#387](https://github.com/NetApp/trident/issues/387)).
 - Fixed issue where Trident would crash when creating a volume if ONTAP FCP interfaces were present in the target SVM.
 - Fixed issue where storage prefix with period would cause backend to fail when updating or creating backend or upgrading Trident from v20.01 (Issue [#455](https://github.com/NetApp/trident/issues/455)).
@@ -146,6 +160,7 @@
 - **Kubernetes:** Fixed issue where Trident uses old Kubernetes secrets after Operator updates the service account (Issue [#444](https://github.com/NetApp/trident/issues/444)).
 
 **Enhancements:**
+
 - **Kubernetes:** Added support for Kubernetes 1.19
 - **Kubernetes:** Updated CSI sidecars to newest major versions.
 - Switched to `distroless` for base-image, reducing size and attack surface.
@@ -157,18 +172,23 @@
 
 **Beta Features:**
 ***These should not be used in production scenarios and are for testing and preview purposes only.***
-- **Kubernetes:** Automatic node preparation for NFS and iSCSI protocols. Trident can now attempt to make sure NFS and/or iSCSI packages and services are installed and running the first time an NFS or iSCSI volume is mounted on a worker node. Can be enabled with `--enable-node-prep` installation option.
+
+- **Kubernetes:** Automatic node preparation for NFS and iSCSI protocols. Trident can now attempt to make sure NFS and/or iSCSI packages and services are installed and running the first time an NFS or iSCSI volume is mounted on a worker node. Can be
+  enabled with `--enable-node-prep` installation option.
 - Added support for the default [CVS](https://cloud.google.com/solutions/partners/netapp-cloud-volumes/service-types?hl=en_US) service type on GCP.
 
 **Deprecations:**
+
 - **Kubernetes:** Removed etcd support, including ability to upgrade directly from etcd-based Trident (v19.04.1 or older).
 
 ## v20.07.0
 
 - **IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/upgrading.html).
-- **IMPORTANT** Trident relies on the [trident-autosupport](https://hub.docker.com/r/netapp/trident-autosupport) sidecar container to periodically send usage and support telemetry data to NetApp by default. Usage of the trident-autosupport project falls under the [NetApp EULA](https://www.netapp.com/us/media/enduser-license-agreement-worldwide.pdf). Automatic sending of this data can be disabled at Trident install time via the "--silence-autosupport" flag.
+- **IMPORTANT** Trident relies on the [trident-autosupport](https://hub.docker.com/r/netapp/trident-autosupport) sidecar container to periodically send usage and support telemetry data to NetApp by default. Usage of the trident-autosupport project falls
+  under the [NetApp EULA](https://www.netapp.com/us/media/enduser-license-agreement-worldwide.pdf). Automatic sending of this data can be disabled at Trident install time via the "--silence-autosupport" flag.
 
 **Fixes:**
+
 - Disabled automatic iSCSI scans and shortened the iSCSI session replacement timeout. (Issue [#410](https://github.com/NetApp/trident/issues/410))
 - Fixed volume cloning in the Azure NetApp Files driver.
 - **Kubernetes:** Fixed an issue where the NFS client could not start rpc-statd.
@@ -182,6 +202,7 @@
 - **Kubernetes:** Redacted sensitive information in Trident logs
 
 **Enhancements**
+
 - Added support for NFS v4.1 volumes to Azure NetApp Files, CVS-AWS, and CVS-GCP drivers. (Issue [#334](https://github.com/NetApp/trident/issues/334))
 - Added cloning to ONTAP FlexGroup driver.
 - **Kubernetes:** Added support for CSI NodeGetVolumeStats endpoint. (Issue [#400](https://github.com/NetApp/trident/issues/400))
@@ -192,6 +213,7 @@
 - **Kubernetes:** Automatic NetApp autosupport telemetry reporting via trident-autosupport sidecar, disabled via --silence-autosupport option in tridentctl install command
 
 **Deprecations:**
+
 - **Kubernetes:** Deprecated all of the 'core' metrics because their names are changing.
 
 ## v20.04.0
@@ -199,6 +221,7 @@
 **IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/upgrading.html).
 
 **Fixes:**
+
 - **Kubernetes:** Changed Trident node server to use downward API instead of relying on Kubernetes DNS to find Trident service. (Issue [#328](https://github.com/NetApp/trident/issues/328))
 - Fixed FlexGroup volume deletion with ONTAP version 9.7. (Issue [#326](https://github.com/NetApp/trident/issues/326))
 - Refer to backend storage for current volume size during resize. (Issue [#345](https://github.com/NetApp/trident/issues/345))
@@ -209,6 +232,7 @@
 - Fixed dataLIF specification in backend config for IPv6.
 
 **Enhancements**
+
 - Updated to GoLang 1.14.
 - **Kubernetes:** Added ability to remove CSI nodes from Trident's database via `tridentctl`.
 - **Kubernetes:** Introduced Trident Operator to manage new Trident installations.
@@ -223,10 +247,12 @@
 **IMPORTANT**: If you are upgrading from Trident 19.07 or 19.10 please carefully read [this](https://netapp-trident.readthedocs.io/en/stable-v20.01/kubernetes/upgrading.html).
 
 **Fixes:**
+
 - **Kubernetes:** Updated CSI sidecars to address CVE-2019-11255.
 - Set default SVM-DR tiering to `snapshot-only` for ONTAP cluster version 9.4 or less. (Issue [#318](https://github.com/NetApp/trident/issues/318))
 
 **Enhancements:**
+
 - **Kubernetes:** Added support for Kubernetes 1.17. (Issue [#327](https://github.com/NetApp/trident/issues/327))
 - **Kubernetes:** Added support for IPv6. (Issue [#122](https://github.com/NetApp/trident/issues/122))
 - **Kubernetes:** Added support for Prometheus metrics. (Issue [#121](https://github.com/NetApp/trident/issues/121))
@@ -238,14 +264,17 @@
 - **Kubernetes:** Added support for `v1beta1` Kubernetes snapshots in Kubernetes 1.17.
 
 **Deprecations:**
+
 - **Kubernetes:** Removed support for `v1alpha1` Kubernetes snapshots.
 
 **Known Issues:**
+
 - Flexgroup driver does not work properly with ONTAP 9.7
 
 ## v19.10.0
 
 **Fixes:**
+
 - **Kubernetes:** Added fix to ensure Trident pods only run on amd64/linux nodes. (Issue [#264](https://github.com/NetApp/trident/issues/264))
 - **Kubernetes:** Reduced log verbosity in CSI sidecars. (Issue [#275](https://github.com/NetApp/trident/issues/275))
 - **Kubernetes:** Added fix for volume names longer than 64 characters in solidfire and ontap-nas-economy drivers.  (Issue [#260](https://github.com/NetApp/trident/issues/260), Issue [#273](https://github.com/NetApp/trident/issues/273))
@@ -258,6 +287,7 @@
 - Fixed bug when IFace is not set in the Element backend config. (Issue [#272](https://github.com/NetApp/trident/issues/272))
 
 **Enhancements:**
+
 - **Kubernetes:** Added support to CSI Trident for volume expansion for iSCSI PVs.
 - **Kubernetes:** Added unsupported tridentctl for MacOS. (Issue [#167](https://github.com/NetApp/trident/issues/167))
 - **Kubernetes:** Added support to CSI Trident for raw block volumes with multi-attach for iSCSI PVs.
@@ -271,6 +301,7 @@
 - Added option for JSON-formatted logging. (Issue [#286](https://github.com/NetApp/trident/issues/286))
 
 **Deprecations:**
+
 - **Kubernetes:** Removed 'dry-run' switch from the installer. (Issue [#192](https://github.com/NetApp/trident/issues/192))
 - Changed minimum supported ONTAP version to 9.1.
 - Removed support for running Trident with an external etcd instance.
@@ -278,35 +309,37 @@
 ## v19.07.0
 
 **Fixes:**
+
 - **Kubernetes:** Improved volume import transaction cleanup during failure scenarios.
 - **Kubernetes:** Fix unknown backend states after Trident upgrade.
 - **Kubernetes:** Prevent operations on failed backends.
 - **Kubernetes:** Removed size requirement for volume import PVC file.
 
 **Enhancements:**
+
 - Trident driver for Azure NetApp Files.
 - **Kubernetes:** Implemented CSI Trident (optional for Kubernetes 1.13, exclusive for Kubernetes 1.14+).
 - **Kubernetes:** Added support to CSI Trident for volume snapshots.
 - **Kubernetes:** Converted Trident to use custom resource definitions instead of etcd.
 - **Kubernetes:** Added support for Kubernetes 1.15.
 - **Kubernetes:** CSI Trident only supports CHAP authentication for Element backends.
-- Trident now allows Solidfire backends without `Types` defined. However, such backends
-  will have one default storage pool with the default backend QoS values.
+- Trident now allows Solidfire backends without `Types` defined. However, such backends will have one default storage pool with the default backend QoS values.
 - Added CONTRIBUTING.md file to describe the process for contributing changes to Trident.
 - **Behavioral change:** Enabled space-allocation feature for ONTAP SAN LUNs by default. Setting `spaceAllocation`
-  parameter to `false` in ONTAP SAN backend's default config section would disable the space-allocation feature for
-  those LUNs.
+  parameter to `false` in ONTAP SAN backend's default config section would disable the space-allocation feature for those LUNs.
 - **Kubernetes:** Fix failure to set snapshot directory access during FlexGroup creation.
 
 ## v19.04.0
 
 **Fixes:**
+
 - Fixed panic if no aggregates are assigned to an ONTAP SVM.
 - **Kubernetes:** Updated CSI driver for 1.0 spec and Kubernetes 1.13. (Alpha release - unsupported)
 - **Kubernetes:** Allow Trident to start if one or more backend drivers fail to initialize.
 - **Kubernetes:** Fixed Trident to install on Kubectl 1.14. (Issue [#241](https://github.com/NetApp/trident/issues/241))
 
 **Enhancements:**
+
 - Trident driver for NetApp Cloud Volumes Service in AWS.
 - **Kubernetes:** Import pre-existing volumes using the `ontap-nas`, `ontap-nas-flexgroup`, `solidfire-san`, and `aws-cvs` drivers.  (Issue [#74](https://github.com/NetApp/trident/issues/74))
 - **Kubernetes:** Added support for Kubernetes 1.14.
@@ -315,11 +348,13 @@
 ## v19.01.0
 
 **Fixes:**
+
 - Fixed an issue where Trident did not allow specifying a port in the management LIF config (Issue [#195](https://github.com/NetApp/trident/issues/195)). Thank you, [@vnandha!](https://github.com/vnandha)
 - Only strip prefix on volume name if volume name starts with prefix.
 - **Kubernetes:** Refactored BackendExternal which fixed the output of "tridentctl get backend -o json" where details like "limitAggregateUsage" and "limitVolumeSize" were not found. (Issue [#188](https://github.com/NetApp/trident/issues/188))
 
 **Enhancements:**
+
 - Updated Trident's 3rd-party dependencies for 19.01 release.
 - Added support for Docker 18.09, Docker Enterprise Edition 2.1, OpenShift 3.11 and Kubernetes 1.13.
 - Removed support for Docker Enterprise Edition 2.0 and Kubernetes 1.8.
@@ -330,16 +365,18 @@
 - **Behavioural change:** The Trident installer now automatically adds the backend used to provision the Trident volume in new installations.
 
 **Deprecations:**
-- **Kubernetes:** Deprecated PVC annotation `trident.netapp.io/reclaimPolicy` as the reclaim policy can be set in the
-  storage class since Kubernetes v1.8.
+
+- **Kubernetes:** Deprecated PVC annotation `trident.netapp.io/reclaimPolicy` as the reclaim policy can be set in the storage class since Kubernetes v1.8.
 
 ## v18.10.0
 
 **Fixes:**
+
 - Modified log messages about ONTAP media types not associated with performance classes (Issue [#158](https://github.com/NetApp/trident/issues/158)).
 - **Docker:** Resolved issue where containers might not restart after restarting Docker (Issue [#160](https://github.com/NetApp/trident/issues/160)).
 
 **Enhancements:**
+
 - Added ability to set snapshotReserve in backend config files, volume creation options, and PVC annotations (Issue [#43](https://github.com/NetApp/trident/issues/43)).
 - Added ability to limit the size of requested volumes.
 - Added ability to limit the ONTAP Aggregate usage percentage (Issue [#64](https://github.com/NetApp/trident/issues/64)).
@@ -349,14 +386,14 @@
 - **Kubernetes:** Updated etcd to v3.3.9 and client-go to v9.0.0.
 
 **Deprecations:**
-- **Docker:** Trident's support for Docker EE 2.0's UCP access control will be removed in the
-  v19.01 release, replaced by the native Kubernetes access control support in
-  Docker EE 2.1 and beyond. The `--ucp-host` and `--ucp-bearer-token` parameters
-  will be deprecated and will not be needed in order to install or uninstall Trident.
+
+- **Docker:** Trident's support for Docker EE 2.0's UCP access control will be removed in the v19.01 release, replaced by the native Kubernetes access control support in Docker EE 2.1 and beyond. The `--ucp-host` and `--ucp-bearer-token` parameters will be
+  deprecated and will not be needed in order to install or uninstall Trident.
 
 ## v18.07.0
 
 **Fixes:**
+
 - Fixed cleanup of the transaction object upon failed deletion (Issue [#126](https://github.com/NetApp/trident/issues/126)).
 - **Kubernetes:** Fixed an issue where Trident would provision a ReadWriteMany PVC to an iSCSI backend.
 - **Kubernetes:** Fixed an installer issue where the Trident PV could be bound to the wrong PVC (Issue [#120](https://github.com/NetApp/trident/issues/120)).
@@ -367,6 +404,7 @@
 - **Docker:** Trident no longer crashes if ONTAP volumes are offline (Issue [#151](https://github.com/NetApp/trident/issues/151)).
 
 **Enhancements:**
+
 - Added ontap-nas-flexgroup driver to support ONTAP FlexGroup Volumes.
 - Changed ONTAP drivers so that the snapshot reserve is set to zero when snapshotPolicy is "none".
 - Added support for Docker EE UCP.
@@ -381,6 +419,7 @@
 ## v18.04.0
 
 **Fixes:**
+
 - Clone operations are more resilient to busy storage controllers.
 - Fixed cleanup of goroutines.
 - Extended timeouts for storage controller API invocations.
@@ -393,36 +432,32 @@
 - **Docker:** Client interfaces start immediately to avoid Docker plugin timeouts.
 
 **Enhancements:**
+
 - Added FQDN support for the management and data LIF of ONTAP backends.
-- For Kubernetes 1.9+, CHAP secrets will be created in Trident's namespace
-  instead of the PVC's namespace.
+- For Kubernetes 1.9+, CHAP secrets will be created in Trident's namespace instead of the PVC's namespace.
 - Return new HTTP codes from REST interface to indicate Trident startup status.
 - Set the minimum supported SolidFire Element version to 8.0.
 - **Kubernetes:** Simplified installing Trident with a new installer.
-- **Kubernetes:** Added the ability to define a custom name for a storage
-  backend. This enhancement enables adding multiple instances of the same
-  backend with different policies (e.g., different snapshot policies), which
-  obviates extending the Trident storage class API to support new parameters
+- **Kubernetes:** Added the ability to define a custom name for a storage backend. This enhancement enables adding multiple instances of the same backend with different policies (e.g., different snapshot policies), which obviates extending the Trident
+  storage class API to support new parameters
   (Issue [#93](https://github.com/NetApp/trident/issues/93)).
 - **Kubernetes:** Added the ability to rename an existing backend.
-- **Kubernetes:** SolidFire defaults to use CHAP if Kubernetes version is >= 1.7
-  and a `trident` access group doesn't exist. Setting AccessGroup or UseCHAP in
-  config overrides this behavior.
+- **Kubernetes:** SolidFire defaults to use CHAP if Kubernetes version is >= 1.7 and a `trident` access group doesn't exist. Setting AccessGroup or UseCHAP in config overrides this behavior.
 - **Docker:** The aggregate attribute in ONTAP config files is now optional.
 
 ## v18.01.0
 
 **Fixes:**
+
 - Volume deletion is an idempotent operation with the ontap-nas-economy driver (Issue [#65](https://github.com/NetApp/trident/issues/65)).
 - Enabled Trident installation on an EF-series (all-flash) array.
-- Fixed an issue where qtrees with names near the 64-character limit could not
-  be deleted.
+- Fixed an issue where qtrees with names near the 64-character limit could not be deleted.
 - Enforced fencing of ONTAP aggregates and E-series pools to match config file values.
-- Fixed an issue where deleting volumes using the ONTAP SAN driver could leave
-  volumes stuck in a partially deleted state.
+- Fixed an issue where deleting volumes using the ONTAP SAN driver could leave volumes stuck in a partially deleted state.
 - Fixed an issue where the ONTAP SAN driver would create junction paths for cloned iSCSI volumes
 
 **Enhancements:**
+
 - Trident can now serve as a Docker Volume Plugin.
 - Enabled cloning volumes via a new PVC annotation.
 - Added support for Kubernetes 1.8 Storage Classes to set the mount options and reclaim policy of PVs (Issue [#49](https://github.com/NetApp/trident/issues/49)).
@@ -432,11 +467,9 @@
 - Added support for the etcdv3 API (Issue [#45](https://github.com/NetApp/trident/issues/45)).
 - Added the etcd-copy utility to migrate data between etcd clusters.
 - Enabled TLS for Trident's etcd client and the etcd-copy utility.
-- Added scripts and instructions for setting up an external etcd cluster using
-  etcd operator.
+- Added scripts and instructions for setting up an external etcd cluster using etcd operator.
 - Significantly reduced Trident and Trident-Launcher Docker image sizes.
-- Clarified and enhanced storage class pool selection by introducing storagePools and renaming
-  requiredStorage to additionalStoragePools.
+- Clarified and enhanced storage class pool selection by introducing storagePools and renaming requiredStorage to additionalStoragePools.
 - Added hostname support to the dataLIF option in the config file for ontap-nas and ontap-nas-economy drivers.
 - Added minimum volume size checks to all plugins.
 - **Docker:** Improved iSCSI rescan performance for ONTAP SAN and E-series plugins.
@@ -444,22 +477,19 @@
 ## v17.10.0
 
 **Fixes:**
+
 - tridentctl correctly handles larger payloads using chunked encoding.
-- Trident installs correctly in a Kubernetes pod with E-series and ONTAP
-  SAN.
+- Trident installs correctly in a Kubernetes pod with E-series and ONTAP SAN.
 - Trident allows periods in PVC names (Issue [#40](https://github.com/NetApp/trident/issues/40)).
-- Fixed issue where ONTAP NAS volumes were not mountable immediately
-  after creation when using load-sharing mirrors for the SVM root
-  volume (Issue [#44](https://github.com/NetApp/trident/issues/44)).
+- Fixed issue where ONTAP NAS volumes were not mountable immediately after creation when using load-sharing mirrors for the SVM root volume (Issue [#44](https://github.com/NetApp/trident/issues/44)).
 - File system type is not set for NFS volumes in the persistent store
   (Issue [#57](https://github.com/NetApp/trident/issues/57)).
 - Deprecated the update script.
 
 **Enhancements:**
-- Controller serial numbers are reported by the REST interface and
-  tridentctl.
-- tridentctl logs can display launcher and ephemeral logs, and it can
-  create a support archive.
+
+- Controller serial numbers are reported by the REST interface and tridentctl.
+- tridentctl logs can display launcher and ephemeral logs, and it can create a support archive.
 - Added ontap-nas-economy driver (Issue [#2](https://github.com/NetApp/trident/issues/2)).
 - Added support for NetApp Volume Encryption to the ONTAP drivers
   (Issue [#3](https://github.com/NetApp/trident/issues/3)).
@@ -469,59 +499,42 @@
 ## v17.07.0
 
 **Fixes:**
-- Trident and Trident launcher no longer fail if they cannot validate
-  the container orchestrator version.
-- When running in a pod, the Trident REST interface is no longer
-  accessible by default from outside the pod.
-- Trident correctly handles updating backends that have volumes
-  provisioned using storage classes that no longer exist (Issue [#29](https://github.com/NetApp/trident/issues/29)).
+
+- Trident and Trident launcher no longer fail if they cannot validate the container orchestrator version.
+- When running in a pod, the Trident REST interface is no longer accessible by default from outside the pod.
+- Trident correctly handles updating backends that have volumes provisioned using storage classes that no longer exist (Issue [#29](https://github.com/NetApp/trident/issues/29)).
 - Installer script correctly creates a new namespace (Issue [#39](https://github.com/NetApp/trident/issues/39)).
 
 **Enhancements:**
-- Added support for `storage.k8s.io/v1` storage classes and the default
-  storage class introduced in Kubernetes v1.6.0.
-- Changed the installer script to support both Kubernetes and OpenShift
-  deployments in a uniform manner and to leverage Role-Based Access
-  Control (RBAC) authorization for better security.
+
+- Added support for `storage.k8s.io/v1` storage classes and the default storage class introduced in Kubernetes v1.6.0.
+- Changed the installer script to support both Kubernetes and OpenShift deployments in a uniform manner and to leverage Role-Based Access Control (RBAC) authorization for better security.
 - Added scripts for uninstalling and updating Trident.
 - Added tridentctl CLI tool for managing Trident.
-- SolidFire backend configuration file accepts up to four Volume Access
-  Group IDs (Issue [#24](https://github.com/NetApp/trident/issues/24)).
+- SolidFire backend configuration file accepts up to four Volume Access Group IDs (Issue [#24](https://github.com/NetApp/trident/issues/24)).
 - Improved efficiency of ONTAP LUN ID selection.
-- Added PVC annotation `trident.netapp.io/blockSize` to specify
-  block/sector size for SolidFire backends (Issues [#33](https://github.com/NetApp/trident/issues/33)
+- Added PVC annotation `trident.netapp.io/blockSize` to specify block/sector size for SolidFire backends (Issues [#33](https://github.com/NetApp/trident/issues/33)
   and [#37](https://github.com/NetApp/trident/issues/37)).
-- Added PVC annotation `trident.netapp.io/fileSystem` to specify the
-  file system type for iSCSI volumes (Issue [#37](https://github.com/NetApp/trident/issues/37)).
-
+- Added PVC annotation `trident.netapp.io/fileSystem` to specify the file system type for iSCSI volumes (Issue [#37](https://github.com/NetApp/trident/issues/37)).
 
 ## v17.04.0
 
 **Fixes:**
 
-- Trident now rejects ONTAP backends with no aggregates assigned to the
-  SVM.
-- Trident now allows ONTAP backends even if it cannot read the aggregate
-  media type, or if the media type is unknown. However, such backends
-  will be ignored for storage classes that require a specific media
-  type.
-- Trident launcher supports creating the ConfigMap in a non-default
-  namespace.
+- Trident now rejects ONTAP backends with no aggregates assigned to the SVM.
+- Trident now allows ONTAP backends even if it cannot read the aggregate media type, or if the media type is unknown. However, such backends will be ignored for storage classes that require a specific media type.
+- Trident launcher supports creating the ConfigMap in a non-default namespace.
 
 **Enhancements:**
 
-- The improved Trident launcher has a better support for failure
-  recovery, error reporting, user arguments, and unit testing.
+- The improved Trident launcher has a better support for failure recovery, error reporting, user arguments, and unit testing.
 - Enabled SVM-scoped users for ONTAP backends.
-- Switched to using vserver-show-aggr-get-iter API for ONTAP 9.0 and
-  later to get aggregate media type.
+- Switched to using vserver-show-aggr-get-iter API for ONTAP 9.0 and later to get aggregate media type.
 - Added support for E-Series.
 - Upgraded the etcd version to v3.1.3.
 - Added release notes (CHANGELOG.md).
 
 ## v1.0
 
-- Trident v1.0 provides storage orchestration for Kubernetes, acting as
-  an external provisioner for NetApp ONTAP and SolidFire systems.
-- Through its REST interface, Trident can provide storage orchestration
-  for non-Kubernetes deployments.
+- Trident v1.0 provides storage orchestration for Kubernetes, acting as an external provisioner for NetApp ONTAP and SolidFire systems.
+- Through its REST interface, Trident can provide storage orchestration for non-Kubernetes deployments.
