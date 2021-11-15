@@ -36,6 +36,7 @@ DR_LINUX = docker run --rm \
 	-e GOARCH=$(GOARCH) \
 	-e GOGC=$(GOGC) \
 	-e GOPROXY=$(GOPROXY) \
+	-e XDG_CACHE_HOME=/go/cache \
 	-v $(OPERATOR_VOLUME):/go \
 	-v "${ROOT}":"${TRIDENT_VOLUME_PATH}" \
 	-w $(OPERATOR_VOLUME_PATH) \

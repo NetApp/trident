@@ -42,6 +42,7 @@ DR_LINUX = docker run --rm \
 	-e GOARCH=$(GOARCH) \
 	-e GOGC=$(GOGC) \
 	-e GOPROXY=$(GOPROXY) \
+	-e XDG_CACHE_HOME=/go/cache \
 	-v $(TRIDENT_VOLUME):/go \
 	-v "${ROOT}":"${TRIDENT_VOLUME_PATH}" \
 	-w $(TRIDENT_VOLUME_PATH) \
@@ -53,6 +54,7 @@ DR_MACOS = docker run --rm \
 	-e GOARCH=$(GOARCH) \
 	-e GOGC=$(GOGC) \
 	-e GOPROXY=$(GOPROXY) \
+	-e XDG_CACHE_HOME=/go/cache \
 	-v $(TRIDENT_VOLUME):/go \
 	-v "${ROOT}":"${TRIDENT_VOLUME_PATH}" \
 	-w $(TRIDENT_VOLUME_PATH) \
