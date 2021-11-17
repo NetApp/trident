@@ -70,9 +70,10 @@ var (
 	useCRD = flag.Bool("crd_persistence", false, "Uses CRDs for persisting orchestrator state.")
 
 	// HTTP REST interface
-	address    = flag.String("address", "127.0.0.1", "Storage orchestrator HTTP API address")
-	port       = flag.String("port", "8000", "Storage orchestrator HTTP API port")
-	enableREST = flag.Bool("rest", true, "Enable HTTP REST interface")
+	address            = flag.String("address", "127.0.0.1", "Storage orchestrator HTTP API address")
+	port               = flag.String("port", "8000", "Storage orchestrator HTTP API port")
+	enableREST         = flag.Bool("rest", true, "Enable HTTP REST interface")
+	httpRequestTimeout = flag.String("http_request_timeout", config.HTTPTimeoutString, "Set the request timeout for HTTP")
 
 	// HTTPS REST interface
 	httpsAddress    = flag.String("https_address", "", "Storage orchestrator HTTPS API address")
@@ -365,10 +366,19 @@ func main() {
 
 	// Create HTTP REST frontend
 	if *enableREST {
+		httpTimeout, err := time.ParseDuration(*httpRequestTimeout)
+		if err != nil {
+			log.Fatalf("HTTP request timeout could not be converted to a duration, cannot continue")
+		}
+
+		if httpTimeout < 0 {
+			log.Fatalf("HTTP request timeout cannot be a negative duration, cannot continue")
+		}
+
 		if *port == "" {
 			log.Warning("HTTP REST interface will not be available (port not specified).")
 		} else {
-			httpServer := rest.NewHTTPServer(orchestrator, *address, *port)
+			httpServer := rest.NewHTTPServer(orchestrator, *address, *port, httpTimeout)
 			preBootstrapFrontends = append(preBootstrapFrontends, httpServer)
 			log.WithFields(log.Fields{"name": httpServer.GetName()}).Info("Added frontend.")
 		}
@@ -379,9 +389,18 @@ func main() {
 		if *httpsPort == "" {
 			log.Warning("HTTPS REST interface will not be available (httpsPort not specified).")
 		} else {
+			httpTimeout, err := time.ParseDuration(*httpRequestTimeout)
+			if err != nil {
+				log.Fatalf("HTTP request timeout could not be converted to a duration, cannot continue")
+			}
+
+			if httpTimeout < 0 {
+				log.Fatalf("HTTP request timeout cannot be a negative duration, cannot continue")
+			}
+
 			httpsServer, err := rest.NewHTTPSServer(
 				orchestrator, *httpsAddress, *httpsPort, *httpsCACert, *httpsServerCert, *httpsServerKey,
-				enableMutualTLS, handler)
+				enableMutualTLS, handler, httpTimeout)
 			if err != nil {
 				log.Fatalf("Unable to start the HTTPS REST frontend. %v", err)
 			}

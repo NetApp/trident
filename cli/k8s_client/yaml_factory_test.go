@@ -9,6 +9,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils"
 )
 
@@ -55,6 +56,24 @@ func TestYAMLFactory(t *testing.T) {
 
 	version := utils.MustParseSemantic("1.21.0")
 
+	deploymentArgs := &DeploymentYAMLArguments{
+		DeploymentName:          Name,
+		TridentImage:            ImageName,
+		AutosupportImage:        AutosupportImageName,
+		AutosupportProxy:        "",
+		AutosupportCustomURL:    "",
+		AutosupportSerialNumber: "",
+		AutosupportHostname:     "",
+		LogFormat:               "",
+		ImageRegistry:           "",
+		ImagePullSecrets:        imagePullSecrets,
+		Labels:                  labels,
+		ControllingCRDetails:    ownerRef,
+		Debug:                   false,
+		Version:                 version,
+		HTTPRequestTimeout:      config.HTTPTimeoutString,
+	}
+
 	yamlsOutputs := []string{
 		GetServiceAccountYAML(Name, nil, nil, nil),
 		GetServiceAccountYAML(Name, Secrets, labels, ownerRef),
@@ -62,9 +81,7 @@ func TestYAMLFactory(t *testing.T) {
 		GetClusterRoleYAML(FlavorOpenshift, Name, labels, ownerRef, true),
 		GetClusterRoleBindingYAML(Namespace, FlavorOpenshift, Name, nil, ownerRef, false),
 		GetClusterRoleBindingYAML(Namespace, FlavorK8s, Name, labels, ownerRef, true),
-		GetCSIDeploymentYAML(Name, ImageName, AutosupportImageName, "", "",
-			"", "", "", "text", "", imagePullSecrets,
-			labels, ownerRef, false, false, false, version, false),
+		GetCSIDeploymentYAML(deploymentArgs),
 		GetCSIServiceYAML(Name, labels, ownerRef),
 		GetSecretYAML(Name, Namespace, labels, ownerRef, nil, nil),
 	}
@@ -111,10 +128,29 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 
 	version := utils.MustParseSemantic("1.17.0")
 
+	deploymentArgs := &DeploymentYAMLArguments{
+		DeploymentName:          "trident-csi",
+		TridentImage:            "netapp/trident:20.10.0-custom",
+		AutosupportImage:        "netapp/trident-autosupport:20.10.0-custom",
+		AutosupportSerialNumber: "0000-0000",
+		AutosupportHostname:     "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
+		AutosupportProxy:        "http://127.0.0.1/",
+		AutosupportCustomURL:    "http://172.16.150.125:8888/",
+		ImageRegistry:           "k8s.gcr.io",
+		LogFormat:               "text",
+		SnapshotCRDVersion:      "v1",
+		ImagePullSecrets:        imagePullSecrets,
+		ControllingCRDetails:    map[string]string{},
+		Version:                 version,
+		HTTPRequestTimeout:      config.HTTPTimeoutString,
+		TopologyEnabled:         true,
+		Debug:                   true,
+		UseIPv6:                 true,
+		SilenceAutosupport:      false,
+	}
+
 	yamlsOutputs := []string{
-		GetCSIDeploymentYAML("trident-csi", "netapp/trident:20.10.0-custom", "netapp/trident-autosupport:20.10.0-custom",
-			"http://127.0.0.1/", "http://172.16.150.125:8888/", "0000-0000", "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
-			"k8s.gcr.io", "text", "v1", imagePullSecrets, labels, nil, true, true, false, version, true),
+		GetCSIDeploymentYAML(deploymentArgs),
 	}
 	for i, yamlData := range yamlsOutputs {
 
@@ -139,10 +175,30 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 
 	version := utils.MustParseSemantic("1.17.0")
 
+	deploymentArgs := &DeploymentYAMLArguments{
+		DeploymentName:          "\ntrident-csi",
+		TridentImage:            "netapp/trident:20.10.0-custom",
+		AutosupportImage:        "netapp/trident-autosupport:20.10.0-custom",
+		AutosupportProxy:        "http://127.0.0.1/",
+		AutosupportCustomURL:    "http://172.16.150.125:8888/",
+		AutosupportSerialNumber: "0000-0000",
+		AutosupportHostname:     "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
+		ImageRegistry:           "k8s.gcr.io",
+		LogFormat:               "text",
+		SnapshotCRDVersion:      "v1beta1",
+		ImagePullSecrets:        imagePullSecrets,
+		Labels:                  labels,
+		ControllingCRDetails:    map[string]string{},
+		Debug:                   true,
+		UseIPv6:                 true,
+		SilenceAutosupport:      false,
+		Version:                 version,
+		TopologyEnabled:         true,
+		HTTPRequestTimeout:      config.HTTPTimeoutString,
+	}
+
 	yamlsOutputs := []string{
-		GetCSIDeploymentYAML("\ntrident-csi", "netapp/trident:20.10.0-custom", "netapp/trident-autosupport:20.10.0-custom",
-			"http://127.0.0.1/", "http://172.16.150.125:8888/", "0000-0000", "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
-			"k8s.gcr.io", "text", "v1beta1", imagePullSecrets, labels, nil, true, true, false, version, true),
+		GetCSIDeploymentYAML(deploymentArgs),
 	}
 
 	for i, yamlData := range yamlsOutputs {

@@ -33,6 +33,10 @@ tridentIPv6: false
 # tridentK8sTimeout overrides the default 30-second timeout for most Kubernetes API operations (if non-zero, in seconds).
 tridentK8sTimeout: 0
 
+# tridentHttpRequestTimeout (int) overrides the default 90-second timeout for the HTTP requests, with 0 being an
+# infinite duration for the timeout. A negative value will cause the default to be used.
+tridentHttpRequestTimeout: -1
+
 # tridentSilenceAutosupport allows disabling Trident's periodic Autosupport reporting.
 tridentSilenceAutosupport: false
 

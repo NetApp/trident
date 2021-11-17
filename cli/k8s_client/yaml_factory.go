@@ -277,22 +277,18 @@ spec:
     targetPort: 8001
 `
 
-func GetCSIDeploymentYAML(deploymentName, tridentImage,
-	autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber, autosupportHostname,
-	imageRegistry, logFormat, snapshotCRDVersion string, imagePullSecrets []string, labels,
-	controllingCRDetails map[string]string,
-	debug, useIPv6, silenceAutosupport bool, version *utils.Version, topologyEnabled bool) string {
+func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 
 	var debugLine, logLevel, ipLocalhost string
 
-	if debug {
+	if args.Debug {
 		debugLine = "- -debug"
 		logLevel = "8"
 	} else {
 		debugLine = "#- -debug"
 		logLevel = "2"
 	}
-	if useIPv6 {
+	if args.UseIPv6 {
 		ipLocalhost = "[::1]"
 	} else {
 		ipLocalhost = "127.0.0.1"
@@ -301,71 +297,72 @@ func GetCSIDeploymentYAML(deploymentName, tridentImage,
 	var deploymentYAML string
 
 	csiSnapshotterVersion := "v3.0.3"
-	switch version.MinorVersion() {
+	switch args.Version.MinorVersion() {
 	case 17, 18, 19:
 		deploymentYAML = csiDeployment117YAMLTemplate
 	default:
 		deploymentYAML = csiDeployment120YAMLTemplate
 
-		if snapshotCRDVersion == "v1" {
+		if args.SnapshotCRDVersion == "v1" {
 			csiSnapshotterVersion = "v4.2.1"
 		}
 	}
 
-	if imageRegistry == "" {
-		imageRegistry = commonconfig.KubernetesCSISidecarRegistry
+	if args.ImageRegistry == "" {
+		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
 	}
 
-	if autosupportImage == "" {
-		autosupportImage = commonconfig.DefaultAutosupportImage
+	if args.AutosupportImage == "" {
+		args.AutosupportImage = commonconfig.DefaultAutosupportImage
 	}
 
 	autosupportProxyLine := ""
-	if autosupportProxy != "" {
-		autosupportProxyLine = fmt.Sprint("- -proxy-url=", autosupportProxy)
+	if args.AutosupportProxy != "" {
+		autosupportProxyLine = fmt.Sprint("- -proxy-url=", args.AutosupportProxy)
 	}
 
 	autosupportCustomURLLine := ""
-	if autosupportCustomURL != "" {
-		autosupportCustomURLLine = fmt.Sprint("- -custom-url=", autosupportCustomURL)
+	if args.AutosupportCustomURL != "" {
+		autosupportCustomURLLine = fmt.Sprint("- -custom-url=", args.AutosupportCustomURL)
 	}
 
 	autosupportSerialNumberLine := ""
-	if autosupportSerialNumber != "" {
-		autosupportSerialNumberLine = fmt.Sprint("- -serial-number=", autosupportSerialNumber)
+	if args.AutosupportSerialNumber != "" {
+		autosupportSerialNumberLine = fmt.Sprint("- -serial-number=", args.AutosupportSerialNumber)
 	}
 
 	autosupportHostnameLine := ""
-	if autosupportHostname != "" {
-		autosupportHostnameLine = fmt.Sprint("- -hostname=", autosupportHostname)
+	if args.AutosupportHostname != "" {
+		autosupportHostnameLine = fmt.Sprint("- -hostname=", args.AutosupportHostname)
 	}
 	provisionerFeatureGates := ""
-	if topologyEnabled {
+	if args.TopologyEnabled {
 		provisionerFeatureGates = "- --feature-gates=Topology=True"
 	}
 
-	if labels == nil {
-		labels = make(map[string]string)
+	if args.Labels == nil {
+		args.Labels = make(map[string]string)
 	}
-	labels[DefaultContainerLabelKey] = "trident-main"
+	args.Labels[DefaultContainerLabelKey] = "trident-main"
 
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", tridentImage)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", deploymentName)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", imageRegistry)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", args.TridentImage)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", args.DeploymentName)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SNAPSHOTTER_VERSION}", csiSnapshotterVersion)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEBUG}", debugLine)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_APP}", labels[TridentAppLabelKey])
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_LEVEL}", logLevel)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_FORMAT}", logFormat)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_FORMAT}", args.LogFormat)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IP_LOCALHOST}", ipLocalhost)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_IMAGE}", autosupportImage)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_IMAGE}", args.AutosupportImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_PROXY}", autosupportProxyLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_CUSTOM_URL}", autosupportCustomURLLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SERIAL_NUMBER}", autosupportSerialNumberLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_HOSTNAME}", autosupportHostnameLine)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SILENCE}", strconv.FormatBool(silenceAutosupport))
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SILENCE}", strconv.FormatBool(args.SilenceAutosupport))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{PROVISIONER_FEATURE_GATES}", provisionerFeatureGates)
-	deploymentYAML = replaceMultiline(deploymentYAML, labels, controllingCRDetails, imagePullSecrets)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
+	deploymentYAML = replaceMultiline(deploymentYAML, args.Labels, args.ControllingCRDetails, args.ImagePullSecrets)
 
 	return deploymentYAML
 }
@@ -408,6 +405,7 @@ spec:
         - "--csi_role=controller"
         - "--log_format={LOG_FORMAT}"
         - "--address={IP_LOCALHOST}"
+        - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--metrics"
         {DEBUG}
         livenessProbe:
@@ -562,6 +560,7 @@ spec:
         - "--csi_role=controller"
         - "--log_format={LOG_FORMAT}"
         - "--address={IP_LOCALHOST}"
+        - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--metrics"
         {DEBUG}
         livenessProbe:
@@ -678,13 +677,11 @@ spec:
           sizeLimit: 1Gi
 `
 
-func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir, logFormat, probePort string,
-	imagePullSecrets []string, labels, controllingCRDetails map[string]string, debug, nodePrep bool,
-	version *utils.Version) string {
+func GetCSIDaemonSetYAML(args *DaemonsetYAMLArguments) string {
 
 	var debugLine, logLevel string
 
-	if debug {
+	if args.Debug {
 		debugLine = "- -debug"
 		logLevel = "8"
 	} else {
@@ -693,31 +690,32 @@ func GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir,
 	}
 
 	var daemonSetYAML string
-	switch version.MinorVersion() {
+	switch args.Version.MinorVersion() {
 	case 17:
 		daemonSetYAML = daemonSet117YAMLTemplate
 	default:
 		daemonSetYAML = daemonSet118YAMLTemplate
 	}
 
-	if imageRegistry == "" {
-		imageRegistry = commonconfig.KubernetesCSISidecarRegistry
+	if args.ImageRegistry == "" {
+		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
 	}
 
-	labels[DefaultContainerLabelKey] = "trident-main"
+	args.Labels[DefaultContainerLabelKey] = "trident-main"
 
-	kubeletDir = strings.TrimRight(kubeletDir, "/")
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{TRIDENT_IMAGE}", tridentImage)
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DAEMONSET_NAME}", daemonsetName)
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{CSI_SIDECAR_REGISTRY}", imageRegistry)
+	kubeletDir := strings.TrimRight(args.KubeletDir, "/")
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{TRIDENT_IMAGE}", args.TridentImage)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DAEMONSET_NAME}", args.DaemonsetName)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{KUBELET_DIR}", kubeletDir)
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LABEL_APP}", labels[TridentAppLabelKey])
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DEBUG}", debugLine)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", logLevel)
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", logFormat)
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{NODE_PREP}", strconv.FormatBool(nodePrep))
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", probePort)
-	daemonSetYAML = replaceMultiline(daemonSetYAML, labels, controllingCRDetails, imagePullSecrets)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", args.LogFormat)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{NODE_PREP}", strconv.FormatBool(args.NodePrep))
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", args.ProbePort)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
+	daemonSetYAML = replaceMultiline(daemonSetYAML, args.Labels, args.ControllingCRDetails, args.ImagePullSecrets)
 
 	return daemonSetYAML
 }
@@ -761,6 +759,7 @@ spec:
         - "--csi_role=node"
         - "--log_format={LOG_FORMAT}"
         - "--node_prep={NODE_PREP}"
+        - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--https_rest"
         - "--https_port={PROBE_PORT}"
         {DEBUG}
@@ -917,6 +916,7 @@ spec:
         - "--csi_role=node"
         - "--log_format={LOG_FORMAT}"
         - "--node_prep={NODE_PREP}"
+        - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--https_rest"
         - "--https_port={PROBE_PORT}"
         {DEBUG}

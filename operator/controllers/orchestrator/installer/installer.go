@@ -77,7 +77,8 @@ var (
 
 	imagePullSecrets []string
 
-	k8sTimeout time.Duration
+	k8sTimeout  time.Duration
+	httpTimeout string
 
 	appLabel      string
 	appLabelKey   string
@@ -273,6 +274,7 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentOrchestrator,
 	imageRegistry = ""
 	kubeletDir = DefaultKubeletDir
 	autosupportImage = commonconfig.DefaultAutosupportImage
+	httpTimeout = commonconfig.HTTPTimeoutString
 
 	imagePullSecrets = []string{}
 
@@ -327,6 +329,9 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentOrchestrator,
 		if cr.Spec.ImageRegistry != "" {
 			autosupportImage = utils.ReplaceImageRegistry(autosupportImage, cr.Spec.ImageRegistry)
 		}
+	}
+	if cr.Spec.HTTPRequestTimeout >= 0 {
+		httpTimeout = strconv.FormatInt(int64(cr.Spec.HTTPRequestTimeout), 10) + "s"
 	}
 
 	appLabel = TridentCSILabel
@@ -513,6 +518,7 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentOrchestrator,
 		AutosupportHostname:     autosupportHostname,
 		KubeletDir:              kubeletDir,
 		K8sTimeout:              strconv.Itoa(int(k8sTimeout.Seconds())),
+		HTTPRequestTimeout:      httpTimeout,
 		ImagePullSecrets:        imagePullSecrets,
 		EnableNodePrep:          strconv.FormatBool(enableNodePrep),
 	}
@@ -1481,10 +1487,29 @@ func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels 
 
 	snapshotCRDVersion := i.identifyCSISnapshotterVersion(currentDeployment)
 
-	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentName, tridentImage,
-		autosupportImage, autosupportProxy, "", autosupportSerialNumber, autosupportHostname,
-		imageRegistry, logFormat, snapshotCRDVersion, imagePullSecrets, labels, controllingCRDetails, debug, useIPv6,
-		silenceAutosupport, i.client.ServerVersion(), topologyEnabled)
+	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
+		DeploymentName:          deploymentName,
+		TridentImage:            tridentImage,
+		AutosupportImage:        autosupportImage,
+		AutosupportProxy:        autosupportProxy,
+		AutosupportCustomURL:    "",
+		AutosupportSerialNumber: autosupportSerialNumber,
+		AutosupportHostname:     autosupportHostname,
+		ImageRegistry:           imageRegistry,
+		LogFormat:               logFormat,
+		SnapshotCRDVersion:      snapshotCRDVersion,
+		ImagePullSecrets:        imagePullSecrets,
+		Labels:                  labels,
+		ControllingCRDetails:    controllingCRDetails,
+		Debug:                   debug,
+		UseIPv6:                 useIPv6,
+		SilenceAutosupport:      silenceAutosupport,
+		Version:                 i.client.ServerVersion(),
+		TopologyEnabled:         topologyEnabled,
+		HTTPRequestTimeout:      httpTimeout,
+	}
+
+	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 
 	if createDeployment {
 		// Create the deployment
@@ -1603,9 +1628,22 @@ func (i *Installer) createOrPatchTridentDaemonSet(controllingCRDetails, labels m
 
 	labels[appLabelKey] = TridentNodeLabelValue
 
-	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonsetName, tridentImage, imageRegistry, kubeletDir,
-		logFormat, probePort, imagePullSecrets, labels, controllingCRDetails, debug, enableNodePrep,
-		i.client.ServerVersion())
+	daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
+		DaemonsetName:        daemonsetName,
+		TridentImage:         tridentImage,
+		ImageRegistry:        imageRegistry,
+		KubeletDir:           kubeletDir,
+		LogFormat:            logFormat,
+		ProbePort:            probePort,
+		ImagePullSecrets:     imagePullSecrets,
+		Labels:               labels,
+		ControllingCRDetails: controllingCRDetails,
+		Debug:                debug,
+		NodePrep:             enableNodePrep,
+		Version:              i.client.ServerVersion(),
+		HTTPRequestTimeout:   httpTimeout,
+	}
+	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonSetArgs)
 
 	if createDaemonset {
 		// Create the daemonset

@@ -89,6 +89,7 @@ var (
 	logFormat               string
 	probePort               int64
 	k8sTimeout              time.Duration
+	httpRequestTimeout      string
 
 	// CLI-based K8S client
 	client k8sclient.Interface
@@ -154,6 +155,7 @@ func init() {
 	installCmd.Flags().StringVar(&autosupportHostname, "autosupport-hostname", "", "The value to set for the hostname field in Autosupport payloads")
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The timeout for all Kubernetes operations.")
+	installCmd.Flags().StringVar(&httpRequestTimeout, "http-request-timeout", tridentconfig.HTTPTimeoutString, "The HTTP request timeout (e.g. '90s'.")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -437,17 +439,48 @@ func prepareYAMLFiles() error {
 		return fmt.Errorf("could not write service YAML file; %v", err)
 	}
 
-	deploymentYAML := k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
-		tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber,
-		autosupportHostname, imageRegistry, logFormat, snapshotCRDVersion, []string{}, labels,
-		nil, Debug, useIPv6, silenceAutosupport, client.ServerVersion(), topologyEnabled)
+	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
+		DeploymentName:          getDeploymentName(true),
+		TridentImage:            tridentImage,
+		AutosupportImage:        autosupportImage,
+		AutosupportProxy:        autosupportProxy,
+		AutosupportCustomURL:    autosupportCustomURL,
+		AutosupportSerialNumber: autosupportSerialNumber,
+		AutosupportHostname:     autosupportHostname,
+		ImageRegistry:           imageRegistry,
+		LogFormat:               logFormat,
+		SnapshotCRDVersion:      snapshotCRDVersion,
+		ImagePullSecrets:        []string{},
+		Labels:                  labels,
+		ControllingCRDetails:    nil,
+		Debug:                   Debug,
+		UseIPv6:                 useIPv6,
+		SilenceAutosupport:      silenceAutosupport,
+		Version:                 client.ServerVersion(),
+		TopologyEnabled:         topologyEnabled,
+		HTTPRequestTimeout:      httpRequestTimeout,
+	}
+	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
 		return fmt.Errorf("could not write deployment YAML file; %v", err)
 	}
 
-	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(getDaemonSetName(),
-		tridentImage, imageRegistry, kubeletDir, logFormat, strconv.FormatInt(probePort, 10), []string{},
-		daemonSetlabels, nil, Debug, enableNodePrep, client.ServerVersion())
+	daemonArgs := &k8sclient.DaemonsetYAMLArguments{
+		DaemonsetName:        getDaemonSetName(),
+		TridentImage:         tridentImage,
+		ImageRegistry:        imageRegistry,
+		KubeletDir:           kubeletDir,
+		LogFormat:            logFormat,
+		ProbePort:            strconv.FormatInt(probePort, 10),
+		ImagePullSecrets:     []string{},
+		Labels:               daemonSetlabels,
+		ControllingCRDetails: nil,
+		Debug:                Debug,
+		NodePrep:             enableNodePrep,
+		Version:              client.ServerVersion(),
+		HTTPRequestTimeout:   httpRequestTimeout,
+	}
+	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonArgs)
 	if err = writeFile(daemonsetPath, daemonSetYAML); err != nil {
 		return fmt.Errorf("could not write daemonset YAML file; %v", err)
 	}
@@ -770,11 +803,29 @@ func installTrident() (returnError error) {
 		returnError = client.CreateObjectByFile(deploymentPath)
 		logFields = log.Fields{"path": deploymentPath}
 	} else {
+		deploymentArgs := &k8sclient.DeploymentYAMLArguments{
+			DeploymentName:          getDeploymentName(true),
+			TridentImage:            tridentImage,
+			AutosupportImage:        autosupportImage,
+			AutosupportProxy:        autosupportProxy,
+			AutosupportCustomURL:    autosupportCustomURL,
+			AutosupportSerialNumber: autosupportSerialNumber,
+			AutosupportHostname:     autosupportHostname,
+			ImageRegistry:           imageRegistry,
+			LogFormat:               logFormat,
+			SnapshotCRDVersion:      snapshotCRDVersion,
+			ImagePullSecrets:        []string{},
+			Labels:                  labels,
+			ControllingCRDetails:    nil,
+			Debug:                   Debug,
+			UseIPv6:                 useIPv6,
+			SilenceAutosupport:      silenceAutosupport,
+			Version:                 client.ServerVersion(),
+			TopologyEnabled:         topologyEnabled,
+			HTTPRequestTimeout:      httpRequestTimeout,
+		}
 		returnError = client.CreateObjectByYAML(
-			k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
-				tridentImage, autosupportImage, autosupportProxy, autosupportCustomURL, autosupportSerialNumber,
-				autosupportHostname, imageRegistry, logFormat, snapshotCRDVersion, []string{}, labels, nil,
-				Debug, useIPv6, silenceAutosupport, client.ServerVersion(), topologyEnabled))
+			k8sclient.GetCSIDeploymentYAML(deploymentArgs))
 		logFields = log.Fields{}
 	}
 	if returnError != nil {
@@ -795,11 +846,23 @@ func installTrident() (returnError error) {
 	} else {
 		daemonSetlabels := make(map[string]string)
 		daemonSetlabels[appLabelKey] = TridentNodeLabelValue
-
+		daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
+			DaemonsetName:        getDaemonSetName(),
+			TridentImage:         tridentImage,
+			ImageRegistry:        imageRegistry,
+			KubeletDir:           kubeletDir,
+			LogFormat:            logFormat,
+			ProbePort:            strconv.FormatInt(probePort, 10),
+			ImagePullSecrets:     []string{},
+			Labels:               daemonSetlabels,
+			ControllingCRDetails: nil,
+			Debug:                Debug,
+			NodePrep:             enableNodePrep,
+			Version:              client.ServerVersion(),
+			HTTPRequestTimeout:   httpRequestTimeout,
+		}
 		returnError = client.CreateObjectByYAML(
-			k8sclient.GetCSIDaemonSetYAML(getDaemonSetName(),
-				tridentImage, imageRegistry, kubeletDir, logFormat, strconv.FormatInt(probePort, 10), []string{},
-				daemonSetlabels, nil, Debug, enableNodePrep, client.ServerVersion()))
+			k8sclient.GetCSIDaemonSetYAML(daemonSetArgs))
 		logFields = log.Fields{}
 	}
 	if returnError != nil {

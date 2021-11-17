@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -25,7 +26,7 @@ type APIServerHTTPS struct {
 
 func NewHTTPSServer(
 	p core.Orchestrator, address, port, caCertFile, serverCertFile, serverKeyFile string, enableMutualTLS bool,
-	handler http.Handler,
+	handler http.Handler, writeTimeout time.Duration,
 ) (*APIServerHTTPS, error) {
 
 	orchestrator = p
@@ -36,7 +37,7 @@ func NewHTTPSServer(
 			Handler:      &tlsAuthHandler{handler: handler},
 			TLSConfig:    &tls.Config{ClientAuth: tls.RequireAndVerifyClientCert, MinVersion: config.MinTLSVersion},
 			ReadTimeout:  config.HTTPTimeout,
-			WriteTimeout: config.HTTPTimeout,
+			WriteTimeout: writeTimeout,
 		},
 		caCertFile:     caCertFile,
 		serverCertFile: serverCertFile,

@@ -125,16 +125,46 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 		snapshotCRDVersion = client.GetSnapshotterCRDVersion()
 	}
 
-	labels := make(map[string]string)
-
+	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
+		DeploymentName:          getDeploymentName(true),
+		TridentImage:            tridentconfig.BuildImage,
+		AutosupportImage:        tridentconfig.DefaultAutosupportImage,
+		AutosupportProxy:        "",
+		AutosupportCustomURL:    "",
+		AutosupportSerialNumber: "",
+		AutosupportHostname:     "",
+		ImageRegistry:           "",
+		LogFormat:               "",
+		SnapshotCRDVersion:      snapshotCRDVersion,
+		ImagePullSecrets:        []string{},
+		Labels:                  map[string]string{},
+		ControllingCRDetails:    map[string]string{},
+		Debug:                   false,
+		UseIPv6:                 false,
+		SilenceAutosupport:      true,
+		Version:                 semVersion,
+		TopologyEnabled:         false,
+		HTTPRequestTimeout:      tridentconfig.HTTPTimeoutString,
+	}
 	// Get Deployment and Daemonset YAML and collect the names of the container images Trident needs to run.
-	yaml := k8sclient.GetCSIDeploymentYAML(getDeploymentName(true),
-		tridentconfig.BuildImage, tridentconfig.DefaultAutosupportImage, "", "",
-		"", "", "", "", snapshotCRDVersion, []string{}, nil,
-		nil, false, false, true, semVersion, false)
+	yaml := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
+	daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
+		DaemonsetName:        "",
+		TridentImage:         "",
+		ImageRegistry:        "",
+		KubeletDir:           "",
+		LogFormat:            "",
+		ProbePort:            "",
+		ImagePullSecrets:     []string{},
+		Labels:               map[string]string{},
+		ControllingCRDetails: map[string]string{},
+		Debug:                false,
+		NodePrep:             false,
+		Version:              semVersion,
+		HTTPRequestTimeout:   tridentconfig.HTTPTimeoutString,
+	}
 	// trident image here is an empty string because we are already going to get it from the deployment yaml
-	yaml += k8sclient.GetCSIDaemonSetYAML("", "", "", "",
-		"", "", []string{}, labels, nil, false, false, semVersion)
+	yaml += k8sclient.GetCSIDaemonSetYAML(daemonSetArgs)
 
 	return yaml, nil
 }

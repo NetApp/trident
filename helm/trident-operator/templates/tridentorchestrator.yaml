@@ -7,6 +7,7 @@ spec:
   debug: {{ include "trident.debug" $ }}
   IPv6: {{ include "trident.IPv6" $ }}
   k8sTimeout: {{ .Values.tridentK8sTimeout }}
+  httpRequestTimeout: {{ .Values.tridentHttpRequestTimeout }}
   silenceAutosupport: {{ include "trident.silenceAutosupport" $ }}
   autosupportImage: {{ include "trident.autosupportImage" $ }}
   autosupportProxy: {{ .Values.tridentAutosupportProxy }}

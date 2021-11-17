@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -19,7 +20,7 @@ type APIServerHTTP struct {
 	server *http.Server
 }
 
-func NewHTTPServer(p core.Orchestrator, address, port string) *APIServerHTTP {
+func NewHTTPServer(p core.Orchestrator, address, port string, writeTimeout time.Duration) *APIServerHTTP {
 
 	orchestrator = p
 
@@ -28,7 +29,7 @@ func NewHTTPServer(p core.Orchestrator, address, port string) *APIServerHTTP {
 			Addr:         fmt.Sprintf("%s:%s", address, port),
 			Handler:      NewRouter(),
 			ReadTimeout:  config.HTTPTimeout,
-			WriteTimeout: config.HTTPTimeout,
+			WriteTimeout: writeTimeout,
 		},
 	}
 

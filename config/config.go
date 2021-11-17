@@ -45,7 +45,8 @@ const (
 	DockerDefaultTimeout             = 55 * time.Second
 
 	/* REST/HTTP constants */
-	HTTPTimeout = 90 * time.Second
+	HTTPTimeout       = 90 * time.Second
+	HTTPTimeoutString = "90s"
 
 	CACertName     = "trident-ca"
 	ServerCertName = "trident-csi" // Must match CSI service name
