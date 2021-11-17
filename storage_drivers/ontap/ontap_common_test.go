@@ -10,15 +10,20 @@ import (
 	"os"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/logger"
+	mock_ontap "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	ontap "github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
 
 const (
@@ -869,4 +874,81 @@ func TestParseVolumeHandle(t *testing.T) {
 
 	_, _, err = parseVolumeHandle("fakesvm")
 	assert.NotEqual(t, nil, err, "Expected error")
+}
+
+func newOntapStorageDriverConfig() *drivers.OntapStorageDriverConfig {
+	ontapConfig := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			DebugTraceFlags: map[string]bool{
+				"method": true,
+				"trace":  true,
+				"api":    true,
+			},
+		},
+	}
+	return ontapConfig
+}
+
+func newMockRestClient(t *testing.T) *mock_ontap.MockRestClientInterface {
+	mockCtrl := gomock.NewController(t)
+	mockRestClient := mock_ontap.NewMockRestClientInterface(mockCtrl)
+	return mockRestClient
+}
+
+// TestEnsureSVMWithRest validates we can derive the SVM if it is not specified
+func TestEnsureSVMWithRest(t *testing.T) {
+	ctx := context.Background()
+
+	// create a config that is missing an SVM
+	ontapConfig := newOntapStorageDriverConfig()
+	ontapConfig.SVM = ""
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  no SVM set && we CANNOT derive an SVM because of a nil result
+	mockRestClient := newMockRestClient(t)
+	mockRestClient.EXPECT().SvmGetByName(ctx, gomock.Any()).AnyTimes()
+	mockRestClient.EXPECT().SvmList(ctx, gomock.Any()).AnyTimes()
+	err := ontap.EnsureSVMWithRest(ctx, ontapConfig, mockRestClient)
+	assert.Equal(t, "cannot derive SVM to use; please specify SVM in config file; result was nil", err.Error())
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  no SVM set && we CANNOT derive an SVM because there are no matching records
+	mockRestClient = newMockRestClient(t)
+	mockRestClient.EXPECT().SvmGetByName(ctx, gomock.Any()).AnyTimes()
+	mockRestClient.EXPECT().SvmList(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, pattern string) (*svm.SvmCollectionGetOK, error) {
+			result := &svm.SvmCollectionGetOK{
+				Payload: &models.SvmResponse{},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+	err = ontap.EnsureSVMWithRest(ctx, ontapConfig, mockRestClient)
+	assert.Equal(t, "cannot derive SVM to use; please specify SVM in config file", err.Error())
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// positive case:  no SVM set && we CAN derive an SVM
+	svmName := "mySVM"
+	svmUUID := svmName + "U-U-I-D"
+	mockRestClient = newMockRestClient(t)
+	mockRestClient.EXPECT().SvmList(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, pattern string) (*svm.SvmCollectionGetOK, error) {
+			var records []*models.Svm
+			records = append(records, &models.Svm{Name: svmName, UUID: svmUUID})
+			result := &svm.SvmCollectionGetOK{
+				Payload: &models.SvmResponse{
+					NumRecords: int64(len(records)),
+					Records:    records,
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+	mockRestClient.EXPECT().SetSVMUUID(gomock.Any()).DoAndReturn(
+		func(newUUID string) {
+			assert.Equal(t, svmUUID, newUUID) // extra validation that it is set to the new value
+		},
+	).AnyTimes()
+	err = ontap.EnsureSVMWithRest(ctx, ontapConfig, mockRestClient)
+	assert.Nil(t, err)
 }

@@ -913,7 +913,7 @@ func InitializeOntapAPIAbstraction(
 		return nil, fmt.Errorf("error creating ONTAP API client: %v", err)
 	}
 
-	Logc(ctx).WithField("SVM", config.SVM).Debug("Using derived SVM.")
+	Logc(ctx).WithField("SVM", config.SVM).Debug("Using SVM.")
 	return ontapAPI, nil
 }
 

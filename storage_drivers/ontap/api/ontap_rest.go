@@ -163,6 +163,60 @@ func NewRestClient(ctx context.Context, config ClientConfig) (*RestClient, error
 	return result, nil
 }
 
+// EnsureSVMWithRest uses the supplied SVM or attempts to derive one if no SVM is supplied
+func EnsureSVMWithRest(
+	ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig, restClient RestClientInterface,
+) error {
+
+	if ontapConfig.SVM != "" {
+		// Attempt to use the specified SVM
+		vserver, err := restClient.SvmGetByName(ctx, ontapConfig.SVM)
+		if err != nil {
+			return fmt.Errorf("unable to get details for SVM %v; %v", ontapConfig.SVM, err)
+		}
+		restClient.SetSVMUUID(vserver.UUID)
+
+		Logc(ctx).WithFields(
+			log.Fields{
+				"SVM":  ontapConfig.SVM,
+				"UUID": vserver.UUID,
+			},
+		).Debug("Using specified SVM.")
+		return nil
+
+	} else {
+		// Attempt to derive the SVM
+		result, err := restClient.SvmList(ctx, "*")
+		if err != nil {
+			return err
+		}
+
+		errorMsg := "cannot derive SVM to use; please specify SVM in config file"
+		if validationErr := ValidatePayloadExists(ctx, result); validationErr != nil {
+			return fmt.Errorf("%s; %v", errorMsg, validationErr)
+		}
+
+		if result.Payload.Records == nil || result.Payload.NumRecords != 1 {
+			// more than result, not going to try and guess
+			return errors.New(errorMsg)
+		}
+
+		// Use our derived SVM
+		derivedSVM := result.Payload.Records[0]
+		ontapConfig.SVM = derivedSVM.Name
+		svmUUID := derivedSVM.UUID
+		restClient.SetSVMUUID(svmUUID)
+
+		Logc(ctx).WithFields(
+			log.Fields{
+				"SVM":  ontapConfig.SVM,
+				"UUID": svmUUID,
+			},
+		).Debug("Using derived SVM.")
+		return nil
+	}
+}
+
 // NewRestClientFromOntapConfig is a factory method for creating a new Ontap API instance with a REST client
 func NewRestClientFromOntapConfig(
 	ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig,
@@ -186,11 +240,9 @@ func NewRestClientFromOntapConfig(
 		return nil, fmt.Errorf("could not instantiate REST client")
 	}
 
-	vserver, err := restClient.SvmGetByName(ctx, ontapConfig.SVM)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get details for SVM %v; %v", ontapConfig.SVM, err)
+	if err := EnsureSVMWithRest(ctx, ontapConfig, restClient); err != nil {
+		return nil, err
 	}
-	restClient.SetSVMUUID(vserver.UUID)
 
 	apiREST, err := NewOntapAPIREST(*restClient)
 	if err != nil {

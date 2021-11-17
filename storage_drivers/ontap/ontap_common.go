@@ -1255,7 +1255,7 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 	})
 	client.SetSVMUUID(svmUUID)
 
-	Logc(ctx).WithField("SVM", config.SVM).Debug("Using derived SVM.")
+	Logc(ctx).WithField("SVM", config.SVM).Debug("Using SVM.")
 	return client, nil
 }
 

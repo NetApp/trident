@@ -6,11 +6,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/netapp/trident/utils"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
-	"github.com/stretchr/testify/assert"
+	"github.com/netapp/trident/utils"
 )
 
 var (
