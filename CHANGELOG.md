@@ -8,6 +8,8 @@
 
 **Enhancements:**
 
+- Allow cross-region volumes in GCP driver (Issue [#633](https://github.com/NetApp/trident/issues/633))
+
 ## v21.10.0
 
 **Fixes:**

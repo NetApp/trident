@@ -449,21 +449,6 @@ func (mr *MockOntapAPIMockRecorder) FlexgroupUsedSize(arg0, arg1 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupUsedSize", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupUsedSize), arg0, arg1)
 }
 
-// GetPeeredVservers mocks base method.
-func (m *MockOntapAPI) GetPeeredVservers(arg0 context.Context) ([]string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPeeredVservers", arg0)
-	ret0, _ := ret[0].([]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPeeredVservers indicates an expected call of GetPeeredVservers.
-func (mr *MockOntapAPIMockRecorder) GetPeeredVservers(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPeeredVservers", reflect.TypeOf((*MockOntapAPI)(nil).GetPeeredVservers), arg0)
-}
-
 // GetReportedDataLifs mocks base method.
 func (m *MockOntapAPI) GetReportedDataLifs(arg0 context.Context) (string, []string, error) {
 	m.ctrl.T.Helper()
@@ -525,27 +510,27 @@ func (mr *MockOntapAPIMockRecorder) GetSVMAggregateSpace(arg0, arg1 interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSVMAggregateSpace", reflect.TypeOf((*MockOntapAPI)(nil).GetSVMAggregateSpace), arg0, arg1)
 }
 
-// GetSVMUUID mocks base method.
-func (m *MockOntapAPI) GetSVMUUID() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSVMUUID")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
 // GetSVMPeers mocks base method.
-func (m *MockOntapAPI) GetSVMPeers(ctx context.Context) ([]string, error) {
+func (m *MockOntapAPI) GetSVMPeers(arg0 context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSVMPeers", ctx)
+	ret := m.ctrl.Call(m, "GetSVMPeers", arg0)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSVMPeers indicates an expected call of GetSVMPeers.
-func (mr *MockOntapAPIMockRecorder) GetSVMPeers(ctx interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) GetSVMPeers(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSVMPeers", reflect.TypeOf((*MockOntapAPI)(nil).GetSVMPeers), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSVMPeers", reflect.TypeOf((*MockOntapAPI)(nil).GetSVMPeers), arg0)
+}
+
+// GetSVMUUID mocks base method.
+func (m *MockOntapAPI) GetSVMUUID() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSVMUUID")
+	ret0, _ := ret[0].(string)
+	return ret0
 }
 
 // GetSVMUUID indicates an expected call of GetSVMUUID.
@@ -686,17 +671,17 @@ func (mr *MockOntapAPIMockRecorder) IscsiNodeGetNameRequest(arg0 interface{}) *g
 }
 
 // JobScheduleExists mocks base method.
-func (m *MockOntapAPI) JobScheduleExists(ctx context.Context, replicationSchedule string) error {
+func (m *MockOntapAPI) JobScheduleExists(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "JobScheduleExists", ctx, replicationSchedule)
+	ret := m.ctrl.Call(m, "JobScheduleExists", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // JobScheduleExists indicates an expected call of JobScheduleExists.
-func (mr *MockOntapAPIMockRecorder) JobScheduleExists(ctx, replicationSchedule interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) JobScheduleExists(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JobScheduleExists", reflect.TypeOf((*MockOntapAPI)(nil).JobScheduleExists), ctx, replicationSchedule)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JobScheduleExists", reflect.TypeOf((*MockOntapAPI)(nil).JobScheduleExists), arg0, arg1)
 }
 
 // LunCreate mocks base method.
@@ -1139,153 +1124,159 @@ func (mr *MockOntapAPIMockRecorder) QuotaStatus(arg0, arg1 interface{}) *gomock.
 }
 
 // SnapmirrorAbort mocks base method.
-func (m *MockOntapAPI) SnapmirrorAbort(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error {
+func (m *MockOntapAPI) SnapmirrorAbort(arg0 context.Context, arg1, arg2, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorAbort", ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	ret := m.ctrl.Call(m, "SnapmirrorAbort", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SnapmirrorAbort indicates an expected call of SnapmirrorAbort.
-func (mr *MockOntapAPIMockRecorder) SnapmirrorAbort(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) SnapmirrorAbort(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorAbort", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorAbort), ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorAbort", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorAbort), arg0, arg1, arg2, arg3, arg4)
 }
 
 // SnapmirrorBreak mocks base method.
-func (m *MockOntapAPI) SnapmirrorBreak(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error {
+func (m *MockOntapAPI) SnapmirrorBreak(arg0 context.Context, arg1, arg2, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorBreak", ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	ret := m.ctrl.Call(m, "SnapmirrorBreak", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SnapmirrorBreak indicates an expected call of SnapmirrorBreak.
-func (mr *MockOntapAPIMockRecorder) SnapmirrorBreak(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) SnapmirrorBreak(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorBreak", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorBreak), ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorBreak", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorBreak), arg0, arg1, arg2, arg3, arg4)
 }
 
 // SnapmirrorCreate mocks base method.
-func (m *MockOntapAPI) SnapmirrorCreate(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, replicationPolicy, replicationSchedule string) error {
+func (m *MockOntapAPI) SnapmirrorCreate(arg0 context.Context, arg1, arg2, arg3, arg4, arg5, arg6 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorCreate", ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, replicationPolicy, replicationSchedule)
+	ret := m.ctrl.Call(m, "SnapmirrorCreate", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SnapmirrorCreate indicates an expected call of SnapmirrorCreate.
-func (mr *MockOntapAPIMockRecorder) SnapmirrorCreate(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, replicationPolicy, replicationSchedule interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) SnapmirrorCreate(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorCreate", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorCreate), ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, replicationPolicy, replicationSchedule)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorCreate", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorCreate), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
 
 // SnapmirrorDelete mocks base method.
-func (m *MockOntapAPI) SnapmirrorDelete(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error {
+func (m *MockOntapAPI) SnapmirrorDelete(arg0 context.Context, arg1, arg2, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorDelete", ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	ret := m.ctrl.Call(m, "SnapmirrorDelete", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SnapmirrorDelete indicates an expected call of SnapmirrorDelete.
-func (mr *MockOntapAPIMockRecorder) SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) SnapmirrorDelete(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorDelete", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorDelete), ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorDelete", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorDelete), arg0, arg1, arg2, arg3, arg4)
 }
 
 // SnapmirrorDeleteViaDestination mocks base method.
-func (m *MockOntapAPI) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) error {
+func (m *MockOntapAPI) SnapmirrorDeleteViaDestination(arg0, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorDeleteViaDestination", localFlexvolName, localSVMName)
+	ret := m.ctrl.Call(m, "SnapmirrorDeleteViaDestination", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SnapmirrorDeleteViaDestination indicates an expected call of SnapmirrorDeleteViaDestination.
-func (mr *MockOntapAPIMockRecorder) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) SnapmirrorDeleteViaDestination(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorDeleteViaDestination", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorDeleteViaDestination), localFlexvolName, localSVMName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorDeleteViaDestination", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorDeleteViaDestination), arg0, arg1)
 }
 
 // SnapmirrorGet mocks base method.
-func (m *MockOntapAPI) SnapmirrorGet(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*api.Snapmirror, error) {
+func (m *MockOntapAPI) SnapmirrorGet(arg0 context.Context, arg1, arg2, arg3, arg4 string) (*api.Snapmirror, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorGet", ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	ret := m.ctrl.Call(m, "SnapmirrorGet", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*api.Snapmirror)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorGet indicates an expected call of SnapmirrorGet.
-func (mr *MockOntapAPIMockRecorder) SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) SnapmirrorGet(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorGet", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorGet), ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorGet", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorGet), arg0, arg1, arg2, arg3, arg4)
 }
 
 // SnapmirrorInitialize mocks base method.
-func (m *MockOntapAPI) SnapmirrorInitialize(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error {
+func (m *MockOntapAPI) SnapmirrorInitialize(arg0 context.Context, arg1, arg2, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorInitialize", ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	ret := m.ctrl.Call(m, "SnapmirrorInitialize", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SnapmirrorInitialize indicates an expected call of SnapmirrorInitialize.
-func (mr *MockOntapAPIMockRecorder) SnapmirrorInitialize(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) SnapmirrorInitialize(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorInitialize", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorInitialize), ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorInitialize", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorInitialize), arg0, arg1, arg2, arg3, arg4)
 }
 
 // SnapmirrorPolicyGet mocks base method.
-func (m *MockOntapAPI) SnapmirrorPolicyGet(ctx context.Context, replicationPolicy string) (*api.SnapmirrorPolicy, error) {
+func (m *MockOntapAPI) SnapmirrorPolicyGet(arg0 context.Context, arg1 string) (*api.SnapmirrorPolicy, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorPolicyGet", ctx, replicationPolicy)
+	ret := m.ctrl.Call(m, "SnapmirrorPolicyGet", arg0, arg1)
 	ret0, _ := ret[0].(*api.SnapmirrorPolicy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorPolicyGet indicates an expected call of SnapmirrorPolicyGet.
-func (mr *MockOntapAPIMockRecorder) SnapmirrorPolicyGet(ctx, replicationPolicy interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) SnapmirrorPolicyGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorPolicyGet", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorPolicyGet), ctx, replicationPolicy)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorPolicyGet", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorPolicyGet), arg0, arg1)
 }
 
 // SnapmirrorQuiesce mocks base method.
-func (m *MockOntapAPI) SnapmirrorQuiesce(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error {
+func (m *MockOntapAPI) SnapmirrorQuiesce(arg0 context.Context, arg1, arg2, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorQuiesce", ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	ret := m.ctrl.Call(m, "SnapmirrorQuiesce", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SnapmirrorQuiesce indicates an expected call of SnapmirrorQuiesce.
-func (mr *MockOntapAPIMockRecorder) SnapmirrorQuiesce(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) SnapmirrorQuiesce(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorQuiesce", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorQuiesce), ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorQuiesce", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorQuiesce), arg0, arg1, arg2, arg3, arg4)
 }
 
 // SnapmirrorResync mocks base method.
-func (m *MockOntapAPI) SnapmirrorResync(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error {
+func (m *MockOntapAPI) SnapmirrorResync(arg0 context.Context, arg1, arg2, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorResync", ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	ret := m.ctrl.Call(m, "SnapmirrorResync", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SnapmirrorResync indicates an expected call of SnapmirrorResync.
-func (mr *MockOntapAPIMockRecorder) SnapmirrorResync(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) SnapmirrorResync(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorResync", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorResync), ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorResync", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorResync), arg0, arg1, arg2, arg3, arg4)
 }
 
 // SnapshotRestoreFlexgroup mocks base method.
-func (m *MockOntapAPI) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, sourceVolume string) error {
+func (m *MockOntapAPI) SnapshotRestoreFlexgroup(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapshotRestoreFlexgroup", ctx, snapshotName, sourceVolume)
+	ret := m.ctrl.Call(m, "SnapshotRestoreFlexgroup", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
+}
+
+// SnapshotRestoreFlexgroup indicates an expected call of SnapshotRestoreFlexgroup.
+func (mr *MockOntapAPIMockRecorder) SnapshotRestoreFlexgroup(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotRestoreFlexgroup", reflect.TypeOf((*MockOntapAPI)(nil).SnapshotRestoreFlexgroup), arg0, arg1, arg2)
 }
 
 // SnapshotRestoreVolume mocks base method.
@@ -1427,21 +1418,6 @@ func (m *MockOntapAPI) VolumeExists(arg0 context.Context, arg1 string) (bool, er
 func (mr *MockOntapAPIMockRecorder) VolumeExists(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExists", reflect.TypeOf((*MockOntapAPI)(nil).VolumeExists), arg0, arg1)
-}
-
-// VolumeGetType mocks base method.
-func (m *MockOntapAPI) VolumeGetType(arg0 string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeGetType", arg0)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// VolumeGetType indicates an expected call of VolumeGetType.
-func (mr *MockOntapAPIMockRecorder) VolumeGetType(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeGetType", reflect.TypeOf((*MockOntapAPI)(nil).VolumeGetType), arg0)
 }
 
 // VolumeInfo mocks base method.

@@ -66,7 +66,7 @@ const (
 type NFSStorageDriver struct {
 	initialized         bool
 	Config              drivers.GCPNFSStorageDriverConfig
-	API                 *api.Client
+	API                 api.GCPClient
 	telemetry           *Telemetry
 	apiVersion          *utils.Version
 	sdeVersion          *utils.Version
@@ -86,7 +86,7 @@ func (d *NFSStorageDriver) GetConfig() *drivers.GCPNFSStorageDriverConfig {
 	return &d.Config
 }
 
-func (d *NFSStorageDriver) GetAPI() *api.Client {
+func (d *NFSStorageDriver) GetAPI() api.GCPClient {
 	return d.API
 }
 
@@ -503,7 +503,7 @@ func (d *NFSStorageDriver) initializeGCPConfig(
 // initializeGCPAPIClient returns an GCP API client.
 func (d *NFSStorageDriver) initializeGCPAPIClient(
 	ctx context.Context, config *drivers.GCPNFSStorageDriverConfig,
-) (*api.Client, error) {
+) (api.GCPClient, error) {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "initializeGCPAPIClient", "Type": "NFSStorageDriver"}
@@ -791,29 +791,7 @@ func (d *NFSStorageDriver) Create(
 		zone = pool.InternalAttributes()[Zone]
 	}
 
-	// Ensure configured topology (zone/region) matches provided topology for software volumes
-	//   The zone/region of the node is defined as the first element in PreferredTopology
-	if len(volConfig.PreferredTopologies) > 0 {
-		if r, ok := volConfig.PreferredTopologies[0][topologyRegionLabel]; ok {
-			if d.Config.APIRegion != r {
-				return fmt.Errorf("configured region does not match topology region")
-			}
-		}
-		// In the case of CVS-SO, we need to ensure we are creating the volume on the correct zone
-		// and limit the allowedTopologies of the volume to that zone
-		if storageClass == api.StorageClassSoftware {
-			if z, ok := volConfig.PreferredTopologies[0][topologyZoneLabel]; ok {
-				if zone != "" && zone != z {
-					return fmt.Errorf("configured zone does not match topology zone")
-				}
-				zone = z
-			}
-
-			volConfig.AllowedTopologies = []map[string]string{volConfig.PreferredTopologies[0]}
-		} else {
-			volConfig.AllowedTopologies = []map[string]string{{topologyRegionLabel: d.Config.APIRegion}}
-		}
-	}
+	zone = d.ensureTopologyRegionAndZone(ctx, volConfig, storageClass, zone)
 
 	if storageClass == api.StorageClassSoftware && zone == "" {
 		return fmt.Errorf("software volumes require zone")
@@ -894,6 +872,37 @@ func (d *NFSStorageDriver) Create(
 
 	// Wait for creation to complete so that the mount targets are available
 	return d.waitForVolumeCreate(ctx, newVolume, name)
+}
+
+func (d *NFSStorageDriver) ensureTopologyRegionAndZone(
+	ctx context.Context, volConfig *storage.VolumeConfig, storageClass, configuredZone string,
+) string {
+	// Check if configured topology (zone/region) matches provided topology for software volumes
+	// If zone is not configured, use the preferred zone from the topology
+	if len(volConfig.PreferredTopologies) > 0 {
+		if r, ok := volConfig.PreferredTopologies[0][topologyRegionLabel]; ok {
+			if d.Config.APIRegion != r {
+				Logc(ctx).WithFields(log.Fields{
+					"configuredRegion": d.Config.APIRegion,
+					"topologyRegion":   r,
+				}).Warn("configured region does not match topology region")
+			}
+		}
+		if storageClass == api.StorageClassSoftware {
+			if z, ok := volConfig.PreferredTopologies[0][topologyZoneLabel]; ok {
+				if configuredZone != "" && configuredZone != z {
+					Logc(ctx).WithFields(log.Fields{
+						"configuredZone": configuredZone,
+						"topologyZone":   z,
+					}).Warn("configured zone does not match topology zone")
+				}
+				if configuredZone == "" {
+					configuredZone = z
+				}
+			}
+		}
+	}
+	return configuredZone
 }
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
@@ -1187,7 +1196,8 @@ func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 			return fmt.Errorf("could not import volume %s: %v", originalName, err)
 		}
 		if _, err = d.API.ChangeVolumeUnixPermissions(ctx, volume, unixPerms); err != nil {
-			Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, modifying unix permissions failed: %v", err)
+			Logc(ctx).WithField("originalName", originalName).Errorf(
+				"Could not import volume, modifying unix permissions failed: %v", err)
 			return fmt.Errorf("could not import volume %s, modifying unix permissions failed: %v", originalName, err)
 		}
 		_, err = d.API.WaitForVolumeStates(

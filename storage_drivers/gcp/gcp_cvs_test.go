@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/gcp/api"
 	"github.com/netapp/trident/utils"
@@ -454,4 +455,87 @@ func TestInitializeStoragePoolsUnixPermissions(t *testing.T) {
 	assert.NotNil(t, virtualPool, "Could not find pool")
 	assert.NotNil(t, virtualPool.InternalAttributes(), "Could not find pool attributes")
 	assert.Equal(t, "0777", virtualPool.InternalAttributes()[UnixPermissions])
+}
+
+func TestEnsureTopologyRegionAndZone(t *testing.T) {
+
+	tests := []struct {
+		Name            string
+		ConfigRegion    string
+		ConfigZone      string
+		PreferredRegion string
+		PreferredZone   string
+		ExpectedRegion  string
+		ExpectedZone    string
+	}{
+		{
+			Name:            "matchingRegionAndZone",
+			ConfigRegion:    "foo",
+			ConfigZone:      "bar",
+			PreferredRegion: "foo",
+			PreferredZone:   "bar",
+			ExpectedZone:    "bar",
+		},
+		{
+			Name:            "matchingRegionDifferentZone",
+			ConfigRegion:    "foo",
+			ConfigZone:      "bar",
+			PreferredRegion: "foo",
+			PreferredZone:   "baz",
+			ExpectedZone:    "bar",
+		},
+		{
+			Name:            "matchingRegionNoZone",
+			ConfigRegion:    "foo",
+			ConfigZone:      "",
+			PreferredRegion: "foo",
+			PreferredZone:   "bar",
+			ExpectedZone:    "bar",
+		},
+		{
+			Name:            "differentRegionMatchingZone",
+			ConfigRegion:    "foo",
+			ConfigZone:      "bar",
+			PreferredRegion: "baz",
+			PreferredZone:   "bar",
+			ExpectedZone:    "bar",
+		},
+		{
+			Name:            "differentRegionAndZone",
+			ConfigRegion:    "foo",
+			ConfigZone:      "bar",
+			PreferredRegion: "baz",
+			PreferredZone:   "biz",
+			ExpectedZone:    "bar",
+		},
+		{
+			Name:            "differentRegionNoZone",
+			ConfigRegion:    "foo",
+			ConfigZone:      "",
+			PreferredRegion: "baz",
+			PreferredZone:   "bar",
+			ExpectedZone:    "bar",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			d := newTestGCPDriver()
+			d.Config.Region = test.ConfigRegion
+			volConfig := &storage.VolumeConfig{
+				PreferredTopologies: []map[string]string{
+					{
+						topologyRegionLabel: test.PreferredRegion,
+						topologyZoneLabel:   test.PreferredZone,
+					},
+				},
+			}
+			zone := d.ensureTopologyRegionAndZone(context.Background(), volConfig, api.StorageClassSoftware,
+				test.ConfigZone)
+			// Verify the allowedTopologies hasn't been modified
+			assert.Nil(t, volConfig.AllowedTopologies, "Unexpected allowed topologies")
+			assert.Equal(t, test.ExpectedZone, zone, "Unexpected zone")
+		})
+	}
+
 }
