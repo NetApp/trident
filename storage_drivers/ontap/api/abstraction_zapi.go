@@ -784,14 +784,15 @@ func NewZAPIClientFromOntapConfig(
 		svmUUID := vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].Uuid()
 
 		client = NewZAPIClient(ClientConfig{
-			ManagementLIF:        ontapConfig.ManagementLIF,
-			SVM:                  ontapConfig.SVM,
-			Username:             ontapConfig.Username,
-			Password:             ontapConfig.Password,
-			ClientCertificate:    ontapConfig.ClientCertificate,
-			ClientPrivateKey:     ontapConfig.ClientPrivateKey,
-			TrustedCACertificate: ontapConfig.TrustedCACertificate,
-			DebugTraceFlags:      ontapConfig.DebugTraceFlags,
+			ManagementLIF:           ontapConfig.ManagementLIF,
+			SVM:                     ontapConfig.SVM,
+			Username:                ontapConfig.Username,
+			Password:                ontapConfig.Password,
+			ClientCertificate:       ontapConfig.ClientCertificate,
+			ClientPrivateKey:        ontapConfig.ClientPrivateKey,
+			ContextBasedZapiRecords: numRecords,
+			TrustedCACertificate:    ontapConfig.TrustedCACertificate,
+			DebugTraceFlags:         ontapConfig.DebugTraceFlags,
 		})
 		client.svmUUID = svmUUID
 	}
