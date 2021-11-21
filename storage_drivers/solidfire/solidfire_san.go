@@ -1388,7 +1388,13 @@ func (d *SANStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *stora
 
 	snapshot, err := d.Client.CreateSnapshot(ctx, &req)
 	if err != nil {
-		return nil, fmt.Errorf("could not create snapshot: %+v", err)
+		if err != nil {
+			if utils.IsMaxLimitReachedError(err) {
+				return nil, utils.MaxLimitReachedError(fmt.Sprintf("could not create snapshot: %+v", err))
+			}
+			return nil, fmt.Errorf("could not create snapshot: %+v", err)
+		}
+		return nil, err
 	}
 
 	return &storage.Snapshot{

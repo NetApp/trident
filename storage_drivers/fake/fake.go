@@ -30,7 +30,7 @@ import (
 
 const (
 	MinimumVolumeSizeBytes = 1048576 // 1 MiB
-
+	maxSnapshots           = 5
 	defaultLimitVolumeSize = ""
 
 	// Constants for internal pool attributes
@@ -710,6 +710,7 @@ func (d *StorageDriver) BootstrapVolume(ctx context.Context, volume *storage.Vol
 
 	if pool == nil {
 		Logc(ctx).WithFields(logFields).Error("Driver pools are nil")
+		return
 	}
 
 	volAttrs := make(map[string]sa.Request)
@@ -930,14 +931,21 @@ func (d *StorageDriver) CreateSnapshot(ctx context.Context, snapConfig *storage.
 		return nil, fmt.Errorf("source volume %s not found", internalVolName)
 	}
 
+	var snapshotList map[string]*storage.Snapshot
+
 	// Initialize the snapshot array if necessary
-	if _, ok := d.Snapshots[internalVolName]; !ok {
+	if snapshotList, ok = d.Snapshots[internalVolName]; !ok {
 		d.Snapshots[internalVolName] = make(map[string]*storage.Snapshot)
 	}
 
 	// Check if a snapshot with same name exists
 	if _, ok := d.Snapshots[internalVolName][internalSnapName]; ok {
 		return nil, fmt.Errorf("snapshot %s already exists", internalSnapName)
+	}
+
+	if len(snapshotList) >= maxSnapshots {
+		return nil, utils.MaxLimitReachedError(fmt.Sprintf("could not create snapshot: too many snapshots " +
+			"created for a volume"))
 	}
 
 	snapshot := &storage.Snapshot{

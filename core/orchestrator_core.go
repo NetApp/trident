@@ -3215,6 +3215,10 @@ func (o *TridentOrchestrator) CreateSnapshot(
 	// Create the snapshot
 	snapshot, err = backend.CreateSnapshot(ctx, snapshotConfig, volume.Config)
 	if err != nil {
+		if utils.IsMaxLimitReachedError(err) {
+			return nil, utils.MaxLimitReachedError(fmt.Sprintf("failed to create snapshot %s for volume %s on backend %s: %v",
+				snapshotConfig.Name, snapshotConfig.VolumeName, backend.Name(), err))
+		}
 		return nil, fmt.Errorf("failed to create snapshot %s for volume %s on backend %s: %v",
 			snapshotConfig.Name, snapshotConfig.VolumeName, backend.Name(), err)
 	}

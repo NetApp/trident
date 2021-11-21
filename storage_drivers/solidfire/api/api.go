@@ -23,7 +23,7 @@ import (
 
 const httpContentType = "json-rpc"
 
-// Client is used to send API requests to a SolidFire system system
+// Client is used to send API requests to a SolidFire system
 type Client struct {
 	SVIP             string
 	Endpoint         string

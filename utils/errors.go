@@ -397,3 +397,25 @@ func HasUnsupportedCapacityRangeError(err error) (bool, *unsupportedCapacityRang
 	ok := errors.As(err, &unsupportedCapacityRangeErrorPtr)
 	return ok, unsupportedCapacityRangeErrorPtr
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// maxLimitReachedError
+/////////////////////////////////////////////////////////////////////////////
+
+type maxLimitReachedError struct {
+	message string
+}
+
+func (e *maxLimitReachedError) Error() string { return e.message }
+
+func MaxLimitReachedError(message string) error {
+	return &maxLimitReachedError{message}
+}
+
+func IsMaxLimitReachedError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*maxLimitReachedError)
+	return ok
+}

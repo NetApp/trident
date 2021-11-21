@@ -6,15 +6,25 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 
 	. "github.com/netapp/trident/logger"
+	"github.com/netapp/trident/utils"
 )
 
 func (c *Client) CreateSnapshot(ctx context.Context, req *CreateSnapshotRequest) (snapshot Snapshot, err error) {
 
 	response, err := c.Request(ctx, "CreateSnapshot", req, NewReqID())
+
+	if err != nil {
+		if strings.Contains(err.Error(), "xMaxSnapshotsPerVolumeExceeded") {
+			return Snapshot{}, utils.MaxLimitReachedError(err.Error())
+		} else {
+			return Snapshot{}, err
+		}
+	}
 	var result CreateSnapshotResult
-	if err := json.Unmarshal(response, &result); err != nil {
+	if err = json.Unmarshal(response, &result); err != nil {
 		Logc(ctx).Errorf("Error detected unmarshalling CreateSnapshot json response: %+v", err)
 		return Snapshot{}, errors.New("json decode error")
 	}

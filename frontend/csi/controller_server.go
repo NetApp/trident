@@ -646,6 +646,10 @@ func (p *Plugin) CreateSnapshot(
 			// CSI snapshotter has no exponential backoff for retries, so slow it down here
 			time.Sleep(10 * time.Second)
 			return nil, status.Error(codes.FailedPrecondition, err.Error())
+		} else if utils.IsMaxLimitReachedError(err) {
+			// CSI snapshotter has no exponential backoff for retries, so slow it down here
+			time.Sleep(10 * time.Second)
+			return nil, status.Error(codes.ResourceExhausted, err.Error())
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
