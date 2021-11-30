@@ -97,7 +97,7 @@ func reestablishMirror(
 			); err != nil {
 				return err
 			}
-			snapmirror, err = d.SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+			_, err = d.SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 			if err != nil {
 				return err
 			}
