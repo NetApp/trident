@@ -403,6 +403,19 @@ func (d *StorageDriver) initializeStoragePools() error {
 		d.fakePools[fakePoolName] = fakePool.ConstructClone()
 	}
 
+	// nil storage pools become problematic on re-install
+	if len(d.fakePools) == 0 && len(d.Config.Storage) == 0 {
+		d.fakePools["pool-0"] = &fake.StoragePool{
+			Bytes: 100 * 1024 * 1024 * 1024,
+			Attrs: map[string]sa.Offer{
+				sa.IOPS:             sa.NewIntOffer(0, 100),
+				sa.Snapshots:        sa.NewBoolOffer(false),
+				sa.Encryption:       sa.NewBoolOffer(false),
+				sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+			},
+		}
+	}
+
 	d.physicalPools = make(map[string]storage.Pool)
 	d.virtualPools = make(map[string]storage.Pool)
 
