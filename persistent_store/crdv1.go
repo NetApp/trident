@@ -621,7 +621,10 @@ func (k *CRDClientV1) DeleteBackend(ctx context.Context, b storage.Backend) (err
 	backend, err = k.getBackendCRD(ctx, b.Name())
 	if err != nil {
 		if MatchKeyNotFoundErr(err) {
-			keyError := err.(*Error)
+			keyError, ok := err.(*Error)
+			if !ok {
+				return utils.TypeAssertionError("err.(*Error)")
+			}
 			Logc(ctx).WithFields(logFields).Debugf("Unable to find key %s. No backend to remove.", keyError.Key)
 		} else {
 			Logc(ctx).WithFields(logFields).Errorf("Unable to remove backend: %v", err)
@@ -674,7 +677,10 @@ func (k *CRDClientV1) removeBackendFinalizer(ctx context.Context, b storage.Back
 	backend, err := k.getBackendCRD(ctx, b.Name())
 	if err != nil {
 		if MatchKeyNotFoundErr(err) {
-			keyError := err.(*Error)
+			keyError, ok := err.(*Error)
+			if !ok {
+				return utils.TypeAssertionError("err.(*Error)")
+			}
 			Logc(ctx).WithFields(logFields).Debugf("Unable to find key %s. No finalizers to remove.", keyError.Key)
 			return nil
 		} else {

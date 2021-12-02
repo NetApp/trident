@@ -13,6 +13,7 @@ import (
 
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/solidfire/api"
+	"github.com/netapp/trident/utils"
 )
 
 const (
@@ -83,7 +84,10 @@ func getDriver() *SANStorageDriver {
 
 func TestGetExternalConfig(t *testing.T) {
 	driver := getDriver()
-	newConfig := driver.GetExternalConfig(ctx()).(drivers.SolidfireStorageDriverConfig)
+	newConfig, ok := driver.GetExternalConfig(ctx()).(drivers.SolidfireStorageDriverConfig)
+	if !ok {
+		t.Fatalf("%e", utils.TypeAssertionError("driver.GetExternalConfig(ctx()).(drivers.SolidfireStorageDriverConfig)"))
+	}
 	if newConfig.EndPoint == driver.Config.EndPoint {
 		t.Errorf("EndPoints are equal; expected different. Got: %s", newConfig.EndPoint)
 	}

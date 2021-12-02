@@ -30,6 +30,7 @@ import (
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
+	"github.com/netapp/trident/utils"
 )
 
 var (
@@ -328,7 +329,10 @@ func main() {
 		}
 		orchestrator.AddFrontend(hybridFrontend)
 		postBootstrapFrontends = append(postBootstrapFrontends, hybridFrontend)
-		hybridPlugin := hybridFrontend.(helpers.HybridPlugin)
+		hybridPlugin, ok := hybridFrontend.(helpers.HybridPlugin)
+		if !ok {
+			log.Fatalf("%e", utils.TypeAssertionError("hybridFrontend.(helpers.HybridPlugin)"))
+		}
 
 		log.WithFields(log.Fields{
 			"name":    *csiNodeName,

@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/netapp/trident/utils"
+
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
@@ -122,12 +124,19 @@ func (p *Plugin) getPVCMirrorPeer(pvc *v1.PersistentVolumeClaim, mirrorRelations
 		if !exists {
 			return "", fmt.Errorf("the TMR %s for PVC %s does not exist", mirrorRelationshipName, pvc.Name)
 		}
-		relationship = relationshipObj.(*netappv1.TridentMirrorRelationship)
+		var ok bool
+		relationship, ok = relationshipObj.(*netappv1.TridentMirrorRelationship)
+		if !ok {
+			return "", utils.TypeAssertionError("relationshipObj.(*netappv1.TridentMirrorRelationship)")
+		}
 	}
 	// If TMR is pointing to PVC but PVC is missing annotation, we search for a single TMR pointing to the PVC
 	relationships := p.mrIndexer.List()
 	for index := range relationships {
-		rel := relationships[index].(*netappv1.TridentMirrorRelationship)
+		rel, ok := relationships[index].(*netappv1.TridentMirrorRelationship)
+		if !ok {
+			return "", utils.TypeAssertionError("relationships[index].(*netappv1.TridentMirrorRelationship)")
+		}
 		mappings := rel.Spec.VolumeMappings
 		for index := range mappings {
 			volMap := mappings[index]

@@ -1895,7 +1895,10 @@ func runRecoveryTests(
 		if backend == nil || err != nil {
 			t.Fatalf("%s: Backend not found after bootstrapping.", c.name)
 		}
-		f := backend.Driver().(*fakedriver.StorageDriver)
+		f, ok := backend.Driver().(*fakedriver.StorageDriver)
+		if !ok {
+			t.Fatalf("%e", utils.TypeAssertionError("backend.Driver().(*fakedriver.StorageDriver)"))
+		}
 		// Destroy should be always called on the backend
 		if _, ok := f.DestroyedVolumes[f.GetInternalVolumeName(ctx(), c.volumeConfig.Name)]; !ok && c.expectDestroy {
 			t.Errorf("%s: Destroy not called on volume.", c.name)
@@ -2049,9 +2052,12 @@ func runSnapshotRecoveryTests(
 		if err != nil {
 			t.Fatalf("%s: Backend not found after bootstrapping.", c.name)
 		}
-		f := backend.Driver().(*fakedriver.StorageDriver)
+		f, ok := backend.Driver().(*fakedriver.StorageDriver)
+		if !ok {
+			t.Fatalf("%e", utils.TypeAssertionError("backend.Driver().(*fakedriver.StorageDriver)"))
+		}
 
-		_, ok := f.DestroyedSnapshots[c.snapshotConfig.ID()]
+		_, ok = f.DestroyedSnapshots[c.snapshotConfig.ID()]
 		if !ok && c.expectDestroy {
 			t.Errorf("%s: Destroy not called on snapshot.", c.name)
 		} else if ok && !c.expectDestroy {

@@ -419,3 +419,19 @@ func IsMaxLimitReachedError(err error) bool {
 	_, ok := err.(*maxLimitReachedError)
 	return ok
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// typeAssertionError
+/////////////////////////////////////////////////////////////////////////////
+
+type typeAssertionError struct {
+	assertion string
+}
+
+func (e *typeAssertionError) Error() string {
+	return fmt.Sprintf("could not perform assertion: %s", e.assertion)
+}
+
+func TypeAssertionError(assertion string) error {
+	return &typeAssertionError{assertion}
+}

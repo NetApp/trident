@@ -173,7 +173,10 @@ func NewZapiAsyncResult(ctx context.Context, zapiResult interface{}) (result Zap
 	case azgo.VolumeModifyIterAsyncResponse:
 		Logc(ctx).Debugf("NewZapiAsyncResult - processing VolumeModifyIterAsyncResponse: %v", obj)
 		// Handle ZAPI result for response object that contains a list of one item with the needed job information.
-		volModifyResult := val.Interface().(azgo.VolumeModifyIterAsyncResponseResult)
+		volModifyResult, ok := val.Interface().(azgo.VolumeModifyIterAsyncResponseResult)
+		if !ok {
+			return ZapiAsyncResult{}, utils.TypeAssertionError("val.Interface().(azgo.VolumeModifyIterAsyncResponseResult)")
+		}
 		if volModifyResult.NumSucceededPtr != nil && *volModifyResult.NumSucceededPtr > 0 {
 			if volModifyResult.SuccessListPtr != nil && volModifyResult.SuccessListPtr.VolumeModifyIterAsyncInfoPtr != nil {
 				volInfoType := volModifyResult.SuccessListPtr.VolumeModifyIterAsyncInfoPtr[0]

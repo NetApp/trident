@@ -2232,10 +2232,14 @@ func (k *KubeClient) createObjectByYAML(yamlData string) error {
 	if md, ok := unstruct.Object["metadata"]; ok {
 		if metadata, ok := md.(map[string]interface{}); ok {
 			if ns, ok := metadata["namespace"]; ok {
-				objNamespace = ns.(string)
+				if objNamespace, ok = ns.(string); !ok {
+					return utils.TypeAssertionError("ns.(string)")
+				}
 			}
 			if name, ok := metadata["name"]; ok {
-				objName = name.(string)
+				if objName, ok = name.(string); !ok {
+					return utils.TypeAssertionError("name.(string)")
+				}
 			}
 		}
 	}
@@ -2310,10 +2314,14 @@ func (k *KubeClient) deleteObjectByYAML(yamlData string, ignoreNotFound bool) er
 	if md, ok := unstruct.Object["metadata"]; ok {
 		if metadata, ok := md.(map[string]interface{}); ok {
 			if ns, ok := metadata["namespace"]; ok {
-				objNamespace = ns.(string)
+				if objNamespace, ok = ns.(string); !ok {
+					return utils.TypeAssertionError("ns.(string)")
+				}
 			}
 			if name, ok := metadata["name"]; ok {
-				objName = name.(string)
+				if objName, ok = name.(string); !ok {
+					return utils.TypeAssertionError("name.(string)")
+				}
 			}
 		}
 	}
@@ -2377,10 +2385,14 @@ func (k *KubeClient) getUnstructuredObjectByYAML(yamlData string) (*unstructured
 	if md, ok := unstruct.Object["metadata"]; ok {
 		if metadata, ok := md.(map[string]interface{}); ok {
 			if ns, ok := metadata["namespace"]; ok {
-				objNamespace = ns.(string)
+				if objNamespace, ok = ns.(string); !ok {
+					return nil, utils.TypeAssertionError("ns.(string)")
+				}
 			}
 			if name, ok := metadata["name"]; ok {
-				objName = name.(string)
+				if objName, ok = name.(string); !ok {
+					return nil, utils.TypeAssertionError("name.(string)")
+				}
 			}
 		}
 	}
@@ -2426,10 +2438,14 @@ func (k *KubeClient) updateObjectByYAML(yamlData string) error {
 	if md, ok := unstruct.Object["metadata"]; ok {
 		if metadata, ok := md.(map[string]interface{}); ok {
 			if ns, ok := metadata["namespace"]; ok {
-				objNamespace = ns.(string)
+				if objNamespace, ok = ns.(string); !ok {
+					return utils.TypeAssertionError("ns.(string)")
+				}
 			}
 			if name, ok := metadata["name"]; ok {
-				objName = name.(string)
+				if objName, ok = name.(string); !ok {
+					return utils.TypeAssertionError("name.(string)")
+				}
 			}
 		}
 	}

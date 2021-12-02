@@ -425,7 +425,10 @@ func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 		err := f(ctx)
 		if err != nil {
 			if persistentstore.MatchKeyNotFoundErr(err) {
-				keyError := err.(*persistentstore.Error)
+				keyError, ok := err.(*persistentstore.Error)
+				if !ok {
+					return utils.TypeAssertionError("err.(*persistentstore.Error)")
+				}
 				Logc(ctx).Warnf("Unable to find key %s.  Continuing bootstrap, but "+
 					"consider checking integrity if Trident installation is not new.", keyError.Key)
 			} else {

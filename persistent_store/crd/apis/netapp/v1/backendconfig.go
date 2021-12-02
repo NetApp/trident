@@ -171,11 +171,16 @@ func (s *TridentBackendConfigSpec) GetSecretName() (string, error) {
 	if credentials, ok := backendConfigSpec["credentials"]; !ok {
 		secretName = ""
 	} else {
-		credentialsMap := credentials.(map[string]interface{})
+		credentialsMap, ok := credentials.(map[string]interface{})
+		if !ok {
+			return "", utils.TypeAssertionError("credentials.(map[string]interface{}")
+		}
 		if name, ok := credentialsMap["name"]; !ok {
 			secretName = ""
 		} else {
-			secretName = name.(string)
+			if secretName, ok = name.(string); !ok {
+				return "", utils.TypeAssertionError("name.(string)")
+			}
 		}
 	}
 
