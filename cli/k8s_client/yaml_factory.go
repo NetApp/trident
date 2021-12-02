@@ -295,10 +295,16 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	}
 
 	var deploymentYAML string
+	var version string
 
 	csiSnapshotterVersion := "v3.0.3"
-	switch args.Version.MinorVersion() {
-	case 17, 18, 19:
+
+	if args.Version != nil {
+		version = args.Version.MinorVersionString()
+	}
+
+	switch version {
+	case "17", "18", "19":
 		deploymentYAML = csiDeployment117YAMLTemplate
 	default:
 		deploymentYAML = csiDeployment120YAMLTemplate
@@ -689,12 +695,12 @@ func GetCSIDaemonSetYAML(args *DaemonsetYAMLArguments) string {
 		logLevel = "2"
 	}
 
-	var daemonSetYAML string
-	switch args.Version.MinorVersion() {
-	case 17:
-		daemonSetYAML = daemonSet117YAMLTemplate
-	default:
-		daemonSetYAML = daemonSet118YAMLTemplate
+	daemonSetYAML := daemonSet118YAMLTemplate
+	if args.Version != nil {
+		switch args.Version.MinorVersion() {
+		case 17:
+			daemonSetYAML = daemonSet117YAMLTemplate
+		}
 	}
 
 	if args.ImageRegistry == "" {

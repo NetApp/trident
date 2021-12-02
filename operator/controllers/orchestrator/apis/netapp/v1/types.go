@@ -35,7 +35,7 @@ type TridentOrchestratorSpec struct {
 	Namespace               string   `json:"namespace"`
 	IPv6                    bool     `json:"IPv6,omitempty"`
 	K8sTimeout              int      `json:"k8sTimeout,omitempty"`
-	HTTPRequestTimeout      int      `json:"httpRequestTimeout,omitempty"`
+	HTTPRequestTimeout      string   `json:"httpRequestTimeout,omitempty"`
 	SilenceAutosupport      bool     `json:"silenceAutosupport,omitempty"`
 	AutosupportImage        string   `json:"autosupportImage,omitempty"`
 	AutosupportProxy        string   `json:"autosupportProxy,omitempty"`

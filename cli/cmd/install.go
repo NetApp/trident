@@ -89,7 +89,7 @@ var (
 	logFormat               string
 	probePort               int64
 	k8sTimeout              time.Duration
-	httpRequestTimeout      string
+	httpRequestTimeout      time.Duration
 
 	// CLI-based K8S client
 	client k8sclient.Interface
@@ -155,7 +155,7 @@ func init() {
 	installCmd.Flags().StringVar(&autosupportHostname, "autosupport-hostname", "", "The value to set for the hostname field in Autosupport payloads")
 
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The timeout for all Kubernetes operations.")
-	installCmd.Flags().StringVar(&httpRequestTimeout, "http-request-timeout", tridentconfig.HTTPTimeoutString, "The HTTP request timeout (e.g. '90s'.")
+	installCmd.Flags().DurationVar(&httpRequestTimeout, "http-request-timeout", tridentconfig.HTTPTimeout, "Override the HTTP request timeout for Trident controller’s REST API")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -458,7 +458,7 @@ func prepareYAMLFiles() error {
 		SilenceAutosupport:      silenceAutosupport,
 		Version:                 client.ServerVersion(),
 		TopologyEnabled:         topologyEnabled,
-		HTTPRequestTimeout:      httpRequestTimeout,
+		HTTPRequestTimeout:      httpRequestTimeout.String(),
 	}
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
@@ -478,7 +478,7 @@ func prepareYAMLFiles() error {
 		Debug:                Debug,
 		NodePrep:             enableNodePrep,
 		Version:              client.ServerVersion(),
-		HTTPRequestTimeout:   httpRequestTimeout,
+		HTTPRequestTimeout:   httpRequestTimeout.String(),
 	}
 	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonArgs)
 	if err = writeFile(daemonsetPath, daemonSetYAML); err != nil {
@@ -822,7 +822,7 @@ func installTrident() (returnError error) {
 			SilenceAutosupport:      silenceAutosupport,
 			Version:                 client.ServerVersion(),
 			TopologyEnabled:         topologyEnabled,
-			HTTPRequestTimeout:      httpRequestTimeout,
+			HTTPRequestTimeout:      httpRequestTimeout.String(),
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))
@@ -859,7 +859,7 @@ func installTrident() (returnError error) {
 			Debug:                Debug,
 			NodePrep:             enableNodePrep,
 			Version:              client.ServerVersion(),
-			HTTPRequestTimeout:   httpRequestTimeout,
+			HTTPRequestTimeout:   httpRequestTimeout.String(),
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDaemonSetYAML(daemonSetArgs))

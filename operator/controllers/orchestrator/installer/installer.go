@@ -330,8 +330,17 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentOrchestrator,
 			autosupportImage = utils.ReplaceImageRegistry(autosupportImage, cr.Spec.ImageRegistry)
 		}
 	}
-	if cr.Spec.HTTPRequestTimeout >= 0 {
-		httpTimeout = strconv.FormatInt(int64(cr.Spec.HTTPRequestTimeout), 10) + "s"
+
+	if cr.Spec.HTTPRequestTimeout != "" {
+		httpTimeout = cr.Spec.HTTPRequestTimeout
+		httpTimeoutValue, err := time.ParseDuration(cr.Spec.HTTPRequestTimeout)
+		if err != nil {
+			return nil, nil, false, fmt.Errorf("could not parse the http request timeout as a duration: %v", err)
+		}
+		if httpTimeoutValue < 0 {
+			return nil, nil, false, fmt.Errorf("a negative value was used for the http request timeout, which is" +
+				" not supported")
+		}
 	}
 
 	appLabel = TridentCSILabel
