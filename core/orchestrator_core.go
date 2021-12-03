@@ -408,7 +408,7 @@ func (o *TridentOrchestrator) bootstrapNodes(ctx context.Context) error {
 	}
 	err = o.reconcileNodeAccessOnAllBackends(ctx)
 	if err != nil {
-		return err
+		Logc(ctx).Warningf("%v", err)
 	}
 	return nil
 }
@@ -3992,11 +3992,16 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx context.Conte
 	}
 
 	Logc(ctx).Debug("Reconciling node access on current backends.")
+	errored := false
 	for _, b := range o.backends {
 		err := o.reconcileNodeAccessOnBackend(ctx, b)
 		if err != nil {
-			return err
+			Logc(ctx).WithError(err).WithField("backend", b.Name()).Warn("Error during node access reconciliation")
+			errored = true
 		}
+	}
+	if errored {
+		return fmt.Errorf("one or more errors during node access reconciliation")
 	}
 	return nil
 }

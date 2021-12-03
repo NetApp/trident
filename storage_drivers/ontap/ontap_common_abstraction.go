@@ -354,7 +354,7 @@ func reconcileSANNodeAccessAbstraction(
 
 	// mappedIQNs is now a list of mapped IQNs that we have no nodes for; remove them
 	for iqn := range mappedIQNs {
-		err = clientAPI.IgroupRemove(ctx, igroupName, iqn, false)
+		err = clientAPI.IgroupRemove(ctx, igroupName, iqn, true)
 		if err != nil {
 			return fmt.Errorf("error removing IQN %v from igroup %v: %v", iqn, igroupName, err)
 		}
