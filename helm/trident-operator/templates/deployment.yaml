@@ -37,9 +37,9 @@ spec:
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
       {{- end }}
-      {{- if .Values.server.tolerations }}
+      {{- if .Values.tolerations }}
       tolerations:
-{{ toYaml .Values.server.tolerations | indent 8 }}
+{{ toYaml .Values.tolerations | indent 8 }}
       {{- end }}
       serviceAccountName: trident-operator
       containers:
