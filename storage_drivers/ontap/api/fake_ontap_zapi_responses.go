@@ -353,8 +353,17 @@ func fakeGetIgroupNameFromInfo(zapiRequest string) (string, error) {
 		fmt.Printf("error: %v", err.Error())
 		return "", err
 	}
+	if igroupGetIterRequest.QueryPtr == nil {
+		return "", nil
+	}
 	query := igroupGetIterRequest.Query()
+	if query.InitiatorGroupInfoPtr == nil {
+		return "", nil
+	}
 	info := query.InitiatorGroupInfo()
+	if info.InitiatorGroupNamePtr == nil {
+		return "", nil
+	}
 	return info.InitiatorGroupName(), nil
 }
 
@@ -365,6 +374,10 @@ func fakeGetIgroupNameFromCreate(zapiRequest string) (string, error) {
 		fmt.Printf("error: %v", err.Error())
 		return "", err
 	}
+
+	if igroupCreateRequest.InitiatorGroupNamePtr == nil {
+		return "", nil
+	}
 	return igroupCreateRequest.InitiatorGroupName(), nil
 }
 
@@ -374,6 +387,10 @@ func fakeGetIgroupNameFromDestroy(zapiRequest string) (string, error) {
 	if err := xml.Unmarshal([]byte(zapiRequest), &igroupDestroyRequest); err != nil {
 		fmt.Printf("error: %v", err.Error())
 		return "", err
+	}
+
+	if igroupDestroyRequest.InitiatorGroupNamePtr == nil {
+		return "", nil
 	}
 	return igroupDestroyRequest.InitiatorGroupName(), nil
 }
@@ -386,6 +403,9 @@ func fakeGetAddInitiator(zapiRequest string) (string, string, error) {
 		return "", "", err
 	}
 
+	if igroupAddRequest.InitiatorGroupNamePtr == nil || igroupAddRequest.InitiatorPtr == nil {
+		return "", "", nil
+	}
 	return igroupAddRequest.InitiatorGroupName(), igroupAddRequest.Initiator(), nil
 }
 
@@ -397,6 +417,9 @@ func fakeGetRemoveInitiator(zapiRequest string) (string, string, error) {
 		return "", "", err
 	}
 
+	if igroupRemoveRequest.InitiatorGroupNamePtr == nil || igroupRemoveRequest.InitiatorPtr == nil {
+		return "", "", nil
+	}
 	return igroupRemoveRequest.InitiatorGroupName(), igroupRemoveRequest.Initiator(), nil
 }
 
