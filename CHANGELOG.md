@@ -2,7 +2,12 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v21.07.0
+## Changes since v21.10.0
+**Fixes:**
+- Fixed potential race condition when importing a volume on a GCP CVS backend resulting in failure to import
+
+
+## v21.10.0
 
 **Fixes:**
 - Fixed issue where clones of XFS volumes could not be mounted on the same node as the source volume (Issue [#514](https://github.com/NetApp/trident/issues/514)).

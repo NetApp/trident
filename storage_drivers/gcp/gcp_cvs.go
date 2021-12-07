@@ -1181,11 +1181,16 @@ func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 			Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, relabel failed: %v", err)
 			return fmt.Errorf("could not import volume %s, relabel failed: %v", originalName, err)
 		}
-		if _, err := d.API.ChangeVolumeUnixPermissions(ctx, volume, unixPerms); err != nil {
+		_, err := d.API.WaitForVolumeStates(
+			ctx, volume, []string{api.StateAvailable}, []string{api.StateError}, d.defaultTimeout())
+		if err != nil {
+			return fmt.Errorf("could not import volume %s: %v", originalName, err)
+		}
+		if _, err = d.API.ChangeVolumeUnixPermissions(ctx, volume, unixPerms); err != nil {
 			Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, modifying unix permissions failed: %v", err)
 			return fmt.Errorf("could not import volume %s, modifying unix permissions failed: %v", originalName, err)
 		}
-		_, err := d.API.WaitForVolumeStates(
+		_, err = d.API.WaitForVolumeStates(
 			ctx, volume, []string{api.StateAvailable}, []string{api.StateError}, d.defaultTimeout())
 		if err != nil {
 			return fmt.Errorf("could not import volume %s: %v", originalName, err)
