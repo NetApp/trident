@@ -2134,6 +2134,24 @@ func (o *TridentOrchestrator) GetVolumeExternal(
 	return volExternal, nil
 }
 
+// GetVolumeByInternalName returns a volume by the given internal name
+func (o *TridentOrchestrator) GetVolumeByInternalName(volumeInternal string, ctx context.Context) (volume string,
+	err error) {
+
+	defer recordTiming("volume_internal_get", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	for _, vol := range o.volumes {
+		if vol.Config.InternalName == volumeInternal {
+			return vol.Config.Name, nil
+		}
+
+	}
+	return "", utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeInternal))
+}
+
 func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) error {
 
 	backend, err := o.getBackendByBackendUUID(volumeConfig.ImportBackendUUID)

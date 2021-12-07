@@ -489,6 +489,21 @@ func (mr *MockOrchestratorMockRecorder) GetVolumeExternal(arg0, arg1, arg2 inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeExternal", reflect.TypeOf((*MockOrchestrator)(nil).GetVolumeExternal), arg0, arg1, arg2)
 }
 
+// GetVolumeByInternalName mocks base method.
+func (m *MockOrchestrator) GetVolumeByInternalName(volumeInternal string, ctx context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVolumeByInternalName", volumeInternal, ctx)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVolumeByInternalName indicates an expected call of GetVolumeByInternalName.
+func (mr *MockOrchestratorMockRecorder) GetVolumeByInternalName(volumeInternal, ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByInternalName", reflect.TypeOf((*MockOrchestrator)(nil).GetVolumeByInternalName), volumeInternal, ctx)
+}
+
 // GetVolumeTransaction mocks base method.
 func (m *MockOrchestrator) GetVolumeTransaction(arg0 context.Context, arg1 *storage.VolumeTransaction) (*storage.VolumeTransaction, error) {
 	m.ctrl.T.Helper()

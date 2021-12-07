@@ -17,6 +17,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -35,6 +36,12 @@ func (p *Plugin) ImportVolume(
 	jsonData, err := base64.StdEncoding.DecodeString(request.PVCData)
 	if err != nil {
 		return nil, fmt.Errorf("the pvcData field does not contain valid base64-encoded data: %v", err)
+	}
+
+	existingVol, err := p.orchestrator.GetVolumeByInternalName(request.InternalName, ctx)
+	if err == nil {
+		return nil, utils.FoundError(fmt.Sprintf("PV %s already exists for volume %s",
+			existingVol, request.InternalName))
 	}
 
 	claim := &v1.PersistentVolumeClaim{}

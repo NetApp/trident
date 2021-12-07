@@ -43,6 +43,8 @@ type Orchestrator interface {
 	DetachVolume(ctx context.Context, volumeName, mountpoint string) error
 	DeleteVolume(ctx context.Context, volume string) error
 	GetVolume(ctx context.Context, volume string) (*storage.VolumeExternal, error)
+	GetVolumeByInternalName(volumeInternal string, ctx context.Context) (volume string,
+		err error)
 	GetVolumeExternal(ctx context.Context, volumeName string, backendName string) (*storage.VolumeExternal, error)
 	GetVolumeType(ctx context.Context, vol *storage.VolumeExternal) (config.VolumeType, error)
 	LegacyImportVolume(

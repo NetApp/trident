@@ -36,15 +36,23 @@ func InvokeRESTAPI(method string, url string, requestBody []byte, debug bool) (*
 	client := &http.Client{Timeout: HTTPClientTimeout}
 	response, err := client.Do(request)
 
+	if err != nil {
+		err = fmt.Errorf("error communicating with Trident REST API; %v", err)
+		return nil, nil, err
+	}
+
 	var responseBody []byte
-	if err == nil {
 
+	if response != nil {
+		defer response.Body.Close()
 		responseBody, err = ioutil.ReadAll(response.Body)
-		response.Body.Close()
-
-		if debug {
-			LogHTTPResponse(response, responseBody)
+		if err != nil {
+			return response, responseBody, fmt.Errorf("error reading response body; %v", err)
 		}
+	}
+
+	if debug {
+		LogHTTPResponse(response, responseBody)
 	}
 
 	return response, responseBody, err
@@ -63,11 +71,14 @@ func LogHTTPRequest(request *http.Request, requestBody []byte) {
 }
 
 func LogHTTPResponse(response *http.Response, responseBody []byte) {
-	fmt.Fprintf(os.Stdout, "Response status: %s\n", response.Status)
-	fmt.Fprintf(os.Stdout, "Response headers: %v\n", response.Header)
-	if responseBody == nil {
-		responseBody = []byte{}
+	if response != nil {
+		fmt.Fprintf(os.Stdout, "Response status: %s\n", response.Status)
+		fmt.Fprintf(os.Stdout, "Response headers: %v\n", response.Header)
 	}
-	fmt.Fprintf(os.Stdout, "Response body: %s\n", string(responseBody))
+
+	if responseBody != nil {
+		fmt.Fprintf(os.Stdout, "Response body: %s\n", string(responseBody))
+	}
+
 	fmt.Fprint(os.Stdout, "================================================================================\n")
 }
