@@ -983,13 +983,16 @@ func (d *StorageDriver) cleanUpFailedVolume(ctx context.Context, volume *api.Vol
 		return
 	}
 
-	// If we failed to create the volume *and* we created an automatic export policy, clean up the export policy CR
-	if deleteErr := d.API.DeleteExportPolicy(ctx, volume.ExportPolicy); deleteErr != nil {
-		Logc(ctx).WithField("export policy", volume.ExportPolicy).WithError(deleteErr).Error(
-			"Could not delete export policy for failed volume.")
-	} else {
-		Logc(ctx).WithField("export policy", volume.ExportPolicy).Warning("Deleted export policy for failed volume.")
+	// Take the export policy name from the volume status, but that could be blank if the volume was never
+	// created, so fall back to the volume name which should always match.
+	exportPolicy := volume.ExportPolicy
+	if exportPolicy == "" {
+		exportPolicy = volume.Name
 	}
+
+	// If we failed to create the volume *and* we created an automatic export policy, clean up the export policy CR
+	var err error
+	d.destroyExportPolicy(ctx, exportPolicy, &err)
 }
 
 // Import brings an existing AstraDS volume under Trident management.
