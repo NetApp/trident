@@ -331,7 +331,7 @@ func GetInitiatorIqns(ctx context.Context) ([]string, error) {
 	}
 	lines := strings.Split(string(out), "\n")
 	for _, l := range lines {
-		if strings.Contains(l, "InitiatorName=") {
+		if strings.Contains(l, "InitiatorName=") && ! strings.HasPrefix(l, "#") {
 			iqns = append(iqns, strings.Split(l, "=")[1])
 		}
 	}
