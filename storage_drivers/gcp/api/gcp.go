@@ -210,21 +210,23 @@ func (d *Client) InvokeAPI(
 	}
 	response, err = d.invokeAPIWithRetry(client, request)
 
-	if response == nil && err != nil {
-		Logc(ctx).Warnf("Error communicating with GCP REST interface. %v", err)
-		return nil, nil, err
-	} else if response != nil {
+	if response != nil {
 		defer func() { _ = response.Body.Close() }()
 	}
 
-	var responseBody []byte
-	if err == nil {
-
-		responseBody, err = ioutil.ReadAll(response.Body)
-
-		if d.config.DebugTraceFlags["api"] {
-			utils.LogHTTPResponse(ctx, response, responseBody)
+	if response == nil || err != nil {
+		if err == nil {
+			err = errors.New("api response is nil")
 		}
+		Logc(ctx).Warnf("Error communicating with GCP REST interface. %v", err)
+		return nil, nil, err
+	}
+
+	var responseBody []byte
+
+	responseBody, err = ioutil.ReadAll(response.Body)
+	if d.config.DebugTraceFlags["api"] {
+		utils.LogHTTPResponse(ctx, response, responseBody)
 	}
 
 	return response, responseBody, err
