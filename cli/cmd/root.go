@@ -27,10 +27,10 @@ import (
 )
 
 const (
-	FormatJSON = "json"
-	FormatName = "name"
-	FormatWide = "wide"
-	FormatYAML = "yaml"
+	FormatJSON     = "json"
+	FormatName     = "name"
+	FormatWide     = "wide"
+	FormatYAML     = "yaml"
 	FormatMarkdown = "markdown"
 
 	ModeDirect  = "direct"

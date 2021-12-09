@@ -378,6 +378,10 @@ func main() {
 		if *port == "" {
 			log.Warning("HTTP REST interface will not be available (port not specified).")
 		} else {
+
+			if *address != "127.0.0.1" && *address != "[::1]" {
+				*address = "127.0.0.1"
+			}
 			httpServer := rest.NewHTTPServer(orchestrator, *address, *port, *httpRequestTimeout)
 			preBootstrapFrontends = append(preBootstrapFrontends, httpServer)
 			log.WithFields(log.Fields{"name": httpServer.GetName()}).Info("Added frontend.")
