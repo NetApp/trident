@@ -3,9 +3,12 @@
 [Releases](https://github.com/NetApp/trident/releases)
 
 ## Changes since v21.10.0
+- **IMPORTANT:** The v21.10.0 release has an issue that can put the Trident controller into a CrashLoopBackOff state when a node is removed and then added back to the Kubernetes cluster. This [issue](https://github.com/NetApp/trident/issues/669) is fixed in v21.10.1. 
+
 **Fixes:**
 - Fixed potential race condition when importing a volume on a GCP CVS backend resulting in failure to import
-
+- Fixed an issue that can put the Trident controller into a CrashLoopBackOff state when a node is removed and then added back to the Kubernetes cluster (Issue [#669](https://github.com/NetApp/trident/issues/669)). 
+- Fixed issue where SVM's were no longer discovered if no SVM name was specified (Issue [#612](https://github.com/NetApp/trident/issues/612)).
 
 ## v21.10.0
 
