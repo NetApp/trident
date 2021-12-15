@@ -40,7 +40,7 @@ var (
 // CRDClientV1 stores persistent state in CRD objects in Kubernetes
 type CRDClientV1 struct {
 	crdClient tridentv1clientset.Interface
-	k8sClient clik8sclient.Interface
+	k8sClient clik8sclient.KubernetesClient
 	version   *config.PersistentStateVersion
 	namespace string
 }

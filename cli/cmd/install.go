@@ -92,7 +92,7 @@ var (
 	httpRequestTimeout      time.Duration
 
 	// CLI-based K8S client
-	client k8sclient.Interface
+	client k8sclient.KubernetesClient
 
 	// File paths
 	installerDirectoryPath string
@@ -305,7 +305,7 @@ func discoverInstallationEnvironment() error {
 	return nil
 }
 
-func initClient() (k8sclient.Interface, error) {
+func initClient() (k8sclient.KubernetesClient, error) {
 
 	clients, err := k8sclient.CreateK8SClients("", "", "")
 	if err != nil {

@@ -22,7 +22,7 @@ var (
 	configPath string
 
 	// k8sClient is our clientset
-	k8sClient k8sclient.Interface
+	k8sClient k8sclient.KubernetesClient
 
 	// crdClientset is a clientset for our own API group
 	crdClientset crdclient.Interface
@@ -66,7 +66,7 @@ var obliviateCRDCmd = &cobra.Command{
 }
 
 func ObliviateCRDs(
-	kubeClientVal k8sclient.Interface, crdClientsetVal crdclient.Interface, timeout time.Duration,
+	kubeClientVal k8sclient.KubernetesClient, crdClientsetVal crdclient.Interface, timeout time.Duration,
 ) error {
 	k8sClient = kubeClientVal
 	crdClientset = crdClientsetVal

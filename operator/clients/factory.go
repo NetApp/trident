@@ -23,7 +23,7 @@ import (
 type Clients struct {
 	KubeConfig     *rest.Config
 	KubeClient     *kubernetes.Clientset
-	K8SClient      k8sclient.Interface
+	K8SClient      k8sclient.KubernetesClient
 	CRDClient      *versioned.Clientset
 	CRDTprovClient *versionedTprov.Clientset
 	K8SVersion     *k8sversion.Info

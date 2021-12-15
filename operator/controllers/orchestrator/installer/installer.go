@@ -14,10 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/api/policy/v1beta1"
-	v12 "k8s.io/api/rbac/v1"
-	storagev1 "k8s.io/api/storage/v1"
-	v1beta12 "k8s.io/api/storage/v1beta1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/client-go/rest"
 
@@ -47,13 +43,6 @@ const (
 	VolumeSnapshotContentCRDName = "volumesnapshotcontents.snapshot.storage.k8s.io"
 
 	DefaultTimeout = 30
-
-	TridentCSI       = "trident-csi"
-	TridentLegacy    = "trident"
-	OpenShiftSCCName = "trident"
-
-	CSIDriver  = "csi.trident.netapp.io"
-	TridentPSP = "tridentpods"
 )
 
 var (
@@ -108,12 +97,12 @@ var (
 )
 
 type Installer struct {
-	client           k8sclient.Interface
+	client           ExtendedK8sClient
 	tridentCRDClient *crdclient.Clientset
 	namespace        string
 }
 
-func NewInstaller(kubeConfig *rest.Config, namespace string, timeout int) (*Installer, error) {
+func NewInstaller(kubeConfig *rest.Config, namespace string, timeout int) (TridentInstaller, error) {
 
 	if timeout <= 0 {
 		timeout = DefaultTimeout
@@ -122,15 +111,15 @@ func NewInstaller(kubeConfig *rest.Config, namespace string, timeout int) (*Inst
 	k8sTimeout = time.Duration(timeout) * time.Second
 
 	// Create the Kubernetes client
-	kubeClient, err := k8sclient.NewKubeClient(kubeConfig, namespace, k8sTimeout)
+	kubeClient, err := NewExtendedK8sClient(kubeConfig, namespace, k8sTimeout)
 	if err != nil {
-		return nil, fmt.Errorf("could not initialize Kubernetes client; %v", err)
+		return nil, fmt.Errorf("failed to initialize Kubernetes client; %v", err)
 	}
 
 	// Create Trident CRD client
 	CRDClientForTrident, err := crdclient.NewForConfig(kubeConfig)
 	if err != nil {
-		return nil, fmt.Errorf("could not initialize Trident's CRD client; %v", err)
+		return nil, fmt.Errorf("failed to initialize Trident's CRD client; %v", err)
 	}
 
 	log.WithField("namespace", namespace).Debugf("Initialized installer.")
@@ -416,7 +405,8 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentOrchestrator,
 	}
 
 	// Remove any leftover transient Trident
-	err = i.cleanupTransientVersionPod()
+	versionPodLabel := TridentVersionPodLabel
+	err = i.client.DeleteTransientVersionPod(versionPodLabel)
 	if err != nil {
 		log.WithError(err).Warn("Could not remove transient Trident pods.")
 	}
@@ -443,19 +433,19 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentOrchestrator,
 	// Create CRDs and ensure they are established
 	returnError = i.createAndEnsureCRDs()
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Trident CRDs; %v", returnError)
+		returnError = fmt.Errorf("failed to create the Trident CRDs; %v", returnError)
 		return nil, "", returnError
 	}
 
 	// Patch the CRD definitions with finalizers to protect them
-	if returnError = i.protectCustomResourceDefinitions(); returnError != nil {
-		return nil, "", returnError
+	if returnError = i.client.AddFinalizerToCRDs(CRDnames); returnError != nil {
+		return nil, "", fmt.Errorf("failed to add finalizers for Trident CRDs %v; err: %v", CRDnames, returnError)
 	}
 
 	// Create or patch or update the RBAC PSPs
 	returnError = i.createOrPatchTridentPodSecurityPolicy(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Trident pod security policy; %v", returnError)
+		returnError = fmt.Errorf("failed to create the Trident pod security policy; %v", returnError)
 		return nil, "", returnError
 	}
 
@@ -466,35 +456,35 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentOrchestrator,
 		returnError = i.createOrPatchK8sBetaCSIDriver(controllingCRDetails, labels, shouldUpdate)
 	}
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Kubernetes CSI Driver object; %v", returnError)
+		returnError = fmt.Errorf("failed to create the Kubernetes CSI Driver object; %v", returnError)
 		return nil, "", returnError
 	}
 
 	// Create or patch or update the Trident Service
 	returnError = i.createOrPatchTridentService(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Trident Service; %v", returnError)
+		returnError = fmt.Errorf("failed to create the Trident Service; %v", returnError)
 		return nil, "", returnError
 	}
 
 	// Create or update the Trident Secret
 	returnError = i.createOrPatchTridentSecret(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Trident Secret; %v", returnError)
+		returnError = fmt.Errorf("failed to create the Trident Secret; %v", returnError)
 		return nil, "", returnError
 	}
 
 	// Create or update the Trident CSI deployment
 	returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Trident Deployment; %v", returnError)
+		returnError = fmt.Errorf("failed to create the Trident Deployment; %v", returnError)
 		return nil, "", returnError
 	}
 
 	// Create or update the Trident CSI daemonset
 	returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Trident DaemonSet; %v", returnError)
+		returnError = fmt.Errorf("failed to create the Trident DaemonSet; %v", returnError)
 		return nil, "", returnError
 	}
 
@@ -537,28 +527,6 @@ func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentOrchestrator,
 		"version":   labels[TridentVersionLabelKey],
 	}).Info("Trident is installed.")
 	return &identifiedSpecValues, labels[TridentVersionLabelKey], nil
-}
-
-func (i *Installer) createCustomResourceDefinitions(crdName, crdYAML string) (returnError error) {
-
-	returnError = i.client.CreateObjectByYAML(crdYAML)
-
-	if returnError != nil {
-		returnError = fmt.Errorf("could not create CRD %v; err: %v", crdName, returnError)
-		return
-	}
-	log.WithField("CRD", crdName).Infof("Created CRD.")
-	return nil
-}
-
-// protectCustomResourceDefinitions adds finalizers to the CRD definitions to prevent accidental deletion
-func (i *Installer) protectCustomResourceDefinitions() error {
-	err := i.client.AddFinalizerToCRDs(CRDnames)
-	if err != nil {
-		return err
-	}
-	log.Info("Added finalizers to custom resource definitions.")
-	return nil
 }
 
 // createCRDs creates and establishes each of the CRDs individually
@@ -614,18 +582,19 @@ func (i *Installer) CreateCRD(crdName, crdYAML string) error {
 		// Create the CRDs and wait for them to be registered in Kubernetes
 		log.WithField("CRD", crdName).Infof("Installer will create a fresh CRD.")
 
-		if returnError = i.createCustomResourceDefinitions(crdName, crdYAML); returnError != nil {
+		if returnError = i.client.CreateCustomResourceDefinition(crdName, crdYAML); returnError != nil {
 			return returnError
 		}
 
 		// Wait for the CRD to be fully established
-		if returnError = i.ensureCRDEstablished(crdName); returnError != nil {
+		if returnError = i.client.WaitForCRDEstablished(crdName, k8sTimeout); returnError != nil {
 			// If CRD registration failed *and* we created the CRD, clean up by deleting the CRD
 			log.WithFields(log.Fields{
 				"CRD": crdName,
 				"err": returnError,
 			}).Errorf("CRD not established.")
-			if err := i.deleteCustomResourceDefinition(crdName, crdYAML); err != nil {
+
+			if err := i.client.DeleteCustomResourceDefinition(crdName, crdYAML); err != nil {
 				log.WithFields(log.Fields{
 					"CRD": crdName,
 					"err": err,
@@ -686,146 +655,51 @@ func (i *Installer) createOrPatchK8sBetaCSIDriver(
 
 	// TODO (cknight): remove when 1.18 is our minimum version
 
-	createCSIDriver := true
 	CSIDriverName := getCSIDriverName()
-	var currentK8sCSIDriver *v1beta12.CSIDriver
-	var unwantedCSIDrivers []v1beta12.CSIDriver
-	var err error
 
-	if csiDrivers, err := i.client.GetBetaCSIDriversByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of CSI driver custom resources by label.")
-		return fmt.Errorf("unable to get list of CSI driver custom resources by label")
-	} else if len(csiDrivers) == 0 {
-		log.Info("CSI driver custom resource not found.")
-
-		log.Debug("Deleting unlabeled Trident CSI Driver by name as it can cause issues during installation.")
-		if err = i.client.DeleteBetaCSIDriver(CSIDriverName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident CSI driver custom resource.")
-			}
-		} else {
-			log.WithField("CSIDriver", CSIDriverName).Info("Deleted Trident CSI driver custom resource; " +
-				"replacing it with a labeled Trident CSI driver custom resource.")
-		}
-
-	} else if shouldUpdate {
-		unwantedCSIDrivers = csiDrivers
-	} else {
-		// Rules:
-		// 1. If there is no CSI driver CR named csi.trident.netapp.io and one or many other CSI driver CRs
-		//    exist that matches the label then remove all the CSI driver CRs.
-		// 2. If there is a CSI driver CR named csi.trident.netapp.io and one or many other CSI driver CRs
-		//    exist that matches the label then remove all other CSI driver CRs.
-		for _, csiDriver := range csiDrivers {
-			if csiDriver.Name == CSIDriverName {
-				// Found a CSIDriver named csi.trident.netapp.io
-				log.WithField("TridentCSIDriver", CSIDriverName).Infof("A Trident CSI driver found by label.")
-
-				currentK8sCSIDriver = &csiDriver
-				createCSIDriver = false
-			} else {
-				log.WithField("CSIDriver", csiDriver.Name).Errorf("A CSI driver was found by label "+
-					"but does not meet name '%s' requirement, marking it for deletion.", CSIDriverName)
-
-				unwantedCSIDrivers = append(unwantedCSIDrivers, csiDriver)
-			}
-		}
+	currentCSIDriver, unwantedCSIDrivers, createCSIDriver, err := i.client.GetBetaCSIDriverInformation(
+		CSIDriverName, appLabel, shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get K8s (beta) CSI drivers; %v", err)
 	}
 
-	if err = i.RemoveMultipleBetaCSIDriverCRs(unwantedCSIDrivers); err != nil {
-		return err
+	if err = i.client.RemoveMultipleBetaCSIDriverCRs(unwantedCSIDrivers); err != nil {
+		return fmt.Errorf("failed to remove unwanted K8s (beta) CSI drivers; %v", err)
 	}
 
 	newK8sCSIDriverYAML := k8sclient.GetCSIDriverYAML(CSIDriverName, i.client.ServerVersion(), labels,
 		controllingCRDetails)
 
-	if createCSIDriver {
-		err = i.client.CreateObjectByYAML(newK8sCSIDriverYAML)
-
-		if err != nil {
-			return fmt.Errorf("could not create CSI driver custom resource; %v", err)
-		}
-		log.WithField("CSIDriver", CSIDriverName).Info("Created CSI driver custom resource.")
-	} else {
-		log.WithFields(log.Fields{
-			"CSIDriver": currentK8sCSIDriver.Name,
-		}).Debug("Patching Trident CSI driver CR.")
-		err = i.patchK8sBetaCSIDriver(currentK8sCSIDriver, []byte(newK8sCSIDriverYAML))
+	err = i.client.PutBetaCSIDriver(currentCSIDriver, createCSIDriver, newK8sCSIDriverYAML, appLabel)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch K8s (beta) CSI drivers; %v", err)
 	}
-
-	return err
+	return nil
 }
 
 func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[string]string, shouldUpdate bool) error {
 
-	createCSIDriver := true
 	CSIDriverName := getCSIDriverName()
-	var currentK8sCSIDriver *storagev1.CSIDriver
-	var unwantedCSIDrivers []storagev1.CSIDriver
-	var err error
 
-	if csiDrivers, err := i.client.GetCSIDriversByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of CSI driver custom resources by label.")
-		return fmt.Errorf("unable to get list of CSI driver custom resources by label")
-	} else if len(csiDrivers) == 0 {
-		log.Info("CSI driver custom resource not found.")
-
-		log.Debug("Deleting unlabeled Trident CSI Driver by name as it can cause issues during installation.")
-		if err = i.client.DeleteCSIDriver(CSIDriverName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident CSI driver custom resource.")
-			}
-		} else {
-			log.WithField("CSIDriver", CSIDriverName).Info("Deleted Trident CSI driver custom resource; " +
-				"replacing it with a labeled Trident CSI driver custom resource.")
-		}
-
-	} else if shouldUpdate {
-		unwantedCSIDrivers = csiDrivers
-	} else {
-		// Rules:
-		// 1. If there is no CSI driver CR named csi.trident.netapp.io and one or many other CSI driver CRs
-		//    exist that matches the label then remove all the CSI driver CRs.
-		// 2. If there is a CSI driver CR named csi.trident.netapp.io and one or many other CSI driver CRs
-		//    exist that matches the label then remove all other CSI driver CRs.
-		for _, csiDriver := range csiDrivers {
-			if csiDriver.Name == CSIDriverName {
-				// Found a CSIDriver named csi.trident.netapp.io
-				log.WithField("TridentCSIDriver", CSIDriverName).Infof("A Trident CSI driver found by label.")
-
-				currentK8sCSIDriver = &csiDriver
-				createCSIDriver = false
-			} else {
-				log.WithField("CSIDriver", csiDriver.Name).Errorf("A CSI driver was found by label "+
-					"but does not meet name '%s' requirement, marking it for deletion.", CSIDriverName)
-
-				unwantedCSIDrivers = append(unwantedCSIDrivers, csiDriver)
-			}
-		}
+	currentCSIDriver, unwantedCSIDrivers, createCSIDriver, err := i.client.GetCSIDriverInformation(CSIDriverName,
+		appLabel, shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get K8s CSI drivers; %v", err)
 	}
 
-	if err = i.RemoveMultipleCSIDriverCRs(unwantedCSIDrivers); err != nil {
-		return err
+	if err = i.client.RemoveMultipleCSIDriverCRs(unwantedCSIDrivers); err != nil {
+		return fmt.Errorf("failed to remove unwanted K8s CSI drivers; %v", err)
 	}
 
 	newK8sCSIDriverYAML := k8sclient.GetCSIDriverYAML(CSIDriverName, i.client.ServerVersion(), labels,
 		controllingCRDetails)
 
-	if createCSIDriver {
-		err = i.client.CreateObjectByYAML(newK8sCSIDriverYAML)
-
-		if err != nil {
-			return fmt.Errorf("could not create CSI driver custom resource; %v", err)
-		}
-		log.WithField("CSIDriver", CSIDriverName).Info("Created CSI driver custom resource.")
-	} else {
-		log.WithFields(log.Fields{
-			"CSIDriver": currentK8sCSIDriver.Name,
-		}).Debug("Patching Trident CSI driver CR.")
-		err = i.patchK8sCSIDriver(currentK8sCSIDriver, []byte(newK8sCSIDriverYAML))
+	err = i.client.PutCSIDriver(currentCSIDriver, createCSIDriver, newK8sCSIDriverYAML, appLabel)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch K8s CSI drivers; %v", err)
 	}
 
-	return err
+	return nil
 }
 
 func (i *Installer) createRBACObjects(controllingCRDetails, labels map[string]string,
@@ -834,21 +708,21 @@ func (i *Installer) createRBACObjects(controllingCRDetails, labels map[string]st
 	// Create service account
 	newServiceAccount, returnError = i.createOrPatchTridentServiceAccount(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Trident service account; %v", returnError)
+		returnError = fmt.Errorf("failed to create the Trident service account; %v", returnError)
 		return
 	}
 
 	// Create cluster role
 	returnError = i.createOrPatchTridentClusterRole(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Trident cluster role; %v", returnError)
+		returnError = fmt.Errorf("failed to create the Trident cluster role; %v", returnError)
 		return
 	}
 
 	// Create cluster role binding
 	returnError = i.createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Trident cluster role binding; %v", returnError)
+		returnError = fmt.Errorf("failed to create the Trident cluster role binding; %v", returnError)
 		return
 	}
 
@@ -857,7 +731,7 @@ func (i *Installer) createRBACObjects(controllingCRDetails, labels map[string]st
 		// Create OpenShift SCC
 		returnError = i.createOrPatchTridentOpenShiftSCC(controllingCRDetails, labels, shouldUpdate)
 		if returnError != nil {
-			returnError = fmt.Errorf("could not create the Trident OpenShift SCC; %v", returnError)
+			returnError = fmt.Errorf("failed to create the Trident OpenShift SCC; %v", returnError)
 			return
 		}
 	}
@@ -886,7 +760,7 @@ func (i *Installer) createTridentInstallationNamespace() error {
 		// Create namespace
 		err := i.client.CreateObjectByYAML(k8sclient.GetNamespaceYAML(i.namespace))
 		if err != nil {
-			return fmt.Errorf("could not create Trident installation namespace %s; %v", i.namespace, err)
+			return fmt.Errorf("failed to create Trident installation namespace %s; %v", i.namespace, err)
 		}
 		log.WithField("namespace", i.namespace).Info("Created Trident installation namespace.")
 	}
@@ -896,539 +770,211 @@ func (i *Installer) createTridentInstallationNamespace() error {
 
 func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, labels map[string]string,
 	shouldUpdate bool) (bool, error) {
-	createServiceAccount := true
-	newServiceAccount := false
-	var currentServiceAccount *v1.ServiceAccount
-	var unwantedServiceAccounts []v1.ServiceAccount
-	var serviceAccountSecretNames []string
-	var err error
 
+	newServiceAccount := false
 	serviceAccountName := getServiceAccountName(true)
 
-	if serviceAccounts, err := i.client.GetServiceAccountsByLabel(appLabel, false); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of service accounts by label.")
-		return newServiceAccount, fmt.Errorf("unable to get list of service accounts")
-	} else if len(serviceAccounts) == 0 {
-		log.Info("Trident service account not found.")
-
-		log.Debug("Deleting unlabeled Trident service account by name as it can cause issues during installation.")
-		if err = i.client.DeleteServiceAccount(serviceAccountName, i.namespace); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident service account.")
-			}
-		} else {
-			log.WithField("Service Account", serviceAccountName).Info(
-				"Deleted Trident service account; replacing it with a labeled Trident service account.")
-		}
-	} else if shouldUpdate {
-		unwantedServiceAccounts = serviceAccounts
-	} else {
-		// Rules:
-		// 1. If there are no service accounts named trident-csi and one or many other service accounts
-		//    exist that matches the label then remove all the service accounts.
-		// 2. If there is a service accounts named trident-csi and one or many other service accounts
-		//    exist that matches the label then remove all other service accounts.
-		for _, serviceAccount := range serviceAccounts {
-			if serviceAccount.Name == serviceAccountName {
-				// Found a service account named trident-csi in the same namespace
-				log.WithFields(log.Fields{
-					"serviceAccount": serviceAccount.Name,
-					"namespace":      serviceAccount.Namespace,
-				}).Infof("A Trident Service account found by label.")
-
-				currentServiceAccount = &serviceAccount
-				createServiceAccount = false
-
-				for _, serviceAccountSecret := range serviceAccount.Secrets {
-					serviceAccountSecretNames = append(serviceAccountSecretNames, serviceAccountSecret.Name)
-				}
-			} else {
-				log.WithField("serviceAccount", serviceAccount.Name).
-					Errorf("A Service account was found by label "+
-						"but does not meet name '%s' requirement, marking it for deletion.", serviceAccountName)
-
-				unwantedServiceAccounts = append(unwantedServiceAccounts, serviceAccount)
-			}
-		}
+	currentServiceAccount, unwantedServiceAccounts, serviceAccountSecretNames, createServiceAccount, err := i.client.GetServiceAccountInformation(serviceAccountName,
+		appLabel, i.namespace, shouldUpdate)
+	if err != nil {
+		return newServiceAccount, fmt.Errorf("failed to get Trident service accounts; %v", err)
 	}
 
-	if err = i.RemoveMultipleServiceAccounts(unwantedServiceAccounts); err != nil {
-		return newServiceAccount, err
+	if err = i.client.RemoveMultipleServiceAccounts(unwantedServiceAccounts); err != nil {
+		return newServiceAccount, fmt.Errorf("failed to remove unwanted service accounts; %v", err)
 	}
 
 	newServiceAccountYAML := k8sclient.GetServiceAccountYAML(serviceAccountName, serviceAccountSecretNames, labels,
 		controllingCRDetails)
 
-	if createServiceAccount {
-		err = i.client.CreateObjectByYAML(newServiceAccountYAML)
-
-		if err != nil {
-			return newServiceAccount, fmt.Errorf("could not create service account; %v", err)
-		}
-		newServiceAccount = true
-		log.WithFields(log.Fields{
-			"serviceAccount": serviceAccountName,
-			"namespace":      i.namespace,
-		}).Info("Created service account.")
-	} else {
-		log.WithFields(log.Fields{
-			"service":   currentServiceAccount.Name,
-			"namespace": currentServiceAccount.Namespace,
-		}).Debug("Patching Trident Service account.")
-
-		err = i.patchTridentServiceAccount(currentServiceAccount, []byte(newServiceAccountYAML))
+	if newServiceAccount, err = i.client.PutServiceAccount(currentServiceAccount, createServiceAccount,
+		newServiceAccountYAML, appLabel); err != nil {
+		return newServiceAccount, fmt.Errorf("failed to create or patch Trident service accounts; %v", err)
 	}
 
-	return newServiceAccount, err
+	return newServiceAccount, nil
 }
 
 func (i *Installer) createOrPatchTridentClusterRole(controllingCRDetails, labels map[string]string,
 	shouldUpdate bool) error {
-	createClusterRole := true
-	var currentClusterRole *v12.ClusterRole
-	var unwantedClusterRoles []v12.ClusterRole
-	var err error
 
 	clusterRoleName := getClusterRoleName(true)
 
-	if clusterRoles, err := i.client.GetClusterRolesByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of cluster roles by label.")
-		return fmt.Errorf("unable to get list of cluster roles")
-	} else if len(clusterRoles) == 0 {
-		log.Info("Trident cluster role not found.")
-
-		log.Debug("Deleting unlabeled Trident cluster role by name as it can cause issues during installation.")
-		if err = i.client.DeleteClusterRole(clusterRoleName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident cluster role")
-			}
-		} else {
-			log.WithField("ClusterRole", clusterRoleName).Info(
-				"Deleted unlabeled Trident cluster role; replacing it with a labeled Trident cluster role.")
-		}
-	} else if shouldUpdate {
-		unwantedClusterRoles = clusterRoles
-	} else {
-		// Rules:
-		// 1. If there is no cluster role named trident-csi and one or many other cluster roles
-		//    exist that matches the label then remove all the cluster roles.
-		// 2. If there is a cluster role named trident-csi  and one or many other cluster roles
-		//    exist that matches the label then remove all other cluster roles.
-		for _, clusterRole := range clusterRoles {
-			if clusterRole.Name == clusterRoleName {
-				// Found a cluster role named trident/trident-csi
-				log.WithField("clusterRole", clusterRoleName).Infof("A Trident cluster role found by label.")
-
-				currentClusterRole = &clusterRole
-				createClusterRole = false
-			} else {
-				log.WithField("clusterRole", clusterRole.Name).Errorf("A cluster role was found by label "+
-					"but does not meet name '%s' requirement, marking it for deletion.", clusterRoleName)
-
-				unwantedClusterRoles = append(unwantedClusterRoles, clusterRole)
-			}
-		}
+	currentClusterRole, unwantedClusterRoles, createClusterRole, err := i.client.GetClusterRoleInformation(
+		clusterRoleName, appLabel, shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident cluster roles; %v", err)
 	}
 
-	if err = i.RemoveMultipleClusterRoles(unwantedClusterRoles); err != nil {
-		return err
+	if err = i.client.RemoveMultipleClusterRoles(unwantedClusterRoles); err != nil {
+		return fmt.Errorf("failed to remove unwanted Trident cluster roles; %v", err)
 	}
 
-	newClusterRoleYAML := k8sclient.GetClusterRoleYAML(i.client.Flavor(), clusterRoleName, labels, controllingCRDetails, true)
+	k8sFlavor := i.client.Flavor()
+	newClusterRoleYAML := k8sclient.GetClusterRoleYAML(k8sFlavor, clusterRoleName, labels, controllingCRDetails,
+		true)
 
-	if createClusterRole {
-		err = i.client.CreateObjectByYAML(newClusterRoleYAML)
-
-		if err != nil {
-			return fmt.Errorf("could not create cluster role; %v", err)
-		}
-		log.WithField("clusterRole", clusterRoleName).Info("Created cluster role.")
-	} else {
-		log.WithFields(log.Fields{
-			"clusterRole": currentClusterRole.Name,
-		}).Debug("Patching Trident Cluster role.")
-
-		err = i.patchTridentClusterRole(currentClusterRole, []byte(newClusterRoleYAML))
+	err = i.client.PutClusterRole(currentClusterRole, createClusterRole, newClusterRoleYAML, appLabel)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch Trident cluster role; %v", err)
 	}
 
-	return err
+	return nil
 }
 
 func (i *Installer) createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels map[string]string,
 	shouldUpdate bool) error {
-	createClusterRoleBinding := true
-	var currentClusterRoleBinding *v12.ClusterRoleBinding
-	var unwantedClusterRoleBindings []v12.ClusterRoleBinding
-	var err error
 
 	clusterRoleBindingName := getClusterRoleBindingName(true)
 
-	if clusterRoleBindings, err := i.client.GetClusterRoleBindingsByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of cluster role bindings by label.")
-		return fmt.Errorf("unable to get list of cluster role bindings")
-	} else if len(clusterRoleBindings) == 0 {
-		log.Info("Trident cluster role binding not found.")
-
-		log.Debug("Deleting unlabeled Trident cluster role binding by name as it can cause issues during installation.")
-		if err = i.client.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident cluster role binding.")
-			}
-		} else {
-			log.WithField("Cluster Role Binding", clusterRoleBindingName).Info(
-				"Deleted unlabeled Trident cluster role binding; replacing it with a labeled Trident cluster role" +
-					" binding.")
-		}
-	} else if shouldUpdate {
-		unwantedClusterRoleBindings = clusterRoleBindings
-	} else {
-		// Rules:
-		// 1. If there is no cluster role binding named trident/trident-csi and one or many other cluster role bindings
-		//    exist that matches the label then remove all the cluster role bindings.
-		// 2. If there is a cluster role binding named trident/trident-csi and one or many other cluster role bindings
-		//    exist that matches the label then remove all other cluster role bindings.
-		for _, clusterRoleBinding := range clusterRoleBindings {
-			if clusterRoleBinding.Name == clusterRoleBindingName {
-				// Found a cluster role binding named trident/trident-csi
-				log.WithField("clusterRoleBinding", clusterRoleBindingName).Infof(
-					"A Trident Cluster role binding was found by label.")
-
-				currentClusterRoleBinding = &clusterRoleBinding
-				createClusterRoleBinding = false
-			} else {
-				log.WithField("clusterRoleBinding", clusterRoleBinding.Name).Errorf(
-					"A cluster role binding was found by label "+
-						"but does not meet name '%s' requirement, marking it for deletion.", clusterRoleBindingName)
-
-				unwantedClusterRoleBindings = append(unwantedClusterRoleBindings, clusterRoleBinding)
-			}
-		}
+	currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding,
+		err := i.client.GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident cluster role bindings; %v", err)
 	}
 
-	if err = i.RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings); err != nil {
-		return err
+	if err = i.client.RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings); err != nil {
+		return fmt.Errorf("failed to remove unwanted Trident cluster role bindings; %v", err)
 	}
 
-	newClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(i.namespace, i.client.Flavor(), clusterRoleBindingName,
+	newClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(i.namespace, i.client.Flavor(),
+		clusterRoleBindingName,
 		labels, controllingCRDetails, true)
 
-	if createClusterRoleBinding {
-		err = i.client.CreateObjectByYAML(newClusterRoleBindingYAML)
-
-		if err != nil {
-			return fmt.Errorf("could not create cluster role binding; %v", err)
-		}
-		log.WithField("clusterRoleBinding", clusterRoleBindingName).Info("Created cluster role binding.")
-	} else {
-		log.WithFields(log.Fields{
-			"clusterRoleBinding": currentClusterRoleBinding.Name,
-		}).Debug("Patching Trident Cluster role binding.")
-
-		err = i.patchTridentClusterRoleBinding(currentClusterRoleBinding, []byte(newClusterRoleBindingYAML))
+	err = i.client.PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding,
+		newClusterRoleBindingYAML, appLabel)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch Trident cluster role binding; %v", err)
 	}
 
-	return err
+	return nil
 }
 
 func (i *Installer) createOrPatchTridentOpenShiftSCC(controllingCRDetails, labels map[string]string,
 	shouldUpdate bool) error {
-	createOpenShiftSCC := true
-	var openShiftSCCOldUserName string
-	var openShiftSCCOldName string
-	var currentOpenShiftSCCJSON []byte
-	var removeExistingSCC bool
-	var logFields log.Fields
-	var err error
 
-	openShiftSCCOldUserName = "trident-csi"
-	openShiftSCCOldName = "privileged"
+	var currentOpenShiftSCCJSON []byte
 
 	openShiftSCCUserName := getOpenShiftSCCUserName()
 	openShiftSCCName := getOpenShiftSCCName()
 
-	logFields = log.Fields{
+	// duplicated in GetTridentOpenShiftSCCInformation because it's valuable in both places
+	logFields := log.Fields{
 		"sccUserName": openShiftSCCUserName,
 		"sccName":     openShiftSCCName,
-		"label":       appLabelValue,
 	}
 
-	if SCCExist, SCCUserExist, jsonData, err := i.client.GetOpenShiftSCCByName(openShiftSCCUserName, openShiftSCCName); err != nil {
+	currentOpenShiftSCCJSON, createOpenShiftSCC, removeExistingSCC, err := i.client.GetTridentOpenShiftSCCInformation(openShiftSCCName,
+		openShiftSCCUserName, shouldUpdate)
+	if err != nil {
 		log.WithFields(logFields).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
-		return fmt.Errorf("unable to get OpenShift SCC for Trident")
-	} else if !SCCExist {
-		log.WithFields(logFields).Info("Trident OpenShift SCC not found.")
-	} else if !SCCUserExist {
-		log.WithFields(logFields).Info("Trident OpenShift SCC found, but SCC user does not exist.")
-		removeExistingSCC = true
-	} else if shouldUpdate {
-		removeExistingSCC = true
-	} else {
-		currentOpenShiftSCCJSON = jsonData
-		createOpenShiftSCC = false
+		return fmt.Errorf("failed to get Trident OpenShift SCC; %v", err)
 	}
 
+	// keep this logic here
 	if removeExistingSCC {
 		if err = i.client.DeleteObjectByYAML(k8sclient.GetOpenShiftSCCQueryYAML(openShiftSCCName), true); err != nil {
 			logFields["err"] = err
 			log.WithFields(logFields).Errorf("Unable to delete OpenShift SCC.")
-			return err
+			return fmt.Errorf("unable to delete OpenShift SCC; %v", err)
 		}
 	}
 
 	newOpenShiftSCCYAML := k8sclient.GetOpenShiftSCCYAML(openShiftSCCName, openShiftSCCUserName, i.namespace,
 		labels, controllingCRDetails)
 
-	if createOpenShiftSCC {
-
-		// Remove trident user from built-in SCC from previous installation
-		if err = i.client.RemoveTridentUserFromOpenShiftSCC(openShiftSCCOldUserName, openShiftSCCOldName); err != nil {
-			log.WithField("err", err).Debugf("No obsolete Trident SCC found - continuing anyway.")
-		}
-
-		if err = i.client.CreateObjectByYAML(newOpenShiftSCCYAML); err != nil {
-			return fmt.Errorf("could not create OpenShift SCC; %v", err)
-		}
-		log.WithFields(logFields).Info("Created OpenShift SCC.")
-	} else {
-		log.WithFields(logFields).Debug("Patching Trident OpenShift SCC.")
-
-		err = i.patchTridentOpenShiftSCC(currentOpenShiftSCCJSON, []byte(newOpenShiftSCCYAML))
+	err = i.client.PutOpenShiftSCC(currentOpenShiftSCCJSON, createOpenShiftSCC, newOpenShiftSCCYAML)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch Trident OpenShift SCC; %v", err)
 	}
 
-	return err
+	return nil
 }
 
 func (i *Installer) createAndEnsureCRDs() (returnError error) {
 
 	returnError = i.createCRDs()
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Trident CRDs; %v", returnError)
+		returnError = fmt.Errorf("failed to create the Trident CRDs; %v", returnError)
 	}
 	return
 }
 
 func (i *Installer) createOrPatchTridentPodSecurityPolicy(controllingCRDetails, labels map[string]string,
 	shouldUpdate bool) error {
-	createPSP := true
-	var currentPSP *v1beta1.PodSecurityPolicy
-	var unwantedPSPs []v1beta1.PodSecurityPolicy
-	var err error
 
 	pspName := getPSPName()
 
-	if podSecurityPolicies, err := i.client.GetPodSecurityPoliciesByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of pod security policies by label.")
-		return fmt.Errorf("unable to get list of pod security policies")
-	} else if len(podSecurityPolicies) == 0 {
-		log.Info("Trident pod security policy not found.")
-
-		log.Debug("Deleting unlabeled Trident pod security policy by name as it can cause issues during installation.")
-		if err = i.client.DeletePodSecurityPolicy(pspName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident pod security policy.")
-			}
-		} else {
-			log.WithField("Pod Security Policy", pspName).Info(
-				"Deleted Trident pod security policy; replacing it with a labeled Trident pod security policy.")
-		}
-	} else if shouldUpdate {
-		unwantedPSPs = podSecurityPolicies
-	} else {
-		// Rules:
-		// 1. If there is no psp named tridentpods and one or many other pod security policies
-		//    exist that matches the label then remove all the pod security policies.
-		// 2. If there is a psp named tridentpods and one or many other pod security policies
-		//    exist that matches the label then remove all other pod security policies.
-		for _, psp := range podSecurityPolicies {
-			if psp.Name == pspName {
-				// Found a pod security policy named tridentpods
-				log.WithField("podSecurityPolicy", pspName).Infof("A Trident Pod security policy was found by label.")
-
-				currentPSP = &psp
-				createPSP = false
-			} else {
-				log.WithField("podSecurityPolicy", psp.Name).Errorf("A pod security policy was found by label "+
-					"but does not meet name '%s' requirement, marking it for deletion.", pspName)
-
-				unwantedPSPs = append(unwantedPSPs, psp)
-			}
-		}
+	currentPSP, unwantedPSPs, createPSP, err := i.client.GetPodSecurityPolicyInformation(pspName, appLabel,
+		shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident pod security policies; %v", err)
 	}
 
-	if err = i.RemoveMultiplePodSecurityPolicies(unwantedPSPs); err != nil {
-		return err
+	if err = i.client.RemoveMultiplePodSecurityPolicies(unwantedPSPs); err != nil {
+		return fmt.Errorf("failed to remove unwanted Trident pod security policies; %v", err)
 	}
 
 	newPSPYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(pspName, labels, controllingCRDetails)
 
-	if createPSP {
-		// Create pod security policy
-		err = i.client.CreateObjectByYAML(newPSPYAML)
-		if err != nil {
-			return fmt.Errorf("could not create Trident pod security policy; %v", err)
-		}
-		log.WithField("podSecurityPolicy", pspName).Info("Created Trident Pod security policy.")
-	} else {
-		log.WithFields(log.Fields{
-			"podSecurityPolicy": currentPSP.Name,
-		}).Debug("Patching Trident Pod security policy.")
-
-		err = i.patchTridentPodSecurityPolicy(currentPSP, []byte(newPSPYAML))
+	if err = i.client.PutPodSecurityPolicy(currentPSP, createPSP, newPSPYAML, appLabel); err != nil {
+		return fmt.Errorf("failed to create or patch Trident pod security policy; %v", err)
 	}
 
-	return err
+	return nil
 }
 
 func (i *Installer) createOrPatchTridentService(controllingCRDetails, labels map[string]string,
 	shouldUpdate bool) error {
-	createService := true
-	var currentService *v1.Service
-	var unwantedServices []v1.Service
-	var err error
 
 	serviceName := getServiceName()
 
-	if services, err := i.client.GetServicesByLabel(appLabel, true); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of services by label.")
-		return fmt.Errorf("unable to get list of services")
-	} else if len(services) == 0 {
-		log.Info("Trident service not found.")
-
-		log.Debug("Deleting unlabeled Trident service by name as it can cause issues during installation.")
-		if err = i.client.DeleteService(serviceName, i.namespace); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident service.")
-			}
-		} else {
-			log.WithField("service", serviceName).Info(
-				"Deleted Trident service; replacing it with a labeled Trident service.")
-		}
-	} else if shouldUpdate {
-		unwantedServices = services
-	} else {
-		// Rules:
-		// 1. If there is no service named trident-csi in CR namespace and one or many other services exist
-		//    that matches the label then remove all the services.
-		// 2. If there is a service named trident-csi in CR namespace and one or many other services exist
-		//    that matches the label then remove all other services.
-		for _, service := range services {
-			if i.namespace == service.Namespace && service.Name == serviceName {
-				// Found a service named trident-csi in the same namespace
-				log.WithFields(log.Fields{
-					"service":   service.Name,
-					"namespace": service.Namespace,
-				}).Infof("A Trident service was found by label.")
-
-				createService = false
-				currentService = &service
-			} else {
-				log.WithFields(log.Fields{
-					"service":          service.Name,
-					"serviceNamespace": service.Namespace,
-				}).Errorf("A service was found by label which does not meet either name %s or namespace '%s'"+
-					" requirement, marking it for deletion.", serviceName, i.namespace)
-
-				unwantedServices = append(unwantedServices, service)
-			}
-		}
+	currentService, unwantedServices, createService, err := i.client.GetServiceInformation(serviceName, appLabel,
+		i.namespace, shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident services; %v", err)
 	}
 
-	if err = i.RemoveMultipleServices(unwantedServices); err != nil {
-		return err
+	if err = i.client.RemoveMultipleServices(unwantedServices); err != nil {
+		return fmt.Errorf("failed to remove unwanted Trident services; %v", err)
 	}
 
 	newServiceYAML := k8sclient.GetCSIServiceYAML(serviceName, labels, controllingCRDetails)
 
-	if createService {
-		err = i.client.CreateObjectByYAML(newServiceYAML)
-		if err != nil {
-			err = fmt.Errorf("could not create Trident service; %v", err)
-			return err
-		}
-		log.WithFields(log.Fields{
-			"service":   serviceName,
-			"namespace": i.namespace,
-		}).Info("Created Trident service.")
-	} else {
-		log.WithFields(log.Fields{
-			"service":   currentService.Name,
-			"namespace": currentService.Namespace,
-		}).Debug("Patching Trident service.")
-
-		err = i.patchTridentService(currentService, []byte(newServiceYAML))
+	if err = i.client.PutService(currentService, createService, newServiceYAML, appLabel); err != nil {
+		return fmt.Errorf("failed to create or patch Trident service; %v", err)
 	}
 
-	return err
+	return nil
 }
 
 func (i *Installer) createOrPatchTridentSecret(controllingCRDetails, labels map[string]string,
 	shouldUpdate bool) error {
-	createSecret := true
-	//var currentSecret *v1.Secret
-	var unwantedSecrets []v1.Secret
-	secretMap := make(map[string]string)
-	var err error
 
+	secretMap := make(map[string]string)
 	secretName := getSecretName()
 
-	if secrets, err := i.client.GetSecretsByLabel(appLabel, false); err != nil {
-		log.Errorf("Unable to get list of secrets by label %v", appLabel)
-		return fmt.Errorf("unable to get list of secrets by label")
-	} else if len(secrets) == 0 {
-		log.Info("Trident secret not found.")
-
-		log.Debug("Deleting unlabeled Trident secret by name as it can cause issues during installation.")
-		if err = i.client.DeleteSecret(secretName, i.namespace); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident secret.")
-			}
-		} else {
-			log.WithField("Secret", secretName).Info(
-				"Deleted Trident secret; replacing it with a labeled Trident secret.")
-		}
-	} else if shouldUpdate {
-		unwantedSecrets = secrets
-	} else {
-		// 1. If there is no secret named trident-csi in CR namespace and one or many other secrets
-		//    exist that matches the label then remove all the secrets.
-		// 2. If there is a secret named trident-csi in CR namespace and one or many other secret
-		//    exist that matches the label then remove all other secrets.
-		for _, secret := range secrets {
-			if secret.Namespace == i.namespace && secret.Name == secretName {
-				// Found a secret named trident-csi in the same namespace
-				log.WithFields(log.Fields{
-					"secret":    secret.Name,
-					"namespace": secret.Namespace,
-				}).Infof("A Trident secret was found by label.")
-
-				//currentSecret = &secret
-				createSecret = false
-			} else {
-				log.WithFields(log.Fields{
-					"secret":          secret.Name,
-					"secretNamespace": secret.Namespace,
-				}).Errorf("A secret was found by label which does not meet either name %s or namespace '%s"+
-					"' requirement, marking it for deletion.", secretName, i.namespace)
-
-				unwantedSecrets = append(unwantedSecrets, secret)
-			}
-		}
+	_, unwantedSecrets, createSecret, err := i.client.GetSecretInformation(secretName, appLabel, i.namespace,
+		shouldUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident secrets; %v", err)
 	}
 
-	if err = i.RemoveMultipleSecrets(unwantedSecrets); err != nil {
-		return err
+	if err = i.client.RemoveMultipleSecrets(unwantedSecrets); err != nil {
+		return fmt.Errorf("failed to remove unwanted Trident secrets; %v", err)
 	}
 
 	if createSecret {
 		// Create the certificates for the CSI controller's HTTPS REST interface
-		certInfo, err := utils.MakeHTTPCertInfo(commonconfig.CACertName, commonconfig.ServerCertName, commonconfig.ClientCertName)
+		certInfo, err := utils.MakeHTTPCertInfo(commonconfig.CACertName, commonconfig.ServerCertName,
+			commonconfig.ClientCertName)
 		if err != nil {
-			return fmt.Errorf("could not create Trident X509 certificates; %v", err)
+			return fmt.Errorf("failed to create Trident X509 certificates; %v", err)
 		}
 
 		aesKey, err := utils.GenerateAESKey()
 		if err != nil {
-			return fmt.Errorf("could not generate secure AES key; %v", err)
+			return fmt.Errorf("failed to generate secure AES key; %v", err)
 		}
 
 		// Create the secret for the HTTP certs & keys
@@ -1445,24 +991,8 @@ func (i *Installer) createOrPatchTridentSecret(controllingCRDetails, labels map[
 
 	newSecretYAML := k8sclient.GetSecretYAML(secretName, i.namespace, labels, controllingCRDetails, secretMap, nil)
 
-	// Create Secret
-	if createSecret {
-		err = i.client.CreateObjectByYAML(newSecretYAML)
-		if err != nil {
-			return fmt.Errorf("could not create Trident secret; %v", err)
-		}
-		log.WithFields(log.Fields{
-			"secret":    secretName,
-			"namespace": i.namespace,
-		}).Info("Created Trident secret.")
-	} else {
-		// It is very debatable if secrets should be patched
-
-		//log.WithFields(log.Fields{
-		//	"service":   currentSecret.Name,
-		//	"namespace": currentSecret.Namespace,
-		//}).Debug("Patching Trident secret.")
-		//i.patchTridentSecret(currentSecret, []byte(newSecretYAML)
+	if err = i.client.PutSecret(createSecret, newSecretYAML); err != nil {
+		return fmt.Errorf("failed to create or patch Trident secret; %v", err)
 	}
 
 	return nil
@@ -1471,16 +1001,17 @@ func (i *Installer) createOrPatchTridentSecret(controllingCRDetails, labels map[
 func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels map[string]string,
 	shouldUpdate, newServiceAccount bool) error {
 
-	deploymentName := getDeploymentName(true)
-
 	topologyEnabled, err := i.client.IsTopologyInUse()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to determine if node topology settings; %v", err)
 	}
 
-	currentDeployment, unwantedDeployments, createDeployment, err := i.TridentDeploymentInformation(appLabel)
+	deploymentName := getDeploymentName(true)
+
+	currentDeployment, unwantedDeployments, createDeployment, err := i.client.GetDeploymentInformation(deploymentName,
+		appLabel, i.namespace)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get Trident deployment information; %v", err)
 	}
 
 	// Create a new deployment if there is a current deployment and
@@ -1490,11 +1021,11 @@ func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels 
 		createDeployment = true
 	}
 
-	if err = i.RemoveMultipleDeployments(unwantedDeployments); err != nil {
-		return err
+	if err = i.client.RemoveMultipleDeployments(unwantedDeployments); err != nil {
+		return fmt.Errorf("failed to remove unwanted Trident deployments; %v", err)
 	}
 
-	snapshotCRDVersion := i.identifyCSISnapshotterVersion(currentDeployment)
+	snapshotCRDVersion := i.client.GetCSISnapshotterVersion(currentDeployment)
 
 	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
 		DeploymentName:          deploymentName,
@@ -1520,25 +1051,12 @@ func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels 
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 
-	if createDeployment {
-		// Create the deployment
-		err = i.client.CreateObjectByYAML(newDeploymentYAML)
-		if err != nil {
-			return fmt.Errorf("could not create Trident deployment; %v", err)
-		}
-		log.WithFields(log.Fields{
-			"deployment": deploymentName,
-			"namespace":  i.namespace,
-		}).Info("Created Trident deployment.")
-	} else {
-		log.WithFields(log.Fields{
-			"deployment": currentDeployment.Name,
-			"namespace":  currentDeployment.Namespace,
-		}).Debug("Patching Trident deployment.")
-		err = i.patchTridentDeployment(currentDeployment, []byte(newDeploymentYAML))
+	err = i.client.PutDeployment(currentDeployment, createDeployment, newDeploymentYAML, appLabel)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch Trident deployment; %v", err)
 	}
 
-	return err
+	return nil
 }
 
 // TridentDeploymentInformation identifies the Operator based Trident CSI deployment and unwanted deployments,
@@ -1548,97 +1066,36 @@ func (i *Installer) TridentDeploymentInformation(
 	deploymentLabel string,
 ) (*appsv1.Deployment, []appsv1.Deployment, bool, error) {
 
-	createDeployment := true
-	var currentDeployment *appsv1.Deployment
-	var unwantedDeployments []appsv1.Deployment
-
-	deploymentName := getDeploymentName(true)
-
-	if deployments, err := i.client.GetDeploymentsByLabel(deploymentLabel, true); err != nil {
-
-		log.WithField("label", deploymentLabel).Errorf("Unable to get list of deployments by label.")
-		return nil, nil, createDeployment, fmt.Errorf("unable to get list of deployments")
-
-	} else if len(deployments) == 0 {
-		log.Info("Trident deployment not found.")
-	} else {
-		// Rules:
-		// 1. If there is no deployment named trident/trident-csi in CR namespace and one or many other deployment
-		//    exist that matches the label then remove all the deployments.
-		// 2. If there is a deployment named trident/trident-csi in CR namespace and one or many other deployment
-		//    exist that matches the label then remove all other deployments.
-		for _, deployment := range deployments {
-			if deployment.Namespace == i.namespace && deployment.Name == deploymentName {
-				// Found a deployment named in the same namespace
-				log.WithFields(log.Fields{
-					"deployment": deployment.Name,
-					"namespace":  deployment.Namespace,
-				}).Infof("A Trident deployment was found by label.")
-
-				currentDeployment = &deployment
-				createDeployment = false
-			} else {
-				log.WithFields(log.Fields{
-					"deployment":          deployment.Name,
-					"deploymentNamespace": deployment.Namespace,
-				}).Errorf("A deployment was found by label which does not meet either name %s or namespace"+
-					" '%s' requirement, marking it for deletion.", deploymentName, i.namespace)
-
-				unwantedDeployments = append(unwantedDeployments, deployment)
-			}
-		}
-	}
-
-	return currentDeployment, unwantedDeployments, createDeployment, nil
-}
-
-// identifyCSISnapshotterVersion uses the below approach to identify CSI Snapshotter Version:
-// If successful in retrieving the CSI Snapshotter CRD Version, use it as it is
-// Else if failed, then CSI Snapshotter CRD Version will be empty
-// then get existing CSI Snapshotter Version and identify v1beta1 vs v1.
-func (i *Installer) identifyCSISnapshotterVersion(currentDeployment *appsv1.Deployment) (snapshotCRDVersion string) {
-
-	if snapshotCRDVersion = i.client.GetSnapshotterCRDVersion(); snapshotCRDVersion == "" && currentDeployment != nil {
-		containers := currentDeployment.Spec.Template.Spec.Containers
-
-		for _, container := range containers {
-			if container.Name == "csi-snapshotter" {
-				log.WithField("currentSnapshotterImage", container.Image).Debug("Found CSI Snapshotter image.")
-				if strings.Contains(container.Image, ":v4") {
-					snapshotCRDVersion = "v1"
-				}
-			}
-		}
-	}
-
-	return
+	return i.client.GetDeploymentInformation(getDeploymentName(true), deploymentLabel, i.namespace)
 }
 
 func (i *Installer) createOrPatchTridentDaemonSet(controllingCRDetails, labels map[string]string,
 	shouldUpdate, newServiceAccount bool) error {
 
-	daemonsetName := getDaemonSetName()
+	daemonSetName := getDaemonSetName()
+	nodeLabel := TridentNodeLabel
 
-	currentDaemonset, unwantedDaemonsets, createDaemonset, err := i.TridentDaemonSetInformation()
+	currentDaemonSet, unwantedDaemonSets, createDaemonSet, err := i.client.GetDaemonSetInformation(daemonSetName,
+		nodeLabel, i.namespace)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get Trident daemonsets; %v", err)
 	}
 
 	// Create a new daemonset if there is a current daemonset and
 	// a new service account or it should be updated
-	if currentDaemonset != nil && (shouldUpdate || newServiceAccount) {
-		unwantedDaemonsets = append(unwantedDaemonsets, *currentDaemonset)
-		createDaemonset = true
+	if currentDaemonSet != nil && (shouldUpdate || newServiceAccount) {
+		unwantedDaemonSets = append(unwantedDaemonSets, *currentDaemonSet)
+		createDaemonSet = true
 	}
 
-	if err = i.RemoveMultipleDaemonSets(unwantedDaemonsets); err != nil {
-		return err
+	if err = i.client.RemoveMultipleDaemonSets(unwantedDaemonSets); err != nil {
+		return fmt.Errorf("failed to remove unwanted Trident daemonsets; %v", err)
 	}
 
 	labels[appLabelKey] = TridentNodeLabelValue
 
 	daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
-		DaemonsetName:        daemonsetName,
+		DaemonsetName:        daemonSetName,
 		TridentImage:         tridentImage,
 		ImageRegistry:        imageRegistry,
 		KubeletDir:           kubeletDir,
@@ -1654,25 +1111,12 @@ func (i *Installer) createOrPatchTridentDaemonSet(controllingCRDetails, labels m
 	}
 	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonSetArgs)
 
-	if createDaemonset {
-		// Create the daemonset
-		err = i.client.CreateObjectByYAML(newDaemonSetYAML)
-		if err != nil {
-			return fmt.Errorf("could not create Trident daemonset; %v", err)
-		}
-		log.WithFields(log.Fields{
-			"daemontset": daemonsetName,
-			"namespace":  i.namespace,
-		}).Info("Created Trident daemonset.")
-	} else {
-		log.WithFields(log.Fields{
-			"daemontset": currentDaemonset.Name,
-			"namespace":  currentDaemonset.Namespace,
-		}).Debug("Patching Trident daemonset.")
-		err = i.patchTridentDaemonSet(currentDaemonset, []byte(newDaemonSetYAML))
+	err = i.client.PutDaemonSet(currentDaemonSet, createDaemonSet, newDaemonSetYAML, nodeLabel)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch Trident daemonset; %v", err)
 	}
 
-	return err
+	return nil
 }
 
 // TridentDaemonSetInformation identifies the Operator based Trident CSI daemonset and unwanted daemonsets,
@@ -1681,48 +1125,9 @@ func (i *Installer) createOrPatchTridentDaemonSet(controllingCRDetails, labels m
 func (i *Installer) TridentDaemonSetInformation() (*appsv1.DaemonSet,
 	[]appsv1.DaemonSet, bool, error) {
 
-	createDaemonset := true
-	var currentDaemonset *appsv1.DaemonSet
-	var unwantedDaemonsets []appsv1.DaemonSet
-
-	daemonsetName := getDaemonSetName()
-
-	if daemonsets, err := i.client.GetDaemonSetsByLabel(TridentNodeLabel, true); err != nil {
-
-		log.WithField("label", TridentNodeLabel).Errorf("Unable to get list of daemonset by label.")
-		return nil, nil, createDaemonset, fmt.Errorf("unable to get list of daemonset")
-
-	} else if len(daemonsets) == 0 {
-		log.Info("Trident daemonset not found.")
-	} else {
-		// Rules:
-		// 1. If there is no daemonset named trident-csi in CR namespace and one or many other daemonsets
-		//    exist that matches the label then remove all the daemonset.
-		// 2. If there is a daemonset named trident-csi in CR namespace and one or many other daemonsets
-		//    exist that matches the label then remove all other daemonsets.
-		for _, daemonset := range daemonsets {
-			if daemonset.Namespace == i.namespace && daemonset.Name == daemonsetName {
-				// Found a daemonset named in the same namespace
-				log.WithFields(log.Fields{
-					"daemonset": daemonset.Name,
-					"namespace": daemonset.Namespace,
-				}).Infof("A Trident daemonset was found by label.")
-
-				currentDaemonset = &daemonset
-				createDaemonset = false
-			} else {
-				log.WithFields(log.Fields{
-					"daemonset":          daemonset.Name,
-					"daemonsetNamespace": daemonset.Namespace,
-				}).Errorf("A daemonset was found by label which does not meet either name %s or namespace '%s"+
-					"' requirement, marking it for deletion.", daemonsetName, i.namespace)
-
-				unwantedDaemonsets = append(unwantedDaemonsets, daemonset)
-			}
-		}
-	}
-
-	return currentDaemonset, unwantedDaemonsets, createDaemonset, nil
+	daemonSetName := getDaemonSetName()
+	nodeLabel := TridentNodeLabel
+	return i.client.GetDaemonSetInformation(daemonSetName, nodeLabel, i.namespace)
 }
 
 func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
@@ -1885,7 +1290,8 @@ func (i *Installer) waitForRESTInterface(tridentPodName string) error {
 		}
 
 		if err != nil {
-			log.Errorf("Trident REST interface was not available after %3.2f seconds; err: %v", totalWaitTime.Seconds(), err)
+			log.Errorf("Trident REST interface was not available after %3.2f seconds; err: %v", totalWaitTime.Seconds(),
+				err)
 			return err
 		}
 	}
@@ -1913,7 +1319,8 @@ func (i *Installer) getTridentClientVersionInfo(imageName string, controllingCRD
 		return nil, err
 	}
 
-	log.WithField("image", imageName).Debugf("Successfully retrieved version information in YAML format: \n%s", string(clientVersionYAML))
+	log.WithField("image", imageName).Debugf("Successfully retrieved version information in YAML format: \n%s",
+		string(clientVersionYAML))
 	clientVersion := api.ClientVersionResponse{}
 	if err := yaml.Unmarshal(clientVersionYAML, &clientVersion); err != nil {
 		errMessage := fmt.Sprintf("unable to umarshall client version YAML to Version struct; err: %v", err)
@@ -1945,13 +1352,14 @@ func (i *Installer) getTridentVersionYAML(imageName string, controllingCRDetails
 	// Create TridentVersion Pod from image
 	returnError := i.createTridentVersionPod(podName, imageName, controllingCRDetails, podLabels)
 	if returnError != nil {
-		return []byte{}, fmt.Errorf("could not create Trident Version pod from the image provided; %v", returnError)
+		return []byte{}, fmt.Errorf("failed to create Trident Version pod from the image provided; %v", returnError)
 	}
 
 	// Wait for Trident version pod to provide information
-	output, err := i.execPodForVersionInformation(podName, tridentVersionCommand)
+	timeout := 30 * time.Second
+	output, err := i.client.ExecPodForVersionInformation(podName, tridentVersionCommand, timeout)
 	if err != nil {
-		errMessage := fmt.Sprintf("could not exec Trident version pod '%s' (image: '%s') for the information; err: %v",
+		errMessage := fmt.Sprintf("failed to exec Trident version pod '%s' (image: '%s') for the information; err: %v",
 			podName, imageName, err)
 		log.Error(errMessage)
 
@@ -1989,9 +1397,10 @@ func (i *Installer) getTridentVersionYAML(imageName string, controllingCRDetails
 func (i *Installer) createTridentVersionPod(
 	podName, imageName string, controllingCRDetails, podLabels map[string]string,
 ) error {
-	err := i.cleanupTransientVersionPod()
+	versionPodLabel := TridentVersionPodLabel
+	err := i.client.DeleteTransientVersionPod(versionPodLabel)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to delete previous transient version pod; %v", err)
 	}
 
 	serviceAccountName := getServiceAccountName(true)
@@ -2002,7 +1411,7 @@ func (i *Installer) createTridentVersionPod(
 
 	err = i.client.CreateObjectByYAML(newTridentVersionPodYAML)
 	if err != nil {
-		err = fmt.Errorf("could not create Trident version pod; %v", err)
+		err = fmt.Errorf("failed to create Trident version pod; %v", err)
 		return err
 	}
 	log.WithFields(log.Fields{
@@ -2011,132 +1420,4 @@ func (i *Installer) createTridentVersionPod(
 	}).Info("Created Trident version pod.")
 
 	return nil
-}
-
-func (i *Installer) cleanupTransientVersionPod() error {
-	var unwantedPods []v1.Pod
-	var err error
-
-	if pods, err := i.client.GetPodsByLabel(TridentVersionPodLabel, true); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of Trident version pods by label.")
-		return fmt.Errorf("unable to get list of Trident version pods")
-	} else if len(pods) == 0 {
-		log.Debug("Trident version pod not found.")
-		return nil
-	} else {
-		unwantedPods = pods
-	}
-
-	if err = i.RemoveMultiplePods(unwantedPods); err != nil {
-		return err
-	}
-	return nil
-}
-
-// execPodForVersionInformation takes the pod name and command to execute the command into the container matching
-// the pod name
-func (i *Installer) execPodForVersionInformation(podName string, tridentVersionCommand []string) ([]byte, error) {
-
-	var execOutput []byte
-
-	checkExecSuccessful := func() error {
-		output, execError := i.client.Exec(podName, "", tridentVersionCommand)
-		if execError != nil {
-			return fmt.Errorf("exec error; %v", execError)
-		}
-
-		execOutput = output
-		return nil
-	}
-
-	execNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
-			"increment": duration,
-			"message":   err.Error(),
-		}).Debugf("Unable to get version information from the Trident version pod yet, waiting.")
-	}
-
-	timeout := 30 * time.Second
-	execBackoff := backoff.NewExponentialBackOff()
-	execBackoff.MaxElapsedTime = timeout
-
-	log.Infof("Waiting for Trident version pod to provide information.")
-
-	if err := backoff.RetryNotify(checkExecSuccessful, execBackoff, execNotify); err != nil {
-		errMessage := fmt.Sprintf("Trident version pod was unable to provide information after %3."+
-			"2f seconds; err: %v", timeout.Seconds(), err)
-
-		log.Error(errMessage)
-		return []byte{}, err
-	}
-
-	log.WithFields(log.Fields{
-		"pod": podName,
-	}).Infof("Trident version pod started.")
-
-	return execOutput, nil
-}
-
-func getServiceAccountName(csi bool) string {
-	if csi {
-		return TridentCSI
-	} else {
-		return TridentLegacy
-	}
-}
-
-func getClusterRoleName(csi bool) string {
-	if csi {
-		return TridentCSI
-	} else {
-		return TridentLegacy
-	}
-}
-
-func getClusterRoleBindingName(csi bool) string {
-	if csi {
-		return TridentCSI
-	} else {
-		return TridentLegacy
-	}
-}
-
-func getPSPName() string {
-	return TridentPSP
-}
-
-func getServiceName() string {
-	return TridentCSI
-}
-
-func getSecretName() string {
-	return TridentCSI
-}
-
-func getDeploymentName(csi bool) string {
-	if csi {
-		return TridentCSI
-	} else {
-		return TridentLegacy
-	}
-}
-
-func getDaemonSetName() string {
-	return TridentCSI
-}
-
-func getCSIDriverName() string {
-	return CSIDriver
-}
-
-func getOpenShiftSCCUserName() string {
-	if csi {
-		return TridentCSI
-	} else {
-		return TridentLegacy
-	}
-}
-
-func getOpenShiftSCCName() string {
-	return OpenShiftSCCName
 }

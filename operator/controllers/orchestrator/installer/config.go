@@ -31,6 +31,14 @@ const (
 	TridentCSILabelValue = "controller.csi.trident.netapp.io"
 	TridentCSILabel      = TridentCSILabelKey + "=" + TridentCSILabelValue
 
+	// Constants used for various resource names
+	TridentCSI       = "trident-csi"
+	TridentLegacy    = "trident"
+	OpenShiftSCCName = "trident"
+
+	CSIDriver  = "csi.trident.netapp.io"
+	TridentPSP = "tridentpods"
+
 	TridentNodeLabelKey   = TridentAppLabelKey
 	TridentNodeLabelValue = "node.csi.trident.netapp.io"
 	TridentNodeLabel      = TridentNodeLabelKey + "=" + TridentNodeLabelValue

@@ -166,7 +166,7 @@ func addCrdTestReactors(crdFakeClient *fake.Clientset, testingCache *TestingCach
 		})
 }
 
-func GetTestKubernetesClient() (*CRDClientV1, k8sclient.Interface) {
+func GetTestKubernetesClient() (*CRDClientV1, k8sclient.KubernetesClient) {
 	log.SetOutput(ioutil.Discard)
 	testingCache := NewTestingCache()
 

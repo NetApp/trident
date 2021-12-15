@@ -29,7 +29,7 @@ type Clients struct {
 	RestConfig     *rest.Config
 	KubeClient     *kubernetes.Clientset
 	SnapshotClient *k8ssnapshots.Clientset
-	K8SClient      Interface
+	K8SClient      KubernetesClient
 	TprovClient    *tprov.Clientset
 	TorcClient     *torc.Clientset
 	TridentClient  *tridentv1clientset.Clientset
