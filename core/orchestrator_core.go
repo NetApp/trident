@@ -78,6 +78,7 @@ type TridentOrchestrator struct {
 	mutex                *sync.Mutex
 	storageClasses       map[string]*storageclass.StorageClass
 	nodes                map[string]*utils.Node
+	volumePublications   map[string]map[string]*utils.VolumePublication
 	snapshots            map[string]*storage.Snapshot
 	storeClient          persistentstore.Client
 	bootstrapped         bool
@@ -92,16 +93,17 @@ type TridentOrchestrator struct {
 // NewTridentOrchestrator returns a storage orchestrator instance
 func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator {
 	return &TridentOrchestrator{
-		backends:       make(map[string]storage.Backend), // key is UUID, not name
-		volumes:        make(map[string]*storage.Volume),
-		frontends:      make(map[string]frontend.Plugin),
-		storageClasses: make(map[string]*storageclass.StorageClass),
-		nodes:          make(map[string]*utils.Node),
-		snapshots:      make(map[string]*storage.Snapshot), // key is ID, not name
-		mutex:          &sync.Mutex{},
-		storeClient:    client,
-		bootstrapped:   false,
-		bootstrapError: utils.NotReadyError(),
+		backends:           make(map[string]storage.Backend), // key is UUID, not name
+		volumes:            make(map[string]*storage.Volume),
+		frontends:          make(map[string]frontend.Plugin),
+		storageClasses:     make(map[string]*storageclass.StorageClass),
+		nodes:              make(map[string]*utils.Node),
+		volumePublications: make(map[string]map[string]*utils.VolumePublication),
+		snapshots:          make(map[string]*storage.Snapshot), // key is ID, not name
+		mutex:              &sync.Mutex{},
+		storeClient:        client,
+		bootstrapped:       false,
+		bootstrapError:     utils.NotReadyError(),
 	}
 }
 
@@ -414,6 +416,36 @@ func (o *TridentOrchestrator) bootstrapNodes(ctx context.Context) error {
 	return nil
 }
 
+func (o *TridentOrchestrator) bootstrapVolumePublications(ctx context.Context) error {
+
+	// Don't bootstrap volume publications if we're not CSI
+	if config.CurrentDriverContext != config.ContextCSI {
+		return nil
+	}
+
+	volumePublications, err := o.storeClient.GetVolumePublications(ctx)
+	if err != nil {
+		return err
+	}
+	for _, vp := range volumePublications {
+		Logc(ctx).WithFields(log.Fields{
+			"volume":  vp.VolumeName,
+			"node":    vp.NodeName,
+			"handler": "Bootstrap",
+		}).Info("Added an existing volume publication.")
+		o.addVolumePublicationToCache(vp)
+	}
+	return nil
+}
+
+func (o *TridentOrchestrator) addVolumePublicationToCache(vp *utils.VolumePublication) {
+	// If the volume has no entry we need to initialize the inner map
+	if o.volumePublications[vp.VolumeName] == nil {
+		o.volumePublications[vp.VolumeName] = map[string]*utils.VolumePublication{}
+	}
+	o.volumePublications[vp.VolumeName][vp.NodeName] = vp
+}
+
 func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 
 	// Fetching backend information
@@ -421,7 +453,7 @@ func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 	type bootstrapFunc func(context.Context) error
 	for _, f := range []bootstrapFunc{
 		o.bootstrapBackends, o.bootstrapStorageClasses, o.bootstrapVolumes,
-		o.bootstrapSnapshots, o.bootstrapVolTxns, o.bootstrapNodes,
+		o.bootstrapSnapshots, o.bootstrapVolTxns, o.bootstrapNodes, o.bootstrapVolumePublications,
 	} {
 		err := f(ctx)
 		if err != nil {
@@ -4239,6 +4271,148 @@ func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nName string) (err
 	delete(o.nodes, nName)
 	o.invalidateAllBackendNodeAccess()
 	return o.reconcileNodeAccessOnAllBackends(ctx)
+}
+
+// AddVolumePublication records the volume publication for a given volume/node pair
+func (o *TridentOrchestrator) AddVolumePublication(
+	ctx context.Context, publication *utils.VolumePublication,
+) (err error) {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	defer recordTiming("vol_pub_add", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	if err := o.storeClient.AddVolumePublication(ctx, publication); err != nil {
+		return err
+	}
+
+	o.addVolumePublicationToCache(publication)
+
+	return nil
+}
+
+// GetVolumePublication returns the volume publication for a given volume/node pair
+func (o *TridentOrchestrator) GetVolumePublication(
+	_ context.Context, volumeName, nodeName string,
+) (publication *utils.VolumePublication, err error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("vol_pub_get", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	publication, found := o.volumePublications[volumeName][nodeName]
+	if !found {
+		return nil, utils.NotFoundError(fmt.Sprintf("volume publication %v was not found",
+			utils.GenerateVolumePublishName(volumeName, nodeName)))
+	}
+	return publication, nil
+}
+
+// ListVolumePublications returns a list of all volume publications
+func (o *TridentOrchestrator) ListVolumePublications(
+	context.Context,
+) (publications []*utils.VolumePublication, err error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("vol_pub_list", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	publications = []*utils.VolumePublication{}
+	for _, pubs := range o.volumePublications {
+		for _, pub := range pubs {
+			publications = append(publications, pub)
+		}
+	}
+	return publications, nil
+}
+
+// ListVolumePublicationsForVolume returns a list of all volume publications for a given volume
+func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
+	ctx context.Context, volumeName string,
+) (publications []*utils.VolumePublication, err error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("vol_pub_list_for_vol", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	publications = []*utils.VolumePublication{}
+	for _, pub := range o.volumePublications[volumeName] {
+		publications = append(publications, pub)
+	}
+	return publications, nil
+}
+
+// ListVolumePublicationsForNode returns a list of all volume publications for a given node
+func (o *TridentOrchestrator) ListVolumePublicationsForNode(
+	ctx context.Context, nodeName string,
+) (publications []*utils.VolumePublication, err error) {
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("vol_pub_list_for_node", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	publications = []*utils.VolumePublication{}
+	for _, pubs := range o.volumePublications {
+		if pubs[nodeName] != nil {
+			publications = append(publications, pubs[nodeName])
+		}
+	}
+	return publications, nil
+}
+
+// DeleteVolumePublication deletes the record of the volume publication for a given volume/node pair
+func (o *TridentOrchestrator) DeleteVolumePublication(ctx context.Context, volumeName, nodeName string) (err error) {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	defer recordTiming("vol_pub_delete", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	publication, found := o.volumePublications[volumeName][nodeName]
+	if !found {
+		return utils.NotFoundError(fmt.Sprintf("volume publication %s not found",
+			utils.GenerateVolumePublishName(volumeName, nodeName)))
+	}
+	if err = o.storeClient.DeleteVolumePublication(ctx, publication); err != nil {
+		if !utils.IsNotFoundError(err) {
+			return err
+		}
+	}
+	o.removeVolumePublicationFromCache(volumeName, nodeName)
+	return nil
+}
+
+func (o *TridentOrchestrator) removeVolumePublicationFromCache(volumeID string, nodeID string) {
+	delete(o.volumePublications[volumeID], nodeID)
+	// If there are no more nodes for this volume, remove the volume's entry
+	if len(o.volumePublications[volumeID]) == 0 {
+		delete(o.volumePublications, volumeID)
+	}
 }
 
 func (o *TridentOrchestrator) updateBackendOnPersistentStore(

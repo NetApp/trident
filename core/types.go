@@ -81,6 +81,17 @@ type Orchestrator interface {
 	DeleteNode(ctx context.Context, nName string) error
 	PeriodicallyReconcileNodeAccessOnBackends()
 
+	AddVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
+	GetVolumePublication(ctx context.Context, volumeName, nodeName string) (*utils.VolumePublication, error)
+	ListVolumePublications(ctx context.Context) ([]*utils.VolumePublication, error)
+	ListVolumePublicationsForVolume(
+		ctx context.Context, volumeName string,
+	) (publications []*utils.VolumePublication, err error)
+	ListVolumePublicationsForNode(
+		ctx context.Context, nodeName string,
+	) (publications []*utils.VolumePublication, err error)
+	DeleteVolumePublication(ctx context.Context, volumeName, nodeName string) error
+
 	AddVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
 	GetVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
 	DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error

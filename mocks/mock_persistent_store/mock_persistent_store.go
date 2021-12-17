@@ -137,6 +137,20 @@ func (mr *MockStoreClientMockRecorder) AddVolumePersistent(arg0, arg1 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolumePersistent", reflect.TypeOf((*MockStoreClient)(nil).AddVolumePersistent), arg0, arg1)
 }
 
+// AddVolumePublication mocks base method.
+func (m *MockStoreClient) AddVolumePublication(arg0 context.Context, arg1 *utils.VolumePublication) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddVolumePublication", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddVolumePublication indicates an expected call of AddVolumePublication.
+func (mr *MockStoreClientMockRecorder) AddVolumePublication(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolumePublication", reflect.TypeOf((*MockStoreClient)(nil).AddVolumePublication), arg0, arg1)
+}
+
 // AddVolumeTransaction mocks base method.
 func (m *MockStoreClient) AddVolumeTransaction(arg0 context.Context, arg1 *storage.VolumeTransaction) error {
 	m.ctrl.T.Helper()
@@ -275,6 +289,20 @@ func (m *MockStoreClient) DeleteVolumeIgnoreNotFound(arg0 context.Context, arg1 
 func (mr *MockStoreClientMockRecorder) DeleteVolumeIgnoreNotFound(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumeIgnoreNotFound", reflect.TypeOf((*MockStoreClient)(nil).DeleteVolumeIgnoreNotFound), arg0, arg1)
+}
+
+// DeleteVolumePublication mocks base method.
+func (m *MockStoreClient) DeleteVolumePublication(arg0 context.Context, arg1 *utils.VolumePublication) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteVolumePublication", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteVolumePublication indicates an expected call of DeleteVolumePublication.
+func (mr *MockStoreClientMockRecorder) DeleteVolumePublication(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumePublication", reflect.TypeOf((*MockStoreClient)(nil).DeleteVolumePublication), arg0, arg1)
 }
 
 // DeleteVolumeTransaction mocks base method.
@@ -511,6 +539,36 @@ func (m *MockStoreClient) GetVolume(arg0 context.Context, arg1 string) (*storage
 func (mr *MockStoreClientMockRecorder) GetVolume(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolume", reflect.TypeOf((*MockStoreClient)(nil).GetVolume), arg0, arg1)
+}
+
+// GetVolumePublication mocks base method.
+func (m *MockStoreClient) GetVolumePublication(arg0 context.Context, arg1 string) (*utils.VolumePublication, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVolumePublication", arg0, arg1)
+	ret0, _ := ret[0].(*utils.VolumePublication)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVolumePublication indicates an expected call of GetVolumePublication.
+func (mr *MockStoreClientMockRecorder) GetVolumePublication(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumePublication", reflect.TypeOf((*MockStoreClient)(nil).GetVolumePublication), arg0, arg1)
+}
+
+// GetVolumePublications mocks base method.
+func (m *MockStoreClient) GetVolumePublications(arg0 context.Context) ([]*utils.VolumePublication, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVolumePublications", arg0)
+	ret0, _ := ret[0].([]*utils.VolumePublication)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVolumePublications indicates an expected call of GetVolumePublications.
+func (mr *MockStoreClientMockRecorder) GetVolumePublications(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumePublications", reflect.TypeOf((*MockStoreClient)(nil).GetVolumePublications), arg0)
 }
 
 // GetVolumeTransactions mocks base method.

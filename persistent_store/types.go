@@ -76,6 +76,11 @@ type Client interface {
 	GetNodes(ctx context.Context) ([]*utils.Node, error)
 	DeleteNode(ctx context.Context, n *utils.Node) error
 
+	AddVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
+	GetVolumePublication(ctx context.Context, vpName string) (*utils.VolumePublication, error)
+	GetVolumePublications(ctx context.Context) ([]*utils.VolumePublication, error)
+	DeleteVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
+
 	AddSnapshot(ctx context.Context, snapshot *storage.Snapshot) error
 	GetSnapshot(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotPersistent, error)
 	GetSnapshots(ctx context.Context) ([]*storage.SnapshotPersistent, error)

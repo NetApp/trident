@@ -37,26 +37,27 @@ const (
 	DefaultPVName      = tridentconfig.OrchestratorName
 
 	// CRD names
-	BackendCRDName            = "tridentbackends.trident.netapp.io"
 	BackendConfigCRDName      = "tridentbackendconfigs.trident.netapp.io"
+	BackendCRDName            = "tridentbackends.trident.netapp.io"
+	MirrorRelationshipCRDName = "tridentmirrorrelationships.trident.netapp.io"
 	NodeCRDName               = "tridentnodes.trident.netapp.io"
+	SnapshotCRDName           = "tridentsnapshots.trident.netapp.io"
+	SnapshotInfoCRDName       = "tridentsnapshotinfos.trident.netapp.io"
 	StorageClassCRDName       = "tridentstorageclasses.trident.netapp.io"
 	TransactionCRDName        = "tridenttransactions.trident.netapp.io"
 	VersionCRDName            = "tridentversions.trident.netapp.io"
 	VolumeCRDName             = "tridentvolumes.trident.netapp.io"
-	SnapshotCRDName           = "tridentsnapshots.trident.netapp.io"
-	MirrorRelationshipCRDName = "tridentmirrorrelationships.trident.netapp.io"
-	SnapshotInfoCRDName       = "tridentsnapshotinfos.trident.netapp.io"
+	VolumePublicationCRDName  = "tridentvolumepublications.trident.netapp.io"
 
-	NamespaceFilename          = "trident-namespace.yaml"
-	ServiceAccountFilename     = "trident-serviceaccount.yaml"
-	ClusterRoleFilename        = "trident-clusterrole.yaml"
 	ClusterRoleBindingFilename = "trident-clusterrolebinding.yaml"
-	DeploymentFilename         = "trident-deployment.yaml"
-	ServiceFilename            = "trident-service.yaml"
-	DaemonSetFilename          = "trident-daemonset.yaml"
+	ClusterRoleFilename        = "trident-clusterrole.yaml"
 	CRDsFilename               = "trident-crds.yaml"
+	DaemonSetFilename          = "trident-daemonset.yaml"
+	DeploymentFilename         = "trident-deployment.yaml"
+	NamespaceFilename          = "trident-namespace.yaml"
 	PodSecurityPolicyFilename  = "trident-podsecuritypolicy.yaml"
+	ServiceAccountFilename     = "trident-serviceaccount.yaml"
+	ServiceFilename            = "trident-service.yaml"
 
 	TridentCSI           = "trident-csi"
 	TridentLegacy        = "trident"
@@ -116,46 +117,61 @@ var (
 	dns1123DomainRegex = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`)
 
 	CRDnames = []string{
-		BackendCRDName,
 		BackendConfigCRDName,
+		BackendCRDName,
 		MirrorRelationshipCRDName,
-		SnapshotInfoCRDName,
 		NodeCRDName,
+		SnapshotCRDName,
+		SnapshotInfoCRDName,
 		StorageClassCRDName,
 		TransactionCRDName,
 		VersionCRDName,
 		VolumeCRDName,
-		SnapshotCRDName,
+		VolumePublicationCRDName,
 	}
 )
 
 func init() {
 	RootCmd.AddCommand(installCmd)
-	installCmd.Flags().BoolVar(&generateYAML, "generate-custom-yaml", false, "Generate YAML files, but don't install anything.")
-	installCmd.Flags().BoolVar(&useYAML, "use-custom-yaml", false, "Use any existing YAML files that exist in setup directory.")
+	installCmd.Flags().BoolVar(&generateYAML, "generate-custom-yaml", false,
+		"Generate YAML files, but don't install anything.")
+	installCmd.Flags().BoolVar(&useYAML, "use-custom-yaml", false,
+		"Use any existing YAML files that exist in setup directory.")
 	installCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during installation.")
-	installCmd.Flags().BoolVar(&skipK8sVersionCheck, "skip-k8s-version-check", false, "(Deprecated) Skip Kubernetes version check for Trident compatibility")
+	installCmd.Flags().BoolVar(&skipK8sVersionCheck, "skip-k8s-version-check", false,
+		"(Deprecated) Skip Kubernetes version check for Trident compatibility")
 	installCmd.Flags().BoolVar(&useIPv6, "use-ipv6", false, "Use IPv6 for Trident's communication.")
-	installCmd.Flags().BoolVar(&silenceAutosupport, "silence-autosupport", tridentconfig.BuildType != "stable", "Don't send autosupport bundles to NetApp automatically.")
+	installCmd.Flags().BoolVar(&silenceAutosupport, "silence-autosupport", tridentconfig.BuildType != "stable",
+		"Don't send autosupport bundles to NetApp automatically.")
 	installCmd.Flags().BoolVar(&enableNodePrep, "enable-node-prep", false,
 		"*BETA* Attempt to automatically install required packages on nodes.")
 
-	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName, "The name of the legacy PVC used by Trident, will ensure this does not exist.")
-	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName, "The name of the legacy PV used by Trident, will ensure this does not exist.")
+	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName,
+		"The name of the legacy PVC used by Trident, will ensure this does not exist.")
+	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName,
+		"The name of the legacy PV used by Trident, will ensure this does not exist.")
 	installCmd.Flags().StringVar(&tridentImage, "trident-image", "", "The Trident image to install.")
 	installCmd.Flags().StringVar(&logFormat, "log-format", "text", "The Trident logging format (text, json).")
 	installCmd.Flags().Int64Var(&probePort, "probe-port", 17546,
 		"The port used by the node pods for liveness/readiness probes. Must not already be in use on the worker hosts.")
-	installCmd.Flags().StringVar(&kubeletDir, "kubelet-dir", "/var/lib/kubelet", "The host location of kubelet's internal state.")
-	installCmd.Flags().StringVar(&imageRegistry, "image-registry", "", "The address/port of an internal image registry.")
-	installCmd.Flags().StringVar(&autosupportProxy, "autosupport-proxy", "", "The address/port of a proxy for sending Autosupport Telemetry")
+	installCmd.Flags().StringVar(&kubeletDir, "kubelet-dir", "/var/lib/kubelet",
+		"The host location of kubelet's internal state.")
+	installCmd.Flags().StringVar(&imageRegistry, "image-registry", "",
+		"The address/port of an internal image registry.")
+	installCmd.Flags().StringVar(&autosupportProxy, "autosupport-proxy", "",
+		"The address/port of a proxy for sending Autosupport Telemetry")
 	installCmd.Flags().StringVar(&autosupportCustomURL, "autosupport-custom-url", "", "Custom Autosupport endpoint")
-	installCmd.Flags().StringVar(&autosupportImage, "autosupport-image", tridentconfig.DefaultAutosupportImage, "The container image for Autosupport Telemetry")
-	installCmd.Flags().StringVar(&autosupportSerialNumber, "autosupport-serial-number", "", "The value to set for the serial number field in Autosupport payloads")
-	installCmd.Flags().StringVar(&autosupportHostname, "autosupport-hostname", "", "The value to set for the hostname field in Autosupport payloads")
+	installCmd.Flags().StringVar(&autosupportImage, "autosupport-image", tridentconfig.DefaultAutosupportImage,
+		"The container image for Autosupport Telemetry")
+	installCmd.Flags().StringVar(&autosupportSerialNumber, "autosupport-serial-number", "",
+		"The value to set for the serial number field in Autosupport payloads")
+	installCmd.Flags().StringVar(&autosupportHostname, "autosupport-hostname", "",
+		"The value to set for the hostname field in Autosupport payloads")
 
-	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second, "The timeout for all Kubernetes operations.")
-	installCmd.Flags().DurationVar(&httpRequestTimeout, "http-request-timeout", tridentconfig.HTTPTimeout, "Override the HTTP request timeout for Trident controller’s REST API")
+	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second,
+		"The timeout for all Kubernetes operations.")
+	installCmd.Flags().DurationVar(&httpRequestTimeout, "http-request-timeout", tridentconfig.HTTPTimeout,
+		"Override the HTTP request timeout for Trident controller’s REST API")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -1159,7 +1175,8 @@ func createCustomResourceDefinition(crdName, crdYAML string) (returnError error)
 	returnError = client.CreateObjectByYAML(crdYAML)
 	logFields = log.Fields{"namespace": TridentPodNamespace}
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create custom resource  %v in %s; %v", crdName, TridentPodNamespace, returnError)
+		returnError = fmt.Errorf("could not create custom resource  %v in %s; %v", crdName, TridentPodNamespace,
+			returnError)
 		return
 	}
 	log.WithFields(logFields).Infof("Created custom resource definitions %v.", crdName)
@@ -1214,7 +1231,8 @@ func deleteCustomResourceDefinition(crdName, crdYAML string) (returnError error)
 
 	returnError = client.DeleteObjectByYAML(crdYAML, true)
 	if returnError != nil {
-		returnError = fmt.Errorf("could not delete custom resource definition %v in %s; %v", crdName, TridentPodNamespace,
+		returnError = fmt.Errorf("could not delete custom resource definition %v in %s; %v", crdName,
+			TridentPodNamespace,
 			returnError)
 		return
 	}
@@ -1746,7 +1764,8 @@ func DeleteOpenShiftTridentSCC(user string) error {
 	labels := make(map[string]string)
 	labels["app"] = labelVal
 
-	err := client.DeleteObjectByYAML(k8sclient.GetOpenShiftSCCYAML("trident", user, TridentPodNamespace, labels, nil), true)
+	err := client.DeleteObjectByYAML(
+		k8sclient.GetOpenShiftSCCYAML("trident", user, TridentPodNamespace, labels, nil), true)
 
 	if err != nil {
 		return fmt.Errorf("%s; %v", "could not delete trident's scc", err)

@@ -2,6 +2,8 @@
 
 package helpers
 
+//go:generate mockgen -destination=../../../mocks/mock_frontend/mock_csi/mock_helpers/mock_helpers.go github.com/netapp/trident/frontend/csi/helpers HybridPlugin
+
 import (
 	"context"
 

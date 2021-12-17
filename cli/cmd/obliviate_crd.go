@@ -136,6 +136,10 @@ func deleteCRs() error {
 		return err
 	}
 
+	if err := deleteVolumePublications(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -277,8 +281,8 @@ func deleteTridentMirrorRelationships() error {
 
 	for _, relationship := range relationships.Items {
 		if relationship.DeletionTimestamp.IsZero() {
-			_ = crdClientset.TridentV1().TridentMirrorRelationships(relationship.Namespace).Delete(ctx(), relationship.Name,
-				deleteOpts)
+			_ = crdClientset.TridentV1().TridentMirrorRelationships(relationship.Namespace).Delete(ctx(),
+				relationship.Name, deleteOpts)
 		}
 	}
 
@@ -350,7 +354,8 @@ func deleteTridentSnapshotInfos() error {
 		if snapshotInfo.HasTridentFinalizers() {
 			crCopy := snapshotInfo.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
-			_, err := crdClientset.TridentV1().TridentSnapshotInfos(snapshotInfo.Namespace).Update(ctx(), crCopy, updateOpts)
+			_, err := crdClientset.TridentV1().TridentSnapshotInfos(snapshotInfo.Namespace).Update(ctx(), crCopy,
+				updateOpts)
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
@@ -394,8 +399,8 @@ func deleteBackendConfigs() error {
 
 	for _, backendConfig := range backendConfigs.Items {
 		if backendConfig.DeletionTimestamp.IsZero() {
-			_ = crdClientset.TridentV1().TridentBackendConfigs(backendConfig.Namespace).Delete(ctx(), backendConfig.Name,
-				deleteOpts)
+			_ = crdClientset.TridentV1().TridentBackendConfigs(backendConfig.Namespace).Delete(ctx(),
+				backendConfig.Name, deleteOpts)
 		}
 	}
 
@@ -408,7 +413,8 @@ func deleteBackendConfigs() error {
 		if backendConfig.HasTridentFinalizers() {
 			crCopy := backendConfig.DeepCopy()
 			crCopy.RemoveTridentFinalizers()
-			_, err := crdClientset.TridentV1().TridentBackendConfigs(backendConfig.Namespace).Update(ctx(), crCopy, updateOpts)
+			_, err := crdClientset.TridentV1().TridentBackendConfigs(backendConfig.Namespace).Update(ctx(), crCopy,
+				updateOpts)
 			if isNotFoundError(err) {
 				continue
 			} else if err != nil {
@@ -599,6 +605,65 @@ func deleteNodes() error {
 	return nil
 }
 
+func deleteVolumePublications() error {
+
+	crd := "tridentvolumepublications.trident.netapp.io"
+	logFields := log.Fields{"CRD": crd}
+
+	// See if CRD exists
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		log.WithField("CRD", crd).Debug("CRD not present.")
+		return nil
+	}
+
+	publications, err := crdClientset.TridentV1().TridentVolumePublications(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	} else if len(publications.Items) == 0 {
+		log.WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, publication := range publications.Items {
+		if publication.DeletionTimestamp.IsZero() {
+			_ = crdClientset.TridentV1().TridentVolumePublications(publication.Namespace).Delete(ctx(),
+				publication.Name, deleteOpts)
+		}
+	}
+
+	publications, err = crdClientset.TridentV1().TridentVolumePublications(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+
+	for _, publication := range publications.Items {
+		if publication.HasTridentFinalizers() {
+			crCopy := publication.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := crdClientset.TridentV1().TridentVolumePublications(publication.Namespace).Update(ctx(), crCopy,
+				updateOpts)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				log.Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := crdClientset.TridentV1().TridentVolumePublications(publication.Namespace).Delete
+		if err := deleteWithRetry(deleteFunc, ctx(), publication.Name, nil); err != nil {
+			log.Errorf("Problem deleting resource: %v", err)
+			return err
+		}
+	}
+
+	log.WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
 func deleteTransactions() error {
 
 	crd := "tridenttransactions.trident.netapp.io"
@@ -726,6 +791,7 @@ func deleteCRDs() error {
 		"tridentnodes.trident.netapp.io",
 		"tridenttransactions.trident.netapp.io",
 		"tridentsnapshots.trident.netapp.io",
+		"tridentvolumepublications.trident.netapp.io",
 	}
 
 	for _, crdName := range crdNames {

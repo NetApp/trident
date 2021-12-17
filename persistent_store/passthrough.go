@@ -452,6 +452,22 @@ func (c *PassthroughClient) DeleteNode(context.Context, *utils.Node) error {
 	return nil
 }
 
+func (c *PassthroughClient) AddVolumePublication(context.Context, *utils.VolumePublication) error {
+	return nil
+}
+
+func (c *PassthroughClient) GetVolumePublication(_ context.Context, vpName string) (*utils.VolumePublication, error) {
+	return nil, NewPersistentStoreError(KeyNotFoundErr, vpName)
+}
+
+func (c *PassthroughClient) GetVolumePublications(context.Context) ([]*utils.VolumePublication, error) {
+	return make([]*utils.VolumePublication, 0), nil
+}
+
+func (c *PassthroughClient) DeleteVolumePublication(context.Context, *utils.VolumePublication) error {
+	return nil
+}
+
 func (c *PassthroughClient) AddSnapshot(context.Context, *storage.Snapshot) error {
 	return nil
 }

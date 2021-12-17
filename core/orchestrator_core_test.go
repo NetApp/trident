@@ -2698,6 +2698,562 @@ func TestValidateImportVolumeSanBackend(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+func TestAddVolumePublication(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Verify that the core calls the store client with the correct object, returning success
+	mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), fakePub).Return(nil)
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	err := orchestrator.AddVolumePublication(context.Background(), fakePub)
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error adding volume publication: %v", err))
+	assert.Contains(t, orchestrator.volumePublications, fakePub.VolumeName,
+		"volume publication missing from orchestrator's cache")
+	assert.Contains(t, orchestrator.volumePublications[fakePub.VolumeName], fakePub.NodeName,
+		"volume publication missing from orchestrator's cache")
+	assert.Equal(t, fakePub, orchestrator.volumePublications[fakePub.VolumeName][fakePub.NodeName],
+		"volume publication was not correctly added")
+}
+
+func TestAddVolumePublicationError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Verify that the core calls the store client with the correct object, but return an error
+	mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), fakePub).Return(fmt.Errorf("fake error"))
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	err := orchestrator.AddVolumePublication(context.Background(), fakePub)
+	assert.NotNilf(t, err, "add volume publication did not return an error")
+	assert.NotContains(t, orchestrator.volumePublications, fakePub.VolumeName,
+		"volume publication was added orchestrator's cache")
+}
+
+func TestGetVolumePublication(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	orchestrator.addVolumePublicationToCache(fakePub)
+
+	actualPub, err := orchestrator.GetVolumePublication(context.Background(), fakePub.VolumeName, fakePub.NodeName)
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error getting volume publication: %v", err))
+	assert.Equal(t, fakePub, actualPub, "volume publication was not correctly retrieved")
+}
+
+func TestGetVolumePublicationNotFound(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	actualPub, err := orchestrator.GetVolumePublication(context.Background(), "NotFound", "NotFound")
+	assert.NotNilf(t, err, fmt.Sprintf("unexpected success getting volume publication: %v", err))
+	assert.True(t, utils.IsNotFoundError(err), "incorrect error type returned")
+	assert.Empty(t, actualPub, "non-empty publication returned")
+}
+
+func TestGetVolumePublicationError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	orchestrator.addVolumePublicationToCache(fakePub)
+
+	// Simulate a bootstrap error
+	orchestrator.bootstrapError = fmt.Errorf("some error")
+
+	actualPub, err := orchestrator.GetVolumePublication(context.Background(), fakePub.VolumeName, fakePub.NodeName)
+	assert.NotNilf(t, err, fmt.Sprintf("unexpected success getting volume publication: %v", err))
+	assert.False(t, utils.IsNotFoundError(err), "incorrect error type returned")
+	assert.Empty(t, actualPub, "non-empty publication returned")
+}
+
+func TestListVolumePublications(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	fakePub2 := &utils.VolumePublication{
+		Name:       "baz/biz",
+		NodeName:   "biz",
+		VolumeName: "baz",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	fakePub3 := &utils.VolumePublication{
+		Name:       fmt.Sprintf("%s/buz", fakePub.VolumeName),
+		NodeName:   "buz",
+		VolumeName: fakePub.VolumeName,
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	// Populate volume publications
+	orchestrator.addVolumePublicationToCache(fakePub)
+	orchestrator.addVolumePublicationToCache(fakePub2)
+	orchestrator.addVolumePublicationToCache(fakePub3)
+
+	expectedPubs := []*utils.VolumePublication{fakePub, fakePub2, fakePub3}
+	actualPubs, err := orchestrator.ListVolumePublications(context.Background())
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
+	assert.ElementsMatch(t, expectedPubs, actualPubs, "incorrect publication list returned")
+}
+
+func TestListVolumePublicationsNotFound(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	actualPubs, err := orchestrator.ListVolumePublications(context.Background())
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
+	assert.Empty(t, actualPubs, "non-empty publication list returned")
+}
+
+func TestListVolumePublicationsError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	// Populate volume publications
+	orchestrator.addVolumePublicationToCache(fakePub)
+
+	// Simulate a bootstrap error
+	orchestrator.bootstrapError = fmt.Errorf("some error")
+
+	actualPubs, err := orchestrator.ListVolumePublications(context.Background())
+	assert.NotNil(t, err, fmt.Sprintf("unexpected success listing volume publications"))
+	assert.Empty(t, actualPubs, "non-empty publication list returned")
+}
+
+func TestListVolumePublicationsForVolume(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	fakePub2 := &utils.VolumePublication{
+		Name:       "baz/biz",
+		NodeName:   "biz",
+		VolumeName: "baz",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	fakePub3 := &utils.VolumePublication{
+		Name:       fmt.Sprintf("%s/buz", fakePub.VolumeName),
+		NodeName:   "buz",
+		VolumeName: fakePub.VolumeName,
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	// Populate volume publications
+	orchestrator.addVolumePublicationToCache(fakePub)
+	orchestrator.addVolumePublicationToCache(fakePub2)
+	orchestrator.addVolumePublicationToCache(fakePub3)
+
+	expectedPubs := []*utils.VolumePublication{fakePub, fakePub3}
+	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), fakePub.VolumeName)
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
+	assert.ElementsMatch(t, expectedPubs, actualPubs, "incorrect publication list returned")
+}
+
+func TestListVolumePublicationsForVolumeNotFound(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	// Populate volume publications
+	orchestrator.addVolumePublicationToCache(fakePub)
+
+	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), "NotFound")
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
+	assert.Empty(t, actualPubs, "non-empty publication list returned")
+}
+
+func TestListVolumePublicationsForVolumeError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	// Populate volume publications
+	orchestrator.addVolumePublicationToCache(fakePub)
+
+	// Simulate a bootstrap error
+	orchestrator.bootstrapError = fmt.Errorf("some error")
+
+	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), fakePub.VolumeName)
+	assert.NotNil(t, err, fmt.Sprintf("unexpected success listing volume publications"))
+	assert.Empty(t, actualPubs, "non-empty publication list returned")
+}
+
+func TestListVolumePublicationsForNode(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	fakePub2 := &utils.VolumePublication{
+		Name:       "baz/biz",
+		NodeName:   "biz",
+		VolumeName: "baz",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	fakePub3 := &utils.VolumePublication{
+		Name:       fmt.Sprintf("%s/buz", fakePub.VolumeName),
+		NodeName:   "buz",
+		VolumeName: fakePub.VolumeName,
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	// Populate volume publications
+	orchestrator.addVolumePublicationToCache(fakePub)
+	orchestrator.addVolumePublicationToCache(fakePub2)
+	orchestrator.addVolumePublicationToCache(fakePub3)
+
+	expectedPubs := []*utils.VolumePublication{fakePub2}
+	actualPubs, err := orchestrator.ListVolumePublicationsForNode(context.Background(), fakePub2.NodeName)
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
+	assert.ElementsMatch(t, expectedPubs, actualPubs, "incorrect publication list returned")
+}
+
+func TestListVolumePublicationsForNodeNotFound(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	// Populate volume publications
+	orchestrator.addVolumePublicationToCache(fakePub)
+
+	actualPubs, err := orchestrator.ListVolumePublicationsForNode(context.Background(), "NotFound")
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
+	assert.Empty(t, actualPubs, "non-empty publication list returned")
+}
+
+func TestListVolumePublicationsForNodeError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	// Populate volume publications
+	orchestrator.addVolumePublicationToCache(fakePub)
+
+	// Simulate a bootstrap error
+	orchestrator.bootstrapError = fmt.Errorf("some error")
+
+	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), fakePub.NodeName)
+	assert.NotNil(t, err, fmt.Sprintf("unexpected success listing volume publications"))
+	assert.Empty(t, actualPubs, "non-empty publication list returned")
+}
+
+func TestDeleteVolumePublication(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	fakePub2 := &utils.VolumePublication{
+		Name:       "baz/biz",
+		NodeName:   "biz",
+		VolumeName: "baz",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	fakePub3 := &utils.VolumePublication{
+		Name:       fmt.Sprintf("%s/buz", fakePub.VolumeName),
+		NodeName:   "buz",
+		VolumeName: fakePub.VolumeName,
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	// Populate volume publications
+	orchestrator.addVolumePublicationToCache(fakePub)
+	orchestrator.addVolumePublicationToCache(fakePub2)
+	orchestrator.addVolumePublicationToCache(fakePub3)
+
+	// Verify if this is the last nodeID for a given volume the volume entry is completely removed from the cache
+	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub2).Return(nil)
+	err := orchestrator.DeleteVolumePublication(context.Background(), fakePub2.VolumeName, fakePub2.NodeName)
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error deleting volume publication: %v", err))
+	assert.NotContains(t, orchestrator.volumePublications, fakePub2.VolumeName,
+		"publication not properly removed from cache")
+
+	// Verify if this is not the last nodeID for a given volume the volume entry is not removed from the cache
+	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub3).Return(nil)
+	err = orchestrator.DeleteVolumePublication(context.Background(), fakePub3.VolumeName, fakePub3.NodeName)
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error deleting volume publication: %v", err))
+	assert.NotNil(t, orchestrator.volumePublications[fakePub3.VolumeName],
+		"publication not properly removed from cache")
+	assert.NotContains(t, orchestrator.volumePublications[fakePub3.VolumeName], fakePub3.NodeName,
+		"publication not properly removed from cache")
+	assert.Contains(t, orchestrator.volumePublications[fakePub.VolumeName], fakePub.NodeName,
+		"publication not properly removed from cache")
+}
+
+func TestDeleteVolumePublicationNotFound(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	// Populate volume publications
+	orchestrator.addVolumePublicationToCache(fakePub)
+
+	err := orchestrator.DeleteVolumePublication(context.Background(), "NotFound", "NotFound")
+	assert.NotNil(t, err, fmt.Sprintf("unexpected success deleting volume publication"))
+	assert.True(t, utils.IsNotFoundError(err), "incorrect error type returned")
+}
+
+func TestDeleteVolumePublicationNotFoundPersistence(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub).Return(utils.NotFoundError("not found"))
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	// Populate volume publications
+	orchestrator.addVolumePublicationToCache(fakePub)
+
+	// Verify delete is idempotent when the persistence object is missing
+	err := orchestrator.DeleteVolumePublication(context.Background(), fakePub.VolumeName, fakePub.NodeName)
+	assert.Nilf(t, err, fmt.Sprintf("unexpected error deleting volume publication: %v", err))
+	assert.NotContains(t, orchestrator.volumePublications, fakePub.VolumeName,
+		"publication not properly removed from cache")
+}
+
+func TestDeleteVolumePublicationError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	// Create a fake VolumePublication
+	fakePub := &utils.VolumePublication{
+		Name:       "foo/bar",
+		NodeName:   "bar",
+		VolumeName: "foo",
+		ReadOnly:   true,
+		AccessMode: 1,
+	}
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+	// Populate volume publications
+	orchestrator.addVolumePublicationToCache(fakePub)
+
+	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub).Return(fmt.Errorf("some error"))
+
+	err := orchestrator.DeleteVolumePublication(context.Background(), fakePub.VolumeName, fakePub.NodeName)
+	assert.NotNil(t, err, fmt.Sprintf("unexpected success deleting volume publication"))
+	assert.False(t, utils.IsNotFoundError(err), "incorrect error type returned")
+	assert.Equal(t, fakePub, orchestrator.volumePublications[fakePub.VolumeName][fakePub.NodeName],
+		"publication improperly removed/updated in cache")
+}
+
 func TestAddNode(t *testing.T) {
 	node := &utils.Node{
 		Name:           "testNode",

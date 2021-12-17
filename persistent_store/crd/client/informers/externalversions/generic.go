@@ -59,6 +59,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentVersions().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentvolumes"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentVolumes().Informer()}, nil
+	case v1.SchemeGroupVersion.WithResource("tridentvolumepublications"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentVolumePublications().Informer()}, nil
 
 	}
 

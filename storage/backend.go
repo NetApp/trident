@@ -523,8 +523,8 @@ func (b *StorageBackend) UnpublishVolume(
 ) error {
 
 	Logc(ctx).WithFields(log.Fields{
-		"backend":        b.Name,
-		"backendUUID":    b.BackendUUID,
+		"backend":        b.name,
+		"backendUUID":    b.backendUUID,
 		"volume":         volConfig.Name,
 		"volumeInternal": volConfig.InternalName,
 	}).Debug("Attempting volume unpublish.")

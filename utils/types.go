@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -45,6 +45,16 @@ type VolumePublishInfo struct {
 
 type VolumeTrackingPublishInfo struct {
 	StagingTargetPath string `json:"stagingTargetPath"`
+}
+
+type VolumePublication struct {
+	Name       string `json:"name"`
+	NodeName   string `json:"node"`
+	VolumeName string `json:"volume"`
+	ReadOnly   bool   `json:"readOnly"`
+	// The access mode values are defined by CSI
+	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
+	AccessMode int32 `json:"accessMode"`
 }
 
 type Node struct {

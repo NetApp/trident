@@ -36,6 +36,7 @@ const (
 	TransactionCRDName        = "tridenttransactions.trident.netapp.io"
 	VersionCRDName            = "tridentversions.trident.netapp.io"
 	VolumeCRDName             = "tridentvolumes.trident.netapp.io"
+	VolumePublicationCRDName  = "tridentvolumepublications.trident.netapp.io"
 	SnapshotCRDName           = "tridentsnapshots.trident.netapp.io"
 
 	VolumeSnapshotCRDName        = "volumesnapshots.snapshot.storage.k8s.io"
@@ -84,6 +85,7 @@ var (
 		VersionCRDName,
 		VolumeCRDName,
 		SnapshotCRDName,
+		VolumePublicationCRDName,
 	}
 
 	AlphaCRDNames = []string{
@@ -248,8 +250,9 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 }
 
 // setInstallationParams identifies the correct parameters for the Trident installation
-func (i *Installer) setInstallationParams(cr netappv1.TridentOrchestrator,
-	currentInstallationVersion string) (map[string]string, map[string]string, bool, error) {
+func (i *Installer) setInstallationParams(
+	cr netappv1.TridentOrchestrator, currentInstallationVersion string,
+) (map[string]string, map[string]string, bool, error) {
 
 	var identifiedImageVersion string
 	var defaultImageOverride bool
@@ -392,8 +395,9 @@ func (i *Installer) setInstallationParams(cr netappv1.TridentOrchestrator,
 	return controllingCRDetails, labels, imageUpdateNeeded, nil
 }
 
-func (i *Installer) InstallOrPatchTrident(cr netappv1.TridentOrchestrator,
-	currentInstallationVersion string, shouldUpdate bool) (*netappv1.TridentOrchestratorSpecValues, string, error) {
+func (i *Installer) InstallOrPatchTrident(
+	cr netappv1.TridentOrchestrator, currentInstallationVersion string, shouldUpdate bool,
+) (*netappv1.TridentOrchestratorSpecValues, string, error) {
 
 	var returnError error
 	var newServiceAccount bool
@@ -554,6 +558,9 @@ func (i *Installer) createCRDs() error {
 	if err = i.CreateCRD(VolumeCRDName, k8sclient.GetVolumeCRDYAML()); err != nil {
 		return err
 	}
+	if err = i.CreateCRD(VolumePublicationCRDName, k8sclient.GetVolumePublicationCRDYAML()); err != nil {
+		return err
+	}
 	if err = i.CreateCRD(NodeCRDName, k8sclient.GetNodeCRDYAML()); err != nil {
 		return err
 	}
@@ -702,8 +709,9 @@ func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[s
 	return nil
 }
 
-func (i *Installer) createRBACObjects(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) (newServiceAccount bool, returnError error) {
+func (i *Installer) createRBACObjects(
+	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+) (newServiceAccount bool, returnError error) {
 
 	// Create service account
 	newServiceAccount, returnError = i.createOrPatchTridentServiceAccount(controllingCRDetails, labels, shouldUpdate)
@@ -768,9 +776,9 @@ func (i *Installer) createTridentInstallationNamespace() error {
 	return nil
 }
 
-func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) (bool, error) {
-
+func (i *Installer) createOrPatchTridentServiceAccount(
+	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+) (bool, error) {
 	newServiceAccount := false
 	serviceAccountName := getServiceAccountName(true)
 
@@ -795,8 +803,9 @@ func (i *Installer) createOrPatchTridentServiceAccount(controllingCRDetails, lab
 	return newServiceAccount, nil
 }
 
-func (i *Installer) createOrPatchTridentClusterRole(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) error {
+func (i *Installer) createOrPatchTridentClusterRole(
+	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+) error {
 
 	clusterRoleName := getClusterRoleName(true)
 
@@ -822,8 +831,9 @@ func (i *Installer) createOrPatchTridentClusterRole(controllingCRDetails, labels
 	return nil
 }
 
-func (i *Installer) createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) error {
+func (i *Installer) createOrPatchTridentClusterRoleBinding(
+	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+) error {
 
 	clusterRoleBindingName := getClusterRoleBindingName(true)
 
@@ -850,9 +860,9 @@ func (i *Installer) createOrPatchTridentClusterRoleBinding(controllingCRDetails,
 	return nil
 }
 
-func (i *Installer) createOrPatchTridentOpenShiftSCC(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) error {
-
+func (i *Installer) createOrPatchTridentOpenShiftSCC(
+	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+) error {
 	var currentOpenShiftSCCJSON []byte
 
 	openShiftSCCUserName := getOpenShiftSCCUserName()
@@ -864,8 +874,8 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(controllingCRDetails, label
 		"sccName":     openShiftSCCName,
 	}
 
-	currentOpenShiftSCCJSON, createOpenShiftSCC, removeExistingSCC, err := i.client.GetTridentOpenShiftSCCInformation(openShiftSCCName,
-		openShiftSCCUserName, shouldUpdate)
+	currentOpenShiftSCCJSON, createOpenShiftSCC, removeExistingSCC, err := i.client.GetTridentOpenShiftSCCInformation(
+		openShiftSCCName, openShiftSCCUserName, shouldUpdate)
 	if err != nil {
 		log.WithFields(logFields).Errorf("Unable to get OpenShift SCC for Trident; err: %v", err)
 		return fmt.Errorf("failed to get Trident OpenShift SCC; %v", err)
@@ -900,8 +910,9 @@ func (i *Installer) createAndEnsureCRDs() (returnError error) {
 	return
 }
 
-func (i *Installer) createOrPatchTridentPodSecurityPolicy(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) error {
+func (i *Installer) createOrPatchTridentPodSecurityPolicy(
+	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+) error {
 
 	pspName := getPSPName()
 
@@ -924,8 +935,9 @@ func (i *Installer) createOrPatchTridentPodSecurityPolicy(controllingCRDetails, 
 	return nil
 }
 
-func (i *Installer) createOrPatchTridentService(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) error {
+func (i *Installer) createOrPatchTridentService(
+	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+) error {
 
 	serviceName := getServiceName()
 
@@ -948,8 +960,9 @@ func (i *Installer) createOrPatchTridentService(controllingCRDetails, labels map
 	return nil
 }
 
-func (i *Installer) createOrPatchTridentSecret(controllingCRDetails, labels map[string]string,
-	shouldUpdate bool) error {
+func (i *Installer) createOrPatchTridentSecret(
+	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+) error {
 
 	secretMap := make(map[string]string)
 	secretName := getSecretName()
@@ -998,8 +1011,9 @@ func (i *Installer) createOrPatchTridentSecret(controllingCRDetails, labels map[
 	return nil
 }
 
-func (i *Installer) createOrPatchTridentDeployment(controllingCRDetails, labels map[string]string,
-	shouldUpdate, newServiceAccount bool) error {
+func (i *Installer) createOrPatchTridentDeployment(
+	controllingCRDetails, labels map[string]string, shouldUpdate, newServiceAccount bool,
+) error {
 
 	topologyEnabled, err := i.client.IsTopologyInUse()
 	if err != nil {
@@ -1069,8 +1083,9 @@ func (i *Installer) TridentDeploymentInformation(
 	return i.client.GetDeploymentInformation(getDeploymentName(true), deploymentLabel, i.namespace)
 }
 
-func (i *Installer) createOrPatchTridentDaemonSet(controllingCRDetails, labels map[string]string,
-	shouldUpdate, newServiceAccount bool) error {
+func (i *Installer) createOrPatchTridentDaemonSet(
+	controllingCRDetails, labels map[string]string, shouldUpdate, newServiceAccount bool,
+) error {
 
 	daemonSetName := getDaemonSetName()
 	nodeLabel := TridentNodeLabel

@@ -13,29 +13,32 @@ import (
 )
 
 type InMemoryClient struct {
-	backends            map[string]*storage.BackendPersistent
-	backendsAdded       int
-	volumes             map[string]*storage.VolumeExternal
-	volumesAdded        int
-	storageClasses      map[string]*sc.Persistent
-	storageClassesAdded int
-	volumeTxns          map[string]*storage.VolumeTransaction
-	volumeTxnsAdded     int
-	version             *config.PersistentStateVersion
-	nodes               map[string]*utils.Node
-	nodesAdded          int
-	snapshots           map[string]*storage.SnapshotPersistent
-	snapshotsAdded      int
+	backends                map[string]*storage.BackendPersistent
+	backendsAdded           int
+	volumes                 map[string]*storage.VolumeExternal
+	volumesAdded            int
+	storageClasses          map[string]*sc.Persistent
+	storageClassesAdded     int
+	volumeTxns              map[string]*storage.VolumeTransaction
+	volumeTxnsAdded         int
+	volumePublications      map[string]*utils.VolumePublication
+	volumePublicationsAdded int
+	version                 *config.PersistentStateVersion
+	nodes                   map[string]*utils.Node
+	nodesAdded              int
+	snapshots               map[string]*storage.SnapshotPersistent
+	snapshotsAdded          int
 }
 
 func NewInMemoryClient() *InMemoryClient {
 	return &InMemoryClient{
-		backends:       make(map[string]*storage.BackendPersistent),
-		volumes:        make(map[string]*storage.VolumeExternal),
-		storageClasses: make(map[string]*sc.Persistent),
-		volumeTxns:     make(map[string]*storage.VolumeTransaction),
-		nodes:          make(map[string]*utils.Node),
-		snapshots:      make(map[string]*storage.SnapshotPersistent),
+		backends:           make(map[string]*storage.BackendPersistent),
+		volumes:            make(map[string]*storage.VolumeExternal),
+		storageClasses:     make(map[string]*sc.Persistent),
+		volumeTxns:         make(map[string]*storage.VolumeTransaction),
+		volumePublications: make(map[string]*utils.VolumePublication),
+		nodes:              make(map[string]*utils.Node),
+		snapshots:          make(map[string]*storage.SnapshotPersistent),
 		version: &config.PersistentStateVersion{
 			PersistentStoreVersion: "memory", OrchestratorAPIVersion: config.OrchestratorAPIVersion,
 		},
@@ -354,6 +357,42 @@ func (c *InMemoryClient) DeleteNode(_ context.Context, n *utils.Node) error {
 		return NewPersistentStoreError(KeyNotFoundErr, n.Name)
 	}
 	delete(c.nodes, n.Name)
+	return nil
+}
+
+func (c *InMemoryClient) AddVolumePublication(_ context.Context, vp *utils.VolumePublication) error {
+	if _, exists := c.volumePublications[vp.Name]; !exists {
+		c.volumePublicationsAdded++
+	}
+	c.volumePublications[vp.Name] = vp
+	return nil
+}
+
+func (c *InMemoryClient) GetVolumePublication(_ context.Context, vpName string) (*utils.VolumePublication, error) {
+	ret, ok := c.volumePublications[vpName]
+	if !ok {
+		return nil, NewPersistentStoreError(KeyNotFoundErr, vpName)
+	}
+	return ret, nil
+}
+
+func (c *InMemoryClient) GetVolumePublications(context.Context) ([]*utils.VolumePublication, error) {
+	ret := make([]*utils.VolumePublication, 0, len(c.volumePublications))
+	if c.volumePublicationsAdded == 0 {
+		// Try to match etcd semantics as closely as possible.
+		return ret, nil
+	}
+	for _, v := range c.volumePublications {
+		ret = append(ret, v)
+	}
+	return ret, nil
+}
+
+func (c *InMemoryClient) DeleteVolumePublication(_ context.Context, vp *utils.VolumePublication) error {
+	if _, ok := c.volumePublications[vp.Name]; !ok {
+		return NewPersistentStoreError(KeyNotFoundErr, vp.Name)
+	}
+	delete(c.volumePublications, vp.Name)
 	return nil
 }
 

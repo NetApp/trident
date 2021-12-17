@@ -191,6 +191,7 @@ rules:
       - tridentbackends
       - tridentstorageclasses
       - tridentvolumes
+      - tridentvolumepublications
       - tridentnodes
       - tridenttransactions
       - tridentsnapshots

@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -349,6 +350,28 @@ func (p *Plugin) ControllerPublishVolume(
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
+	// Verify the publication is new or the same as the existing publication
+	vp := generateVolumePublicationFromCSIPublishRequest(req)
+	err = p.verifyVolumePublicationIsNew(ctx, vp)
+	// If err == nil then the volume publication already exists with the requested values, so we do not need to do
+	// anything
+	if err != nil {
+		if utils.IsNotFoundError(err) {
+			// Volume publication does not exist, add it
+			if err := p.orchestrator.AddVolumePublication(ctx, vp); err != nil {
+				msg := "error recording volume publication"
+				Logc(ctx).WithError(err).Error(msg)
+				return nil, status.Error(codes.Internal, msg)
+			}
+		} else if utils.IsFoundError(err) {
+			// Volume publication exists, but with different values, we cannot handle this
+			return nil, status.Error(codes.AlreadyExists, err.Error())
+		} else {
+			// Something else went wrong
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
 	// Set up volume publish info with what we know about the node
 	volumePublishInfo := &utils.VolumePublishInfo{
 		Localhost: false,
@@ -409,6 +432,36 @@ func (p *Plugin) ControllerPublishVolume(
 	return &csi.ControllerPublishVolumeResponse{PublishContext: publishInfo}, nil
 }
 
+func (p *Plugin) verifyVolumePublicationIsNew(ctx context.Context, vp *utils.VolumePublication) error {
+	existingPub, err := p.orchestrator.GetVolumePublication(ctx, vp.VolumeName, vp.NodeName)
+	if err != nil {
+		// Volume publication was not found or an error occurred
+		return err
+	}
+	if reflect.DeepEqual(existingPub, vp) {
+		// Volume publication already exists with the current values
+		return nil
+	} else {
+		// Volume publication already exists with different values
+		return utils.FoundError("this volume is already published to this node with different options")
+	}
+}
+
+func generateVolumePublicationFromCSIPublishRequest(req *csi.ControllerPublishVolumeRequest) *utils.VolumePublication {
+	vp := &utils.VolumePublication{
+		Name:       utils.GenerateVolumePublishName(req.GetVolumeId(), req.GetNodeId()),
+		VolumeName: req.GetVolumeId(),
+		NodeName:   req.GetNodeId(),
+		ReadOnly:   req.GetReadonly(),
+	}
+	if req.VolumeCapability != nil {
+		if req.VolumeCapability.GetAccessMode() != nil {
+			vp.AccessMode = int32(req.VolumeCapability.GetAccessMode().GetMode())
+		}
+	}
+	return vp
+}
+
 func (p *Plugin) ControllerUnpublishVolume(
 	ctx context.Context, req *csi.ControllerUnpublishVolumeRequest,
 ) (*csi.ControllerUnpublishVolumeResponse, error) {
@@ -456,6 +509,19 @@ func (p *Plugin) ControllerUnpublishVolume(
 	// Optionally update NFS export rules, remove node IQN from igroup, etc.
 	if err = p.orchestrator.UnpublishVolume(ctx, volume.Config.Name, volumePublishInfo); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	if err = p.orchestrator.DeleteVolumePublication(ctx, req.GetVolumeId(), req.GetNodeId()); err != nil {
+		if !utils.IsNotFoundError(err) {
+			msg := "error removing volume publication record"
+			Logc(ctx).WithError(err).Error(msg)
+			return nil, status.Error(codes.Internal, msg)
+		} else {
+			Logc(ctx).WithFields(log.Fields{
+				"VolumeID": req.GetVolumeId(),
+				"NodeID":   req.GetNodeId(),
+			}).Warn("Volume publication record not found.")
+		}
 	}
 
 	return &csi.ControllerUnpublishVolumeResponse{}, nil
@@ -556,7 +622,22 @@ func (p *Plugin) ListVolumes(
 
 		if len(entries) < maxPageEntries {
 			if csiVolume, err := p.getCSIVolumeFromTridentVolume(ctx, volume); err == nil {
-				entries = append(entries, &csi.ListVolumesResponse_Entry{Volume: csiVolume})
+				entry := &csi.ListVolumesResponse_Entry{Volume: csiVolume}
+				// We must always include the volume status when we report LIST_VOLUMES_PUBLISHED_NODES capability
+				entry.Status = &csi.ListVolumesResponse_VolumeStatus{
+					PublishedNodeIds: []string{},
+				}
+				// Find all the nodes to which this volume has been published
+				publications, err := p.orchestrator.ListVolumePublicationsForVolume(ctx, csiVolume.VolumeId)
+				if err != nil {
+					msg := fmt.Sprintf("error listing volume publications for volume %s", csiVolume.VolumeId)
+					Logc(ctx).WithError(err).Error(msg)
+					return nil, status.Error(codes.Internal, msg)
+				}
+				for _, publication := range publications {
+					entry.Status.PublishedNodeIds = append(entry.Status.PublishedNodeIds, publication.NodeName)
+				}
+				entries = append(entries, entry)
 			}
 		} else {
 			nextToken = volume.Config.Name

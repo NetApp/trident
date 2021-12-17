@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 // Copyright 2017 The Kubernetes Authors.
 
@@ -51,7 +51,8 @@ func NewNodeServiceCapability(cap csi.NodeServiceCapability_RPC_Type) *csi.NodeS
 	}
 }
 
-func logGRPC(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+func logGRPC(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{},
+	error) {
 
 	ctx = GenerateRequestContext(ctx, "", ContextSourceCSI)
 	Logc(ctx).Debugf("GRPC call: %s", info.FullMethod)

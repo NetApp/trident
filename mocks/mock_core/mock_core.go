@@ -111,6 +111,20 @@ func (mr *MockOrchestratorMockRecorder) AddVolume(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolume", reflect.TypeOf((*MockOrchestrator)(nil).AddVolume), arg0, arg1)
 }
 
+// AddVolumePublication mocks base method.
+func (m *MockOrchestrator) AddVolumePublication(arg0 context.Context, arg1 *utils.VolumePublication) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddVolumePublication", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddVolumePublication indicates an expected call of AddVolumePublication.
+func (mr *MockOrchestratorMockRecorder) AddVolumePublication(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolumePublication", reflect.TypeOf((*MockOrchestrator)(nil).AddVolumePublication), arg0, arg1)
+}
+
 // AddVolumeTransaction mocks base method.
 func (m *MockOrchestrator) AddVolumeTransaction(arg0 context.Context, arg1 *storage.VolumeTransaction) error {
 	m.ctrl.T.Helper()
@@ -280,6 +294,20 @@ func (m *MockOrchestrator) DeleteVolume(arg0 context.Context, arg1 string) error
 func (mr *MockOrchestratorMockRecorder) DeleteVolume(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolume", reflect.TypeOf((*MockOrchestrator)(nil).DeleteVolume), arg0, arg1)
+}
+
+// DeleteVolumePublication mocks base method.
+func (m *MockOrchestrator) DeleteVolumePublication(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteVolumePublication", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteVolumePublication indicates an expected call of DeleteVolumePublication.
+func (mr *MockOrchestratorMockRecorder) DeleteVolumePublication(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumePublication", reflect.TypeOf((*MockOrchestrator)(nil).DeleteVolumePublication), arg0, arg1, arg2)
 }
 
 // DeleteVolumeTransaction mocks base method.
@@ -474,6 +502,21 @@ func (mr *MockOrchestratorMockRecorder) GetVolume(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolume", reflect.TypeOf((*MockOrchestrator)(nil).GetVolume), arg0, arg1)
 }
 
+// GetVolumeByInternalName mocks base method.
+func (m *MockOrchestrator) GetVolumeByInternalName(arg0 string, arg1 context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVolumeByInternalName", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVolumeByInternalName indicates an expected call of GetVolumeByInternalName.
+func (mr *MockOrchestratorMockRecorder) GetVolumeByInternalName(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByInternalName", reflect.TypeOf((*MockOrchestrator)(nil).GetVolumeByInternalName), arg0, arg1)
+}
+
 // GetVolumeExternal mocks base method.
 func (m *MockOrchestrator) GetVolumeExternal(arg0 context.Context, arg1, arg2 string) (*storage.VolumeExternal, error) {
 	m.ctrl.T.Helper()
@@ -489,19 +532,19 @@ func (mr *MockOrchestratorMockRecorder) GetVolumeExternal(arg0, arg1, arg2 inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeExternal", reflect.TypeOf((*MockOrchestrator)(nil).GetVolumeExternal), arg0, arg1, arg2)
 }
 
-// GetVolumeByInternalName mocks base method.
-func (m *MockOrchestrator) GetVolumeByInternalName(volumeInternal string, ctx context.Context) (string, error) {
+// GetVolumePublication mocks base method.
+func (m *MockOrchestrator) GetVolumePublication(arg0 context.Context, arg1, arg2 string) (*utils.VolumePublication, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeByInternalName", volumeInternal, ctx)
-	ret0, _ := ret[0].(string)
+	ret := m.ctrl.Call(m, "GetVolumePublication", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*utils.VolumePublication)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetVolumeByInternalName indicates an expected call of GetVolumeByInternalName.
-func (mr *MockOrchestratorMockRecorder) GetVolumeByInternalName(volumeInternal, ctx interface{}) *gomock.Call {
+// GetVolumePublication indicates an expected call of GetVolumePublication.
+func (mr *MockOrchestratorMockRecorder) GetVolumePublication(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByInternalName", reflect.TypeOf((*MockOrchestrator)(nil).GetVolumeByInternalName), volumeInternal, ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumePublication", reflect.TypeOf((*MockOrchestrator)(nil).GetVolumePublication), arg0, arg1, arg2)
 }
 
 // GetVolumeTransaction mocks base method.
@@ -652,6 +695,51 @@ func (m *MockOrchestrator) ListStorageClasses(arg0 context.Context) ([]*storagec
 func (mr *MockOrchestratorMockRecorder) ListStorageClasses(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListStorageClasses", reflect.TypeOf((*MockOrchestrator)(nil).ListStorageClasses), arg0)
+}
+
+// ListVolumePublications mocks base method.
+func (m *MockOrchestrator) ListVolumePublications(arg0 context.Context) ([]*utils.VolumePublication, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListVolumePublications", arg0)
+	ret0, _ := ret[0].([]*utils.VolumePublication)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListVolumePublications indicates an expected call of ListVolumePublications.
+func (mr *MockOrchestratorMockRecorder) ListVolumePublications(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumePublications", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumePublications), arg0)
+}
+
+// ListVolumePublicationsForNode mocks base method.
+func (m *MockOrchestrator) ListVolumePublicationsForNode(arg0 context.Context, arg1 string) ([]*utils.VolumePublication, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListVolumePublicationsForNode", arg0, arg1)
+	ret0, _ := ret[0].([]*utils.VolumePublication)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListVolumePublicationsForNode indicates an expected call of ListVolumePublicationsForNode.
+func (mr *MockOrchestratorMockRecorder) ListVolumePublicationsForNode(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumePublicationsForNode", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumePublicationsForNode), arg0, arg1)
+}
+
+// ListVolumePublicationsForVolume mocks base method.
+func (m *MockOrchestrator) ListVolumePublicationsForVolume(arg0 context.Context, arg1 string) ([]*utils.VolumePublication, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListVolumePublicationsForVolume", arg0, arg1)
+	ret0, _ := ret[0].([]*utils.VolumePublication)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListVolumePublicationsForVolume indicates an expected call of ListVolumePublicationsForVolume.
+func (mr *MockOrchestratorMockRecorder) ListVolumePublicationsForVolume(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVolumePublicationsForVolume", reflect.TypeOf((*MockOrchestrator)(nil).ListVolumePublicationsForVolume), arg0, arg1)
 }
 
 // ListVolumes mocks base method.

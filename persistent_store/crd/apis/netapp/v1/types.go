@@ -25,6 +25,34 @@ type TridentCRD interface {
 	RemoveTridentFinalizers()
 }
 
+// TridentVolumePublication tracks volumes the Trident controller has been asked to publish.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentVolumePublication struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	// VolumeID is the ID of the volume as given by the CO
+	VolumeID string `json:"volumeID"`
+	// NodeID is the ID of the node as given by the CO
+	NodeID string `json:"nodeID"`
+	// ReadOnly indicates that the ControllerPublishVolume request had this flag value
+	ReadOnly bool `json:"readOnly"`
+	// AccessMode describes how the CO intends to use the volume
+	AccessMode int32 `json:"accessMode,omitempty"`
+}
+
+// TridentVolumePublicationList is a list of TridentVolumePublication objects.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentVolumePublicationList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	// List of TridentVolumePublication objects
+	Items []*TridentVolumePublication `json:"items"`
+}
+
 // TridentSnapshotInfo maps a k8s snapshot to the Trident internal snapshot.
 // +genclient
 // +k8s:openapi-gen=true

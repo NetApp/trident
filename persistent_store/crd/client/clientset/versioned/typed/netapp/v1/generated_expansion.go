@@ -23,3 +23,5 @@ type TridentTransactionExpansion interface{}
 type TridentVersionExpansion interface{}
 
 type TridentVolumeExpansion interface{}
+
+type TridentVolumePublicationExpansion interface{}

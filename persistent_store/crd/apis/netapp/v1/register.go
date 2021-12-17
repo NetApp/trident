@@ -42,6 +42,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&TridentBackendConfigList{},
 		&TridentVolume{},
 		&TridentVolumeList{},
+		&TridentVolumePublication{},
+		&TridentVolumePublicationList{},
 		&TridentStorageClass{},
 		&TridentStorageClassList{},
 		&TridentTransaction{},

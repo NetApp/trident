@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2021 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -89,6 +89,7 @@ func NewControllerPlugin(
 		csi.ControllerServiceCapability_RPC_LIST_SNAPSHOTS,
 		csi.ControllerServiceCapability_RPC_EXPAND_VOLUME,
 		csi.ControllerServiceCapability_RPC_CLONE_VOLUME,
+		csi.ControllerServiceCapability_RPC_LIST_VOLUMES_PUBLISHED_NODES,
 	})
 
 	// Define volume capabilities
@@ -204,6 +205,7 @@ func NewAllInOnePlugin(
 		csi.ControllerServiceCapability_RPC_LIST_SNAPSHOTS,
 		csi.ControllerServiceCapability_RPC_EXPAND_VOLUME,
 		csi.ControllerServiceCapability_RPC_CLONE_VOLUME,
+		csi.ControllerServiceCapability_RPC_LIST_VOLUMES_PUBLISHED_NODES,
 	})
 
 	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{

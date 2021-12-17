@@ -1372,6 +1372,79 @@ func (k *CRDClientV1) DeleteNode(ctx context.Context, n *utils.Node) error {
 	return k.crdClient.TridentV1().TridentNodes(k.namespace).Delete(ctx, v1.NameFix(n.Name), k.deleteOpts())
 }
 
+func (k *CRDClientV1) AddVolumePublication(ctx context.Context, publication *utils.VolumePublication) error {
+
+	newPublication, err := v1.NewTridentVolumePublication(publication)
+	if err != nil {
+		return err
+	}
+
+	_, err = k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Create(ctx, newPublication, createOpts)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k *CRDClientV1) GetVolumePublication(ctx context.Context, nName string) (*utils.VolumePublication, error) {
+
+	publication, err := k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Get(ctx, v1.NameFix(nName),
+		getOpts)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil, utils.NotFoundError(err.Error())
+		}
+		return nil, err
+	}
+
+	persistentPublication, err := publication.Persistent()
+	if err != nil {
+		return nil, err
+	}
+
+	return persistentPublication, nil
+}
+
+func (k *CRDClientV1) GetVolumePublications(ctx context.Context) ([]*utils.VolumePublication, error) {
+
+	publicationList, err := k.crdClient.TridentV1().TridentVolumePublications(k.namespace).List(ctx, listOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]*utils.VolumePublication, 0)
+
+	for _, item := range publicationList.Items {
+		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
+			Logc(ctx).WithFields(log.Fields{
+				"Name":              item.Name,
+				"DeletionTimestamp": item.DeletionTimestamp,
+			}).Debug("GetVolumePublications skipping deleted VolumePublication")
+			continue
+		}
+
+		persistent, err := item.Persistent()
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, persistent)
+	}
+
+	return results, nil
+}
+
+func (k *CRDClientV1) DeleteVolumePublication(ctx context.Context, vp *utils.VolumePublication) error {
+	err := k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Delete(ctx, v1.NameFix(vp.Name),
+		k.deleteOpts())
+	if errors.IsNotFound(err) {
+		return utils.NotFoundError(err.Error())
+	}
+
+	return err
+}
+
 // deleteOpts returns a DeleteOptions struct suitable for most DELETE calls to the K8S REST API.
 func (k *CRDClientV1) deleteOpts() metav1.DeleteOptions {
 

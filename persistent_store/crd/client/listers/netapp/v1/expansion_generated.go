@@ -83,3 +83,11 @@ type TridentVolumeListerExpansion interface{}
 // TridentVolumeNamespaceListerExpansion allows custom methods to be added to
 // TridentVolumeNamespaceLister.
 type TridentVolumeNamespaceListerExpansion interface{}
+
+// TridentVolumePublicationListerExpansion allows custom methods to be added to
+// TridentVolumePublicationLister.
+type TridentVolumePublicationListerExpansion interface{}
+
+// TridentVolumePublicationNamespaceListerExpansion allows custom methods to be added to
+// TridentVolumePublicationNamespaceLister.
+type TridentVolumePublicationNamespaceListerExpansion interface{}

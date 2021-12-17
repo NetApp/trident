@@ -27,8 +27,9 @@ metadata:
   name: {NAMESPACE}
 `
 
-func GetServiceAccountYAML(serviceAccountName string, secrets []string, labels,
-	controllingCRDetails map[string]string) string {
+func GetServiceAccountYAML(
+	serviceAccountName string, secrets []string, labels, controllingCRDetails map[string]string,
+) string {
 
 	var saYAML string
 
@@ -64,8 +65,9 @@ metadata:
 {SECRETS}
 `
 
-func GetClusterRoleYAML(flavor OrchestratorFlavor, clusterRoleName string, labels,
-	controllingCRDetails map[string]string, csi bool) string {
+func GetClusterRoleYAML(
+	flavor OrchestratorFlavor, clusterRoleName string, labels, controllingCRDetails map[string]string, csi bool,
+) string {
 
 	var clusterRoleYAML string
 
@@ -121,7 +123,7 @@ rules:
     resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
 "tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
 "tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
-"tridentsnapshotinfos/status"]
+"tridentsnapshotinfos/status", "tridentvolumepublications"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -190,7 +192,7 @@ rules:
     resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
 "tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
 "tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
-"tridentsnapshotinfos/status"]
+"tridentsnapshotinfos/status", "tridentvolumepublications"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -199,7 +201,9 @@ rules:
       - tridentpods
 `
 
-func GetClusterRoleBindingYAML(namespace string, flavor OrchestratorFlavor, name string, labels, controllingCRDetails map[string]string, csi bool) string {
+func GetClusterRoleBindingYAML(
+	namespace string, flavor OrchestratorFlavor, name string, labels, controllingCRDetails map[string]string, csi bool,
+) string {
 
 	var crbYAML string
 
@@ -365,7 +369,8 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_CUSTOM_URL}", autosupportCustomURLLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SERIAL_NUMBER}", autosupportSerialNumberLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_HOSTNAME}", autosupportHostnameLine)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SILENCE}", strconv.FormatBool(args.SilenceAutosupport))
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SILENCE}",
+		strconv.FormatBool(args.SilenceAutosupport))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{PROVISIONER_FEATURE_GATES}", provisionerFeatureGates)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	deploymentYAML = replaceMultiline(deploymentYAML, args.Labels, args.ControllingCRDetails, args.ImagePullSecrets)
@@ -1048,8 +1053,10 @@ spec:
           secretName: trident-csi
 `
 
-func GetTridentVersionPodYAML(name, tridentImage, serviceAccountName string, imagePullSecrets []string, labels,
-	controllingCRDetails map[string]string) string {
+func GetTridentVersionPodYAML(
+	name, tridentImage, serviceAccountName string, imagePullSecrets []string, labels,
+	controllingCRDetails map[string]string,
+) string {
 
 	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", name)
 	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{TRIDENT_IMAGE}", tridentImage)
@@ -1188,7 +1195,9 @@ metadata:
   name: {SCC}
 `
 
-func GetSecretYAML(secretName, namespace string, labels, controllingCRDetails, data, stringData map[string]string) string {
+func GetSecretYAML(
+	secretName, namespace string, labels, controllingCRDetails, data, stringData map[string]string,
+) string {
 
 	secretYAML := strings.ReplaceAll(secretYAMLTemplate, "{SECRET_NAME}", secretName)
 	secretYAML = strings.ReplaceAll(secretYAML, "{NAMESPACE}", namespace)
@@ -1253,6 +1262,10 @@ func GetVolumeCRDYAML() string {
 	return tridentVolumeCRDYAMLv1
 }
 
+func GetVolumePublicationCRDYAML() string {
+	return tridentVolumePublicationCRDYAMLv1
+}
+
 func GetNodeCRDYAML() string {
 	return tridentNodeCRDYAMLv1
 }
@@ -1276,6 +1289,7 @@ kubectl delete crd tridentmirrorrelationships.trident.netapp.io --wait=false
 kubectl delete crd tridentbackendconfigs.trident.netapp.io --wait=false
 kubectl delete crd tridentstorageclasses.trident.netapp.io --wait=false
 kubectl delete crd tridentvolumes.trident.netapp.io --wait=false
+kubectl delete crd tridentvolumepublications.trident.netapp.io --wait=false
 kubectl delete crd tridentnodes.trident.netapp.io --wait=false
 kubectl delete crd tridenttransactions.trident.netapp.io --wait=false
 kubectl delete crd tridentsnapshots.trident.netapp.io --wait=false
@@ -1286,6 +1300,7 @@ kubectl patch crd tridentmirrorrelationships.trident.netapp.io -p '{"metadata":{
 kubectl patch crd tridentbackendconfigs.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentstorageclasses.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentvolumes.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentvolumepublications.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentnodes.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridenttransactions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentsnapshots.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
@@ -1296,6 +1311,7 @@ kubectl delete crd tridentmirrorrelationships.trident.netapp.io
 kubectl delete crd tridentbackendconfigs.trident.netapp.io
 kubectl delete crd tridentstorageclasses.trident.netapp.io
 kubectl delete crd tridentvolumes.trident.netapp.io
+kubectl delete crd tridentvolumepublications.trident.netapp.io
 kubectl delete crd tridentnodes.trident.netapp.io
 kubectl delete crd tridenttransactions.trident.netapp.io
 kubectl delete crd tridentsnapshots.trident.netapp.io
@@ -1675,6 +1691,62 @@ spec:
     - trident
     - trident-internal`
 
+const tridentVolumePublicationCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentvolumepublications.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            volumeID:
+              type: string
+            nodeID:
+              type: string
+            readOnly:
+              type: boolean
+            accessMode:
+              type: integer
+              format: int32
+          required:
+              - volumeID
+              - nodeID
+              - readOnly
+      additionalPrinterColumns:
+        - name: Volume
+          type: string
+          description: Volume ID
+          priority: 0
+          jsonPath: .volumeID
+        - name: Node
+          type: string
+          description: Node ID
+          priority: 0
+          jsonPath: .nodeID
+  scope: Namespaced
+  names:
+    plural: tridentvolumepublications
+    singular: tridentvolumepublication
+    kind: TridentVolumePublication
+    shortNames:
+    - tvp
+    - tvpub
+    - tvpublication
+    - tvolpub
+    - tvolumepub
+    - tvolpublication
+    - tvolumepublication
+    categories:
+    - trident
+    - trident-internal`
+
 const tridentNodeCRDYAMLv1 = `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -1795,6 +1867,7 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentSnapshotInfoCRDYAMLv1 +
 	"\n---" + tridentStorageClassCRDYAMLv1 +
 	"\n---" + tridentVolumeCRDYAMLv1 +
+	"\n---" + tridentVolumePublicationCRDYAMLv1 +
 	"\n---" + tridentNodeCRDYAMLv1 +
 	"\n---" + tridentTransactionCRDYAMLv1 +
 	"\n---" + tridentSnapshotCRDYAMLv1 + "\n"
@@ -1914,11 +1987,14 @@ func replaceMultiline(originalYAML string, labels, ownerRef map[string]string, i
 
 		switch tag {
 		case "LABELS":
-			originalYAML = strings.Replace(originalYAML, tagWithSpaces, contructLabels(labels, createSpaces(spaceCount)), 1)
+			originalYAML = strings.Replace(originalYAML, tagWithSpaces,
+				contructLabels(labels, createSpaces(spaceCount)), 1)
 		case "OWNER_REF":
-			originalYAML = strings.Replace(originalYAML, tagWithSpaces, constructOwnerRef(ownerRef, createSpaces(spaceCount)), 1)
+			originalYAML = strings.Replace(originalYAML, tagWithSpaces,
+				constructOwnerRef(ownerRef, createSpaces(spaceCount)), 1)
 		case "IMAGE_PULL_SECRETS":
-			originalYAML = strings.Replace(originalYAML, tagWithSpaces, constructImagePullSecrets(imagePullSecrets, createSpaces(spaceCount)), 1)
+			originalYAML = strings.Replace(originalYAML, tagWithSpaces,
+				constructImagePullSecrets(imagePullSecrets, createSpaces(spaceCount)), 1)
 		default:
 			// Unsupported tag
 			return ""

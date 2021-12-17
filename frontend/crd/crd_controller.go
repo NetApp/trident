@@ -137,6 +137,10 @@ type TridentCrdController struct {
 	volumesLister listers.TridentVolumeLister
 	volumesSynced cache.InformerSynced
 
+	// TridentVolumePublication CRD handling
+	volumePublicationsLister listers.TridentVolumePublicationLister
+	volumePublicationsSynced cache.InformerSynced
+
 	// TridentSnapshot CRD handling
 	snapshotsLister listers.TridentSnapshotLister
 	snapshotsSynced cache.InformerSynced
@@ -203,6 +207,7 @@ func newTridentCrdControllerImpl(
 	transactionInformer := crdInformer.TridentTransactions()
 	versionInformer := crdInformer.TridentVersions()
 	volumeInformer := crdInformer.TridentVolumes()
+	volumePublicationInformer := crdInformer.TridentVolumePublications()
 	snapshotInformer := crdInformer.TridentSnapshots()
 	secretInformer := kubeInformer.Secrets()
 
@@ -215,37 +220,39 @@ func newTridentCrdControllerImpl(
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: controllerAgentName})
 
 	controller := &TridentCrdController{
-		orchestrator:          orchestrator,
-		kubeClientset:         kubeClientset,
-		snapshotClientSet:     snapshotClientset,
-		crdClientset:          crdClientset,
-		crdControllerStopChan: make(chan struct{}),
-		crdInformerFactory:    crdInformerFactory,
-		crdInformer:           crdInformer,
-		kubeInformerFactory:   kubeInformerFactory,
-		kubeInformer:          kubeInformer,
-		backendsLister:        backendInformer.Lister(),
-		backendsSynced:        backendInformer.Informer().HasSynced,
-		backendConfigsLister:  backendConfigInformer.Lister(),
-		backendConfigsSynced:  backendConfigInformer.Informer().HasSynced,
-		mirrorLister:          mirrorInformer.Lister(),
-		mirrorSynced:          mirrorInformer.Informer().HasSynced,
-		snapshotInfoLister:    snapshotInfoInformer.Lister(),
-		snapshotInfoSynced:    snapshotInfoInformer.Informer().HasSynced,
-		nodesLister:           nodeInformer.Lister(),
-		nodesSynced:           nodeInformer.Informer().HasSynced,
-		storageClassesLister:  storageClassInformer.Lister(),
-		storageClassesSynced:  storageClassInformer.Informer().HasSynced,
-		transactionsLister:    transactionInformer.Lister(),
-		transactionsSynced:    transactionInformer.Informer().HasSynced,
-		versionsLister:        versionInformer.Lister(),
-		versionsSynced:        versionInformer.Informer().HasSynced,
-		volumesLister:         volumeInformer.Lister(),
-		volumesSynced:         volumeInformer.Informer().HasSynced,
-		snapshotsLister:       snapshotInformer.Lister(),
-		snapshotsSynced:       snapshotInformer.Informer().HasSynced,
-		secretsLister:         secretInformer.Lister(),
-		secretsSynced:         secretInformer.Informer().HasSynced,
+		orchestrator:             orchestrator,
+		kubeClientset:            kubeClientset,
+		snapshotClientSet:        snapshotClientset,
+		crdClientset:             crdClientset,
+		crdControllerStopChan:    make(chan struct{}),
+		crdInformerFactory:       crdInformerFactory,
+		crdInformer:              crdInformer,
+		kubeInformerFactory:      kubeInformerFactory,
+		kubeInformer:             kubeInformer,
+		backendsLister:           backendInformer.Lister(),
+		backendsSynced:           backendInformer.Informer().HasSynced,
+		backendConfigsLister:     backendConfigInformer.Lister(),
+		backendConfigsSynced:     backendConfigInformer.Informer().HasSynced,
+		mirrorLister:             mirrorInformer.Lister(),
+		mirrorSynced:             mirrorInformer.Informer().HasSynced,
+		snapshotInfoLister:       snapshotInfoInformer.Lister(),
+		snapshotInfoSynced:       snapshotInfoInformer.Informer().HasSynced,
+		nodesLister:              nodeInformer.Lister(),
+		nodesSynced:              nodeInformer.Informer().HasSynced,
+		storageClassesLister:     storageClassInformer.Lister(),
+		storageClassesSynced:     storageClassInformer.Informer().HasSynced,
+		transactionsLister:       transactionInformer.Lister(),
+		transactionsSynced:       transactionInformer.Informer().HasSynced,
+		versionsLister:           versionInformer.Lister(),
+		versionsSynced:           versionInformer.Informer().HasSynced,
+		volumesLister:            volumeInformer.Lister(),
+		volumesSynced:            volumeInformer.Informer().HasSynced,
+		volumePublicationsLister: volumePublicationInformer.Lister(),
+		volumePublicationsSynced: volumePublicationInformer.Informer().HasSynced,
+		snapshotsLister:          snapshotInformer.Lister(),
+		snapshotsSynced:          snapshotInformer.Informer().HasSynced,
+		secretsLister:            secretInformer.Lister(),
+		secretsSynced:            secretInformer.Informer().HasSynced,
 		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(),
 			tridentBackendConfigsQueueName),
 		recorder: recorder,
@@ -301,6 +308,7 @@ func newTridentCrdControllerImpl(
 		transactionInformer.Informer(),
 		versionInformer.Informer(),
 		volumeInformer.Informer(),
+		volumePublicationInformer.Informer(),
 		snapshotInformer.Informer(),
 	}
 	for _, informer := range informers {
@@ -366,6 +374,7 @@ func (c *TridentCrdController) Run(threadiness int, stopCh <-chan struct{}) {
 		c.transactionsSynced,
 		c.versionsSynced,
 		c.volumesSynced,
+		c.volumePublicationsSynced,
 		c.mirrorSynced,
 		c.snapshotsSynced,
 		c.snapshotInfoSynced,
@@ -917,7 +926,8 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 
 		if _, statusErr := c.updateTbcEventAndStatus(ctx, backendConfig, newStatus, "Failed to process backend.",
 			corev1.EventTypeWarning); statusErr != nil {
-			err = fmt.Errorf("validation error: %v, Also encountered error while updating the status: %v", err, statusErr)
+			err = fmt.Errorf(
+				"validation error: %v, Also encountered error while updating the status: %v", err, statusErr)
 		}
 
 		return utils.UnsupportedConfigError(err)
@@ -934,8 +944,8 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 			LastOperationStatus: OperationStatusFailed,
 		}
 
-		if _, statusErr := c.updateTbcEventAndStatus(ctx, backendConfig, newStatus, "Failed to retrieve deletion policy.",
-			corev1.EventTypeWarning); statusErr != nil {
+		if _, statusErr := c.updateTbcEventAndStatus(ctx, backendConfig, newStatus,
+			"Failed to retrieve deletion policy.", corev1.EventTypeWarning); statusErr != nil {
 			err = fmt.Errorf("errror during deletion policy retrieval: %v, "+
 				"Also encountered error while updating the status: %v", err, statusErr)
 		}
@@ -1021,7 +1031,8 @@ func (c *TridentCrdController) addBackendConfig(
 			LastOperationStatus: OperationStatusSuccess,
 		}
 
-		if _, statusErr := c.updateTbcEventAndStatus(ctx, backendConfig, newStatus, "Backend created.", corev1.EventTypeNormal); statusErr != nil {
+		if _, statusErr := c.updateTbcEventAndStatus(ctx, backendConfig, newStatus, "Backend created.",
+			corev1.EventTypeNormal); statusErr != nil {
 			err = fmt.Errorf("encountered an error while updating the status: %v", statusErr)
 		}
 	}
@@ -1062,8 +1073,9 @@ func (c *TridentCrdController) updateBackendConfig(
 		rawJSONData := backendConfig.Spec.Raw
 
 		var backendDetails *storage.BackendExternal
-		backendDetails, err = c.orchestrator.UpdateBackendByBackendUUID(ctx, backendConfig.Status.BackendInfo.BackendName,
-			string(rawJSONData), backendConfig.Status.BackendInfo.BackendUUID, string(backendConfig.UID))
+		backendDetails, err = c.orchestrator.UpdateBackendByBackendUUID(ctx,
+			backendConfig.Status.BackendInfo.BackendName, string(rawJSONData),
+			backendConfig.Status.BackendInfo.BackendUUID, string(backendConfig.UID))
 		if err != nil {
 			phase = tridentv1.TridentBackendConfigPhase(backendConfig.Status.Phase)
 
@@ -1100,10 +1112,10 @@ func (c *TridentCrdController) updateBackendConfig(
 			LastOperationStatus: OperationStatusFailed,
 		}
 
-		if _, statusErr := c.updateTbcEventAndStatus(ctx, backendConfig, newStatus, "Failed to apply the backend update.",
-			corev1.EventTypeWarning); statusErr != nil {
-			err = fmt.Errorf("failed to update backend: %v; Also encountered error while updating the status: %v", err,
-				statusErr)
+		if _, statusErr := c.updateTbcEventAndStatus(ctx, backendConfig, newStatus,
+			"Failed to apply the backend update.", corev1.EventTypeWarning); statusErr != nil {
+			err = fmt.Errorf(
+				"failed to update backend: %v; Also encountered error while updating the status: %v", err, statusErr)
 		}
 	}
 
@@ -1237,8 +1249,9 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 		Logx(ctx).WithFields(logFields).Debug("Backend is present and not in a deleting state, " +
 			"proceeding with the backend deletion.")
 
-		if err = c.orchestrator.DeleteBackendByBackendUUID(ctx, backendConfig.Status.BackendInfo.BackendName, backendConfig.Status.
-			BackendInfo.BackendUUID); err != nil {
+		if err = c.orchestrator.DeleteBackendByBackendUUID(ctx, backendConfig.Status.BackendInfo.BackendName,
+			backendConfig.Status.
+				BackendInfo.BackendUUID); err != nil {
 
 			phase = tridentv1.TridentBackendConfigPhase(backendConfig.Status.Phase)
 			err = fmt.Errorf("unable to delete backend '%v'; %v", backendConfig.Status.BackendInfo.BackendName, err)
@@ -1264,7 +1277,8 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 				phase = tridentv1.PhaseUnknown
 
 				Logx(ctx).WithFields(logFields).Errorf("Unable to ensure backend deletion; %v", err)
-				err = fmt.Errorf("unable to ensure backend '%v' deletion; %v", backendConfig.Status.BackendInfo.BackendName,
+				err = fmt.Errorf("unable to ensure backend '%v' deletion; %v",
+					backendConfig.Status.BackendInfo.BackendName,
 					err)
 			} else if backend != nil {
 				message = "Backend still present after a deletion attempt"
@@ -1366,7 +1380,8 @@ func (c *TridentCrdController) getTridentBackend(
 }
 
 // getBackendConfigWithBackendUUID identifies if the backend config referencing a given backendUUID exists or not
-func (c *TridentCrdController) getBackendConfigWithBackendUUID(ctx context.Context, namespace, backendUUID string,
+func (c *TridentCrdController) getBackendConfigWithBackendUUID(
+	ctx context.Context, namespace, backendUUID string,
 ) (*tridentv1.TridentBackendConfig, error) {
 	// Get list of all the backend configs
 	backendConfigList, err := c.crdClientset.TridentV1().TridentBackendConfigs(namespace).List(ctx, listOpts)
@@ -1389,7 +1404,8 @@ func (c *TridentCrdController) getBackendConfigWithBackendUUID(ctx context.Conte
 }
 
 // getBackendConfigsWithSecret identifies the backend configs referencing a given secret (if any)
-func (c *TridentCrdController) getBackendConfigsWithSecret(ctx context.Context, namespace, secret string,
+func (c *TridentCrdController) getBackendConfigsWithSecret(
+	ctx context.Context, namespace, secret string,
 ) ([]*tridentv1.TridentBackendConfig, error) {
 
 	var backendConfigs []*tridentv1.TridentBackendConfig
@@ -1420,7 +1436,8 @@ func (c *TridentCrdController) getBackendConfigsWithSecret(ctx context.Context, 
 }
 
 // getBackendInfo creates TridentBackendConfigBackendInfo object based on the provided information
-func (c *TridentCrdController) getBackendInfo(_ context.Context, backendName, backendUUID string,
+func (c *TridentCrdController) getBackendInfo(
+	_ context.Context, backendName, backendUUID string,
 ) tridentv1.TridentBackendConfigBackendInfo {
 	return tridentv1.TridentBackendConfigBackendInfo{
 		BackendName: backendName,
@@ -1449,7 +1466,8 @@ func (c *TridentCrdController) updateTbcEventAndStatus(
 }
 
 // updateTridentBackendConfigCRStatus updates the status of a CR if required
-func (c *TridentCrdController) updateTridentBackendConfigCRStatus(ctx context.Context,
+func (c *TridentCrdController) updateTridentBackendConfigCRStatus(
+	ctx context.Context,
 	tbcCR *tridentv1.TridentBackendConfig, newStatusDetails tridentv1.TridentBackendConfigStatus, debugMessage string,
 ) (*tridentv1.TridentBackendConfig, bool, error) {
 
@@ -1484,7 +1502,8 @@ func (c *TridentCrdController) updateTridentBackendConfigCRStatus(ctx context.Co
 
 // checkAndHandleNewlyBoundCRDeletion handles a corner cases where tbc is delete immediately after creation
 // which may result in tbc-only deletion in next reconcile without the tbe or in-memory backend deletion
-func (c *TridentCrdController) checkAndHandleNewlyBoundCRDeletion(ctx context.Context,
+func (c *TridentCrdController) checkAndHandleNewlyBoundCRDeletion(
+	ctx context.Context,
 	tbcCR *tridentv1.TridentBackendConfig, newStatusDetails tridentv1.TridentBackendConfigStatus,
 ) *tridentv1.TridentBackendConfig {
 
@@ -1533,7 +1552,8 @@ func (c *TridentCrdController) checkAndHandleNewlyBoundCRDeletion(ctx context.Co
 }
 
 // updateTridentBackendConfigCR updates the TridentBackendConfigCR
-func (c *TridentCrdController) updateTridentBackendConfigCR(ctx context.Context, tbcCR *tridentv1.TridentBackendConfig,
+func (c *TridentCrdController) updateTridentBackendConfigCR(
+	ctx context.Context, tbcCR *tridentv1.TridentBackendConfig,
 ) (*tridentv1.TridentBackendConfig, error) {
 
 	logFields := log.Fields{"TridentBackendConfigCR": tbcCR.Name}
@@ -1560,7 +1580,7 @@ func (c *TridentCrdController) removeFinalizers(ctx context.Context, obj interfa
 
 	switch crd := obj.(type) {
 	case *tridentv1.TridentBackend:
-		//nothing to do
+		// nothing to do
 		return nil
 	case *tridentv1.TridentBackendConfig:
 		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -1586,6 +1606,10 @@ func (c *TridentCrdController) removeFinalizers(ctx context.Context, obj interfa
 		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
 			return c.removeVolumeFinalizers(ctx, crd)
 		}
+	case *tridentv1.TridentVolumePublication:
+		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
+			return c.removeVolumePublicationFinalizers(ctx, crd)
+		}
 	case *tridentv1.TridentSnapshot:
 		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
 			return c.removeSnapshotFinalizers(ctx, crd)
@@ -1607,8 +1631,9 @@ func (c *TridentCrdController) removeFinalizers(ctx context.Context, obj interfa
 }
 
 // removeBackendFinalizers removes Trident's finalizers from TridentBackend CRs
-func (c *TridentCrdController) removeBackendFinalizers(ctx context.Context,
-	backend *tridentv1.TridentBackend) (err error) {
+func (c *TridentCrdController) removeBackendFinalizers(
+	ctx context.Context, backend *tridentv1.TridentBackend,
+) (err error) {
 
 	Logx(ctx).WithFields(log.Fields{
 		"backend.ResourceVersion":              backend.ResourceVersion,
@@ -1632,7 +1657,8 @@ func (c *TridentCrdController) removeBackendFinalizers(ctx context.Context,
 }
 
 // removeBackendConfigFinalizers removes TridentConfig's finalizers from TridentBackendconfig CRs
-func (c *TridentCrdController) removeBackendConfigFinalizers(ctx context.Context, tbc *tridentv1.TridentBackendConfig,
+func (c *TridentCrdController) removeBackendConfigFinalizers(
+	ctx context.Context, tbc *tridentv1.TridentBackendConfig,
 ) (err error) {
 
 	Logx(ctx).WithFields(log.Fields{
@@ -1682,7 +1708,8 @@ func (c *TridentCrdController) removeNodeFinalizers(ctx context.Context, node *t
 }
 
 // removeStorageClassFinalizers removes Trident's finalizers from TridentStorageClass CRs
-func (c *TridentCrdController) removeStorageClassFinalizers(ctx context.Context, sc *tridentv1.TridentStorageClass,
+func (c *TridentCrdController) removeStorageClassFinalizers(
+	ctx context.Context, sc *tridentv1.TridentStorageClass,
 ) (err error) {
 
 	Logx(ctx).WithFields(log.Fields{
@@ -1707,7 +1734,8 @@ func (c *TridentCrdController) removeStorageClassFinalizers(ctx context.Context,
 }
 
 // removeTransactionFinalizers removes Trident's finalizers from TridentTransaction CRs
-func (c *TridentCrdController) removeTransactionFinalizers(ctx context.Context, tx *tridentv1.TridentTransaction,
+func (c *TridentCrdController) removeTransactionFinalizers(
+	ctx context.Context, tx *tridentv1.TridentTransaction,
 ) (err error) {
 
 	Logx(ctx).WithFields(log.Fields{
@@ -1779,8 +1807,35 @@ func (c *TridentCrdController) removeVolumeFinalizers(ctx context.Context, vol *
 	return
 }
 
+// removeVolumePublicationFinalizers removes Trident's finalizers from TridentVolumePublication CRs
+func (c *TridentCrdController) removeVolumePublicationFinalizers(
+	ctx context.Context, volPub *tridentv1.TridentVolumePublication,
+) (err error) {
+
+	Logx(ctx).WithFields(log.Fields{
+		"volPub.ResourceVersion":              volPub.ResourceVersion,
+		"volPub.ObjectMeta.DeletionTimestamp": volPub.ObjectMeta.DeletionTimestamp,
+	}).Debug("removeVolumePublicationFinalizers")
+
+	if volPub.HasTridentFinalizers() {
+		Logx(ctx).Debug("Has finalizers, removing them.")
+		volCopy := volPub.DeepCopy()
+		volCopy.RemoveTridentFinalizers()
+		_, err = c.crdClientset.TridentV1().TridentVolumePublications(volPub.Namespace).Update(ctx, volCopy, updateOpts)
+		if err != nil {
+			Logx(ctx).Errorf("Problem removing finalizers: %v", err)
+			return
+		}
+	} else {
+		Logx(ctx).Debug("No finalizers to remove.")
+	}
+
+	return
+}
+
 // removeSnapshotFinalizers removes Trident's finalizers from TridentSnapshot CRs
-func (c *TridentCrdController) removeSnapshotFinalizers(ctx context.Context, snap *tridentv1.TridentSnapshot,
+func (c *TridentCrdController) removeSnapshotFinalizers(
+	ctx context.Context, snap *tridentv1.TridentSnapshot,
 ) (err error) {
 
 	Logx(ctx).WithFields(log.Fields{
@@ -1805,7 +1860,8 @@ func (c *TridentCrdController) removeSnapshotFinalizers(ctx context.Context, sna
 }
 
 // removeTMRFinalizers removes Trident's finalizers from TridentMirrorRelationship CRs
-func (c *TridentCrdController) removeTMRFinalizers(ctx context.Context, tmr *tridentv1.TridentMirrorRelationship,
+func (c *TridentCrdController) removeTMRFinalizers(
+	ctx context.Context, tmr *tridentv1.TridentMirrorRelationship,
 ) (err error) {
 
 	Logx(ctx).WithFields(log.Fields{
@@ -1830,7 +1886,8 @@ func (c *TridentCrdController) removeTMRFinalizers(ctx context.Context, tmr *tri
 }
 
 // removeTSIFinalizers removes Trident's finalizers from TridentSnapshotInfo CRs
-func (c *TridentCrdController) removeTSIFinalizers(ctx context.Context, tsi *tridentv1.TridentSnapshotInfo,
+func (c *TridentCrdController) removeTSIFinalizers(
+	ctx context.Context, tsi *tridentv1.TridentSnapshotInfo,
 ) (err error) {
 
 	Logx(ctx).WithFields(log.Fields{
