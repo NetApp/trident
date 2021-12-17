@@ -104,7 +104,7 @@ To upgrade **from**: Trident 21.01 and later, here is the set of steps to be fol
 
    .. code-block:: bash
 
-       kubectl install -f 21.07/trident-installer/deploy/bundle.yaml -n trident.
+       kubectl create -f 21.07/trident-installer/deploy/bundle.yaml -n trident
 
 As part of this step, the 21.07 Trident operator will identify an existing Trident installation and upgrade it to the same version as the operator. 
 
