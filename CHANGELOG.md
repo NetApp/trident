@@ -10,6 +10,10 @@
 
 - Allow cross-region volumes in GCP driver (Issue [#633](https://github.com/NetApp/trident/issues/633))
 
+**Deprecations:**
+
+- Trident REST interface can listen and serve only at 127.0.0.1 or [::1] addresses
+
 ## v21.10.0
 
 **Fixes:**

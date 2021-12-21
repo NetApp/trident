@@ -37,7 +37,7 @@ commands and global options:
     -h, --help               help for tridentctl
     -n, --namespace string   Namespace of Trident deployment
     -o, --output string      Output format. One of json|yaml|name|wide|ps (default)
-    -s, --server string      Address/port of Trident REST interface
+    -s, --server string      Address/port of Trident REST interface (127.0.0.1 or [::1] only)
 
 create
 ------
