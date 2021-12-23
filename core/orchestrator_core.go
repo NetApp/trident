@@ -359,7 +359,7 @@ func (o *TridentOrchestrator) bootstrapSnapshots(ctx context.Context) error {
 				snapshot.State = storage.SnapshotStateMissingBackend
 			} else {
 				if fakeDriver, ok := backend.Driver().(*fake.StorageDriver); ok {
-					fakeDriver.BootstrapSnapshot(ctx, snapshot)
+					fakeDriver.BootstrapSnapshot(ctx, snapshot, volume.Config)
 				}
 			}
 		}
@@ -1986,6 +1986,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	// Copy a few attributes from the request that will affect clone creation
 	cloneConfig.Name = volumeConfig.Name
 	cloneConfig.InternalName = ""
+	cloneConfig.InternalID = ""
 	cloneConfig.CloneSourceVolume = volumeConfig.CloneSourceVolume
 	cloneConfig.CloneSourceVolumeInternal = sourceVolume.Config.InternalName
 	cloneConfig.CloneSourceSnapshot = volumeConfig.CloneSourceSnapshot
@@ -2032,7 +2033,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	}()
 
 	// Create the clone
-	if vol, err = backend.CloneVolume(ctx, cloneConfig, pool, false); err != nil {
+	if vol, err = backend.CloneVolume(ctx, sourceVolume.Config, cloneConfig, pool, false); err != nil {
 
 		logFields := log.Fields{
 			"backend":      backend.Name(),
@@ -2074,7 +2075,13 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 
 	cloneConfig := &txn.VolumeCreatingConfig.VolumeConfig
 
-	backend, found := o.backends[txn.VolumeCreatingConfig.BackendUUID]
+	// Get the source volume
+	sourceVolume, found := o.volumes[cloneConfig.CloneSourceVolume]
+	if !found {
+		return nil, utils.NotFoundError(fmt.Sprintf("source volume not found: %s", cloneConfig.CloneSourceVolume))
+	}
+
+	backend, found = o.backends[txn.VolumeCreatingConfig.BackendUUID]
 	if !found {
 		// Should never get here but just to be safe
 		return nil, utils.NotFoundError(fmt.Sprintf("backend %s for volume %s not found",
@@ -2103,7 +2110,7 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 	}()
 
 	// Create the clone
-	if vol, err = backend.CloneVolume(ctx, cloneConfig, pool, true); err != nil {
+	if vol, err = backend.CloneVolume(ctx, sourceVolume.Config, cloneConfig, pool, true); err != nil {
 
 		logFields := log.Fields{
 			"backend":      backend.Name(),
@@ -3247,7 +3254,7 @@ func (o *TridentOrchestrator) CreateSnapshot(
 	snapshotConfig.VolumeInternalName = volume.Config.InternalName
 
 	// Ensure a snapshot is even possible before creating the transaction
-	if err := backend.CanSnapshot(ctx, snapshotConfig); err != nil {
+	if err := backend.CanSnapshot(ctx, snapshotConfig, volume.Config); err != nil {
 		return nil, err
 	}
 
@@ -3400,7 +3407,7 @@ func (o *TridentOrchestrator) updateSnapshot(
 		return snapshot, utils.NotFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
 	}
 
-	updatedSnapshot, err := backend.GetSnapshot(ctx, snapshot.Config)
+	updatedSnapshot, err := backend.GetSnapshot(ctx, snapshot.Config, volume.Config)
 	if err != nil {
 		return snapshot, err
 	}

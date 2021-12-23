@@ -58,6 +58,8 @@ type VolumeConfig struct {
 	IsMirrorDestination bool `json:"mirrorDestination,omitempty"`
 	// PeerVolumeHandle is the internal volume handle for the source volume if this volume is a mirror destination
 	PeerVolumeHandle string `json:"requiredPeerVolumeHandle,omitempty"`
+	// InternalID is an optional, backend-specific identifier to help find an object
+	InternalID string `json:"internalID,omitempty"`
 }
 
 type VolumeCreatingConfig struct {

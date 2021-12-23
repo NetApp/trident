@@ -95,32 +95,32 @@ func (mr *MockBackendMockRecorder) CanMirror() *gomock.Call {
 }
 
 // CanSnapshot mocks base method.
-func (m *MockBackend) CanSnapshot(arg0 context.Context, arg1 *storage.SnapshotConfig) error {
+func (m *MockBackend) CanSnapshot(arg0 context.Context, arg1 *storage.SnapshotConfig, arg2 *storage.VolumeConfig) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CanSnapshot", arg0, arg1)
+	ret := m.ctrl.Call(m, "CanSnapshot", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CanSnapshot indicates an expected call of CanSnapshot.
-func (mr *MockBackendMockRecorder) CanSnapshot(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBackendMockRecorder) CanSnapshot(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanSnapshot", reflect.TypeOf((*MockBackend)(nil).CanSnapshot), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanSnapshot", reflect.TypeOf((*MockBackend)(nil).CanSnapshot), arg0, arg1, arg2)
 }
 
 // CloneVolume mocks base method.
-func (m *MockBackend) CloneVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 storage.Pool, arg3 bool) (*storage.Volume, error) {
+func (m *MockBackend) CloneVolume(arg0 context.Context, arg1, arg2 *storage.VolumeConfig, arg3 storage.Pool, arg4 bool) (*storage.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CloneVolume", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "CloneVolume", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*storage.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CloneVolume indicates an expected call of CloneVolume.
-func (mr *MockBackendMockRecorder) CloneVolume(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockBackendMockRecorder) CloneVolume(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloneVolume", reflect.TypeOf((*MockBackend)(nil).CloneVolume), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloneVolume", reflect.TypeOf((*MockBackend)(nil).CloneVolume), arg0, arg1, arg2, arg3, arg4)
 }
 
 // ConfigRef mocks base method.
@@ -265,18 +265,18 @@ func (mr *MockBackendMockRecorder) GetProtocol(arg0 interface{}) *gomock.Call {
 }
 
 // GetSnapshot mocks base method.
-func (m *MockBackend) GetSnapshot(arg0 context.Context, arg1 *storage.SnapshotConfig) (*storage.Snapshot, error) {
+func (m *MockBackend) GetSnapshot(arg0 context.Context, arg1 *storage.SnapshotConfig, arg2 *storage.VolumeConfig) (*storage.Snapshot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSnapshot", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetSnapshot", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*storage.Snapshot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSnapshot indicates an expected call of GetSnapshot.
-func (mr *MockBackendMockRecorder) GetSnapshot(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockBackendMockRecorder) GetSnapshot(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshot", reflect.TypeOf((*MockBackend)(nil).GetSnapshot), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshot", reflect.TypeOf((*MockBackend)(nil).GetSnapshot), arg0, arg1, arg2)
 }
 
 // GetSnapshots mocks base method.

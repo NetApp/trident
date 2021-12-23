@@ -432,12 +432,12 @@ func (d *NASQtreeStorageDriver) Create(
 
 // CreateClone creates a volume clone
 func (d *NASQtreeStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, _ storage.Pool,
+	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, _ storage.Pool,
 ) error {
 
-	name := volConfig.InternalName
-	source := volConfig.CloneSourceVolumeInternal
-	snapshot := volConfig.CloneSourceSnapshot
+	name := cloneVolConfig.InternalName
+	source := cloneVolConfig.CloneSourceVolumeInternal
+	snapshot := cloneVolConfig.CloneSourceSnapshot
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -465,7 +465,9 @@ func (d *NASQtreeStorageDriver) Rename(context.Context, string, string) error {
 }
 
 // Destroy the volume
-func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, name string) error {
+func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -608,14 +610,16 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
-func (d *NASQtreeStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+func (d *NASQtreeStorageDriver) CanSnapshot(
+	_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
-func (d *NASQtreeStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) (
-	*storage.Snapshot, error,
-) {
+func (d *NASQtreeStorageDriver) GetSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) (*storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -652,7 +656,7 @@ func (d *NASQtreeStorageDriver) GetSnapshots(ctx context.Context, volConfig *sto
 
 // CreateSnapshot creates a snapshot for the given volume
 func (d *NASQtreeStorageDriver) CreateSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -670,7 +674,9 @@ func (d *NASQtreeStorageDriver) CreateSnapshot(
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
-func (d *NASQtreeStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *NASQtreeStorageDriver) RestoreSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -687,7 +693,9 @@ func (d *NASQtreeStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig 
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
-func (d *NASQtreeStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *NASQtreeStorageDriver) DeleteSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{

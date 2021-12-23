@@ -38,9 +38,9 @@ type Driver interface {
 	CreatePrepare(ctx context.Context, volConfig *VolumeConfig)
 	// CreateFollowup adds necessary information for accessing the volume to VolumeConfig.
 	CreateFollowup(ctx context.Context, volConfig *VolumeConfig) error
-	CreateClone(ctx context.Context, volConfig *VolumeConfig, storagePool Pool) error
+	CreateClone(ctx context.Context, sourceVolConfig, cloneVolConfig *VolumeConfig, storagePool Pool) error
 	Import(ctx context.Context, volConfig *VolumeConfig, originalName string) error
-	Destroy(ctx context.Context, name string) error
+	Destroy(ctx context.Context, volConfig *VolumeConfig) error
 	Rename(ctx context.Context, name, newName string) error
 	Resize(ctx context.Context, volConfig *VolumeConfig, sizeBytes uint64) error
 	Get(ctx context.Context, name string) error
@@ -49,12 +49,12 @@ type Driver interface {
 	GetStorageBackendPhysicalPoolNames(ctx context.Context) []string
 	GetProtocol(ctx context.Context) tridentconfig.Protocol
 	Publish(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
-	CanSnapshot(ctx context.Context, snapConfig *SnapshotConfig) error
-	GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig) (*Snapshot, error)
+	CanSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error
+	GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) (*Snapshot, error)
 	GetSnapshots(ctx context.Context, volConfig *VolumeConfig) ([]*Snapshot, error)
-	CreateSnapshot(ctx context.Context, snapConfig *SnapshotConfig) (*Snapshot, error)
-	RestoreSnapshot(ctx context.Context, snapConfig *SnapshotConfig) error
-	DeleteSnapshot(ctx context.Context, snapConfig *SnapshotConfig) error
+	CreateSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) (*Snapshot, error)
+	RestoreSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error
+	DeleteSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error
 	StoreConfig(ctx context.Context, b *PersistentStorageBackendConfig)
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
@@ -342,7 +342,7 @@ func (b *StorageBackend) AddVolume(
 				"volume":  volConfig.InternalName,
 			}).Errorf("CreateFollowup failed for newly created volume, deleting the volume.")
 
-			errDestroy := b.driver.Destroy(ctx, volConfig.InternalName)
+			errDestroy := b.driver.Destroy(ctx, volConfig)
 			if errDestroy != nil {
 				Logc(ctx).WithFields(log.Fields{
 					"backend": b.name,
@@ -388,23 +388,23 @@ func (b *StorageBackend) GetDebugTraceFlags(ctx context.Context) map[string]bool
 }
 
 func (b *StorageBackend) CloneVolume(
-	ctx context.Context, volConfig *VolumeConfig, storagePool Pool, retry bool,
+	ctx context.Context, sourceVolConfig, cloneVolConfig *VolumeConfig, storagePool Pool, retry bool,
 ) (*Volume, error) {
 
 	Logc(ctx).WithFields(log.Fields{
-		"backend":                volConfig.Name,
+		"backend":                cloneVolConfig.Name,
 		"backendUUID":            b.backendUUID,
-		"storage_class":          volConfig.StorageClass,
-		"source_volume":          volConfig.CloneSourceVolume,
-		"source_volume_internal": volConfig.CloneSourceVolumeInternal,
-		"source_snapshot":        volConfig.CloneSourceSnapshot,
-		"clone_volume":           volConfig.Name,
-		"clone_volume_internal":  volConfig.InternalName,
+		"storage_class":          cloneVolConfig.StorageClass,
+		"source_volume":          cloneVolConfig.CloneSourceVolume,
+		"source_volume_internal": cloneVolConfig.CloneSourceVolumeInternal,
+		"source_snapshot":        cloneVolConfig.CloneSourceSnapshot,
+		"clone_volume":           cloneVolConfig.Name,
+		"clone_volume_internal":  cloneVolConfig.InternalName,
 	}).Debug("Attempting volume clone.")
 
 	// Ensure volume is managed
-	if volConfig.ImportNotManaged {
-		return nil, &NotManagedError{volConfig.InternalName}
+	if cloneVolConfig.ImportNotManaged {
+		return nil, &NotManagedError{cloneVolConfig.InternalName}
 	}
 
 	// Ensure backend is ready
@@ -413,16 +413,16 @@ func (b *StorageBackend) CloneVolume(
 	}
 
 	// Ensure the internal names exist
-	if volConfig.InternalName == "" {
+	if cloneVolConfig.InternalName == "" {
 		return nil, errors.New("internal name not set")
 	}
-	if volConfig.CloneSourceVolumeInternal == "" {
+	if cloneVolConfig.CloneSourceVolumeInternal == "" {
 		return nil, errors.New("clone source volume internal name not set")
 	}
 
 	// Clone volume on the backend
 	volumeExists := false
-	if err := b.driver.CreateClone(ctx, volConfig, storagePool); err != nil {
+	if err := b.driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, storagePool); err != nil {
 
 		if drivers.IsVolumeExistsError(err) {
 
@@ -431,7 +431,7 @@ func (b *StorageBackend) CloneVolume(
 
 			Logc(ctx).WithFields(log.Fields{
 				"backend": b.name,
-				"volume":  volConfig.InternalName,
+				"volume":  cloneVolConfig.InternalName,
 			}).Warning("Volume already exists.")
 
 		} else {
@@ -442,7 +442,7 @@ func (b *StorageBackend) CloneVolume(
 
 	// The clone may not be fully created when the clone API returns, so wait here until it exists.
 	checkCloneExists := func() error {
-		return b.driver.Get(ctx, volConfig.InternalName)
+		return b.driver.Get(ctx, cloneVolConfig.InternalName)
 	}
 	cloneExistsNotify := func(err error, duration time.Duration) {
 		Logc(ctx).WithField("increment", duration).Debug("Clone not yet present, waiting.")
@@ -455,21 +455,21 @@ func (b *StorageBackend) CloneVolume(
 
 	// Run the clone check using an exponential backoff
 	if err := backoff.RetryNotify(checkCloneExists, cloneBackoff, cloneExistsNotify); err != nil {
-		Logc(ctx).WithField("clone_volume", volConfig.Name).Warnf("Could not find clone after %3.2f seconds.",
+		Logc(ctx).WithField("clone_volume", cloneVolConfig.Name).Warnf("Could not find clone after %3.2f seconds.",
 			float64(cloneBackoff.MaxElapsedTime))
 	} else {
-		Logc(ctx).WithField("clone_volume", volConfig.Name).Debug("Clone found.")
+		Logc(ctx).WithField("clone_volume", cloneVolConfig.Name).Debug("Clone found.")
 	}
 
-	if err := b.driver.CreateFollowup(ctx, volConfig); err != nil {
+	if err := b.driver.CreateFollowup(ctx, cloneVolConfig); err != nil {
 
 		// If follow-up fails and we just created the volume, clean up by deleting it
 		if !volumeExists || retry {
-			errDestroy := b.driver.Destroy(ctx, volConfig.InternalName)
+			errDestroy := b.driver.Destroy(ctx, cloneVolConfig)
 			if errDestroy != nil {
 				Logc(ctx).WithFields(log.Fields{
 					"backend": b.name,
-					"volume":  volConfig.InternalName,
+					"volume":  cloneVolConfig.InternalName,
 				}).Warnf("Mapping the created volume failed and %s wasn't able to delete it afterwards: %s. "+
 					"Volume must be manually deleted.", tridentconfig.OrchestratorName, errDestroy)
 			}
@@ -488,7 +488,7 @@ func (b *StorageBackend) CloneVolume(
 		poolName = storagePool.Name()
 	}
 
-	vol := NewVolume(volConfig, b.backendUUID, poolName, false)
+	vol := NewVolume(cloneVolConfig, b.backendUUID, poolName, false)
 	b.volumes[vol.Config.Name] = vol
 	return vol, nil
 }
@@ -673,7 +673,7 @@ func (b *StorageBackend) RemoveVolume(ctx context.Context, volConfig *VolumeConf
 		return err
 	}
 
-	if err := b.driver.Destroy(ctx, volConfig.InternalName); err != nil {
+	if err := b.driver.Destroy(ctx, volConfig); err != nil {
 		// TODO:  Check the error being returned once the nDVP throws errors
 		// for volumes that aren't found.
 		return err
@@ -687,11 +687,13 @@ func (b *StorageBackend) RemoveCachedVolume(volumeName string) {
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
-func (b *StorageBackend) CanSnapshot(ctx context.Context, snapConfig *SnapshotConfig) error {
-	return b.driver.CanSnapshot(ctx, snapConfig)
+func (b *StorageBackend) CanSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error {
+	return b.driver.CanSnapshot(ctx, snapConfig, volConfig)
 }
 
-func (b *StorageBackend) GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig) (*Snapshot, error) {
+func (b *StorageBackend) GetSnapshot(
+	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
+) (*Snapshot, error) {
 
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.name,
@@ -705,7 +707,7 @@ func (b *StorageBackend) GetSnapshot(ctx context.Context, snapConfig *SnapshotCo
 		return nil, err
 	}
 
-	if snapshot, err := b.driver.GetSnapshot(ctx, snapConfig); err != nil {
+	if snapshot, err := b.driver.GetSnapshot(ctx, snapConfig, volConfig); err != nil {
 		// An error here means we couldn't check for the snapshot.  It does not mean the snapshot doesn't exist.
 		return nil, err
 	} else if snapshot == nil {
@@ -758,7 +760,7 @@ func (b *StorageBackend) CreateSnapshot(
 	snapConfig.InternalName = snapConfig.Name
 
 	// Implement idempotency by checking for the snapshot first
-	if existingSnapshot, err := b.driver.GetSnapshot(ctx, snapConfig); err != nil {
+	if existingSnapshot, err := b.driver.GetSnapshot(ctx, snapConfig, volConfig); err != nil {
 
 		// An error here means we couldn't check for the snapshot.  It does not mean the snapshot doesn't exist.
 		return nil, err
@@ -776,7 +778,7 @@ func (b *StorageBackend) CreateSnapshot(
 	}
 
 	// Create snapshot
-	return b.driver.CreateSnapshot(ctx, snapConfig)
+	return b.driver.CreateSnapshot(ctx, snapConfig, volConfig)
 }
 
 func (b *StorageBackend) RestoreSnapshot(
@@ -801,7 +803,7 @@ func (b *StorageBackend) RestoreSnapshot(
 	}
 
 	// Restore snapshot
-	return b.driver.RestoreSnapshot(ctx, snapConfig)
+	return b.driver.RestoreSnapshot(ctx, snapConfig, volConfig)
 }
 
 func (b *StorageBackend) DeleteSnapshot(
@@ -826,7 +828,7 @@ func (b *StorageBackend) DeleteSnapshot(
 	}
 
 	// Implement idempotency by checking for the snapshot first
-	if existingSnapshot, err := b.driver.GetSnapshot(ctx, snapConfig); err != nil {
+	if existingSnapshot, err := b.driver.GetSnapshot(ctx, snapConfig, volConfig); err != nil {
 
 		// An error here means we couldn't check for the snapshot.  It does not mean the snapshot doesn't exist.
 		return err
@@ -844,7 +846,7 @@ func (b *StorageBackend) DeleteSnapshot(
 	}
 
 	// Delete snapshot
-	return b.driver.DeleteSnapshot(ctx, snapConfig)
+	return b.driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 }
 
 const (

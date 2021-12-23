@@ -783,11 +783,13 @@ func (d *StorageDriver) unpadVolumeSizeWithSnapshotReserve(
 }
 
 // CreateClone creates a volume from an existing volume or snapshot.
-func (d *StorageDriver) CreateClone(ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool) error {
+func (d *StorageDriver) CreateClone(
+	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, pool storage.Pool,
+) error {
 
-	name := volConfig.InternalName
-	sourceVolumeName := volConfig.CloneSourceVolumeInternal
-	sourceSnapshotName := volConfig.CloneSourceSnapshot
+	name := cloneVolConfig.InternalName
+	sourceVolumeName := cloneVolConfig.CloneSourceVolumeInternal
+	sourceSnapshotName := cloneVolConfig.CloneSourceSnapshot
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -856,7 +858,7 @@ func (d *StorageDriver) CreateClone(ctx context.Context, volConfig *storage.Volu
 	}
 
 	// Take export policy from volume config first (handles Docker case & PVC annotations), then from source volume
-	exportPolicy := volConfig.ExportPolicy
+	exportPolicy := cloneVolConfig.ExportPolicy
 	if exportPolicy == "" {
 		exportPolicy = sourceVolume.ExportPolicy
 	}
@@ -889,7 +891,7 @@ func (d *StorageDriver) CreateClone(ctx context.Context, volConfig *storage.Volu
 		Namespace:       d.Config.Namespace,
 		Annotations:     annotations,
 		Labels:          d.validateLabels(ctx, pool.GetLabels(ctx, labelPrefix)),
-		DisplayName:     volConfig.Name,
+		DisplayName:     cloneVolConfig.Name,
 		RequestedSize:   sourceVolume.RequestedSize,
 		Type:            api.NetappVolumeTypeReadWrite,
 		ExportPolicy:    exportPolicy,
@@ -1115,7 +1117,9 @@ func (d *StorageDriver) validateLabels(ctx context.Context, labels map[string]st
 }
 
 // Destroy deletes a volume.
-func (d *StorageDriver) Destroy(ctx context.Context, name string) (err error) {
+func (d *StorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) (err error) {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1507,14 +1511,14 @@ func (d *StorageDriver) reconcileExportPolicyRules(
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
-func (d *StorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+func (d *StorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
 	return nil
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
 func (d *StorageDriver) GetSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
@@ -1635,7 +1639,7 @@ func (d *StorageDriver) GetSnapshots(
 
 // CreateSnapshot creates a snapshot for the given volume.
 func (d *StorageDriver) CreateSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
@@ -1720,7 +1724,9 @@ func (d *StorageDriver) cleanUpFailedSnapshot(ctx context.Context, snapshot *api
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
-func (d *StorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *StorageDriver) RestoreSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -1740,7 +1746,9 @@ func (d *StorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *storage
 }
 
 // DeleteSnapshot deletes a snapshot of a volume.
-func (d *StorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *StorageDriver) DeleteSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName

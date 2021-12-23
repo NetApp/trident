@@ -655,12 +655,15 @@ func MinInt64(a, b int64) int64 {
 	return b
 }
 
-// DerefString accepts a string pointer and returns the value of the string, or "" if the pointer is nil.
-func DerefString(s *string) string {
-	if s != nil {
-		return *s
+func ValidateOctalUnixPermissions(perms string) error {
+
+	permsRegex := regexp.MustCompile(`^[0-7]{4}$`)
+
+	if !permsRegex.MatchString(perms) {
+		return fmt.Errorf("%s is not a valid octal unix permissions value", perms)
 	}
-	return ""
+
+	return nil
 }
 
 func GenerateVolumePublishName(volumeID, nodeID string) string {

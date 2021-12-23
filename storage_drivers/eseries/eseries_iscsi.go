@@ -607,7 +607,9 @@ func (d *SANStorageDriver) getPoolsForCreate(
 }
 
 // Destroy is called by Docker to delete a container volume.
-func (d *SANStorageDriver) Destroy(ctx context.Context, name string) error {
+func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -871,14 +873,14 @@ func (d *SANStorageDriver) MapVolumeToLocalHost(ctx context.Context, volume api.
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
-func (d *SANStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+func (d *SANStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
 	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
-func (d *SANStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) (
-	*storage.Snapshot, error,
-) {
+func (d *SANStorageDriver) GetSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) (*storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -915,9 +917,9 @@ func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.
 
 // CreateSnapshot creates a snapshot for the given volume. The E-series volume plugin
 // does not support cloning or snapshots, so this method always returns an error.
-func (d *SANStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) (
-	*storage.Snapshot, error,
-) {
+func (d *SANStorageDriver) CreateSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) (*storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -934,7 +936,9 @@ func (d *SANStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *stora
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
-func (d *SANStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *SANStorageDriver) RestoreSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -951,7 +955,9 @@ func (d *SANStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *stor
 }
 
 // DeleteSnapshot deletes a volume snapshot.
-func (d *SANStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *SANStorageDriver) DeleteSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -969,11 +975,13 @@ func (d *SANStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *stora
 
 // CreateClone creates a new volume from the named volume, either by direct clone or from the named snapshot.
 // The E-series volume plugin does not support cloning or snapshots, so this method always returns an error.
-func (d *SANStorageDriver) CreateClone(ctx context.Context, volConfig *storage.VolumeConfig, _ storage.Pool) error {
+func (d *SANStorageDriver) CreateClone(
+	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, _ storage.Pool,
+) error {
 
-	name := volConfig.InternalName
-	source := volConfig.CloneSourceVolumeInternal
-	snapshot := volConfig.CloneSourceSnapshot
+	name := cloneVolConfig.InternalName
+	source := cloneVolConfig.CloneSourceVolumeInternal
+	snapshot := cloneVolConfig.CloneSourceSnapshot
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{

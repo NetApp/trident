@@ -672,21 +672,30 @@ func TestValidateCIDRSet(t *testing.T) {
 	}
 }
 
-func TestDerefString(t *testing.T) {
-	log.Debug("Running TestDerefString...")
+func TestValidateOctalUnixPermissions(t *testing.T) {
 
-	s := "test"
-
-	var testCases = []struct {
-		Ptr            *string
-		ExpectedResult string
+	var tests = []struct {
+		perms     string
+		errNotNil bool
 	}{
-		{nil, ""},
-		{&s, "test"},
+		// Positive tests
+		{"0700", false},
+		{"0755", false},
+		{"0000", false},
+		{"7777", false},
+
+		// Negative tests
+		{"", true},
+		{"777", true},
+		{"77777", true},
+		{"8777", true},
+		{"7778", true},
 	}
 
-	for _, testCase := range testCases {
-		result := DerefString(testCase.Ptr)
-		assert.Equal(t, testCase.ExpectedResult, result)
+	for _, test := range tests {
+
+		err := ValidateOctalUnixPermissions(test.perms)
+
+		assert.Equal(t, test.errNotNil, err != nil)
 	}
 }

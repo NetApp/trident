@@ -907,12 +907,12 @@ func (d *NFSStorageDriver) ensureTopologyRegionAndZone(
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
 func (d *NFSStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
+	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
 
-	name := volConfig.InternalName
-	source := volConfig.CloneSourceVolumeInternal
-	snapshot := volConfig.CloneSourceSnapshot
+	name := cloneVolConfig.InternalName
+	source := cloneVolConfig.CloneSourceVolumeInternal
+	snapshot := cloneVolConfig.CloneSourceSnapshot
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -995,7 +995,7 @@ func (d *NFSStorageDriver) CreateClone(
 		return fmt.Errorf("cannot clone a volume from both snapshot and backup")
 	}
 
-	network := volConfig.Network
+	network := cloneVolConfig.Network
 	if network == "" {
 		Logc(ctx).Debugf("Network not found in volume config, using '%s'.", d.Config.Network)
 		network = d.Config.Network
@@ -1031,7 +1031,7 @@ func (d *NFSStorageDriver) CreateClone(
 	}
 
 	createRequest := &api.VolumeCreateRequest{
-		Name:              volConfig.Name,
+		Name:              cloneVolConfig.Name,
 		Region:            sourceVolume.Region,
 		Zone:              sourceVolume.Zone,
 		CreationToken:     name,
@@ -1315,7 +1315,9 @@ func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 }
 
 // Destroy deletes a volume.
-func (d *NFSStorageDriver) Destroy(ctx context.Context, name string) error {
+func (d *NFSStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1406,14 +1408,14 @@ func (d *NFSStorageDriver) Publish(
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
-func (d *NFSStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+func (d *NFSStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
 	return nil
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
 func (d *NFSStorageDriver) GetSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
@@ -1647,7 +1649,7 @@ func (d *NFSStorageDriver) getBackups(
 
 // CreateSnapshot creates a snapshot for the given volume.
 func (d *NFSStorageDriver) CreateSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
@@ -1801,7 +1803,9 @@ func (d *NFSStorageDriver) getSnapshotStateForBackup(backup *api.Backup) storage
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
-func (d *NFSStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *NFSStorageDriver) RestoreSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -1838,7 +1842,9 @@ func (d *NFSStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *stor
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
-func (d *NFSStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *NFSStorageDriver) DeleteSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName

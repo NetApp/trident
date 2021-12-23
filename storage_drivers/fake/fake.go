@@ -735,11 +735,13 @@ func (d *StorageDriver) BootstrapVolume(ctx context.Context, volume *storage.Vol
 	}
 }
 
-func (d *StorageDriver) CreateClone(ctx context.Context, volConfig *storage.VolumeConfig, _ storage.Pool) error {
+func (d *StorageDriver) CreateClone(
+	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, _ storage.Pool,
+) error {
 
-	name := volConfig.InternalName
-	source := volConfig.CloneSourceVolumeInternal
-	snapshot := volConfig.CloneSourceSnapshot
+	name := cloneVolConfig.InternalName
+	source := cloneVolConfig.CloneSourceVolumeInternal
+	snapshot := cloneVolConfig.CloneSourceSnapshot
 
 	// Ensure source volume exists
 	sourceVolume, ok := d.Volumes[source]
@@ -833,7 +835,9 @@ func (d *StorageDriver) Rename(ctx context.Context, name, newName string) error 
 	return nil
 }
 
-func (d *StorageDriver) Destroy(ctx context.Context, name string) error {
+func (d *StorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
+
+	name := volConfig.InternalName
 
 	d.DestroyedVolumes[name] = true
 
@@ -868,15 +872,15 @@ func (d *StorageDriver) Publish(context.Context, *storage.VolumeConfig, *utils.V
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
-func (d *StorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+func (d *StorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
 	return nil
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
-func (d *StorageDriver) GetSnapshot(_ context.Context, snapConfig *storage.SnapshotConfig) (
-	*storage.Snapshot, error,
-) {
+func (d *StorageDriver) GetSnapshot(
+	_ context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -920,9 +924,9 @@ func (d *StorageDriver) GetSnapshots(_ context.Context, volConfig *storage.Volum
 }
 
 // CreateSnapshot creates a snapshot for the given volume
-func (d *StorageDriver) CreateSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) (
-	*storage.Snapshot, error,
-) {
+func (d *StorageDriver) CreateSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -979,7 +983,9 @@ func (d *StorageDriver) CreateSnapshot(ctx context.Context, snapConfig *storage.
 	return snapshot, nil
 }
 
-func (d *StorageDriver) BootstrapSnapshot(ctx context.Context, snapshot *storage.Snapshot) {
+func (d *StorageDriver) BootstrapSnapshot(
+	ctx context.Context, snapshot *storage.Snapshot, volConfig *storage.VolumeConfig,
+) {
 
 	logFields := log.Fields{
 		"backend":      d.Config.InstanceName,
@@ -987,7 +993,7 @@ func (d *StorageDriver) BootstrapSnapshot(ctx context.Context, snapshot *storage
 		"sourceVolume": snapshot.Config.VolumeInternalName,
 	}
 
-	if newSnapshot, err := d.CreateSnapshot(ctx, snapshot.Config); err != nil {
+	if newSnapshot, err := d.CreateSnapshot(ctx, snapshot.Config, volConfig); err != nil {
 		Logc(ctx).WithFields(logFields).Error("Failed to bootstrap fake snapshot.")
 	} else {
 		newSnapshot.Created = snapshot.Created
@@ -996,7 +1002,9 @@ func (d *StorageDriver) BootstrapSnapshot(ctx context.Context, snapshot *storage
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
-func (d *StorageDriver) RestoreSnapshot(_ context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *StorageDriver) RestoreSnapshot(
+	_ context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -1018,7 +1026,9 @@ func (d *StorageDriver) RestoreSnapshot(_ context.Context, snapConfig *storage.S
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
-func (d *StorageDriver) DeleteSnapshot(_ context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *StorageDriver) DeleteSnapshot(
+	_ context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName

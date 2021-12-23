@@ -594,34 +594,39 @@ func (d AWSNFSStorageDriverConfig) SpecOnlyValidation() error {
 
 type AzureNFSStorageDriverConfig struct {
 	*CommonStorageDriverConfig
-	SubscriptionID  string `json:"subscriptionID"`
-	TenantID        string `json:"tenantID"`
-	ClientID        string `json:"clientID"`
-	ClientSecret    string `json:"clientSecret"`
-	NfsMountOptions string `json:"nfsMountOptions"`
+	SubscriptionID      string `json:"subscriptionID"`
+	TenantID            string `json:"tenantID"`
+	ClientID            string `json:"clientID"`
+	ClientSecret        string `json:"clientSecret"`
+	Location            string `json:"location"`
+	NfsMountOptions     string `json:"nfsMountOptions"`
+	VolumeCreateTimeout string `json:"volumeCreateTimeout"`
+	SDKTimeout          string `json:"sdkTimeout"`
+	MaxCacheAge         string `json:"maxCacheAge"`
 	AzureNFSStorageDriverPool
-	Storage             []AzureNFSStorageDriverPool `json:"storage"`
-	VolumeCreateTimeout string                      `json:"volumeCreateTimeout"`
+	Storage []AzureNFSStorageDriverPool `json:"storage"`
 }
 
-// Note that 'Region' and 'Zone' are internal specifiers, not related to Azure's
-// 'Location' field.
+// AzureNFSStorageDriverPool is the virtual pool definition for the ANF driver.  Note that 'Region' and 'Zone'
+// are internal specifiers, not related to Azure's 'Location' field.
 type AzureNFSStorageDriverPool struct {
 	Labels                              map[string]string   `json:"labels"`
 	Region                              string              `json:"region"`
 	Zone                                string              `json:"zone"`
-	Location                            string              `json:"location"`
 	ServiceLevel                        string              `json:"serviceLevel"`
 	VirtualNetwork                      string              `json:"virtualNetwork"`
 	Subnet                              string              `json:"subnet"`
 	SupportedTopologies                 []map[string]string `json:"supportedTopologies"`
+	ResourceGroups                      []string            `json:"resourceGroups"`
+	NetappAccounts                      []string            `json:"netappAccounts"`
 	CapacityPools                       []string            `json:"capacityPools"`
 	AzureNFSStorageDriverConfigDefaults `json:"defaults"`
 }
 
 type AzureNFSStorageDriverConfigDefaults struct {
-	ExportRule  string `json:"exportRule"`
-	SnapshotDir string `json:"snapshotDir"`
+	ExportRule      string `json:"exportRule"`
+	SnapshotDir     string `json:"snapshotDir"`
+	UnixPermissions string `json:"unixPermissions"`
 	CommonStorageDriverConfigDefaults
 }
 

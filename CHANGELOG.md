@@ -4,11 +4,16 @@
 
 ## Changes since v21.10.0
 
+- **IMPORTANT**: If you are upgrading from any previous Trident release and use Azure NetApp Files, the ``location`` config parameter is now a mandatory, singleton field.
+
 **Fixes:**
+
+- Fixed ANF driver to allow duplicate resource names and limit operations to a single location.
 
 **Enhancements:**
 
 - Allow cross-region volumes in GCP driver (Issue [#633](https://github.com/NetApp/trident/issues/633))
+- Added support for 'unixPermissions' option to ANF volumes.  (Issue [#666](https://github.com/NetApp/trident/issues/666))
 
 **Deprecations:**
 

@@ -673,15 +673,15 @@ func (d *SANEconomyStorageDriver) Create(
 
 // CreateClone creates a volume clone
 func (d *SANEconomyStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, _ storage.Pool,
+	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, _ storage.Pool,
 ) error {
 
-	source := volConfig.CloneSourceVolumeInternal
-	name := volConfig.InternalName
-	snapshot := volConfig.CloneSourceSnapshot
+	source := cloneVolConfig.CloneSourceVolumeInternal
+	name := cloneVolConfig.InternalName
+	snapshot := cloneVolConfig.CloneSourceSnapshot
 	isFromSnapshot := snapshot != ""
-	qosPolicy := volConfig.QosPolicy
-	adaptiveQosPolicy := volConfig.AdaptiveQosPolicy
+	qosPolicy := cloneVolConfig.QosPolicy
+	adaptiveQosPolicy := cloneVolConfig.AdaptiveQosPolicy
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -814,7 +814,9 @@ func (d *SANEconomyStorageDriver) Rename(ctx context.Context, name, newName stri
 }
 
 // Destroy the LUN
-func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, name string) error {
+func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -884,7 +886,7 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, name string) erro
 		return deleteError
 	}
 	for _, snap := range snapList {
-		err = d.DeleteSnapshot(ctx, snap.Config)
+		err = d.DeleteSnapshot(ctx, snap.Config, volConfig)
 		if err != nil {
 			Logc(ctx).Errorf("Error snap-LUN delete failed: %v", err)
 			return err
@@ -1000,14 +1002,16 @@ func (d *SANEconomyStorageDriver) Publish(
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
-func (d *SANEconomyStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+func (d *SANEconomyStorageDriver) CanSnapshot(
+	_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 	return nil
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
 func (d *SANEconomyStorageDriver) GetSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1149,7 +1153,7 @@ func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
 
 // CreateSnapshot creates a snapshot for the given volume.
 func (d *SANEconomyStorageDriver) CreateSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1220,7 +1224,9 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
-func (d *SANEconomyStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *SANEconomyStorageDriver) RestoreSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1237,7 +1243,9 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(ctx context.Context, snapConfi
 }
 
 // DeleteSnapshot deletes a LUN snapshot.
-func (d *SANEconomyStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *SANEconomyStorageDriver) DeleteSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{

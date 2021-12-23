@@ -455,12 +455,12 @@ func (d *SANStorageDriver) Create(
 
 // CreateClone creates a volume clone
 func (d *SANStorageDriver) CreateClone(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
+	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
 
-	name := volConfig.InternalName
-	source := volConfig.CloneSourceVolumeInternal
-	snapshot := volConfig.CloneSourceSnapshot
+	name := cloneVolConfig.InternalName
+	source := cloneVolConfig.CloneSourceVolumeInternal
+	snapshot := cloneVolConfig.CloneSourceSnapshot
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -475,7 +475,7 @@ func (d *SANStorageDriver) CreateClone(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
 	}
 
-	opts, err := d.GetVolumeOpts(ctx, volConfig, make(map[string]sa.Request))
+	opts, err := d.GetVolumeOpts(ctx, cloneVolConfig, make(map[string]sa.Request))
 	if err != nil {
 		return err
 	}
@@ -504,11 +504,11 @@ func (d *SANStorageDriver) CreateClone(
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes()[SplitOnClone]
 
 		// Ensure the volume exists
-		flexvol, err := d.API.VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal)
+		flexvol, err := d.API.VolumeInfo(ctx, cloneVolConfig.CloneSourceVolumeInternal)
 		if err != nil {
 			return err
 		} else if flexvol == nil {
-			return fmt.Errorf("volume %s not found", volConfig.CloneSourceVolumeInternal)
+			return fmt.Errorf("volume %s not found", cloneVolConfig.CloneSourceVolumeInternal)
 		}
 
 		// Get the source volume's label
@@ -661,7 +661,9 @@ func (d *SANStorageDriver) Rename(ctx context.Context, name, newName string) err
 }
 
 // Destroy the requested (volume,lun) storage tuple
-func (d *SANStorageDriver) Destroy(ctx context.Context, name string) error {
+func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
+
+	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -774,15 +776,15 @@ func (d *SANStorageDriver) Publish(
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
-func (d *SANStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig) error {
+func (d *SANStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
 	return nil
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
-func (d *SANStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) (
-	*storage.Snapshot, error,
-) {
+func (d *SANStorageDriver) GetSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) (*storage.Snapshot, error) {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -817,9 +819,9 @@ func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.
 }
 
 // CreateSnapshot creates a snapshot for the given volume
-func (d *SANStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) (
-	*storage.Snapshot, error,
-) {
+func (d *SANStorageDriver) CreateSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -839,7 +841,9 @@ func (d *SANStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *stora
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
-func (d *SANStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *SANStorageDriver) RestoreSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -856,7 +860,9 @@ func (d *SANStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *stor
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
-func (d *SANStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig) error {
+func (d *SANStorageDriver) DeleteSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{

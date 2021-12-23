@@ -41,7 +41,9 @@ type Backend interface {
 		volAttributes map[string]storageattribute.Request, retry bool,
 	) (*Volume, error)
 	GetDebugTraceFlags(ctx context.Context) map[string]bool
-	CloneVolume(ctx context.Context, volConfig *VolumeConfig, storagePool Pool, retry bool) (*Volume, error)
+	CloneVolume(
+		ctx context.Context, sourceVolConfig, cloneVolConfig *VolumeConfig, storagePool Pool, retry bool,
+	) (*Volume, error)
 	PublishVolume(
 		ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
 	) error
@@ -52,8 +54,8 @@ type Backend interface {
 	RenameVolume(ctx context.Context, volConfig *VolumeConfig, newName string) error
 	RemoveVolume(ctx context.Context, volConfig *VolumeConfig) error
 	RemoveCachedVolume(volumeName string)
-	CanSnapshot(ctx context.Context, snapConfig *SnapshotConfig) error
-	GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig) (*Snapshot, error)
+	CanSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error
+	GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) (*Snapshot, error)
 	GetSnapshots(ctx context.Context, volConfig *VolumeConfig) ([]*Snapshot, error)
 	CreateSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) (*Snapshot, error)
 	RestoreSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error
