@@ -102,12 +102,6 @@ type SoftwareModifyParams struct {
 	*/
 	PauseAfterQueryParameter *string
 
-	/* ReturnRecords.
-
-	   The default is false.  If set to true, the records are returned.
-	*/
-	ReturnRecordsQueryParameter *bool
-
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
@@ -150,13 +144,10 @@ func (o *SoftwareModifyParams) WithDefaults() *SoftwareModifyParams {
 // All values with no default are reset to their zero value.
 func (o *SoftwareModifyParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
-
 		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := SoftwareModifyParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
@@ -263,17 +254,6 @@ func (o *SoftwareModifyParams) WithPauseAfterQueryParameter(pauseAfter *string) 
 // SetPauseAfterQueryParameter adds the pauseAfter to the software modify params
 func (o *SoftwareModifyParams) SetPauseAfterQueryParameter(pauseAfter *string) {
 	o.PauseAfterQueryParameter = pauseAfter
-}
-
-// WithReturnRecordsQueryParameter adds the returnRecords to the software modify params
-func (o *SoftwareModifyParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SoftwareModifyParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
-	return o
-}
-
-// SetReturnRecordsQueryParameter adds the returnRecords to the software modify params
-func (o *SoftwareModifyParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WithReturnTimeoutQueryParameter adds the returnTimeout to the software modify params
@@ -413,23 +393,6 @@ func (o *SoftwareModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		if qPauseAfter != "" {
 
 			if err := r.SetQueryParam("pause_after", qPauseAfter); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ReturnRecordsQueryParameter != nil {
-
-		// query param return_records
-		var qrReturnRecords bool
-
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
-		}
-		qReturnRecords := swag.FormatBool(qrReturnRecords)
-		if qReturnRecords != "" {
-
-			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
 				return err
 			}
 		}

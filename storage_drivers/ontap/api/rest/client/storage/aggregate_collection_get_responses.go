@@ -101,6 +101,7 @@ func NewAggregateCollectionGetDefault(code int) *AggregateCollectionGetDefault {
 | 19726404 | The recommended mirrored aggregate couldn't use all the attached capacity in one of the SyncMirror pools. Make sure that the remote and local storage is symmetrically wired. |
 | 19726405 | Not all local and remote disks attached to the node have been auto-partitioned. |
 | 19726406 | Aggregate recommendations are not supported on this node because remote and local storage is not symmetrically wired. |
+| 19726540 | The next tag is not supported for recommended aggregates. Retry the operation with a higher "return_timeout" value. |
 | 196608055 | Aggregate recommendation is not supported on this node because it does not support NetApp Aggregate Encryption (NAE). |
 | 196608206 | Internal error. Failed to get encryption operation status. |
 

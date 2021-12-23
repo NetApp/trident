@@ -20,11 +20,6 @@ import (
 // swagger:model ip_service
 type IPService string
 
-func NewIPService(value IPService) *IPService {
-	v := value
-	return &v
-}
-
 const (
 
 	// IPServiceClusterCore captures enum value "cluster_core"
@@ -47,6 +42,9 @@ const (
 
 	// IPServiceManagementHTTPS captures enum value "management_https"
 	IPServiceManagementHTTPS IPService = "management_https"
+
+	// IPServiceManagementHTTP captures enum value "management_http"
+	IPServiceManagementHTTP IPService = "management_http"
 
 	// IPServiceManagementSSH captures enum value "management_ssh"
 	IPServiceManagementSSH IPService = "management_ssh"
@@ -71,6 +69,30 @@ const (
 
 	// IPServiceDataS3Server captures enum value "data_s3_server"
 	IPServiceDataS3Server IPService = "data_s3_server"
+
+	// IPServiceDataDNSServer captures enum value "data_dns_server"
+	IPServiceDataDNSServer IPService = "data_dns_server"
+
+	// IPServiceManagementNtpClient captures enum value "management_ntp_client"
+	IPServiceManagementNtpClient IPService = "management_ntp_client"
+
+	// IPServiceManagementSnmpServer captures enum value "management_snmp_server"
+	IPServiceManagementSnmpServer IPService = "management_snmp_server"
+
+	// IPServiceManagementRshServer captures enum value "management_rsh_server"
+	IPServiceManagementRshServer IPService = "management_rsh_server"
+
+	// IPServiceManagementTelnetServer captures enum value "management_telnet_server"
+	IPServiceManagementTelnetServer IPService = "management_telnet_server"
+
+	// IPServiceManagementNtpServer captures enum value "management_ntp_server"
+	IPServiceManagementNtpServer IPService = "management_ntp_server"
+
+	// IPServiceDataNvmeTCP captures enum value "data_nvme_tcp"
+	IPServiceDataNvmeTCP IPService = "data_nvme_tcp"
+
+	// IPServiceBackupNdmpControl captures enum value "backup_ndmp_control"
+	IPServiceBackupNdmpControl IPService = "backup_ndmp_control"
 )
 
 // for schema
@@ -78,7 +100,7 @@ var ipServiceEnum []interface{}
 
 func init() {
 	var res []IPService
-	if err := json.Unmarshal([]byte(`["cluster_core","intercluster_core","management_core","management_autosupport","management_bgp","management_ems","management_https","management_ssh","management_portmap","data_core","data_nfs","data_cifs","data_flexcache","data_iscsi","data_s3_server"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["cluster_core","intercluster_core","management_core","management_autosupport","management_bgp","management_ems","management_https","management_http","management_ssh","management_portmap","data_core","data_nfs","data_cifs","data_flexcache","data_iscsi","data_s3_server","data_dns_server","management_ntp_client","management_snmp_server","management_rsh_server","management_telnet_server","management_ntp_server","data_nvme_tcp","backup_ndmp_control"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

@@ -47,7 +47,7 @@ type CloudTarget struct {
 	// cluster
 	Cluster *CloudTargetCluster `json:"cluster,omitempty"`
 
-	// Data bucket/container name
+	// Data bucket/container name. For FabricLink, a wildcard character "*" can also be specified to indicate that all the buckets in an SVM can use the same target information. However, for containers other than ONTAP, an exact name should be specified.
 	// Example: bucket1
 	Container string `json:"container,omitempty"`
 
@@ -57,14 +57,14 @@ type CloudTarget struct {
 	// Cloud target name
 	Name string `json:"name,omitempty"`
 
-	// Owner of the target. Allowed values are FabricPool or SnapMirror. A target can be used by only one feature.
-	// Enum: [fabricpool snapmirror]
+	// Owner of the target. Allowed values are FabricPool, SnapMirror or S3_SnapMirror. A target can be used by only one feature.
+	// Enum: [fabricpool snapmirror s3_snapmirror]
 	Owner string `json:"owner,omitempty"`
 
 	// Port number of the object store that ONTAP uses when establishing a connection. Required in POST.
 	Port int64 `json:"port,omitempty"`
 
-	// Type of cloud provider. Allowed values depend on owner type. For FabricPool, AliCloud, AWS_S3, Azure_Cloud, GoggleCloud, IBM_COS, SGWS, and ONTAP_S3 are allowed. For SnapMirror, the valid values are AWS_S3 or SGWS.
+	// Type of cloud provider. Allowed values depend on owner type. For FabricPool, AliCloud, AWS_S3, Azure_Cloud, GoggleCloud, IBM_COS, SGWS, and ONTAP_S3 are allowed. For SnapMirror, the valid values are AWS_S3 or SGWS. For FabricLink, AWS_S3, SGWS, S3_Compatible, S3EMU, LOOPBACK and ONTAP_S3 are allowed.
 	ProviderType string `json:"provider_type,omitempty"`
 
 	// Secret access key for AWS_S3 and other S3 compatible provider types.
@@ -311,7 +311,7 @@ var cloudTargetTypeOwnerPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["fabricpool","snapmirror"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["fabricpool","snapmirror","s3_snapmirror"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -340,6 +340,16 @@ const (
 	// END DEBUGGING
 	// CloudTargetOwnerSnapmirror captures enum value "snapmirror"
 	CloudTargetOwnerSnapmirror string = "snapmirror"
+
+	// BEGIN DEBUGGING
+	// cloud_target
+	// CloudTarget
+	// owner
+	// Owner
+	// s3_snapmirror
+	// END DEBUGGING
+	// CloudTargetOwnerS3Snapmirror captures enum value "s3_snapmirror"
+	CloudTargetOwnerS3Snapmirror string = "s3_snapmirror"
 )
 
 // prop value enum
@@ -992,7 +1002,7 @@ func (m *CloudTargetLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// CloudTargetSvm This field is only applicable when used for SnapMirror. For POST and PATCH, SVM information is required for SnapMirror targets and not allowed for FabricPool targets.
+// CloudTargetSvm This field is only applicable when used for SnapMirror and FabricLink. For POST and PATCH, SVM information is required for SnapMirror and FabricLink targets and not allowed for FabricPool targets.
 //
 // swagger:model CloudTargetSvm
 type CloudTargetSvm struct {

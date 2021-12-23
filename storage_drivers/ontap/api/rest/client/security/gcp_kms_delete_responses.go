@@ -74,14 +74,15 @@ func NewGcpKmsDeleteDefault(code int) *GcpKmsDeleteDefault {
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
-| 65536242 | One or more Storage Encryption devices are assigned an authentication key. |
+| 65536242 | One or more self-encrypting drives are assigned an authentication key. |
+| 65536243 | Cannot determine authentication key presence on one or more self-encrypting drives. |
 | 65536817 | Internal error. Failed to determine if it is safe to disable key manager. |
 | 65536827 | Internal error. Failed to determine if the given SVM has any encrypted volumes. |
 | 65536834 | Internal error. Failed to get existing key-server details for the given SVM. |
 | 65536867 | Volume encryption keys (VEK) for one or more encrypted volumes are stored on the key manager configured for the given SVM. |
 | 65536883 | Internal error. Volume encryption key is missing for a volume. |
 | 65536884 | Internal error. Volume encryption key is invalid for a volume. |
-| 65536924 | Cannot remove key manager that still contains one or more NSE (NetApp Storage Encryption) authentication keys. |
+| 65536924 | Cannot remove key manager that still contains one or more authentication keys for self-encrypting drives. |
 | 65537721 | The Google Cloud Key Management Service is not configured for the SVM. |
 | 196608080 | One or more nodes in the cluster have the root volume encrypted using NVE (NetApp Volume Encryption). |
 | 196608301 | Internal error. Failed to get encryption type. |

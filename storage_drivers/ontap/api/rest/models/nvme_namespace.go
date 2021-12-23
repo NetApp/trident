@@ -69,7 +69,7 @@ type NvmeNamespace struct {
 	// The operating system type of the NVMe namespace.<br/>
 	// Required in POST when creating an NVMe namespace that is not a clone of another. Disallowed in POST when creating a namespace clone.
 	//
-	// Enum: [linux vmware windows]
+	// Enum: [aix linux vmware windows]
 	OsType string `json:"os_type,omitempty"`
 
 	// space
@@ -252,7 +252,7 @@ var nvmeNamespaceTypeOsTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["linux","vmware","windows"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["aix","linux","vmware","windows"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -261,6 +261,16 @@ func init() {
 }
 
 const (
+
+	// BEGIN DEBUGGING
+	// nvme_namespace
+	// NvmeNamespace
+	// os_type
+	// OsType
+	// aix
+	// END DEBUGGING
+	// NvmeNamespaceOsTypeAix captures enum value "aix"
+	NvmeNamespaceOsTypeAix string = "aix"
 
 	// BEGIN DEBUGGING
 	// nvme_namespace
@@ -863,6 +873,9 @@ type NvmeNamespaceLocation struct {
 	// Example: namespace1
 	Namespace string `json:"namespace,omitempty"`
 
+	// node
+	Node *NvmeNamespaceLocationNode `json:"node,omitempty"`
+
 	// qtree
 	Qtree *NvmeNamespaceLocationQtree `json:"qtree,omitempty"`
 
@@ -873,6 +886,10 @@ type NvmeNamespaceLocation struct {
 // Validate validates this nvme namespace location
 func (m *NvmeNamespaceLocation) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateQtree(formats); err != nil {
 		res = append(res, err)
@@ -885,6 +902,23 @@ func (m *NvmeNamespaceLocation) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NvmeNamespaceLocation) validateNode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Node) { // not required
+		return nil
+	}
+
+	if m.Node != nil {
+		if err := m.Node.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "node")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -926,6 +960,10 @@ func (m *NvmeNamespaceLocation) validateVolume(formats strfmt.Registry) error {
 func (m *NvmeNamespaceLocation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateQtree(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -937,6 +975,20 @@ func (m *NvmeNamespaceLocation) ContextValidate(ctx context.Context, formats str
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NvmeNamespaceLocation) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Node != nil {
+		if err := m.Node.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "node")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -979,6 +1031,187 @@ func (m *NvmeNamespaceLocation) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *NvmeNamespaceLocation) UnmarshalBinary(b []byte) error {
 	var res NvmeNamespaceLocation
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeNamespaceLocationNode The cluster node that hosts the NVMe namespace.
+//
+//
+// swagger:model NvmeNamespaceLocationNode
+type NvmeNamespaceLocationNode struct {
+
+	// links
+	Links *NvmeNamespaceLocationNodeLinks `json:"_links,omitempty"`
+
+	// name
+	// Example: node1
+	Name string `json:"name,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this nvme namespace location node
+func (m *NvmeNamespaceLocationNode) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceLocationNode) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "node" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme namespace location node based on the context it is used
+func (m *NvmeNamespaceLocationNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceLocationNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "node" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceLocationNode) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceLocationNode) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceLocationNode
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeNamespaceLocationNodeLinks nvme namespace location node links
+//
+// swagger:model NvmeNamespaceLocationNodeLinks
+type NvmeNamespaceLocationNodeLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this nvme namespace location node links
+func (m *NvmeNamespaceLocationNodeLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceLocationNodeLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "node" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme namespace location node links based on the context it is used
+func (m *NvmeNamespaceLocationNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeNamespaceLocationNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "node" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceLocationNodeLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceLocationNodeLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceLocationNodeLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2172,8 +2405,7 @@ type NvmeNamespaceSpace struct {
 	// guarantee
 	Guarantee *NvmeNamespaceSpaceGuarantee `json:"guarantee,omitempty"`
 
-	// The total provisioned size of the NVMe namespace.<br/>
-	// NVMe namespaces do not support resize.<br/>
+	// The total provisioned size of the NVMe namespace. Valid in POST and PATCH. The NVMe namespace size can be increased but not be made smaller using the REST interface.<br/>
 	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes in bytes. The maximum size is variable with respect to large NVMe namespace support in ONTAP. If large namespaces are supported, the maximum size is 128 TB (140737488355328 bytes) and if not supported, the maximum size is just under 16 TB (17557557870592 bytes). The minimum size supported is always 4096 bytes.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
 	//

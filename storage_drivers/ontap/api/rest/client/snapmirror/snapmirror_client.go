@@ -118,6 +118,8 @@ It takes the following values:
 ### Important note
 - The property "identity_preservation" is applicable to only SnapMirror relationships with SVM endpoints and it indicates which configuration of the source SVM is replicated to the destination SVM.
 - The properties "identity_preservation" and "transfer_schedule" are not applicable for "sync" type policies.
+- The property "copy_all_source_snapshots" is not applicable for "sync" type policies.
+- No "retention" properties can be specified if "copy_all_source_snapshots" is specified.
 - The properties "retention.creation_schedule" and "retention.prefix" are not applicable for "sync" type policies.
 - The property "sync_common_snapshot_schedule" is not applicable for an "async" type policy.
 - The property "retention.count" specifies the maximum number of Snapshot copies that are retained on the SnapMirror destination volume.
@@ -131,6 +133,7 @@ It takes the following values:
 If not specified in POST, the following default property values are assigned:
 * `type` - _async_
 * `sync_type` - _sync_ (when `type` is _sync_)
+* `copy_all_source_snapshots` - _false_ {when 'type' is _async_)
 * `network_compression_enabled` - _false_
 * `throttle` - _0_
 * `identity_preservation` - `_exclude_network_and_protocol_config_`
@@ -152,6 +155,11 @@ If not specified in POST, the following default property values are assigned:
   Creating a SnapMirror policy of type "async"
    ```
    POST "/api/snapmirror/policies" '{"name": "newPolicy", "svm":{"name" : "vs1"}, "type": "async"}'
+   ```
+   <br/>
+  Creating a SnapMirror policy of type "async" which replicates all Snapshot copies
+   ```
+   POST "/api/snapmirror/policies" '{"name": "newPolicy", "svm":{"name" : "vs1"}, "type": "async", "copy_all_source_snapshots": "true"}'
    ```
    <br/>
   Creating a SnapMirror policy of type "sync" with sync_type as "automated_failover"
@@ -302,13 +310,27 @@ func (a *Client) SnapmirrorPolicyGet(params *SnapmirrorPolicyGetParams, authInfo
 * The properties "retention.label" and "retention.count" are mandatory if "retention" is provided in the input. The provided "retention.label" is the final list and it replaces the existing values.
 * The value of the "identity_preservation" property cannot be changed if the SnapMirror relationships associated with the policy have different identity_preservation configurations.
 * If the SnapMirror policy "identity_preservation" value matches the "identity_preservation" value of the associated SnapMirror relationships, then the "identity_preservation" value can be changed from a higher "identity_preservation" threshold value to a lower "identity_preservation" threshold value but not vice-versa. For example, the threshold value of the "identity_preservation" property can be changed from "full" to "exclude_network_config" to "exclude_network_and_protocol_config", but could not be increased from "exclude_network_and_protocol_config" to "exclude_network_config" to "full".<br/>
+* No "retention" properties can be modified if the "copy_all_source_snapshots" property is present in the policy.
+* The "copy_all_source_snapshots" property of a policy cannot be modified.
 ### Related ONTAP commands
 * `snapmirror policy modify`
 ### Example
-  Updating the "retention" property
+  Updating the "retention" property to add rules to a policy without any rules.
    <br/>
    ```
    PATCH "/api/snapmirror/policies/fe65686d-00dc-11e9-b5fb-0050568e3f83" '{"retention": [{"label": "newlabel", "count": 2}, {"label": "weekly", "count": 2, "creation_schedule": {"name": "weekly"}}, {"label": "daily", "count": 14}]}'
+   ```
+   <br/>
+  Updating the "retention" property to add rules to a policy with existing rules {"retention": [{"label": "oldLabel1", "count": 2}, {"label": "oldLabel2", "count": 5}]
+   <br/>
+   ```
+   PATCH "/api/snapmirror/policies/fe65686d-00dc-11e9-b5fb-0050568e3f83" '{"retention": [{"label": "oldLabel1", "count": 2}, {"label": "oldLabel2", "count": 5}, {"label": "newlabel", "count": 3}, {"label": "weekly", "count": 1}]}'
+   ```
+   <br/>
+  Updating the "retention" property to remove a rule (oldLabel1) and add new rule to a policy with existing rules {"retention": [{"label": "oldLabel1", "count": 2}, {"label": "oldLabel2", "count": 3}]
+   <br/>
+   ```
+   PATCH "/api/snapmirror/policies/fe65686d-00dc-11e9-b5fb-0050568e3f83" '{"retention": [{"label": "oldLabel2", "count": 3}, {"label": "newlabel", "count": 2}]}'
    ```
    <br/>
   Updating "transfer_schedule", "throttle", and "identity_preservation" properties
@@ -487,6 +509,7 @@ func (a *Client) SnapmirrorRelationshipCreate(params *SnapmirrorRelationshipCrea
 * For a restore relationship, the call must be executed on the cluster containing the destination endpoint without specifying the destination_only, source_only, or source_info_only parameters.
 * Additionally, ensure that there are no ongoing transfers on a restore relationship before calling this API.
 * The "failover", "force-failover" and "failback" query parameters are only applicable for SVM-DR SnapMirror relationships.
+* When a SnapMirror relationship associated with a pair of source and destination Consistency Groups is deleted, the corresponding Consistency Groups on the source and destination clusters are not automatically deleted and remain in place.
 ### Related ONTAP commands
 * `snapmirror delete`
 * `snapmirror release`
@@ -754,10 +777,10 @@ The following examples show how to perform SnapMirror "initialize", "update", an
    POST "/api/snapmirror/relationships/e4e7e130-0279-11e9-b566-0050568e9909/transfers" '{"throttle":"100"}'
    ```
    <br/>
-   Perform SnapMirror restore transfer
+   Perform SnapMirror restore transfer of a file
    <br/>
    ```
-   POST "/api/snapmirror/relationships/c8c62a90-0fef-11e9-b09e-0050568e7067/transfers" '{"source-snapshot": "src", "files": {"source_path": ["/a1.txt.0"], "destination_path": ["/a1-renamed.txt.0"]}}'
+   POST "/api/snapmirror/relationships/c8c62a90-0fef-11e9-b09e-0050568e7067/transfers" '{"source_snapshot": "src", "files":[{"source_path": "/a1.txt.0", "destination_path": "/a1-renamed.txt.0"}]}'
    ```
    <br/>
 ### Learn more

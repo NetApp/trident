@@ -1129,7 +1129,7 @@ func (m *SanApplicationComponentsItems0StorageService) UnmarshalBinary(b []byte)
 // swagger:model SanExcludeAggregatesItems0
 type SanExcludeAggregatesItems0 struct {
 
-	// The name of the aggregate to exclude. Usage: &lt;aggr0_akerr_vsim1&gt;
+	// The name of the aggregate to exclude. Usage: &lt;aggr0_svctridentci_vsim3&gt;
 	Name string `json:"name,omitempty"`
 
 	// The ID of the aggregate to exclude. Usage: &lt;UUID&gt;

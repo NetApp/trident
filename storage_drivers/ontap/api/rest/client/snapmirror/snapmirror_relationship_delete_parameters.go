@@ -80,7 +80,7 @@ type SnapmirrorRelationshipDeleteParams struct {
 
 	/* SourceOnly.
 
-	   Deletes a relationship on the source only. This parameter is applicable only when the call is executed on the cluster that contains the source endpoint.
+	   Deletes a relationship on the source only. This parameter is applicable only when the call is executed on the cluster that contains the source endpoint. In the case of a relationship that uses SnapMirror policy of type 'continuous', this parameter is used to delete the source end of the relationship while ignoring errors when the destination endpoint is not reachable.
 	*/
 	SourceOnlyQueryParameter *bool
 

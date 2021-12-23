@@ -246,6 +246,18 @@ type NetworkIPInterfacesGetParams struct {
 	*/
 	OrderByQueryParameter []string
 
+	/* ProbePort.
+
+	   Filter by probe_port
+	*/
+	ProbePortQueryParameter *int64
+
+	/* RdmaProtocols.
+
+	   Filter by rdma_protocols
+	*/
+	RdmaProtocolsQueryParameter *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -752,6 +764,28 @@ func (o *NetworkIPInterfacesGetParams) WithOrderByQueryParameter(orderBy []strin
 // SetOrderByQueryParameter adds the orderBy to the network ip interfaces get params
 func (o *NetworkIPInterfacesGetParams) SetOrderByQueryParameter(orderBy []string) {
 	o.OrderByQueryParameter = orderBy
+}
+
+// WithProbePortQueryParameter adds the probePort to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithProbePortQueryParameter(probePort *int64) *NetworkIPInterfacesGetParams {
+	o.SetProbePortQueryParameter(probePort)
+	return o
+}
+
+// SetProbePortQueryParameter adds the probePort to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetProbePortQueryParameter(probePort *int64) {
+	o.ProbePortQueryParameter = probePort
+}
+
+// WithRdmaProtocolsQueryParameter adds the rdmaProtocols to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRdmaProtocolsQueryParameter(rdmaProtocols *string) *NetworkIPInterfacesGetParams {
+	o.SetRdmaProtocolsQueryParameter(rdmaProtocols)
+	return o
+}
+
+// SetRdmaProtocolsQueryParameter adds the rdmaProtocols to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRdmaProtocolsQueryParameter(rdmaProtocols *string) {
+	o.RdmaProtocolsQueryParameter = rdmaProtocols
 }
 
 // WithReturnRecordsQueryParameter adds the returnRecords to the network ip interfaces get params
@@ -1450,6 +1484,40 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.ProbePortQueryParameter != nil {
+
+		// query param probe_port
+		var qrProbePort int64
+
+		if o.ProbePortQueryParameter != nil {
+			qrProbePort = *o.ProbePortQueryParameter
+		}
+		qProbePort := swag.FormatInt64(qrProbePort)
+		if qProbePort != "" {
+
+			if err := r.SetQueryParam("probe_port", qProbePort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RdmaProtocolsQueryParameter != nil {
+
+		// query param rdma_protocols
+		var qrRdmaProtocols string
+
+		if o.RdmaProtocolsQueryParameter != nil {
+			qrRdmaProtocols = *o.RdmaProtocolsQueryParameter
+		}
+		qRdmaProtocols := qrRdmaProtocols
+		if qRdmaProtocols != "" {
+
+			if err := r.SetQueryParam("rdma_protocols", qRdmaProtocols); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -70,7 +70,7 @@ type LunModifyParams struct {
 
 	/* UUID.
 
-	   The unique identifier of the LUN to update.
+	   The unique identifier of the LUN to retrieve.
 
 	*/
 	UUIDPathParameter string

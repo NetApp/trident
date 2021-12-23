@@ -60,12 +60,6 @@ func NewMetroclusterDiagnosticsCreateParamsWithHTTPClient(client *http.Client) *
 */
 type MetroclusterDiagnosticsCreateParams struct {
 
-	/* ReturnRecords.
-
-	   The default is false.  If set to true, the records are returned.
-	*/
-	ReturnRecordsQueryParameter *bool
-
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
@@ -96,13 +90,10 @@ func (o *MetroclusterDiagnosticsCreateParams) WithDefaults() *MetroclusterDiagno
 // All values with no default are reset to their zero value.
 func (o *MetroclusterDiagnosticsCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
-
 		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := MetroclusterDiagnosticsCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
@@ -145,17 +136,6 @@ func (o *MetroclusterDiagnosticsCreateParams) SetHTTPClient(client *http.Client)
 	o.HTTPClient = client
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the metrocluster diagnostics create params
-func (o *MetroclusterDiagnosticsCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *MetroclusterDiagnosticsCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
-	return o
-}
-
-// SetReturnRecordsQueryParameter adds the returnRecords to the metrocluster diagnostics create params
-func (o *MetroclusterDiagnosticsCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
-}
-
 // WithReturnTimeoutQueryParameter adds the returnTimeout to the metrocluster diagnostics create params
 func (o *MetroclusterDiagnosticsCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *MetroclusterDiagnosticsCreateParams {
 	o.SetReturnTimeoutQueryParameter(returnTimeout)
@@ -185,23 +165,6 @@ func (o *MetroclusterDiagnosticsCreateParams) WriteToRequest(r runtime.ClientReq
 		return err
 	}
 	var res []error
-
-	if o.ReturnRecordsQueryParameter != nil {
-
-		// query param return_records
-		var qrReturnRecords bool
-
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
-		}
-		qReturnRecords := swag.FormatBool(qrReturnRecords)
-		if qReturnRecords != "" {
-
-			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
-				return err
-			}
-		}
-	}
 
 	if o.ReturnTimeoutQueryParameter != nil {
 

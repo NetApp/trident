@@ -1107,14 +1107,14 @@ type StorageSwitchErrorsItems0 struct {
 	Component *StorageSwitchErrorsItems0Component `json:"component,omitempty"`
 
 	// reason
-	Reason *StorageSwitchErrorsItems0Reason `json:"reason,omitempty"`
+	Reason *Error `json:"reason,omitempty"`
 
 	// Error component severity
 	// Enum: [unknown notice warning error]
 	Severity string `json:"severity,omitempty"`
 
 	// Error component type
-	// Enum: [switch_unreachable temp_above_critical_level temp_below_warning_level temp_below_critical_level temp_sensor_status_failed fan_status_non_operational power_supply_status_failed power_above_warning_level power_above_critical_level power_below_warning_level power_below_critical_level sfp_rx_power_above_warning_level sfp_rx_power_above_critical_level sfp_tx_power_above_warning_level sfp_tx_power_above_critical_level sfp_rx_power_below_warning_level sfp_rx_power_below_critical_level sfp_tx_power_below_warning_level sfp_tx_power_below_critical_level sfp_status_failed vsan_invalid_frame_delivery_configuration temp_sensor_status_unavailable fan_status_unavailable power_supply_inline_power_failed power_supply_status_unavailable unknown power_supply_off_env_other power_supply_off_admin power_supply_off_denied power_supply_off_env_power power_supply_off_env_temp power_supply_off_env_fan power_supply_on_but_fan_fail power_supply_off_cooling power_supply_off_connector_rating e_ports_down snmpv3_user_not_configured]
+	// Enum: [switch_unreachable temp_above_warning_level temp_above_critical_level temp_below_warning_level temp_below_critical_level temp_sensor_status_failed fan_status_non_operational power_supply_status_failed power_above_warning_level power_above_critical_level power_below_warning_level power_below_critical_level sfp_rx_power_above_warning_level sfp_rx_power_above_critical_level sfp_tx_power_above_warning_level sfp_tx_power_above_critical_level sfp_rx_power_below_warning_level sfp_rx_power_below_critical_level sfp_tx_power_below_warning_level sfp_tx_power_below_critical_level sfp_status_failed vsan_invalid_frame_delivery_configuration temp_sensor_status_unavailable fan_status_unavailable power_supply_inline_power_failed power_supply_status_unavailable unknown power_supply_off_env_other power_supply_off_admin power_supply_off_denied power_supply_off_env_power power_supply_off_env_temp power_supply_off_env_fan power_supply_on_but_fan_fail power_supply_off_cooling power_supply_off_connector_rating e_ports_down snmpv3_user_not_configured incomplete_snmp_data_refresh]
 	Type string `json:"type,omitempty"`
 }
 
@@ -1258,7 +1258,7 @@ var storageSwitchErrorsItems0TypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["switch_unreachable","temp_above_critical_level","temp_below_warning_level","temp_below_critical_level","temp_sensor_status_failed","fan_status_non_operational","power_supply_status_failed","power_above_warning_level","power_above_critical_level","power_below_warning_level","power_below_critical_level","sfp_rx_power_above_warning_level","sfp_rx_power_above_critical_level","sfp_tx_power_above_warning_level","sfp_tx_power_above_critical_level","sfp_rx_power_below_warning_level","sfp_rx_power_below_critical_level","sfp_tx_power_below_warning_level","sfp_tx_power_below_critical_level","sfp_status_failed","vsan_invalid_frame_delivery_configuration","temp_sensor_status_unavailable","fan_status_unavailable","power_supply_inline_power_failed","power_supply_status_unavailable","unknown","power_supply_off_env_other","power_supply_off_admin","power_supply_off_denied","power_supply_off_env_power","power_supply_off_env_temp","power_supply_off_env_fan","power_supply_on_but_fan_fail","power_supply_off_cooling","power_supply_off_connector_rating","e_ports_down","snmpv3_user_not_configured"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["switch_unreachable","temp_above_warning_level","temp_above_critical_level","temp_below_warning_level","temp_below_critical_level","temp_sensor_status_failed","fan_status_non_operational","power_supply_status_failed","power_above_warning_level","power_above_critical_level","power_below_warning_level","power_below_critical_level","sfp_rx_power_above_warning_level","sfp_rx_power_above_critical_level","sfp_tx_power_above_warning_level","sfp_tx_power_above_critical_level","sfp_rx_power_below_warning_level","sfp_rx_power_below_critical_level","sfp_tx_power_below_warning_level","sfp_tx_power_below_critical_level","sfp_status_failed","vsan_invalid_frame_delivery_configuration","temp_sensor_status_unavailable","fan_status_unavailable","power_supply_inline_power_failed","power_supply_status_unavailable","unknown","power_supply_off_env_other","power_supply_off_admin","power_supply_off_denied","power_supply_off_env_power","power_supply_off_env_temp","power_supply_off_env_fan","power_supply_on_but_fan_fail","power_supply_off_cooling","power_supply_off_connector_rating","e_ports_down","snmpv3_user_not_configured","incomplete_snmp_data_refresh"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1277,6 +1277,16 @@ const (
 	// END DEBUGGING
 	// StorageSwitchErrorsItems0TypeSwitchUnreachable captures enum value "switch_unreachable"
 	StorageSwitchErrorsItems0TypeSwitchUnreachable string = "switch_unreachable"
+
+	// BEGIN DEBUGGING
+	// StorageSwitchErrorsItems0
+	// StorageSwitchErrorsItems0
+	// type
+	// Type
+	// temp_above_warning_level
+	// END DEBUGGING
+	// StorageSwitchErrorsItems0TypeTempAboveWarningLevel captures enum value "temp_above_warning_level"
+	StorageSwitchErrorsItems0TypeTempAboveWarningLevel string = "temp_above_warning_level"
 
 	// BEGIN DEBUGGING
 	// StorageSwitchErrorsItems0
@@ -1637,6 +1647,16 @@ const (
 	// END DEBUGGING
 	// StorageSwitchErrorsItems0TypeSnmpv3UserNotConfigured captures enum value "snmpv3_user_not_configured"
 	StorageSwitchErrorsItems0TypeSnmpv3UserNotConfigured string = "snmpv3_user_not_configured"
+
+	// BEGIN DEBUGGING
+	// StorageSwitchErrorsItems0
+	// StorageSwitchErrorsItems0
+	// type
+	// Type
+	// incomplete_snmp_data_refresh
+	// END DEBUGGING
+	// StorageSwitchErrorsItems0TypeIncompleteSnmpDataRefresh captures enum value "incomplete_snmp_data_refresh"
+	StorageSwitchErrorsItems0TypeIncompleteSnmpDataRefresh string = "incomplete_snmp_data_refresh"
 )
 
 // prop value enum
@@ -1757,46 +1777,6 @@ func (m *StorageSwitchErrorsItems0Component) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *StorageSwitchErrorsItems0Component) UnmarshalBinary(b []byte) error {
 	var res StorageSwitchErrorsItems0Component
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// StorageSwitchErrorsItems0Reason storage switch errors items0 reason
-//
-// swagger:model StorageSwitchErrorsItems0Reason
-type StorageSwitchErrorsItems0Reason struct {
-
-	// code
-	Code string `json:"code,omitempty"`
-
-	// message
-	Message string `json:"message,omitempty"`
-}
-
-// Validate validates this storage switch errors items0 reason
-func (m *StorageSwitchErrorsItems0Reason) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validates this storage switch errors items0 reason based on context it is used
-func (m *StorageSwitchErrorsItems0Reason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *StorageSwitchErrorsItems0Reason) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *StorageSwitchErrorsItems0Reason) UnmarshalBinary(b []byte) error {
-	var res StorageSwitchErrorsItems0Reason
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

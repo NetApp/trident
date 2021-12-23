@@ -155,6 +155,10 @@ type LdapService struct {
 	// svm
 	Svm *LdapServiceSvm `json:"svm,omitempty"`
 
+	// Specifies whether or not channel binding is attempted in the case of TLS/LDAPS.
+	//
+	TryChannelBinding *bool `json:"try_channel_binding,omitempty"`
+
 	// Specifies whether or not to use Start TLS over LDAP connections.
 	//
 	UseStartTLS *bool `json:"use_start_tls,omitempty"`

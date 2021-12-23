@@ -126,6 +126,18 @@ type DiskCollectionGetParams struct {
 	*/
 	EffectiveTypeQueryParameter *string
 
+	/* ErrorReasonArgumentsCode.
+
+	   Filter by error.reason.arguments.code
+	*/
+	ErrorReasonArgumentsCodeQueryParameter *string
+
+	/* ErrorReasonArgumentsMessage.
+
+	   Filter by error.reason.arguments.message
+	*/
+	ErrorReasonArgumentsMessageQueryParameter *string
+
 	/* ErrorReasonCode.
 
 	   Filter by error.reason.code
@@ -137,6 +149,12 @@ type DiskCollectionGetParams struct {
 	   Filter by error.reason.message
 	*/
 	ErrorReasonMessageQueryParameter *string
+
+	/* ErrorReasonTarget.
+
+	   Filter by error.reason.target
+	*/
+	ErrorReasonTargetQueryParameter *string
 
 	/* ErrorType.
 
@@ -234,6 +252,18 @@ type DiskCollectionGetParams struct {
 	*/
 	OutagePersistentlyFailedQueryParameter *bool
 
+	/* OutageReasonArgumentsCode.
+
+	   Filter by outage.reason.arguments.code
+	*/
+	OutageReasonArgumentsCodeQueryParameter *string
+
+	/* OutageReasonArgumentsMessage.
+
+	   Filter by outage.reason.arguments.message
+	*/
+	OutageReasonArgumentsMessageQueryParameter *string
+
 	/* OutageReasonCode.
 
 	   Filter by outage.reason.code
@@ -245,6 +275,12 @@ type DiskCollectionGetParams struct {
 	   Filter by outage.reason.message
 	*/
 	OutageReasonMessageQueryParameter *string
+
+	/* OutageReasonTarget.
+
+	   Filter by outage.reason.target
+	*/
+	OutageReasonTargetQueryParameter *string
 
 	/* PathsInitiator.
 
@@ -588,6 +624,28 @@ func (o *DiskCollectionGetParams) SetEffectiveTypeQueryParameter(effectiveType *
 	o.EffectiveTypeQueryParameter = effectiveType
 }
 
+// WithErrorReasonArgumentsCodeQueryParameter adds the errorReasonArgumentsCode to the disk collection get params
+func (o *DiskCollectionGetParams) WithErrorReasonArgumentsCodeQueryParameter(errorReasonArgumentsCode *string) *DiskCollectionGetParams {
+	o.SetErrorReasonArgumentsCodeQueryParameter(errorReasonArgumentsCode)
+	return o
+}
+
+// SetErrorReasonArgumentsCodeQueryParameter adds the errorReasonArgumentsCode to the disk collection get params
+func (o *DiskCollectionGetParams) SetErrorReasonArgumentsCodeQueryParameter(errorReasonArgumentsCode *string) {
+	o.ErrorReasonArgumentsCodeQueryParameter = errorReasonArgumentsCode
+}
+
+// WithErrorReasonArgumentsMessageQueryParameter adds the errorReasonArgumentsMessage to the disk collection get params
+func (o *DiskCollectionGetParams) WithErrorReasonArgumentsMessageQueryParameter(errorReasonArgumentsMessage *string) *DiskCollectionGetParams {
+	o.SetErrorReasonArgumentsMessageQueryParameter(errorReasonArgumentsMessage)
+	return o
+}
+
+// SetErrorReasonArgumentsMessageQueryParameter adds the errorReasonArgumentsMessage to the disk collection get params
+func (o *DiskCollectionGetParams) SetErrorReasonArgumentsMessageQueryParameter(errorReasonArgumentsMessage *string) {
+	o.ErrorReasonArgumentsMessageQueryParameter = errorReasonArgumentsMessage
+}
+
 // WithErrorReasonCodeQueryParameter adds the errorReasonCode to the disk collection get params
 func (o *DiskCollectionGetParams) WithErrorReasonCodeQueryParameter(errorReasonCode *string) *DiskCollectionGetParams {
 	o.SetErrorReasonCodeQueryParameter(errorReasonCode)
@@ -608,6 +666,17 @@ func (o *DiskCollectionGetParams) WithErrorReasonMessageQueryParameter(errorReas
 // SetErrorReasonMessageQueryParameter adds the errorReasonMessage to the disk collection get params
 func (o *DiskCollectionGetParams) SetErrorReasonMessageQueryParameter(errorReasonMessage *string) {
 	o.ErrorReasonMessageQueryParameter = errorReasonMessage
+}
+
+// WithErrorReasonTargetQueryParameter adds the errorReasonTarget to the disk collection get params
+func (o *DiskCollectionGetParams) WithErrorReasonTargetQueryParameter(errorReasonTarget *string) *DiskCollectionGetParams {
+	o.SetErrorReasonTargetQueryParameter(errorReasonTarget)
+	return o
+}
+
+// SetErrorReasonTargetQueryParameter adds the errorReasonTarget to the disk collection get params
+func (o *DiskCollectionGetParams) SetErrorReasonTargetQueryParameter(errorReasonTarget *string) {
+	o.ErrorReasonTargetQueryParameter = errorReasonTarget
 }
 
 // WithErrorTypeQueryParameter adds the errorType to the disk collection get params
@@ -786,6 +855,28 @@ func (o *DiskCollectionGetParams) SetOutagePersistentlyFailedQueryParameter(outa
 	o.OutagePersistentlyFailedQueryParameter = outagePersistentlyFailed
 }
 
+// WithOutageReasonArgumentsCodeQueryParameter adds the outageReasonArgumentsCode to the disk collection get params
+func (o *DiskCollectionGetParams) WithOutageReasonArgumentsCodeQueryParameter(outageReasonArgumentsCode *string) *DiskCollectionGetParams {
+	o.SetOutageReasonArgumentsCodeQueryParameter(outageReasonArgumentsCode)
+	return o
+}
+
+// SetOutageReasonArgumentsCodeQueryParameter adds the outageReasonArgumentsCode to the disk collection get params
+func (o *DiskCollectionGetParams) SetOutageReasonArgumentsCodeQueryParameter(outageReasonArgumentsCode *string) {
+	o.OutageReasonArgumentsCodeQueryParameter = outageReasonArgumentsCode
+}
+
+// WithOutageReasonArgumentsMessageQueryParameter adds the outageReasonArgumentsMessage to the disk collection get params
+func (o *DiskCollectionGetParams) WithOutageReasonArgumentsMessageQueryParameter(outageReasonArgumentsMessage *string) *DiskCollectionGetParams {
+	o.SetOutageReasonArgumentsMessageQueryParameter(outageReasonArgumentsMessage)
+	return o
+}
+
+// SetOutageReasonArgumentsMessageQueryParameter adds the outageReasonArgumentsMessage to the disk collection get params
+func (o *DiskCollectionGetParams) SetOutageReasonArgumentsMessageQueryParameter(outageReasonArgumentsMessage *string) {
+	o.OutageReasonArgumentsMessageQueryParameter = outageReasonArgumentsMessage
+}
+
 // WithOutageReasonCodeQueryParameter adds the outageReasonCode to the disk collection get params
 func (o *DiskCollectionGetParams) WithOutageReasonCodeQueryParameter(outageReasonCode *string) *DiskCollectionGetParams {
 	o.SetOutageReasonCodeQueryParameter(outageReasonCode)
@@ -806,6 +897,17 @@ func (o *DiskCollectionGetParams) WithOutageReasonMessageQueryParameter(outageRe
 // SetOutageReasonMessageQueryParameter adds the outageReasonMessage to the disk collection get params
 func (o *DiskCollectionGetParams) SetOutageReasonMessageQueryParameter(outageReasonMessage *string) {
 	o.OutageReasonMessageQueryParameter = outageReasonMessage
+}
+
+// WithOutageReasonTargetQueryParameter adds the outageReasonTarget to the disk collection get params
+func (o *DiskCollectionGetParams) WithOutageReasonTargetQueryParameter(outageReasonTarget *string) *DiskCollectionGetParams {
+	o.SetOutageReasonTargetQueryParameter(outageReasonTarget)
+	return o
+}
+
+// SetOutageReasonTargetQueryParameter adds the outageReasonTarget to the disk collection get params
+func (o *DiskCollectionGetParams) SetOutageReasonTargetQueryParameter(outageReasonTarget *string) {
+	o.OutageReasonTargetQueryParameter = outageReasonTarget
 }
 
 // WithPathsInitiatorQueryParameter adds the pathsInitiator to the disk collection get params
@@ -1278,6 +1380,40 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.ErrorReasonArgumentsCodeQueryParameter != nil {
+
+		// query param error.reason.arguments.code
+		var qrErrorReasonArgumentsCode string
+
+		if o.ErrorReasonArgumentsCodeQueryParameter != nil {
+			qrErrorReasonArgumentsCode = *o.ErrorReasonArgumentsCodeQueryParameter
+		}
+		qErrorReasonArgumentsCode := qrErrorReasonArgumentsCode
+		if qErrorReasonArgumentsCode != "" {
+
+			if err := r.SetQueryParam("error.reason.arguments.code", qErrorReasonArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ErrorReasonArgumentsMessageQueryParameter != nil {
+
+		// query param error.reason.arguments.message
+		var qrErrorReasonArgumentsMessage string
+
+		if o.ErrorReasonArgumentsMessageQueryParameter != nil {
+			qrErrorReasonArgumentsMessage = *o.ErrorReasonArgumentsMessageQueryParameter
+		}
+		qErrorReasonArgumentsMessage := qrErrorReasonArgumentsMessage
+		if qErrorReasonArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("error.reason.arguments.message", qErrorReasonArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ErrorReasonCodeQueryParameter != nil {
 
 		// query param error.reason.code
@@ -1307,6 +1443,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qErrorReasonMessage != "" {
 
 			if err := r.SetQueryParam("error.reason.message", qErrorReasonMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ErrorReasonTargetQueryParameter != nil {
+
+		// query param error.reason.target
+		var qrErrorReasonTarget string
+
+		if o.ErrorReasonTargetQueryParameter != nil {
+			qrErrorReasonTarget = *o.ErrorReasonTargetQueryParameter
+		}
+		qErrorReasonTarget := qrErrorReasonTarget
+		if qErrorReasonTarget != "" {
+
+			if err := r.SetQueryParam("error.reason.target", qErrorReasonTarget); err != nil {
 				return err
 			}
 		}
@@ -1572,6 +1725,40 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
+	if o.OutageReasonArgumentsCodeQueryParameter != nil {
+
+		// query param outage.reason.arguments.code
+		var qrOutageReasonArgumentsCode string
+
+		if o.OutageReasonArgumentsCodeQueryParameter != nil {
+			qrOutageReasonArgumentsCode = *o.OutageReasonArgumentsCodeQueryParameter
+		}
+		qOutageReasonArgumentsCode := qrOutageReasonArgumentsCode
+		if qOutageReasonArgumentsCode != "" {
+
+			if err := r.SetQueryParam("outage.reason.arguments.code", qOutageReasonArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OutageReasonArgumentsMessageQueryParameter != nil {
+
+		// query param outage.reason.arguments.message
+		var qrOutageReasonArgumentsMessage string
+
+		if o.OutageReasonArgumentsMessageQueryParameter != nil {
+			qrOutageReasonArgumentsMessage = *o.OutageReasonArgumentsMessageQueryParameter
+		}
+		qOutageReasonArgumentsMessage := qrOutageReasonArgumentsMessage
+		if qOutageReasonArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("outage.reason.arguments.message", qOutageReasonArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.OutageReasonCodeQueryParameter != nil {
 
 		// query param outage.reason.code
@@ -1601,6 +1788,23 @@ func (o *DiskCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qOutageReasonMessage != "" {
 
 			if err := r.SetQueryParam("outage.reason.message", qOutageReasonMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OutageReasonTargetQueryParameter != nil {
+
+		// query param outage.reason.target
+		var qrOutageReasonTarget string
+
+		if o.OutageReasonTargetQueryParameter != nil {
+			qrOutageReasonTarget = *o.OutageReasonTargetQueryParameter
+		}
+		qOutageReasonTarget := qrOutageReasonTarget
+		if qOutageReasonTarget != "" {
+
+			if err := r.SetQueryParam("outage.reason.target", qOutageReasonTarget); err != nil {
 				return err
 			}
 		}

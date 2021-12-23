@@ -312,6 +312,11 @@ type PortMetricsResponseRecordsItems0 struct {
 	// Example: 2017-01-25T11:20:13Z
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+
+	// Port UUID
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
 }
 
 // Validate validates this port metrics response records items0
@@ -634,6 +639,10 @@ func (m *PortMetricsResponseRecordsItems0) ContextValidate(ctx context.Context, 
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -663,6 +672,15 @@ func (m *PortMetricsResponseRecordsItems0) contextValidateThroughput(ctx context
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *PortMetricsResponseRecordsItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+		return err
 	}
 
 	return nil
@@ -772,7 +790,7 @@ func (m *PortMetricsResponseRecordsItems0Links) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
-// PortMetricsResponseRecordsItems0Throughput The rate of throughput bytes per second observed at the port object.
+// PortMetricsResponseRecordsItems0Throughput The rate of throughput bytes per second observed at the interface.
 //
 // swagger:model PortMetricsResponseRecordsItems0Throughput
 type PortMetricsResponseRecordsItems0Throughput struct {

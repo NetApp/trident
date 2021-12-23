@@ -27,11 +27,21 @@ type Volume struct {
 	// Indicates whether or not access time updates are enabled on the volume.
 	AccessTimeEnabled bool `json:"access_time_enabled,omitempty"`
 
+	// activity tracking
+	ActivityTracking *VolumeActivityTracking `json:"activity_tracking,omitempty"`
+
 	// Aggregate hosting the volume. Required on POST.
 	Aggregates []*VolumeAggregatesItems0 `json:"aggregates,omitempty"`
 
 	// analytics
 	Analytics *VolumeAnalytics `json:"analytics,omitempty"`
+
+	// anti ransomware
+	AntiRansomware *VolumeAntiRansomwareType `json:"anti_ransomware,omitempty"`
+
+	// The Anti-ransomware state of the volume. If no "anti_ransomware_state" property is specified, the volume inherits the value from its parent SVM's "anti_ransomware_default_volume_state" property. If this value is "disabled", Anti-ransomware is disabled on the volume. If this value is "enabled", Anti-ransomware is enabled on the volume and alerts are raised if any suspect is detected for those volumes. If this value is "dry_run", Anti-ransomware is enabled in the dry-run or learning mode on the volume. The "dry_run" state is same as the "enabled" state except that the analytics data is used here for learning. No alerts are raised for any detections or violations. If this value is "paused", Anti-ransomware is paused on the volume. Additionally, three more states are available, which are only valid for GET. If this value is "disable_in_progress", Anti-ransomware monitoring is being disabled and a cleanup operation is in effect. If this value is "enable_paused", Anti-ransomware is paused on the volume from its earlier enabled state. If this value is "dry_run_paused", Anti-ransomware monitoring is paused on the volume from its earlier dry_run state. For POST, the valid Anti-ransomware states are only "disabled", "enabled" and "dry_run", whereas for PATCH, "paused" is also valid along with the three valid states for POST.
+	// Enum: [disabled enabled dry_run paused disable_in_progress enable_paused dry_run_paused]
+	AntiRansomwareState string `json:"anti_ransomware_state,omitempty"`
 
 	// application
 	Application *VolumeApplication `json:"application,omitempty"`
@@ -62,10 +72,13 @@ type Volume struct {
 	// constituents
 	Constituents []*VolumeConstituentsItems0 `json:"constituents,omitempty"`
 
-	// Specifies the number of times to iterate over the aggregates listed with the "aggregates.name" or "aggregates.uuid" when creating or expanding a FlexGroup. If a volume is being created on a single aggregate, the system will create a flexible volume if the "constituents_per_aggregate" field is not specified, and a FlexGroup if it is specified.  If a volume is being created on multiple aggregates, the system will always create a FlexGroup.
+	// Specifies the number of times to iterate over the aggregates listed with the "aggregates.name" or "aggregates.uuid" when creating or expanding a FlexGroup volume. If a volume is being created on a single aggregate, the system creates a flexible volume if the "constituents_per_aggregate" field is not specified, or a FlexGroup volume if it is specified. If a volume is being created on multiple aggregates, the system always creates a FlexGroup volume. The root constituent of a FlexGroup volume is always placed on the first aggregate in the list.
 	// Maximum: 1000
 	// Minimum: 1
 	ConstituentsPerAggregate int64 `json:"constituents_per_aggregate,omitempty"`
+
+	// Specifies whether directory Unicode format conversion is enabled when directories are accessed by NFS clients.
+	ConvertUnicode bool `json:"convert_unicode,omitempty"`
 
 	// Creation time of the volume. This field is generated when the volume is created.
 	// Example: 2018-06-04T19:00:00Z
@@ -85,10 +98,16 @@ type Volume struct {
 	// files
 	Files *VolumeFiles `json:"files,omitempty"`
 
+	// flash pool
+	FlashPool *VolumeFlashPool `json:"flash_pool,omitempty"`
+
 	// FlexCache endpoint type. <br>none &dash; The volume is neither a FlexCache nor origin of any FlexCache. <br>cache &dash; The volume is a FlexCache volume. <br>origin &dash; The volume is origin of a FlexCache volume.
 	// Read Only: true
 	// Enum: [none cache origin]
 	FlexcacheEndpointType string `json:"flexcache_endpoint_type,omitempty"`
+
+	// flexgroup
+	Flexgroup *VolumeFlexgroup `json:"flexgroup,omitempty"`
 
 	// guarantee
 	Guarantee *VolumeGuarantee `json:"guarantee,omitempty"`
@@ -104,6 +123,9 @@ type Volume struct {
 	// Language encoding setting for volume. If no language is specified, the volume inherits its SVM language encoding setting.
 	// Enum: [ar ar.utf_8 c c.utf_8 cs cs.utf_8 da da.utf_8 de de.utf_8 en en.utf_8 en_us en_us.utf_8 es es.utf_8 fi fi.utf_8 fr fr.utf_8 he he.utf_8 hr hr.utf_8 hu hu.utf_8 it it.utf_8 ja ja.utf_8 ja_jp.932 ja_jp.932.utf_8 ja_jp.pck ja_jp.pck.utf_8 ja_jp.pck_v2 ja_jp.pck_v2.utf_8 ja_v1 ja_v1.utf_8 ko ko.utf_8 nl nl.utf_8 no no.utf_8 pl pl.utf_8 pt pt.utf_8 ro ro.utf_8 ru ru.utf_8 sk sk.utf_8 sl sl.utf_8 sv sv.utf_8 tr tr.utf_8 utf8mb4 zh zh.gbk zh.gbk.utf_8 zh.utf_8 zh_tw zh_tw.big5 zh_tw.big5.utf_8 zh_tw.utf_8]
 	Language string `json:"language,omitempty"`
+
+	// Maximum directory size. This value sets maximum size, in bytes, to which a directory can grow. The default maximum directory size for FlexVol volumes is model-dependent, and optimized for the size of system memory. Before increasing the maximum directory size, involve technical support.
+	MaxDirSize int64 `json:"max_dir_size,omitempty"`
 
 	// metric
 	Metric *VolumeMetric `json:"metric,omitempty"`
@@ -129,6 +151,13 @@ type Volume struct {
 	// quota
 	Quota *VolumeQuota `json:"quota,omitempty"`
 
+	// Naming Scheme for automatic Snapshot copies:
+	// * create_time - Automatic Snapshot copies are saved as per the start of their current date and time.
+	// * ordinal - Latest automatic snapshot copy is saved as <scheduled_frequency>.0 and subsequent copies will follow the create_time naming convention.
+	//
+	// Enum: [create_time ordinal]
+	ScheduledSnapshotNamingScheme *string `json:"scheduled_snapshot_naming_scheme,omitempty"`
+
 	// Physical size of the volume, in bytes. The minimum size for a FlexVol volume is 20MB and the minimum size for a FlexGroup volume is 200MB per constituent. The recommended size for a FlexGroup volume is a minimum of 100GB per constituent. For all volumes, the default size is equal to the minimum size.
 	Size int64 `json:"size,omitempty"`
 
@@ -138,14 +167,20 @@ type Volume struct {
 	// snapmirror
 	Snapmirror *VolumeSnapmirror `json:"snapmirror,omitempty"`
 
+	// Number of Snapshot copies in the volume.
+	// Read Only: true
+	// Maximum: 1023
+	// Minimum: 0
+	SnapshotCount int64 `json:"snapshot_count,omitempty"`
+
 	// snapshot policy
 	SnapshotPolicy *VolumeSnapshotPolicy `json:"snapshot_policy,omitempty"`
 
 	// space
 	Space *VolumeSpace `json:"space,omitempty"`
 
-	// Volume state. A volume can only be brought online if it is offline. Taking a volume offline removes its junction path. The 'mixed' state applies to FlexGroup volumes only and cannot be specified as a target state. An 'error' state implies that the volume is not in a state to serve data.
-	// Enum: [error mixed offline online]
+	// Volume state. Client access is supported only when volume is online and junctioned. Taking volume to offline or restricted state removes its junction path and blocks client access. When volume is in restricted state some operations like parity reconstruction and iron on commit are allowed. The 'mixed' state applies to FlexGroup volumes only and cannot be specified as a target state. An 'error' state implies that the volume is not in a state to serve data.
+	// Enum: [error mixed offline online restricted]
 	State string `json:"state,omitempty"`
 
 	// statistics
@@ -155,8 +190,8 @@ type Volume struct {
 	// Read Only: true
 	Status []string `json:"status,omitempty"`
 
-	// The style of the volume. If "style" is not specified, the volume type is determined based on the specified aggregates. Specifying a single aggregate, without "constituents_per_aggregate", creates a flexible volume. Specifying multiple aggregates, or a single aggregate with "constituents_per_aggregate", creates a FlexGroup. Specifying a volume "style" creates a volume of that type. For example, if the style is "flexvol" you must specify a single aggregate. If the style is "flexgroup", the system either uses the specified aggregates or automatically provisions aggregates if there are no specified aggregates.<br>flexvol &dash; flexible volumes and FlexClone volumes<br>flexgroup &dash; FlexGroups.
-	// Enum: [flexvol flexgroup]
+	// The style of the volume. If "style" is not specified, the volume type is determined based on the specified aggregates. Specifying a single aggregate, without "constituents_per_aggregate", creates a flexible volume. Specifying multiple aggregates, or a single aggregate with "constituents_per_aggregate", creates a FlexGroup. Specifying a volume "style" creates a volume of that type. For example, if the style is "flexvol" you must specify a single aggregate. If the style is "flexgroup", the system either uses the specified aggregates or automatically provisions aggregates if there are no specified aggregates. The style "flexgroup_constiutent" is not supported when creating a volume.<br>flexvol &dash; flexible volumes and FlexClone volumes<br>flexgroup &dash; FlexGroup volumes<br>flexgroup_constituent &dash; FlexGroup constituents.
+	// Enum: [flexvol flexgroup flexgroup_constituent]
 	Style string `json:"style,omitempty"`
 
 	// svm
@@ -186,11 +221,23 @@ func (m *Volume) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateActivityTracking(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateAggregates(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateAnalytics(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAntiRansomware(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAntiRansomwareState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -246,7 +293,15 @@ func (m *Volume) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateFlashPool(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateFlexcacheEndpointType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFlexgroup(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -282,11 +337,19 @@ func (m *Volume) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateScheduledSnapshotNamingScheme(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSnaplock(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateSnapmirror(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapshotCount(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -345,6 +408,23 @@ func (m *Volume) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Volume) validateActivityTracking(formats strfmt.Registry) error {
+	if swag.IsZero(m.ActivityTracking) { // not required
+		return nil
+	}
+
+	if m.ActivityTracking != nil {
+		if err := m.ActivityTracking.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("activity_tracking")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Volume) validateAggregates(formats strfmt.Registry) error {
 	if swag.IsZero(m.Aggregates) { // not required
 		return nil
@@ -381,6 +461,129 @@ func (m *Volume) validateAnalytics(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Volume) validateAntiRansomware(formats strfmt.Registry) error {
+	if swag.IsZero(m.AntiRansomware) { // not required
+		return nil
+	}
+
+	if m.AntiRansomware != nil {
+		if err := m.AntiRansomware.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("anti_ransomware")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var volumeTypeAntiRansomwareStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["disabled","enabled","dry_run","paused","disable_in_progress","enable_paused","dry_run_paused"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeTypeAntiRansomwareStatePropEnum = append(volumeTypeAntiRansomwareStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// anti_ransomware_state
+	// AntiRansomwareState
+	// disabled
+	// END DEBUGGING
+	// VolumeAntiRansomwareStateDisabled captures enum value "disabled"
+	VolumeAntiRansomwareStateDisabled string = "disabled"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// anti_ransomware_state
+	// AntiRansomwareState
+	// enabled
+	// END DEBUGGING
+	// VolumeAntiRansomwareStateEnabled captures enum value "enabled"
+	VolumeAntiRansomwareStateEnabled string = "enabled"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// anti_ransomware_state
+	// AntiRansomwareState
+	// dry_run
+	// END DEBUGGING
+	// VolumeAntiRansomwareStateDryRun captures enum value "dry_run"
+	VolumeAntiRansomwareStateDryRun string = "dry_run"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// anti_ransomware_state
+	// AntiRansomwareState
+	// paused
+	// END DEBUGGING
+	// VolumeAntiRansomwareStatePaused captures enum value "paused"
+	VolumeAntiRansomwareStatePaused string = "paused"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// anti_ransomware_state
+	// AntiRansomwareState
+	// disable_in_progress
+	// END DEBUGGING
+	// VolumeAntiRansomwareStateDisableInProgress captures enum value "disable_in_progress"
+	VolumeAntiRansomwareStateDisableInProgress string = "disable_in_progress"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// anti_ransomware_state
+	// AntiRansomwareState
+	// enable_paused
+	// END DEBUGGING
+	// VolumeAntiRansomwareStateEnablePaused captures enum value "enable_paused"
+	VolumeAntiRansomwareStateEnablePaused string = "enable_paused"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// anti_ransomware_state
+	// AntiRansomwareState
+	// dry_run_paused
+	// END DEBUGGING
+	// VolumeAntiRansomwareStateDryRunPaused captures enum value "dry_run_paused"
+	VolumeAntiRansomwareStateDryRunPaused string = "dry_run_paused"
+)
+
+// prop value enum
+func (m *Volume) validateAntiRansomwareStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeTypeAntiRansomwareStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Volume) validateAntiRansomwareState(formats strfmt.Registry) error {
+	if swag.IsZero(m.AntiRansomwareState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAntiRansomwareStateEnum("anti_ransomware_state", "body", m.AntiRansomwareState); err != nil {
+		return err
 	}
 
 	return nil
@@ -666,6 +869,23 @@ func (m *Volume) validateFiles(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Volume) validateFlashPool(formats strfmt.Registry) error {
+	if swag.IsZero(m.FlashPool) { // not required
+		return nil
+	}
+
+	if m.FlashPool != nil {
+		if err := m.FlashPool.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("flash_pool")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 var volumeTypeFlexcacheEndpointTypePropEnum []interface{}
 
 func init() {
@@ -727,6 +947,23 @@ func (m *Volume) validateFlexcacheEndpointType(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateFlexcacheEndpointTypeEnum("flexcache_endpoint_type", "body", m.FlexcacheEndpointType); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Volume) validateFlexgroup(formats strfmt.Registry) error {
+	if swag.IsZero(m.Flexgroup) { // not required
+		return nil
+	}
+
+	if m.Flexgroup != nil {
+		if err := m.Flexgroup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("flexgroup")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1576,6 +1813,62 @@ func (m *Volume) validateQuota(formats strfmt.Registry) error {
 	return nil
 }
 
+var volumeTypeScheduledSnapshotNamingSchemePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["create_time","ordinal"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeTypeScheduledSnapshotNamingSchemePropEnum = append(volumeTypeScheduledSnapshotNamingSchemePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// scheduled_snapshot_naming_scheme
+	// ScheduledSnapshotNamingScheme
+	// create_time
+	// END DEBUGGING
+	// VolumeScheduledSnapshotNamingSchemeCreateTime captures enum value "create_time"
+	VolumeScheduledSnapshotNamingSchemeCreateTime string = "create_time"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// scheduled_snapshot_naming_scheme
+	// ScheduledSnapshotNamingScheme
+	// ordinal
+	// END DEBUGGING
+	// VolumeScheduledSnapshotNamingSchemeOrdinal captures enum value "ordinal"
+	VolumeScheduledSnapshotNamingSchemeOrdinal string = "ordinal"
+)
+
+// prop value enum
+func (m *Volume) validateScheduledSnapshotNamingSchemeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeTypeScheduledSnapshotNamingSchemePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Volume) validateScheduledSnapshotNamingScheme(formats strfmt.Registry) error {
+	if swag.IsZero(m.ScheduledSnapshotNamingScheme) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateScheduledSnapshotNamingSchemeEnum("scheduled_snapshot_naming_scheme", "body", *m.ScheduledSnapshotNamingScheme); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Volume) validateSnaplock(formats strfmt.Registry) error {
 	if swag.IsZero(m.Snaplock) { // not required
 		return nil
@@ -1605,6 +1898,22 @@ func (m *Volume) validateSnapmirror(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Volume) validateSnapshotCount(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnapshotCount) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("snapshot_count", "body", m.SnapshotCount, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("snapshot_count", "body", m.SnapshotCount, 1023, false); err != nil {
+		return err
 	}
 
 	return nil
@@ -1648,7 +1957,7 @@ var volumeTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["error","mixed","offline","online"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["error","mixed","offline","online","restricted"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1697,6 +2006,16 @@ const (
 	// END DEBUGGING
 	// VolumeStateOnline captures enum value "online"
 	VolumeStateOnline string = "online"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// state
+	// State
+	// restricted
+	// END DEBUGGING
+	// VolumeStateRestricted captures enum value "restricted"
+	VolumeStateRestricted string = "restricted"
 )
 
 // prop value enum
@@ -1741,7 +2060,7 @@ var volumeTypeStylePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["flexvol","flexgroup"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["flexvol","flexgroup","flexgroup_constituent"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1770,6 +2089,16 @@ const (
 	// END DEBUGGING
 	// VolumeStyleFlexgroup captures enum value "flexgroup"
 	VolumeStyleFlexgroup string = "flexgroup"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// style
+	// Style
+	// flexgroup_constituent
+	// END DEBUGGING
+	// VolumeStyleFlexgroupConstituent captures enum value "flexgroup_constituent"
+	VolumeStyleFlexgroupConstituent string = "flexgroup_constituent"
 )
 
 // prop value enum
@@ -1901,11 +2230,19 @@ func (m *Volume) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateActivityTracking(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateAggregates(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateAnalytics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAntiRansomware(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1949,7 +2286,15 @@ func (m *Volume) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateFlashPool(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFlexcacheEndpointType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFlexgroup(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1990,6 +2335,10 @@ func (m *Volume) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 	}
 
 	if err := m.contextValidateSnapmirror(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapshotCount(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2041,6 +2390,20 @@ func (m *Volume) contextValidateLinks(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
+func (m *Volume) contextValidateActivityTracking(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ActivityTracking != nil {
+		if err := m.ActivityTracking.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("activity_tracking")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Volume) contextValidateAggregates(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Aggregates); i++ {
@@ -2065,6 +2428,20 @@ func (m *Volume) contextValidateAnalytics(ctx context.Context, formats strfmt.Re
 		if err := m.Analytics.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("analytics")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Volume) contextValidateAntiRansomware(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AntiRansomware != nil {
+		if err := m.AntiRansomware.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("anti_ransomware")
 			}
 			return err
 		}
@@ -2212,10 +2589,38 @@ func (m *Volume) contextValidateFiles(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
+func (m *Volume) contextValidateFlashPool(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.FlashPool != nil {
+		if err := m.FlashPool.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("flash_pool")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Volume) contextValidateFlexcacheEndpointType(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "flexcache_endpoint_type", "body", string(m.FlexcacheEndpointType)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Volume) contextValidateFlexgroup(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Flexgroup != nil {
+		if err := m.Flexgroup.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("flexgroup")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -2351,6 +2756,15 @@ func (m *Volume) contextValidateSnapmirror(ctx context.Context, formats strfmt.R
 	return nil
 }
 
+func (m *Volume) contextValidateSnapshotCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "snapshot_count", "body", int64(m.SnapshotCount)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Volume) contextValidateSnapshotPolicy(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.SnapshotPolicy != nil {
@@ -2450,6 +2864,248 @@ func (m *Volume) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Volume) UnmarshalBinary(b []byte) error {
 	var res Volume
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeActivityTracking volume activity tracking
+//
+// swagger:model VolumeActivityTracking
+type VolumeActivityTracking struct {
+
+	// Activity tracking state of the volume. If this value is "on", ONTAP collects top metrics information for the volume in real time. There is a slight impact to I/O performance in order to collect this information. If this value is "off", no activity tracking information is collected or available to view.
+	// Enum: [off on]
+	State string `json:"state,omitempty"`
+
+	// This field indicates whether or not volume activity tracking is supported on the volume. If volume activity tracking is not supported, the reason why is provided in the "activity_tracking.unsupported_reason" field.
+	// Read Only: true
+	Supported *bool `json:"supported,omitempty"`
+
+	// unsupported reason
+	UnsupportedReason *VolumeActivityTrackingUnsupportedReason `json:"unsupported_reason,omitempty"`
+}
+
+// Validate validates this volume activity tracking
+func (m *VolumeActivityTracking) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUnsupportedReason(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var volumeActivityTrackingTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["off","on"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeActivityTrackingTypeStatePropEnum = append(volumeActivityTrackingTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeActivityTracking
+	// VolumeActivityTracking
+	// state
+	// State
+	// off
+	// END DEBUGGING
+	// VolumeActivityTrackingStateOff captures enum value "off"
+	VolumeActivityTrackingStateOff string = "off"
+
+	// BEGIN DEBUGGING
+	// VolumeActivityTracking
+	// VolumeActivityTracking
+	// state
+	// State
+	// on
+	// END DEBUGGING
+	// VolumeActivityTrackingStateOn captures enum value "on"
+	VolumeActivityTrackingStateOn string = "on"
+)
+
+// prop value enum
+func (m *VolumeActivityTracking) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeActivityTrackingTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeActivityTracking) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("activity_tracking"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeActivityTracking) validateUnsupportedReason(formats strfmt.Registry) error {
+	if swag.IsZero(m.UnsupportedReason) { // not required
+		return nil
+	}
+
+	if m.UnsupportedReason != nil {
+		if err := m.UnsupportedReason.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("activity_tracking" + "." + "unsupported_reason")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume activity tracking based on the context it is used
+func (m *VolumeActivityTracking) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSupported(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUnsupportedReason(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeActivityTracking) contextValidateSupported(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "activity_tracking"+"."+"supported", "body", m.Supported); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeActivityTracking) contextValidateUnsupportedReason(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.UnsupportedReason != nil {
+		if err := m.UnsupportedReason.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("activity_tracking" + "." + "unsupported_reason")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeActivityTracking) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeActivityTracking) UnmarshalBinary(b []byte) error {
+	var res VolumeActivityTracking
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeActivityTrackingUnsupportedReason volume activity tracking unsupported reason
+//
+// swagger:model VolumeActivityTrackingUnsupportedReason
+type VolumeActivityTrackingUnsupportedReason struct {
+
+	// If volume activity tracking is not supported on the volume, this field provides an appropriate error code.
+	// Example: 124518405
+	// Read Only: true
+	Code string `json:"code,omitempty"`
+
+	// If volume activity tracking is not supported on the volume, this field provides an error message detailing why this is the case.
+	// Example: Volume activity tracking cannot be enabled on volumes that contain LUNs.
+	// Read Only: true
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this volume activity tracking unsupported reason
+func (m *VolumeActivityTrackingUnsupportedReason) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this volume activity tracking unsupported reason based on the context it is used
+func (m *VolumeActivityTrackingUnsupportedReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeActivityTrackingUnsupportedReason) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "activity_tracking"+"."+"unsupported_reason"+"."+"code", "body", string(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeActivityTrackingUnsupportedReason) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "activity_tracking"+"."+"unsupported_reason"+"."+"message", "body", string(m.Message)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeActivityTrackingUnsupportedReason) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeActivityTrackingUnsupportedReason) UnmarshalBinary(b []byte) error {
+	var res VolumeActivityTrackingUnsupportedReason
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2910,6 +3566,624 @@ func (m *VolumeAnalyticsUnsupportedReason) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *VolumeAnalyticsUnsupportedReason) UnmarshalBinary(b []byte) error {
 	var res VolumeAnalyticsUnsupportedReason
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeAntiRansomwareType Anti-ransomware related information of the volume.
+//
+// swagger:model VolumeAntiRansomwareType
+type VolumeAntiRansomwareType struct {
+
+	// Probability of a ransomware attack.<br>`none` No files are suspected of ransomware activity.<br>`low` A number of files are suspected of ransomware activity.<br>`moderate` A moderate number of files are suspected of ransomware activity.<br>`high` A large number of files are suspected of ransomware activity.
+	// Read Only: true
+	// Enum: [none low moderate high]
+	AttackProbability string `json:"attack_probability,omitempty"`
+
+	// attack reports
+	AttackReports []*AntiRansomwareAttackReport `json:"attack_reports,omitempty"`
+
+	// Time when Anti-ransomware monitoring `state` is set to dry-run value for starting evaluation mode.
+	// Read Only: true
+	// Format: date-time
+	DryRunStartTime *strfmt.DateTime `json:"dry_run_start_time,omitempty"`
+
+	// space
+	Space *VolumeAntiRansomwareSpace `json:"space,omitempty"`
+
+	// Anti-ransomware state.<br>`disabled` Anti-ransomware monitoring is disabled on the volume.  This is the default state in a POST operation.<br>`disable_in_progress` Anti-ransomware monitoring is being disabled and a cleanup operation is in effect. Valid in GET operation.<br>`dry_run` Anti-ransomware monitoring is enabled in the evaluation mode.<br>`enabled` Anti-ransomware monitoring is active on the volume.<br>`paused` Anti-ransomware monitoring is paused on the volume.<br>`enable_paused` Anti-ransomware monitoring is paused on the volume from its earlier enabled state. Valid in GET operation. <br>`dry_run_paused` Anti-ransomware monitoring is paused on the volume from its earlier dry_run state. Valid in GET operation. <br>For POST, the valid Anti-ransomware states are only `disabled`, `enabled` and `dry_run`, whereas for PATCH, `paused` is also valid along with the three valid states for POST.
+	// Enum: [disabled disable_in_progress dry_run enabled paused enable_paused dry_run_paused]
+	State string `json:"state,omitempty"`
+
+	// suspect files
+	SuspectFiles []*VolumeAntiRansomwareSuspectFilesItems0 `json:"suspect_files,omitempty"`
+}
+
+// Validate validates this volume anti ransomware type
+func (m *VolumeAntiRansomwareType) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAttackProbability(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAttackReports(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDryRunStartTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSpace(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSuspectFiles(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var volumeAntiRansomwareTypeTypeAttackProbabilityPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","low","moderate","high"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeAntiRansomwareTypeTypeAttackProbabilityPropEnum = append(volumeAntiRansomwareTypeTypeAttackProbabilityPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeAntiRansomwareType
+	// VolumeAntiRansomwareType
+	// attack_probability
+	// AttackProbability
+	// none
+	// END DEBUGGING
+	// VolumeAntiRansomwareTypeAttackProbabilityNone captures enum value "none"
+	VolumeAntiRansomwareTypeAttackProbabilityNone string = "none"
+
+	// BEGIN DEBUGGING
+	// VolumeAntiRansomwareType
+	// VolumeAntiRansomwareType
+	// attack_probability
+	// AttackProbability
+	// low
+	// END DEBUGGING
+	// VolumeAntiRansomwareTypeAttackProbabilityLow captures enum value "low"
+	VolumeAntiRansomwareTypeAttackProbabilityLow string = "low"
+
+	// BEGIN DEBUGGING
+	// VolumeAntiRansomwareType
+	// VolumeAntiRansomwareType
+	// attack_probability
+	// AttackProbability
+	// moderate
+	// END DEBUGGING
+	// VolumeAntiRansomwareTypeAttackProbabilityModerate captures enum value "moderate"
+	VolumeAntiRansomwareTypeAttackProbabilityModerate string = "moderate"
+
+	// BEGIN DEBUGGING
+	// VolumeAntiRansomwareType
+	// VolumeAntiRansomwareType
+	// attack_probability
+	// AttackProbability
+	// high
+	// END DEBUGGING
+	// VolumeAntiRansomwareTypeAttackProbabilityHigh captures enum value "high"
+	VolumeAntiRansomwareTypeAttackProbabilityHigh string = "high"
+)
+
+// prop value enum
+func (m *VolumeAntiRansomwareType) validateAttackProbabilityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeAntiRansomwareTypeTypeAttackProbabilityPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeAntiRansomwareType) validateAttackProbability(formats strfmt.Registry) error {
+	if swag.IsZero(m.AttackProbability) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAttackProbabilityEnum("anti_ransomware"+"."+"attack_probability", "body", m.AttackProbability); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAntiRansomwareType) validateAttackReports(formats strfmt.Registry) error {
+	if swag.IsZero(m.AttackReports) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AttackReports); i++ {
+		if swag.IsZero(m.AttackReports[i]) { // not required
+			continue
+		}
+
+		if m.AttackReports[i] != nil {
+			if err := m.AttackReports[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("anti_ransomware" + "." + "attack_reports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeAntiRansomwareType) validateDryRunStartTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.DryRunStartTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("anti_ransomware"+"."+"dry_run_start_time", "body", "date-time", m.DryRunStartTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAntiRansomwareType) validateSpace(formats strfmt.Registry) error {
+	if swag.IsZero(m.Space) { // not required
+		return nil
+	}
+
+	if m.Space != nil {
+		if err := m.Space.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("anti_ransomware" + "." + "space")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var volumeAntiRansomwareTypeTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["disabled","disable_in_progress","dry_run","enabled","paused","enable_paused","dry_run_paused"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeAntiRansomwareTypeTypeStatePropEnum = append(volumeAntiRansomwareTypeTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeAntiRansomwareType
+	// VolumeAntiRansomwareType
+	// state
+	// State
+	// disabled
+	// END DEBUGGING
+	// VolumeAntiRansomwareTypeStateDisabled captures enum value "disabled"
+	VolumeAntiRansomwareTypeStateDisabled string = "disabled"
+
+	// BEGIN DEBUGGING
+	// VolumeAntiRansomwareType
+	// VolumeAntiRansomwareType
+	// state
+	// State
+	// disable_in_progress
+	// END DEBUGGING
+	// VolumeAntiRansomwareTypeStateDisableInProgress captures enum value "disable_in_progress"
+	VolumeAntiRansomwareTypeStateDisableInProgress string = "disable_in_progress"
+
+	// BEGIN DEBUGGING
+	// VolumeAntiRansomwareType
+	// VolumeAntiRansomwareType
+	// state
+	// State
+	// dry_run
+	// END DEBUGGING
+	// VolumeAntiRansomwareTypeStateDryRun captures enum value "dry_run"
+	VolumeAntiRansomwareTypeStateDryRun string = "dry_run"
+
+	// BEGIN DEBUGGING
+	// VolumeAntiRansomwareType
+	// VolumeAntiRansomwareType
+	// state
+	// State
+	// enabled
+	// END DEBUGGING
+	// VolumeAntiRansomwareTypeStateEnabled captures enum value "enabled"
+	VolumeAntiRansomwareTypeStateEnabled string = "enabled"
+
+	// BEGIN DEBUGGING
+	// VolumeAntiRansomwareType
+	// VolumeAntiRansomwareType
+	// state
+	// State
+	// paused
+	// END DEBUGGING
+	// VolumeAntiRansomwareTypeStatePaused captures enum value "paused"
+	VolumeAntiRansomwareTypeStatePaused string = "paused"
+
+	// BEGIN DEBUGGING
+	// VolumeAntiRansomwareType
+	// VolumeAntiRansomwareType
+	// state
+	// State
+	// enable_paused
+	// END DEBUGGING
+	// VolumeAntiRansomwareTypeStateEnablePaused captures enum value "enable_paused"
+	VolumeAntiRansomwareTypeStateEnablePaused string = "enable_paused"
+
+	// BEGIN DEBUGGING
+	// VolumeAntiRansomwareType
+	// VolumeAntiRansomwareType
+	// state
+	// State
+	// dry_run_paused
+	// END DEBUGGING
+	// VolumeAntiRansomwareTypeStateDryRunPaused captures enum value "dry_run_paused"
+	VolumeAntiRansomwareTypeStateDryRunPaused string = "dry_run_paused"
+)
+
+// prop value enum
+func (m *VolumeAntiRansomwareType) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeAntiRansomwareTypeTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeAntiRansomwareType) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("anti_ransomware"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAntiRansomwareType) validateSuspectFiles(formats strfmt.Registry) error {
+	if swag.IsZero(m.SuspectFiles) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SuspectFiles); i++ {
+		if swag.IsZero(m.SuspectFiles[i]) { // not required
+			continue
+		}
+
+		if m.SuspectFiles[i] != nil {
+			if err := m.SuspectFiles[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("anti_ransomware" + "." + "suspect_files" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume anti ransomware type based on the context it is used
+func (m *VolumeAntiRansomwareType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAttackProbability(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAttackReports(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDryRunStartTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSpace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSuspectFiles(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeAntiRansomwareType) contextValidateAttackProbability(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "anti_ransomware"+"."+"attack_probability", "body", string(m.AttackProbability)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAntiRansomwareType) contextValidateAttackReports(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.AttackReports); i++ {
+
+		if m.AttackReports[i] != nil {
+			if err := m.AttackReports[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("anti_ransomware" + "." + "attack_reports" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *VolumeAntiRansomwareType) contextValidateDryRunStartTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "anti_ransomware"+"."+"dry_run_start_time", "body", m.DryRunStartTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAntiRansomwareType) contextValidateSpace(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Space != nil {
+		if err := m.Space.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("anti_ransomware" + "." + "space")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeAntiRansomwareType) contextValidateSuspectFiles(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SuspectFiles); i++ {
+
+		if m.SuspectFiles[i] != nil {
+			if err := m.SuspectFiles[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("anti_ransomware" + "." + "suspect_files" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeAntiRansomwareType) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeAntiRansomwareType) UnmarshalBinary(b []byte) error {
+	var res VolumeAntiRansomwareType
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeAntiRansomwareSpace volume anti ransomware space
+//
+// swagger:model VolumeAntiRansomwareSpace
+type VolumeAntiRansomwareSpace struct {
+
+	// Total number of Anti-ransomware backup Snapshot copies.
+	// Read Only: true
+	SnapshotCount int64 `json:"snapshot_count,omitempty"`
+
+	// Total space in bytes used by the Anti-ransomware feature.
+	// Read Only: true
+	Used int64 `json:"used,omitempty"`
+
+	// Space in bytes used by the Anti-ransomware analytics logs.
+	// Read Only: true
+	UsedByLogs int64 `json:"used_by_logs,omitempty"`
+
+	// Space in bytes used by the Anti-ransomware backup Snapshot copies.
+	// Read Only: true
+	UsedBySnapshots int64 `json:"used_by_snapshots,omitempty"`
+}
+
+// Validate validates this volume anti ransomware space
+func (m *VolumeAntiRansomwareSpace) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this volume anti ransomware space based on the context it is used
+func (m *VolumeAntiRansomwareSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSnapshotCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsedByLogs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsedBySnapshots(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeAntiRansomwareSpace) contextValidateSnapshotCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "anti_ransomware"+"."+"space"+"."+"snapshot_count", "body", int64(m.SnapshotCount)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAntiRansomwareSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "anti_ransomware"+"."+"space"+"."+"used", "body", int64(m.Used)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAntiRansomwareSpace) contextValidateUsedByLogs(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "anti_ransomware"+"."+"space"+"."+"used_by_logs", "body", int64(m.UsedByLogs)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAntiRansomwareSpace) contextValidateUsedBySnapshots(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "anti_ransomware"+"."+"space"+"."+"used_by_snapshots", "body", int64(m.UsedBySnapshots)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeAntiRansomwareSpace) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeAntiRansomwareSpace) UnmarshalBinary(b []byte) error {
+	var res VolumeAntiRansomwareSpace
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeAntiRansomwareSuspectFilesItems0 volume anti ransomware suspect files items0
+//
+// swagger:model VolumeAntiRansomwareSuspectFilesItems0
+type VolumeAntiRansomwareSuspectFilesItems0 struct {
+
+	// Total number of `suspect_files.format` files observed by the Anti-ransomware analytics engine on the volume.
+	// Read Only: true
+	Count int64 `json:"count,omitempty"`
+
+	// File formats observed by the Anti-ransomware analytics engine on the volume.
+	// Read Only: true
+	Format string `json:"format,omitempty"`
+}
+
+// Validate validates this volume anti ransomware suspect files items0
+func (m *VolumeAntiRansomwareSuspectFilesItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this volume anti ransomware suspect files items0 based on the context it is used
+func (m *VolumeAntiRansomwareSuspectFilesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFormat(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeAntiRansomwareSuspectFilesItems0) contextValidateCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "count", "body", int64(m.Count)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeAntiRansomwareSuspectFilesItems0) contextValidateFormat(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "format", "body", string(m.Format)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeAntiRansomwareSuspectFilesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeAntiRansomwareSuspectFilesItems0) UnmarshalBinary(b []byte) error {
+	var res VolumeAntiRansomwareSuspectFilesItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3693,9 +4967,14 @@ func (m *VolumeCloneParentVolumeLinks) UnmarshalBinary(b []byte) error {
 // swagger:model VolumeConsistencyGroup
 type VolumeConsistencyGroup struct {
 
-	// Name of the consistency group.
+	// The name of the consistency group to which the volume belongs. Available only when the volume is part of a consistency group. If this volume belongs to a child consistency group, then this will be the UUID of the parent consistency group.
 	// Example: consistency_group_1
 	Name string `json:"name,omitempty"`
+
+	// The UUID of the consistency group to which the volume belongs. Available only when the volume is part of a consistency group. If this volume belongs to a child consistency group, then this will be the UUID of the parent consistency group.
+	// Example: 1cd8a442-86d1-11e0-ae1d-123478563412
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
 }
 
 // Validate validates this volume consistency group
@@ -3703,8 +4982,26 @@ func (m *VolumeConsistencyGroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this volume consistency group based on context it is used
+// ContextValidate validate this volume consistency group based on the context it is used
 func (m *VolumeConsistencyGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeConsistencyGroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "consistency_group"+"."+"uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -4565,6 +5862,9 @@ type VolumeConstituentsItems0Space struct {
 
 	// The space used by Active Filesystem, in bytes.
 	UsedByAfs int64 `json:"used_by_afs,omitempty"`
+
+	// The virtual space used (includes volume reserves) before storage efficiency, as a percent.
+	UsedPercent int64 `json:"used_percent,omitempty"`
 }
 
 // Validate validates this volume constituents items0 space
@@ -4980,42 +6280,55 @@ type VolumeEfficiencyType struct {
 	Dedupe string `json:"dedupe,omitempty"`
 
 	// Last sis operation begin timestamp.
+	// Read Only: true
 	LastOpBegin string `json:"last_op_begin,omitempty"`
 
 	// Last sis operation end timestamp.
+	// Read Only: true
 	LastOpEnd string `json:"last_op_end,omitempty"`
 
 	// Last sis operation error text.
+	// Read Only: true
 	LastOpErr string `json:"last_op_err,omitempty"`
 
 	// Last sis operation size.
+	// Read Only: true
 	LastOpSize int64 `json:"last_op_size,omitempty"`
 
 	// Last sis operation state.
+	// Read Only: true
 	LastOpState string `json:"last_op_state,omitempty"`
 
 	// Sis status of the volume.
+	// Read Only: true
 	// Enum: [idle initializing active undoing pending downgrading disabled]
 	OpState string `json:"op_state,omitempty"`
 
 	// Absolute volume path of the volume.
+	// Read Only: true
 	Path string `json:"path,omitempty"`
 
 	// policy
 	Policy *VolumeEfficiencyTypePolicyType `json:"policy,omitempty"`
 
 	// Sis progress of the volume.
+	// Read Only: true
 	Progress string `json:"progress,omitempty"`
 
 	// Schedule associated with volume.
 	// Read Only: true
 	Schedule string `json:"schedule,omitempty"`
 
-	// Sis state of the volume.
-	// Enum: [disabled enabled mixed]
+	// Storage efficiency state of the volume. Currently, this field supports POST/PATCH only for RW (Read-Write) volumes on FSx for ONTAP.<br>disabled &dash; All storage efficiency features are disabled.<br>mixed &dash; Read-only field for FlexGroup volumes, storage efficiency is enabled on certain constituents and disabled on others.<br>On FSx for ONTAP &dash; <br> &emsp; enabled &dash; All supported storage efficiency features for the volume are enabled.<br> &emsp; custom &dash; Read-only field currently only supported for the FSx for ONTAP, user-defined storage efficiency features are enabled.<br>For other platforms &dash; <br> &emsp; enabled &dash; At least one storage efficiency feature for the volume is enabled.
+	// Enum: [disabled enabled mixed custom]
 	State string `json:"state,omitempty"`
 
+	// Storage efficiency mode used by volume. This parameter is supported only on AFF platform.
+	// Enum: [default efficient]
+	StorageEfficiencyMode string `json:"storage_efficiency_mode,omitempty"`
+
 	// Sis Type of the volume.
+	// Read Only: true
 	// Enum: [regular snapvault]
 	Type string `json:"type,omitempty"`
 }
@@ -5053,6 +6366,10 @@ func (m *VolumeEfficiencyType) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStorageEfficiencyMode(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -5573,7 +6890,7 @@ var volumeEfficiencyTypeTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["disabled","enabled","mixed"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["disabled","enabled","mixed","custom"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -5612,6 +6929,16 @@ const (
 	// END DEBUGGING
 	// VolumeEfficiencyTypeStateMixed captures enum value "mixed"
 	VolumeEfficiencyTypeStateMixed string = "mixed"
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// state
+	// State
+	// custom
+	// END DEBUGGING
+	// VolumeEfficiencyTypeStateCustom captures enum value "custom"
+	VolumeEfficiencyTypeStateCustom string = "custom"
 )
 
 // prop value enum
@@ -5629,6 +6956,62 @@ func (m *VolumeEfficiencyType) validateState(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateStateEnum("efficiency"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var volumeEfficiencyTypeTypeStorageEfficiencyModePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["default","efficient"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeEfficiencyTypeTypeStorageEfficiencyModePropEnum = append(volumeEfficiencyTypeTypeStorageEfficiencyModePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// storage_efficiency_mode
+	// StorageEfficiencyMode
+	// default
+	// END DEBUGGING
+	// VolumeEfficiencyTypeStorageEfficiencyModeDefault captures enum value "default"
+	VolumeEfficiencyTypeStorageEfficiencyModeDefault string = "default"
+
+	// BEGIN DEBUGGING
+	// VolumeEfficiencyType
+	// VolumeEfficiencyType
+	// storage_efficiency_mode
+	// StorageEfficiencyMode
+	// efficient
+	// END DEBUGGING
+	// VolumeEfficiencyTypeStorageEfficiencyModeEfficient captures enum value "efficient"
+	VolumeEfficiencyTypeStorageEfficiencyModeEfficient string = "efficient"
+)
+
+// prop value enum
+func (m *VolumeEfficiencyType) validateStorageEfficiencyModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeEfficiencyTypeTypeStorageEfficiencyModePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeEfficiencyType) validateStorageEfficiencyMode(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageEfficiencyMode) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStorageEfficiencyModeEnum("efficiency"+"."+"storage_efficiency_mode", "body", m.StorageEfficiencyMode); err != nil {
 		return err
 	}
 
@@ -5695,7 +7078,39 @@ func (m *VolumeEfficiencyType) validateType(formats strfmt.Registry) error {
 func (m *VolumeEfficiencyType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateLastOpBegin(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastOpEnd(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastOpErr(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastOpSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastOpState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateOpState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePath(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidatePolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProgress(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -5703,9 +7118,76 @@ func (m *VolumeEfficiencyType) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VolumeEfficiencyType) contextValidateLastOpBegin(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"last_op_begin", "body", string(m.LastOpBegin)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeEfficiencyType) contextValidateLastOpEnd(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"last_op_end", "body", string(m.LastOpEnd)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeEfficiencyType) contextValidateLastOpErr(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"last_op_err", "body", string(m.LastOpErr)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeEfficiencyType) contextValidateLastOpSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"last_op_size", "body", int64(m.LastOpSize)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeEfficiencyType) contextValidateLastOpState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"last_op_state", "body", string(m.LastOpState)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeEfficiencyType) contextValidateOpState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"op_state", "body", string(m.OpState)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeEfficiencyType) contextValidatePath(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"path", "body", string(m.Path)); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -5723,9 +7205,27 @@ func (m *VolumeEfficiencyType) contextValidatePolicy(ctx context.Context, format
 	return nil
 }
 
+func (m *VolumeEfficiencyType) contextValidateProgress(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"progress", "body", string(m.Progress)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *VolumeEfficiencyType) contextValidateSchedule(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "efficiency"+"."+"schedule", "body", string(m.Schedule)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeEfficiencyType) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"type", "body", string(m.Type)); err != nil {
 		return err
 	}
 
@@ -5755,7 +7255,7 @@ func (m *VolumeEfficiencyType) UnmarshalBinary(b []byte) error {
 // swagger:model VolumeEfficiencyTypePolicyType
 type VolumeEfficiencyTypePolicyType struct {
 
-	// Specifies the name of the efficiency policy.
+	// Specifies the name of the efficiency policy. Valid for PATCH.
 	Name string `json:"name,omitempty"`
 }
 
@@ -6294,6 +7794,516 @@ func (m *VolumeFiles) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *VolumeFiles) UnmarshalBinary(b []byte) error {
 	var res VolumeFiles
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeFlashPool volume flash pool
+//
+// swagger:model VolumeFlashPool
+type VolumeFlashPool struct {
+
+	// If this parameter is specified, the command displays information only about the volume or volumes with the specified Flash Pool caching attributes.
+	// Read Only: true
+	// Enum: [read read_write none]
+	CacheEligibility string `json:"cache_eligibility,omitempty"`
+
+	// If this parameter is specified, the command displays the volumes that match the specified cache retention priority policy. A cache retention priority defines how long the blocks of a volume will be cached in the Flash Pool once they become cold.
+	// Read Only: true
+	// Enum: [normal low high]
+	CacheRetentionPriority string `json:"cache_retention_priority,omitempty"`
+
+	// This optionally specifies the caching policy to apply to the volume. A caching policy defines how the system caches a volume's data in Flash Cache modules. If a caching policy is not assigned to a volume, the system uses the caching policy that is assigned to the containing SVM. If a caching policy is not assigned to the containing SVM, the system uses the default cluster-wide policy.
+	// Read Only: true
+	// Enum: [none auto meta random_read random_read_write all_read all_read_random_write all noread_random_write meta_random_write random_read_write_random_write all_read_random_write_random_write all_random_write]
+	CachingPolicy string `json:"caching_policy,omitempty"`
+}
+
+// Validate validates this volume flash pool
+func (m *VolumeFlashPool) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateCacheEligibility(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCacheRetentionPriority(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCachingPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var volumeFlashPoolTypeCacheEligibilityPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["read","read_write","none"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeFlashPoolTypeCacheEligibilityPropEnum = append(volumeFlashPoolTypeCacheEligibilityPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// cache_eligibility
+	// CacheEligibility
+	// read
+	// END DEBUGGING
+	// VolumeFlashPoolCacheEligibilityRead captures enum value "read"
+	VolumeFlashPoolCacheEligibilityRead string = "read"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// cache_eligibility
+	// CacheEligibility
+	// read_write
+	// END DEBUGGING
+	// VolumeFlashPoolCacheEligibilityReadWrite captures enum value "read_write"
+	VolumeFlashPoolCacheEligibilityReadWrite string = "read_write"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// cache_eligibility
+	// CacheEligibility
+	// none
+	// END DEBUGGING
+	// VolumeFlashPoolCacheEligibilityNone captures enum value "none"
+	VolumeFlashPoolCacheEligibilityNone string = "none"
+)
+
+// prop value enum
+func (m *VolumeFlashPool) validateCacheEligibilityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeFlashPoolTypeCacheEligibilityPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeFlashPool) validateCacheEligibility(formats strfmt.Registry) error {
+	if swag.IsZero(m.CacheEligibility) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateCacheEligibilityEnum("flash_pool"+"."+"cache_eligibility", "body", m.CacheEligibility); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var volumeFlashPoolTypeCacheRetentionPriorityPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["normal","low","high"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeFlashPoolTypeCacheRetentionPriorityPropEnum = append(volumeFlashPoolTypeCacheRetentionPriorityPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// cache_retention_priority
+	// CacheRetentionPriority
+	// normal
+	// END DEBUGGING
+	// VolumeFlashPoolCacheRetentionPriorityNormal captures enum value "normal"
+	VolumeFlashPoolCacheRetentionPriorityNormal string = "normal"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// cache_retention_priority
+	// CacheRetentionPriority
+	// low
+	// END DEBUGGING
+	// VolumeFlashPoolCacheRetentionPriorityLow captures enum value "low"
+	VolumeFlashPoolCacheRetentionPriorityLow string = "low"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// cache_retention_priority
+	// CacheRetentionPriority
+	// high
+	// END DEBUGGING
+	// VolumeFlashPoolCacheRetentionPriorityHigh captures enum value "high"
+	VolumeFlashPoolCacheRetentionPriorityHigh string = "high"
+)
+
+// prop value enum
+func (m *VolumeFlashPool) validateCacheRetentionPriorityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeFlashPoolTypeCacheRetentionPriorityPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeFlashPool) validateCacheRetentionPriority(formats strfmt.Registry) error {
+	if swag.IsZero(m.CacheRetentionPriority) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateCacheRetentionPriorityEnum("flash_pool"+"."+"cache_retention_priority", "body", m.CacheRetentionPriority); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var volumeFlashPoolTypeCachingPolicyPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","auto","meta","random_read","random_read_write","all_read","all_read_random_write","all","noread_random_write","meta_random_write","random_read_write_random_write","all_read_random_write_random_write","all_random_write"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeFlashPoolTypeCachingPolicyPropEnum = append(volumeFlashPoolTypeCachingPolicyPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// none
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyNone captures enum value "none"
+	VolumeFlashPoolCachingPolicyNone string = "none"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// auto
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyAuto captures enum value "auto"
+	VolumeFlashPoolCachingPolicyAuto string = "auto"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// meta
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyMeta captures enum value "meta"
+	VolumeFlashPoolCachingPolicyMeta string = "meta"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// random_read
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyRandomRead captures enum value "random_read"
+	VolumeFlashPoolCachingPolicyRandomRead string = "random_read"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// random_read_write
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyRandomReadWrite captures enum value "random_read_write"
+	VolumeFlashPoolCachingPolicyRandomReadWrite string = "random_read_write"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// all_read
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyAllRead captures enum value "all_read"
+	VolumeFlashPoolCachingPolicyAllRead string = "all_read"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// all_read_random_write
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyAllReadRandomWrite captures enum value "all_read_random_write"
+	VolumeFlashPoolCachingPolicyAllReadRandomWrite string = "all_read_random_write"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// all
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyAll captures enum value "all"
+	VolumeFlashPoolCachingPolicyAll string = "all"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// noread_random_write
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyNoreadRandomWrite captures enum value "noread_random_write"
+	VolumeFlashPoolCachingPolicyNoreadRandomWrite string = "noread_random_write"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// meta_random_write
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyMetaRandomWrite captures enum value "meta_random_write"
+	VolumeFlashPoolCachingPolicyMetaRandomWrite string = "meta_random_write"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// random_read_write_random_write
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyRandomReadWriteRandomWrite captures enum value "random_read_write_random_write"
+	VolumeFlashPoolCachingPolicyRandomReadWriteRandomWrite string = "random_read_write_random_write"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// all_read_random_write_random_write
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyAllReadRandomWriteRandomWrite captures enum value "all_read_random_write_random_write"
+	VolumeFlashPoolCachingPolicyAllReadRandomWriteRandomWrite string = "all_read_random_write_random_write"
+
+	// BEGIN DEBUGGING
+	// VolumeFlashPool
+	// VolumeFlashPool
+	// caching_policy
+	// CachingPolicy
+	// all_random_write
+	// END DEBUGGING
+	// VolumeFlashPoolCachingPolicyAllRandomWrite captures enum value "all_random_write"
+	VolumeFlashPoolCachingPolicyAllRandomWrite string = "all_random_write"
+)
+
+// prop value enum
+func (m *VolumeFlashPool) validateCachingPolicyEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeFlashPoolTypeCachingPolicyPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeFlashPool) validateCachingPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.CachingPolicy) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateCachingPolicyEnum("flash_pool"+"."+"caching_policy", "body", m.CachingPolicy); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume flash pool based on the context it is used
+func (m *VolumeFlashPool) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCacheEligibility(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCacheRetentionPriority(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCachingPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeFlashPool) contextValidateCacheEligibility(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "flash_pool"+"."+"cache_eligibility", "body", string(m.CacheEligibility)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeFlashPool) contextValidateCacheRetentionPriority(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "flash_pool"+"."+"cache_retention_priority", "body", string(m.CacheRetentionPriority)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeFlashPool) contextValidateCachingPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "flash_pool"+"."+"caching_policy", "body", string(m.CachingPolicy)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeFlashPool) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeFlashPool) UnmarshalBinary(b []byte) error {
+	var res VolumeFlashPool
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeFlexgroup volume flexgroup
+//
+// swagger:model VolumeFlexgroup
+type VolumeFlexgroup struct {
+
+	// Name of the FlexGroup volume that the constituent is part of.
+	// Example: my_flexgroup
+	// Read Only: true
+	// Max Length: 203
+	// Min Length: 1
+	Name string `json:"name,omitempty"`
+
+	// Unique identifier for the FlexGroup volume that the constituent is part of.
+	// Example: 75c9cfb0-3eb4-11eb-9fb4-005056bb088a
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this volume flexgroup
+func (m *VolumeFlexgroup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeFlexgroup) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("flexgroup"+"."+"name", "body", m.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("flexgroup"+"."+"name", "body", m.Name, 203); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume flexgroup based on the context it is used
+func (m *VolumeFlexgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeFlexgroup) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "flexgroup"+"."+"name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeFlexgroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "flexgroup"+"."+"uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeFlexgroup) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeFlexgroup) UnmarshalBinary(b []byte) error {
+	var res VolumeFlexgroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -8841,7 +10851,7 @@ type VolumeNas struct {
 	// junction parent
 	JunctionParent *VolumeNasJunctionParent `json:"junction_parent,omitempty"`
 
-	// The fully-qualified path in the owning SVM's namespace at which the volume is mounted. The path is case insensitive and must be unique within a SVM's namespace. Path must begin with '/' and must not end with '/'. Only one volume can be mounted at any given junction path. An empty path in POST creates an unmounted volume. An empty path in PATCH deactivates and unmounts the volume. Taking a volume offline removes its junction path. This attribute is reported in GET only when the volume is mounted.
+	// The fully-qualified path in the owning SVM's namespace at which the volume is mounted. The path is case insensitive and must be unique within a SVM's namespace. Path must begin with '/' and must not end with '/'. Only one volume can be mounted at any given junction path. An empty path in POST creates an unmounted volume. An empty path in PATCH deactivates and unmounts the volume. Taking a volume offline or restricted state removes its junction path. This attribute is reported in GET only when the volume is mounted.
 	// Example: /user/my_volume
 	Path *string `json:"path,omitempty"`
 
@@ -9905,9 +11915,8 @@ type VolumeSnaplock struct {
 
 	// The SnapLock type of the volume. <br>compliance &dash; A SnapLock Compliance(SLC) volume provides the highest level of WORM protection and an administrator cannot destroy a SLC volume if it contains unexpired WORM files. <br> enterprise &dash; An administrator can delete a SnapLock Enterprise(SLE) volume.<br> non_snaplock &dash; Indicates the volume is non-snaplock.
 	// Example: enterprise
-	// Read Only: true
 	// Enum: [compliance enterprise non_snaplock]
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 
 	// Indicates the number of files with an unspecified retention time in the volume.
 	// Example: 10
@@ -10111,7 +12120,7 @@ func (m *VolumeSnaplock) validateType(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateTypeEnum("snaplock"+"."+"type", "body", m.Type); err != nil {
+	if err := m.validateTypeEnum("snaplock"+"."+"type", "body", *m.Type); err != nil {
 		return err
 	}
 
@@ -10139,10 +12148,6 @@ func (m *VolumeSnaplock) ContextValidate(ctx context.Context, formats strfmt.Reg
 	}
 
 	if err := m.contextValidateRetention(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -10201,15 +12206,6 @@ func (m *VolumeSnaplock) contextValidateRetention(ctx context.Context, formats s
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *VolumeSnaplock) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "snaplock"+"."+"type", "body", string(m.Type)); err != nil {
-		return err
 	}
 
 	return nil
@@ -10671,6 +12667,40 @@ type VolumeSpace struct {
 	// Read Only: true
 	CapacityTierFootprint int64 `json:"capacity_tier_footprint,omitempty"`
 
+	// Cross volume deduplication metadata footprint, in bytes.
+	// Read Only: true
+	CrossVolumeDedupeMetafilesFootprint int64 `json:"cross_volume_dedupe_metafiles_footprint,omitempty"`
+
+	// Cross volume temporary deduplication metadata footprint, in bytes.
+	// Read Only: true
+	CrossVolumeDedupeMetafilesTemporaryFootprint int64 `json:"cross_volume_dedupe_metafiles_temporary_footprint,omitempty"`
+
+	// Deduplication metadata footprint, in bytes.
+	// Read Only: true
+	DedupeMetafilesFootprint int64 `json:"dedupe_metafiles_footprint,omitempty"`
+
+	// Temporary deduplication metadata footprint, in bytes.
+	// Read Only: true
+	DedupeMetafilesTemporaryFootprint int64 `json:"dedupe_metafiles_temporary_footprint,omitempty"`
+
+	// Delayed free blocks footprint, in bytes.
+	// Read Only: true
+	DelayedFreeFootprint int64 `json:"delayed_free_footprint,omitempty"`
+
+	// Size that should be available for the volume, irrespective of available size in the aggregate, in bytes.
+	ExpectedAvailable int64 `json:"expected_available,omitempty"`
+
+	// File operation metadata footprint, in bytes.
+	// Read Only: true
+	FileOperationMetadata int64 `json:"file_operation_metadata,omitempty"`
+
+	// Total usable size of the volume, in bytes.
+	// Read Only: true
+	FilesystemSize int64 `json:"filesystem_size,omitempty"`
+
+	// Specifies whether the file system is to remain of the same size when set to true or to grow when set to false. This option is automatically set to true when a volume becomes SnapMirrored.
+	FilesystemSizeFixed *bool `json:"filesystem_size_fixed,omitempty"`
+
 	// Data used for this volume in the aggregate, in bytes.
 	// Read Only: true
 	Footprint int64 `json:"footprint,omitempty"`
@@ -10715,6 +12745,12 @@ type VolumeSpace struct {
 	// Read Only: true
 	PerformanceTierFootprint int64 `json:"performance_tier_footprint,omitempty"`
 
+	// Size that is physically used in the volume, in bytes.
+	PhysicalUsed int64 `json:"physical_used,omitempty"`
+
+	// Size that is physically used in the volume, as a percentage.
+	PhysicalUsedPercent int64 `json:"physical_used_percent,omitempty"`
+
 	// Total provisioned size. The default size is equal to the minimum size of 20MB, in bytes.
 	Size int64 `json:"size,omitempty"`
 
@@ -10722,8 +12758,20 @@ type VolumeSpace struct {
 	// Read Only: true
 	SizeAvailableForSnapshots int64 `json:"size_available_for_snapshots,omitempty"`
 
+	// SnapMirror destination footprint, in bytes.
+	// Read Only: true
+	SnapmirrorDestinationFootprint int64 `json:"snapmirror_destination_footprint,omitempty"`
+
 	// snapshot
 	Snapshot *VolumeSpaceSnapshot `json:"snapshot,omitempty"`
+
+	// Snapshot reserve that is not available for Snapshot copy creation, in bytes.
+	// Read Only: true
+	SnapshotReserveUnusable int64 `json:"snapshot_reserve_unusable,omitempty"`
+
+	// Space used by the snapshot copies beyond the snap-reserve, in bytes.
+	// Read Only: true
+	SnapshotSpill int64 `json:"snapshot_spill,omitempty"`
 
 	// Data and metadata used for this volume in the aggregate, in bytes.
 	// Read Only: true
@@ -10735,6 +12783,14 @@ type VolumeSpace struct {
 
 	// The space used by Active Filesystem, in bytes.
 	UsedByAfs int64 `json:"used_by_afs,omitempty"`
+
+	// User data, in bytes.
+	// Read Only: true
+	UserData int64 `json:"user_data,omitempty"`
+
+	// Space reserved for future writes in the volume, in bytes.
+	// Read Only: true
+	VolumeGuaranteeFootprint int64 `json:"volume_guarantee_footprint,omitempty"`
 }
 
 // Validate validates this volume space
@@ -10809,6 +12865,34 @@ func (m *VolumeSpace) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateCrossVolumeDedupeMetafilesFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCrossVolumeDedupeMetafilesTemporaryFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDedupeMetafilesFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDedupeMetafilesTemporaryFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDelayedFreeFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFileOperationMetadata(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFilesystemSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFootprint(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -10849,7 +12933,19 @@ func (m *VolumeSpace) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSnapmirrorDestinationFootprint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSnapshot(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapshotReserveUnusable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapshotSpill(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -10858,6 +12954,14 @@ func (m *VolumeSpace) ContextValidate(ctx context.Context, formats strfmt.Regist
 	}
 
 	if err := m.contextValidateUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserData(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeGuaranteeFootprint(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -10897,6 +13001,69 @@ func (m *VolumeSpace) contextValidateBlockStorageInactiveUserDataPercent(ctx con
 func (m *VolumeSpace) contextValidateCapacityTierFootprint(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"capacity_tier_footprint", "body", int64(m.CapacityTierFootprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateCrossVolumeDedupeMetafilesFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"cross_volume_dedupe_metafiles_footprint", "body", int64(m.CrossVolumeDedupeMetafilesFootprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateCrossVolumeDedupeMetafilesTemporaryFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"cross_volume_dedupe_metafiles_temporary_footprint", "body", int64(m.CrossVolumeDedupeMetafilesTemporaryFootprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateDedupeMetafilesFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"dedupe_metafiles_footprint", "body", int64(m.DedupeMetafilesFootprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateDedupeMetafilesTemporaryFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"dedupe_metafiles_temporary_footprint", "body", int64(m.DedupeMetafilesTemporaryFootprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateDelayedFreeFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"delayed_free_footprint", "body", int64(m.DelayedFreeFootprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateFileOperationMetadata(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"file_operation_metadata", "body", int64(m.FileOperationMetadata)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateFilesystemSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"filesystem_size", "body", int64(m.FilesystemSize)); err != nil {
 		return err
 	}
 
@@ -10998,6 +13165,15 @@ func (m *VolumeSpace) contextValidateSizeAvailableForSnapshots(ctx context.Conte
 	return nil
 }
 
+func (m *VolumeSpace) contextValidateSnapmirrorDestinationFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapmirror_destination_footprint", "body", int64(m.SnapmirrorDestinationFootprint)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *VolumeSpace) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Snapshot != nil {
@@ -11007,6 +13183,24 @@ func (m *VolumeSpace) contextValidateSnapshot(ctx context.Context, formats strfm
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateSnapshotReserveUnusable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot_reserve_unusable", "body", int64(m.SnapshotReserveUnusable)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateSnapshotSpill(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot_spill", "body", int64(m.SnapshotSpill)); err != nil {
+		return err
 	}
 
 	return nil
@@ -11024,6 +13218,24 @@ func (m *VolumeSpace) contextValidateTotalFootprint(ctx context.Context, formats
 func (m *VolumeSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"used", "body", int64(m.Used)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateUserData(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"user_data", "body", int64(m.UserData)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpace) contextValidateVolumeGuaranteeFootprint(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"volume_guarantee_footprint", "body", int64(m.VolumeGuaranteeFootprint)); err != nil {
 		return err
 	}
 
@@ -11071,6 +13283,10 @@ type VolumeSpaceLogicalSpace struct {
 	// Read Only: true
 	UsedByAfs int64 `json:"used_by_afs,omitempty"`
 
+	// Size that is logically used across all Snapshot copies in the volume, in bytes.
+	// Read Only: true
+	UsedBySnapshots int64 `json:"used_by_snapshots,omitempty"`
+
 	// SUM of (physical-used, shared_refs, compression_saved_in_plane0, vbn_zero, future_blk_cnt), as a percentage.
 	// Read Only: true
 	UsedPercent int64 `json:"used_percent,omitempty"`
@@ -11094,6 +13310,10 @@ func (m *VolumeSpaceLogicalSpace) ContextValidate(ctx context.Context, formats s
 	}
 
 	if err := m.contextValidateUsedByAfs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsedBySnapshots(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -11128,6 +13348,15 @@ func (m *VolumeSpaceLogicalSpace) contextValidateUsed(ctx context.Context, forma
 func (m *VolumeSpaceLogicalSpace) contextValidateUsedByAfs(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"logical_space"+"."+"used_by_afs", "body", int64(m.UsedByAfs)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeSpaceLogicalSpace) contextValidateUsedBySnapshots(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"logical_space"+"."+"used_by_snapshots", "body", int64(m.UsedBySnapshots)); err != nil {
 		return err
 	}
 
@@ -11169,6 +13398,14 @@ type VolumeSpaceSnapshot struct {
 	// Specifies whether Snapshot copy autodelete is currently enabled on this volume.
 	AutodeleteEnabled *bool `json:"autodelete_enabled,omitempty"`
 
+	// Specifies when the system should trigger an autodelete of Snapshot copies. When set to _volume_, autodelete is triggered based on volume fullness. When set to _snap_reserve_, autodelete is triggered based on Snapshot reserve fullness. The default value is _volume_.
+	// Enum: [volume snap_reserve]
+	AutodeleteTrigger *string `json:"autodelete_trigger,omitempty"`
+
+	// Size available for Snapshot copies within the Snapshot copy reserve, in bytes.
+	// Read Only: true
+	ReserveAvailable int64 `json:"reserve_available,omitempty"`
+
 	// The space that has been set aside as a reserve for Snapshot copy usage, in percent.
 	ReservePercent *int64 `json:"reserve_percent,omitempty"`
 
@@ -11187,12 +13424,81 @@ type VolumeSpaceSnapshot struct {
 
 // Validate validates this volume space snapshot
 func (m *VolumeSpaceSnapshot) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAutodeleteTrigger(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var volumeSpaceSnapshotTypeAutodeleteTriggerPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["volume","snap_reserve"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeSpaceSnapshotTypeAutodeleteTriggerPropEnum = append(volumeSpaceSnapshotTypeAutodeleteTriggerPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VolumeSpaceSnapshot
+	// VolumeSpaceSnapshot
+	// autodelete_trigger
+	// AutodeleteTrigger
+	// volume
+	// END DEBUGGING
+	// VolumeSpaceSnapshotAutodeleteTriggerVolume captures enum value "volume"
+	VolumeSpaceSnapshotAutodeleteTriggerVolume string = "volume"
+
+	// BEGIN DEBUGGING
+	// VolumeSpaceSnapshot
+	// VolumeSpaceSnapshot
+	// autodelete_trigger
+	// AutodeleteTrigger
+	// snap_reserve
+	// END DEBUGGING
+	// VolumeSpaceSnapshotAutodeleteTriggerSnapReserve captures enum value "snap_reserve"
+	VolumeSpaceSnapshotAutodeleteTriggerSnapReserve string = "snap_reserve"
+)
+
+// prop value enum
+func (m *VolumeSpaceSnapshot) validateAutodeleteTriggerEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeSpaceSnapshotTypeAutodeleteTriggerPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeSpaceSnapshot) validateAutodeleteTrigger(formats strfmt.Registry) error {
+	if swag.IsZero(m.AutodeleteTrigger) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAutodeleteTriggerEnum("space"+"."+"snapshot"+"."+"autodelete_trigger", "body", *m.AutodeleteTrigger); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // ContextValidate validate this volume space snapshot based on the context it is used
 func (m *VolumeSpaceSnapshot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateReserveAvailable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateReserveSize(ctx, formats); err != nil {
 		res = append(res, err)
@@ -11209,6 +13515,15 @@ func (m *VolumeSpaceSnapshot) ContextValidate(ctx context.Context, formats strfm
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VolumeSpaceSnapshot) contextValidateReserveAvailable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "space"+"."+"snapshot"+"."+"reserve_available", "body", int64(m.ReserveAvailable)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

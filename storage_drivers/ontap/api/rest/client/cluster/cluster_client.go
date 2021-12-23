@@ -124,6 +124,8 @@ type ClientService interface {
 
 	MetroclusterInterconnectGet(params *MetroclusterInterconnectGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectGetOK, error)
 
+	MetroclusterInterconnectModify(params *MetroclusterInterconnectModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectModifyAccepted, error)
+
 	MetroclusterModify(params *MetroclusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterModifyAccepted, error)
 
 	MetroclusterNodeCollectionGet(params *MetroclusterNodeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterNodeCollectionGetOK, error)
@@ -173,6 +175,10 @@ type ClientService interface {
 	SoftwarePackagesCollectionGet(params *SoftwarePackagesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackagesCollectionGetOK, error)
 
 	SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareUploadAccepted, error)
+
+	WebGet(params *WebGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebGetOK, error)
+
+	WebModify(params *WebModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebModifyOK, *WebModifyAccepted, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -1353,7 +1359,7 @@ func (a *Client) JobModify(params *JobModifyParams, authInfo runtime.ClientAuthI
 /*
   LicenseCreate Installs one or more feature licenses.
 ### Required properties
-* `keys` - Array containing a list of NLF or 26-character license keys.
+* `keys` - Array containing a list of NLF or 28-character license keys.
 ### Related ONTAP commands
 * `system license add`
 
@@ -2224,6 +2230,45 @@ func (a *Client) MetroclusterInterconnectGet(params *MetroclusterInterconnectGet
 }
 
 /*
+  MetroclusterInterconnectModify Updates a MetroCluster interconnect interface.
+### Related ONTAP commands * `metrocluster configuration-settings interface modify`
+*/
+func (a *Client) MetroclusterInterconnectModify(params *MetroclusterInterconnectModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterInterconnectModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMetroclusterInterconnectModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "metrocluster_interconnect_modify",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/metrocluster/interconnects/{node.uuid}/{partner_type}/{adapter}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MetroclusterInterconnectModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MetroclusterInterconnectModifyAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MetroclusterInterconnectModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   MetroclusterModify Initiates a switchover or switchback operation.
 ### Related ONTAP commands * `metrocluster switchover` * `metrocluster switchback`
 */
@@ -2490,6 +2535,8 @@ func (a *Client) NodeDelete(params *NodeDeleteParams, authInfo runtime.ClientAut
 * `system node show-discovered`
 * `system service-processor network show`
 * `system service-processor show`
+* `system service-processor ssh show`
+* `system service-processor image show`
 * `version`
 
 */
@@ -2573,7 +2620,11 @@ func (a *Client) NodeMetricsCollectionGet(params *NodeMetricsCollectionGetParams
 * `storage failover modify`
 * `system node modify`
 * `system node reboot`
+* `system node power off`
+* `system node power on`
 * `system service-processor network modify`
+* `system service-processor reboot-sp`
+* `system service-processor image modify`
 
 */
 func (a *Client) NodeModify(params *NodeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NodeModifyAccepted, error) {
@@ -2945,6 +2996,7 @@ func (a *Client) SoftwareDownloadGet(params *SoftwareDownloadGetParams, authInfo
 ### Related ONTAP commands
 * `cluster image show`
 * `cluster image show-update-progress`
+* `system node image package show`
 ### Learn more
 * [`DOC /cluster/software`](#docs-cluster-cluster_software)
 
@@ -3304,6 +3356,87 @@ func (a *Client) SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.C
 	// unexpected success response
 	unexpectedSuccess := result.(*SoftwareUploadDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  WebGet Retrieves the web services configuration.
+*/
+func (a *Client) WebGet(params *WebGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWebGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "web_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/web",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WebGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WebGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WebGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  WebModify Updates the web services configuration.
+### Related ONTAP commands
+* `system services web modify`
+
+*/
+func (a *Client) WebModify(params *WebModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebModifyOK, *WebModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWebModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "web_modify",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/web",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WebModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *WebModifyOK:
+		return value, nil, nil
+	case *WebModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WebModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

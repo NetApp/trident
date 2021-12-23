@@ -407,7 +407,7 @@ func (m *IgroupInitiatorListItemIgroupLinks) UnmarshalBinary(b []byte) error {
 type IgroupInitiatorListItemLinks struct {
 
 	// self
-	Self *Href `json:"self,omitempty"`
+	Self *IgroupInitiatorListItemLinksSelf `json:"self,omitempty"`
 }
 
 // Validate validates this igroup initiator list item links
@@ -480,6 +480,63 @@ func (m *IgroupInitiatorListItemLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *IgroupInitiatorListItemLinks) UnmarshalBinary(b []byte) error {
 	var res IgroupInitiatorListItemLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IgroupInitiatorListItemLinksSelf A link to the initiator where mutations can be made. If the initiator is inherited from a nested initiator group, the link refers to the initiator in the nested initiator group. In this case, mutations of the initiator will be applied to all initiator groups referencing the same nested initiator group.
+//
+// swagger:model IgroupInitiatorListItemLinksSelf
+type IgroupInitiatorListItemLinksSelf struct {
+
+	// href
+	// Example: /api/resourcelink
+	// Read Only: true
+	Href string `json:"href,omitempty"`
+}
+
+// Validate validates this igroup initiator list item links self
+func (m *IgroupInitiatorListItemLinksSelf) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this igroup initiator list item links self based on the context it is used
+func (m *IgroupInitiatorListItemLinksSelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateHref(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IgroupInitiatorListItemLinksSelf) contextValidateHref(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "_links"+"."+"self"+"."+"href", "body", string(m.Href)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IgroupInitiatorListItemLinksSelf) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IgroupInitiatorListItemLinksSelf) UnmarshalBinary(b []byte) error {
+	var res IgroupInitiatorListItemLinksSelf
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -28,6 +28,14 @@ type Lun struct {
 	// links
 	Links *LunLinks `json:"_links,omitempty"`
 
+	// An array of name/value pairs optionally stored with the LUN. Attributes are available to callers to persist small amounts of application-specific metadata. They are in no way interpreted by ONTAP.<br/>
+	// Attribute names and values must be at least one byte and no more than 4091 bytes in length. The sum of the name and value lengths must be no more than 4092 bytes.<br/>
+	// Valid in POST except when creating a LUN clone. A cloned can already have attributes from its source. You can add, modify, and delete the attributes of a LUN clone in separate requests after creation of the LUN.<br/>
+	// Attributes may be added/modified/removed for an existing LUN using the /api/storage/luns/{lun.uuid}/attributes endpoint. For further information, see [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes).<br/>
+	// There is an added cost to retrieving property values for `attributes`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	//
+	Attributes []*LunAttributesItems0 `json:"attributes,omitempty"`
+
 	// This property marks the LUN for auto deletion when the volume containing the LUN runs out of space. This is most commonly set on LUN clones.<br/>
 	// When set to _true_, the LUN becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the LUN is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new LUN is _false_.<br/>
@@ -35,11 +43,11 @@ type Lun struct {
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
-	// The class of LUN. Only _regular_ LUNs can be created using the REST API.
+	// The class of LUN.<br/>
+	// Optional in POST.
 	//
-	// Read Only: true
 	// Enum: [regular protocol_endpoint vvol]
-	Class string `json:"class,omitempty"`
+	Class *string `json:"class,omitempty"`
 
 	// clone
 	Clone *LunClone `json:"clone,omitempty"`
@@ -49,6 +57,12 @@ type Lun struct {
 	// Max Length: 254
 	// Min Length: 0
 	Comment *string `json:"comment,omitempty"`
+
+	// consistency group
+	ConsistencyGroup *LunConsistencyGroup `json:"consistency_group,omitempty"`
+
+	// copy
+	Copy *LunCopy `json:"copy,omitempty"`
 
 	// The time the LUN was created.
 	// Example: 2018-06-04T19:00:00Z
@@ -115,6 +129,9 @@ type Lun struct {
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
+
+	// vvol
+	Vvol *LunVvol `json:"vvol,omitempty"`
 }
 
 // Validate validates this lun
@@ -122,6 +139,10 @@ func (m *Lun) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAttributes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -134,6 +155,14 @@ func (m *Lun) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateComment(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConsistencyGroup(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCopy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -185,6 +214,10 @@ func (m *Lun) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateVvol(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -203,6 +236,30 @@ func (m *Lun) validateLinks(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Lun) validateAttributes(formats strfmt.Registry) error {
+	if swag.IsZero(m.Attributes) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Attributes); i++ {
+		if swag.IsZero(m.Attributes[i]) { // not required
+			continue
+		}
+
+		if m.Attributes[i] != nil {
+			if err := m.Attributes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("attributes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -267,7 +324,7 @@ func (m *Lun) validateClass(formats strfmt.Registry) error {
 	}
 
 	// value enum
-	if err := m.validateClassEnum("class", "body", m.Class); err != nil {
+	if err := m.validateClassEnum("class", "body", *m.Class); err != nil {
 		return err
 	}
 
@@ -302,6 +359,40 @@ func (m *Lun) validateComment(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("comment", "body", *m.Comment, 254); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Lun) validateConsistencyGroup(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConsistencyGroup) { // not required
+		return nil
+	}
+
+	if m.ConsistencyGroup != nil {
+		if err := m.ConsistencyGroup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("consistency_group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Lun) validateCopy(formats strfmt.Registry) error {
+	if swag.IsZero(m.Copy) { // not required
+		return nil
+	}
+
+	if m.Copy != nil {
+		if err := m.Copy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -661,6 +752,23 @@ func (m *Lun) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Lun) validateVvol(formats strfmt.Registry) error {
+	if swag.IsZero(m.Vvol) { // not required
+		return nil
+	}
+
+	if m.Vvol != nil {
+		if err := m.Vvol.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("vvol")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this lun based on the context it is used
 func (m *Lun) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -669,11 +777,19 @@ func (m *Lun) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateClass(ctx, formats); err != nil {
+	if err := m.contextValidateAttributes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateClone(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateConsistencyGroup(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCopy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -725,6 +841,10 @@ func (m *Lun) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateVvol(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -745,10 +865,19 @@ func (m *Lun) contextValidateLinks(ctx context.Context, formats strfmt.Registry)
 	return nil
 }
 
-func (m *Lun) contextValidateClass(ctx context.Context, formats strfmt.Registry) error {
+func (m *Lun) contextValidateAttributes(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "class", "body", string(m.Class)); err != nil {
-		return err
+	for i := 0; i < len(m.Attributes); i++ {
+
+		if m.Attributes[i] != nil {
+			if err := m.Attributes[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("attributes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -760,6 +889,34 @@ func (m *Lun) contextValidateClone(ctx context.Context, formats strfmt.Registry)
 		if err := m.Clone.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("clone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Lun) contextValidateConsistencyGroup(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ConsistencyGroup != nil {
+		if err := m.ConsistencyGroup.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("consistency_group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Lun) contextValidateCopy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Copy != nil {
+		if err := m.Copy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy")
 			}
 			return err
 		}
@@ -929,6 +1086,20 @@ func (m *Lun) contextValidateUUID(ctx context.Context, formats strfmt.Registry) 
 	return nil
 }
 
+func (m *Lun) contextValidateVvol(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Vvol != nil {
+		if err := m.Vvol.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("vvol")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *Lun) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -947,7 +1118,236 @@ func (m *Lun) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunClone This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, and `space.guarantee.requested`.<br/>
+// LunAttributesItems0 A name/value pair optionally stored with the LUN. Attributes are available to callers to persist small amounts of application-specific metadata. They are in no way interpreted by ONTAP.<br/>
+// Attribute names and values must be at least one byte and no more than 4091 bytes in length. The sum of the name and value lengths must be no more than 4092 bytes.<br/>
+// Optional in POST.
+//
+//
+// swagger:model LunAttributesItems0
+type LunAttributesItems0 struct {
+
+	// links
+	Links *LunAttributesItems0Links `json:"_links,omitempty"`
+
+	// The attribute name.
+	//
+	// Example: name1
+	// Max Length: 4091
+	// Min Length: 1
+	Name string `json:"name,omitempty"`
+
+	// The attribute value.
+	//
+	// Example: value1
+	// Max Length: 4091
+	// Min Length: 1
+	Value string `json:"value,omitempty"`
+}
+
+// Validate validates this lun attributes items0
+func (m *LunAttributesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateValue(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunAttributesItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunAttributesItems0) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("name", "body", m.Name, 4091); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunAttributesItems0) validateValue(formats strfmt.Registry) error {
+	if swag.IsZero(m.Value) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("value", "body", m.Value, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("value", "body", m.Value, 4091); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun attributes items0 based on the context it is used
+func (m *LunAttributesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunAttributesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunAttributesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunAttributesItems0) UnmarshalBinary(b []byte) error {
+	var res LunAttributesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunAttributesItems0Links lun attributes items0 links
+//
+// swagger:model LunAttributesItems0Links
+type LunAttributesItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this lun attributes items0 links
+func (m *LunAttributesItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunAttributesItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun attributes items0 links based on the context it is used
+func (m *LunAttributesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunAttributesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunAttributesItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunAttributesItems0Links) UnmarshalBinary(b []byte) error {
+	var res LunAttributesItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunClone This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
 // When used in a PATCH, the patched LUN's data is over-written as a clone of the source and the following properties are preserved from the patched LUN unless otherwise specified as part of the PATCH: `class`, `auto_delete`, `lun_maps`, `serial_number`, `status.state`, and `uuid`.<br/>
 // Persistent reservations for the patched LUN are also preserved.
 //
@@ -1083,6 +1483,1447 @@ func (m *LunCloneSource) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// LunConsistencyGroup The LUN's consistency group. This property is populated for LUNs whose volume is a member of a consistency group. If the volume is a member of a child consistency group, the parent consistency group is reported.
+//
+//
+// swagger:model LunConsistencyGroup
+type LunConsistencyGroup struct {
+
+	// links
+	Links *LunConsistencyGroupLinks `json:"_links,omitempty"`
+
+	// The name of the consistency group.
+	//
+	// Example: cg1
+	// Read Only: true
+	Name string `json:"name,omitempty"`
+
+	// The unique identifier of the consistency group.
+	//
+	// Example: 4abc2317-4332-9d37-93a0-20bd29c22df0
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this lun consistency group
+func (m *LunConsistencyGroup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunConsistencyGroup) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("consistency_group" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun consistency group based on the context it is used
+func (m *LunConsistencyGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunConsistencyGroup) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("consistency_group" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunConsistencyGroup) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "consistency_group"+"."+"name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunConsistencyGroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "consistency_group"+"."+"uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunConsistencyGroup) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunConsistencyGroup) UnmarshalBinary(b []byte) error {
+	var res LunConsistencyGroup
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunConsistencyGroupLinks lun consistency group links
+//
+// swagger:model LunConsistencyGroupLinks
+type LunConsistencyGroupLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this lun consistency group links
+func (m *LunConsistencyGroupLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunConsistencyGroupLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("consistency_group" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun consistency group links based on the context it is used
+func (m *LunConsistencyGroupLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunConsistencyGroupLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("consistency_group" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunConsistencyGroupLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunConsistencyGroupLinks) UnmarshalBinary(b []byte) error {
+	var res LunConsistencyGroupLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunCopy This sub-object applies to LUN copy operations. A LUN can be copied with a POST request that supplies `copy.source` properties.<br/>
+// Copying a LUN is an asynchronous activity begun by a POST request that specifies the source of the copy in the `copy.source` properties. The data for the LUN is then asynchronously copied from the source to the destination. The time required to complete the copy depends on the size of the LUN and the load on the cluster. The `copy` sub-object is populated while a LUN copy is in progress and for two (2) minutes following completion of a copy.<br/>
+// While LUNs are being copied, the status of the LUN copy operations can be obtained using a GET of the source or destination LUN that requests the `copy` properties. If the LUN is the source LUN for one or more copy operations, the `copy.destinations` array is populated in GET. If the containing LUN is the destination LUN for a copy operation, the `copy.source` sub-object is populated in GET. The LUN copy operation can be further modified using a PATCH on the properties on the `copy.source` sub-object of the copy destination LUN.<br/>
+// There is an added cost to retrieving property values for `copy`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+//
+//
+// swagger:model LunCopy
+type LunCopy struct {
+
+	// An array of destination LUNs of LUN copy operations in which the containing LUN is the source of the copy.
+	//
+	// Read Only: true
+	Destinations []*LunCopyDestinationsItems0 `json:"destinations,omitempty"`
+
+	// source
+	Source *LunCopySource `json:"source,omitempty"`
+}
+
+// Validate validates this lun copy
+func (m *LunCopy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDestinations(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSource(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopy) validateDestinations(formats strfmt.Registry) error {
+	if swag.IsZero(m.Destinations) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Destinations); i++ {
+		if swag.IsZero(m.Destinations[i]) { // not required
+			continue
+		}
+
+		if m.Destinations[i] != nil {
+			if err := m.Destinations[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("copy" + "." + "destinations" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *LunCopy) validateSource(formats strfmt.Registry) error {
+	if swag.IsZero(m.Source) { // not required
+		return nil
+	}
+
+	if m.Source != nil {
+		if err := m.Source.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun copy based on the context it is used
+func (m *LunCopy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDestinations(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSource(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopy) contextValidateDestinations(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "copy"+"."+"destinations", "body", []*LunCopyDestinationsItems0(m.Destinations)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Destinations); i++ {
+
+		if m.Destinations[i] != nil {
+			if err := m.Destinations[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("copy" + "." + "destinations" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *LunCopy) contextValidateSource(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Source != nil {
+		if err := m.Source.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunCopy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunCopy) UnmarshalBinary(b []byte) error {
+	var res LunCopy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunCopyDestinationsItems0 A LUN copy operation in which the containing LUN is the source of the copy.
+//
+//
+// swagger:model LunCopyDestinationsItems0
+type LunCopyDestinationsItems0 struct {
+
+	// links
+	Links *LunCopyDestinationsItems0Links `json:"_links,omitempty"`
+
+	// The maximum data throughput, in bytes per second, that should be utilized in support of the LUN copy. See property `copy.source.max_throughput` for further details.
+	//
+	// Read Only: true
+	MaxThroughput int64 `json:"max_throughput,omitempty"`
+
+	// The fully qualified path of the LUN copy destination composed of a "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN.
+	//
+	// Example: /vol/vol1/lun1
+	// Read Only: true
+	Name string `json:"name,omitempty"`
+
+	// progress
+	Progress *LunCopyDestinationsItems0Progress `json:"progress,omitempty"`
+
+	// The unique identifier of the LUN copy destination.
+	//
+	// Example: 1bc327d5-4654-5284-a116-f182282240b4
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this lun copy destinations items0
+func (m *LunCopyDestinationsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProgress(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0) validateProgress(formats strfmt.Registry) error {
+	if swag.IsZero(m.Progress) { // not required
+		return nil
+	}
+
+	if m.Progress != nil {
+		if err := m.Progress.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("progress")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun copy destinations items0 based on the context it is used
+func (m *LunCopyDestinationsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMaxThroughput(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProgress(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0) contextValidateMaxThroughput(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "max_throughput", "body", int64(m.MaxThroughput)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0) contextValidateProgress(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Progress != nil {
+		if err := m.Progress.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("progress")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunCopyDestinationsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunCopyDestinationsItems0) UnmarshalBinary(b []byte) error {
+	var res LunCopyDestinationsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunCopyDestinationsItems0Links lun copy destinations items0 links
+//
+// swagger:model LunCopyDestinationsItems0Links
+type LunCopyDestinationsItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this lun copy destinations items0 links
+func (m *LunCopyDestinationsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun copy destinations items0 links based on the context it is used
+func (m *LunCopyDestinationsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunCopyDestinationsItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunCopyDestinationsItems0Links) UnmarshalBinary(b []byte) error {
+	var res LunCopyDestinationsItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunCopyDestinationsItems0Progress Properties related to the progress of an active or recently completed LUN copy.
+//
+//
+// swagger:model LunCopyDestinationsItems0Progress
+type LunCopyDestinationsItems0Progress struct {
+
+	// The amount of time that has elapsed since the start of the LUN copy, in seconds.
+	//
+	// Read Only: true
+	Elapsed int64 `json:"elapsed,omitempty"`
+
+	// Error information provided if the asynchronous LUN copy operation fails.
+	//
+	// Read Only: true
+	Failure *Error `json:"failure,omitempty"`
+
+	// The percentage completed of the LUN copy.
+	//
+	// Read Only: true
+	// Maximum: 100
+	// Minimum: 0
+	PercentComplete int64 `json:"percent_complete,omitempty"`
+
+	// The state of the LUN copy.
+	//
+	// Read Only: true
+	// Enum: [preparing replicating paused paused_error complete reverting failed]
+	State string `json:"state,omitempty"`
+
+	// This property reports if volume Snapshot copies are blocked by the LUN copy. This property can be polled to identify when volume Snapshot copies can be resumed after beginning a LUN copy.
+	//
+	// Read Only: true
+	VolumeSnapshotBlocked *bool `json:"volume_snapshot_blocked,omitempty"`
+}
+
+// Validate validates this lun copy destinations items0 progress
+func (m *LunCopyDestinationsItems0Progress) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateFailure(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePercentComplete(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0Progress) validateFailure(formats strfmt.Registry) error {
+	if swag.IsZero(m.Failure) { // not required
+		return nil
+	}
+
+	if m.Failure != nil {
+		if err := m.Failure.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("progress" + "." + "failure")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0Progress) validatePercentComplete(formats strfmt.Registry) error {
+	if swag.IsZero(m.PercentComplete) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("progress"+"."+"percent_complete", "body", m.PercentComplete, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("progress"+"."+"percent_complete", "body", m.PercentComplete, 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var lunCopyDestinationsItems0ProgressTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["preparing","replicating","paused","paused_error","complete","reverting","failed"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		lunCopyDestinationsItems0ProgressTypeStatePropEnum = append(lunCopyDestinationsItems0ProgressTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// LunCopyDestinationsItems0Progress
+	// LunCopyDestinationsItems0Progress
+	// state
+	// State
+	// preparing
+	// END DEBUGGING
+	// LunCopyDestinationsItems0ProgressStatePreparing captures enum value "preparing"
+	LunCopyDestinationsItems0ProgressStatePreparing string = "preparing"
+
+	// BEGIN DEBUGGING
+	// LunCopyDestinationsItems0Progress
+	// LunCopyDestinationsItems0Progress
+	// state
+	// State
+	// replicating
+	// END DEBUGGING
+	// LunCopyDestinationsItems0ProgressStateReplicating captures enum value "replicating"
+	LunCopyDestinationsItems0ProgressStateReplicating string = "replicating"
+
+	// BEGIN DEBUGGING
+	// LunCopyDestinationsItems0Progress
+	// LunCopyDestinationsItems0Progress
+	// state
+	// State
+	// paused
+	// END DEBUGGING
+	// LunCopyDestinationsItems0ProgressStatePaused captures enum value "paused"
+	LunCopyDestinationsItems0ProgressStatePaused string = "paused"
+
+	// BEGIN DEBUGGING
+	// LunCopyDestinationsItems0Progress
+	// LunCopyDestinationsItems0Progress
+	// state
+	// State
+	// paused_error
+	// END DEBUGGING
+	// LunCopyDestinationsItems0ProgressStatePausedError captures enum value "paused_error"
+	LunCopyDestinationsItems0ProgressStatePausedError string = "paused_error"
+
+	// BEGIN DEBUGGING
+	// LunCopyDestinationsItems0Progress
+	// LunCopyDestinationsItems0Progress
+	// state
+	// State
+	// complete
+	// END DEBUGGING
+	// LunCopyDestinationsItems0ProgressStateComplete captures enum value "complete"
+	LunCopyDestinationsItems0ProgressStateComplete string = "complete"
+
+	// BEGIN DEBUGGING
+	// LunCopyDestinationsItems0Progress
+	// LunCopyDestinationsItems0Progress
+	// state
+	// State
+	// reverting
+	// END DEBUGGING
+	// LunCopyDestinationsItems0ProgressStateReverting captures enum value "reverting"
+	LunCopyDestinationsItems0ProgressStateReverting string = "reverting"
+
+	// BEGIN DEBUGGING
+	// LunCopyDestinationsItems0Progress
+	// LunCopyDestinationsItems0Progress
+	// state
+	// State
+	// failed
+	// END DEBUGGING
+	// LunCopyDestinationsItems0ProgressStateFailed captures enum value "failed"
+	LunCopyDestinationsItems0ProgressStateFailed string = "failed"
+)
+
+// prop value enum
+func (m *LunCopyDestinationsItems0Progress) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, lunCopyDestinationsItems0ProgressTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0Progress) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("progress"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun copy destinations items0 progress based on the context it is used
+func (m *LunCopyDestinationsItems0Progress) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateElapsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFailure(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePercentComplete(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeSnapshotBlocked(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0Progress) contextValidateElapsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "progress"+"."+"elapsed", "body", int64(m.Elapsed)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0Progress) contextValidateFailure(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Failure != nil {
+		if err := m.Failure.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("progress" + "." + "failure")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0Progress) contextValidatePercentComplete(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "progress"+"."+"percent_complete", "body", int64(m.PercentComplete)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0Progress) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "progress"+"."+"state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunCopyDestinationsItems0Progress) contextValidateVolumeSnapshotBlocked(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "progress"+"."+"volume_snapshot_blocked", "body", m.VolumeSnapshotBlocked); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunCopyDestinationsItems0Progress) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunCopyDestinationsItems0Progress) UnmarshalBinary(b []byte) error {
+	var res LunCopyDestinationsItems0Progress
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunCopySource The source LUN of a LUN copy operation in which the containing LUN is the destination of the copy.<br/>
+// Valid in POST except when creating a LUN clone. A LUN copy request cannot be combined with setting any other LUN properties except the destination location. All other properties of the destination LUN come from the source LUN.
+//
+//
+// swagger:model LunCopySource
+type LunCopySource struct {
+
+	// links
+	Links *LunCopySourceLinks `json:"_links,omitempty"`
+
+	// The maximum data throughput, in bytes per second, that should be utilized in support of the LUN copy. This property can be used to throttle a transfer and limit its impact on the performance of the source and destination nodes. The specified value will be rounded up to the nearest megabyte.<br/>
+	// If this property is not specified in a POST that begins a LUN copy, throttling is not applied to the data transfer.<br/>
+	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.<br/>
+	// Valid only in a POST that begins a LUN copy or a PATCH when a LUN copy is already in process.
+	//
+	MaxThroughput int64 `json:"max_throughput,omitempty"`
+
+	// The fully qualified path of the LUN copy source composed of a "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN.<br/>
+	// Set this property in POST to specify the source for a LUN copy operation.
+	//
+	// Example: /vol/vol2/lun1
+	Name string `json:"name,omitempty"`
+
+	// progress
+	Progress *LunCopySourceProgress `json:"progress,omitempty"`
+
+	// The unique identifier of the LUN copy source.<br/>
+	// Set this property in POST to specify the source for a LUN copy operation.
+	//
+	// Example: 03c05019-40d9-3945-c767-dca4c3be5e90
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this lun copy source
+func (m *LunCopySource) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProgress(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopySource) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunCopySource) validateProgress(formats strfmt.Registry) error {
+	if swag.IsZero(m.Progress) { // not required
+		return nil
+	}
+
+	if m.Progress != nil {
+		if err := m.Progress.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "progress")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun copy source based on the context it is used
+func (m *LunCopySource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProgress(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopySource) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunCopySource) contextValidateProgress(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Progress != nil {
+		if err := m.Progress.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "progress")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunCopySource) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunCopySource) UnmarshalBinary(b []byte) error {
+	var res LunCopySource
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunCopySourceLinks lun copy source links
+//
+// swagger:model LunCopySourceLinks
+type LunCopySourceLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this lun copy source links
+func (m *LunCopySourceLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopySourceLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun copy source links based on the context it is used
+func (m *LunCopySourceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopySourceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunCopySourceLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunCopySourceLinks) UnmarshalBinary(b []byte) error {
+	var res LunCopySourceLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunCopySourceProgress Properties related to the progress of an active or recently completed LUN copy.
+//
+//
+// swagger:model LunCopySourceProgress
+type LunCopySourceProgress struct {
+
+	// The amount of time that has elapsed since the start of the LUN copy, in seconds.
+	//
+	// Read Only: true
+	Elapsed int64 `json:"elapsed,omitempty"`
+
+	// Error information provided if the asynchronous LUN copy operation fails.
+	//
+	// Read Only: true
+	Failure *Error `json:"failure,omitempty"`
+
+	// The percentage completed of the LUN copy.
+	//
+	// Read Only: true
+	// Maximum: 100
+	// Minimum: 0
+	PercentComplete int64 `json:"percent_complete,omitempty"`
+
+	// The state of the LUN copy.<br/>
+	// Valid in PATCH when an LUN copy is active. Set to _paused_ to pause a LUN copy. Set to _replicating_ to resume a paused LUN copy.
+	//
+	// Enum: [preparing replicating paused paused_error complete reverting failed]
+	State string `json:"state,omitempty"`
+
+	// This property reports if volume Snapshot copies are blocked by the LUN copy. This property can be polled to identify when volume Snapshot copies can be resumed after beginning a LUN copy.
+	//
+	// Read Only: true
+	VolumeSnapshotBlocked *bool `json:"volume_snapshot_blocked,omitempty"`
+}
+
+// Validate validates this lun copy source progress
+func (m *LunCopySourceProgress) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateFailure(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePercentComplete(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopySourceProgress) validateFailure(formats strfmt.Registry) error {
+	if swag.IsZero(m.Failure) { // not required
+		return nil
+	}
+
+	if m.Failure != nil {
+		if err := m.Failure.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "progress" + "." + "failure")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunCopySourceProgress) validatePercentComplete(formats strfmt.Registry) error {
+	if swag.IsZero(m.PercentComplete) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("copy"+"."+"source"+"."+"progress"+"."+"percent_complete", "body", m.PercentComplete, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("copy"+"."+"source"+"."+"progress"+"."+"percent_complete", "body", m.PercentComplete, 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var lunCopySourceProgressTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["preparing","replicating","paused","paused_error","complete","reverting","failed"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		lunCopySourceProgressTypeStatePropEnum = append(lunCopySourceProgressTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// LunCopySourceProgress
+	// LunCopySourceProgress
+	// state
+	// State
+	// preparing
+	// END DEBUGGING
+	// LunCopySourceProgressStatePreparing captures enum value "preparing"
+	LunCopySourceProgressStatePreparing string = "preparing"
+
+	// BEGIN DEBUGGING
+	// LunCopySourceProgress
+	// LunCopySourceProgress
+	// state
+	// State
+	// replicating
+	// END DEBUGGING
+	// LunCopySourceProgressStateReplicating captures enum value "replicating"
+	LunCopySourceProgressStateReplicating string = "replicating"
+
+	// BEGIN DEBUGGING
+	// LunCopySourceProgress
+	// LunCopySourceProgress
+	// state
+	// State
+	// paused
+	// END DEBUGGING
+	// LunCopySourceProgressStatePaused captures enum value "paused"
+	LunCopySourceProgressStatePaused string = "paused"
+
+	// BEGIN DEBUGGING
+	// LunCopySourceProgress
+	// LunCopySourceProgress
+	// state
+	// State
+	// paused_error
+	// END DEBUGGING
+	// LunCopySourceProgressStatePausedError captures enum value "paused_error"
+	LunCopySourceProgressStatePausedError string = "paused_error"
+
+	// BEGIN DEBUGGING
+	// LunCopySourceProgress
+	// LunCopySourceProgress
+	// state
+	// State
+	// complete
+	// END DEBUGGING
+	// LunCopySourceProgressStateComplete captures enum value "complete"
+	LunCopySourceProgressStateComplete string = "complete"
+
+	// BEGIN DEBUGGING
+	// LunCopySourceProgress
+	// LunCopySourceProgress
+	// state
+	// State
+	// reverting
+	// END DEBUGGING
+	// LunCopySourceProgressStateReverting captures enum value "reverting"
+	LunCopySourceProgressStateReverting string = "reverting"
+
+	// BEGIN DEBUGGING
+	// LunCopySourceProgress
+	// LunCopySourceProgress
+	// state
+	// State
+	// failed
+	// END DEBUGGING
+	// LunCopySourceProgressStateFailed captures enum value "failed"
+	LunCopySourceProgressStateFailed string = "failed"
+)
+
+// prop value enum
+func (m *LunCopySourceProgress) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, lunCopySourceProgressTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LunCopySourceProgress) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("copy"+"."+"source"+"."+"progress"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun copy source progress based on the context it is used
+func (m *LunCopySourceProgress) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateElapsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFailure(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePercentComplete(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeSnapshotBlocked(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunCopySourceProgress) contextValidateElapsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "copy"+"."+"source"+"."+"progress"+"."+"elapsed", "body", int64(m.Elapsed)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunCopySourceProgress) contextValidateFailure(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Failure != nil {
+		if err := m.Failure.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("copy" + "." + "source" + "." + "progress" + "." + "failure")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunCopySourceProgress) contextValidatePercentComplete(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "copy"+"."+"source"+"."+"progress"+"."+"percent_complete", "body", int64(m.PercentComplete)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunCopySourceProgress) contextValidateVolumeSnapshotBlocked(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "copy"+"."+"source"+"."+"progress"+"."+"volume_snapshot_blocked", "body", m.VolumeSnapshotBlocked); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunCopySourceProgress) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunCopySourceProgress) UnmarshalBinary(b []byte) error {
+	var res LunCopySourceProgress
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // LunLinks lun links
 //
 // swagger:model LunLinks
@@ -1182,6 +3023,9 @@ type LunLocation struct {
 	// Example: lun1
 	LogicalUnit string `json:"logical_unit,omitempty"`
 
+	// node
+	Node *LunLocationNode `json:"node,omitempty"`
+
 	// qtree
 	Qtree *LunLocationQtree `json:"qtree,omitempty"`
 
@@ -1192,6 +3036,10 @@ type LunLocation struct {
 // Validate validates this lun location
 func (m *LunLocation) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateQtree(formats); err != nil {
 		res = append(res, err)
@@ -1204,6 +3052,23 @@ func (m *LunLocation) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *LunLocation) validateNode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Node) { // not required
+		return nil
+	}
+
+	if m.Node != nil {
+		if err := m.Node.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "node")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -1245,6 +3110,10 @@ func (m *LunLocation) validateVolume(formats strfmt.Registry) error {
 func (m *LunLocation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateQtree(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1256,6 +3125,20 @@ func (m *LunLocation) ContextValidate(ctx context.Context, formats strfmt.Regist
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *LunLocation) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Node != nil {
+		if err := m.Node.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "node")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -1298,6 +3181,187 @@ func (m *LunLocation) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *LunLocation) UnmarshalBinary(b []byte) error {
 	var res LunLocation
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunLocationNode The cluster node that hosts the LUN.
+//
+//
+// swagger:model LunLocationNode
+type LunLocationNode struct {
+
+	// links
+	Links *LunLocationNodeLinks `json:"_links,omitempty"`
+
+	// name
+	// Example: node1
+	Name string `json:"name,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this lun location node
+func (m *LunLocationNode) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunLocationNode) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "node" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun location node based on the context it is used
+func (m *LunLocationNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunLocationNode) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "node" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunLocationNode) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunLocationNode) UnmarshalBinary(b []byte) error {
+	var res LunLocationNode
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunLocationNodeLinks lun location node links
+//
+// swagger:model LunLocationNodeLinks
+type LunLocationNodeLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this lun location node links
+func (m *LunLocationNodeLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunLocationNodeLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "node" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun location node links based on the context it is used
+func (m *LunLocationNodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunLocationNodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("location" + "." + "node" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunLocationNodeLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunLocationNodeLinks) UnmarshalBinary(b []byte) error {
+	var res LunLocationNodeLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2925,13 +4989,13 @@ func (m *LunMetricThroughput) UnmarshalBinary(b []byte) error {
 // LunMovement This sub-object applies to LUN movement between volumes. A LUN can be moved to a new volume with a PATCH request that changes either the volume portion of property `name`, `location.volume.uuid`, or `location.volume.name`. If the volume is changed using more than one of these properties, the supplied properties used must refer to the same volume.<br/>
 // Moving a LUN between volumes is an asynchronous activity begun by a PATCH request. The data for the LUN is then asynchronously copied from the source volume to the destination volume. The time required to complete the move depends on the size of the LUN and the load on the cluster. The `movement` sub-object is populated while a LUN movement is in progress and for two (2) minutes following completion of a movement.<br/>
 // While the LUN is being moved, the status of the LUN movement operation can be obtained using a GET for the LUN that requests the `movement` properties. The LUN movement operation can be further modified using a PATCH on the properties on the `movement` sub-object.<br/>
-// There is added cost to retrieving property values for `movement`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+// There is an added cost to retrieving property values for `movement`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 //
 //
 // swagger:model LunMovement
 type LunMovement struct {
 
-	// The maximum data throughput that should be utilized in support of the LUN movement. This property can be used to throttle a transfer and limit its impact on the performance of the source and destination nodes. The specified value will be rounded up to the nearest megabyte.<br/>
+	// The maximum data throughput, in bytes per second, that should be utilized in support of the LUN movement. This property can be used to throttle a transfer and limit its impact on the performance of the source and destination nodes. The specified value will be rounded up to the nearest megabyte.<br/>
 	// If this property is not specified in a POST that begins a LUN movement, throttling is not applied to the data transfer.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.<br/>
 	// This property is valid only in a POST that begins a LUN movement or a PATCH when a LUN movement is already in process.
@@ -3068,6 +5132,7 @@ func (m *LunMovement) UnmarshalBinary(b []byte) error {
 type LunMovementPaths struct {
 
 	// The fully qualified path of the LUN movement destination composed of a "/vol" prefix, the volume name, the (optional) qtree name, and base name of the LUN.
+	//
 	// Example: /vol/vol1/lun1
 	// Read Only: true
 	Destination string `json:"destination,omitempty"`
@@ -3138,20 +5203,23 @@ func (m *LunMovementPaths) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMovementProgress lun movement progress
+// LunMovementProgress Properties related to the progress of an active or recently completed LUN movement.
+//
 //
 // swagger:model LunMovementProgress
 type LunMovementProgress struct {
 
-	// The amount of time, in seconds, that has elapsed since the start of the LUN movement.
+	// The amount of time that has elapsed since the start of the LUN movement, in seconds.
 	//
 	// Read Only: true
 	Elapsed int64 `json:"elapsed,omitempty"`
 
-	// failure
-	Failure *LunMovementProgressFailure `json:"failure,omitempty"`
+	// Error information provided if the asynchronous LUN movement operation fails.
+	//
+	// Read Only: true
+	Failure *Error `json:"failure,omitempty"`
 
-	// The percentage complete of the LUN movement.
+	// The percentage completed of the LUN movement.
 	//
 	// Read Only: true
 	// Maximum: 100
@@ -3416,84 +5484,6 @@ func (m *LunMovementProgress) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunMovementProgressFailure Error information provided if the asynchronous LUN movement operation fails.
-//
-//
-// swagger:model LunMovementProgressFailure
-type LunMovementProgressFailure struct {
-
-	// The error code.
-	//
-	// Example: 4
-	// Read Only: true
-	Code string `json:"code,omitempty"`
-
-	// The error message.
-	//
-	// Example: Destination volume is offline.
-	// Read Only: true
-	Message string `json:"message,omitempty"`
-}
-
-// Validate validates this lun movement progress failure
-func (m *LunMovementProgressFailure) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validate this lun movement progress failure based on the context it is used
-func (m *LunMovementProgressFailure) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateCode(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMessage(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *LunMovementProgressFailure) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "movement"+"."+"progress"+"."+"failure"+"."+"code", "body", string(m.Code)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *LunMovementProgressFailure) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "movement"+"."+"progress"+"."+"failure"+"."+"message", "body", string(m.Message)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *LunMovementProgressFailure) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *LunMovementProgressFailure) UnmarshalBinary(b []byte) error {
-	var res LunMovementProgressFailure
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
 // LunQosPolicy The QoS policy for the LUN. Both traditional and adaptive QoS policies are supported. If both property `qos_policy.uuid` and `qos_policy.name` are specified in the same request, they must refer to the same QoS policy. To remove the QoS policy from a LUN, leaving it with no QoS policy, set property `qos_policy.name` to an empty string ("") in a PATCH request. Valid in POST and PATCH.<br/>
 // Note that a QoS policy can be set on a LUN, or a LUN's volume, but not both.
 //
@@ -3687,8 +5677,18 @@ type LunSpace struct {
 	// guarantee
 	Guarantee *LunSpaceGuarantee `json:"guarantee,omitempty"`
 
+	// To leverage the benefits of SCSI thin provisioning, it must be supported by your host. SCSI thin provisioning uses the Logical Block Provisioning feature as defined in the SCSI SBC-3 standard. Only hosts that support this standard can use SCSI thin provisioning in ONTAP.<br/>
+	// When you enable SCSI thin provisioning support in ONTAP, you turn on the following SCSI thin provisioning features:
+	// - Unmapping and reporting space usage for space reclamation
+	// - Reporting resource exhaustion errors
+	// <p/>
+	// The value of this property is not propagated to the destination when a LUN is cloned as a new LUN or copied; it is reset to false. The value of this property is maintained from the destination LUN when a LUN is overwritten as a clone.<br/>
+	// Valid in POST and PATCH.
+	//
+	ScsiThinProvisioningSupportEnabled *bool `json:"scsi_thin_provisioning_support_enabled,omitempty"`
+
 	// The total provisioned size of the LUN. The LUN size can be increased but not be made smaller using the REST interface.<br/>
-	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes in bytes. The actual minimum and maxiumum sizes vary depending on the ONTAP version, ONTAP platform and the available space in the containing volume and aggregate.
+	// The maximum and minimum sizes listed here are the absolute maximum and absolute minimum sizes in bytes. The actual minimum and maxiumum sizes vary depending on the ONTAP version, ONTAP platform and the available space in the containing volume and aggregate.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
 	//
 	// Example: 1073741824
@@ -4870,6 +6870,578 @@ func (m *LunSvmLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *LunSvmLinks) UnmarshalBinary(b []byte) error {
 	var res LunSvmLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunVvol A VMware virtual volume (vVol) binding is an association between a LUN of class `protocol_endpoint` and a LUN of class `vvol`. Class `protocol_endpoint` LUNs are mapped to igroups and granted access using the same configuration as class `regular` LUNs. When a class `vvol` LUN is bound to a mapped class `protocol_endpoint` LUN, VMware can access the class `vvol` LUN through the class `protocol_endpoint` LUN mapping.</br>
+// See [`POST /protocols/san/vvol-bindings`](#/SAN/vvol_binding_create) to learn more about creating vVol bindings and [`DELETE /protocols/san/vvol-bindings`](#/SAN/vvol_binding_delete) to learn more about deleting vVol bindings.</br>
+// There is an added cost to retrieving property values for `vvol`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+//
+//
+// swagger:model LunVvol
+type LunVvol struct {
+
+	// Bindings between the LUN, which must be of class `protocol_endpoint` or `vvol`, and LUNs of the opposite class.<br/>
+	// A class `vvol` LUN must be bound to a class `protocol_endpoint` LUN in order to be accessed. Class `protocol_endpoint` and `vvol` LUNs allow many-to-many bindings. A LUN of one class is allowed to be bound to zero or more LUNs of the opposite class. The binding between any two specific LUNs is reference counted. When a binding is created that already exists, the binding count is incremented. When a binding is deleted, the binding count is decremented, but the LUNs remain bound if the resultant reference count is greater than zero. When the binding count reaches zero, the binding is destroyed.<br/>
+	// The bindings array contains LUNs of the opposite class of the containing LUN object.<br/>
+	// There is an added cost to retrieving property values for `vvol.bindings`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	//
+	// Read Only: true
+	Bindings []*LunVvolBindingsItems0 `json:"bindings,omitempty"`
+
+	// Reports if the LUN is part of a VMware virtual volume (vVol) bind relationship. This is `true` if the LUN is of class `protocol_endpoint` or `vvol` and has one or more bindings to a LUN of the opposite class. This is false if the LUN is of class `regular` or unbound.
+	//
+	// Read Only: true
+	IsBound *bool `json:"is_bound,omitempty"`
+}
+
+// Validate validates this lun vvol
+func (m *LunVvol) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBindings(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunVvol) validateBindings(formats strfmt.Registry) error {
+	if swag.IsZero(m.Bindings) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Bindings); i++ {
+		if swag.IsZero(m.Bindings[i]) { // not required
+			continue
+		}
+
+		if m.Bindings[i] != nil {
+			if err := m.Bindings[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("vvol" + "." + "bindings" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun vvol based on the context it is used
+func (m *LunVvol) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBindings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsBound(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunVvol) contextValidateBindings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "vvol"+"."+"bindings", "body", []*LunVvolBindingsItems0(m.Bindings)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Bindings); i++ {
+
+		if m.Bindings[i] != nil {
+			if err := m.Bindings[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("vvol" + "." + "bindings" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *LunVvol) contextValidateIsBound(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "vvol"+"."+"is_bound", "body", m.IsBound); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunVvol) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunVvol) UnmarshalBinary(b []byte) error {
+	var res LunVvol
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunVvolBindingsItems0 A vVol binding with which the LUN is associated.
+//
+//
+// swagger:model LunVvolBindingsItems0
+type LunVvolBindingsItems0 struct {
+
+	// links
+	Links *LunVvolBindingsItems0Links `json:"_links,omitempty"`
+
+	// The identifier assigned to the binding. The bind identifier is unique amongst all class `vvol` LUNs bound to the same class `protocol_endpoint` LUN.
+	//
+	// Example: 1
+	// Read Only: true
+	ID int64 `json:"id,omitempty"`
+
+	// partner
+	Partner *LunVvolBindingsItems0Partner `json:"partner,omitempty"`
+}
+
+// Validate validates this lun vvol bindings items0
+func (m *LunVvolBindingsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePartner(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunVvolBindingsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunVvolBindingsItems0) validatePartner(formats strfmt.Registry) error {
+	if swag.IsZero(m.Partner) { // not required
+		return nil
+	}
+
+	if m.Partner != nil {
+		if err := m.Partner.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("partner")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun vvol bindings items0 based on the context it is used
+func (m *LunVvolBindingsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePartner(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunVvolBindingsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunVvolBindingsItems0) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunVvolBindingsItems0) contextValidatePartner(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Partner != nil {
+		if err := m.Partner.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("partner")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunVvolBindingsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunVvolBindingsItems0) UnmarshalBinary(b []byte) error {
+	var res LunVvolBindingsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunVvolBindingsItems0Links lun vvol bindings items0 links
+//
+// swagger:model LunVvolBindingsItems0Links
+type LunVvolBindingsItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this lun vvol bindings items0 links
+func (m *LunVvolBindingsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunVvolBindingsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun vvol bindings items0 links based on the context it is used
+func (m *LunVvolBindingsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunVvolBindingsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunVvolBindingsItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunVvolBindingsItems0Links) UnmarshalBinary(b []byte) error {
+	var res LunVvolBindingsItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunVvolBindingsItems0Partner The LUN partner that this LUN is bound to. If this LUN is a `vvol` class LUN, the partner is a `protocol_endpoint` class LUN.
+//
+//
+// swagger:model LunVvolBindingsItems0Partner
+type LunVvolBindingsItems0Partner struct {
+
+	// links
+	Links *LunVvolBindingsItems0PartnerLinks `json:"_links,omitempty"`
+
+	// The name of the partner LUN.
+	//
+	// Example: /vol/vol1/lun1
+	// Read Only: true
+	Name string `json:"name,omitempty"`
+
+	// The unique identifier of the partner LUN.
+	//
+	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this lun vvol bindings items0 partner
+func (m *LunVvolBindingsItems0Partner) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunVvolBindingsItems0Partner) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("partner" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun vvol bindings items0 partner based on the context it is used
+func (m *LunVvolBindingsItems0Partner) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunVvolBindingsItems0Partner) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("partner" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunVvolBindingsItems0Partner) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "partner"+"."+"name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LunVvolBindingsItems0Partner) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "partner"+"."+"uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunVvolBindingsItems0Partner) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunVvolBindingsItems0Partner) UnmarshalBinary(b []byte) error {
+	var res LunVvolBindingsItems0Partner
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunVvolBindingsItems0PartnerLinks lun vvol bindings items0 partner links
+//
+// swagger:model LunVvolBindingsItems0PartnerLinks
+type LunVvolBindingsItems0PartnerLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this lun vvol bindings items0 partner links
+func (m *LunVvolBindingsItems0PartnerLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunVvolBindingsItems0PartnerLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("partner" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun vvol bindings items0 partner links based on the context it is used
+func (m *LunVvolBindingsItems0PartnerLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunVvolBindingsItems0PartnerLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("partner" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunVvolBindingsItems0PartnerLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunVvolBindingsItems0PartnerLinks) UnmarshalBinary(b []byte) error {
+	var res LunVvolBindingsItems0PartnerLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

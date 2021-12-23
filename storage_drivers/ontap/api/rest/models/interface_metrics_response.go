@@ -286,7 +286,7 @@ func (m *InterfaceMetricsResponseLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// InterfaceMetricsResponseRecordsItems0 interface metrics response records items0
+// InterfaceMetricsResponseRecordsItems0 Throughput performance for the interfaces.
 //
 // swagger:model InterfaceMetricsResponseRecordsItems0
 type InterfaceMetricsResponseRecordsItems0 struct {
@@ -312,6 +312,11 @@ type InterfaceMetricsResponseRecordsItems0 struct {
 	// Example: 2017-01-25T11:20:13Z
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+
+	// The UUID that uniquely identifies the interface.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
 }
 
 // Validate validates this interface metrics response records items0
@@ -634,6 +639,10 @@ func (m *InterfaceMetricsResponseRecordsItems0) ContextValidate(ctx context.Cont
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -663,6 +672,15 @@ func (m *InterfaceMetricsResponseRecordsItems0) contextValidateThroughput(ctx co
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *InterfaceMetricsResponseRecordsItems0) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+		return err
 	}
 
 	return nil

@@ -51,6 +51,9 @@ type CifsService struct {
 	// netbios
 	Netbios *CifsNetbios `json:"netbios,omitempty"`
 
+	// options
+	Options *CifsServiceOptions `json:"options,omitempty"`
+
 	// security
 	Security *CifsServiceSecurity `json:"security,omitempty"`
 
@@ -86,6 +89,10 @@ func (m *CifsService) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNetbios(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOptions(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -207,6 +214,23 @@ func (m *CifsService) validateNetbios(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *CifsService) validateOptions(formats strfmt.Registry) error {
+	if swag.IsZero(m.Options) { // not required
+		return nil
+	}
+
+	if m.Options != nil {
+		if err := m.Options.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("options")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *CifsService) validateSecurity(formats strfmt.Registry) error {
 	if swag.IsZero(m.Security) { // not required
 		return nil
@@ -278,6 +302,10 @@ func (m *CifsService) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateOptions(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSecurity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -344,6 +372,20 @@ func (m *CifsService) contextValidateNetbios(ctx context.Context, formats strfmt
 		if err := m.Netbios.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("netbios")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *CifsService) contextValidateOptions(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Options != nil {
+		if err := m.Options.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("options")
 			}
 			return err
 		}

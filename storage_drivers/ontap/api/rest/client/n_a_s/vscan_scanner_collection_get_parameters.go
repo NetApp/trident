@@ -130,6 +130,12 @@ type VscanScannerCollectionGetParams struct {
 	*/
 	ServersQueryParameter *string
 
+	/* SvmName.
+
+	   Filter by svm.name
+	*/
+	SVMNameQueryParameter *string
+
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
@@ -324,6 +330,17 @@ func (o *VscanScannerCollectionGetParams) SetServersQueryParameter(servers *stri
 	o.ServersQueryParameter = servers
 }
 
+// WithSVMNameQueryParameter adds the svmName to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *VscanScannerCollectionGetParams {
+	o.SetSVMNameQueryParameter(svmName)
+	return o
+}
+
+// SetSVMNameQueryParameter adds the svmName to the vscan scanner collection get params
+func (o *VscanScannerCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
+	o.SVMNameQueryParameter = svmName
+}
+
 // WithSVMUUIDPathParameter adds the svmUUID to the vscan scanner collection get params
 func (o *VscanScannerCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *VscanScannerCollectionGetParams {
 	o.SetSVMUUIDPathParameter(svmUUID)
@@ -513,6 +530,23 @@ func (o *VscanScannerCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		if qServers != "" {
 
 			if err := r.SetQueryParam("servers", qServers); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SVMNameQueryParameter != nil {
+
+		// query param svm.name
+		var qrSvmName string
+
+		if o.SVMNameQueryParameter != nil {
+			qrSvmName = *o.SVMNameQueryParameter
+		}
+		qSvmName := qrSvmName
+		if qSvmName != "" {
+
+			if err := r.SetQueryParam("svm.name", qSvmName); err != nil {
 				return err
 			}
 		}

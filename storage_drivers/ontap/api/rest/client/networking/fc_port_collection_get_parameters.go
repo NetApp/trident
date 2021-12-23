@@ -108,6 +108,12 @@ type FcPortCollectionGetParams struct {
 	*/
 	FieldsQueryParameter []string
 
+	/* InterfaceCount.
+
+	   Filter by interface_count
+	*/
+	InterfaceCountQueryParameter *int64
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
@@ -541,6 +547,17 @@ func (o *FcPortCollectionGetParams) WithFieldsQueryParameter(fields []string) *F
 // SetFieldsQueryParameter adds the fields to the fc port collection get params
 func (o *FcPortCollectionGetParams) SetFieldsQueryParameter(fields []string) {
 	o.FieldsQueryParameter = fields
+}
+
+// WithInterfaceCountQueryParameter adds the interfaceCount to the fc port collection get params
+func (o *FcPortCollectionGetParams) WithInterfaceCountQueryParameter(interfaceCount *int64) *FcPortCollectionGetParams {
+	o.SetInterfaceCountQueryParameter(interfaceCount)
+	return o
+}
+
+// SetInterfaceCountQueryParameter adds the interfaceCount to the fc port collection get params
+func (o *FcPortCollectionGetParams) SetInterfaceCountQueryParameter(interfaceCount *int64) {
+	o.InterfaceCountQueryParameter = interfaceCount
 }
 
 // WithMaxRecordsQueryParameter adds the maxRecords to the fc port collection get params
@@ -1184,6 +1201,23 @@ func (o *FcPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.InterfaceCountQueryParameter != nil {
+
+		// query param interface_count
+		var qrInterfaceCount int64
+
+		if o.InterfaceCountQueryParameter != nil {
+			qrInterfaceCount = *o.InterfaceCountQueryParameter
+		}
+		qInterfaceCount := swag.FormatInt64(qrInterfaceCount)
+		if qInterfaceCount != "" {
+
+			if err := r.SetQueryParam("interface_count", qInterfaceCount); err != nil {
+				return err
+			}
 		}
 	}
 

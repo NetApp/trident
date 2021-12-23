@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -36,6 +37,15 @@ type QosPolicy struct {
 	// Read Only: true
 	ObjectCount int64 `json:"object_count,omitempty"`
 
+	// Policy group ID of the QoS policy.
+	// Read Only: true
+	Pgid int64 `json:"pgid,omitempty"`
+
+	// Class of the QoS policy.
+	// Read Only: true
+	// Enum: [undefined preset user_defined system_defined autovolume load_control]
+	PolicyClass string `json:"policy_class,omitempty"`
+
 	// svm
 	Svm *QosPolicySvm `json:"svm,omitempty"`
 
@@ -58,6 +68,10 @@ func (m *QosPolicy) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateFixed(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePolicyClass(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,6 +136,102 @@ func (m *QosPolicy) validateFixed(formats strfmt.Registry) error {
 	return nil
 }
 
+var qosPolicyTypePolicyClassPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["undefined","preset","user_defined","system_defined","autovolume","load_control"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		qosPolicyTypePolicyClassPropEnum = append(qosPolicyTypePolicyClassPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// qos_policy
+	// QosPolicy
+	// policy_class
+	// PolicyClass
+	// undefined
+	// END DEBUGGING
+	// QosPolicyPolicyClassUndefined captures enum value "undefined"
+	QosPolicyPolicyClassUndefined string = "undefined"
+
+	// BEGIN DEBUGGING
+	// qos_policy
+	// QosPolicy
+	// policy_class
+	// PolicyClass
+	// preset
+	// END DEBUGGING
+	// QosPolicyPolicyClassPreset captures enum value "preset"
+	QosPolicyPolicyClassPreset string = "preset"
+
+	// BEGIN DEBUGGING
+	// qos_policy
+	// QosPolicy
+	// policy_class
+	// PolicyClass
+	// user_defined
+	// END DEBUGGING
+	// QosPolicyPolicyClassUserDefined captures enum value "user_defined"
+	QosPolicyPolicyClassUserDefined string = "user_defined"
+
+	// BEGIN DEBUGGING
+	// qos_policy
+	// QosPolicy
+	// policy_class
+	// PolicyClass
+	// system_defined
+	// END DEBUGGING
+	// QosPolicyPolicyClassSystemDefined captures enum value "system_defined"
+	QosPolicyPolicyClassSystemDefined string = "system_defined"
+
+	// BEGIN DEBUGGING
+	// qos_policy
+	// QosPolicy
+	// policy_class
+	// PolicyClass
+	// autovolume
+	// END DEBUGGING
+	// QosPolicyPolicyClassAutovolume captures enum value "autovolume"
+	QosPolicyPolicyClassAutovolume string = "autovolume"
+
+	// BEGIN DEBUGGING
+	// qos_policy
+	// QosPolicy
+	// policy_class
+	// PolicyClass
+	// load_control
+	// END DEBUGGING
+	// QosPolicyPolicyClassLoadControl captures enum value "load_control"
+	QosPolicyPolicyClassLoadControl string = "load_control"
+)
+
+// prop value enum
+func (m *QosPolicy) validatePolicyClassEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, qosPolicyTypePolicyClassPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *QosPolicy) validatePolicyClass(formats strfmt.Registry) error {
+	if swag.IsZero(m.PolicyClass) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePolicyClassEnum("policy_class", "body", m.PolicyClass); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *QosPolicy) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -156,6 +266,14 @@ func (m *QosPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry
 	}
 
 	if err := m.contextValidateObjectCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePgid(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePolicyClass(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -224,6 +342,24 @@ func (m *QosPolicy) contextValidateObjectCount(ctx context.Context, formats strf
 	return nil
 }
 
+func (m *QosPolicy) contextValidatePgid(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "pgid", "body", int64(m.Pgid)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *QosPolicy) contextValidatePolicyClass(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "policy_class", "body", string(m.PolicyClass)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *QosPolicy) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
@@ -273,15 +409,262 @@ type QosPolicyAdaptive struct {
 	// Specifies the absolute minimum IOPS that is used as an override when the expected_iops is less than this value. These floors are not guaranteed on non-AFF platforms or when FabricPool tiering policies are set.
 	AbsoluteMinIops int64 `json:"absolute_min_iops,omitempty"`
 
+	// Specifies the block size
+	// Enum: [any 4k 8k 16k 32k 64k 128k]
+	BlockSize *string `json:"block_size,omitempty"`
+
 	// Expected IOPS. Specifies the minimum expected IOPS per TB allocated based on the storage object allocated size. These floors are not guaranteed on non-AFF platforms or when FabricPool tiering policies are set.
 	ExpectedIops int64 `json:"expected_iops,omitempty"`
 
+	// Specifies the size to be used to calculate expected IOPS per TB. The size options are either the storage object allocated space or the storage object used space.
+	// Enum: [used_space allocated_space]
+	ExpectedIopsAllocation *string `json:"expected_iops_allocation,omitempty"`
+
 	// Peak IOPS. Specifies the maximum possible IOPS per TB allocated based on the storage object allocated size or the storage object used size.
 	PeakIops int64 `json:"peak_iops,omitempty"`
+
+	// Specifies the size to be used to calculate peak IOPS per TB. The size options are either the storage object allocated space or the storage object used space.
+	// Enum: [used_space allocated_space]
+	PeakIopsAllocation *string `json:"peak_iops_allocation,omitempty"`
 }
 
 // Validate validates this qos policy adaptive
 func (m *QosPolicyAdaptive) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBlockSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExpectedIopsAllocation(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePeakIopsAllocation(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var qosPolicyAdaptiveTypeBlockSizePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["any","4k","8k","16k","32k","64k","128k"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		qosPolicyAdaptiveTypeBlockSizePropEnum = append(qosPolicyAdaptiveTypeBlockSizePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// QosPolicyAdaptive
+	// QosPolicyAdaptive
+	// block_size
+	// BlockSize
+	// any
+	// END DEBUGGING
+	// QosPolicyAdaptiveBlockSizeAny captures enum value "any"
+	QosPolicyAdaptiveBlockSizeAny string = "any"
+
+	// BEGIN DEBUGGING
+	// QosPolicyAdaptive
+	// QosPolicyAdaptive
+	// block_size
+	// BlockSize
+	// 4k
+	// END DEBUGGING
+	// QosPolicyAdaptiveBlockSizeNr4k captures enum value "4k"
+	QosPolicyAdaptiveBlockSizeNr4k string = "4k"
+
+	// BEGIN DEBUGGING
+	// QosPolicyAdaptive
+	// QosPolicyAdaptive
+	// block_size
+	// BlockSize
+	// 8k
+	// END DEBUGGING
+	// QosPolicyAdaptiveBlockSizeNr8k captures enum value "8k"
+	QosPolicyAdaptiveBlockSizeNr8k string = "8k"
+
+	// BEGIN DEBUGGING
+	// QosPolicyAdaptive
+	// QosPolicyAdaptive
+	// block_size
+	// BlockSize
+	// 16k
+	// END DEBUGGING
+	// QosPolicyAdaptiveBlockSizeNr16k captures enum value "16k"
+	QosPolicyAdaptiveBlockSizeNr16k string = "16k"
+
+	// BEGIN DEBUGGING
+	// QosPolicyAdaptive
+	// QosPolicyAdaptive
+	// block_size
+	// BlockSize
+	// 32k
+	// END DEBUGGING
+	// QosPolicyAdaptiveBlockSizeNr32k captures enum value "32k"
+	QosPolicyAdaptiveBlockSizeNr32k string = "32k"
+
+	// BEGIN DEBUGGING
+	// QosPolicyAdaptive
+	// QosPolicyAdaptive
+	// block_size
+	// BlockSize
+	// 64k
+	// END DEBUGGING
+	// QosPolicyAdaptiveBlockSizeNr64k captures enum value "64k"
+	QosPolicyAdaptiveBlockSizeNr64k string = "64k"
+
+	// BEGIN DEBUGGING
+	// QosPolicyAdaptive
+	// QosPolicyAdaptive
+	// block_size
+	// BlockSize
+	// 128k
+	// END DEBUGGING
+	// QosPolicyAdaptiveBlockSizeNr128k captures enum value "128k"
+	QosPolicyAdaptiveBlockSizeNr128k string = "128k"
+)
+
+// prop value enum
+func (m *QosPolicyAdaptive) validateBlockSizeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, qosPolicyAdaptiveTypeBlockSizePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *QosPolicyAdaptive) validateBlockSize(formats strfmt.Registry) error {
+	if swag.IsZero(m.BlockSize) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateBlockSizeEnum("adaptive"+"."+"block_size", "body", *m.BlockSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var qosPolicyAdaptiveTypeExpectedIopsAllocationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["used_space","allocated_space"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		qosPolicyAdaptiveTypeExpectedIopsAllocationPropEnum = append(qosPolicyAdaptiveTypeExpectedIopsAllocationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// QosPolicyAdaptive
+	// QosPolicyAdaptive
+	// expected_iops_allocation
+	// ExpectedIopsAllocation
+	// used_space
+	// END DEBUGGING
+	// QosPolicyAdaptiveExpectedIopsAllocationUsedSpace captures enum value "used_space"
+	QosPolicyAdaptiveExpectedIopsAllocationUsedSpace string = "used_space"
+
+	// BEGIN DEBUGGING
+	// QosPolicyAdaptive
+	// QosPolicyAdaptive
+	// expected_iops_allocation
+	// ExpectedIopsAllocation
+	// allocated_space
+	// END DEBUGGING
+	// QosPolicyAdaptiveExpectedIopsAllocationAllocatedSpace captures enum value "allocated_space"
+	QosPolicyAdaptiveExpectedIopsAllocationAllocatedSpace string = "allocated_space"
+)
+
+// prop value enum
+func (m *QosPolicyAdaptive) validateExpectedIopsAllocationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, qosPolicyAdaptiveTypeExpectedIopsAllocationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *QosPolicyAdaptive) validateExpectedIopsAllocation(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExpectedIopsAllocation) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateExpectedIopsAllocationEnum("adaptive"+"."+"expected_iops_allocation", "body", *m.ExpectedIopsAllocation); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var qosPolicyAdaptiveTypePeakIopsAllocationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["used_space","allocated_space"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		qosPolicyAdaptiveTypePeakIopsAllocationPropEnum = append(qosPolicyAdaptiveTypePeakIopsAllocationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// QosPolicyAdaptive
+	// QosPolicyAdaptive
+	// peak_iops_allocation
+	// PeakIopsAllocation
+	// used_space
+	// END DEBUGGING
+	// QosPolicyAdaptivePeakIopsAllocationUsedSpace captures enum value "used_space"
+	QosPolicyAdaptivePeakIopsAllocationUsedSpace string = "used_space"
+
+	// BEGIN DEBUGGING
+	// QosPolicyAdaptive
+	// QosPolicyAdaptive
+	// peak_iops_allocation
+	// PeakIopsAllocation
+	// allocated_space
+	// END DEBUGGING
+	// QosPolicyAdaptivePeakIopsAllocationAllocatedSpace captures enum value "allocated_space"
+	QosPolicyAdaptivePeakIopsAllocationAllocatedSpace string = "allocated_space"
+)
+
+// prop value enum
+func (m *QosPolicyAdaptive) validatePeakIopsAllocationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, qosPolicyAdaptiveTypePeakIopsAllocationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *QosPolicyAdaptive) validatePeakIopsAllocation(formats strfmt.Registry) error {
+	if swag.IsZero(m.PeakIopsAllocation) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePeakIopsAllocationEnum("adaptive"+"."+"peak_iops_allocation", "body", *m.PeakIopsAllocation); err != nil {
+		return err
+	}
+
 	return nil
 }
 

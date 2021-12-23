@@ -106,7 +106,7 @@ type SecurityAssociationCollectionGetParams struct {
 
 	   Filter by ike.version
 	*/
-	IkeVersionQueryParameter *string
+	IkeVersionQueryParameter *int64
 
 	/* IpsecAction.
 
@@ -395,13 +395,13 @@ func (o *SecurityAssociationCollectionGetParams) SetIkeStateQueryParameter(ikeSt
 }
 
 // WithIkeVersionQueryParameter adds the ikeVersion to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) WithIkeVersionQueryParameter(ikeVersion *string) *SecurityAssociationCollectionGetParams {
+func (o *SecurityAssociationCollectionGetParams) WithIkeVersionQueryParameter(ikeVersion *int64) *SecurityAssociationCollectionGetParams {
 	o.SetIkeVersionQueryParameter(ikeVersion)
 	return o
 }
 
 // SetIkeVersionQueryParameter adds the ikeVersion to the security association collection get params
-func (o *SecurityAssociationCollectionGetParams) SetIkeVersionQueryParameter(ikeVersion *string) {
+func (o *SecurityAssociationCollectionGetParams) SetIkeVersionQueryParameter(ikeVersion *int64) {
 	o.IkeVersionQueryParameter = ikeVersion
 }
 
@@ -782,12 +782,12 @@ func (o *SecurityAssociationCollectionGetParams) WriteToRequest(r runtime.Client
 	if o.IkeVersionQueryParameter != nil {
 
 		// query param ike.version
-		var qrIkeVersion string
+		var qrIkeVersion int64
 
 		if o.IkeVersionQueryParameter != nil {
 			qrIkeVersion = *o.IkeVersionQueryParameter
 		}
-		qIkeVersion := qrIkeVersion
+		qIkeVersion := swag.FormatInt64(qrIkeVersion)
 		if qIkeVersion != "" {
 
 			if err := r.SetQueryParam("ike.version", qIkeVersion); err != nil {

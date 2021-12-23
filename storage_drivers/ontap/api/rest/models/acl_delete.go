@@ -32,6 +32,16 @@ type ACLDelete struct {
 	// Enum: [access_allow access_deny audit_failure audit_success]
 	Access string `json:"access,omitempty"`
 
+	// An Access Control Level specifies the access control of the task to be applied. Valid values
+	// are "file-directory" or "Storage-Level Access Guard (SLAG)". SLAG is used to apply the
+	// specified security descriptors with the task for the volume or qtree. Otherwise, the
+	// security descriptors are applied on files and directories at the specified path.
+	// The value slag is not supported on FlexGroups volumes. The default value is "file-directory".
+	//
+	// Example: file_directory
+	// Enum: [file_directory slag]
+	AccessControl *string `json:"access_control,omitempty"`
+
 	// apply to
 	ApplyTo *ApplyTo `json:"apply_to,omitempty"`
 
@@ -56,6 +66,10 @@ func (m *ACLDelete) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAccess(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAccessControl(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -143,6 +157,62 @@ func (m *ACLDelete) validateAccess(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateAccessEnum("access", "body", m.Access); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var aclDeleteTypeAccessControlPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["file_directory","slag"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		aclDeleteTypeAccessControlPropEnum = append(aclDeleteTypeAccessControlPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// acl_delete
+	// ACLDelete
+	// access_control
+	// AccessControl
+	// file_directory
+	// END DEBUGGING
+	// ACLDeleteAccessControlFileDirectory captures enum value "file_directory"
+	ACLDeleteAccessControlFileDirectory string = "file_directory"
+
+	// BEGIN DEBUGGING
+	// acl_delete
+	// ACLDelete
+	// access_control
+	// AccessControl
+	// slag
+	// END DEBUGGING
+	// ACLDeleteAccessControlSlag captures enum value "slag"
+	ACLDeleteAccessControlSlag string = "slag"
+)
+
+// prop value enum
+func (m *ACLDelete) validateAccessControlEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aclDeleteTypeAccessControlPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ACLDelete) validateAccessControl(formats strfmt.Registry) error {
+	if swag.IsZero(m.AccessControl) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAccessControlEnum("access_control", "body", *m.AccessControl); err != nil {
 		return err
 	}
 

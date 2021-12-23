@@ -26,6 +26,10 @@ type Qtree struct {
 	// export policy
 	ExportPolicy *QtreeExportPolicy `json:"export_policy,omitempty"`
 
+	// Path of the qtree directory. This path is relative to the volume root directory.
+	// Example: /dir1/qtree1
+	FilesystemPath string `json:"filesystem_path,omitempty"`
+
 	// group
 	Group *QtreeGroup `json:"group,omitempty"`
 
@@ -906,7 +910,7 @@ func (m *QtreeNas) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// QtreeQosPolicy When "min_throughput_iops", "max_throughput_iops" or "max_throughput_mbps" attributes are specified, the storage object is assigned to an auto-generated QoS policy group. If the attributes are later modified, the auto-generated QoS policy-group attributes are modified. Attributes can be removed by specifying "0" and policy group by specifying "none". Upon deletion of the storage object or if the attributes are removed, then the QoS policy-group is also removed.
+// QtreeQosPolicy qtree qos policy
 //
 // swagger:model QtreeQosPolicy
 type QtreeQosPolicy struct {
@@ -925,6 +929,10 @@ type QtreeQosPolicy struct {
 	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
 	// Example: 2000
 	MinThroughputIops int64 `json:"min_throughput_iops,omitempty"`
+
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Example: 500
+	MinThroughputMbps int64 `json:"min_throughput_mbps,omitempty"`
 
 	// The QoS policy group name. This is mutually exclusive with UUID and other QoS attributes during POST and PATCH.
 	// Example: performance

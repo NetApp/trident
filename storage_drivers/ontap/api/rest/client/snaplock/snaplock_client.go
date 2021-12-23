@@ -30,6 +30,8 @@ type ClientOption func(*runtime.ClientOperation)
 type ClientService interface {
 	SnaplockComplianceClockCollectionGet(params *SnaplockComplianceClockCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockComplianceClockCollectionGetOK, error)
 
+	SnaplockComplianceClockCreate(params *SnaplockComplianceClockCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockComplianceClockCreateCreated, error)
+
 	SnaplockComplianceClockGet(params *SnaplockComplianceClockGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockComplianceClockGetOK, error)
 
 	SnaplockFilePrivilegedDelete(params *SnaplockFilePrivilegedDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockFilePrivilegedDeleteAccepted, error)
@@ -133,6 +135,51 @@ func (a *Client) SnaplockComplianceClockCollectionGet(params *SnaplockCompliance
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SnaplockComplianceClockCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SnaplockComplianceClockCreate Initializes the SnapLock ComplianceClock.
+### Required properties
+* `node.name` or `node.uuid` - Name or UUID of the node.
+### Related ONTAP commands
+* `snaplock compliance-clock initialize`
+### Learn more
+* [`DOC /storage/snaplock/compliance-clocks`](#docs-snaplock-storage_snaplock_compliance-clocks)
+
+*/
+func (a *Client) SnaplockComplianceClockCreate(params *SnaplockComplianceClockCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnaplockComplianceClockCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSnaplockComplianceClockCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "snaplock_compliance_clock_create",
+		Method:             "POST",
+		PathPattern:        "/storage/snaplock/compliance-clocks",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SnaplockComplianceClockCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SnaplockComplianceClockCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SnaplockComplianceClockCreateDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

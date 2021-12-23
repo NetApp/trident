@@ -96,6 +96,18 @@ type CifsShareCollectionGetParams struct {
 	*/
 	CommentQueryParameter *string
 
+	/* ContinuouslyAvailable.
+
+	   Filter by continuously_available
+	*/
+	ContinuouslyAvailableQueryParameter *bool
+
+	/* DirUmask.
+
+	   Filter by dir_umask
+	*/
+	DirUmaskQueryParameter *int64
+
 	/* Encryption.
 
 	   Filter by encryption
@@ -107,6 +119,18 @@ type CifsShareCollectionGetParams struct {
 	   Specify the fields to return.
 	*/
 	FieldsQueryParameter []string
+
+	/* FileUmask.
+
+	   Filter by file_umask
+	*/
+	FileUmaskQueryParameter *int64
+
+	/* ForceGroupForCreate.
+
+	   Filter by force_group_for_create
+	*/
+	ForceGroupForCreateQueryParameter *string
 
 	/* HomeDirectory.
 
@@ -126,11 +150,23 @@ type CifsShareCollectionGetParams struct {
 	*/
 	NameQueryParameter *string
 
+	/* NamespaceCaching.
+
+	   Filter by namespace_caching
+	*/
+	NamespaceCachingQueryParameter *bool
+
 	/* NoStrictSecurity.
 
 	   Filter by no_strict_security
 	*/
 	NoStrictSecurityQueryParameter *bool
+
+	/* OfflineFiles.
+
+	   Filter by offline_files
+	*/
+	OfflineFilesQueryParameter *string
 
 	/* Oplocks.
 
@@ -166,6 +202,12 @@ type CifsShareCollectionGetParams struct {
 	*/
 	ReturnTimeoutQueryParameter *int64
 
+	/* ShowSnapshot.
+
+	   Filter by show_snapshot
+	*/
+	ShowSnapshotQueryParameter *bool
+
 	/* SvmName.
 
 	   Filter by svm.name
@@ -195,6 +237,12 @@ type CifsShareCollectionGetParams struct {
 	   Filter by volume.uuid
 	*/
 	VolumeUUIDQueryParameter *string
+
+	/* VscanProfile.
+
+	   Filter by vscan_profile
+	*/
+	VscanProfileQueryParameter *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -329,6 +377,28 @@ func (o *CifsShareCollectionGetParams) SetCommentQueryParameter(comment *string)
 	o.CommentQueryParameter = comment
 }
 
+// WithContinuouslyAvailableQueryParameter adds the continuouslyAvailable to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithContinuouslyAvailableQueryParameter(continuouslyAvailable *bool) *CifsShareCollectionGetParams {
+	o.SetContinuouslyAvailableQueryParameter(continuouslyAvailable)
+	return o
+}
+
+// SetContinuouslyAvailableQueryParameter adds the continuouslyAvailable to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetContinuouslyAvailableQueryParameter(continuouslyAvailable *bool) {
+	o.ContinuouslyAvailableQueryParameter = continuouslyAvailable
+}
+
+// WithDirUmaskQueryParameter adds the dirUmask to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithDirUmaskQueryParameter(dirUmask *int64) *CifsShareCollectionGetParams {
+	o.SetDirUmaskQueryParameter(dirUmask)
+	return o
+}
+
+// SetDirUmaskQueryParameter adds the dirUmask to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetDirUmaskQueryParameter(dirUmask *int64) {
+	o.DirUmaskQueryParameter = dirUmask
+}
+
 // WithEncryptionQueryParameter adds the encryption to the cifs share collection get params
 func (o *CifsShareCollectionGetParams) WithEncryptionQueryParameter(encryption *bool) *CifsShareCollectionGetParams {
 	o.SetEncryptionQueryParameter(encryption)
@@ -349,6 +419,28 @@ func (o *CifsShareCollectionGetParams) WithFieldsQueryParameter(fields []string)
 // SetFieldsQueryParameter adds the fields to the cifs share collection get params
 func (o *CifsShareCollectionGetParams) SetFieldsQueryParameter(fields []string) {
 	o.FieldsQueryParameter = fields
+}
+
+// WithFileUmaskQueryParameter adds the fileUmask to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithFileUmaskQueryParameter(fileUmask *int64) *CifsShareCollectionGetParams {
+	o.SetFileUmaskQueryParameter(fileUmask)
+	return o
+}
+
+// SetFileUmaskQueryParameter adds the fileUmask to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetFileUmaskQueryParameter(fileUmask *int64) {
+	o.FileUmaskQueryParameter = fileUmask
+}
+
+// WithForceGroupForCreateQueryParameter adds the forceGroupForCreate to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithForceGroupForCreateQueryParameter(forceGroupForCreate *string) *CifsShareCollectionGetParams {
+	o.SetForceGroupForCreateQueryParameter(forceGroupForCreate)
+	return o
+}
+
+// SetForceGroupForCreateQueryParameter adds the forceGroupForCreate to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetForceGroupForCreateQueryParameter(forceGroupForCreate *string) {
+	o.ForceGroupForCreateQueryParameter = forceGroupForCreate
 }
 
 // WithHomeDirectoryQueryParameter adds the homeDirectory to the cifs share collection get params
@@ -384,6 +476,17 @@ func (o *CifsShareCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
 }
 
+// WithNamespaceCachingQueryParameter adds the namespaceCaching to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithNamespaceCachingQueryParameter(namespaceCaching *bool) *CifsShareCollectionGetParams {
+	o.SetNamespaceCachingQueryParameter(namespaceCaching)
+	return o
+}
+
+// SetNamespaceCachingQueryParameter adds the namespaceCaching to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetNamespaceCachingQueryParameter(namespaceCaching *bool) {
+	o.NamespaceCachingQueryParameter = namespaceCaching
+}
+
 // WithNoStrictSecurityQueryParameter adds the noStrictSecurity to the cifs share collection get params
 func (o *CifsShareCollectionGetParams) WithNoStrictSecurityQueryParameter(noStrictSecurity *bool) *CifsShareCollectionGetParams {
 	o.SetNoStrictSecurityQueryParameter(noStrictSecurity)
@@ -393,6 +496,17 @@ func (o *CifsShareCollectionGetParams) WithNoStrictSecurityQueryParameter(noStri
 // SetNoStrictSecurityQueryParameter adds the noStrictSecurity to the cifs share collection get params
 func (o *CifsShareCollectionGetParams) SetNoStrictSecurityQueryParameter(noStrictSecurity *bool) {
 	o.NoStrictSecurityQueryParameter = noStrictSecurity
+}
+
+// WithOfflineFilesQueryParameter adds the offlineFiles to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithOfflineFilesQueryParameter(offlineFiles *string) *CifsShareCollectionGetParams {
+	o.SetOfflineFilesQueryParameter(offlineFiles)
+	return o
+}
+
+// SetOfflineFilesQueryParameter adds the offlineFiles to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetOfflineFilesQueryParameter(offlineFiles *string) {
+	o.OfflineFilesQueryParameter = offlineFiles
 }
 
 // WithOplocksQueryParameter adds the oplocks to the cifs share collection get params
@@ -450,6 +564,17 @@ func (o *CifsShareCollectionGetParams) SetReturnTimeoutQueryParameter(returnTime
 	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
+// WithShowSnapshotQueryParameter adds the showSnapshot to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithShowSnapshotQueryParameter(showSnapshot *bool) *CifsShareCollectionGetParams {
+	o.SetShowSnapshotQueryParameter(showSnapshot)
+	return o
+}
+
+// SetShowSnapshotQueryParameter adds the showSnapshot to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetShowSnapshotQueryParameter(showSnapshot *bool) {
+	o.ShowSnapshotQueryParameter = showSnapshot
+}
+
 // WithSVMNameQueryParameter adds the svmName to the cifs share collection get params
 func (o *CifsShareCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *CifsShareCollectionGetParams {
 	o.SetSVMNameQueryParameter(svmName)
@@ -503,6 +628,17 @@ func (o *CifsShareCollectionGetParams) WithVolumeUUIDQueryParameter(volumeUUID *
 // SetVolumeUUIDQueryParameter adds the volumeUuid to the cifs share collection get params
 func (o *CifsShareCollectionGetParams) SetVolumeUUIDQueryParameter(volumeUUID *string) {
 	o.VolumeUUIDQueryParameter = volumeUUID
+}
+
+// WithVscanProfileQueryParameter adds the vscanProfile to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) WithVscanProfileQueryParameter(vscanProfile *string) *CifsShareCollectionGetParams {
+	o.SetVscanProfileQueryParameter(vscanProfile)
+	return o
+}
+
+// SetVscanProfileQueryParameter adds the vscanProfile to the cifs share collection get params
+func (o *CifsShareCollectionGetParams) SetVscanProfileQueryParameter(vscanProfile *string) {
+	o.VscanProfileQueryParameter = vscanProfile
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -615,6 +751,40 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.ContinuouslyAvailableQueryParameter != nil {
+
+		// query param continuously_available
+		var qrContinuouslyAvailable bool
+
+		if o.ContinuouslyAvailableQueryParameter != nil {
+			qrContinuouslyAvailable = *o.ContinuouslyAvailableQueryParameter
+		}
+		qContinuouslyAvailable := swag.FormatBool(qrContinuouslyAvailable)
+		if qContinuouslyAvailable != "" {
+
+			if err := r.SetQueryParam("continuously_available", qContinuouslyAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DirUmaskQueryParameter != nil {
+
+		// query param dir_umask
+		var qrDirUmask int64
+
+		if o.DirUmaskQueryParameter != nil {
+			qrDirUmask = *o.DirUmaskQueryParameter
+		}
+		qDirUmask := swag.FormatInt64(qrDirUmask)
+		if qDirUmask != "" {
+
+			if err := r.SetQueryParam("dir_umask", qDirUmask); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EncryptionQueryParameter != nil {
 
 		// query param encryption
@@ -640,6 +810,40 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.FileUmaskQueryParameter != nil {
+
+		// query param file_umask
+		var qrFileUmask int64
+
+		if o.FileUmaskQueryParameter != nil {
+			qrFileUmask = *o.FileUmaskQueryParameter
+		}
+		qFileUmask := swag.FormatInt64(qrFileUmask)
+		if qFileUmask != "" {
+
+			if err := r.SetQueryParam("file_umask", qFileUmask); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ForceGroupForCreateQueryParameter != nil {
+
+		// query param force_group_for_create
+		var qrForceGroupForCreate string
+
+		if o.ForceGroupForCreateQueryParameter != nil {
+			qrForceGroupForCreate = *o.ForceGroupForCreateQueryParameter
+		}
+		qForceGroupForCreate := qrForceGroupForCreate
+		if qForceGroupForCreate != "" {
+
+			if err := r.SetQueryParam("force_group_for_create", qForceGroupForCreate); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -694,6 +898,23 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.NamespaceCachingQueryParameter != nil {
+
+		// query param namespace_caching
+		var qrNamespaceCaching bool
+
+		if o.NamespaceCachingQueryParameter != nil {
+			qrNamespaceCaching = *o.NamespaceCachingQueryParameter
+		}
+		qNamespaceCaching := swag.FormatBool(qrNamespaceCaching)
+		if qNamespaceCaching != "" {
+
+			if err := r.SetQueryParam("namespace_caching", qNamespaceCaching); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.NoStrictSecurityQueryParameter != nil {
 
 		// query param no_strict_security
@@ -706,6 +927,23 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qNoStrictSecurity != "" {
 
 			if err := r.SetQueryParam("no_strict_security", qNoStrictSecurity); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OfflineFilesQueryParameter != nil {
+
+		// query param offline_files
+		var qrOfflineFiles string
+
+		if o.OfflineFilesQueryParameter != nil {
+			qrOfflineFiles = *o.OfflineFilesQueryParameter
+		}
+		qOfflineFiles := qrOfflineFiles
+		if qOfflineFiles != "" {
+
+			if err := r.SetQueryParam("offline_files", qOfflineFiles); err != nil {
 				return err
 			}
 		}
@@ -785,6 +1023,23 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ShowSnapshotQueryParameter != nil {
+
+		// query param show_snapshot
+		var qrShowSnapshot bool
+
+		if o.ShowSnapshotQueryParameter != nil {
+			qrShowSnapshot = *o.ShowSnapshotQueryParameter
+		}
+		qShowSnapshot := swag.FormatBool(qrShowSnapshot)
+		if qShowSnapshot != "" {
+
+			if err := r.SetQueryParam("show_snapshot", qShowSnapshot); err != nil {
 				return err
 			}
 		}
@@ -870,6 +1125,23 @@ func (o *CifsShareCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qVolumeUUID != "" {
 
 			if err := r.SetQueryParam("volume.uuid", qVolumeUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VscanProfileQueryParameter != nil {
+
+		// query param vscan_profile
+		var qrVscanProfile string
+
+		if o.VscanProfileQueryParameter != nil {
+			qrVscanProfile = *o.VscanProfileQueryParameter
+		}
+		qVscanProfile := qrVscanProfile
+		if qVscanProfile != "" {
+
+			if err := r.SetQueryParam("vscan_profile", qVscanProfile); err != nil {
 				return err
 			}
 		}

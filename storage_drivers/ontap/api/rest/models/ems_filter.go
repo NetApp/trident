@@ -30,6 +30,11 @@ type EmsFilter struct {
 
 	// Array of event filter rules on which to match.
 	Rules []*EmsFilterRulesItems0 `json:"rules,omitempty"`
+
+	// Flag indicating system-defined filters.
+	// Example: true
+	// Read Only: true
+	SystemDefined *bool `json:"system_defined,omitempty"`
 }
 
 // Validate validates this ems filter
@@ -103,6 +108,10 @@ func (m *EmsFilter) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSystemDefined(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -136,6 +145,15 @@ func (m *EmsFilter) contextValidateRules(ctx context.Context, formats strfmt.Reg
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *EmsFilter) contextValidateSystemDefined(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "system_defined", "body", m.SystemDefined); err != nil {
+		return err
 	}
 
 	return nil

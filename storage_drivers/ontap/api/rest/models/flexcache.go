@@ -33,7 +33,7 @@ type Flexcache struct {
 	// If set to true, a DR cache is created.
 	DrCache *bool `json:"dr_cache,omitempty"`
 
-	// Specifies whether or not a FlexCache volume has global file locking mode enabled. Global file locking mode is a mode where protocol read locking semantics are enforced across all FlexCaches and origins of a FlexCache volume.
+	// Specifies whether or not a FlexCache volume has global file locking mode enabled. Global file locking mode is a mode where protocol read locking semantics are enforced across all FlexCaches and origins of a FlexCache volume. When global file locking mode is enabled, the "is_disconnected_mode_off_for_locks" flag is always set to "true".
 	GlobalFileLockingEnabled *bool `json:"global_file_locking_enabled,omitempty"`
 
 	// guarantee
@@ -777,7 +777,7 @@ type FlexcachePrepopulateType struct {
 	// exclude dir paths
 	ExcludeDirPaths []string `json:"exclude_dir_paths,omitempty"`
 
-	// Specifies whether or not the prepopulate action should search through the directory-path recursively. If not set, the default value "true" is used.
+	// Specifies whether or not the prepopulate action should search through the `dir_paths` recursively. If not set, the default value _true_ is used.
 	Recurse *bool `json:"recurse,omitempty"`
 }
 

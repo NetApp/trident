@@ -38,6 +38,11 @@ type FcPort struct {
 	// fabric
 	Fabric *FcPortFabric `json:"fabric,omitempty"`
 
+	// The number of FC interfaces currently provisioned on this port. This property is not supported in an SVM context.
+	//
+	// Read Only: true
+	InterfaceCount int64 `json:"interface_count,omitempty"`
+
 	// metric
 	Metric *FcPortMetric `json:"metric,omitempty"`
 
@@ -496,6 +501,10 @@ func (m *FcPort) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateInterfaceCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateMetric(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -582,6 +591,15 @@ func (m *FcPort) contextValidateFabric(ctx context.Context, formats strfmt.Regis
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *FcPort) contextValidateInterfaceCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "interface_count", "body", int64(m.InterfaceCount)); err != nil {
+		return err
 	}
 
 	return nil

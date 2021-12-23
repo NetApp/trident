@@ -74,7 +74,9 @@ func NewLunMapDeleteDefault(code int) *LunMapDeleteDefault {
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
-| 5374875 | The LUN was not found. |
+| 5374875 | The specified LUN does not exist or is not accessible to the caller. |
+| 5374878 | The specified initiator group does not exist, is not accessible to the caller, or is not in the same SVM as the specified LUN. |
+| 5374922 | The specified LUN map does not exist. |
 
 */
 type LunMapDeleteDefault struct {

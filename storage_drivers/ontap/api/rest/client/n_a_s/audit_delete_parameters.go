@@ -60,6 +60,12 @@ func NewAuditDeleteParamsWithHTTPClient(client *http.Client) *AuditDeleteParams 
 */
 type AuditDeleteParams struct {
 
+	/* Force.
+
+	   Indicates to force delete audit configuration.
+	*/
+	ForceQueryParameter *bool
+
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
@@ -136,6 +142,17 @@ func (o *AuditDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithForceQueryParameter adds the force to the audit delete params
+func (o *AuditDeleteParams) WithForceQueryParameter(force *bool) *AuditDeleteParams {
+	o.SetForceQueryParameter(force)
+	return o
+}
+
+// SetForceQueryParameter adds the force to the audit delete params
+func (o *AuditDeleteParams) SetForceQueryParameter(force *bool) {
+	o.ForceQueryParameter = force
+}
+
 // WithReturnTimeoutQueryParameter adds the returnTimeout to the audit delete params
 func (o *AuditDeleteParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *AuditDeleteParams {
 	o.SetReturnTimeoutQueryParameter(returnTimeout)
@@ -165,6 +182,23 @@ func (o *AuditDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		return err
 	}
 	var res []error
+
+	if o.ForceQueryParameter != nil {
+
+		// query param force
+		var qrForce bool
+
+		if o.ForceQueryParameter != nil {
+			qrForce = *o.ForceQueryParameter
+		}
+		qForce := swag.FormatBool(qrForce)
+		if qForce != "" {
+
+			if err := r.SetQueryParam("force", qForce); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.ReturnTimeoutQueryParameter != nil {
 

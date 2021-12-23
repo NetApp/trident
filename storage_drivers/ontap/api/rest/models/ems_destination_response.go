@@ -309,6 +309,11 @@ type EmsDestinationResponseRecordsItems0 struct {
 	// Example: Admin_Email
 	Name string `json:"name,omitempty"`
 
+	// Flag indicating system-defined destinations.
+	// Example: true
+	// Read Only: true
+	SystemDefined *bool `json:"system_defined,omitempty"`
+
 	// Type of destination. Valid in POST.
 	// Example: email
 	// Enum: [snmp email syslog rest_api]
@@ -491,6 +496,10 @@ func (m *EmsDestinationResponseRecordsItems0) ContextValidate(ctx context.Contex
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSystemDefined(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -538,6 +547,15 @@ func (m *EmsDestinationResponseRecordsItems0) contextValidateFilters(ctx context
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *EmsDestinationResponseRecordsItems0) contextValidateSystemDefined(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "system_defined", "body", m.SystemDefined); err != nil {
+		return err
 	}
 
 	return nil

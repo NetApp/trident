@@ -68,8 +68,6 @@ type ClientService interface {
 
 	FileInfoModify(params *FileInfoModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileInfoModifyOK, error)
 
-	FileMoveCreate(params *FileMoveCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileMoveCreateAccepted, error)
-
 	FlexcacheCollectionGet(params *FlexcacheCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheCollectionGetOK, error)
 
 	FlexcacheCreate(params *FlexcacheCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FlexcacheCreateAccepted, error)
@@ -112,6 +110,10 @@ type ClientService interface {
 
 	QosPolicyModify(params *QosPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QosPolicyModifyAccepted, error)
 
+	QosWorkloadCollectionGet(params *QosWorkloadCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QosWorkloadCollectionGetOK, error)
+
+	QosWorkloadGet(params *QosWorkloadGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QosWorkloadGetOK, error)
+
 	QtreeCollectionGet(params *QtreeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QtreeCollectionGetOK, error)
 
 	QtreeCreate(params *QtreeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QtreeCreateAccepted, error)
@@ -139,6 +141,8 @@ type ClientService interface {
 	ShelfCollectionGet(params *ShelfCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShelfCollectionGetOK, error)
 
 	ShelfGet(params *ShelfGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShelfGetOK, error)
+
+	ShelfModify(params *ShelfModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShelfModifyOK, error)
 
 	SnapshotCollectionGet(params *SnapshotCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotCollectionGetOK, error)
 
@@ -170,6 +174,16 @@ type ClientService interface {
 
 	SnapshotPolicyScheduleModify(params *SnapshotPolicyScheduleModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnapshotPolicyScheduleModifyOK, error)
 
+	SplitLoadCollectionGet(params *SplitLoadCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitLoadCollectionGetOK, error)
+
+	SplitLoadGet(params *SplitLoadGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitLoadGetOK, error)
+
+	SplitLoadModify(params *SplitLoadModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitLoadModifyOK, error)
+
+	SplitStatusCollectionGet(params *SplitStatusCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitStatusCollectionGetOK, error)
+
+	SplitStatusGet(params *SplitStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitStatusGetOK, error)
+
 	StorageBridgeCollectionGet(params *StorageBridgeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageBridgeCollectionGetOK, error)
 
 	StorageBridgeGet(params *StorageBridgeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageBridgeGetOK, error)
@@ -183,6 +197,24 @@ type ClientService interface {
 	TapeDeviceCollectionGet(params *TapeDeviceCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TapeDeviceCollectionGetOK, error)
 
 	TapeDeviceGet(params *TapeDeviceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TapeDeviceGetOK, error)
+
+	TokenCollectionGet(params *TokenCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenCollectionGetOK, error)
+
+	TokenCreate(params *TokenCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenCreateCreated, error)
+
+	TokenDelete(params *TokenDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenDeleteOK, error)
+
+	TokenGet(params *TokenGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenGetOK, error)
+
+	TokenModify(params *TokenModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenModifyOK, error)
+
+	TopMetricsClientCollectionGet(params *TopMetricsClientCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsClientCollectionGetOK, error)
+
+	TopMetricsDirectoryCollectionGet(params *TopMetricsDirectoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsDirectoryCollectionGetOK, error)
+
+	TopMetricsFileCollectionGet(params *TopMetricsFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsFileCollectionGetOK, error)
+
+	TopMetricsUserCollectionGet(params *TopMetricsUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsUserCollectionGetOK, error)
 
 	VolumeCollectionGet(params *VolumeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeCollectionGetOK, error)
 
@@ -215,6 +247,7 @@ type ClientService interface {
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `metric.*`
 * `space.block_storage.inactive_user_data`
+* `space.block_storage.inactive_user_data_percent`
 * `space.footprint`
 * `statistics.*`
 ### Related ONTAP commands
@@ -359,6 +392,7 @@ func (a *Client) AggregateDelete(params *AggregateDeleteParams, authInfo runtime
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `metric.*`
 * `space.block_storage.inactive_user_data`
+* `space.block_storage.inactive_user_data_percent`
 * `space.footprint`
 * `statistics.*`
 ### Related ONTAP commands
@@ -833,6 +867,39 @@ func (a *Client) DiskModify(params *DiskModifyParams, authInfo runtime.ClientAut
 
 /*
   FileCloneCreate Creates a clone of the file.
+### Required Properties
+* `source_path`
+* `destination_path`
+* `volume.uuid` and `volume.name` - Instance UUID and name of volume in which to create clone.
+### Optional Properties
+* `range` -  Required only in the case of a sub file clone.
+* `autodelete` - Marks a cloned file for auto deletion.
+* `backup` - Cloned file is used as a backup.
+### Related Ontap commands
+* `volume file clone create`
+### Creating file clones
+The POST operation is used to create file clones with the specified attributes in body. Set the `volume.name` and `volume.uuid` to identify the volume.<br/>
+Set `source_path` and `destination_path` to identify the file path of original and copied file. In case of full file clone, the new file is created using `destination_path`.<br\>
+In case of a sub file clone, set `range` in the format source-file-block-number:destination-file-block-number:block-count. The API returns an error for the following overlapping conditions: (a) if source and destination files are same and any of the source ranges  overlap with any of the destination ranges. (b) if any of the source ranges overlap amongst themselves. (c) if any of the destination ranges overlap amongst themselves. If not provided, full file cloning is assumed.<br/>
+If set to `autodelete`, the cloned file is deleted when the volumes are full.<br\>
+```
+# The API:
+curl -X POST "https://<mgmt_ip>/api/storage/file/clone" -H "accept: application/hal+json" -d '{"volume": {"name": "vol1",  "uuid": "40e0fdc5-c28f-11eb-8270-005056bbeb0b"}, "source_path": "f1", "destination_path": "f2_c1"}'
+# The response:
+{
+  "job": {
+    "uuid": "0d025fd9-c4dc-11eb-adb5-005056bbeb0b",
+    "_links": {
+       "self": {
+         "href": "/api/cluster/jobs/0d025fd9-c4dc-11eb-adb5-005056bbeb0b"
+       }
+    }
+  }
+}
+```
+### Learn More
+* [`DOC /storage/file/clone`]
+
 */
 func (a *Client) FileCloneCreate(params *FileCloneCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileCloneCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1094,74 +1161,6 @@ func (a *Client) FileInfoModify(params *FileInfoModifyParams, authInfo runtime.C
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*FileInfoModifyDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-  FileMoveCreate Starts a file move operation. Only supported on flexible volumes.
-## Required properties
-* `files_to_move` - List of files with the destination they are to be moved to.
-## Default property values
-* `cutover_time` - _10_
-* `hold_quiescence` - _false_
-* `max_throughput` - _0_
-* `reference_cutover_time` - _10_
-## Related ONTAP commands
-* `volume file move start`
-## Examples
-### Copying two files
-The POST request is used to move file(s).
-```
-# The API:
-/api/storage/file/move
-# The call:
-curl -X POST  "https://<mgmt-ip>/api/storage/file/move" -H "accept: application/hal+json" -d '{"files_to_move":[{"source":{"volume":{"name":"vol_a"},"svm":{"name":"vs0"},"path":"d1/src_f1"},"destination":{"volume":{"name":"vol_a"},"svm":{"name":"vs0"},"path":"d1/dst_f1"}}, {"source":{"volume":{"name":"vol_a"},"svm":{"name":"vs0"},"path":"d1/src_f2"},"destination":{"volume":{"name":"vol_a"},"svm":{"name":"vs0"},"path":"d1/dst_f2"}}]}'
-# The response:
-{
-  "job": {
-    "uuid": "b89bc5dd-94a3-11e8-a7a3-0050568edf84",
-    "_links": {
-       "self": {
-         "href": "/api/cluster/jobs/b89bc5dd-94a3-11e8-a7a3-0050568edf84"
-       }
-     }
-   }
-}
-```
-
-*/
-func (a *Client) FileMoveCreate(params *FileMoveCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileMoveCreateAccepted, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewFileMoveCreateParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "file_move_create",
-		Method:             "POST",
-		PathPattern:        "/storage/file/move",
-		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
-		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &FileMoveCreateReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*FileMoveCreateAccepted)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*FileMoveCreateDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -2124,6 +2123,85 @@ func (a *Client) QosPolicyModify(params *QosPolicyModifyParams, authInfo runtime
 }
 
 /*
+  QosWorkloadCollectionGet Retrieves a collection of QoS workloads.
+*/
+func (a *Client) QosWorkloadCollectionGet(params *QosWorkloadCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QosWorkloadCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewQosWorkloadCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "qos_workload_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/qos/workloads",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &QosWorkloadCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*QosWorkloadCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*QosWorkloadCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  QosWorkloadGet Retrieves a specific QoS workload.
+### Related ONTAP command
+* `qos workload show`
+
+*/
+func (a *Client) QosWorkloadGet(params *QosWorkloadGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*QosWorkloadGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewQosWorkloadGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "qos_workload_get",
+		Method:             "GET",
+		PathPattern:        "/storage/qos/workloads/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &QosWorkloadGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*QosWorkloadGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*QosWorkloadGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   QtreeCollectionGet Retrieves qtrees configured for all FlexVol volumes or FlexGroup volumes. <br/>
 Use the `fields` query parameter to retrieve all properties of the qtree. If the `fields` query parameter is not used, then GET returns the qtree `name` and qtree `id` only.
 ### Expensive properties
@@ -2660,6 +2738,7 @@ func (a *Client) QuotaRuleModify(params *QuotaRuleModifyParams, authInfo runtime
 * `storage shelf show`
 * `storage shelf port show`
 * `storage shelf drawer show`
+* `storage shelf acp show`
 ### Learn more
 * [`DOC /storage/shelves`](#docs-storage-storage_shelves)
 
@@ -2705,6 +2784,7 @@ func (a *Client) ShelfCollectionGet(params *ShelfCollectionGetParams, authInfo r
 * `storage shelf show`
 * `storage shelf port show`
 * `storage shelf drawer show`
+* `storage shelf acp show`
 ### Learn more
 * [`DOC /storage/shelves`](#docs-storage-storage_shelves)
 
@@ -2745,9 +2825,56 @@ func (a *Client) ShelfGet(params *ShelfGetParams, authInfo runtime.ClientAuthInf
 }
 
 /*
+  ShelfModify Updates a shelf location LED.
+### Related ONTAP commands
+* `storage shelf location-led modify`
+### Learn more
+* [`DOC /storage/shelves`](#docs-storage-storage_shelves)
+
+*/
+func (a *Client) ShelfModify(params *ShelfModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShelfModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewShelfModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "shelf_modify",
+		Method:             "PATCH",
+		PathPattern:        "/storage/shelves/{uid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ShelfModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ShelfModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ShelfModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   SnapshotCollectionGet Retrieves a collection of volume Snapshot copies.
+### Expensive properties
+There is an added cost to retrieving the amount of reclaimable space for Snapshot copies, as the calculation is done on demand based on the list of Snapshot copies provided.
+* `reclaimable_space`
 ### Related ONTAP commands
 * `snapshot show`
+* `snapshot compute-reclaimable`
 ### Learn more
 * [`DOC /storage/volumes/{volume.uuid}/snapshots`](#docs-storage-storage_volumes_{volume.uuid}_snapshots)
 
@@ -3418,6 +3545,373 @@ func (a *Client) SnapshotPolicyScheduleModify(params *SnapshotPolicyScheduleModi
 }
 
 /*
+  SplitLoadCollectionGet Retrieves the clone split load of a node.
+### Related Ontap Commands
+* `volume file clone split load show`
+### Retrieving file clone split load related information
+The GET operation can be used to retrieve information about clone split load data. Split load data is the data currently undergoing the split. There is a limit on split load data. This API communicates how much data is undergoing split and how much can still be processed.<br\>
+```
+# The API:
+/api/storage/file/clone/split-loads
+# The call:
+curl -X GET "https://<mgmt_ip>/api/storage/file/clone/split-loads" -H "accept: application/hal+json"
+# The response:
+{
+  "records": [
+    {
+      "node": {
+        "uuid": "158d592f-a829-11eb-a47b-005056bb46d7",
+        "name": "node1",
+        "_links": {
+          "self": {
+            "href": "/api/cluster/nodes/158d592f-a829-11eb-a47b-005056bb46d7"
+          }
+        }
+      },
+      "load": {
+        "maximum": 35184372088832,
+        "current": 0,
+        "token_reserved": 0,
+        "allowable": 35184372088832
+      },
+      "_links": {
+        "self": {
+          "href": "/api/storage/file/clone/split-loads/158d592f-a829-11eb-a47b-005056bb46d7"
+        }
+      }
+    },
+    {
+      "node": {
+        "uuid": "9686b8d1-a828-11eb-80d8-005056bbe7b6",
+        "name": "node2",
+        "_links": {
+          "self": {
+            "href": "/api/cluster/nodes/9686b8d1-a828-11eb-80d8-005056bbe7b6"
+          }
+        }
+      },
+      "load": {
+        "maximum": 35184372088832,
+        "current": 0,
+        "token_reserved": 0,
+        "allowable": 35184372088832
+      },
+      "_links": {
+        "self": {
+          "href": "/api/storage/file/clone/split-loads/9686b8d1-a828-11eb-80d8-005056bbe7b6"
+        }
+      }
+    }
+  ],
+  "num_records": 2,
+  "_links":
+    "self": {
+      "href": "/api/storage/file/clone/split-loads"
+    }
+  }
+}
+```
+### Learn More
+* [`DOC /storage/file/clone`]
+
+*/
+func (a *Client) SplitLoadCollectionGet(params *SplitLoadCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitLoadCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSplitLoadCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "split_load_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/file/clone/split-loads",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SplitLoadCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SplitLoadCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SplitLoadCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SplitLoadGet Retrieve Volume File Clone Split Load REST
+*/
+func (a *Client) SplitLoadGet(params *SplitLoadGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitLoadGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSplitLoadGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "split_load_get",
+		Method:             "GET",
+		PathPattern:        "/storage/file/clone/split-loads/{node.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SplitLoadGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SplitLoadGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SplitLoadGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SplitLoadModify Updates the maximum split load.
+### Related Ontap command
+* `volume file clone split load modify`
+### Learn More
+* [`DOC /storage/file/clone`]
+```
+# The call:
+curl -X PATCH "https://<mgmt_IP>/api/storage/file/clone/split-loads/9686b8d1-a828-11eb-80d8-005056bbe7b6" -d '{"load": {"maximum": "16TB" } }'
+# The response to successful patch is empty body
+```
+
+*/
+func (a *Client) SplitLoadModify(params *SplitLoadModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitLoadModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSplitLoadModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "split_load_modify",
+		Method:             "PATCH",
+		PathPattern:        "/storage/file/clone/split-loads/{node.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SplitLoadModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SplitLoadModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SplitLoadModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SplitStatusCollectionGet Retrieves file clone split status of all volumes in the node.
+### Learn More
+* [`DOC /storage/file/clone`]
+```
+# The API:
+/api/storage/file/clone/split-status
+# The call:
+curl -X GET "https://<mgmt_ip>/api/storage/file/clone/split-status" -H "accept: application/hal+json"
+# The response:
+{
+  "records": [
+    {
+      "volume": {
+        "uuid": "ac559964-57a3-40cf-b5cb-f3cb99151a7d",
+        "name": "vol1",
+        "_links": {
+          "self": {
+            "href": "/api/storage/volumes/ac559964-57a3-40cf-b5cb-f3cb99151a7d"
+          }
+        }
+      },
+      "svm": {
+        "name": "vs1"
+      },
+      "pending_splits": 0,
+      "unsplit_clone_size": 0,
+      "_links": {
+        "self": {
+          "href": "/api/storage/file/clone/split-status/ac559964-57a3-40cf-b5cb-f3cb99151a7d"
+        }
+      }
+    },
+    {
+      "volume": {
+        "uuid": "32d95d48-d8b7-11eb-a41d-005056bb3837",
+        "name": "vs1_root",
+        "_links": {
+          "self": {
+            "href": "/api/storage/volumes/32d95d48-d8b7-11eb-a41d-005056bb3837"
+          }
+        }
+      },
+      "svm": {
+        "name": "vs1"
+      },
+      "pending_splits": 0,
+      "unsplit_clone_size": 0,
+      "_links": {
+        "self": {
+          "href": "/api/storage/file/clone/split-status/32d95d48-d8b7-11eb-a41d-005056bb3837"
+        }
+      }
+    }
+  ],
+  "num_records": 2,
+  "_links": {
+    "self": {
+      "href": "/api/storage/file/clone/split-status"
+    }
+  }
+}
+```
+
+*/
+func (a *Client) SplitStatusCollectionGet(params *SplitStatusCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitStatusCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSplitStatusCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "split_status_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/file/clone/split-status",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SplitStatusCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SplitStatusCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SplitStatusCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SplitStatusGet Retrieves file clone split status of all volumes in the node.
+### Related Ontap commands
+* `volume file clone split status`
+### Learn More
+* [`DOC /storage/file/clone`]
+### Retrieves the information of split status.
+The GET operation retrieves information about split processes in the volume.<br\>
+`pending-clone-splits` is the number of files for which file clone split is not yet completed.<br\>
+`unsplit-size` is the sum of all sizes, in bytes in the volume that is not split.<br\>
+```
+# The API:
+/api/storage/file/clone/split-status/{volume.uuid}
+# The call:
+curl -X GET "https://<mgmt_ip>/api/storage/file/clone/split-status/ac559964-57a3-40cf-b5cb-f3cb99151a7d" -H "accept: application/hal+json"
+# The response:
+{
+  "volume": {
+    "uuid": "ac559964-57a3-40cf-b5cb-f3cb99151a7d",
+    "name": "vol1",
+    "_links": {
+      "self": {
+        "href": "/api/storage/volumes/ac559964-57a3-40cf-b5cb-f3cb99151a7d"
+      }
+    }
+  },
+  "svm": {
+    "name": "vs1"
+  },
+  "pending_splits": 0,
+  "unsplit_clone_size": 0,
+  "_links": {
+    "self": {
+      "href": "/api/storage/file/clone/split-status/ac559964-57a3-40cf-b5cb-f3cb99151a7d"
+    }
+  }
+}
+```
+
+*/
+func (a *Client) SplitStatusGet(params *SplitStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitStatusGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSplitStatusGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "split_status_get",
+		Method:             "GET",
+		PathPattern:        "/storage/file/clone/split-status/{volume.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SplitStatusGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SplitStatusGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SplitStatusGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   StorageBridgeCollectionGet Retrieves a collection of bridges.
 ### Related ONTAP commands
 * `storage bridge show`
@@ -3716,14 +4210,498 @@ func (a *Client) TapeDeviceGet(params *TapeDeviceGetParams, authInfo runtime.Cli
 }
 
 /*
+  TokenCollectionGet Retrieves information for the specified token.
+### Related Ontap command
+* `volume file clone token show`
+### Learn More
+* [`DOC /storage/file/clone`]
+### Retrieving information on clone tokens
+```
+# The API:
+/api/storage/file/clone/tokens
+# The call:
+curl -X GET "https://<mgmt_ip>/api/storage/file/clone/tokens" -H "accept: application/hal+json"
+# The response:
+{
+  "records": [
+    {
+      "node": {
+        "uuid": "97255711-a1ad-11eb-92b2-0050568eb2ca",
+        "name": "node1",
+        "_links": {
+          "self": {
+            "href": "/api/cluster/nodes/97255711-a1ad-11eb-92b2-0050568eb2ca"
+          }
+        }
+      },
+      "uuid": "905c42ce-a74b-11eb-bd86-0050568ec7ae",
+      "reserve_size": 10240,
+      "expiry_time": {
+        "limit": "PT1H10M",
+        "left": "PT1H9M"
+      },
+      "_links": {
+        "self": {
+          "href": "/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca/905c42ce-a74b-11eb-bd86-0050568ec7ae"
+        }
+      }
+    }
+  ],
+  "num_records": 1,
+  "_links": {
+    "self": {
+      "href": "/api/storage/file/clone/tokens"
+    }
+  }
+}
+```
+
+*/
+func (a *Client) TokenCollectionGet(params *TokenCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTokenCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "token_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/file/clone/tokens",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TokenCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TokenCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TokenCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TokenCreate Creates a new token to reserve the split load.
+### Required Properties
+* `node.uuid`
+* `reserve-size`
+### Optional Propeties
+* `expiry_time.limit`
+* `expiry_time.left`
+### Related Ontap Commands
+* `volume file clone token create`
+### Learn More
+* [`DOC /storage/file/clone`]
+### Creating clone tokens to reserve space for clone creation on the node
+There is a limit on the amount of clone data that can undergo a split at a point of time on the node (clone split load). Clone tokens are used to reserve space from clone split load for clone creation. The POST operation is used to create clone tokens with `reserve-size` and `expiry-time.limit` in the body.<br\>
+```
+# The API
+/api/storage/file/clone/tokens
+# The call
+curl -X POST "https://<mgmt_ip>/api/storage/file/clone/tokens" -H "accept: application/hal+json" -d '{"node": {"uuid": "97255711-a1ad-11eb-92b2-0050568eb2ca"}, "reserve_size": "40M", "expiry_time": { "limit": "4200"} }'
+# The response
+{
+  "num_records": 1,
+  "records": [
+    {
+      "node": {
+        "name": "node1"
+      },
+      "uuid": "286f6ae4-c94d-11eb-adb5-005056bbeb0b",
+      "reserve_size": 41943040,
+      "_links": {
+        "self": {
+          "href": "/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca"
+        }
+      }
+    }
+  ]
+}
+```
+
+*/
+func (a *Client) TokenCreate(params *TokenCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTokenCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "token_create",
+		Method:             "POST",
+		PathPattern:        "/storage/file/clone/tokens",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TokenCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TokenCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TokenCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TokenDelete Deletes a specific file clone token.
+### Related Ontap command
+* `volume file clone token delete`
+### Delete specific clone token.
+```
+# The API:
+/api/storage/file/clone/tokens/{node.uuid}/{token.uuid}
+# The call:
+curl -X DELETE "https://<mgmt_ip>/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca/909c42ce-a74b-11eb-bd86-0050568ec7ae"
+# The successful response is empty body.
+```
+### Learn More
+* [`DOC /storage/file/clone`]
+
+*/
+func (a *Client) TokenDelete(params *TokenDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTokenDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "token_delete",
+		Method:             "DELETE",
+		PathPattern:        "/storage/file/clone/tokens/{node.uuid}/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TokenDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TokenDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TokenDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TokenGet Retrieves a file clone token
+### Related Ontap command
+* `volume file clone token show`
+### Retrieve information for single token.
+```
+# The call:
+curl -X GET "https://<mgmt_ip>/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca/905c42ce-a74b-11eb-bd86-0050568ec7ae"
+# The response:
+{
+  "node": {
+    "uuid": "97255711-a1ad-11eb-92b2-0050568eb2ca",
+    "name": "node1",
+    "_links": {
+      "self": {
+        "href": "/api/cluster/nodes/97255711-a1ad-11eb-92b2-0050568eb2ca"
+      }
+    }
+  },
+  "uuid": "905c42ce-a74b-11eb-bd86-0050568ec7ae",
+  "reserve_size": 41943040,
+  "expiry_time": {
+    "limit": "PT1H10M",
+    "left": "PT1H9M"
+  },
+  "_links": {
+    "self": {
+      "href": "/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca/905c42ce-a74b-11eb-bd86-0050568ec7ae"
+    }
+  }
+}
+```
+### Learn More
+* [`DOC /storage/file/clone`]
+
+*/
+func (a *Client) TokenGet(params *TokenGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTokenGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "token_get",
+		Method:             "GET",
+		PathPattern:        "/storage/file/clone/tokens/{node.uuid}/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TokenGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TokenGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TokenGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TokenModify Updates a file clone token.
+### Related Ontap commands
+* `volume file clone token modify`
+### Modify clone token
+Use the PATCH API to update the expiry time associated with the clone token.<br\>
+```
+# The call:
+curl -X PATCH "https://<mgmt_ip>/api/storage/file/clone/tokens/97255711-a1ad-11eb-92b2-0050568eb2ca/905c42ce-a74b-11eb-bd86-0050568ec7ae" -d '{"expiry_time": {"limit": "5400"} }'
+# The response for successful PATCH is empty.
+```
+### Learn More
+* [`DOC /storage/file/clone`]
+
+*/
+func (a *Client) TokenModify(params *TokenModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TokenModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTokenModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "token_modify",
+		Method:             "PATCH",
+		PathPattern:        "/storage/file/clone/tokens/{node.uuid}/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TokenModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TokenModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TokenModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TopMetricsClientCollectionGet Retrieves a list of clients with the most IO activity.
+*/
+func (a *Client) TopMetricsClientCollectionGet(params *TopMetricsClientCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsClientCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTopMetricsClientCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "top_metrics_client_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/volumes/{volume.uuid}/top-metrics/clients",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TopMetricsClientCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TopMetricsClientCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TopMetricsClientCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TopMetricsDirectoryCollectionGet Retrieves a list of directories with the most IO activity.
+*/
+func (a *Client) TopMetricsDirectoryCollectionGet(params *TopMetricsDirectoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsDirectoryCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTopMetricsDirectoryCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "top_metrics_directory_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/volumes/{volume.uuid}/top-metrics/directories",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TopMetricsDirectoryCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TopMetricsDirectoryCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TopMetricsDirectoryCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TopMetricsFileCollectionGet Retrieves a list of files with the most IO activity.
+*/
+func (a *Client) TopMetricsFileCollectionGet(params *TopMetricsFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsFileCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTopMetricsFileCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "top_metrics_file_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/volumes/{volume.uuid}/top-metrics/files",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TopMetricsFileCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TopMetricsFileCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TopMetricsFileCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  TopMetricsUserCollectionGet Retrieves a list of users with the most IO activity.
+*/
+func (a *Client) TopMetricsUserCollectionGet(params *TopMetricsUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsUserCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewTopMetricsUserCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "top_metrics_user_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/volumes/{volume.uuid}/top-metrics/users",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &TopMetricsUserCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*TopMetricsUserCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*TopMetricsUserCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   VolumeCollectionGet Retrieves volumes.
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `is_svm_root`
 * `analytics.*`
+* `anti_ransomware.*`
 * `application.*`
 * `encryption.*`
 * `queue_for_encryption`
+* `convert_unicode`
 * `clone.parent_snapshot.name`
 * `clone.parent_snapshot.uuid`
 * `clone.parent_svm.name`
@@ -3736,6 +4714,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `efficiency.*`
 * `error_state.*`
 * `files.*`
+* `max_dir_size`
 * `nas.export_policy.id`
 * `nas.gid`
 * `nas.path`
@@ -3758,6 +4737,17 @@ There is an added cost to retrieving values for these properties. They are not i
 * `space.over_provisioned`
 * `space.metadata`
 * `space.total_footprint`
+* `space.dedupe_metafiles_footprint`
+* `space.dedupe_metafiles_temporary_footprint`
+* `space.delayed_free_footprint`
+* `space.file_operation_metadata`
+* `space.snapmirror_destination_footprint`
+* `space.volume_guarantee_footprint`
+* `space.cross_volume_dedupe_metafiles_footprint`
+* `space.cross_volume_dedupe_metafiles_temporary_footprint`
+* `space.snapshot_reserve_unusable`
+* `space.snapshot_spill`
+* `space.user_data`
 * `space.logical_space.*`
 * `space.snapshot.*`
 * `space.used_by_afs`
@@ -3771,37 +4761,44 @@ There is an added cost to retrieving values for these properties. They are not i
 * `space.percent_used`
 * `space.fractional_reserve`
 * `space.block_storage_inactive_user_data_percent`
+* `space.physical_used`
+* `space.physical_used_percent`
+* `space.expected_available`
+* `space.filesystem_size`
+* `space.filesystem_size_fixed`
 * `guarantee.*`
 * `autosize.*`
 * `movement.*`
 * `statistics.*`
-* `constituents.name
-* `constituents.space.size
-* `constituents.space.available
-* `constituents.space.used
-* `constituents.space.block_storage_inactive_user_data
-* `constituents.space.capacity_tier_footprint
-* `constituents.space.performance_tier_footprint
-* `constituents.space.local_tier_footprint
-* `constituents.space.footprint
-* `constituents.space.over_provisioned
-* `constituents.space.metadata
-* `constituents.space.total_footprint
-* `constituents.space.logical_space.reporting
-* `constituents.space.logical_space.enforcement
-* `constituents.space.logical_space.used_by_afs
-* `constituents.space.logical_space.available
-* `constituents.space.snapshot.used
-* `constituents.space.snapshot.reserve_percent
-* `constituents.space.snapshot.autodelete_enabled
-* `constituents.aggregates.name
-* `constituents.aggregates.uuid
-* `constituents.movement.destination_aggregate.name
-* `constituents.movement.destination_aggregate.uuid
-* `constituents.movement.state
-* `constituents.movement.percent_complete
-* `constituents.movement.cutover_window
-* `constituents.movement.tiering_policy
+* `constituents.name`
+* `constituents.space.size`
+* `constituents.space.available`
+* `constituents.space.used`
+* `constituents.space.available_percent`
+* `constituents.space.used_percent`
+* `constituents.space.block_storage_inactive_user_data`
+* `constituents.space.capacity_tier_footprint`
+* `constituents.space.performance_tier_footprint`
+* `constituents.space.local_tier_footprint`
+* `constituents.space.footprint`
+* `constituents.space.over_provisioned`
+* `constituents.space.metadata`
+* `constituents.space.total_footprint`
+* `constituents.space.logical_space.reporting`
+* `constituents.space.logical_space.enforcement`
+* `constituents.space.logical_space.used_by_afs`
+* `constituents.space.logical_space.available`
+* `constituents.space.snapshot.used`
+* `constituents.space.snapshot.reserve_percent`
+* `constituents.space.snapshot.autodelete_enabled`
+* `constituents.aggregates.name`
+* `constituents.aggregates.uuid`
+* `constituents.movement.destination_aggregate.name`
+* `constituents.movement.destination_aggregate.uuid`
+* `constituents.movement.state`
+* `constituents.movement.percent_complete`
+* `constituents.movement.cutover_window`
+* `constituents.movement.tiering_policy`
 ### Related ONTAP commands
 * `volume show`
 * `volume clone show`
@@ -3813,6 +4810,8 @@ There is an added cost to retrieving values for these properties. They are not i
 * `volume quota show`
 * `volume show-space`
 * `volume snaplock show`
+* `security anti-ransomware volume show`
+* `security anti-ransomware volume space show`
 
 */
 func (a *Client) VolumeCollectionGet(params *VolumeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeCollectionGetOK, error) {
@@ -3864,6 +4863,7 @@ func (a *Client) VolumeCollectionGet(params *VolumeCollectionGetParams, authInfo
 * `encryption.enabled` - _false_
 * `snapshot_policy.name` - _default_
 * `gaurantee.type` - _volume_
+* `anti_ransomware.state` - _default_
 ### Related ONTAP commands
 * `volume create`
 * `volume clone create`
@@ -3997,14 +4997,14 @@ func (a *Client) VolumeEfficiencyPolicyCollectionGet(params *VolumeEfficiencyPol
 ### Recommended optional properties
 * `type` - Type of volume policy.
 * `schedule` - Schedule the volume efficiency defined in minutes, hourly, daily and weekly.
-* `duration` - Indicates the allowed duration for a session for policy type "threshold" and "auto".
+* `duration` - Indicates the allowed duration for a session for policy type "scheduled".
 * `start_threshold_percent` - Indicates the start threshold percentage for the policy type "threshold". It is mutually exclusive of the schedule.
 * `qos_policy` - QoS policy for the sis operation.
 * `comment` - A comment associated with the volume efficiency policy.
 * `enabled` - Is the volume efficiency policy enabled?
 ### Default property values
 If not specified in POST, the following default property values are assigned:
-* `type` - auto
+* `type` - scheduled
 * `enabled` - true
 * `qos_policy` - best_effort
 ### Related ONTAP commands
@@ -4183,8 +5183,10 @@ func (a *Client) VolumeEfficiencyPolicyModify(params *VolumeEfficiencyPolicyModi
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `is_svm_root`
 * `analytics.*`
+* `anti_ransomware.*`
 * `application.*`
 * `encryption.*`
+* `convert_unicode`
 * `clone.parent_snapshot.name`
 * `clone.parent_snapshot.uuid`
 * `clone.parent_svm.name`
@@ -4197,6 +5199,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `efficiency.*`
 * `error_state.*`
 * `files.*`
+* `max_dir_size`
 * `nas.export_policy.id`
 * `nas.gid`
 * `nas.path`
@@ -4219,6 +5222,17 @@ There is an added cost to retrieving values for these properties. They are not i
 * `space.over_provisioned`
 * `space.metadata`
 * `space.total_footprint`
+* `space.dedupe_metafiles_footprint`
+* `space.dedupe_metafiles_temporary_footprint`
+* `space.delayed_free_footprint`
+* `space.file_operation_metadata`
+* `space.snapmirror_destination_footprint`
+* `space.volume_guarantee_footprint`
+* `space.cross_volume_dedupe_metafiles_footprint`
+* `space.cross_volume_dedupe_metafiles_temporary_footprint`
+* `space.snapshot_reserve_unusable`
+* `space.snapshot_spill`
+* `space.user_data`
 * `space.logical_space.*`
 * `space.snapshot.*`
 * `space.used_by_afs`
@@ -4232,6 +5246,11 @@ There is an added cost to retrieving values for these properties. They are not i
 * `space.percent_used`
 * `space.fractional_reserve`
 * `space.block_storage_inactive_user_data_percent`
+* `space.physical_used`
+* `space.physical_used_percent`
+* `space.expected_available`
+* `space.filesystem_size`
+* `space.filesystem_size_fixed`
 * `guarantee.*`
 * `autosize.*`
 * `movement.*`
@@ -4247,6 +5266,9 @@ There is an added cost to retrieving values for these properties. They are not i
 * `volume quota show`
 * `volume show-space`
 * `volume snaplock show`
+* `security anti-ransomware volume show`
+* `security anti-ransomware volume attack generate-report`
+* `security anti-ransomware volume space show`
 
 */
 func (a *Client) VolumeGet(params *VolumeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeGetOK, error) {
@@ -4341,6 +5363,11 @@ func (a *Client) VolumeMetricsCollectionGet(params *VolumeMetricsCollectionGetPa
 * `volume snaplock modify`
 * `volume encryption conversion start`
 * `volume encryption rekey start`
+* `security anti-ransomware volume enable`
+* `security anti-ransomware volume disable`
+* `security anti-ransomware volume dry-run`
+* `security anti-ransomware volume pause`
+* `security anti-ransomware volume resume`
 
 */
 func (a *Client) VolumeModify(params *VolumeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeModifyAccepted, error) {

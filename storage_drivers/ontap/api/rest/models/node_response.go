@@ -312,8 +312,15 @@ type NodeResponseRecordsItems0 struct {
 	// Format: date-time
 	Date *strfmt.DateTime `json:"date,omitempty"`
 
+	// external cache
+	ExternalCache *NodeResponseRecordsItems0ExternalCache `json:"external_cache,omitempty"`
+
 	// ha
 	Ha *NodeResponseRecordsItems0Ha `json:"ha,omitempty"`
+
+	// Specifies whether or not the node is in spares low condition.
+	// Read Only: true
+	IsSparesLow *bool `json:"is_spares_low,omitempty"`
 
 	// location
 	// Example: rack 2 row 5
@@ -450,6 +457,10 @@ func (m *NodeResponseRecordsItems0) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExternalCache(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -597,6 +608,23 @@ func (m *NodeResponseRecordsItems0) validateDate(formats strfmt.Registry) error 
 
 	if err := validate.FormatOf("date", "body", "date-time", m.Date.String(), formats); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0) validateExternalCache(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExternalCache) { // not required
+		return nil
+	}
+
+	if m.ExternalCache != nil {
+		if err := m.ExternalCache.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("external_cache")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1113,7 +1141,15 @@ func (m *NodeResponseRecordsItems0) ContextValidate(ctx context.Context, formats
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateExternalCache(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateHa(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsSparesLow(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1272,6 +1308,20 @@ func (m *NodeResponseRecordsItems0) contextValidateDate(ctx context.Context, for
 	return nil
 }
 
+func (m *NodeResponseRecordsItems0) contextValidateExternalCache(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ExternalCache != nil {
+		if err := m.ExternalCache.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("external_cache")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *NodeResponseRecordsItems0) contextValidateHa(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Ha != nil {
@@ -1281,6 +1331,15 @@ func (m *NodeResponseRecordsItems0) contextValidateHa(ctx context.Context, forma
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0) contextValidateIsSparesLow(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_spares_low", "body", m.IsSparesLow); err != nil {
+		return err
 	}
 
 	return nil
@@ -3343,6 +3402,55 @@ func (m *NodeResponseRecordsItems0ControllerFrusItems0) UnmarshalBinary(b []byte
 	return nil
 }
 
+// NodeResponseRecordsItems0ExternalCache Cache used for buffer management.
+//
+// swagger:model NodeResponseRecordsItems0ExternalCache
+type NodeResponseRecordsItems0ExternalCache struct {
+
+	// Indicates whether the external cache is enabled.
+	// Example: true
+	IsEnabled bool `json:"is_enabled,omitempty"`
+
+	// Indicates whether HyA caching is enabled.
+	// Example: true
+	IsHyaEnabled bool `json:"is_hya_enabled,omitempty"`
+
+	// Indicates whether rewarm is enabled.
+	// Example: true
+	IsRewarmEnabled bool `json:"is_rewarm_enabled,omitempty"`
+
+	// PCS size in gigabytes.
+	PcsSize int64 `json:"pcs_size,omitempty"`
+}
+
+// Validate validates this node response records items0 external cache
+func (m *NodeResponseRecordsItems0ExternalCache) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this node response records items0 external cache based on context it is used
+func (m *NodeResponseRecordsItems0ExternalCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ExternalCache) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ExternalCache) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0ExternalCache
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NodeResponseRecordsItems0Ha node response records items0 ha
 //
 // swagger:model NodeResponseRecordsItems0Ha
@@ -4927,6 +5035,10 @@ type NodeResponseRecordsItems0Metric struct {
 	// Example: 2017-01-25T11:20:13Z
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
 }
 
 // Validate validates this node response records items0 metric
@@ -5807,7 +5919,13 @@ func (m *NodeResponseRecordsItems0Nvram) UnmarshalBinary(b []byte) error {
 // swagger:model NodeResponseRecordsItems0ServiceProcessor
 type NodeResponseRecordsItems0ServiceProcessor struct {
 
-	// Set to "true" to use DHCP to configure an IPv4 interface.
+	// Indicates whether the service processor can be automatically updated from ONTAP.
+	AutoupdateEnabled bool `json:"autoupdate_enabled,omitempty"`
+
+	// backup
+	Backup *NodeResponseRecordsItems0ServiceProcessorBackup `json:"backup,omitempty"`
+
+	// Set to "true" to use DHCP to configure an IPv4 interface. Do not provide values for address, netmask and gateway when set to "true".
 	DhcpEnabled bool `json:"dhcp_enabled,omitempty"`
 
 	// The version of firmware installed.
@@ -5820,6 +5938,15 @@ type NodeResponseRecordsItems0ServiceProcessor struct {
 	// ipv6 interface
 	IPV6Interface *NodeResponseRecordsItems0ServiceProcessorIPV6Interface `json:"ipv6_interface,omitempty"`
 
+	// Indicates whether the service processor network is configured.
+	// Read Only: true
+	IsIPConfigured *bool `json:"is_ip_configured,omitempty"`
+
+	// Provides the "update status" of the last service processor update.
+	// Read Only: true
+	// Enum: [failed passed]
+	LastUpdateState string `json:"last_update_state,omitempty"`
+
 	// link status
 	// Read Only: true
 	// Enum: [up down disabled unknown]
@@ -5829,15 +5956,30 @@ type NodeResponseRecordsItems0ServiceProcessor struct {
 	// Read Only: true
 	MacAddress string `json:"mac_address,omitempty"`
 
+	// primary
+	Primary *NodeResponseRecordsItems0ServiceProcessorPrimary `json:"primary,omitempty"`
+
+	// ssh info
+	SSHInfo *NodeResponseRecordsItems0ServiceProcessorSSHInfo `json:"ssh_info,omitempty"`
+
 	// state
 	// Read Only: true
 	// Enum: [online offline degraded rebooting unknown updating node_offline sp_daemon_offline]
 	State string `json:"state,omitempty"`
+
+	// type
+	// Read Only: true
+	// Enum: [sp none bmc]
+	Type string `json:"type,omitempty"`
 }
 
 // Validate validates this node response records items0 service processor
 func (m *NodeResponseRecordsItems0ServiceProcessor) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateBackup(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateIPV4Interface(formats); err != nil {
 		res = append(res, err)
@@ -5847,7 +5989,19 @@ func (m *NodeResponseRecordsItems0ServiceProcessor) Validate(formats strfmt.Regi
 		res = append(res, err)
 	}
 
+	if err := m.validateLastUpdateState(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateLinkStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePrimary(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSSHInfo(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -5855,9 +6009,30 @@ func (m *NodeResponseRecordsItems0ServiceProcessor) Validate(formats strfmt.Regi
 		res = append(res, err)
 	}
 
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessor) validateBackup(formats strfmt.Registry) error {
+	if swag.IsZero(m.Backup) { // not required
+		return nil
+	}
+
+	if m.Backup != nil {
+		if err := m.Backup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "backup")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -5890,6 +6065,62 @@ func (m *NodeResponseRecordsItems0ServiceProcessor) validateIPV6Interface(format
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var nodeResponseRecordsItems0ServiceProcessorTypeLastUpdateStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["failed","passed"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeResponseRecordsItems0ServiceProcessorTypeLastUpdateStatePropEnum = append(nodeResponseRecordsItems0ServiceProcessorTypeLastUpdateStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessor
+	// NodeResponseRecordsItems0ServiceProcessor
+	// last_update_state
+	// LastUpdateState
+	// failed
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorLastUpdateStateFailed captures enum value "failed"
+	NodeResponseRecordsItems0ServiceProcessorLastUpdateStateFailed string = "failed"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessor
+	// NodeResponseRecordsItems0ServiceProcessor
+	// last_update_state
+	// LastUpdateState
+	// passed
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorLastUpdateStatePassed captures enum value "passed"
+	NodeResponseRecordsItems0ServiceProcessorLastUpdateStatePassed string = "passed"
+)
+
+// prop value enum
+func (m *NodeResponseRecordsItems0ServiceProcessor) validateLastUpdateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeResponseRecordsItems0ServiceProcessorTypeLastUpdateStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessor) validateLastUpdateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.LastUpdateState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateLastUpdateStateEnum("service_processor"+"."+"last_update_state", "body", m.LastUpdateState); err != nil {
+		return err
 	}
 
 	return nil
@@ -5966,6 +6197,40 @@ func (m *NodeResponseRecordsItems0ServiceProcessor) validateLinkStatus(formats s
 	// value enum
 	if err := m.validateLinkStatusEnum("service_processor"+"."+"link_status", "body", m.LinkStatus); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessor) validatePrimary(formats strfmt.Registry) error {
+	if swag.IsZero(m.Primary) { // not required
+		return nil
+	}
+
+	if m.Primary != nil {
+		if err := m.Primary.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "primary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessor) validateSSHInfo(formats strfmt.Registry) error {
+	if swag.IsZero(m.SSHInfo) { // not required
+		return nil
+	}
+
+	if m.SSHInfo != nil {
+		if err := m.SSHInfo.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "ssh_info")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -6087,9 +6352,79 @@ func (m *NodeResponseRecordsItems0ServiceProcessor) validateState(formats strfmt
 	return nil
 }
 
+var nodeResponseRecordsItems0ServiceProcessorTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["sp","none","bmc"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeResponseRecordsItems0ServiceProcessorTypeTypePropEnum = append(nodeResponseRecordsItems0ServiceProcessorTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessor
+	// NodeResponseRecordsItems0ServiceProcessor
+	// type
+	// Type
+	// sp
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorTypeSp captures enum value "sp"
+	NodeResponseRecordsItems0ServiceProcessorTypeSp string = "sp"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessor
+	// NodeResponseRecordsItems0ServiceProcessor
+	// type
+	// Type
+	// none
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorTypeNone captures enum value "none"
+	NodeResponseRecordsItems0ServiceProcessorTypeNone string = "none"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessor
+	// NodeResponseRecordsItems0ServiceProcessor
+	// type
+	// Type
+	// bmc
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorTypeBmc captures enum value "bmc"
+	NodeResponseRecordsItems0ServiceProcessorTypeBmc string = "bmc"
+)
+
+// prop value enum
+func (m *NodeResponseRecordsItems0ServiceProcessor) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeResponseRecordsItems0ServiceProcessorTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessor) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("service_processor"+"."+"type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this node response records items0 service processor based on the context it is used
 func (m *NodeResponseRecordsItems0ServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateBackup(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateFirmwareVersion(ctx, formats); err != nil {
 		res = append(res, err)
@@ -6103,6 +6438,14 @@ func (m *NodeResponseRecordsItems0ServiceProcessor) ContextValidate(ctx context.
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIsIPConfigured(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateLinkStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -6111,13 +6454,39 @@ func (m *NodeResponseRecordsItems0ServiceProcessor) ContextValidate(ctx context.
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePrimary(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSSHInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessor) contextValidateBackup(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Backup != nil {
+		if err := m.Backup.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "backup")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -6158,6 +6527,24 @@ func (m *NodeResponseRecordsItems0ServiceProcessor) contextValidateIPV6Interface
 	return nil
 }
 
+func (m *NodeResponseRecordsItems0ServiceProcessor) contextValidateIsIPConfigured(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"is_ip_configured", "body", m.IsIPConfigured); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessor) contextValidateLastUpdateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"last_update_state", "body", string(m.LastUpdateState)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *NodeResponseRecordsItems0ServiceProcessor) contextValidateLinkStatus(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "service_processor"+"."+"link_status", "body", string(m.LinkStatus)); err != nil {
@@ -6176,9 +6563,46 @@ func (m *NodeResponseRecordsItems0ServiceProcessor) contextValidateMacAddress(ct
 	return nil
 }
 
+func (m *NodeResponseRecordsItems0ServiceProcessor) contextValidatePrimary(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Primary != nil {
+		if err := m.Primary.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "primary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessor) contextValidateSSHInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SSHInfo != nil {
+		if err := m.SSHInfo.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "ssh_info")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *NodeResponseRecordsItems0ServiceProcessor) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "service_processor"+"."+"state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessor) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"type", "body", string(m.Type)); err != nil {
 		return err
 	}
 
@@ -6196,6 +6620,193 @@ func (m *NodeResponseRecordsItems0ServiceProcessor) MarshalBinary() ([]byte, err
 // UnmarshalBinary interface implementation
 func (m *NodeResponseRecordsItems0ServiceProcessor) UnmarshalBinary(b []byte) error {
 	var res NodeResponseRecordsItems0ServiceProcessor
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0ServiceProcessorBackup Provides the properties of the service processor backup partition.
+//
+// swagger:model NodeResponseRecordsItems0ServiceProcessorBackup
+type NodeResponseRecordsItems0ServiceProcessorBackup struct {
+
+	// Indicates whether the service processor is currently booted from the backup partition.
+	// Read Only: true
+	IsCurrent *bool `json:"is_current,omitempty"`
+
+	// Status of the backup partition.
+	// Read Only: true
+	// Enum: [installed corrupt updating auto_updating none]
+	State string `json:"state,omitempty"`
+
+	// Firmware version of the backup partition.
+	// Example: 11.6
+	// Read Only: true
+	Version string `json:"version,omitempty"`
+}
+
+// Validate validates this node response records items0 service processor backup
+func (m *NodeResponseRecordsItems0ServiceProcessorBackup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nodeResponseRecordsItems0ServiceProcessorBackupTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["installed","corrupt","updating","auto_updating","none"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeResponseRecordsItems0ServiceProcessorBackupTypeStatePropEnum = append(nodeResponseRecordsItems0ServiceProcessorBackupTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorBackup
+	// NodeResponseRecordsItems0ServiceProcessorBackup
+	// state
+	// State
+	// installed
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorBackupStateInstalled captures enum value "installed"
+	NodeResponseRecordsItems0ServiceProcessorBackupStateInstalled string = "installed"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorBackup
+	// NodeResponseRecordsItems0ServiceProcessorBackup
+	// state
+	// State
+	// corrupt
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorBackupStateCorrupt captures enum value "corrupt"
+	NodeResponseRecordsItems0ServiceProcessorBackupStateCorrupt string = "corrupt"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorBackup
+	// NodeResponseRecordsItems0ServiceProcessorBackup
+	// state
+	// State
+	// updating
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorBackupStateUpdating captures enum value "updating"
+	NodeResponseRecordsItems0ServiceProcessorBackupStateUpdating string = "updating"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorBackup
+	// NodeResponseRecordsItems0ServiceProcessorBackup
+	// state
+	// State
+	// auto_updating
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorBackupStateAutoUpdating captures enum value "auto_updating"
+	NodeResponseRecordsItems0ServiceProcessorBackupStateAutoUpdating string = "auto_updating"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorBackup
+	// NodeResponseRecordsItems0ServiceProcessorBackup
+	// state
+	// State
+	// none
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorBackupStateNone captures enum value "none"
+	NodeResponseRecordsItems0ServiceProcessorBackupStateNone string = "none"
+)
+
+// prop value enum
+func (m *NodeResponseRecordsItems0ServiceProcessorBackup) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeResponseRecordsItems0ServiceProcessorBackupTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessorBackup) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("service_processor"+"."+"backup"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response records items0 service processor backup based on the context it is used
+func (m *NodeResponseRecordsItems0ServiceProcessorBackup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIsCurrent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessorBackup) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"backup"+"."+"is_current", "body", m.IsCurrent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessorBackup) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"backup"+"."+"state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessorBackup) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"backup"+"."+"version", "body", string(m.Version)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ServiceProcessorBackup) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ServiceProcessorBackup) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0ServiceProcessorBackup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -6332,6 +6943,283 @@ func (m *NodeResponseRecordsItems0ServiceProcessorIPV6Interface) MarshalBinary()
 // UnmarshalBinary interface implementation
 func (m *NodeResponseRecordsItems0ServiceProcessorIPV6Interface) UnmarshalBinary(b []byte) error {
 	var res NodeResponseRecordsItems0ServiceProcessorIPV6Interface
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0ServiceProcessorPrimary Provides the properties of the service processor primary partition.
+//
+// swagger:model NodeResponseRecordsItems0ServiceProcessorPrimary
+type NodeResponseRecordsItems0ServiceProcessorPrimary struct {
+
+	// Indicates whether the service processor is currently booted from the primary partition.
+	// Read Only: true
+	IsCurrent *bool `json:"is_current,omitempty"`
+
+	// Status of the primary partition.
+	// Read Only: true
+	// Enum: [installed corrupt updating auto_updating none]
+	State string `json:"state,omitempty"`
+
+	// Firmware version of the primary partition.
+	// Example: 11.6
+	// Read Only: true
+	Version string `json:"version,omitempty"`
+}
+
+// Validate validates this node response records items0 service processor primary
+func (m *NodeResponseRecordsItems0ServiceProcessorPrimary) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nodeResponseRecordsItems0ServiceProcessorPrimaryTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["installed","corrupt","updating","auto_updating","none"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeResponseRecordsItems0ServiceProcessorPrimaryTypeStatePropEnum = append(nodeResponseRecordsItems0ServiceProcessorPrimaryTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorPrimary
+	// NodeResponseRecordsItems0ServiceProcessorPrimary
+	// state
+	// State
+	// installed
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorPrimaryStateInstalled captures enum value "installed"
+	NodeResponseRecordsItems0ServiceProcessorPrimaryStateInstalled string = "installed"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorPrimary
+	// NodeResponseRecordsItems0ServiceProcessorPrimary
+	// state
+	// State
+	// corrupt
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorPrimaryStateCorrupt captures enum value "corrupt"
+	NodeResponseRecordsItems0ServiceProcessorPrimaryStateCorrupt string = "corrupt"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorPrimary
+	// NodeResponseRecordsItems0ServiceProcessorPrimary
+	// state
+	// State
+	// updating
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorPrimaryStateUpdating captures enum value "updating"
+	NodeResponseRecordsItems0ServiceProcessorPrimaryStateUpdating string = "updating"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorPrimary
+	// NodeResponseRecordsItems0ServiceProcessorPrimary
+	// state
+	// State
+	// auto_updating
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorPrimaryStateAutoUpdating captures enum value "auto_updating"
+	NodeResponseRecordsItems0ServiceProcessorPrimaryStateAutoUpdating string = "auto_updating"
+
+	// BEGIN DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorPrimary
+	// NodeResponseRecordsItems0ServiceProcessorPrimary
+	// state
+	// State
+	// none
+	// END DEBUGGING
+	// NodeResponseRecordsItems0ServiceProcessorPrimaryStateNone captures enum value "none"
+	NodeResponseRecordsItems0ServiceProcessorPrimaryStateNone string = "none"
+)
+
+// prop value enum
+func (m *NodeResponseRecordsItems0ServiceProcessorPrimary) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeResponseRecordsItems0ServiceProcessorPrimaryTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessorPrimary) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("service_processor"+"."+"primary"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response records items0 service processor primary based on the context it is used
+func (m *NodeResponseRecordsItems0ServiceProcessorPrimary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIsCurrent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessorPrimary) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"primary"+"."+"is_current", "body", m.IsCurrent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessorPrimary) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"primary"+"."+"state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessorPrimary) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"primary"+"."+"version", "body", string(m.Version)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ServiceProcessorPrimary) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ServiceProcessorPrimary) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0ServiceProcessorPrimary
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NodeResponseRecordsItems0ServiceProcessorSSHInfo Service processor SSH allowed IP address configuration applied across the cluster.
+//
+// swagger:model NodeResponseRecordsItems0ServiceProcessorSSHInfo
+type NodeResponseRecordsItems0ServiceProcessorSSHInfo struct {
+
+	// Allowed IP addresses
+	AllowedAddresses []IPAddressAndNetmask `json:"allowed_addresses,omitempty"`
+}
+
+// Validate validates this node response records items0 service processor SSH info
+func (m *NodeResponseRecordsItems0ServiceProcessorSSHInfo) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAllowedAddresses(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessorSSHInfo) validateAllowedAddresses(formats strfmt.Registry) error {
+	if swag.IsZero(m.AllowedAddresses) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AllowedAddresses); i++ {
+
+		if err := m.AllowedAddresses[i].Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "ssh_info" + "." + "allowed_addresses" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this node response records items0 service processor SSH info based on the context it is used
+func (m *NodeResponseRecordsItems0ServiceProcessorSSHInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAllowedAddresses(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NodeResponseRecordsItems0ServiceProcessorSSHInfo) contextValidateAllowedAddresses(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.AllowedAddresses); i++ {
+
+		if err := m.AllowedAddresses[i].ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "ssh_info" + "." + "allowed_addresses" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ServiceProcessorSSHInfo) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeResponseRecordsItems0ServiceProcessorSSHInfo) UnmarshalBinary(b []byte) error {
+	var res NodeResponseRecordsItems0ServiceProcessorSSHInfo
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

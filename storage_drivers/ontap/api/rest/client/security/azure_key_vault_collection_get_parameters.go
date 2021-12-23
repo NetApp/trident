@@ -60,6 +60,12 @@ func NewAzureKeyVaultCollectionGetParamsWithHTTPClient(client *http.Client) *Azu
 */
 type AzureKeyVaultCollectionGetParams struct {
 
+	/* AuthenticationMethod.
+
+	   Filter by authentication_method
+	*/
+	AuthenticationMethodQueryParameter *string
+
 	/* AzureReachabilityCode.
 
 	   Filter by azure_reachability.code
@@ -297,6 +303,17 @@ func (o *AzureKeyVaultCollectionGetParams) WithHTTPClient(client *http.Client) *
 // SetHTTPClient adds the HTTPClient to the azure key vault collection get params
 func (o *AzureKeyVaultCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAuthenticationMethodQueryParameter adds the authenticationMethod to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) WithAuthenticationMethodQueryParameter(authenticationMethod *string) *AzureKeyVaultCollectionGetParams {
+	o.SetAuthenticationMethodQueryParameter(authenticationMethod)
+	return o
+}
+
+// SetAuthenticationMethodQueryParameter adds the authenticationMethod to the azure key vault collection get params
+func (o *AzureKeyVaultCollectionGetParams) SetAuthenticationMethodQueryParameter(authenticationMethod *string) {
+	o.AuthenticationMethodQueryParameter = authenticationMethod
 }
 
 // WithAzureReachabilityCodeQueryParameter adds the azureReachabilityCode to the azure key vault collection get params
@@ -614,6 +631,23 @@ func (o *AzureKeyVaultCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		return err
 	}
 	var res []error
+
+	if o.AuthenticationMethodQueryParameter != nil {
+
+		// query param authentication_method
+		var qrAuthenticationMethod string
+
+		if o.AuthenticationMethodQueryParameter != nil {
+			qrAuthenticationMethod = *o.AuthenticationMethodQueryParameter
+		}
+		qAuthenticationMethod := qrAuthenticationMethod
+		if qAuthenticationMethod != "" {
+
+			if err := r.SetQueryParam("authentication_method", qAuthenticationMethod); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.AzureReachabilityCodeQueryParameter != nil {
 

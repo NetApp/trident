@@ -154,12 +154,6 @@ type S3PolicyCollectionGetParams struct {
 	*/
 	SVMUUIDPathParameter string
 
-	/* SvmUUID.
-
-	   Filter by svm.uuid
-	*/
-	SVMUUIDQueryParameter *string
-
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -390,17 +384,6 @@ func (o *S3PolicyCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *
 // SetSVMUUIDPathParameter adds the svmUuid to the s3 policy collection get params
 func (o *S3PolicyCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
 	o.SVMUUIDPathParameter = svmUUID
-}
-
-// WithSVMUUIDQueryParameter adds the svmUUID to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *S3PolicyCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
-	return o
-}
-
-// SetSVMUUIDQueryParameter adds the svmUuid to the s3 policy collection get params
-func (o *S3PolicyCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -640,23 +623,6 @@ func (o *S3PolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 	// path param svm.uuid
 	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
-	}
-
-	if o.SVMUUIDQueryParameter != nil {
-
-		// query param svm.uuid
-		var qrSvmUUID string
-
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
-		}
-		qSvmUUID := qrSvmUUID
-		if qSvmUUID != "" {
-
-			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(res) > 0 {

@@ -20,19 +20,19 @@ import (
 // swagger:model layout_requirement
 type LayoutRequirement struct {
 
-	// Minimum number of disks to create an aggregate
+	// Minimum number of disks to create an aggregate.
 	// Example: 6
 	// Read Only: true
 	AggregateMinDisks int64 `json:"aggregate_min_disks,omitempty"`
 
-	// Indicates if this RAID type is the default
+	// Indicates if this RAID type is the default.
 	// Read Only: true
 	Default *bool `json:"default,omitempty"`
 
 	// raid group
 	RaidGroup *LayoutRequirementRaidGroup `json:"raid_group,omitempty"`
 
-	// RAID type
+	// RAID type.
 	// Read Only: true
 	// Enum: [raid_dp raid_tec raid4 raid0]
 	RaidType string `json:"raid_type,omitempty"`
@@ -239,17 +239,17 @@ func (m *LayoutRequirement) UnmarshalBinary(b []byte) error {
 // swagger:model LayoutRequirementRaidGroup
 type LayoutRequirementRaidGroup struct {
 
-	// Default number of disks in a RAID group
+	// Default number of disks in a RAID group.
 	// Example: 16
 	// Read Only: true
 	Default int64 `json:"default,omitempty"`
 
-	// Maximum number of disks allowed in a RAID group
+	// Maximum number of disks allowed in a RAID group.
 	// Example: 28
 	// Read Only: true
 	Max int64 `json:"max,omitempty"`
 
-	// Minimum number of disks allowed in a RAID group
+	// Minimum number of disks allowed in a RAID group.
 	// Example: 5
 	// Read Only: true
 	Min int64 `json:"min,omitempty"`

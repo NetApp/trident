@@ -494,6 +494,13 @@ type IpsecPolicyResponseRecordsItems0 struct {
 	// Enum: [bypass discard esp_transport esp_udp]
 	Action string `json:"action,omitempty"`
 
+	// Authentication method for the IPsec policy.
+	// Enum: [none psk pki]
+	AuthenticationMethod string `json:"authentication_method,omitempty"`
+
+	// certificate
+	Certificate *IpsecPolicyResponseRecordsItems0Certificate `json:"certificate,omitempty"`
+
 	// Indicates whether or not the policy is enabled.
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -504,8 +511,6 @@ type IpsecPolicyResponseRecordsItems0 struct {
 	LocalEndpoint *IpsecPolicyResponseRecordsItems0LocalEndpoint `json:"local_endpoint,omitempty"`
 
 	// Local Identity
-	// Max Length: 64
-	// Min Length: 8
 	LocalIdentity string `json:"local_identity,omitempty"`
 
 	// IPsec policy name.
@@ -519,8 +524,6 @@ type IpsecPolicyResponseRecordsItems0 struct {
 	RemoteEndpoint *IpsecPolicyResponseRecordsItems0RemoteEndpoint `json:"remote_endpoint,omitempty"`
 
 	// Remote Identity
-	// Max Length: 64
-	// Min Length: 8
 	RemoteIdentity string `json:"remote_identity,omitempty"`
 
 	// scope
@@ -548,6 +551,14 @@ func (m *IpsecPolicyResponseRecordsItems0) Validate(formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.validateAuthenticationMethod(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCertificate(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateIpspace(formats); err != nil {
 		res = append(res, err)
 	}
@@ -556,15 +567,7 @@ func (m *IpsecPolicyResponseRecordsItems0) Validate(formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
-	if err := m.validateLocalIdentity(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateRemoteEndpoint(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateRemoteIdentity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -662,6 +665,89 @@ func (m *IpsecPolicyResponseRecordsItems0) validateAction(formats strfmt.Registr
 	return nil
 }
 
+var ipsecPolicyResponseRecordsItems0TypeAuthenticationMethodPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","psk","pki"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ipsecPolicyResponseRecordsItems0TypeAuthenticationMethodPropEnum = append(ipsecPolicyResponseRecordsItems0TypeAuthenticationMethodPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// IpsecPolicyResponseRecordsItems0
+	// IpsecPolicyResponseRecordsItems0
+	// authentication_method
+	// AuthenticationMethod
+	// none
+	// END DEBUGGING
+	// IpsecPolicyResponseRecordsItems0AuthenticationMethodNone captures enum value "none"
+	IpsecPolicyResponseRecordsItems0AuthenticationMethodNone string = "none"
+
+	// BEGIN DEBUGGING
+	// IpsecPolicyResponseRecordsItems0
+	// IpsecPolicyResponseRecordsItems0
+	// authentication_method
+	// AuthenticationMethod
+	// psk
+	// END DEBUGGING
+	// IpsecPolicyResponseRecordsItems0AuthenticationMethodPsk captures enum value "psk"
+	IpsecPolicyResponseRecordsItems0AuthenticationMethodPsk string = "psk"
+
+	// BEGIN DEBUGGING
+	// IpsecPolicyResponseRecordsItems0
+	// IpsecPolicyResponseRecordsItems0
+	// authentication_method
+	// AuthenticationMethod
+	// pki
+	// END DEBUGGING
+	// IpsecPolicyResponseRecordsItems0AuthenticationMethodPki captures enum value "pki"
+	IpsecPolicyResponseRecordsItems0AuthenticationMethodPki string = "pki"
+)
+
+// prop value enum
+func (m *IpsecPolicyResponseRecordsItems0) validateAuthenticationMethodEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ipsecPolicyResponseRecordsItems0TypeAuthenticationMethodPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *IpsecPolicyResponseRecordsItems0) validateAuthenticationMethod(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuthenticationMethod) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAuthenticationMethodEnum("authentication_method", "body", m.AuthenticationMethod); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *IpsecPolicyResponseRecordsItems0) validateCertificate(formats strfmt.Registry) error {
+	if swag.IsZero(m.Certificate) { // not required
+		return nil
+	}
+
+	if m.Certificate != nil {
+		if err := m.Certificate.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *IpsecPolicyResponseRecordsItems0) validateIpspace(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ipspace) { // not required
 		return nil
@@ -696,22 +782,6 @@ func (m *IpsecPolicyResponseRecordsItems0) validateLocalEndpoint(formats strfmt.
 	return nil
 }
 
-func (m *IpsecPolicyResponseRecordsItems0) validateLocalIdentity(formats strfmt.Registry) error {
-	if swag.IsZero(m.LocalIdentity) { // not required
-		return nil
-	}
-
-	if err := validate.MinLength("local_identity", "body", m.LocalIdentity, 8); err != nil {
-		return err
-	}
-
-	if err := validate.MaxLength("local_identity", "body", m.LocalIdentity, 64); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *IpsecPolicyResponseRecordsItems0) validateRemoteEndpoint(formats strfmt.Registry) error {
 	if swag.IsZero(m.RemoteEndpoint) { // not required
 		return nil
@@ -724,22 +794,6 @@ func (m *IpsecPolicyResponseRecordsItems0) validateRemoteEndpoint(formats strfmt
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *IpsecPolicyResponseRecordsItems0) validateRemoteIdentity(formats strfmt.Registry) error {
-	if swag.IsZero(m.RemoteIdentity) { // not required
-		return nil
-	}
-
-	if err := validate.MinLength("remote_identity", "body", m.RemoteIdentity, 8); err != nil {
-		return err
-	}
-
-	if err := validate.MaxLength("remote_identity", "body", m.RemoteIdentity, 64); err != nil {
-		return err
 	}
 
 	return nil
@@ -797,6 +851,10 @@ func (m *IpsecPolicyResponseRecordsItems0) validateSvm(formats strfmt.Registry) 
 func (m *IpsecPolicyResponseRecordsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateCertificate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIpspace(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -824,6 +882,20 @@ func (m *IpsecPolicyResponseRecordsItems0) ContextValidate(ctx context.Context, 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *IpsecPolicyResponseRecordsItems0) contextValidateCertificate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Certificate != nil {
+		if err := m.Certificate.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -915,6 +987,186 @@ func (m *IpsecPolicyResponseRecordsItems0) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *IpsecPolicyResponseRecordsItems0) UnmarshalBinary(b []byte) error {
 	var res IpsecPolicyResponseRecordsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IpsecPolicyResponseRecordsItems0Certificate Certificate for the IPsec policy.
+//
+// swagger:model IpsecPolicyResponseRecordsItems0Certificate
+type IpsecPolicyResponseRecordsItems0Certificate struct {
+
+	// links
+	Links *IpsecPolicyResponseRecordsItems0CertificateLinks `json:"_links,omitempty"`
+
+	// Certificate name
+	// Example: cert1
+	Name string `json:"name,omitempty"`
+
+	// Certificate UUID
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this ipsec policy response records items0 certificate
+func (m *IpsecPolicyResponseRecordsItems0Certificate) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IpsecPolicyResponseRecordsItems0Certificate) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ipsec policy response records items0 certificate based on the context it is used
+func (m *IpsecPolicyResponseRecordsItems0Certificate) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IpsecPolicyResponseRecordsItems0Certificate) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IpsecPolicyResponseRecordsItems0Certificate) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IpsecPolicyResponseRecordsItems0Certificate) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyResponseRecordsItems0Certificate
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IpsecPolicyResponseRecordsItems0CertificateLinks ipsec policy response records items0 certificate links
+//
+// swagger:model IpsecPolicyResponseRecordsItems0CertificateLinks
+type IpsecPolicyResponseRecordsItems0CertificateLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this ipsec policy response records items0 certificate links
+func (m *IpsecPolicyResponseRecordsItems0CertificateLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IpsecPolicyResponseRecordsItems0CertificateLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ipsec policy response records items0 certificate links based on the context it is used
+func (m *IpsecPolicyResponseRecordsItems0CertificateLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IpsecPolicyResponseRecordsItems0CertificateLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("certificate" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IpsecPolicyResponseRecordsItems0CertificateLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IpsecPolicyResponseRecordsItems0CertificateLinks) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyResponseRecordsItems0CertificateLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -37,7 +37,7 @@ type MccipPort struct {
 	// VLAN ID
 	// Example: 200
 	// Maximum: 4095
-	// Minimum: 101
+	// Minimum: 10
 	VlanID int64 `json:"vlan_id,omitempty"`
 }
 
@@ -102,7 +102,7 @@ func (m *MccipPort) validateVlanID(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("vlan_id", "body", m.VlanID, 101, false); err != nil {
+	if err := validate.MinimumInt("vlan_id", "body", m.VlanID, 10, false); err != nil {
 		return err
 	}
 

@@ -81,6 +81,9 @@ func NewRolePrivilegeCreateDefault(code int) *RolePrivilegeCreateDefault {
 | 5636170 | The URI does not exist. |
 | 5636173 | This feature requires an effective cluster version of 9.6 or later. |
 | 5636175 | Vserver admin cannot have access to given API. |
+| 5636184 | Expanded REST roles for granular resource control feature is currently disabled. |
+| 5636185 | The specified UUID was not found. |
+| 5636186 | Expanded REST roles for granular resource control requires an effective cluster version of 9.10.1 or later. |
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434891 | UUID LookUp failed for Vserver roles. |
 | 13434892 | Roles is a required field. |

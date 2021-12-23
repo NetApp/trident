@@ -31,7 +31,7 @@ type ExportPolicy struct {
 	Name string `json:"name,omitempty"`
 
 	// Rules of the Export Policy.
-	Rules []*ExportRule `json:"rules,omitempty"`
+	Rules []*ExportRules `json:"rules,omitempty"`
 
 	// svm
 	Svm *ExportPolicySvm `json:"svm,omitempty"`

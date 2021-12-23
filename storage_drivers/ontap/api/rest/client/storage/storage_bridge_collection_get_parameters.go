@@ -90,6 +90,18 @@ type StorageBridgeCollectionGetParams struct {
 	*/
 	ErrorsComponentUniqueIDQueryParameter *string
 
+	/* ErrorsReasonArgumentsCode.
+
+	   Filter by errors.reason.arguments.code
+	*/
+	ErrorsReasonArgumentsCodeQueryParameter *string
+
+	/* ErrorsReasonArgumentsMessage.
+
+	   Filter by errors.reason.arguments.message
+	*/
+	ErrorsReasonArgumentsMessageQueryParameter *string
+
 	/* ErrorsReasonCode.
 
 	   Filter by errors.reason.code
@@ -101,6 +113,12 @@ type StorageBridgeCollectionGetParams struct {
 	   Filter by errors.reason.message
 	*/
 	ErrorsReasonMessageQueryParameter *string
+
+	/* ErrorsReasonTarget.
+
+	   Filter by errors.reason.target
+	*/
+	ErrorsReasonTargetQueryParameter *string
 
 	/* ErrorsSeverity.
 
@@ -210,6 +228,18 @@ type StorageBridgeCollectionGetParams struct {
 	*/
 	IPAddressQueryParameter *string
 
+	/* LastRebootReasonArgumentsCode.
+
+	   Filter by last_reboot.reason.arguments.code
+	*/
+	LastRebootReasonArgumentsCodeQueryParameter *string
+
+	/* LastRebootReasonArgumentsMessage.
+
+	   Filter by last_reboot.reason.arguments.message
+	*/
+	LastRebootReasonArgumentsMessageQueryParameter *string
+
 	/* LastRebootReasonCode.
 
 	   Filter by last_reboot.reason.code
@@ -221,6 +251,12 @@ type StorageBridgeCollectionGetParams struct {
 	   Filter by last_reboot.reason.message
 	*/
 	LastRebootReasonMessageQueryParameter *string
+
+	/* LastRebootReasonTarget.
+
+	   Filter by last_reboot.reason.target
+	*/
+	LastRebootReasonTargetQueryParameter *string
 
 	/* LastRebootTime.
 
@@ -612,6 +648,28 @@ func (o *StorageBridgeCollectionGetParams) SetErrorsComponentUniqueIDQueryParame
 	o.ErrorsComponentUniqueIDQueryParameter = errorsComponentUniqueID
 }
 
+// WithErrorsReasonArgumentsCodeQueryParameter adds the errorsReasonArgumentsCode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsReasonArgumentsCodeQueryParameter(errorsReasonArgumentsCode *string) *StorageBridgeCollectionGetParams {
+	o.SetErrorsReasonArgumentsCodeQueryParameter(errorsReasonArgumentsCode)
+	return o
+}
+
+// SetErrorsReasonArgumentsCodeQueryParameter adds the errorsReasonArgumentsCode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsReasonArgumentsCodeQueryParameter(errorsReasonArgumentsCode *string) {
+	o.ErrorsReasonArgumentsCodeQueryParameter = errorsReasonArgumentsCode
+}
+
+// WithErrorsReasonArgumentsMessageQueryParameter adds the errorsReasonArgumentsMessage to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsReasonArgumentsMessageQueryParameter(errorsReasonArgumentsMessage *string) *StorageBridgeCollectionGetParams {
+	o.SetErrorsReasonArgumentsMessageQueryParameter(errorsReasonArgumentsMessage)
+	return o
+}
+
+// SetErrorsReasonArgumentsMessageQueryParameter adds the errorsReasonArgumentsMessage to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsReasonArgumentsMessageQueryParameter(errorsReasonArgumentsMessage *string) {
+	o.ErrorsReasonArgumentsMessageQueryParameter = errorsReasonArgumentsMessage
+}
+
 // WithErrorsReasonCodeQueryParameter adds the errorsReasonCode to the storage bridge collection get params
 func (o *StorageBridgeCollectionGetParams) WithErrorsReasonCodeQueryParameter(errorsReasonCode *string) *StorageBridgeCollectionGetParams {
 	o.SetErrorsReasonCodeQueryParameter(errorsReasonCode)
@@ -632,6 +690,17 @@ func (o *StorageBridgeCollectionGetParams) WithErrorsReasonMessageQueryParameter
 // SetErrorsReasonMessageQueryParameter adds the errorsReasonMessage to the storage bridge collection get params
 func (o *StorageBridgeCollectionGetParams) SetErrorsReasonMessageQueryParameter(errorsReasonMessage *string) {
 	o.ErrorsReasonMessageQueryParameter = errorsReasonMessage
+}
+
+// WithErrorsReasonTargetQueryParameter adds the errorsReasonTarget to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithErrorsReasonTargetQueryParameter(errorsReasonTarget *string) *StorageBridgeCollectionGetParams {
+	o.SetErrorsReasonTargetQueryParameter(errorsReasonTarget)
+	return o
+}
+
+// SetErrorsReasonTargetQueryParameter adds the errorsReasonTarget to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetErrorsReasonTargetQueryParameter(errorsReasonTarget *string) {
+	o.ErrorsReasonTargetQueryParameter = errorsReasonTarget
 }
 
 // WithErrorsSeverityQueryParameter adds the errorsSeverity to the storage bridge collection get params
@@ -832,6 +901,28 @@ func (o *StorageBridgeCollectionGetParams) SetIPAddressQueryParameter(iPAddress 
 	o.IPAddressQueryParameter = iPAddress
 }
 
+// WithLastRebootReasonArgumentsCodeQueryParameter adds the lastRebootReasonArgumentsCode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonArgumentsCodeQueryParameter(lastRebootReasonArgumentsCode *string) *StorageBridgeCollectionGetParams {
+	o.SetLastRebootReasonArgumentsCodeQueryParameter(lastRebootReasonArgumentsCode)
+	return o
+}
+
+// SetLastRebootReasonArgumentsCodeQueryParameter adds the lastRebootReasonArgumentsCode to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonArgumentsCodeQueryParameter(lastRebootReasonArgumentsCode *string) {
+	o.LastRebootReasonArgumentsCodeQueryParameter = lastRebootReasonArgumentsCode
+}
+
+// WithLastRebootReasonArgumentsMessageQueryParameter adds the lastRebootReasonArgumentsMessage to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonArgumentsMessageQueryParameter(lastRebootReasonArgumentsMessage *string) *StorageBridgeCollectionGetParams {
+	o.SetLastRebootReasonArgumentsMessageQueryParameter(lastRebootReasonArgumentsMessage)
+	return o
+}
+
+// SetLastRebootReasonArgumentsMessageQueryParameter adds the lastRebootReasonArgumentsMessage to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonArgumentsMessageQueryParameter(lastRebootReasonArgumentsMessage *string) {
+	o.LastRebootReasonArgumentsMessageQueryParameter = lastRebootReasonArgumentsMessage
+}
+
 // WithLastRebootReasonCodeQueryParameter adds the lastRebootReasonCode to the storage bridge collection get params
 func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonCodeQueryParameter(lastRebootReasonCode *string) *StorageBridgeCollectionGetParams {
 	o.SetLastRebootReasonCodeQueryParameter(lastRebootReasonCode)
@@ -852,6 +943,17 @@ func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonMessageQueryParam
 // SetLastRebootReasonMessageQueryParameter adds the lastRebootReasonMessage to the storage bridge collection get params
 func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonMessageQueryParameter(lastRebootReasonMessage *string) {
 	o.LastRebootReasonMessageQueryParameter = lastRebootReasonMessage
+}
+
+// WithLastRebootReasonTargetQueryParameter adds the lastRebootReasonTarget to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithLastRebootReasonTargetQueryParameter(lastRebootReasonTarget *string) *StorageBridgeCollectionGetParams {
+	o.SetLastRebootReasonTargetQueryParameter(lastRebootReasonTarget)
+	return o
+}
+
+// SetLastRebootReasonTargetQueryParameter adds the lastRebootReasonTarget to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) SetLastRebootReasonTargetQueryParameter(lastRebootReasonTarget *string) {
+	o.LastRebootReasonTargetQueryParameter = lastRebootReasonTarget
 }
 
 // WithLastRebootTimeQueryParameter adds the lastRebootTime to the storage bridge collection get params
@@ -1431,6 +1533,40 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.ErrorsReasonArgumentsCodeQueryParameter != nil {
+
+		// query param errors.reason.arguments.code
+		var qrErrorsReasonArgumentsCode string
+
+		if o.ErrorsReasonArgumentsCodeQueryParameter != nil {
+			qrErrorsReasonArgumentsCode = *o.ErrorsReasonArgumentsCodeQueryParameter
+		}
+		qErrorsReasonArgumentsCode := qrErrorsReasonArgumentsCode
+		if qErrorsReasonArgumentsCode != "" {
+
+			if err := r.SetQueryParam("errors.reason.arguments.code", qErrorsReasonArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ErrorsReasonArgumentsMessageQueryParameter != nil {
+
+		// query param errors.reason.arguments.message
+		var qrErrorsReasonArgumentsMessage string
+
+		if o.ErrorsReasonArgumentsMessageQueryParameter != nil {
+			qrErrorsReasonArgumentsMessage = *o.ErrorsReasonArgumentsMessageQueryParameter
+		}
+		qErrorsReasonArgumentsMessage := qrErrorsReasonArgumentsMessage
+		if qErrorsReasonArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("errors.reason.arguments.message", qErrorsReasonArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ErrorsReasonCodeQueryParameter != nil {
 
 		// query param errors.reason.code
@@ -1460,6 +1596,23 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qErrorsReasonMessage != "" {
 
 			if err := r.SetQueryParam("errors.reason.message", qErrorsReasonMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ErrorsReasonTargetQueryParameter != nil {
+
+		// query param errors.reason.target
+		var qrErrorsReasonTarget string
+
+		if o.ErrorsReasonTargetQueryParameter != nil {
+			qrErrorsReasonTarget = *o.ErrorsReasonTargetQueryParameter
+		}
+		qErrorsReasonTarget := qrErrorsReasonTarget
+		if qErrorsReasonTarget != "" {
+
+			if err := r.SetQueryParam("errors.reason.target", qErrorsReasonTarget); err != nil {
 				return err
 			}
 		}
@@ -1765,6 +1918,40 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.LastRebootReasonArgumentsCodeQueryParameter != nil {
+
+		// query param last_reboot.reason.arguments.code
+		var qrLastRebootReasonArgumentsCode string
+
+		if o.LastRebootReasonArgumentsCodeQueryParameter != nil {
+			qrLastRebootReasonArgumentsCode = *o.LastRebootReasonArgumentsCodeQueryParameter
+		}
+		qLastRebootReasonArgumentsCode := qrLastRebootReasonArgumentsCode
+		if qLastRebootReasonArgumentsCode != "" {
+
+			if err := r.SetQueryParam("last_reboot.reason.arguments.code", qLastRebootReasonArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LastRebootReasonArgumentsMessageQueryParameter != nil {
+
+		// query param last_reboot.reason.arguments.message
+		var qrLastRebootReasonArgumentsMessage string
+
+		if o.LastRebootReasonArgumentsMessageQueryParameter != nil {
+			qrLastRebootReasonArgumentsMessage = *o.LastRebootReasonArgumentsMessageQueryParameter
+		}
+		qLastRebootReasonArgumentsMessage := qrLastRebootReasonArgumentsMessage
+		if qLastRebootReasonArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("last_reboot.reason.arguments.message", qLastRebootReasonArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.LastRebootReasonCodeQueryParameter != nil {
 
 		// query param last_reboot.reason.code
@@ -1794,6 +1981,23 @@ func (o *StorageBridgeCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qLastRebootReasonMessage != "" {
 
 			if err := r.SetQueryParam("last_reboot.reason.message", qLastRebootReasonMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LastRebootReasonTargetQueryParameter != nil {
+
+		// query param last_reboot.reason.target
+		var qrLastRebootReasonTarget string
+
+		if o.LastRebootReasonTargetQueryParameter != nil {
+			qrLastRebootReasonTarget = *o.LastRebootReasonTargetQueryParameter
+		}
+		qLastRebootReasonTarget := qrLastRebootReasonTarget
+		if qLastRebootReasonTarget != "" {
+
+			if err := r.SetQueryParam("last_reboot.reason.target", qLastRebootReasonTarget); err != nil {
 				return err
 			}
 		}

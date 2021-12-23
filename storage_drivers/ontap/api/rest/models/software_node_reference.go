@@ -27,6 +27,9 @@ type SoftwareNodeReference struct {
 	// Read Only: true
 	Name string `json:"name,omitempty"`
 
+	// software images
+	SoftwareImages SoftwareImages `json:"software_images,omitempty"`
+
 	// ONTAP version of the node.
 	// Example: ONTAP_X
 	// Read Only: true
@@ -38,6 +41,10 @@ func (m *SoftwareNodeReference) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateFirmware(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSoftwareImages(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,6 +71,21 @@ func (m *SoftwareNodeReference) validateFirmware(formats strfmt.Registry) error 
 	return nil
 }
 
+func (m *SoftwareNodeReference) validateSoftwareImages(formats strfmt.Registry) error {
+	if swag.IsZero(m.SoftwareImages) { // not required
+		return nil
+	}
+
+	if err := m.SoftwareImages.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("software_images")
+		}
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this software node reference based on the context it is used
 func (m *SoftwareNodeReference) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -73,6 +95,10 @@ func (m *SoftwareNodeReference) ContextValidate(ctx context.Context, formats str
 	}
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSoftwareImages(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -103,6 +129,18 @@ func (m *SoftwareNodeReference) contextValidateFirmware(ctx context.Context, for
 func (m *SoftwareNodeReference) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SoftwareNodeReference) contextValidateSoftwareImages(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.SoftwareImages.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("software_images")
+		}
 		return err
 	}
 

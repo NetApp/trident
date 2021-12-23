@@ -60,12 +60,6 @@ func NewGcpKmsRestoreParamsWithHTTPClient(client *http.Client) *GcpKmsRestorePar
 */
 type GcpKmsRestoreParams struct {
 
-	/* GcpKmsUUID.
-
-	   UUID of the existing Google Cloud KMS configuration.
-	*/
-	GcpKmsUUIDPathParameter string
-
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
@@ -77,6 +71,12 @@ type GcpKmsRestoreParams struct {
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
 	ReturnTimeoutQueryParameter *int64
+
+	/* UUID.
+
+	   UUID of the existing Google Cloud KMS configuration.
+	*/
+	UUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,17 +145,6 @@ func (o *GcpKmsRestoreParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithGcpKmsUUIDPathParameter adds the gcpKmsUUID to the gcp kms restore params
-func (o *GcpKmsRestoreParams) WithGcpKmsUUIDPathParameter(gcpKmsUUID string) *GcpKmsRestoreParams {
-	o.SetGcpKmsUUIDPathParameter(gcpKmsUUID)
-	return o
-}
-
-// SetGcpKmsUUIDPathParameter adds the gcpKmsUuid to the gcp kms restore params
-func (o *GcpKmsRestoreParams) SetGcpKmsUUIDPathParameter(gcpKmsUUID string) {
-	o.GcpKmsUUIDPathParameter = gcpKmsUUID
-}
-
 // WithReturnRecordsQueryParameter adds the returnRecords to the gcp kms restore params
 func (o *GcpKmsRestoreParams) WithReturnRecordsQueryParameter(returnRecords *bool) *GcpKmsRestoreParams {
 	o.SetReturnRecordsQueryParameter(returnRecords)
@@ -178,6 +167,17 @@ func (o *GcpKmsRestoreParams) SetReturnTimeoutQueryParameter(returnTimeout *int6
 	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
+// WithUUIDPathParameter adds the uuid to the gcp kms restore params
+func (o *GcpKmsRestoreParams) WithUUIDPathParameter(uuid string) *GcpKmsRestoreParams {
+	o.SetUUIDPathParameter(uuid)
+	return o
+}
+
+// SetUUIDPathParameter adds the uuid to the gcp kms restore params
+func (o *GcpKmsRestoreParams) SetUUIDPathParameter(uuid string) {
+	o.UUIDPathParameter = uuid
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *GcpKmsRestoreParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -185,11 +185,6 @@ func (o *GcpKmsRestoreParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		return err
 	}
 	var res []error
-
-	// path param gcp_kms.uuid
-	if err := r.SetPathParam("gcp_kms.uuid", o.GcpKmsUUIDPathParameter); err != nil {
-		return err
-	}
 
 	if o.ReturnRecordsQueryParameter != nil {
 
@@ -223,6 +218,11 @@ func (o *GcpKmsRestoreParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 				return err
 			}
 		}
+	}
+
+	// path param uuid
+	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+		return err
 	}
 
 	if len(res) > 0 {

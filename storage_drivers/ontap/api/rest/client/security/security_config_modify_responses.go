@@ -85,6 +85,9 @@ func NewSecurityConfigModifyDefault(code int) *SecurityConfigModifyDefault {
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
+| 5636142 | This operation is not supported in a mixed-release cluster. |
+| 52428817 | SSLv3 is not supported when FIPS is enabled. |
+| 52428824 | TLSv1 is not supported when FIPS is enabled. |
 | 52428830 | Cannot enable FIPS-compliant mode because the configured minimum security strength for certificates is not compatible. |
 | 52559974 | Cannot enable FIPS-compliant mode because a certificate that is not FIPS-compliant is in use. |
 | 196608081 | Cannot start software encryption conversion while there are data volumes in the cluster. |

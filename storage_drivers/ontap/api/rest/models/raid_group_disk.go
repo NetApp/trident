@@ -36,7 +36,7 @@ type RaidGroupDisk struct {
 	// Disk interface type
 	// Example: ssd
 	// Read Only: true
-	// Enum: [ata bsas fcal fsas lun sas msata ssd vmdisk unknown ssd_cap ssd_nvm]
+	// Enum: [ata bsas fcal fsas lun sas msata ssd vmdisk unknown ssd_cap ssd_nvm ssd_zns]
 	Type string `json:"type,omitempty"`
 
 	// Size in bytes that is usable by the aggregate.
@@ -304,7 +304,7 @@ var raidGroupDiskTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ata","bsas","fcal","fsas","lun","sas","msata","ssd","vmdisk","unknown","ssd_cap","ssd_nvm"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ata","bsas","fcal","fsas","lun","sas","msata","ssd","vmdisk","unknown","ssd_cap","ssd_nvm","ssd_zns"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -433,6 +433,16 @@ const (
 	// END DEBUGGING
 	// RaidGroupDiskTypeSsdNvm captures enum value "ssd_nvm"
 	RaidGroupDiskTypeSsdNvm string = "ssd_nvm"
+
+	// BEGIN DEBUGGING
+	// raid_group_disk
+	// RaidGroupDisk
+	// type
+	// Type
+	// ssd_zns
+	// END DEBUGGING
+	// RaidGroupDiskTypeSsdZns captures enum value "ssd_zns"
+	RaidGroupDiskTypeSsdZns string = "ssd_zns"
 )
 
 // prop value enum

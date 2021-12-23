@@ -730,7 +730,7 @@ type SnapmirrorRelationshipPolicy struct {
 
 	// type
 	// Read Only: true
-	// Enum: [async sync]
+	// Enum: [async sync continuous]
 	Type string `json:"type,omitempty"`
 
 	// uuid
@@ -782,7 +782,7 @@ var snapmirrorRelationshipPolicyTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["async","sync"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["async","sync","continuous"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -811,6 +811,16 @@ const (
 	// END DEBUGGING
 	// SnapmirrorRelationshipPolicyTypeSync captures enum value "sync"
 	SnapmirrorRelationshipPolicyTypeSync string = "sync"
+
+	// BEGIN DEBUGGING
+	// SnapmirrorRelationshipPolicy
+	// SnapmirrorRelationshipPolicy
+	// type
+	// Type
+	// continuous
+	// END DEBUGGING
+	// SnapmirrorRelationshipPolicyTypeContinuous captures enum value "continuous"
+	SnapmirrorRelationshipPolicyTypeContinuous string = "continuous"
 )
 
 // prop value enum
@@ -1012,10 +1022,10 @@ type SnapmirrorRelationshipTransfer struct {
 	State string `json:"state,omitempty"`
 
 	// Transfer elapsed time.
-	// Example: PT28M41S'
+	// Example: PT28M41S
 	TotalDuration string `json:"total_duration,omitempty"`
 
-	// uuid
+	// Transfer UUID. This property is applicable only for active transfers.
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Format: uuid
 	UUID strfmt.UUID `json:"uuid,omitempty"`

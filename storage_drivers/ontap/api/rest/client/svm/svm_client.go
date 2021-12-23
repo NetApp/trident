@@ -36,6 +36,20 @@ type ClientService interface {
 
 	SvmGet(params *SvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmGetOK, error)
 
+	SvmMigrateDelete(params *SvmMigrateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrateDeleteAccepted, error)
+
+	SvmMigrationCollectionGet(params *SvmMigrationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCollectionGetOK, error)
+
+	SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCreateAccepted, error)
+
+	SvmMigrationGet(params *SvmMigrationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationGetOK, error)
+
+	SvmMigrationModify(params *SvmMigrationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationModifyAccepted, error)
+
+	SvmMigrationVolumeCollectionGet(params *SvmMigrationVolumeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationVolumeCollectionGetOK, error)
+
+	SvmMigrationVolumeGet(params *SvmMigrationVolumeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationVolumeGetOK, error)
+
 	SvmModify(params *SvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmModifyAccepted, error)
 
 	SvmPeerCollectionGet(params *SvmPeerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerCollectionGetOK, error)
@@ -57,6 +71,10 @@ type ClientService interface {
 	SvmPeerPermissionInstanceGet(params *SvmPeerPermissionInstanceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionInstanceGetOK, error)
 
 	SvmPeerPermissionModify(params *SvmPeerPermissionModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmPeerPermissionModifyOK, error)
+
+	WebSvmGet(params *WebSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebSvmGetOK, error)
+
+	WebSvmModify(params *WebSvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebSvmModifyOK, *WebSvmModifyAccepted, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -107,6 +125,12 @@ There is an added cost to retrieving values for these properties. They are not i
     <br/>
     ```
     GET "/api/svm/svms?cifs.allowed=true"
+    ```
+    <br/>
+7. Retrieves a list of SVMs in the cluster where the NDMP protocol is specified as allowed
+    <br/>
+    ```
+    GET "/api/svm/svms?ndmp.allowed=true"
     ```
     <br/>
 ### Learn more
@@ -190,6 +214,7 @@ If not specified in POST, the following default property values are assigned:
 * `ipspace.name` - _Default_
 * `snapshot_policy.name` - _Default_
 * `subtype` - _Default_ ( _sync-source_ if MetroCluster configuration )
+* `anti_ransomware_default_volume_state` - _disabled_
 ### Related ONTAP commands
 * `vserver create`
 * `vserver add-aggregates`
@@ -284,6 +309,12 @@ If not specified in POST, the following default property values are assigned:
     <br/>
     ```
     POST "/api/svm/svms/" '{"name":"testVs", "max_volumes":"200"}'
+    ```
+    <br/>
+14. Creates an SVM and disallows the NDMP service for the SVM.
+    <br/>
+    ```
+    POST "/api/svm/svms" '{"name":"testVs", "ndmp":{"allowed":"false"}}'
     ```
     <br/>
 ### Learn more
@@ -430,6 +461,314 @@ func (a *Client) SvmGet(params *SvmGetParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
+  SvmMigrateDelete Deletes the SVM migration.
+### Related ONTAP commands
+* `vserver migrate abort`
+
+*/
+func (a *Client) SvmMigrateDelete(params *SvmMigrateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrateDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmMigrateDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_migrate_delete",
+		Method:             "DELETE",
+		PathPattern:        "/svm/migrations/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmMigrateDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmMigrateDeleteAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmMigrateDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SvmMigrationCollectionGet Retrieves the SVM migration status.
+### Related ONTAP commands
+* `vserver migrate show`
+
+*/
+func (a *Client) SvmMigrationCollectionGet(params *SvmMigrationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmMigrationCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_migration_collection_get",
+		Method:             "GET",
+		PathPattern:        "/svm/migrations",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmMigrationCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmMigrationCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmMigrationCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SvmMigrationCreate Creates an SVM migration operation. This API must be executed on the destination cluster. This API creates an SVM on the destination cluster and preserves the SVM's identity specified in the source cluster.
+Optionally, you can specify the aggregate list for creating the volumes, and IPspace. You can perform pre-checks to verify if SVM migration is possible, by setting the "check-only" option to "true". By default the values for auto-source-cleanup and auto-cutover is true.
+### Required properties
+* `source.svm.name` or `source.svm.uuid` - Source SVM name or source SVM UUID.
+* `source.cluster.name` or `source.cluster.uuid` - Source cluster name or source cluster UUID
+### Optional properties
+* `destination.ipspace.name` or `destination.ipspace.uuid` - Destination IP Space name or UUID where the vserver will be migrated to.
+* `destination.volume_placement.aggregates` - List of aggregates where the migrating volumes should go on destination.
+* `auto_cutover` - Option to specify whether to perform cutover automatically. Default is true.
+* `auto_source_cleanup` - Option to specify whether to perform souce cleanup automatically. Default is true.
+* `check_only` - Option to perform all the prechecks for migrate without actually starting the migrate. Default is false.
+### Related ONTAP commands
+* `vserver migrate start`
+
+*/
+func (a *Client) SvmMigrationCreate(params *SvmMigrationCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmMigrationCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_migration_create",
+		Method:             "POST",
+		PathPattern:        "/svm/migrations",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmMigrationCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmMigrationCreateAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmMigrationCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SvmMigrationGet Retrieves the migration status of an individual SVM.
+### Important notes
+* The "migrations" object includes a large set of fields and can be expensive to retrieve.
+* REST APIs only expose a data SVM as an SVM.
+### Example
+    Retrieving an individual SVM migration status.
+    <br/>
+    ```
+    GET "/api/svm/migrations/a14ae39f-8d85-11e9-b4a7-00505682dc8b/svms/f16f0935-5281-11e8-b94d-005056b46485"
+    ```
+    <br/>
+
+*/
+func (a *Client) SvmMigrationGet(params *SvmMigrationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmMigrationGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_migration_get",
+		Method:             "GET",
+		PathPattern:        "/svm/migrations/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmMigrationGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmMigrationGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmMigrationGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SvmMigrationModify Actions that can be performed during an SVM migration.
+### Related ONTAP commands
+* `vserver migrate pause`
+* `vserver migrate resume`
+* `vserver migrate cutover`
+* `vserver migrate source-cleanup`
+
+*/
+func (a *Client) SvmMigrationModify(params *SvmMigrationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmMigrationModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_migration_modify",
+		Method:             "PATCH",
+		PathPattern:        "/svm/migrations/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmMigrationModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmMigrationModifyAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmMigrationModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SvmMigrationVolumeCollectionGet Retrieves the transfer status of the volumes in the SVM.
+### Related ONTAP commands
+* `vserver migrate show-volume`
+
+*/
+func (a *Client) SvmMigrationVolumeCollectionGet(params *SvmMigrationVolumeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationVolumeCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmMigrationVolumeCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_migration_volume_collection_get",
+		Method:             "GET",
+		PathPattern:        "/svm/migrations/{svm_migration.uuid}/volumes",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmMigrationVolumeCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmMigrationVolumeCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmMigrationVolumeCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SvmMigrationVolumeGet Retrieves the volume transfer status of the specified volume.uuid.
+### Related ONTAP commands
+* `vserver migrate show-volume`
+
+*/
+func (a *Client) SvmMigrationVolumeGet(params *SvmMigrationVolumeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmMigrationVolumeGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmMigrationVolumeGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_migration_volume_get",
+		Method:             "GET",
+		PathPattern:        "/svm/migrations/{svm_migration.uuid}/volumes/{volume.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmMigrationVolumeGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmMigrationVolumeGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmMigrationVolumeGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   SvmModify Updates one or more of the following properties of an individual SVM: SVM name, SVM default volume language code, SVM comment, and SVM state.
 ### Related ONTAP commands
 * `vserver modify`
@@ -491,7 +830,7 @@ func (a *Client) SvmGet(params *SvmGetParams, authInfo runtime.ClientAuthInfoWri
 9.  Allows NFS protocol which was previously disallowed for the SVM
     <br/>
     ```
-    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"nfs":{"enabled":"true"}}'
+    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"nfs":{"allowed":"true"}}'
     ```
     <br/>
 10. Updates the max volume limit for the SVM
@@ -1086,6 +1425,84 @@ func (a *Client) SvmPeerPermissionModify(params *SvmPeerPermissionModifyParams, 
 	// unexpected success response
 	unexpectedSuccess := result.(*SvmPeerPermissionModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  WebSvmGet Retrieves the web services security configuration.
+*/
+func (a *Client) WebSvmGet(params *WebSvmGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebSvmGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWebSvmGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "web_svm_get",
+		Method:             "GET",
+		PathPattern:        "/svm/svms/{svm.uuid}/web",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WebSvmGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WebSvmGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WebSvmGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  WebSvmModify Updates the web services security configuration.
+*/
+func (a *Client) WebSvmModify(params *WebSvmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebSvmModifyOK, *WebSvmModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWebSvmModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "web_svm_modify",
+		Method:             "PATCH",
+		PathPattern:        "/svm/svms/{svm.uuid}/web",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WebSvmModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *WebSvmModifyOK:
+		return value, nil, nil
+	case *WebSvmModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WebSvmModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

@@ -99,6 +99,8 @@ func NewAzureKeyVaultCreateDefault(code int) *AzureKeyVaultCreateDefault {
 | 65537518 | Failed to find an interface with Cluster role. |
 | 65537523 | Invalid key ID format. Example key ID format\":" "https://mykeyvault.vault.azure.net/keys/key1". |
 | 65537526 | Failed to enable Azure Key Vault feature. |
+| 65537567 | No authentication method provided. |
+| 65537573 | Invalid client certificate. |
 
 */
 type AzureKeyVaultCreateDefault struct {

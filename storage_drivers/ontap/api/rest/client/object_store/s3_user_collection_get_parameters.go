@@ -120,12 +120,6 @@ type S3UserCollectionGetParams struct {
 
 	/* SvmUUID.
 
-	   Filter by svm.uuid
-	*/
-	SVMUUIDQueryParameter *string
-
-	/* SvmUUID.
-
 	   UUID of the SVM to which this object belongs.
 	*/
 	SVMUUIDPathParameter string
@@ -296,17 +290,6 @@ func (o *S3UserCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
 	o.SVMNameQueryParameter = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the s3 user collection get params
-func (o *S3UserCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *S3UserCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
-	return o
-}
-
-// SetSVMUUIDQueryParameter adds the svmUuid to the s3 user collection get params
-func (o *S3UserCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
-}
-
 // WithSVMUUIDPathParameter adds the svmUUID to the s3 user collection get params
 func (o *S3UserCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *S3UserCollectionGetParams {
 	o.SetSVMUUIDPathParameter(svmUUID)
@@ -462,23 +445,6 @@ func (o *S3UserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qSvmName != "" {
 
 			if err := r.SetQueryParam("svm.name", qSvmName); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.SVMUUIDQueryParameter != nil {
-
-		// query param svm.uuid
-		var qrSvmUUID string
-
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
-		}
-		qSvmUUID := qrSvmUUID
-		if qSvmUUID != "" {
-
-			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
 				return err
 			}
 		}

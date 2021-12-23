@@ -54,7 +54,7 @@ type AzureKeyVaultRekeyInternalAccepted struct {
 }
 
 func (o *AzureKeyVaultRekeyInternalAccepted) Error() string {
-	return fmt.Sprintf("[POST /security/azure-key-vaults/{azure_key_vault.uuid}/rekey-internal][%d] azureKeyVaultRekeyInternalAccepted ", 202)
+	return fmt.Sprintf("[POST /security/azure-key-vaults/{uuid}/rekey-internal][%d] azureKeyVaultRekeyInternalAccepted ", 202)
 }
 
 func (o *AzureKeyVaultRekeyInternalAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -91,7 +91,7 @@ func (o *AzureKeyVaultRekeyInternalDefault) Code() int {
 }
 
 func (o *AzureKeyVaultRekeyInternalDefault) Error() string {
-	return fmt.Sprintf("[POST /security/azure-key-vaults/{azure_key_vault.uuid}/rekey-internal][%d] azure_key_vault_rekey_internal default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[POST /security/azure-key-vaults/{uuid}/rekey-internal][%d] azure_key_vault_rekey_internal default  %+v", o._statusCode, o.Payload)
 }
 func (o *AzureKeyVaultRekeyInternalDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

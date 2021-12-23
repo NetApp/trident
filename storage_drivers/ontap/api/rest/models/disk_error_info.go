@@ -20,8 +20,8 @@ import (
 // swagger:model disk_error_info
 type DiskErrorInfo struct {
 
-	// reason
-	Reason *DiskErrorInfoReason `json:"reason,omitempty"`
+	// The message and code detailing the error state of this disk.
+	Reason *Error `json:"reason,omitempty"`
 
 	// Disk error type.
 	// Example: notallflashdisk
@@ -313,80 +313,6 @@ func (m *DiskErrorInfo) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *DiskErrorInfo) UnmarshalBinary(b []byte) error {
 	var res DiskErrorInfo
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// DiskErrorInfoReason disk error info reason
-//
-// swagger:model DiskErrorInfoReason
-type DiskErrorInfoReason struct {
-
-	// Provides an error code.
-	// Read Only: true
-	Code string `json:"code,omitempty"`
-
-	// Provides an error message detailing the error state of this disk.
-	// Example: not responding
-	// Read Only: true
-	Message string `json:"message,omitempty"`
-}
-
-// Validate validates this disk error info reason
-func (m *DiskErrorInfoReason) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validate this disk error info reason based on the context it is used
-func (m *DiskErrorInfoReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateCode(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMessage(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *DiskErrorInfoReason) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "reason"+"."+"code", "body", string(m.Code)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *DiskErrorInfoReason) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "reason"+"."+"message", "body", string(m.Message)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *DiskErrorInfoReason) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *DiskErrorInfoReason) UnmarshalBinary(b []byte) error {
-	var res DiskErrorInfoReason
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

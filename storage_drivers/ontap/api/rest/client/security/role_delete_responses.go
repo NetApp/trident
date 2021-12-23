@@ -74,8 +74,13 @@ func NewRoleDeleteDefault(code int) *RoleDeleteDefault {
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
+| 5636169 | Specified URI path is invalid or not supported. Resource-qualified endpoints are not supported. |
+| 5636170 | URI does not exist. |
 | 5636172 | User accounts detected with this role assigned. Update or delete those accounts before deleting this role. |
 | 5636173 | Features require an effective cluster version of 9.6 or later. |
+| 5636184 | Expanded REST roles for granular resource control feature is currently disabled. |
+| 5636185 | The specified UUID was not found. |
+| 5636186 | Expanded REST roles for granular resource control requires an effective cluster version of 9.10.1 or later. |
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434893 | The SVM does not exist. |
 

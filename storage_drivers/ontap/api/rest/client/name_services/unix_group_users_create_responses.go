@@ -23,8 +23,8 @@ type UnixGroupUsersCreateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *UnixGroupUsersCreateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-	case 200:
-		result := NewUnixGroupUsersCreateOK()
+	case 201:
+		result := NewUnixGroupUsersCreateCreated()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -41,23 +41,23 @@ func (o *UnixGroupUsersCreateReader) ReadResponse(response runtime.ClientRespons
 	}
 }
 
-// NewUnixGroupUsersCreateOK creates a UnixGroupUsersCreateOK with default headers values
-func NewUnixGroupUsersCreateOK() *UnixGroupUsersCreateOK {
-	return &UnixGroupUsersCreateOK{}
+// NewUnixGroupUsersCreateCreated creates a UnixGroupUsersCreateCreated with default headers values
+func NewUnixGroupUsersCreateCreated() *UnixGroupUsersCreateCreated {
+	return &UnixGroupUsersCreateCreated{}
 }
 
-/* UnixGroupUsersCreateOK describes a response with status code 200, with default header values.
+/* UnixGroupUsersCreateCreated describes a response with status code 201, with default header values.
 
-OK
+Created
 */
-type UnixGroupUsersCreateOK struct {
+type UnixGroupUsersCreateCreated struct {
 }
 
-func (o *UnixGroupUsersCreateOK) Error() string {
-	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unixGroupUsersCreateOK ", 200)
+func (o *UnixGroupUsersCreateCreated) Error() string {
+	return fmt.Sprintf("[POST /name-services/unix-groups/{svm.uuid}/{unix_group.name}/users][%d] unixGroupUsersCreateCreated ", 201)
 }
 
-func (o *UnixGroupUsersCreateOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *UnixGroupUsersCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }

@@ -50,6 +50,13 @@ type IPInterface struct {
 	// Example: dataLif1
 	Name string `json:"name,omitempty"`
 
+	// Probe port for Cloud load balancer
+	// Example: 64001
+	ProbePort int64 `json:"probe_port,omitempty"`
+
+	// Supported RDMA offload protocols
+	RdmaProtocols []string `json:"rdma_protocols,omitempty"`
+
 	// Set to "svm" for interfaces owned by an SVM. Otherwise, set to "cluster".
 	// Enum: [svm cluster]
 	Scope string `json:"scope,omitempty"`
@@ -102,6 +109,10 @@ func (m *IPInterface) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateMetric(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRdmaProtocols(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -215,6 +226,42 @@ func (m *IPInterface) validateMetric(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var ipInterfaceRdmaProtocolsItemsEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["roce"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		ipInterfaceRdmaProtocolsItemsEnum = append(ipInterfaceRdmaProtocolsItemsEnum, v)
+	}
+}
+
+func (m *IPInterface) validateRdmaProtocolsItemsEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, ipInterfaceRdmaProtocolsItemsEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *IPInterface) validateRdmaProtocols(formats strfmt.Registry) error {
+	if swag.IsZero(m.RdmaProtocols) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.RdmaProtocols); i++ {
+
+		// value enum
+		if err := m.validateRdmaProtocolsItemsEnum("rdma_protocols"+"."+strconv.Itoa(i), "body", m.RdmaProtocols[i]); err != nil {
+			return err
+		}
+
 	}
 
 	return nil

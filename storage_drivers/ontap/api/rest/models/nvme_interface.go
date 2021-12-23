@@ -7,6 +7,8 @@ package models
 
 import (
 	"context"
+	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -32,6 +34,15 @@ type NvmeInterface struct {
 	// fc interface
 	FcInterface *NvmeInterfaceFcInterface `json:"fc_interface,omitempty"`
 
+	// The underlying interface type of the NVMe interface. This property identifies which of _fc_interface_ and _ip_interface_ will be further populated.
+	//
+	// Read Only: true
+	// Enum: [fc_interface ip_interface]
+	InterfaceType string `json:"interface_type,omitempty"`
+
+	// ip interface
+	IPInterface *NvmeInterfaceIPInterface `json:"ip_interface,omitempty"`
+
 	// The name of the NVMe interface.
 	//
 	// Example: lif1
@@ -49,6 +60,10 @@ type NvmeInterface struct {
 	// Example: nn-0x200a00a0989062da:pn-0x200100a0989062da
 	// Read Only: true
 	TransportAddress string `json:"transport_address,omitempty"`
+
+	// The transport protocols supported by the NVMe interface.
+	//
+	TransportProtocols []string `json:"transport_protocols,omitempty"`
 
 	// The unique identifier of the NVMe interface.
 	//
@@ -69,11 +84,23 @@ func (m *NvmeInterface) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateInterfaceType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIPInterface(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateNode(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTransportProtocols(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -117,6 +144,79 @@ func (m *NvmeInterface) validateFcInterface(formats strfmt.Registry) error {
 	return nil
 }
 
+var nvmeInterfaceTypeInterfaceTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["fc_interface","ip_interface"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeInterfaceTypeInterfaceTypePropEnum = append(nvmeInterfaceTypeInterfaceTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// nvme_interface
+	// NvmeInterface
+	// interface_type
+	// InterfaceType
+	// fc_interface
+	// END DEBUGGING
+	// NvmeInterfaceInterfaceTypeFcInterface captures enum value "fc_interface"
+	NvmeInterfaceInterfaceTypeFcInterface string = "fc_interface"
+
+	// BEGIN DEBUGGING
+	// nvme_interface
+	// NvmeInterface
+	// interface_type
+	// InterfaceType
+	// ip_interface
+	// END DEBUGGING
+	// NvmeInterfaceInterfaceTypeIPInterface captures enum value "ip_interface"
+	NvmeInterfaceInterfaceTypeIPInterface string = "ip_interface"
+)
+
+// prop value enum
+func (m *NvmeInterface) validateInterfaceTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeInterfaceTypeInterfaceTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeInterface) validateInterfaceType(formats strfmt.Registry) error {
+	if swag.IsZero(m.InterfaceType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateInterfaceTypeEnum("interface_type", "body", m.InterfaceType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeInterface) validateIPInterface(formats strfmt.Registry) error {
+	if swag.IsZero(m.IPInterface) { // not required
+		return nil
+	}
+
+	if m.IPInterface != nil {
+		if err := m.IPInterface.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_interface")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *NvmeInterface) validateNode(formats strfmt.Registry) error {
 	if swag.IsZero(m.Node) { // not required
 		return nil
@@ -151,6 +251,42 @@ func (m *NvmeInterface) validateSvm(formats strfmt.Registry) error {
 	return nil
 }
 
+var nvmeInterfaceTransportProtocolsItemsEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["fc_nvme","nvme_tcp"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeInterfaceTransportProtocolsItemsEnum = append(nvmeInterfaceTransportProtocolsItemsEnum, v)
+	}
+}
+
+func (m *NvmeInterface) validateTransportProtocolsItemsEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeInterfaceTransportProtocolsItemsEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NvmeInterface) validateTransportProtocols(formats strfmt.Registry) error {
+	if swag.IsZero(m.TransportProtocols) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.TransportProtocols); i++ {
+
+		// value enum
+		if err := m.validateTransportProtocolsItemsEnum("transport_protocols"+"."+strconv.Itoa(i), "body", m.TransportProtocols[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this nvme interface based on the context it is used
 func (m *NvmeInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -167,6 +303,14 @@ func (m *NvmeInterface) ContextValidate(ctx context.Context, formats strfmt.Regi
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateInterfaceType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIPInterface(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateName(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -180,6 +324,10 @@ func (m *NvmeInterface) ContextValidate(ctx context.Context, formats strfmt.Regi
 	}
 
 	if err := m.contextValidateTransportAddress(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTransportProtocols(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -222,6 +370,29 @@ func (m *NvmeInterface) contextValidateFcInterface(ctx context.Context, formats 
 		if err := m.FcInterface.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("fc_interface")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeInterface) contextValidateInterfaceType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "interface_type", "body", string(m.InterfaceType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeInterface) contextValidateIPInterface(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IPInterface != nil {
+		if err := m.IPInterface.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_interface")
 			}
 			return err
 		}
@@ -276,6 +447,19 @@ func (m *NvmeInterface) contextValidateTransportAddress(ctx context.Context, for
 	return nil
 }
 
+func (m *NvmeInterface) contextValidateTransportProtocols(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.TransportProtocols); i++ {
+
+		if err := validate.ReadOnly(ctx, "transport_protocols"+"."+strconv.Itoa(i), "body", string(m.TransportProtocols[i])); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
 func (m *NvmeInterface) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
@@ -304,6 +488,7 @@ func (m *NvmeInterface) UnmarshalBinary(b []byte) error {
 }
 
 // NvmeInterfaceFcInterface The attributes specific to a Fibre Channel-based NVMe interface.<br/>
+// This is populated when `interface_type` is _fc_interface_.
 //
 //
 // swagger:model NvmeInterfaceFcInterface
@@ -814,6 +999,348 @@ func (m *NvmeInterfaceFcInterfacePortNode) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *NvmeInterfaceFcInterfacePortNode) UnmarshalBinary(b []byte) error {
 	var res NvmeInterfaceFcInterfacePortNode
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeInterfaceIPInterface The attributes specific to an IP-based NVMe interface.<br/>
+// This is populated when `interface_type` is _ip_interface_.
+//
+//
+// swagger:model NvmeInterfaceIPInterface
+type NvmeInterfaceIPInterface struct {
+
+	// links
+	Links *SelfLink `json:"_links,omitempty"`
+
+	// ip
+	IP *NvmeInterfaceIPInterfaceIP `json:"ip,omitempty"`
+
+	// location
+	Location *NvmeInterfaceIPInterfaceLocation `json:"location,omitempty"`
+}
+
+// Validate validates this nvme interface IP interface
+func (m *NvmeInterfaceIPInterface) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIP(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLocation(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeInterfaceIPInterface) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_interface" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeInterfaceIPInterface) validateIP(formats strfmt.Registry) error {
+	if swag.IsZero(m.IP) { // not required
+		return nil
+	}
+
+	if m.IP != nil {
+		if err := m.IP.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_interface" + "." + "ip")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeInterfaceIPInterface) validateLocation(formats strfmt.Registry) error {
+	if swag.IsZero(m.Location) { // not required
+		return nil
+	}
+
+	if m.Location != nil {
+		if err := m.Location.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_interface" + "." + "location")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme interface IP interface based on the context it is used
+func (m *NvmeInterfaceIPInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLocation(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeInterfaceIPInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_interface" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeInterfaceIPInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IP != nil {
+		if err := m.IP.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_interface" + "." + "ip")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NvmeInterfaceIPInterface) contextValidateLocation(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Location != nil {
+		if err := m.Location.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_interface" + "." + "location")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeInterfaceIPInterface) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeInterfaceIPInterface) UnmarshalBinary(b []byte) error {
+	var res NvmeInterfaceIPInterface
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeInterfaceIPInterfaceIP nvme interface IP interface IP
+//
+// swagger:model NvmeInterfaceIPInterfaceIP
+type NvmeInterfaceIPInterfaceIP struct {
+
+	// address
+	// Read Only: true
+	Address IPAddressReadonly `json:"address,omitempty"`
+}
+
+// Validate validates this nvme interface IP interface IP
+func (m *NvmeInterfaceIPInterfaceIP) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAddress(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeInterfaceIPInterfaceIP) validateAddress(formats strfmt.Registry) error {
+	if swag.IsZero(m.Address) { // not required
+		return nil
+	}
+
+	if err := m.Address.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("ip_interface" + "." + "ip" + "." + "address")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme interface IP interface IP based on the context it is used
+func (m *NvmeInterfaceIPInterfaceIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAddress(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeInterfaceIPInterfaceIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Address.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("ip_interface" + "." + "ip" + "." + "address")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeInterfaceIPInterfaceIP) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeInterfaceIPInterfaceIP) UnmarshalBinary(b []byte) error {
+	var res NvmeInterfaceIPInterfaceIP
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeInterfaceIPInterfaceLocation nvme interface IP interface location
+//
+// swagger:model NvmeInterfaceIPInterfaceLocation
+type NvmeInterfaceIPInterfaceLocation struct {
+
+	// port
+	// Read Only: true
+	Port *PortReference `json:"port,omitempty"`
+}
+
+// Validate validates this nvme interface IP interface location
+func (m *NvmeInterfaceIPInterfaceLocation) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePort(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeInterfaceIPInterfaceLocation) validatePort(formats strfmt.Registry) error {
+	if swag.IsZero(m.Port) { // not required
+		return nil
+	}
+
+	if m.Port != nil {
+		if err := m.Port.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_interface" + "." + "location" + "." + "port")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme interface IP interface location based on the context it is used
+func (m *NvmeInterfaceIPInterfaceLocation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePort(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeInterfaceIPInterfaceLocation) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Port != nil {
+		if err := m.Port.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ip_interface" + "." + "location" + "." + "port")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeInterfaceIPInterfaceLocation) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeInterfaceIPInterfaceLocation) UnmarshalBinary(b []byte) error {
+	var res NvmeInterfaceIPInterfaceLocation
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

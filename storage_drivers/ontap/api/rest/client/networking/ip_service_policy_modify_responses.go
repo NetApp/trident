@@ -78,8 +78,11 @@ func NewIPServicePolicyModifyDefault(code int) *IPServicePolicyModifyDefault {
 | 53281929 | Service policies cannot combine block and file services. |
 | 53281930 | Service policies maintained by the system cannot be renamed. |
 | 53281931 | Service policy names cannot start with "default-". |
+| 53281932 | Service cannot be added because the service does not exist for the specified SVM or IPspace. |
 | 53281933 | A Cluster-scoped service cannot be added to a SVM-scoped service policy. |
 | 53281934 | An SVM-scoped service cannot be added to a Cluster-scoped service policy. |
+| 53281952 | The service policy on an SVM cannot be updated to include a block service. Use built-in service policies for SAN services. |
+| 53281953 | The service policy on an SVM cannot be updated to include a new service. |
 
 */
 type IPServicePolicyModifyDefault struct {

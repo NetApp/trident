@@ -19,11 +19,6 @@ import (
 // swagger:model security_style
 type SecurityStyle string
 
-func NewSecurityStyle(value SecurityStyle) *SecurityStyle {
-	v := value
-	return &v
-}
-
 const (
 
 	// SecurityStyleUnix captures enum value "unix"

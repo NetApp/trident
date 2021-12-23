@@ -216,6 +216,12 @@ type NetworkEthernetPortsGetParams struct {
 	*/
 	OrderByQueryParameter []string
 
+	/* RdmaProtocols.
+
+	   Filter by rdma_protocols
+	*/
+	RdmaProtocolsQueryParameter *string
+
 	/* Reachability.
 
 	   Filter by reachability
@@ -733,6 +739,17 @@ func (o *NetworkEthernetPortsGetParams) WithOrderByQueryParameter(orderBy []stri
 // SetOrderByQueryParameter adds the orderBy to the network ethernet ports get params
 func (o *NetworkEthernetPortsGetParams) SetOrderByQueryParameter(orderBy []string) {
 	o.OrderByQueryParameter = orderBy
+}
+
+// WithRdmaProtocolsQueryParameter adds the rdmaProtocols to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) WithRdmaProtocolsQueryParameter(rdmaProtocols *string) *NetworkEthernetPortsGetParams {
+	o.SetRdmaProtocolsQueryParameter(rdmaProtocols)
+	return o
+}
+
+// SetRdmaProtocolsQueryParameter adds the rdmaProtocols to the network ethernet ports get params
+func (o *NetworkEthernetPortsGetParams) SetRdmaProtocolsQueryParameter(rdmaProtocols *string) {
+	o.RdmaProtocolsQueryParameter = rdmaProtocols
 }
 
 // WithReachabilityQueryParameter adds the reachability to the network ethernet ports get params
@@ -1467,6 +1484,23 @@ func (o *NetworkEthernetPortsGetParams) WriteToRequest(r runtime.ClientRequest, 
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.RdmaProtocolsQueryParameter != nil {
+
+		// query param rdma_protocols
+		var qrRdmaProtocols string
+
+		if o.RdmaProtocolsQueryParameter != nil {
+			qrRdmaProtocols = *o.RdmaProtocolsQueryParameter
+		}
+		qRdmaProtocols := qrRdmaProtocols
+		if qRdmaProtocols != "" {
+
+			if err := r.SetQueryParam("rdma_protocols", qRdmaProtocols); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -20,11 +20,6 @@ import (
 // swagger:model key_exchange_algorithm
 type KeyExchangeAlgorithm string
 
-func NewKeyExchangeAlgorithm(value KeyExchangeAlgorithm) *KeyExchangeAlgorithm {
-	v := value
-	return &v
-}
-
 const (
 
 	// KeyExchangeAlgorithmDiffieHellmanGroupExchangeSha256 captures enum value "diffie_hellman_group_exchange_sha256"

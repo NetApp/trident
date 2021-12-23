@@ -36,6 +36,9 @@ type FpolicyEngine struct {
 	// Example: ["10.132.145.20","10.132.145.21"]
 	SecondaryServers []string `json:"secondary_servers,omitempty"`
 
+	// svm
+	Svm *FpolicyEngineSvm `json:"svm,omitempty"`
+
 	// The notification mode determines what ONTAP does after sending notifications to FPolicy servers.
 	//   The possible values are:
 	//     * synchronous  - After sending a notification, wait for a response from the FPolicy server.
@@ -49,6 +52,10 @@ type FpolicyEngine struct {
 func (m *FpolicyEngine) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
@@ -56,6 +63,23 @@ func (m *FpolicyEngine) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *FpolicyEngine) validateSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.Svm) { // not required
+		return nil
+	}
+
+	if m.Svm != nil {
+		if err := m.Svm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -115,8 +139,31 @@ func (m *FpolicyEngine) validateType(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this fpolicy engine based on context it is used
+// ContextValidate validate this fpolicy engine based on the context it is used
 func (m *FpolicyEngine) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FpolicyEngine) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Svm != nil {
+		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -131,6 +178,62 @@ func (m *FpolicyEngine) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *FpolicyEngine) UnmarshalBinary(b []byte) error {
 	var res FpolicyEngine
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FpolicyEngineSvm fpolicy engine svm
+//
+// swagger:model FpolicyEngineSvm
+type FpolicyEngineSvm struct {
+
+	// SVM UUID
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this fpolicy engine svm
+func (m *FpolicyEngineSvm) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this fpolicy engine svm based on the context it is used
+func (m *FpolicyEngineSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FpolicyEngineSvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "svm"+"."+"uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FpolicyEngineSvm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FpolicyEngineSvm) UnmarshalBinary(b []byte) error {
+	var res FpolicyEngineSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

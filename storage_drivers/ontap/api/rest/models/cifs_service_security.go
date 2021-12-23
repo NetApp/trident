@@ -20,6 +20,10 @@ import (
 // swagger:model cifs_service_security
 type CifsServiceSecurity struct {
 
+	// Specifies whether or not an AES session key is enabled for the Netlogon channel.
+	//
+	AesNetlogonEnabled *bool `json:"aes_netlogon_enabled,omitempty"`
+
 	// Specifies whether encryption is required for domain controller connections.
 	EncryptDcConnection *bool `json:"encrypt_dc_connection,omitempty"`
 
@@ -41,6 +45,10 @@ type CifsServiceSecurity struct {
 	//
 	KdcEncryption *bool `json:"kdc_encryption,omitempty"`
 
+	// Specifies whether or not LDAP referral chasing is enabled for AD LDAP connections.
+	//
+	LdapReferralEnabled *bool `json:"ldap_referral_enabled,omitempty"`
+
 	// It is CIFS server minimum security level, also known as the LMCompatibilityLevel. The minimum security level is the minimum level of the security tokens that        the CIFS server accepts from SMB clients.
 	// The available values are:
 	// * lm_ntlm_ntlmv2_krb          Accepts LM, NTLM, NTLMv2 and Kerberos
@@ -60,12 +68,35 @@ type CifsServiceSecurity struct {
 	// Enum: [no_restriction no_enumeration no_access]
 	RestrictAnonymous *string `json:"restrict_anonymous,omitempty"`
 
+	// Specifies client session security for AD LDAP connections.
+	// The available values are:
+	//   * none - No Signing or Sealing.
+	//   * sign - Sign LDAP traffic.
+	//   * seal - Seal and Sign LDAP traffic
+	//
+	// Enum: [none sign seal]
+	SessionSecurity *string `json:"session_security,omitempty"`
+
 	// Specifies whether encryption is required for incoming CIFS traffic.
 	SmbEncryption *bool `json:"smb_encryption,omitempty"`
 
 	// Specifies whether signing is required for incoming CIFS traffic. SMB signing helps to ensure that network traffic between the CIFS server and the client is not compromised.
 	//
 	SmbSigning *bool `json:"smb_signing,omitempty"`
+
+	// Specifies whether or not channel binding is attempted in the case of TLS/LDAPS.
+	//
+	TryLdapChannelBinding *bool `json:"try_ldap_channel_binding,omitempty"`
+
+	// Specifies whether or not to use use LDAPS for secure Active Directory LDAP connections
+	// by using the TLS/SSL protocols.
+	//
+	UseLdaps *bool `json:"use_ldaps,omitempty"`
+
+	// Specifies whether or not to use SSL/TLS for allowing secure LDAP communication with
+	// Active Directory LDAP servers.
+	//
+	UseStartTLS *bool `json:"use_start_tls,omitempty"`
 }
 
 // Validate validates this cifs service security
@@ -77,6 +108,10 @@ func (m *CifsServiceSecurity) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRestrictAnonymous(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSessionSecurity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -222,6 +257,72 @@ func (m *CifsServiceSecurity) validateRestrictAnonymous(formats strfmt.Registry)
 
 	// value enum
 	if err := m.validateRestrictAnonymousEnum("restrict_anonymous", "body", *m.RestrictAnonymous); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var cifsServiceSecurityTypeSessionSecurityPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","sign","seal"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cifsServiceSecurityTypeSessionSecurityPropEnum = append(cifsServiceSecurityTypeSessionSecurityPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cifs_service_security
+	// CifsServiceSecurity
+	// session_security
+	// SessionSecurity
+	// none
+	// END DEBUGGING
+	// CifsServiceSecuritySessionSecurityNone captures enum value "none"
+	CifsServiceSecuritySessionSecurityNone string = "none"
+
+	// BEGIN DEBUGGING
+	// cifs_service_security
+	// CifsServiceSecurity
+	// session_security
+	// SessionSecurity
+	// sign
+	// END DEBUGGING
+	// CifsServiceSecuritySessionSecuritySign captures enum value "sign"
+	CifsServiceSecuritySessionSecuritySign string = "sign"
+
+	// BEGIN DEBUGGING
+	// cifs_service_security
+	// CifsServiceSecurity
+	// session_security
+	// SessionSecurity
+	// seal
+	// END DEBUGGING
+	// CifsServiceSecuritySessionSecuritySeal captures enum value "seal"
+	CifsServiceSecuritySessionSecuritySeal string = "seal"
+)
+
+// prop value enum
+func (m *CifsServiceSecurity) validateSessionSecurityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsServiceSecurityTypeSessionSecurityPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CifsServiceSecurity) validateSessionSecurity(formats strfmt.Registry) error {
+	if swag.IsZero(m.SessionSecurity) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSessionSecurityEnum("session_security", "body", *m.SessionSecurity); err != nil {
 		return err
 	}
 

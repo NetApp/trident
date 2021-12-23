@@ -46,6 +46,9 @@ type Snapshot struct {
 	// Read Only: true
 	Owners []string `json:"owners,omitempty"`
 
+	// Space reclaimed when the Snapshot copy is deleted, in bytes.
+	ReclaimableSpace int64 `json:"reclaimable_space,omitempty"`
+
 	// Size of the active file system at the time the Snapshot copy is captured. The actual size of the Snapshot copy also includes those blocks trapped by other Snapshot copies. On a Snapshot copy deletion, the "size" amount of blocks is the maximum number of blocks available. On a Snapshot copy restore, the "afs-used size" value will match the Snapshot copy "size" value.
 	// Example: 122880
 	// Read Only: true
@@ -164,7 +167,7 @@ var snapshotOwnersItemsEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["unknown","snapmirror","snapmirror_dependent","sync_mirror","volume_clone","volume_clone_dependent","snap_restore","snap_restore_dependent","dump","cifs_share","volume_copy","ndmp","worm_volume","sis_clone","s2c_iron","lun_clone","backup_dependent","snaplock_dependent","file_clone_dependent","volume_move_dependent","svmdr_dependent"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["unknown","snapmirror","snapmirror_dependent","sync_mirror","volume_clone","volume_clone_dependent","snap_restore","snap_restore_dependent","dump","cifs_share","volume_copy","ndmp","worm_volume","sis_clone","s2c_iron","lun_clone","backup_dependent","snaplock_dependent","file_clone_dependent","volume_move_dependent","svmdr_dependent","anti_ransomware_backup"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

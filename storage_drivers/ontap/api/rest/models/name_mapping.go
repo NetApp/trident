@@ -50,10 +50,14 @@ type NameMapping struct {
 
 	// Pattern used to match the name while searching for a name that can be used as a replacement. The pattern is a UNIX-style regular expression. Regular expressions are case-insensitive when mapping from Windows to UNIX, and they are case-sensitive for mappings from Kerberos to UNIX and UNIX to Windows.
 	// Example: ENGCIFS_AD_USER
+	// Max Length: 256
+	// Min Length: 1
 	Pattern string `json:"pattern,omitempty"`
 
 	// The name that is used as a replacement, if the pattern associated with this entry matches.
 	// Example: unix_user1
+	// Max Length: 256
+	// Min Length: 1
 	Replacement string `json:"replacement,omitempty"`
 
 	// svm
@@ -73,6 +77,14 @@ func (m *NameMapping) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateIndex(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePattern(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateReplacement(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -179,6 +191,38 @@ func (m *NameMapping) validateIndex(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaximumInt("index", "body", m.Index, 2.147483647e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NameMapping) validatePattern(formats strfmt.Registry) error {
+	if swag.IsZero(m.Pattern) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("pattern", "body", m.Pattern, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("pattern", "body", m.Pattern, 256); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NameMapping) validateReplacement(formats strfmt.Registry) error {
+	if swag.IsZero(m.Replacement) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("replacement", "body", m.Replacement, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("replacement", "body", m.Replacement, 256); err != nil {
 		return err
 	}
 

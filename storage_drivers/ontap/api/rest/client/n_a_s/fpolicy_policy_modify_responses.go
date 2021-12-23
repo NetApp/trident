@@ -81,6 +81,10 @@ func NewFpolicyPolicyModifyDefault(code int) *FpolicyPolicyModifyDefault {
 | 9764908    | An FPolicy policy is already enabled |
 | 9764907    | An FPolicy policy is already disabled |
 | 9765029    | An FPolicy was modified but disable/enable failed as the policy is already disabled/enabled |
+| 9765036    | Cannot modify an FPolicy policy as passthrough-read policies are not supported without privileged user |
+| 9765038    | Passthrough-read policies are not supported with an external engine of type "asynchronous" |
+| 9765039    | Passthrough-read policies are not supported with native engine |
+| 9765040    | Cannot modify an FPolicy policy as passthrough-read could not be enabled/disabled when the policy is enabled |
 
 */
 type FpolicyPolicyModifyDefault struct {

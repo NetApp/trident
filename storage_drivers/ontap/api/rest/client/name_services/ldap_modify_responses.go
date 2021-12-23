@@ -89,6 +89,7 @@ func NewLdapModifyDefault(code int) *LdapModifyDefault {
 | 4915258    | The LDAP configuration is invalid. Verify that the Active Directory domain or servers are reachable and that the network configuration is correct |
 | 4915259    | LDAP configurations with Active Directory domains are not supported on admin SVM. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
+| 4915252    | LDAP Referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
 
 */
 type LdapModifyDefault struct {

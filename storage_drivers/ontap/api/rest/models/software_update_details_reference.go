@@ -34,7 +34,7 @@ type SoftwareUpdateDetailsReference struct {
 	Node *SoftwareUpdateDetailsReferenceNode `json:"node,omitempty"`
 
 	// Phase details
-	// Example: Pre-update checks
+	// Example: Post-update checks
 	// Read Only: true
 	Phase string `json:"phase,omitempty"`
 

@@ -34,7 +34,7 @@ type SoftwareReference struct {
 	// Read Only: true
 	ElapsedDuration int64 `json:"elapsed_duration,omitempty"`
 
-	// Estimated time remaining until completion of the upgrade or validation operation.
+	// Overall estimated time for completion of the upgrade or validation operation.
 	// Example: 5220
 	// Read Only: true
 	EstimatedDuration int64 `json:"estimated_duration,omitempty"`

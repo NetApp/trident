@@ -46,6 +46,9 @@ type VscanServerStatus struct {
 	//
 	DisconnectedReason string `json:"disconnected_reason,omitempty"`
 
+	// interface
+	Interface *VscanServerStatusInterface `json:"interface,omitempty"`
+
 	// IP address of the Vscan server.
 	IP string `json:"ip,omitempty"`
 
@@ -87,6 +90,10 @@ type VscanServerStatus struct {
 func (m *VscanServerStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateInterface(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateNode(formats); err != nil {
 		res = append(res, err)
 	}
@@ -106,6 +113,23 @@ func (m *VscanServerStatus) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VscanServerStatus) validateInterface(formats strfmt.Registry) error {
+	if swag.IsZero(m.Interface) { // not required
+		return nil
+	}
+
+	if m.Interface != nil {
+		if err := m.Interface.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -215,6 +239,10 @@ func (m *VscanServerStatus) validateUpdateTime(formats strfmt.Registry) error {
 func (m *VscanServerStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateInterface(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -226,6 +254,20 @@ func (m *VscanServerStatus) ContextValidate(ctx context.Context, formats strfmt.
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VscanServerStatus) contextValidateInterface(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Interface != nil {
+		if err := m.Interface.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -268,6 +310,310 @@ func (m *VscanServerStatus) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *VscanServerStatus) UnmarshalBinary(b []byte) error {
 	var res VscanServerStatus
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VscanServerStatusInterface Address of the interface used for the Vscan connection.
+//
+// swagger:model VscanServerStatusInterface
+type VscanServerStatusInterface struct {
+
+	// links
+	Links *VscanServerStatusInterfaceLinks `json:"_links,omitempty"`
+
+	// ip
+	IP *VscanServerStatusInterfaceIP `json:"ip,omitempty"`
+
+	// The name of the interface.
+	// Example: lif1
+	Name string `json:"name,omitempty"`
+
+	// The UUID that uniquely identifies the interface.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this vscan server status interface
+func (m *VscanServerStatusInterface) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIP(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VscanServerStatusInterface) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VscanServerStatusInterface) validateIP(formats strfmt.Registry) error {
+	if swag.IsZero(m.IP) { // not required
+		return nil
+	}
+
+	if m.IP != nil {
+		if err := m.IP.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this vscan server status interface based on the context it is used
+func (m *VscanServerStatusInterface) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VscanServerStatusInterface) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VscanServerStatusInterface) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.IP != nil {
+		if err := m.IP.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "ip")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VscanServerStatusInterface) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VscanServerStatusInterface) UnmarshalBinary(b []byte) error {
+	var res VscanServerStatusInterface
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VscanServerStatusInterfaceIP IP information
+//
+// swagger:model VscanServerStatusInterfaceIP
+type VscanServerStatusInterfaceIP struct {
+
+	// address
+	Address IPAddressReadonly `json:"address,omitempty"`
+}
+
+// Validate validates this vscan server status interface IP
+func (m *VscanServerStatusInterfaceIP) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAddress(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VscanServerStatusInterfaceIP) validateAddress(formats strfmt.Registry) error {
+	if swag.IsZero(m.Address) { // not required
+		return nil
+	}
+
+	if err := m.Address.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this vscan server status interface IP based on the context it is used
+func (m *VscanServerStatusInterfaceIP) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAddress(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VscanServerStatusInterfaceIP) contextValidateAddress(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Address.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("interface" + "." + "ip" + "." + "address")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VscanServerStatusInterfaceIP) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VscanServerStatusInterfaceIP) UnmarshalBinary(b []byte) error {
+	var res VscanServerStatusInterfaceIP
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VscanServerStatusInterfaceLinks vscan server status interface links
+//
+// swagger:model VscanServerStatusInterfaceLinks
+type VscanServerStatusInterfaceLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this vscan server status interface links
+func (m *VscanServerStatusInterfaceLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VscanServerStatusInterfaceLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this vscan server status interface links based on the context it is used
+func (m *VscanServerStatusInterfaceLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VscanServerStatusInterfaceLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("interface" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VscanServerStatusInterfaceLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VscanServerStatusInterfaceLinks) UnmarshalBinary(b []byte) error {
+	var res VscanServerStatusInterfaceLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -455,7 +801,7 @@ func (m *VscanServerStatusNodeLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanServerStatusSvm SVM, applies only to SVM-scoped objects.
+// VscanServerStatusSvm vscan server status svm
 //
 // swagger:model VscanServerStatusSvm
 type VscanServerStatusSvm struct {

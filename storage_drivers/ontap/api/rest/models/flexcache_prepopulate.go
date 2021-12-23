@@ -23,7 +23,7 @@ type FlexcachePrepopulate struct {
 	// exclude dir paths
 	ExcludeDirPaths []string `json:"exclude_dir_paths,omitempty"`
 
-	// Specifies whether or not the prepopulate action should search through the directory-path recursively. If not set, the default value "true" is used.
+	// Specifies whether or not the prepopulate action should search through the `dir_paths` recursively. If not set, the default value _true_ is used.
 	Recurse *bool `json:"recurse,omitempty"`
 }
 

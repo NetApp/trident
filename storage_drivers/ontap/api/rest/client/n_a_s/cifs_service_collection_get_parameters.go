@@ -72,12 +72,6 @@ type CifsServiceCollectionGetParams struct {
 	*/
 	AdDomainOrganizationalUnitQueryParameter *string
 
-	/* AdDomainUser.
-
-	   Filter by ad_domain.user
-	*/
-	AdDomainUserQueryParameter *string
-
 	/* Comment.
 
 	   Filter by comment
@@ -216,6 +210,84 @@ type CifsServiceCollectionGetParams struct {
 	*/
 	NetbiosWinsServersQueryParameter *string
 
+	/* OptionsAdminToRootMapping.
+
+	   Filter by options.admin_to_root_mapping
+	*/
+	OptionsAdminToRootMappingQueryParameter *bool
+
+	/* OptionsAdvancedSparseFile.
+
+	   Filter by options.advanced_sparse_file
+	*/
+	OptionsAdvancedSparseFileQueryParameter *bool
+
+	/* OptionsCopyOffload.
+
+	   Filter by options.copy_offload
+	*/
+	OptionsCopyOffloadQueryParameter *bool
+
+	/* OptionsFakeOpen.
+
+	   Filter by options.fake_open
+	*/
+	OptionsFakeOpenQueryParameter *bool
+
+	/* OptionsFsctlTrim.
+
+	   Filter by options.fsctl_trim
+	*/
+	OptionsFsctlTrimQueryParameter *bool
+
+	/* OptionsJunctionReparse.
+
+	   Filter by options.junction_reparse
+	*/
+	OptionsJunctionReparseQueryParameter *bool
+
+	/* OptionsLargeMtu.
+
+	   Filter by options.large_mtu
+	*/
+	OptionsLargeMtuQueryParameter *bool
+
+	/* OptionsMultichannel.
+
+	   Filter by options.multichannel
+	*/
+	OptionsMultichannelQueryParameter *bool
+
+	/* OptionsNullUserWindowsName.
+
+	   Filter by options.null_user_windows_name
+	*/
+	OptionsNullUserWindowsNameQueryParameter *string
+
+	/* OptionsPathComponentCache.
+
+	   Filter by options.path_component_cache
+	*/
+	OptionsPathComponentCacheQueryParameter *bool
+
+	/* OptionsReferral.
+
+	   Filter by options.referral
+	*/
+	OptionsReferralQueryParameter *bool
+
+	/* OptionsSmbCredits.
+
+	   Filter by options.smb_credits
+	*/
+	OptionsSmbCreditsQueryParameter *int64
+
+	/* OptionsWidelinkReparseVersions.
+
+	   Filter by options.widelink_reparse_versions
+	*/
+	OptionsWidelinkReparseVersionsQueryParameter *string
+
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
@@ -238,6 +310,12 @@ type CifsServiceCollectionGetParams struct {
 	*/
 	ReturnTimeoutQueryParameter *int64
 
+	/* SecurityAesNetlogonEnabled.
+
+	   Filter by security.aes_netlogon_enabled
+	*/
+	SecurityAesNetlogonEnabledQueryParameter *bool
+
 	/* SecurityEncryptDcConnection.
 
 	   Filter by security.encrypt_dc_connection
@@ -249,6 +327,12 @@ type CifsServiceCollectionGetParams struct {
 	   Filter by security.kdc_encryption
 	*/
 	SecurityKdcEncryptionQueryParameter *bool
+
+	/* SecurityLdapReferralEnabled.
+
+	   Filter by security.ldap_referral_enabled
+	*/
+	SecurityLdapReferralEnabledQueryParameter *bool
 
 	/* SecurityLmCompatibilityLevel.
 
@@ -262,6 +346,12 @@ type CifsServiceCollectionGetParams struct {
 	*/
 	SecurityRestrictAnonymousQueryParameter *string
 
+	/* SecuritySessionSecurity.
+
+	   Filter by security.session_security
+	*/
+	SecuritySessionSecurityQueryParameter *string
+
 	/* SecuritySmbEncryption.
 
 	   Filter by security.smb_encryption
@@ -273,6 +363,24 @@ type CifsServiceCollectionGetParams struct {
 	   Filter by security.smb_signing
 	*/
 	SecuritySmbSigningQueryParameter *bool
+
+	/* SecurityTryLdapChannelBinding.
+
+	   Filter by security.try_ldap_channel_binding
+	*/
+	SecurityTryLdapChannelBindingQueryParameter *bool
+
+	/* SecurityUseLdaps.
+
+	   Filter by security.use_ldaps
+	*/
+	SecurityUseLdapsQueryParameter *bool
+
+	/* SecurityUseStartTLS.
+
+	   Filter by security.use_start_tls
+	*/
+	SecurityUseStartTLSQueryParameter *bool
 
 	/* StatisticsIopsRawOther.
 
@@ -451,17 +559,6 @@ func (o *CifsServiceCollectionGetParams) WithAdDomainOrganizationalUnitQueryPara
 // SetAdDomainOrganizationalUnitQueryParameter adds the adDomainOrganizationalUnit to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) SetAdDomainOrganizationalUnitQueryParameter(adDomainOrganizationalUnit *string) {
 	o.AdDomainOrganizationalUnitQueryParameter = adDomainOrganizationalUnit
-}
-
-// WithAdDomainUserQueryParameter adds the adDomainUser to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) WithAdDomainUserQueryParameter(adDomainUser *string) *CifsServiceCollectionGetParams {
-	o.SetAdDomainUserQueryParameter(adDomainUser)
-	return o
-}
-
-// SetAdDomainUserQueryParameter adds the adDomainUser to the cifs service collection get params
-func (o *CifsServiceCollectionGetParams) SetAdDomainUserQueryParameter(adDomainUser *string) {
-	o.AdDomainUserQueryParameter = adDomainUser
 }
 
 // WithCommentQueryParameter adds the comment to the cifs service collection get params
@@ -717,6 +814,149 @@ func (o *CifsServiceCollectionGetParams) SetNetbiosWinsServersQueryParameter(net
 	o.NetbiosWinsServersQueryParameter = netbiosWinsServers
 }
 
+// WithOptionsAdminToRootMappingQueryParameter adds the optionsAdminToRootMapping to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsAdminToRootMappingQueryParameter(optionsAdminToRootMapping *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsAdminToRootMappingQueryParameter(optionsAdminToRootMapping)
+	return o
+}
+
+// SetOptionsAdminToRootMappingQueryParameter adds the optionsAdminToRootMapping to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsAdminToRootMappingQueryParameter(optionsAdminToRootMapping *bool) {
+	o.OptionsAdminToRootMappingQueryParameter = optionsAdminToRootMapping
+}
+
+// WithOptionsAdvancedSparseFileQueryParameter adds the optionsAdvancedSparseFile to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsAdvancedSparseFileQueryParameter(optionsAdvancedSparseFile *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsAdvancedSparseFileQueryParameter(optionsAdvancedSparseFile)
+	return o
+}
+
+// SetOptionsAdvancedSparseFileQueryParameter adds the optionsAdvancedSparseFile to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsAdvancedSparseFileQueryParameter(optionsAdvancedSparseFile *bool) {
+	o.OptionsAdvancedSparseFileQueryParameter = optionsAdvancedSparseFile
+}
+
+// WithOptionsCopyOffloadQueryParameter adds the optionsCopyOffload to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsCopyOffloadQueryParameter(optionsCopyOffload *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsCopyOffloadQueryParameter(optionsCopyOffload)
+	return o
+}
+
+// SetOptionsCopyOffloadQueryParameter adds the optionsCopyOffload to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsCopyOffloadQueryParameter(optionsCopyOffload *bool) {
+	o.OptionsCopyOffloadQueryParameter = optionsCopyOffload
+}
+
+// WithOptionsFakeOpenQueryParameter adds the optionsFakeOpen to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsFakeOpenQueryParameter(optionsFakeOpen *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsFakeOpenQueryParameter(optionsFakeOpen)
+	return o
+}
+
+// SetOptionsFakeOpenQueryParameter adds the optionsFakeOpen to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsFakeOpenQueryParameter(optionsFakeOpen *bool) {
+	o.OptionsFakeOpenQueryParameter = optionsFakeOpen
+}
+
+// WithOptionsFsctlTrimQueryParameter adds the optionsFsctlTrim to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsFsctlTrimQueryParameter(optionsFsctlTrim *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsFsctlTrimQueryParameter(optionsFsctlTrim)
+	return o
+}
+
+// SetOptionsFsctlTrimQueryParameter adds the optionsFsctlTrim to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsFsctlTrimQueryParameter(optionsFsctlTrim *bool) {
+	o.OptionsFsctlTrimQueryParameter = optionsFsctlTrim
+}
+
+// WithOptionsJunctionReparseQueryParameter adds the optionsJunctionReparse to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsJunctionReparseQueryParameter(optionsJunctionReparse *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsJunctionReparseQueryParameter(optionsJunctionReparse)
+	return o
+}
+
+// SetOptionsJunctionReparseQueryParameter adds the optionsJunctionReparse to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsJunctionReparseQueryParameter(optionsJunctionReparse *bool) {
+	o.OptionsJunctionReparseQueryParameter = optionsJunctionReparse
+}
+
+// WithOptionsLargeMtuQueryParameter adds the optionsLargeMtu to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsLargeMtuQueryParameter(optionsLargeMtu *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsLargeMtuQueryParameter(optionsLargeMtu)
+	return o
+}
+
+// SetOptionsLargeMtuQueryParameter adds the optionsLargeMtu to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsLargeMtuQueryParameter(optionsLargeMtu *bool) {
+	o.OptionsLargeMtuQueryParameter = optionsLargeMtu
+}
+
+// WithOptionsMultichannelQueryParameter adds the optionsMultichannel to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsMultichannelQueryParameter(optionsMultichannel *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsMultichannelQueryParameter(optionsMultichannel)
+	return o
+}
+
+// SetOptionsMultichannelQueryParameter adds the optionsMultichannel to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsMultichannelQueryParameter(optionsMultichannel *bool) {
+	o.OptionsMultichannelQueryParameter = optionsMultichannel
+}
+
+// WithOptionsNullUserWindowsNameQueryParameter adds the optionsNullUserWindowsName to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsNullUserWindowsNameQueryParameter(optionsNullUserWindowsName *string) *CifsServiceCollectionGetParams {
+	o.SetOptionsNullUserWindowsNameQueryParameter(optionsNullUserWindowsName)
+	return o
+}
+
+// SetOptionsNullUserWindowsNameQueryParameter adds the optionsNullUserWindowsName to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsNullUserWindowsNameQueryParameter(optionsNullUserWindowsName *string) {
+	o.OptionsNullUserWindowsNameQueryParameter = optionsNullUserWindowsName
+}
+
+// WithOptionsPathComponentCacheQueryParameter adds the optionsPathComponentCache to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsPathComponentCacheQueryParameter(optionsPathComponentCache *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsPathComponentCacheQueryParameter(optionsPathComponentCache)
+	return o
+}
+
+// SetOptionsPathComponentCacheQueryParameter adds the optionsPathComponentCache to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsPathComponentCacheQueryParameter(optionsPathComponentCache *bool) {
+	o.OptionsPathComponentCacheQueryParameter = optionsPathComponentCache
+}
+
+// WithOptionsReferralQueryParameter adds the optionsReferral to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsReferralQueryParameter(optionsReferral *bool) *CifsServiceCollectionGetParams {
+	o.SetOptionsReferralQueryParameter(optionsReferral)
+	return o
+}
+
+// SetOptionsReferralQueryParameter adds the optionsReferral to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsReferralQueryParameter(optionsReferral *bool) {
+	o.OptionsReferralQueryParameter = optionsReferral
+}
+
+// WithOptionsSmbCreditsQueryParameter adds the optionsSmbCredits to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsSmbCreditsQueryParameter(optionsSmbCredits *int64) *CifsServiceCollectionGetParams {
+	o.SetOptionsSmbCreditsQueryParameter(optionsSmbCredits)
+	return o
+}
+
+// SetOptionsSmbCreditsQueryParameter adds the optionsSmbCredits to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsSmbCreditsQueryParameter(optionsSmbCredits *int64) {
+	o.OptionsSmbCreditsQueryParameter = optionsSmbCredits
+}
+
+// WithOptionsWidelinkReparseVersionsQueryParameter adds the optionsWidelinkReparseVersions to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithOptionsWidelinkReparseVersionsQueryParameter(optionsWidelinkReparseVersions *string) *CifsServiceCollectionGetParams {
+	o.SetOptionsWidelinkReparseVersionsQueryParameter(optionsWidelinkReparseVersions)
+	return o
+}
+
+// SetOptionsWidelinkReparseVersionsQueryParameter adds the optionsWidelinkReparseVersions to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetOptionsWidelinkReparseVersionsQueryParameter(optionsWidelinkReparseVersions *string) {
+	o.OptionsWidelinkReparseVersionsQueryParameter = optionsWidelinkReparseVersions
+}
+
 // WithOrderByQueryParameter adds the orderBy to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) WithOrderByQueryParameter(orderBy []string) *CifsServiceCollectionGetParams {
 	o.SetOrderByQueryParameter(orderBy)
@@ -750,6 +990,17 @@ func (o *CifsServiceCollectionGetParams) SetReturnTimeoutQueryParameter(returnTi
 	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
+// WithSecurityAesNetlogonEnabledQueryParameter adds the securityAesNetlogonEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityAesNetlogonEnabledQueryParameter(securityAesNetlogonEnabled *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityAesNetlogonEnabledQueryParameter(securityAesNetlogonEnabled)
+	return o
+}
+
+// SetSecurityAesNetlogonEnabledQueryParameter adds the securityAesNetlogonEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityAesNetlogonEnabledQueryParameter(securityAesNetlogonEnabled *bool) {
+	o.SecurityAesNetlogonEnabledQueryParameter = securityAesNetlogonEnabled
+}
+
 // WithSecurityEncryptDcConnectionQueryParameter adds the securityEncryptDcConnection to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) WithSecurityEncryptDcConnectionQueryParameter(securityEncryptDcConnection *bool) *CifsServiceCollectionGetParams {
 	o.SetSecurityEncryptDcConnectionQueryParameter(securityEncryptDcConnection)
@@ -770,6 +1021,17 @@ func (o *CifsServiceCollectionGetParams) WithSecurityKdcEncryptionQueryParameter
 // SetSecurityKdcEncryptionQueryParameter adds the securityKdcEncryption to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) SetSecurityKdcEncryptionQueryParameter(securityKdcEncryption *bool) {
 	o.SecurityKdcEncryptionQueryParameter = securityKdcEncryption
+}
+
+// WithSecurityLdapReferralEnabledQueryParameter adds the securityLdapReferralEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityLdapReferralEnabledQueryParameter(securityLdapReferralEnabled *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityLdapReferralEnabledQueryParameter(securityLdapReferralEnabled)
+	return o
+}
+
+// SetSecurityLdapReferralEnabledQueryParameter adds the securityLdapReferralEnabled to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityLdapReferralEnabledQueryParameter(securityLdapReferralEnabled *bool) {
+	o.SecurityLdapReferralEnabledQueryParameter = securityLdapReferralEnabled
 }
 
 // WithSecurityLmCompatibilityLevelQueryParameter adds the securityLmCompatibilityLevel to the cifs service collection get params
@@ -794,6 +1056,17 @@ func (o *CifsServiceCollectionGetParams) SetSecurityRestrictAnonymousQueryParame
 	o.SecurityRestrictAnonymousQueryParameter = securityRestrictAnonymous
 }
 
+// WithSecuritySessionSecurityQueryParameter adds the securitySessionSecurity to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecuritySessionSecurityQueryParameter(securitySessionSecurity *string) *CifsServiceCollectionGetParams {
+	o.SetSecuritySessionSecurityQueryParameter(securitySessionSecurity)
+	return o
+}
+
+// SetSecuritySessionSecurityQueryParameter adds the securitySessionSecurity to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecuritySessionSecurityQueryParameter(securitySessionSecurity *string) {
+	o.SecuritySessionSecurityQueryParameter = securitySessionSecurity
+}
+
 // WithSecuritySmbEncryptionQueryParameter adds the securitySmbEncryption to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) WithSecuritySmbEncryptionQueryParameter(securitySmbEncryption *bool) *CifsServiceCollectionGetParams {
 	o.SetSecuritySmbEncryptionQueryParameter(securitySmbEncryption)
@@ -814,6 +1087,39 @@ func (o *CifsServiceCollectionGetParams) WithSecuritySmbSigningQueryParameter(se
 // SetSecuritySmbSigningQueryParameter adds the securitySmbSigning to the cifs service collection get params
 func (o *CifsServiceCollectionGetParams) SetSecuritySmbSigningQueryParameter(securitySmbSigning *bool) {
 	o.SecuritySmbSigningQueryParameter = securitySmbSigning
+}
+
+// WithSecurityTryLdapChannelBindingQueryParameter adds the securityTryLdapChannelBinding to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityTryLdapChannelBindingQueryParameter(securityTryLdapChannelBinding *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityTryLdapChannelBindingQueryParameter(securityTryLdapChannelBinding)
+	return o
+}
+
+// SetSecurityTryLdapChannelBindingQueryParameter adds the securityTryLdapChannelBinding to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityTryLdapChannelBindingQueryParameter(securityTryLdapChannelBinding *bool) {
+	o.SecurityTryLdapChannelBindingQueryParameter = securityTryLdapChannelBinding
+}
+
+// WithSecurityUseLdapsQueryParameter adds the securityUseLdaps to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityUseLdapsQueryParameter(securityUseLdaps *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityUseLdapsQueryParameter(securityUseLdaps)
+	return o
+}
+
+// SetSecurityUseLdapsQueryParameter adds the securityUseLdaps to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityUseLdapsQueryParameter(securityUseLdaps *bool) {
+	o.SecurityUseLdapsQueryParameter = securityUseLdaps
+}
+
+// WithSecurityUseStartTLSQueryParameter adds the securityUseStartTLS to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) WithSecurityUseStartTLSQueryParameter(securityUseStartTLS *bool) *CifsServiceCollectionGetParams {
+	o.SetSecurityUseStartTLSQueryParameter(securityUseStartTLS)
+	return o
+}
+
+// SetSecurityUseStartTLSQueryParameter adds the securityUseStartTls to the cifs service collection get params
+func (o *CifsServiceCollectionGetParams) SetSecurityUseStartTLSQueryParameter(securityUseStartTLS *bool) {
+	o.SecurityUseStartTLSQueryParameter = securityUseStartTLS
 }
 
 // WithStatisticsIopsRawOtherQueryParameter adds the statisticsIopsRawOther to the cifs service collection get params
@@ -1018,23 +1324,6 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qAdDomainOrganizationalUnit != "" {
 
 			if err := r.SetQueryParam("ad_domain.organizational_unit", qAdDomainOrganizationalUnit); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.AdDomainUserQueryParameter != nil {
-
-		// query param ad_domain.user
-		var qrAdDomainUser string
-
-		if o.AdDomainUserQueryParameter != nil {
-			qrAdDomainUser = *o.AdDomainUserQueryParameter
-		}
-		qAdDomainUser := qrAdDomainUser
-		if qAdDomainUser != "" {
-
-			if err := r.SetQueryParam("ad_domain.user", qAdDomainUser); err != nil {
 				return err
 			}
 		}
@@ -1425,6 +1714,227 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
+	if o.OptionsAdminToRootMappingQueryParameter != nil {
+
+		// query param options.admin_to_root_mapping
+		var qrOptionsAdminToRootMapping bool
+
+		if o.OptionsAdminToRootMappingQueryParameter != nil {
+			qrOptionsAdminToRootMapping = *o.OptionsAdminToRootMappingQueryParameter
+		}
+		qOptionsAdminToRootMapping := swag.FormatBool(qrOptionsAdminToRootMapping)
+		if qOptionsAdminToRootMapping != "" {
+
+			if err := r.SetQueryParam("options.admin_to_root_mapping", qOptionsAdminToRootMapping); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsAdvancedSparseFileQueryParameter != nil {
+
+		// query param options.advanced_sparse_file
+		var qrOptionsAdvancedSparseFile bool
+
+		if o.OptionsAdvancedSparseFileQueryParameter != nil {
+			qrOptionsAdvancedSparseFile = *o.OptionsAdvancedSparseFileQueryParameter
+		}
+		qOptionsAdvancedSparseFile := swag.FormatBool(qrOptionsAdvancedSparseFile)
+		if qOptionsAdvancedSparseFile != "" {
+
+			if err := r.SetQueryParam("options.advanced_sparse_file", qOptionsAdvancedSparseFile); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsCopyOffloadQueryParameter != nil {
+
+		// query param options.copy_offload
+		var qrOptionsCopyOffload bool
+
+		if o.OptionsCopyOffloadQueryParameter != nil {
+			qrOptionsCopyOffload = *o.OptionsCopyOffloadQueryParameter
+		}
+		qOptionsCopyOffload := swag.FormatBool(qrOptionsCopyOffload)
+		if qOptionsCopyOffload != "" {
+
+			if err := r.SetQueryParam("options.copy_offload", qOptionsCopyOffload); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsFakeOpenQueryParameter != nil {
+
+		// query param options.fake_open
+		var qrOptionsFakeOpen bool
+
+		if o.OptionsFakeOpenQueryParameter != nil {
+			qrOptionsFakeOpen = *o.OptionsFakeOpenQueryParameter
+		}
+		qOptionsFakeOpen := swag.FormatBool(qrOptionsFakeOpen)
+		if qOptionsFakeOpen != "" {
+
+			if err := r.SetQueryParam("options.fake_open", qOptionsFakeOpen); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsFsctlTrimQueryParameter != nil {
+
+		// query param options.fsctl_trim
+		var qrOptionsFsctlTrim bool
+
+		if o.OptionsFsctlTrimQueryParameter != nil {
+			qrOptionsFsctlTrim = *o.OptionsFsctlTrimQueryParameter
+		}
+		qOptionsFsctlTrim := swag.FormatBool(qrOptionsFsctlTrim)
+		if qOptionsFsctlTrim != "" {
+
+			if err := r.SetQueryParam("options.fsctl_trim", qOptionsFsctlTrim); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsJunctionReparseQueryParameter != nil {
+
+		// query param options.junction_reparse
+		var qrOptionsJunctionReparse bool
+
+		if o.OptionsJunctionReparseQueryParameter != nil {
+			qrOptionsJunctionReparse = *o.OptionsJunctionReparseQueryParameter
+		}
+		qOptionsJunctionReparse := swag.FormatBool(qrOptionsJunctionReparse)
+		if qOptionsJunctionReparse != "" {
+
+			if err := r.SetQueryParam("options.junction_reparse", qOptionsJunctionReparse); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsLargeMtuQueryParameter != nil {
+
+		// query param options.large_mtu
+		var qrOptionsLargeMtu bool
+
+		if o.OptionsLargeMtuQueryParameter != nil {
+			qrOptionsLargeMtu = *o.OptionsLargeMtuQueryParameter
+		}
+		qOptionsLargeMtu := swag.FormatBool(qrOptionsLargeMtu)
+		if qOptionsLargeMtu != "" {
+
+			if err := r.SetQueryParam("options.large_mtu", qOptionsLargeMtu); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsMultichannelQueryParameter != nil {
+
+		// query param options.multichannel
+		var qrOptionsMultichannel bool
+
+		if o.OptionsMultichannelQueryParameter != nil {
+			qrOptionsMultichannel = *o.OptionsMultichannelQueryParameter
+		}
+		qOptionsMultichannel := swag.FormatBool(qrOptionsMultichannel)
+		if qOptionsMultichannel != "" {
+
+			if err := r.SetQueryParam("options.multichannel", qOptionsMultichannel); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsNullUserWindowsNameQueryParameter != nil {
+
+		// query param options.null_user_windows_name
+		var qrOptionsNullUserWindowsName string
+
+		if o.OptionsNullUserWindowsNameQueryParameter != nil {
+			qrOptionsNullUserWindowsName = *o.OptionsNullUserWindowsNameQueryParameter
+		}
+		qOptionsNullUserWindowsName := qrOptionsNullUserWindowsName
+		if qOptionsNullUserWindowsName != "" {
+
+			if err := r.SetQueryParam("options.null_user_windows_name", qOptionsNullUserWindowsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsPathComponentCacheQueryParameter != nil {
+
+		// query param options.path_component_cache
+		var qrOptionsPathComponentCache bool
+
+		if o.OptionsPathComponentCacheQueryParameter != nil {
+			qrOptionsPathComponentCache = *o.OptionsPathComponentCacheQueryParameter
+		}
+		qOptionsPathComponentCache := swag.FormatBool(qrOptionsPathComponentCache)
+		if qOptionsPathComponentCache != "" {
+
+			if err := r.SetQueryParam("options.path_component_cache", qOptionsPathComponentCache); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsReferralQueryParameter != nil {
+
+		// query param options.referral
+		var qrOptionsReferral bool
+
+		if o.OptionsReferralQueryParameter != nil {
+			qrOptionsReferral = *o.OptionsReferralQueryParameter
+		}
+		qOptionsReferral := swag.FormatBool(qrOptionsReferral)
+		if qOptionsReferral != "" {
+
+			if err := r.SetQueryParam("options.referral", qOptionsReferral); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsSmbCreditsQueryParameter != nil {
+
+		// query param options.smb_credits
+		var qrOptionsSmbCredits int64
+
+		if o.OptionsSmbCreditsQueryParameter != nil {
+			qrOptionsSmbCredits = *o.OptionsSmbCreditsQueryParameter
+		}
+		qOptionsSmbCredits := swag.FormatInt64(qrOptionsSmbCredits)
+		if qOptionsSmbCredits != "" {
+
+			if err := r.SetQueryParam("options.smb_credits", qOptionsSmbCredits); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OptionsWidelinkReparseVersionsQueryParameter != nil {
+
+		// query param options.widelink_reparse_versions
+		var qrOptionsWidelinkReparseVersions string
+
+		if o.OptionsWidelinkReparseVersionsQueryParameter != nil {
+			qrOptionsWidelinkReparseVersions = *o.OptionsWidelinkReparseVersionsQueryParameter
+		}
+		qOptionsWidelinkReparseVersions := qrOptionsWidelinkReparseVersions
+		if qOptionsWidelinkReparseVersions != "" {
+
+			if err := r.SetQueryParam("options.widelink_reparse_versions", qOptionsWidelinkReparseVersions); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.OrderByQueryParameter != nil {
 
 		// binding items for order_by
@@ -1470,6 +1980,23 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
+	if o.SecurityAesNetlogonEnabledQueryParameter != nil {
+
+		// query param security.aes_netlogon_enabled
+		var qrSecurityAesNetlogonEnabled bool
+
+		if o.SecurityAesNetlogonEnabledQueryParameter != nil {
+			qrSecurityAesNetlogonEnabled = *o.SecurityAesNetlogonEnabledQueryParameter
+		}
+		qSecurityAesNetlogonEnabled := swag.FormatBool(qrSecurityAesNetlogonEnabled)
+		if qSecurityAesNetlogonEnabled != "" {
+
+			if err := r.SetQueryParam("security.aes_netlogon_enabled", qSecurityAesNetlogonEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SecurityEncryptDcConnectionQueryParameter != nil {
 
 		// query param security.encrypt_dc_connection
@@ -1499,6 +2026,23 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qSecurityKdcEncryption != "" {
 
 			if err := r.SetQueryParam("security.kdc_encryption", qSecurityKdcEncryption); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityLdapReferralEnabledQueryParameter != nil {
+
+		// query param security.ldap_referral_enabled
+		var qrSecurityLdapReferralEnabled bool
+
+		if o.SecurityLdapReferralEnabledQueryParameter != nil {
+			qrSecurityLdapReferralEnabled = *o.SecurityLdapReferralEnabledQueryParameter
+		}
+		qSecurityLdapReferralEnabled := swag.FormatBool(qrSecurityLdapReferralEnabled)
+		if qSecurityLdapReferralEnabled != "" {
+
+			if err := r.SetQueryParam("security.ldap_referral_enabled", qSecurityLdapReferralEnabled); err != nil {
 				return err
 			}
 		}
@@ -1538,6 +2082,23 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
+	if o.SecuritySessionSecurityQueryParameter != nil {
+
+		// query param security.session_security
+		var qrSecuritySessionSecurity string
+
+		if o.SecuritySessionSecurityQueryParameter != nil {
+			qrSecuritySessionSecurity = *o.SecuritySessionSecurityQueryParameter
+		}
+		qSecuritySessionSecurity := qrSecuritySessionSecurity
+		if qSecuritySessionSecurity != "" {
+
+			if err := r.SetQueryParam("security.session_security", qSecuritySessionSecurity); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SecuritySmbEncryptionQueryParameter != nil {
 
 		// query param security.smb_encryption
@@ -1567,6 +2128,57 @@ func (o *CifsServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qSecuritySmbSigning != "" {
 
 			if err := r.SetQueryParam("security.smb_signing", qSecuritySmbSigning); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityTryLdapChannelBindingQueryParameter != nil {
+
+		// query param security.try_ldap_channel_binding
+		var qrSecurityTryLdapChannelBinding bool
+
+		if o.SecurityTryLdapChannelBindingQueryParameter != nil {
+			qrSecurityTryLdapChannelBinding = *o.SecurityTryLdapChannelBindingQueryParameter
+		}
+		qSecurityTryLdapChannelBinding := swag.FormatBool(qrSecurityTryLdapChannelBinding)
+		if qSecurityTryLdapChannelBinding != "" {
+
+			if err := r.SetQueryParam("security.try_ldap_channel_binding", qSecurityTryLdapChannelBinding); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityUseLdapsQueryParameter != nil {
+
+		// query param security.use_ldaps
+		var qrSecurityUseLdaps bool
+
+		if o.SecurityUseLdapsQueryParameter != nil {
+			qrSecurityUseLdaps = *o.SecurityUseLdapsQueryParameter
+		}
+		qSecurityUseLdaps := swag.FormatBool(qrSecurityUseLdaps)
+		if qSecurityUseLdaps != "" {
+
+			if err := r.SetQueryParam("security.use_ldaps", qSecurityUseLdaps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityUseStartTLSQueryParameter != nil {
+
+		// query param security.use_start_tls
+		var qrSecurityUseStartTLS bool
+
+		if o.SecurityUseStartTLSQueryParameter != nil {
+			qrSecurityUseStartTLS = *o.SecurityUseStartTLSQueryParameter
+		}
+		qSecurityUseStartTLS := swag.FormatBool(qrSecurityUseStartTLS)
+		if qSecurityUseStartTLS != "" {
+
+			if err := r.SetQueryParam("security.use_start_tls", qSecurityUseStartTLS); err != nil {
 				return err
 			}
 		}

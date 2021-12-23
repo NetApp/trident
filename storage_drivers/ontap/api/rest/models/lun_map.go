@@ -38,6 +38,13 @@ type LunMap struct {
 	// lun
 	Lun *LunMapLun `json:"lun,omitempty"`
 
+	// The cluster nodes from which network paths to the mapped LUNs are advertised via the SAN protocols as part of the Selective LUN Map (SLM) feature of ONTAP.<br/>
+	// When a LUN map is created, the cluster node hosting the LUN and its high availability (HA) partner are set as the default reporting node. In POST, the property `additional_reporting_node` may be used to add an additional node and its HA partner.<br/>
+	// For further information, see [`DOC /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes`](#docs-SAN-protocols_san_lun-maps_{lun.uuid}_{igroup.uuid}_reporting-nodes).
+	//
+	// Read Only: true
+	ReportingNodes []*LunMapReportingNodesItems0 `json:"reporting_nodes,omitempty"`
+
 	// svm
 	Svm *LunMapSvm `json:"svm,omitempty"`
 }
@@ -59,6 +66,10 @@ func (m *LunMap) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateLun(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateReportingNodes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -139,6 +150,30 @@ func (m *LunMap) validateLun(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *LunMap) validateReportingNodes(formats strfmt.Registry) error {
+	if swag.IsZero(m.ReportingNodes) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ReportingNodes); i++ {
+		if swag.IsZero(m.ReportingNodes[i]) { // not required
+			continue
+		}
+
+		if m.ReportingNodes[i] != nil {
+			if err := m.ReportingNodes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("reporting_nodes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *LunMap) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -169,6 +204,10 @@ func (m *LunMap) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 	}
 
 	if err := m.contextValidateLun(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReportingNodes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -219,6 +258,28 @@ func (m *LunMap) contextValidateLun(ctx context.Context, formats strfmt.Registry
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *LunMap) contextValidateReportingNodes(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reporting_nodes", "body", []*LunMapReportingNodesItems0(m.ReportingNodes)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ReportingNodes); i++ {
+
+		if m.ReportingNodes[i] != nil {
+			if err := m.ReportingNodes[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("reporting_nodes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -1228,6 +1289,233 @@ func (m *LunMapLunNodeLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *LunMapLunNodeLinks) UnmarshalBinary(b []byte) error {
 	var res LunMapLunNodeLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunMapReportingNodesItems0 A cluster node from which network paths to the LUN are advertised by ONTAP via the SAN protocols.
+//
+//
+// swagger:model LunMapReportingNodesItems0
+type LunMapReportingNodesItems0 struct {
+
+	// links
+	Links *LunMapReportingNodesItems0Links `json:"_links,omitempty"`
+
+	// The name of the node.<br/>
+	// Either `uuid` or `name` are required in POST.
+	//
+	// Example: node1
+	Name string `json:"name,omitempty"`
+
+	// The unique identifier of the node.<br/>
+	// Either `uuid` or `name` are required in POST.
+	//
+	// Example: 5ac8eb9c-4e32-dbaa-57ca-fb905976f54e
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this lun map reporting nodes items0
+func (m *LunMapReportingNodesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunMapReportingNodesItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun map reporting nodes items0 based on the context it is used
+func (m *LunMapReportingNodesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunMapReportingNodesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunMapReportingNodesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunMapReportingNodesItems0) UnmarshalBinary(b []byte) error {
+	var res LunMapReportingNodesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunMapReportingNodesItems0Links lun map reporting nodes items0 links
+//
+// swagger:model LunMapReportingNodesItems0Links
+type LunMapReportingNodesItems0Links struct {
+
+	// node
+	Node *Href `json:"node,omitempty"`
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this lun map reporting nodes items0 links
+func (m *LunMapReportingNodesItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunMapReportingNodesItems0Links) validateNode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Node) { // not required
+		return nil
+	}
+
+	if m.Node != nil {
+		if err := m.Node.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunMapReportingNodesItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this lun map reporting nodes items0 links based on the context it is used
+func (m *LunMapReportingNodesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LunMapReportingNodesItems0Links) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Node != nil {
+		if err := m.Node.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *LunMapReportingNodesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunMapReportingNodesItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunMapReportingNodesItems0Links) UnmarshalBinary(b []byte) error {
+	var res LunMapReportingNodesItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

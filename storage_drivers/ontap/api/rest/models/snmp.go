@@ -28,6 +28,14 @@ type Snmp struct {
 	// Specifies whether to enable or disable SNMP.
 	// Example: true
 	Enabled bool `json:"enabled,omitempty"`
+
+	// Specifies whether to enable or disable SNMP traps.
+	// Example: true
+	TrapsEnabled bool `json:"traps_enabled,omitempty"`
+
+	// Trigger a test SNMP trap.
+	// Example: true
+	TriggerTestTrap *bool `json:"trigger_test_trap,omitempty"`
 }
 
 // Validate validates this snmp

@@ -60,6 +60,24 @@ func NewIpsecPolicyCollectionGetParamsWithHTTPClient(client *http.Client) *Ipsec
 */
 type IpsecPolicyCollectionGetParams struct {
 
+	/* AuthenticationMethod.
+
+	   Filter by authentication_method
+	*/
+	AuthenticationMethodQueryParameter *string
+
+	/* CertificateName.
+
+	   Filter by certificate.name
+	*/
+	CertificateNameQueryParameter *string
+
+	/* CertificateUUID.
+
+	   Filter by certificate.uuid
+	*/
+	CertificateUUIDQueryParameter *string
+
 	/* Enabled.
 
 	   Filter by enabled
@@ -273,6 +291,39 @@ func (o *IpsecPolicyCollectionGetParams) WithHTTPClient(client *http.Client) *Ip
 // SetHTTPClient adds the HTTPClient to the ipsec policy collection get params
 func (o *IpsecPolicyCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAuthenticationMethodQueryParameter adds the authenticationMethod to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithAuthenticationMethodQueryParameter(authenticationMethod *string) *IpsecPolicyCollectionGetParams {
+	o.SetAuthenticationMethodQueryParameter(authenticationMethod)
+	return o
+}
+
+// SetAuthenticationMethodQueryParameter adds the authenticationMethod to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetAuthenticationMethodQueryParameter(authenticationMethod *string) {
+	o.AuthenticationMethodQueryParameter = authenticationMethod
+}
+
+// WithCertificateNameQueryParameter adds the certificateName to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithCertificateNameQueryParameter(certificateName *string) *IpsecPolicyCollectionGetParams {
+	o.SetCertificateNameQueryParameter(certificateName)
+	return o
+}
+
+// SetCertificateNameQueryParameter adds the certificateName to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetCertificateNameQueryParameter(certificateName *string) {
+	o.CertificateNameQueryParameter = certificateName
+}
+
+// WithCertificateUUIDQueryParameter adds the certificateUUID to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithCertificateUUIDQueryParameter(certificateUUID *string) *IpsecPolicyCollectionGetParams {
+	o.SetCertificateUUIDQueryParameter(certificateUUID)
+	return o
+}
+
+// SetCertificateUUIDQueryParameter adds the certificateUuid to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetCertificateUUIDQueryParameter(certificateUUID *string) {
+	o.CertificateUUIDQueryParameter = certificateUUID
 }
 
 // WithEnabledQueryParameter adds the enabled to the ipsec policy collection get params
@@ -546,6 +597,57 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		return err
 	}
 	var res []error
+
+	if o.AuthenticationMethodQueryParameter != nil {
+
+		// query param authentication_method
+		var qrAuthenticationMethod string
+
+		if o.AuthenticationMethodQueryParameter != nil {
+			qrAuthenticationMethod = *o.AuthenticationMethodQueryParameter
+		}
+		qAuthenticationMethod := qrAuthenticationMethod
+		if qAuthenticationMethod != "" {
+
+			if err := r.SetQueryParam("authentication_method", qAuthenticationMethod); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CertificateNameQueryParameter != nil {
+
+		// query param certificate.name
+		var qrCertificateName string
+
+		if o.CertificateNameQueryParameter != nil {
+			qrCertificateName = *o.CertificateNameQueryParameter
+		}
+		qCertificateName := qrCertificateName
+		if qCertificateName != "" {
+
+			if err := r.SetQueryParam("certificate.name", qCertificateName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CertificateUUIDQueryParameter != nil {
+
+		// query param certificate.uuid
+		var qrCertificateUUID string
+
+		if o.CertificateUUIDQueryParameter != nil {
+			qrCertificateUUID = *o.CertificateUUIDQueryParameter
+		}
+		qCertificateUUID := qrCertificateUUID
+		if qCertificateUUID != "" {
+
+			if err := r.SetQueryParam("certificate.uuid", qCertificateUUID); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.EnabledQueryParameter != nil {
 

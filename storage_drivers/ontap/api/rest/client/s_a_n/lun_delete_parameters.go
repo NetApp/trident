@@ -71,7 +71,7 @@ type LunDeleteParams struct {
 
 	/* UUID.
 
-	   The unique identifier of the LUN.
+	   The unique identifier of the LUN to retrieve.
 
 	*/
 	UUIDPathParameter string

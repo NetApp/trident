@@ -98,6 +98,16 @@ type ClientService interface {
 
 	IscsiSessionGet(params *IscsiSessionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IscsiSessionGetOK, error)
 
+	LunAttributeCollectionGet(params *LunAttributeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeCollectionGetOK, error)
+
+	LunAttributeCreate(params *LunAttributeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeCreateCreated, error)
+
+	LunAttributeDelete(params *LunAttributeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeDeleteOK, error)
+
+	LunAttributeGet(params *LunAttributeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeGetOK, error)
+
+	LunAttributeModify(params *LunAttributeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeModifyOK, error)
+
 	LunCollectionGet(params *LunCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunCollectionGetOK, error)
 
 	LunCollectionPerformanceMetricsGet(params *LunCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunCollectionPerformanceMetricsGetOK, error)
@@ -116,6 +126,14 @@ type ClientService interface {
 
 	LunMapGet(params *LunMapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapGetOK, error)
 
+	LunMapReportingNodeCollectionGet(params *LunMapReportingNodeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeCollectionGetOK, error)
+
+	LunMapReportingNodeCreate(params *LunMapReportingNodeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeCreateCreated, error)
+
+	LunMapReportingNodeDelete(params *LunMapReportingNodeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeDeleteOK, error)
+
+	LunMapReportingNodeGet(params *LunMapReportingNodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeGetOK, error)
+
 	LunModify(params *LunModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunModifyOK, error)
 
 	PortsetCollectionGet(params *PortsetCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetCollectionGetOK, error)
@@ -133,6 +151,14 @@ type ClientService interface {
 	PortsetInterfaceDelete(params *PortsetInterfaceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceDeleteOK, error)
 
 	PortsetInterfaceGet(params *PortsetInterfaceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PortsetInterfaceGetOK, error)
+
+	VvolBindingCollectionGet(params *VvolBindingCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingCollectionGetOK, error)
+
+	VvolBindingCreate(params *VvolBindingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingCreateCreated, error)
+
+	VvolBindingDelete(params *VvolBindingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingDeleteOK, error)
+
+	VvolBindingGet(params *VvolBindingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingGetOK, error)
 
 	WwpnAliasCollectionGet(params *WwpnAliasCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WwpnAliasCollectionGetOK, error)
 
@@ -1731,16 +1757,228 @@ func (a *Client) IscsiSessionGet(params *IscsiSessionGetParams, authInfo runtime
 }
 
 /*
+  LunAttributeCollectionGet Retrieves LUN attributes.
+### Learn more
+* [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes)
+
+*/
+func (a *Client) LunAttributeCollectionGet(params *LunAttributeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunAttributeCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_attribute_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/luns/{lun.uuid}/attributes",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunAttributeCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunAttributeCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunAttributeCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LunAttributeCreate Adds an attribute to a LUN.
+### Required properties
+* `name` - The name of the attribute to add.
+* `value` - The value of the attribute to add.
+### Learn more
+* [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes)
+
+*/
+func (a *Client) LunAttributeCreate(params *LunAttributeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunAttributeCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_attribute_create",
+		Method:             "POST",
+		PathPattern:        "/storage/luns/{lun.uuid}/attributes",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunAttributeCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunAttributeCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunAttributeCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LunAttributeDelete Deletes a LUN attribute.
+### Learn more
+* [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes)
+
+*/
+func (a *Client) LunAttributeDelete(params *LunAttributeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunAttributeDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_attribute_delete",
+		Method:             "DELETE",
+		PathPattern:        "/storage/luns/{lun.uuid}/attributes/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunAttributeDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunAttributeDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunAttributeDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LunAttributeGet Retrieves a LUN attribute.
+### Learn more
+* [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes)
+
+*/
+func (a *Client) LunAttributeGet(params *LunAttributeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunAttributeGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_attribute_get",
+		Method:             "GET",
+		PathPattern:        "/storage/luns/{lun.uuid}/attributes/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunAttributeGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunAttributeGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunAttributeGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LunAttributeModify Updates a LUN attribute value.
+### Learn more
+* [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes)
+
+*/
+func (a *Client) LunAttributeModify(params *LunAttributeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunAttributeModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunAttributeModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_attribute_modify",
+		Method:             "PATCH",
+		PathPattern:        "/storage/luns/{lun.uuid}/attributes/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunAttributeModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunAttributeModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunAttributeModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   LunCollectionGet Retrieves LUNs.
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `attributes.*`
 * `auto_delete`
+* `copy.*`
 * `lun_maps.*`
 * `movement.*`
-* `status.mapped`
 * `statistics.*`
+* `vvol.bindings.*`
 * `metric.*`
 ### Related ONTAP commands
+* `lun bind show`
+* `lun copy show`
 * `lun mapping show`
 * `lun move show`
 * `lun show`
@@ -1837,6 +2075,7 @@ If not specified in POST, the follow default property values are assigned.
 * `auto_delete` - _false_
 ### Related ONTAP commands
 * `lun create`
+* `lun copy start`
 * `volume file clone autodelete`
 * `volume file clone create`
 ### Learn more
@@ -1881,6 +2120,7 @@ func (a *Client) LunCreate(params *LunCreateParams, authInfo runtime.ClientAuthI
 /*
   LunDelete Deletes a LUN.
 ### Related ONTAP commands
+* `lun copy cancel`
 * `lun delete`
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
@@ -1925,13 +2165,17 @@ func (a *Client) LunDelete(params *LunDeleteParams, authInfo runtime.ClientAuthI
   LunGet Retrieves a LUN.
 ### Expensive properties
 There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `attributes.*`
 * `auto_delete`
+* `copy.*`
 * `lun_maps.*`
 * `movement.*`
-* `status.mapped`
 * `statistics.*`
+* `vvol.bindings.*`
 * `metric.*`
 ### Related ONTAP commands
+* `lun bind show`
+* `lun copy show`
 * `lun mapping show`
 * `lun move show`
 * `lun show`
@@ -1979,6 +2223,7 @@ func (a *Client) LunGet(params *LunGetParams, authInfo runtime.ClientAuthInfoWri
   LunMapCollectionGet Retrieves LUN maps.
 ### Related ONTAP commands
 * `lun mapping show`
+### Learn more
 * [`DOC /protocols/san/lun-maps`](#docs-SAN-protocols_san_lun-maps)
 
 */
@@ -2154,9 +2399,187 @@ func (a *Client) LunMapGet(params *LunMapGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
+  LunMapReportingNodeCollectionGet Retrieves LUN map reporting nodes.
+### Related ONTAP commands
+* `lun mapping show`
+### Learn more
+* [`DOC /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes`](#docs-SAN-protocols_san_lun-maps_{lun.uuid}_{igroup.uuid}_reporting-nodes)
+
+*/
+func (a *Client) LunMapReportingNodeCollectionGet(params *LunMapReportingNodeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunMapReportingNodeCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_map_reporting_node_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunMapReportingNodeCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunMapReportingNodeCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunMapReportingNodeCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LunMapReportingNodeCreate Adds a reporting node and its HA partner to a LUN map.
+### Required properties
+* `node.uuid` or `node.name` - A cluster node to add.
+### Related ONTAP commands
+* `lun mapping add-reporting-nodes`
+### Learn more
+* [`DOC /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes`](#docs-SAN-protocols_san_lun-maps_{lun.uuid}_{igroup.uuid}_reporting-nodes)
+
+*/
+func (a *Client) LunMapReportingNodeCreate(params *LunMapReportingNodeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunMapReportingNodeCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_map_reporting_node_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunMapReportingNodeCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunMapReportingNodeCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunMapReportingNodeCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LunMapReportingNodeDelete Removes a reporting node and its HA partner from a LUN map.
+### Related ONTAP commands
+* `lun mapping remove-reporting-nodes`
+### Learn more
+* [`DOC /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes`](#docs-SAN-protocols_san_lun-maps_{lun.uuid}_{igroup.uuid}_reporting-nodes)
+
+*/
+func (a *Client) LunMapReportingNodeDelete(params *LunMapReportingNodeDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunMapReportingNodeDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_map_reporting_node_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunMapReportingNodeDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunMapReportingNodeDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunMapReportingNodeDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LunMapReportingNodeGet Retrieves a LUN map reporting node.
+### Related ONTAP commands
+* `lun mapping show`
+### Learn more
+* [`DOC /protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes`](#docs-SAN-protocols_san_lun-maps_{lun.uuid}_{igroup.uuid}_reporting-nodes)
+
+*/
+func (a *Client) LunMapReportingNodeGet(params *LunMapReportingNodeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunMapReportingNodeGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_map_reporting_node_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}/reporting-nodes/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunMapReportingNodeGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunMapReportingNodeGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunMapReportingNodeGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   LunModify Updates the properties of a LUN. A PATCH request can also be be used to overwrite the contents of a LUN as a clone of another, to begin movement of a LUN between volumes, and to pause and resume the movement of a LUN between volumes.
 ### Related ONTAP commands
+* `lun copy modify`
+* `lun copy pause`
+* `lun copy resume`
 * `lun modify`
+* `lun move-in-volume`
 * `lun move modify`
 * `lun move pause`
 * `lun move resume`
@@ -2554,6 +2977,181 @@ func (a *Client) PortsetInterfaceGet(params *PortsetInterfaceGetParams, authInfo
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*PortsetInterfaceGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  VvolBindingCollectionGet Retrieves vVol bindings.
+### Related ONTAP commands
+* `lun bind show`
+* [`DOC /protocols/san/vvol-bindings`](#docs-SAN-protocols_san_vvol-bindings)
+
+*/
+func (a *Client) VvolBindingCollectionGet(params *VvolBindingCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVvolBindingCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vvol_binding_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/vvol-bindings",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VvolBindingCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VvolBindingCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VvolBindingCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  VvolBindingCreate Creates a vVol binding. The binding between any two specific LUNs is reference counted. When a binding is created that already exists, the binding count is incremented.
+### Required properties
+* `svm.uuid` or `svm.name` - Existing SVM in which to create the vVol binding.
+* `protocol_endpoint.uuid` or `protocol_endpoint.name` - Existing class `protocol_endpoint` LUN to bind to the specified class `vvol` LUN.
+* `vvol.uuid` or `vvol.name` - Existing class `vvol` LUN to bind to the specified class `protocol_endpoint` LUN.
+### Related ONTAP commands
+* `lun bind create`
+### Learn more
+* [`DOC /protocols/san/vvol-bindings`](#docs-SAN-protocols_san_vvol-bindings)
+
+*/
+func (a *Client) VvolBindingCreate(params *VvolBindingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVvolBindingCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vvol_binding_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/san/vvol-bindings",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VvolBindingCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VvolBindingCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VvolBindingCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  VvolBindingDelete Deletes a vVol binding. The binding between any two specific LUNs is reference counted. When a binding is deleted, the binding count is decremented, but the LUNs remain bound if the resultant reference count is greater than zero. When the binding count reaches zero, the binding is destroyed.
+### Related ONTAP commands
+* `lun bind destroy`
+### Learn more
+* [`DOC /protocols/san/vvol-bindings`](#docs-SAN-protocols_san_vvol-bindings)
+
+*/
+func (a *Client) VvolBindingDelete(params *VvolBindingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVvolBindingDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vvol_binding_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VvolBindingDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VvolBindingDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VvolBindingDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  VvolBindingGet Retrieves a vVol binding.
+### Related ONTAP commands
+* `lun bind show`
+### Learn more
+* [`DOC /protocols/san/vvol-bindings`](#docs-SAN-protocols_san_vvol-bindings)
+
+*/
+func (a *Client) VvolBindingGet(params *VvolBindingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VvolBindingGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewVvolBindingGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "vvol_binding_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/san/vvol-bindings/{protocol_endpoint.uuid}/{vvol.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &VvolBindingGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*VvolBindingGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VvolBindingGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

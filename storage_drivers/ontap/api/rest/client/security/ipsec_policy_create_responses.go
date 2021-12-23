@@ -102,6 +102,9 @@ func NewIpsecPolicyCreateDefault(code int) *IpsecPolicyCreateDefault {
 | 66257121 | The maximum limit of IPsec Policies has reached for the specified SVM. |
 | 66257125 | The local_endpoint.address must be specified with local_endpoint.netmask. |
 | 66257126 | The remote_endpoint.address must be specified with remote_endpoint.netmask. |
+| 66257132 | Invalid value for port field. Value should be in range <1-65535>. |
+| 66257139 | Certificate with the specified UUID was not found. |
+| 66257140 | Only certificates with a client or server type are supported. |
 
 */
 type IpsecPolicyCreateDefault struct {

@@ -31,6 +31,10 @@ type Svm struct {
 	// Read Only: true
 	AggregatesDelegated *bool `json:"aggregates_delegated,omitempty"`
 
+	// Specifies the default Anti-ransomware state of the volumes in the SVM. Default "anti_ransomware_default_volume_state" property is disabled for POST operation. If this value is "disabled", Anti-ransomware protection is disabled by default on the new volumes that are created in the SVM. If this value is "dry_run", Anti-ransomware protection is in learning mode by default on the new volumes that are created in the SVM.  When the Anti-ransomware license is not present, this property is ignored and volumes will be created with the "disabled" state.
+	// Enum: [disabled dry_run]
+	AntiRansomwareDefaultVolumeState string `json:"anti_ransomware_default_volume_state,omitempty"`
+
 	// certificate
 	Certificate *SvmCertificate `json:"certificate,omitempty"`
 
@@ -76,6 +80,9 @@ type Svm struct {
 	// Example: svm1
 	Name string `json:"name,omitempty"`
 
+	// ndmp
+	Ndmp *SvmNdmp `json:"ndmp,omitempty"`
+
 	// nfs
 	Nfs *SvmNfs `json:"nfs,omitempty"`
 
@@ -117,9 +124,6 @@ type Svm struct {
 	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
 	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
-
-	// volume efficiency policy
-	VolumeEfficiencyPolicy *SvmVolumeEfficiencyPolicy `json:"volume_efficiency_policy,omitempty"`
 }
 
 // Validate validates this svm
@@ -131,6 +135,10 @@ func (m *Svm) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateAggregates(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAntiRansomwareDefaultVolumeState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -178,6 +186,10 @@ func (m *Svm) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateNdmp(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateNfs(formats); err != nil {
 		res = append(res, err)
 	}
@@ -219,10 +231,6 @@ func (m *Svm) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSubtype(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateVolumeEfficiencyPolicy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -268,6 +276,62 @@ func (m *Svm) validateAggregates(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+var svmTypeAntiRansomwareDefaultVolumeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["disabled","dry_run"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		svmTypeAntiRansomwareDefaultVolumeStatePropEnum = append(svmTypeAntiRansomwareDefaultVolumeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// svm
+	// Svm
+	// anti_ransomware_default_volume_state
+	// AntiRansomwareDefaultVolumeState
+	// disabled
+	// END DEBUGGING
+	// SvmAntiRansomwareDefaultVolumeStateDisabled captures enum value "disabled"
+	SvmAntiRansomwareDefaultVolumeStateDisabled string = "disabled"
+
+	// BEGIN DEBUGGING
+	// svm
+	// Svm
+	// anti_ransomware_default_volume_state
+	// AntiRansomwareDefaultVolumeState
+	// dry_run
+	// END DEBUGGING
+	// SvmAntiRansomwareDefaultVolumeStateDryRun captures enum value "dry_run"
+	SvmAntiRansomwareDefaultVolumeStateDryRun string = "dry_run"
+)
+
+// prop value enum
+func (m *Svm) validateAntiRansomwareDefaultVolumeStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, svmTypeAntiRansomwareDefaultVolumeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Svm) validateAntiRansomwareDefaultVolumeState(formats strfmt.Registry) error {
+	if swag.IsZero(m.AntiRansomwareDefaultVolumeState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAntiRansomwareDefaultVolumeStateEnum("anti_ransomware_default_volume_state", "body", m.AntiRansomwareDefaultVolumeState); err != nil {
+		return err
 	}
 
 	return nil
@@ -1182,6 +1246,23 @@ func (m *Svm) validateLdap(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Svm) validateNdmp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Ndmp) { // not required
+		return nil
+	}
+
+	if m.Ndmp != nil {
+		if err := m.Ndmp.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ndmp")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Svm) validateNfs(formats strfmt.Registry) error {
 	if swag.IsZero(m.Nfs) { // not required
 		return nil
@@ -1504,23 +1585,6 @@ func (m *Svm) validateSubtype(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Svm) validateVolumeEfficiencyPolicy(formats strfmt.Registry) error {
-	if swag.IsZero(m.VolumeEfficiencyPolicy) { // not required
-		return nil
-	}
-
-	if m.VolumeEfficiencyPolicy != nil {
-		if err := m.VolumeEfficiencyPolicy.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("volume_efficiency_policy")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
 // ContextValidate validate this svm based on the context it is used
 func (m *Svm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -1573,6 +1637,10 @@ func (m *Svm) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateNdmp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNfs(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1610,10 +1678,6 @@ func (m *Svm) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 	}
 
 	if err := m.contextValidateUUID(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateVolumeEfficiencyPolicy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1798,6 +1862,20 @@ func (m *Svm) contextValidateLdap(ctx context.Context, formats strfmt.Registry) 
 	return nil
 }
 
+func (m *Svm) contextValidateNdmp(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Ndmp != nil {
+		if err := m.Ndmp.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ndmp")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Svm) contextValidateNfs(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Nfs != nil {
@@ -1932,20 +2010,6 @@ func (m *Svm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) 
 
 	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Svm) contextValidateVolumeEfficiencyPolicy(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.VolumeEfficiencyPolicy != nil {
-		if err := m.VolumeEfficiencyPolicy.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("volume_efficiency_policy")
-			}
-			return err
-		}
 	}
 
 	return nil
@@ -2149,7 +2213,7 @@ func (m *SvmAggregatesItems0Links) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmCertificate Certificate for incoming TLS connection requests.
+// SvmCertificate Support for this field will be removed in a future release. Please use /svm/svms/{svm.uuid}/web for this field. Certificate for incoming TLS connection requests.
 //
 // swagger:model SvmCertificate
 type SvmCertificate struct {
@@ -3541,6 +3605,43 @@ func (m *SvmLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SvmLinks) UnmarshalBinary(b []byte) error {
 	var res SvmLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SvmNdmp svm ndmp
+//
+// swagger:model SvmNdmp
+type SvmNdmp struct {
+
+	// If this is set to true, an SVM administrator can manage the NDMP service. If it is false, only the cluster administrator can manage the service.
+	Allowed *bool `json:"allowed,omitempty"`
+}
+
+// Validate validates this svm ndmp
+func (m *SvmNdmp) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this svm ndmp based on context it is used
+func (m *SvmNdmp) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SvmNdmp) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SvmNdmp) UnmarshalBinary(b []byte) error {
+	var res SvmNdmp
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -5306,188 +5407,6 @@ func (m *SvmSnapshotPolicyLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SvmSnapshotPolicyLinks) UnmarshalBinary(b []byte) error {
 	var res SvmSnapshotPolicyLinks
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// SvmVolumeEfficiencyPolicy This is a reference to the volume efficiency policy.
-//
-// swagger:model SvmVolumeEfficiencyPolicy
-type SvmVolumeEfficiencyPolicy struct {
-
-	// links
-	Links *SvmVolumeEfficiencyPolicyLinks `json:"_links,omitempty"`
-
-	// Name of the volume efficiency policy
-	//
-	// Example: default
-	Name string `json:"name,omitempty"`
-
-	// Unique identifier of the volume efficiency policy.
-	//
-	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
-	UUID string `json:"uuid,omitempty"`
-}
-
-// Validate validates this svm volume efficiency policy
-func (m *SvmVolumeEfficiencyPolicy) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *SvmVolumeEfficiencyPolicy) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(m.Links) { // not required
-		return nil
-	}
-
-	if m.Links != nil {
-		if err := m.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("volume_efficiency_policy" + "." + "_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this svm volume efficiency policy based on the context it is used
-func (m *SvmVolumeEfficiencyPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *SvmVolumeEfficiencyPolicy) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Links != nil {
-		if err := m.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("volume_efficiency_policy" + "." + "_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *SvmVolumeEfficiencyPolicy) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *SvmVolumeEfficiencyPolicy) UnmarshalBinary(b []byte) error {
-	var res SvmVolumeEfficiencyPolicy
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// SvmVolumeEfficiencyPolicyLinks svm volume efficiency policy links
-//
-// swagger:model SvmVolumeEfficiencyPolicyLinks
-type SvmVolumeEfficiencyPolicyLinks struct {
-
-	// self
-	Self *Href `json:"self,omitempty"`
-}
-
-// Validate validates this svm volume efficiency policy links
-func (m *SvmVolumeEfficiencyPolicyLinks) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateSelf(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *SvmVolumeEfficiencyPolicyLinks) validateSelf(formats strfmt.Registry) error {
-	if swag.IsZero(m.Self) { // not required
-		return nil
-	}
-
-	if m.Self != nil {
-		if err := m.Self.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("volume_efficiency_policy" + "." + "_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this svm volume efficiency policy links based on the context it is used
-func (m *SvmVolumeEfficiencyPolicyLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateSelf(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *SvmVolumeEfficiencyPolicyLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Self != nil {
-		if err := m.Self.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("volume_efficiency_policy" + "." + "_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *SvmVolumeEfficiencyPolicyLinks) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *SvmVolumeEfficiencyPolicyLinks) UnmarshalBinary(b []byte) error {
-	var res SvmVolumeEfficiencyPolicyLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

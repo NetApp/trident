@@ -66,34 +66,6 @@ type ClusterLdapGetParams struct {
 	*/
 	FieldsQueryParameter []string
 
-	/* MaxRecords.
-
-	   Limit the number of records returned.
-	*/
-	MaxRecordsQueryParameter *int64
-
-	/* OrderBy.
-
-	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
-	*/
-	OrderByQueryParameter []string
-
-	/* ReturnRecords.
-
-	   The default is true for GET calls.  When set to false, only the number of records is returned.
-
-	   Default: true
-	*/
-	ReturnRecordsQueryParameter *bool
-
-	/* ReturnTimeout.
-
-	   The number of seconds to allow the call to execute before returning.  When iterating over a collection, the default is 15 seconds.  ONTAP returns earlier if either max records or the end of the collection is reached.
-
-	   Default: 15
-	*/
-	ReturnTimeoutQueryParameter *int64
-
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -111,21 +83,7 @@ func (o *ClusterLdapGetParams) WithDefaults() *ClusterLdapGetParams {
 //
 // All values with no default are reset to their zero value.
 func (o *ClusterLdapGetParams) SetDefaults() {
-	var (
-		returnRecordsQueryParameterDefault = bool(true)
-
-		returnTimeoutQueryParameterDefault = int64(15)
-	)
-
-	val := ClusterLdapGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
-	}
-
-	val.timeout = o.timeout
-	val.Context = o.Context
-	val.HTTPClient = o.HTTPClient
-	*o = val
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the cluster ldap get params
@@ -172,50 +130,6 @@ func (o *ClusterLdapGetParams) SetFieldsQueryParameter(fields []string) {
 	o.FieldsQueryParameter = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the cluster ldap get params
-func (o *ClusterLdapGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *ClusterLdapGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
-	return o
-}
-
-// SetMaxRecordsQueryParameter adds the maxRecords to the cluster ldap get params
-func (o *ClusterLdapGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
-}
-
-// WithOrderByQueryParameter adds the orderBy to the cluster ldap get params
-func (o *ClusterLdapGetParams) WithOrderByQueryParameter(orderBy []string) *ClusterLdapGetParams {
-	o.SetOrderByQueryParameter(orderBy)
-	return o
-}
-
-// SetOrderByQueryParameter adds the orderBy to the cluster ldap get params
-func (o *ClusterLdapGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
-}
-
-// WithReturnRecordsQueryParameter adds the returnRecords to the cluster ldap get params
-func (o *ClusterLdapGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ClusterLdapGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
-	return o
-}
-
-// SetReturnRecordsQueryParameter adds the returnRecords to the cluster ldap get params
-func (o *ClusterLdapGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
-}
-
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the cluster ldap get params
-func (o *ClusterLdapGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *ClusterLdapGetParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
-	return o
-}
-
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the cluster ldap get params
-func (o *ClusterLdapGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
-}
-
 // WriteToRequest writes these params to a swagger request
 func (o *ClusterLdapGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -232,68 +146,6 @@ func (o *ClusterLdapGetParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
-		}
-	}
-
-	if o.MaxRecordsQueryParameter != nil {
-
-		// query param max_records
-		var qrMaxRecords int64
-
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
-		}
-		qMaxRecords := swag.FormatInt64(qrMaxRecords)
-		if qMaxRecords != "" {
-
-			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.OrderByQueryParameter != nil {
-
-		// binding items for order_by
-		joinedOrderBy := o.bindParamOrderBy(reg)
-
-		// query array param order_by
-		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
-			return err
-		}
-	}
-
-	if o.ReturnRecordsQueryParameter != nil {
-
-		// query param return_records
-		var qrReturnRecords bool
-
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
-		}
-		qReturnRecords := swag.FormatBool(qrReturnRecords)
-		if qReturnRecords != "" {
-
-			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ReturnTimeoutQueryParameter != nil {
-
-		// query param return_timeout
-		var qrReturnTimeout int64
-
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
-		}
-		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
-		if qReturnTimeout != "" {
-
-			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
-				return err
-			}
 		}
 	}
 
@@ -318,21 +170,4 @@ func (o *ClusterLdapGetParams) bindParamFields(formats strfmt.Registry) []string
 	fieldsIS := swag.JoinByFormat(fieldsIC, "csv")
 
 	return fieldsIS
-}
-
-// bindParamClusterLdapGet binds the parameter order_by
-func (o *ClusterLdapGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
-
-	var orderByIC []string
-	for _, orderByIIR := range orderByIR { // explode []string
-
-		orderByIIV := orderByIIR // string as string
-		orderByIC = append(orderByIC, orderByIIV)
-	}
-
-	// items.CollectionFormat: "csv"
-	orderByIS := swag.JoinByFormat(orderByIC, "csv")
-
-	return orderByIS
 }

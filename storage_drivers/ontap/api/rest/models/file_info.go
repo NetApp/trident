@@ -43,6 +43,9 @@ type FileInfo struct {
 	// Format: date-time
 	ChangedTime *strfmt.DateTime `json:"changed_time,omitempty"`
 
+	// constituent
+	Constituent *FileInfoConstituent `json:"constituent,omitempty"`
+
 	// Creation time of the file in date-time format.
 	// Example: 2019-06-12T11:00:16-04:00
 	// Read Only: true
@@ -161,6 +164,10 @@ func (m *FileInfo) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateConstituent(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateCreationTime(formats); err != nil {
 		res = append(res, err)
 	}
@@ -240,6 +247,23 @@ func (m *FileInfo) validateChangedTime(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("changed_time", "body", "date-time", m.ChangedTime.String(), formats); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *FileInfo) validateConstituent(formats strfmt.Registry) error {
+	if swag.IsZero(m.Constituent) { // not required
+		return nil
+	}
+
+	if m.Constituent != nil {
+		if err := m.Constituent.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("constituent")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -453,6 +477,10 @@ func (m *FileInfo) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateConstituent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateCreationTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -557,6 +585,20 @@ func (m *FileInfo) contextValidateChangedTime(ctx context.Context, formats strfm
 
 	if err := validate.ReadOnly(ctx, "changed_time", "body", m.ChangedTime); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *FileInfo) contextValidateConstituent(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Constituent != nil {
+		if err := m.Constituent.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("constituent")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1338,6 +1380,48 @@ func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) MarshalBinary() ([]byte, erro
 // UnmarshalBinary interface implementation
 func (m *FileInfoAnalyticsByModifiedTimeBytesUsed) UnmarshalBinary(b []byte) error {
 	var res FileInfoAnalyticsByModifiedTimeBytesUsed
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FileInfoConstituent file info constituent
+//
+// swagger:model FileInfoConstituent
+type FileInfoConstituent struct {
+
+	// FlexGroup volume constituent name.
+	// Example: fg__0001
+	Name string `json:"name,omitempty"`
+
+	// FlexGroup volume constituent UUID.
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this file info constituent
+func (m *FileInfoConstituent) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this file info constituent based on context it is used
+func (m *FileInfoConstituent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FileInfoConstituent) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FileInfoConstituent) UnmarshalBinary(b []byte) error {
+	var res FileInfoConstituent
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

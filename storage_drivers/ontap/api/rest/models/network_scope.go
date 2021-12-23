@@ -19,11 +19,6 @@ import (
 // swagger:model network_scope
 type NetworkScope string
 
-func NewNetworkScope(value NetworkScope) *NetworkScope {
-	v := value
-	return &v
-}
-
 const (
 
 	// NetworkScopeSvm captures enum value "svm"

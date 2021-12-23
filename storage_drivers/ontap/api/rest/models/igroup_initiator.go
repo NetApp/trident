@@ -261,10 +261,16 @@ type IgroupInitiatorIgroup struct {
 	// links
 	Links *IgroupInitiatorIgroupLinks `json:"_links,omitempty"`
 
+	// The name of the initiator group.
+	//
+	// Example: igroup1
+	// Max Length: 96
+	// Min Length: 1
+	Name string `json:"name,omitempty"`
+
 	// The unique identifier of the initiator group.
 	//
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
-	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
 }
 
@@ -273,6 +279,10 @@ func (m *IgroupInitiatorIgroup) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -299,15 +309,27 @@ func (m *IgroupInitiatorIgroup) validateLinks(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *IgroupInitiatorIgroup) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("igroup"+"."+"name", "body", m.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("igroup"+"."+"name", "body", m.Name, 96); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this igroup initiator igroup based on the context it is used
 func (m *IgroupInitiatorIgroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateUUID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -326,15 +348,6 @@ func (m *IgroupInitiatorIgroup) contextValidateLinks(ctx context.Context, format
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *IgroupInitiatorIgroup) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "igroup"+"."+"uuid", "body", string(m.UUID)); err != nil {
-		return err
 	}
 
 	return nil

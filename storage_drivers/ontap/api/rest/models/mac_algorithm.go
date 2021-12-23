@@ -20,11 +20,6 @@ import (
 // swagger:model mac_algorithm
 type MacAlgorithm string
 
-func NewMacAlgorithm(value MacAlgorithm) *MacAlgorithm {
-	v := value
-	return &v
-}
-
 const (
 
 	// MacAlgorithmHmacSha1 captures enum value "hmac_sha1"

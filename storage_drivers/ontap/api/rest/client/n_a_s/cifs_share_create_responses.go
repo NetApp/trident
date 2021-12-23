@@ -83,7 +83,9 @@ func NewCifsShareCreateDefault(code int) *CifsShareCreateDefault {
 | 656424     | Failed to create CIFS the administrator share 'c$' because you are not permitted to created any admin shares |
 | 655625     | Failed to create CIFS share. The Shares path is not a valid file-type for CIFS share |
 | 656426     | CIFS Share Creation failed because the share name is invalid |
-| 655655     | no-strict-security should be set to true only if unix_symlink is configured as "local" or "widelink".
+| 655655     | no-strict-security should be set to true only if unix_symlink is configured as "local" or "widelink" |
+| 655394     | Failed to create CIFS share because share cannot be made continuously available unless running SMB3 or later. |
+| 4849678    | Failed to create CIFS share because the specified UNIX group does not exist |
 
 */
 type CifsShareCreateDefault struct {

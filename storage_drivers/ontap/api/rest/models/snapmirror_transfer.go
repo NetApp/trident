@@ -32,6 +32,15 @@ type SnapmirrorTransfer struct {
 	// Read Only: true
 	CheckpointSize int64 `json:"checkpoint_size,omitempty"`
 
+	// End time of the transfer.
+	// Example: 2020-12-02T18:36:19-08:00
+	// Read Only: true
+	// Format: date-time
+	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
+
+	// error info
+	ErrorInfo *SnapmirrorTransferErrorInfo `json:"error_info,omitempty"`
+
 	// This is supported for transfer of restore relationship only. This specifies the list of files or LUNs to be restored. Can contain up to eight files or LUNs.
 	Files []*SnapmirrorTransferFilesItems0 `json:"files,omitempty"`
 
@@ -55,6 +64,11 @@ type SnapmirrorTransfer struct {
 	// Throttle in KB/s. Defaults to throttle setting of the associated SnapMirror policy if set, or 0, which is interpreted as unlimited.
 	Throttle int64 `json:"throttle,omitempty"`
 
+	// Elapsed transfer time.
+	// Example: PT28M41S
+	// Read Only: true
+	TotalDuration string `json:"total_duration,omitempty"`
+
 	// uuid
 	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
@@ -67,6 +81,14 @@ func (m *SnapmirrorTransfer) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateEndTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateErrorInfo(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -101,6 +123,35 @@ func (m *SnapmirrorTransfer) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorTransfer) validateEndTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.EndTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("end_time", "body", "date-time", m.EndTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorTransfer) validateErrorInfo(formats strfmt.Registry) error {
+	if swag.IsZero(m.ErrorInfo) { // not required
+		return nil
+	}
+
+	if m.ErrorInfo != nil {
+		if err := m.ErrorInfo.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("error_info")
 			}
 			return err
 		}
@@ -274,6 +325,14 @@ func (m *SnapmirrorTransfer) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateEndTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateErrorInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFiles(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -283,6 +342,10 @@ func (m *SnapmirrorTransfer) ContextValidate(ctx context.Context, formats strfmt
 	}
 
 	if err := m.contextValidateSnapshot(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTotalDuration(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -323,6 +386,29 @@ func (m *SnapmirrorTransfer) contextValidateCheckpointSize(ctx context.Context, 
 
 	if err := validate.ReadOnly(ctx, "checkpoint_size", "body", int64(m.CheckpointSize)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorTransfer) contextValidateEndTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "end_time", "body", m.EndTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SnapmirrorTransfer) contextValidateErrorInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ErrorInfo != nil {
+		if err := m.ErrorInfo.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("error_info")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -369,6 +455,15 @@ func (m *SnapmirrorTransfer) contextValidateSnapshot(ctx context.Context, format
 	return nil
 }
 
+func (m *SnapmirrorTransfer) contextValidateTotalDuration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "total_duration", "body", string(m.TotalDuration)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *SnapmirrorTransfer) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "uuid", "body", strfmt.UUID(m.UUID)); err != nil {
@@ -396,7 +491,54 @@ func (m *SnapmirrorTransfer) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SnapmirrorTransferFilesItems0 Specifies a file or LUN consisting of a source_path and an optional destination_path. If not specified, the destination_path is the same as the source_path.
+// SnapmirrorTransferErrorInfo Error information for the transfer.
+//
+// swagger:model SnapmirrorTransferErrorInfo
+type SnapmirrorTransferErrorInfo struct {
+
+	// Error code
+	// Example: 6620046
+	Code int64 `json:"code,omitempty"`
+
+	// Error message
+	// Example: Transfer aborted
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this snapmirror transfer error info
+func (m *SnapmirrorTransferErrorInfo) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this snapmirror transfer error info based on the context it is used
+func (m *SnapmirrorTransferErrorInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SnapmirrorTransferErrorInfo) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SnapmirrorTransferErrorInfo) UnmarshalBinary(b []byte) error {
+	var res SnapmirrorTransferErrorInfo
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SnapmirrorTransferFilesItems0 Specifies a file or LUN consisting of a source_path and an optional destination_path. If not specified, the destination_path is the same as the source_path. File restore is not supported if the source_path or destination_path contains commas in its directory or file name.
 //
 // swagger:model SnapmirrorTransferFilesItems0
 type SnapmirrorTransferFilesItems0 struct {

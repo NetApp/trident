@@ -502,7 +502,7 @@ func (m *PortsetInterfaceFcLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInterfaceIP A network interface. Either UUID or name may be supplied on input.
+// PortsetInterfaceIP portset interface IP
 //
 // swagger:model PortsetInterfaceIP
 type PortsetInterfaceIP struct {

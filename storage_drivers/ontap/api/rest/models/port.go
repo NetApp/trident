@@ -47,13 +47,17 @@ type Port struct {
 	// Minimum: 68
 	Mtu int64 `json:"mtu,omitempty"`
 
-	// Portname, such as e0a, e1b-100 (VLAN on ethernet), a0c (LAG/ifgrp), a0d-200 (vlan on LAG/ifgrp)
+	// Portname, such as e0a, e1b-100 (VLAN on Ethernet), a0c (LAG/ifgrp), a0d-200 (VLAN on LAG/ifgrp), e0a.pv1 (p-VLAN, in select environments only)
 	// Example: e1b
 	// Read Only: true
 	Name string `json:"name,omitempty"`
 
 	// node
 	Node *PortNode `json:"node,omitempty"`
+
+	// Supported RDMA offload protocols
+	// Read Only: true
+	RdmaProtocols []string `json:"rdma_protocols,omitempty"`
 
 	// Reachability status of the port. Enum value "ok" is the only acceptable value for a PATCH request to repair a port.
 	// Example: ok
@@ -69,16 +73,16 @@ type Port struct {
 	// Read Only: true
 	Speed int64 `json:"speed,omitempty"`
 
-	// Operational state of the port.
+	// Operational state of the port. The state is set to 'down' if the operational state of the port is down. The state is set to 'up' if the link state of the port is up and the port is healthy. The state is set to 'up' if the link state of the port is up and configured to ignore health status. The state is 'degraded' if the link state of the port is up, and the port is not healthy.
 	// Read Only: true
-	// Enum: [up down]
+	// Enum: [up down degraded]
 	State string `json:"state,omitempty"`
 
 	// statistics
 	Statistics *PortStatisticsType `json:"statistics,omitempty"`
 
 	// Type of physical or virtual port
-	// Enum: [vlan physical lag]
+	// Enum: [vlan physical lag pvlan]
 	Type string `json:"type,omitempty"`
 
 	// Port UUID
@@ -115,6 +119,10 @@ func (m *Port) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRdmaProtocols(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -245,6 +253,42 @@ func (m *Port) validateNode(formats strfmt.Registry) error {
 	return nil
 }
 
+var portRdmaProtocolsItemsEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["roce"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		portRdmaProtocolsItemsEnum = append(portRdmaProtocolsItemsEnum, v)
+	}
+}
+
+func (m *Port) validateRdmaProtocolsItemsEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, portRdmaProtocolsItemsEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Port) validateRdmaProtocols(formats strfmt.Registry) error {
+	if swag.IsZero(m.RdmaProtocols) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.RdmaProtocols); i++ {
+
+		// value enum
+		if err := m.validateRdmaProtocolsItemsEnum("rdma_protocols"+"."+strconv.Itoa(i), "body", m.RdmaProtocols[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
 var portTypeReachabilityPropEnum []interface{}
 
 func init() {
@@ -339,7 +383,7 @@ var portTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["up","down"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["up","down","degraded"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -368,6 +412,16 @@ const (
 	// END DEBUGGING
 	// PortStateDown captures enum value "down"
 	PortStateDown string = "down"
+
+	// BEGIN DEBUGGING
+	// port
+	// Port
+	// state
+	// State
+	// degraded
+	// END DEBUGGING
+	// PortStateDegraded captures enum value "degraded"
+	PortStateDegraded string = "degraded"
 )
 
 // prop value enum
@@ -412,7 +466,7 @@ var portTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["vlan","physical","lag"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["vlan","physical","lag","pvlan"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -451,6 +505,16 @@ const (
 	// END DEBUGGING
 	// PortTypeLag captures enum value "lag"
 	PortTypeLag string = "lag"
+
+	// BEGIN DEBUGGING
+	// port
+	// Port
+	// type
+	// Type
+	// pvlan
+	// END DEBUGGING
+	// PortTypePvlan captures enum value "pvlan"
+	PortTypePvlan string = "pvlan"
 )
 
 // prop value enum
@@ -524,6 +588,10 @@ func (m *Port) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 	}
 
 	if err := m.contextValidateNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRdmaProtocols(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -649,6 +717,15 @@ func (m *Port) contextValidateNode(ctx context.Context, formats strfmt.Registry)
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Port) contextValidateRdmaProtocols(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "rdma_protocols", "body", []string(m.RdmaProtocols)); err != nil {
+		return err
 	}
 
 	return nil
@@ -2414,7 +2491,7 @@ func (m *PortMetricLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortMetricThroughput The rate of throughput bytes per second observed at the port object.
+// PortMetricThroughput The rate of throughput bytes per second observed at the interface.
 //
 // swagger:model PortMetricThroughput
 type PortMetricThroughput struct {

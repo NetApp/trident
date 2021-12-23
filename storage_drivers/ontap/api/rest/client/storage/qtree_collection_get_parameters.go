@@ -78,6 +78,12 @@ type QtreeCollectionGetParams struct {
 	*/
 	FieldsQueryParameter []string
 
+	/* FilesystemPath.
+
+	   Filter by filesystem_path
+	*/
+	FilesystemPathQueryParameter *string
+
 	/* GroupID.
 
 	   Filter by group.id
@@ -143,6 +149,12 @@ type QtreeCollectionGetParams struct {
 	   Filter by qos_policy.min_throughput_iops
 	*/
 	QosPolicyMinThroughputIopsQueryParameter *int64
+
+	/* QosPolicyMinThroughputMbps.
+
+	   Filter by qos_policy.min_throughput_mbps
+	*/
+	QosPolicyMinThroughputMbpsQueryParameter *int64
 
 	/* QosPolicyName.
 
@@ -380,6 +392,17 @@ func (o *QtreeCollectionGetParams) SetFieldsQueryParameter(fields []string) {
 	o.FieldsQueryParameter = fields
 }
 
+// WithFilesystemPathQueryParameter adds the filesystemPath to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithFilesystemPathQueryParameter(filesystemPath *string) *QtreeCollectionGetParams {
+	o.SetFilesystemPathQueryParameter(filesystemPath)
+	return o
+}
+
+// SetFilesystemPathQueryParameter adds the filesystemPath to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetFilesystemPathQueryParameter(filesystemPath *string) {
+	o.FilesystemPathQueryParameter = filesystemPath
+}
+
 // WithGroupIDQueryParameter adds the groupID to the qtree collection get params
 func (o *QtreeCollectionGetParams) WithGroupIDQueryParameter(groupID *string) *QtreeCollectionGetParams {
 	o.SetGroupIDQueryParameter(groupID)
@@ -499,6 +522,17 @@ func (o *QtreeCollectionGetParams) WithQosPolicyMinThroughputIopsQueryParameter(
 // SetQosPolicyMinThroughputIopsQueryParameter adds the qosPolicyMinThroughputIops to the qtree collection get params
 func (o *QtreeCollectionGetParams) SetQosPolicyMinThroughputIopsQueryParameter(qosPolicyMinThroughputIops *int64) {
 	o.QosPolicyMinThroughputIopsQueryParameter = qosPolicyMinThroughputIops
+}
+
+// WithQosPolicyMinThroughputMbpsQueryParameter adds the qosPolicyMinThroughputMbps to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps *int64) *QtreeCollectionGetParams {
+	o.SetQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps)
+	return o
+}
+
+// SetQosPolicyMinThroughputMbpsQueryParameter adds the qosPolicyMinThroughputMbps to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyMinThroughputMbpsQueryParameter(qosPolicyMinThroughputMbps *int64) {
+	o.QosPolicyMinThroughputMbpsQueryParameter = qosPolicyMinThroughputMbps
 }
 
 // WithQosPolicyNameQueryParameter adds the qosPolicyName to the qtree collection get params
@@ -796,6 +830,23 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
+	if o.FilesystemPathQueryParameter != nil {
+
+		// query param filesystem_path
+		var qrFilesystemPath string
+
+		if o.FilesystemPathQueryParameter != nil {
+			qrFilesystemPath = *o.FilesystemPathQueryParameter
+		}
+		qFilesystemPath := qrFilesystemPath
+		if qFilesystemPath != "" {
+
+			if err := r.SetQueryParam("filesystem_path", qFilesystemPath); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.GroupIDQueryParameter != nil {
 
 		// query param group.id
@@ -972,6 +1023,23 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		if qQosPolicyMinThroughputIops != "" {
 
 			if err := r.SetQueryParam("qos_policy.min_throughput_iops", qQosPolicyMinThroughputIops); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyMinThroughputMbpsQueryParameter != nil {
+
+		// query param qos_policy.min_throughput_mbps
+		var qrQosPolicyMinThroughputMbps int64
+
+		if o.QosPolicyMinThroughputMbpsQueryParameter != nil {
+			qrQosPolicyMinThroughputMbps = *o.QosPolicyMinThroughputMbpsQueryParameter
+		}
+		qQosPolicyMinThroughputMbps := swag.FormatInt64(qrQosPolicyMinThroughputMbps)
+		if qQosPolicyMinThroughputMbps != "" {
+
+			if err := r.SetQueryParam("qos_policy.min_throughput_mbps", qQosPolicyMinThroughputMbps); err != nil {
 				return err
 			}
 		}

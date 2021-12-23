@@ -28,11 +28,6 @@ import (
 // swagger:model export_authentication_flavor
 type ExportAuthenticationFlavor string
 
-func NewExportAuthenticationFlavor(value ExportAuthenticationFlavor) *ExportAuthenticationFlavor {
-	v := value
-	return &v
-}
-
 const (
 
 	// ExportAuthenticationFlavorAny captures enum value "any"

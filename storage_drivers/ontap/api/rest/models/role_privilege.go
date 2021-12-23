@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// RolePrivilege A tuple containing the REST endpoint and the access level assigned to that endpoint.
+// RolePrivilege A tuple containing the REST endpoint and the access level assigned to that endpoint. The REST endpoint can be a resource-qualified endpoint. At present, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\*/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
 //
 // swagger:model role_privilege
 type RolePrivilege struct {

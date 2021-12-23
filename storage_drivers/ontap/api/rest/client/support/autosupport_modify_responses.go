@@ -78,6 +78,9 @@ func NewAutosupportModifyDefault(code int) *AutosupportModifyDefault {
 | 8650863    | A maximum of 5 SMTP mail hosts can be provided |
 | 8650864    | A maximum of 5 email addresses can be provided |
 | 8650865    | A maximum of 5 partner email addresses can be provided |
+| 8650880    | Automatic update requires AutoSupport to be enabled. |
+| 8650881    | Automatic update requires AutoSupport to use the HTTPS transport. |
+| 8650882    | Automatic update requires AutoSupport OnDemand to be enabled. |
 | 53149727   | The proxy URI provided is invalid |
 | 53149728   | The mailhost URI provided is invalid |
 

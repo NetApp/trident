@@ -108,11 +108,23 @@ type FpolicyPolicyCollectionGetParams struct {
 	*/
 	OrderByQueryParameter []string
 
+	/* PassthroughRead.
+
+	   Filter by passthrough_read
+	*/
+	PassthroughReadQueryParameter *bool
+
 	/* Priority.
 
 	   Filter by priority
 	*/
 	PriorityQueryParameter *int64
+
+	/* PrivilegedUser.
+
+	   Filter by privileged_user
+	*/
+	PrivilegedUserQueryParameter *string
 
 	/* ReturnRecords.
 
@@ -339,6 +351,17 @@ func (o *FpolicyPolicyCollectionGetParams) SetOrderByQueryParameter(orderBy []st
 	o.OrderByQueryParameter = orderBy
 }
 
+// WithPassthroughReadQueryParameter adds the passthroughRead to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithPassthroughReadQueryParameter(passthroughRead *bool) *FpolicyPolicyCollectionGetParams {
+	o.SetPassthroughReadQueryParameter(passthroughRead)
+	return o
+}
+
+// SetPassthroughReadQueryParameter adds the passthroughRead to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetPassthroughReadQueryParameter(passthroughRead *bool) {
+	o.PassthroughReadQueryParameter = passthroughRead
+}
+
 // WithPriorityQueryParameter adds the priority to the fpolicy policy collection get params
 func (o *FpolicyPolicyCollectionGetParams) WithPriorityQueryParameter(priority *int64) *FpolicyPolicyCollectionGetParams {
 	o.SetPriorityQueryParameter(priority)
@@ -348,6 +371,17 @@ func (o *FpolicyPolicyCollectionGetParams) WithPriorityQueryParameter(priority *
 // SetPriorityQueryParameter adds the priority to the fpolicy policy collection get params
 func (o *FpolicyPolicyCollectionGetParams) SetPriorityQueryParameter(priority *int64) {
 	o.PriorityQueryParameter = priority
+}
+
+// WithPrivilegedUserQueryParameter adds the privilegedUser to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithPrivilegedUserQueryParameter(privilegedUser *string) *FpolicyPolicyCollectionGetParams {
+	o.SetPrivilegedUserQueryParameter(privilegedUser)
+	return o
+}
+
+// SetPrivilegedUserQueryParameter adds the privilegedUser to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetPrivilegedUserQueryParameter(privilegedUser *string) {
+	o.PrivilegedUserQueryParameter = privilegedUser
 }
 
 // WithReturnRecordsQueryParameter adds the returnRecords to the fpolicy policy collection get params
@@ -603,6 +637,23 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.PassthroughReadQueryParameter != nil {
+
+		// query param passthrough_read
+		var qrPassthroughRead bool
+
+		if o.PassthroughReadQueryParameter != nil {
+			qrPassthroughRead = *o.PassthroughReadQueryParameter
+		}
+		qPassthroughRead := swag.FormatBool(qrPassthroughRead)
+		if qPassthroughRead != "" {
+
+			if err := r.SetQueryParam("passthrough_read", qPassthroughRead); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.PriorityQueryParameter != nil {
 
 		// query param priority
@@ -615,6 +666,23 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qPriority != "" {
 
 			if err := r.SetQueryParam("priority", qPriority); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PrivilegedUserQueryParameter != nil {
+
+		// query param privileged_user
+		var qrPrivilegedUser string
+
+		if o.PrivilegedUserQueryParameter != nil {
+			qrPrivilegedUser = *o.PrivilegedUserQueryParameter
+		}
+		qPrivilegedUser := qrPrivilegedUser
+		if qPrivilegedUser != "" {
+
+			if err := r.SetQueryParam("privileged_user", qPrivilegedUser); err != nil {
 				return err
 			}
 		}

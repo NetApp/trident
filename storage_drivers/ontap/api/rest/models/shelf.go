@@ -21,16 +21,24 @@ import (
 // swagger:model shelf
 type Shelf struct {
 
+	// Alternate Control Paths to ACP processors/functions in shelf modules and expanders
+	Acps []*ShelfAcpsItems0 `json:"acps,omitempty"`
+
 	// bays
 	Bays []*ShelfBaysItems0 `json:"bays,omitempty"`
 
 	// connection type
 	// Example: sas
+	// Read Only: true
 	// Enum: [unknown fc sas nvme]
 	ConnectionType string `json:"connection_type,omitempty"`
 
+	// current sensors
+	CurrentSensors []*ShelfCurrentSensorsItems0 `json:"current_sensors,omitempty"`
+
 	// disk count
 	// Example: 12
+	// Read Only: true
 	DiskCount int64 `json:"disk_count,omitempty"`
 
 	// drawers
@@ -47,25 +55,39 @@ type Shelf struct {
 
 	// id
 	// Example: 1
+	// Read Only: true
 	ID string `json:"id,omitempty"`
 
 	// internal
-	Internal bool `json:"internal,omitempty"`
+	// Read Only: true
+	Internal *bool `json:"internal,omitempty"`
 
 	// local
-	Local bool `json:"local,omitempty"`
+	// Read Only: true
+	Local *bool `json:"local,omitempty"`
+
+	// location led
+	// Example: off
+	// Enum: [off on unsupported]
+	LocationLed string `json:"location_led,omitempty"`
+
+	// manufacturer
+	Manufacturer *ShelfManufacturer `json:"manufacturer,omitempty"`
 
 	// model
 	// Example: DS2246
+	// Read Only: true
 	Model string `json:"model,omitempty"`
 
 	// module type
 	// Example: iom6
+	// Read Only: true
 	// Enum: [unknown iom6 iom6e iom12 iom12e iom12f nsm100 psm3e]
 	ModuleType string `json:"module_type,omitempty"`
 
 	// name
 	// Example: 1.1
+	// Read Only: true
 	Name string `json:"name,omitempty"`
 
 	// paths
@@ -76,30 +98,47 @@ type Shelf struct {
 
 	// serial number
 	// Example: SHFMS1514000895
+	// Read Only: true
 	SerialNumber string `json:"serial_number,omitempty"`
 
 	// state
 	// Example: ok
+	// Read Only: true
 	// Enum: [unknown ok error]
 	State string `json:"state,omitempty"`
 
+	// temperature sensors
+	TemperatureSensors []*ShelfTemperatureSensorsItems0 `json:"temperature_sensors,omitempty"`
+
 	// uid
 	// Example: 7777841915827391056
+	// Read Only: true
 	UID string `json:"uid,omitempty"`
 
 	// vendor
 	Vendor *ShelfVendor `json:"vendor,omitempty"`
+
+	// voltage sensors
+	VoltageSensors []*ShelfVoltageSensorsItems0 `json:"voltage_sensors,omitempty"`
 }
 
 // Validate validates this shelf
 func (m *Shelf) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateAcps(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateBays(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateConnectionType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCurrentSensors(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -119,6 +158,14 @@ func (m *Shelf) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateLocationLed(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateManufacturer(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateModuleType(formats); err != nil {
 		res = append(res, err)
 	}
@@ -135,13 +182,45 @@ func (m *Shelf) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateTemperatureSensors(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateVendor(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVoltageSensors(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Shelf) validateAcps(formats strfmt.Registry) error {
+	if swag.IsZero(m.Acps) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Acps); i++ {
+		if swag.IsZero(m.Acps[i]) { // not required
+			continue
+		}
+
+		if m.Acps[i] != nil {
+			if err := m.Acps[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("acps" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -245,6 +324,30 @@ func (m *Shelf) validateConnectionType(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Shelf) validateCurrentSensors(formats strfmt.Registry) error {
+	if swag.IsZero(m.CurrentSensors) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.CurrentSensors); i++ {
+		if swag.IsZero(m.CurrentSensors[i]) { // not required
+			continue
+		}
+
+		if m.CurrentSensors[i] != nil {
+			if err := m.CurrentSensors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("current_sensors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *Shelf) validateDrawers(formats strfmt.Registry) error {
 	if swag.IsZero(m.Drawers) { // not required
 		return nil
@@ -336,6 +439,89 @@ func (m *Shelf) validateFrus(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+var shelfTypeLocationLedPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["off","on","unsupported"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		shelfTypeLocationLedPropEnum = append(shelfTypeLocationLedPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// shelf
+	// Shelf
+	// location_led
+	// LocationLed
+	// off
+	// END DEBUGGING
+	// ShelfLocationLedOff captures enum value "off"
+	ShelfLocationLedOff string = "off"
+
+	// BEGIN DEBUGGING
+	// shelf
+	// Shelf
+	// location_led
+	// LocationLed
+	// on
+	// END DEBUGGING
+	// ShelfLocationLedOn captures enum value "on"
+	ShelfLocationLedOn string = "on"
+
+	// BEGIN DEBUGGING
+	// shelf
+	// Shelf
+	// location_led
+	// LocationLed
+	// unsupported
+	// END DEBUGGING
+	// ShelfLocationLedUnsupported captures enum value "unsupported"
+	ShelfLocationLedUnsupported string = "unsupported"
+)
+
+// prop value enum
+func (m *Shelf) validateLocationLedEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfTypeLocationLedPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Shelf) validateLocationLed(formats strfmt.Registry) error {
+	if swag.IsZero(m.LocationLed) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateLocationLedEnum("location_led", "body", m.LocationLed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Shelf) validateManufacturer(formats strfmt.Registry) error {
+	if swag.IsZero(m.Manufacturer) { // not required
+		return nil
+	}
+
+	if m.Manufacturer != nil {
+		if err := m.Manufacturer.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("manufacturer")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -571,6 +757,30 @@ func (m *Shelf) validateState(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Shelf) validateTemperatureSensors(formats strfmt.Registry) error {
+	if swag.IsZero(m.TemperatureSensors) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.TemperatureSensors); i++ {
+		if swag.IsZero(m.TemperatureSensors[i]) { // not required
+			continue
+		}
+
+		if m.TemperatureSensors[i] != nil {
+			if err := m.TemperatureSensors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("temperature_sensors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *Shelf) validateVendor(formats strfmt.Registry) error {
 	if swag.IsZero(m.Vendor) { // not required
 		return nil
@@ -588,11 +798,51 @@ func (m *Shelf) validateVendor(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Shelf) validateVoltageSensors(formats strfmt.Registry) error {
+	if swag.IsZero(m.VoltageSensors) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.VoltageSensors); i++ {
+		if swag.IsZero(m.VoltageSensors[i]) { // not required
+			continue
+		}
+
+		if m.VoltageSensors[i] != nil {
+			if err := m.VoltageSensors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("voltage_sensors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this shelf based on the context it is used
 func (m *Shelf) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateAcps(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateBays(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateConnectionType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCurrentSensors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDiskCount(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -612,6 +862,34 @@ func (m *Shelf) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInternal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateManufacturer(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateModel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateModuleType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidatePaths(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -620,13 +898,51 @@ func (m *Shelf) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSerialNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTemperatureSensors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateVendor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVoltageSensors(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Shelf) contextValidateAcps(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Acps); i++ {
+
+		if m.Acps[i] != nil {
+			if err := m.Acps[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("acps" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -643,6 +959,42 @@ func (m *Shelf) contextValidateBays(ctx context.Context, formats strfmt.Registry
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateConnectionType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "connection_type", "body", string(m.ConnectionType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateCurrentSensors(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.CurrentSensors); i++ {
+
+		if m.CurrentSensors[i] != nil {
+			if err := m.CurrentSensors[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("current_sensors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateDiskCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "disk_count", "body", int64(m.DiskCount)); err != nil {
+		return err
 	}
 
 	return nil
@@ -720,6 +1072,74 @@ func (m *Shelf) contextValidateFrus(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
+func (m *Shelf) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateInternal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "internal", "body", m.Internal); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "local", "body", m.Local); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateManufacturer(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Manufacturer != nil {
+		if err := m.Manufacturer.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("manufacturer")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateModel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "model", "body", string(m.Model)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateModuleType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "module_type", "body", string(m.ModuleType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Shelf) contextValidatePaths(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Paths); i++ {
@@ -756,6 +1176,51 @@ func (m *Shelf) contextValidatePorts(ctx context.Context, formats strfmt.Registr
 	return nil
 }
 
+func (m *Shelf) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "serial_number", "body", string(m.SerialNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateTemperatureSensors(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.TemperatureSensors); i++ {
+
+		if m.TemperatureSensors[i] != nil {
+			if err := m.TemperatureSensors[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("temperature_sensors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uid", "body", string(m.UID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Shelf) contextValidateVendor(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Vendor != nil {
@@ -765,6 +1230,24 @@ func (m *Shelf) contextValidateVendor(ctx context.Context, formats strfmt.Regist
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateVoltageSensors(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VoltageSensors); i++ {
+
+		if m.VoltageSensors[i] != nil {
+			if err := m.VoltageSensors[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("voltage_sensors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -781,6 +1264,807 @@ func (m *Shelf) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Shelf) UnmarshalBinary(b []byte) error {
 	var res Shelf
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfAcpsItems0 shelf acps items0
+//
+// swagger:model ShelfAcpsItems0
+type ShelfAcpsItems0 struct {
+
+	// address
+	// Example: 192.168.1.104
+	Address string `json:"address,omitempty"`
+
+	// channel
+	// Example: out_of_band
+	// Enum: [unknown out_of_band in_band]
+	Channel string `json:"channel,omitempty"`
+
+	// connection state
+	// Example: full_connectivity
+	// Enum: [no_connectivity partial_connectivity full_connectivity additional_connectivity unknown_connectivity not_available active disabled]
+	ConnectionState string `json:"connection_state,omitempty"`
+
+	// enabled
+	Enabled bool `json:"enabled,omitempty"`
+
+	// error
+	Error *ShelfAcpsItems0Error `json:"error,omitempty"`
+
+	// netmask
+	// Example: 255.255.252.0
+	Netmask string `json:"netmask,omitempty"`
+
+	// node
+	Node *ShelfAcpsItems0Node `json:"node,omitempty"`
+
+	// port
+	// Example: e0P
+	Port string `json:"port,omitempty"`
+
+	// subnet
+	// Example: 192.168.0.1
+	Subnet string `json:"subnet,omitempty"`
+}
+
+// Validate validates this shelf acps items0
+func (m *ShelfAcpsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateChannel(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConnectionState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var shelfAcpsItems0TypeChannelPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["unknown","out_of_band","in_band"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		shelfAcpsItems0TypeChannelPropEnum = append(shelfAcpsItems0TypeChannelPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0
+	// ShelfAcpsItems0
+	// channel
+	// Channel
+	// unknown
+	// END DEBUGGING
+	// ShelfAcpsItems0ChannelUnknown captures enum value "unknown"
+	ShelfAcpsItems0ChannelUnknown string = "unknown"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0
+	// ShelfAcpsItems0
+	// channel
+	// Channel
+	// out_of_band
+	// END DEBUGGING
+	// ShelfAcpsItems0ChannelOutOfBand captures enum value "out_of_band"
+	ShelfAcpsItems0ChannelOutOfBand string = "out_of_band"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0
+	// ShelfAcpsItems0
+	// channel
+	// Channel
+	// in_band
+	// END DEBUGGING
+	// ShelfAcpsItems0ChannelInBand captures enum value "in_band"
+	ShelfAcpsItems0ChannelInBand string = "in_band"
+)
+
+// prop value enum
+func (m *ShelfAcpsItems0) validateChannelEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfAcpsItems0TypeChannelPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ShelfAcpsItems0) validateChannel(formats strfmt.Registry) error {
+	if swag.IsZero(m.Channel) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateChannelEnum("channel", "body", m.Channel); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var shelfAcpsItems0TypeConnectionStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["no_connectivity","partial_connectivity","full_connectivity","additional_connectivity","unknown_connectivity","not_available","active","disabled"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		shelfAcpsItems0TypeConnectionStatePropEnum = append(shelfAcpsItems0TypeConnectionStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0
+	// ShelfAcpsItems0
+	// connection_state
+	// ConnectionState
+	// no_connectivity
+	// END DEBUGGING
+	// ShelfAcpsItems0ConnectionStateNoConnectivity captures enum value "no_connectivity"
+	ShelfAcpsItems0ConnectionStateNoConnectivity string = "no_connectivity"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0
+	// ShelfAcpsItems0
+	// connection_state
+	// ConnectionState
+	// partial_connectivity
+	// END DEBUGGING
+	// ShelfAcpsItems0ConnectionStatePartialConnectivity captures enum value "partial_connectivity"
+	ShelfAcpsItems0ConnectionStatePartialConnectivity string = "partial_connectivity"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0
+	// ShelfAcpsItems0
+	// connection_state
+	// ConnectionState
+	// full_connectivity
+	// END DEBUGGING
+	// ShelfAcpsItems0ConnectionStateFullConnectivity captures enum value "full_connectivity"
+	ShelfAcpsItems0ConnectionStateFullConnectivity string = "full_connectivity"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0
+	// ShelfAcpsItems0
+	// connection_state
+	// ConnectionState
+	// additional_connectivity
+	// END DEBUGGING
+	// ShelfAcpsItems0ConnectionStateAdditionalConnectivity captures enum value "additional_connectivity"
+	ShelfAcpsItems0ConnectionStateAdditionalConnectivity string = "additional_connectivity"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0
+	// ShelfAcpsItems0
+	// connection_state
+	// ConnectionState
+	// unknown_connectivity
+	// END DEBUGGING
+	// ShelfAcpsItems0ConnectionStateUnknownConnectivity captures enum value "unknown_connectivity"
+	ShelfAcpsItems0ConnectionStateUnknownConnectivity string = "unknown_connectivity"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0
+	// ShelfAcpsItems0
+	// connection_state
+	// ConnectionState
+	// not_available
+	// END DEBUGGING
+	// ShelfAcpsItems0ConnectionStateNotAvailable captures enum value "not_available"
+	ShelfAcpsItems0ConnectionStateNotAvailable string = "not_available"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0
+	// ShelfAcpsItems0
+	// connection_state
+	// ConnectionState
+	// active
+	// END DEBUGGING
+	// ShelfAcpsItems0ConnectionStateActive captures enum value "active"
+	ShelfAcpsItems0ConnectionStateActive string = "active"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0
+	// ShelfAcpsItems0
+	// connection_state
+	// ConnectionState
+	// disabled
+	// END DEBUGGING
+	// ShelfAcpsItems0ConnectionStateDisabled captures enum value "disabled"
+	ShelfAcpsItems0ConnectionStateDisabled string = "disabled"
+)
+
+// prop value enum
+func (m *ShelfAcpsItems0) validateConnectionStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfAcpsItems0TypeConnectionStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ShelfAcpsItems0) validateConnectionState(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConnectionState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateConnectionStateEnum("connection_state", "body", m.ConnectionState); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ShelfAcpsItems0) validateError(formats strfmt.Registry) error {
+	if swag.IsZero(m.Error) { // not required
+		return nil
+	}
+
+	if m.Error != nil {
+		if err := m.Error.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ShelfAcpsItems0) validateNode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Node) { // not required
+		return nil
+	}
+
+	if m.Node != nil {
+		if err := m.Node.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this shelf acps items0 based on the context it is used
+func (m *ShelfAcpsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateError(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfAcpsItems0) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Error != nil {
+		if err := m.Error.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ShelfAcpsItems0) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Node != nil {
+		if err := m.Node.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfAcpsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfAcpsItems0) UnmarshalBinary(b []byte) error {
+	var res ShelfAcpsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfAcpsItems0Error Error object is populated when connection_state becomes non-optimal
+//
+// swagger:model ShelfAcpsItems0Error
+type ShelfAcpsItems0Error struct {
+
+	// reason
+	Reason *Error `json:"reason,omitempty"`
+
+	// severity
+	// Enum: [unknown notice warning error critical]
+	Severity string `json:"severity,omitempty"`
+
+	// type
+	// Enum: [not_applicable connection_issue connection_activity module_error shelf_error]
+	Type string `json:"type,omitempty"`
+}
+
+// Validate validates this shelf acps items0 error
+func (m *ShelfAcpsItems0Error) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateReason(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSeverity(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfAcpsItems0Error) validateReason(formats strfmt.Registry) error {
+	if swag.IsZero(m.Reason) { // not required
+		return nil
+	}
+
+	if m.Reason != nil {
+		if err := m.Reason.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("error" + "." + "reason")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var shelfAcpsItems0ErrorTypeSeverityPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["unknown","notice","warning","error","critical"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		shelfAcpsItems0ErrorTypeSeverityPropEnum = append(shelfAcpsItems0ErrorTypeSeverityPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0Error
+	// ShelfAcpsItems0Error
+	// severity
+	// Severity
+	// unknown
+	// END DEBUGGING
+	// ShelfAcpsItems0ErrorSeverityUnknown captures enum value "unknown"
+	ShelfAcpsItems0ErrorSeverityUnknown string = "unknown"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0Error
+	// ShelfAcpsItems0Error
+	// severity
+	// Severity
+	// notice
+	// END DEBUGGING
+	// ShelfAcpsItems0ErrorSeverityNotice captures enum value "notice"
+	ShelfAcpsItems0ErrorSeverityNotice string = "notice"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0Error
+	// ShelfAcpsItems0Error
+	// severity
+	// Severity
+	// warning
+	// END DEBUGGING
+	// ShelfAcpsItems0ErrorSeverityWarning captures enum value "warning"
+	ShelfAcpsItems0ErrorSeverityWarning string = "warning"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0Error
+	// ShelfAcpsItems0Error
+	// severity
+	// Severity
+	// error
+	// END DEBUGGING
+	// ShelfAcpsItems0ErrorSeverityError captures enum value "error"
+	ShelfAcpsItems0ErrorSeverityError string = "error"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0Error
+	// ShelfAcpsItems0Error
+	// severity
+	// Severity
+	// critical
+	// END DEBUGGING
+	// ShelfAcpsItems0ErrorSeverityCritical captures enum value "critical"
+	ShelfAcpsItems0ErrorSeverityCritical string = "critical"
+)
+
+// prop value enum
+func (m *ShelfAcpsItems0Error) validateSeverityEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfAcpsItems0ErrorTypeSeverityPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ShelfAcpsItems0Error) validateSeverity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Severity) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSeverityEnum("error"+"."+"severity", "body", m.Severity); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var shelfAcpsItems0ErrorTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["not_applicable","connection_issue","connection_activity","module_error","shelf_error"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		shelfAcpsItems0ErrorTypeTypePropEnum = append(shelfAcpsItems0ErrorTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0Error
+	// ShelfAcpsItems0Error
+	// type
+	// Type
+	// not_applicable
+	// END DEBUGGING
+	// ShelfAcpsItems0ErrorTypeNotApplicable captures enum value "not_applicable"
+	ShelfAcpsItems0ErrorTypeNotApplicable string = "not_applicable"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0Error
+	// ShelfAcpsItems0Error
+	// type
+	// Type
+	// connection_issue
+	// END DEBUGGING
+	// ShelfAcpsItems0ErrorTypeConnectionIssue captures enum value "connection_issue"
+	ShelfAcpsItems0ErrorTypeConnectionIssue string = "connection_issue"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0Error
+	// ShelfAcpsItems0Error
+	// type
+	// Type
+	// connection_activity
+	// END DEBUGGING
+	// ShelfAcpsItems0ErrorTypeConnectionActivity captures enum value "connection_activity"
+	ShelfAcpsItems0ErrorTypeConnectionActivity string = "connection_activity"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0Error
+	// ShelfAcpsItems0Error
+	// type
+	// Type
+	// module_error
+	// END DEBUGGING
+	// ShelfAcpsItems0ErrorTypeModuleError captures enum value "module_error"
+	ShelfAcpsItems0ErrorTypeModuleError string = "module_error"
+
+	// BEGIN DEBUGGING
+	// ShelfAcpsItems0Error
+	// ShelfAcpsItems0Error
+	// type
+	// Type
+	// shelf_error
+	// END DEBUGGING
+	// ShelfAcpsItems0ErrorTypeShelfError captures enum value "shelf_error"
+	ShelfAcpsItems0ErrorTypeShelfError string = "shelf_error"
+)
+
+// prop value enum
+func (m *ShelfAcpsItems0Error) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfAcpsItems0ErrorTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ShelfAcpsItems0Error) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("error"+"."+"type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this shelf acps items0 error based on the context it is used
+func (m *ShelfAcpsItems0Error) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateReason(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfAcpsItems0Error) contextValidateReason(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Reason != nil {
+		if err := m.Reason.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("error" + "." + "reason")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfAcpsItems0Error) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfAcpsItems0Error) UnmarshalBinary(b []byte) error {
+	var res ShelfAcpsItems0Error
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfAcpsItems0Node shelf acps items0 node
+//
+// swagger:model ShelfAcpsItems0Node
+type ShelfAcpsItems0Node struct {
+
+	// links
+	Links *ShelfAcpsItems0NodeLinks `json:"_links,omitempty"`
+
+	// name
+	// Example: node1
+	Name string `json:"name,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this shelf acps items0 node
+func (m *ShelfAcpsItems0Node) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfAcpsItems0Node) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this shelf acps items0 node based on the context it is used
+func (m *ShelfAcpsItems0Node) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfAcpsItems0Node) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfAcpsItems0Node) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfAcpsItems0Node) UnmarshalBinary(b []byte) error {
+	var res ShelfAcpsItems0Node
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfAcpsItems0NodeLinks shelf acps items0 node links
+//
+// swagger:model ShelfAcpsItems0NodeLinks
+type ShelfAcpsItems0NodeLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this shelf acps items0 node links
+func (m *ShelfAcpsItems0NodeLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfAcpsItems0NodeLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this shelf acps items0 node links based on the context it is used
+func (m *ShelfAcpsItems0NodeLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfAcpsItems0NodeLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfAcpsItems0NodeLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfAcpsItems0NodeLinks) UnmarshalBinary(b []byte) error {
+	var res ShelfAcpsItems0NodeLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -984,6 +2268,122 @@ func (m *ShelfBaysItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// ShelfCurrentSensorsItems0 shelf current sensors items0
+//
+// swagger:model ShelfCurrentSensorsItems0
+type ShelfCurrentSensorsItems0 struct {
+
+	// Current, in milliamps
+	// Example: 14410
+	Current int64 `json:"current,omitempty"`
+
+	// id
+	// Example: 1
+	ID int64 `json:"id,omitempty"`
+
+	// location
+	// Example: rear of the shelf on the lower left power supply
+	Location string `json:"location,omitempty"`
+
+	// state
+	// Example: ok
+	// Enum: [ok error]
+	State string `json:"state,omitempty"`
+}
+
+// Validate validates this shelf current sensors items0
+func (m *ShelfCurrentSensorsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var shelfCurrentSensorsItems0TypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		shelfCurrentSensorsItems0TypeStatePropEnum = append(shelfCurrentSensorsItems0TypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ShelfCurrentSensorsItems0
+	// ShelfCurrentSensorsItems0
+	// state
+	// State
+	// ok
+	// END DEBUGGING
+	// ShelfCurrentSensorsItems0StateOk captures enum value "ok"
+	ShelfCurrentSensorsItems0StateOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// ShelfCurrentSensorsItems0
+	// ShelfCurrentSensorsItems0
+	// state
+	// State
+	// error
+	// END DEBUGGING
+	// ShelfCurrentSensorsItems0StateError captures enum value "error"
+	ShelfCurrentSensorsItems0StateError string = "error"
+)
+
+// prop value enum
+func (m *ShelfCurrentSensorsItems0) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfCurrentSensorsItems0TypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ShelfCurrentSensorsItems0) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this shelf current sensors items0 based on context it is used
+func (m *ShelfCurrentSensorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfCurrentSensorsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfCurrentSensorsItems0) UnmarshalBinary(b []byte) error {
+	var res ShelfCurrentSensorsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // ShelfDrawersItems0 shelf drawers items0
 //
 // swagger:model ShelfDrawersItems0
@@ -1115,7 +2515,7 @@ func (m *ShelfDrawersItems0) UnmarshalBinary(b []byte) error {
 type ShelfErrorsItems0 struct {
 
 	// reason
-	Reason *ShelfErrorsItems0Reason `json:"reason,omitempty"`
+	Reason *Error `json:"reason,omitempty"`
 }
 
 // Validate validates this shelf errors items0
@@ -1188,46 +2588,6 @@ func (m *ShelfErrorsItems0) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ShelfErrorsItems0) UnmarshalBinary(b []byte) error {
 	var res ShelfErrorsItems0
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// ShelfErrorsItems0Reason shelf errors items0 reason
-//
-// swagger:model ShelfErrorsItems0Reason
-type ShelfErrorsItems0Reason struct {
-
-	// Error code
-	Code string `json:"code,omitempty"`
-
-	// Error message
-	Message string `json:"message,omitempty"`
-}
-
-// Validate validates this shelf errors items0 reason
-func (m *ShelfErrorsItems0Reason) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validates this shelf errors items0 reason based on context it is used
-func (m *ShelfErrorsItems0Reason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *ShelfErrorsItems0Reason) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *ShelfErrorsItems0Reason) UnmarshalBinary(b []byte) error {
-	var res ShelfErrorsItems0Reason
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1363,9 +2723,16 @@ type ShelfFrusItems0 struct {
 	// id
 	ID int64 `json:"id,omitempty"`
 
+	// installed
+	// Example: true
+	Installed bool `json:"installed,omitempty"`
+
 	// part number
 	// Example: 111-00690+A2
 	PartNumber string `json:"part_number,omitempty"`
+
+	// psu
+	Psu *ShelfFrusItems0Psu `json:"psu,omitempty"`
 
 	// serial number
 	// Example: 8000166294
@@ -1386,6 +2753,10 @@ type ShelfFrusItems0 struct {
 func (m *ShelfFrusItems0) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validatePsu(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
 	}
@@ -1397,6 +2768,23 @@ func (m *ShelfFrusItems0) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ShelfFrusItems0) validatePsu(formats strfmt.Registry) error {
+	if swag.IsZero(m.Psu) { // not required
+		return nil
+	}
+
+	if m.Psu != nil {
+		if err := m.Psu.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("psu")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -1512,8 +2900,31 @@ func (m *ShelfFrusItems0) validateType(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this shelf frus items0 based on context it is used
+// ContextValidate validate this shelf frus items0 based on the context it is used
 func (m *ShelfFrusItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePsu(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfFrusItems0) contextValidatePsu(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Psu != nil {
+		if err := m.Psu.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("psu")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -1528,6 +2939,94 @@ func (m *ShelfFrusItems0) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ShelfFrusItems0) UnmarshalBinary(b []byte) error {
 	var res ShelfFrusItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfFrusItems0Psu shelf frus items0 psu
+//
+// swagger:model ShelfFrusItems0Psu
+type ShelfFrusItems0Psu struct {
+
+	// The ratio of the peak voltage to the root-mean-square voltage
+	// Example: 92
+	CrestFactor int64 `json:"crest_factor,omitempty"`
+
+	// model
+	// Example: 00
+	Model string `json:"model,omitempty"`
+
+	// Power drawn, in watts
+	// Example: 210
+	PowerDrawn int64 `json:"power_drawn,omitempty"`
+
+	// Power rating, in watts
+	// Example: 1600
+	PowerRating int64 `json:"power_rating,omitempty"`
+}
+
+// Validate validates this shelf frus items0 psu
+func (m *ShelfFrusItems0Psu) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this shelf frus items0 psu based on context it is used
+func (m *ShelfFrusItems0Psu) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfFrusItems0Psu) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfFrusItems0Psu) UnmarshalBinary(b []byte) error {
+	var res ShelfFrusItems0Psu
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfManufacturer shelf manufacturer
+//
+// swagger:model ShelfManufacturer
+type ShelfManufacturer struct {
+
+	// name
+	// Example: NETAPP
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this shelf manufacturer
+func (m *ShelfManufacturer) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this shelf manufacturer based on context it is used
+func (m *ShelfManufacturer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfManufacturer) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfManufacturer) UnmarshalBinary(b []byte) error {
+	var res ShelfManufacturer
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2424,14 +3923,397 @@ func (m *ShelfPortsItems0Remote) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// ShelfTemperatureSensorsItems0 shelf temperature sensors items0
+//
+// swagger:model ShelfTemperatureSensorsItems0
+type ShelfTemperatureSensorsItems0 struct {
+
+	// Sensor that measures the ambient temperature
+	// Example: false
+	Ambient bool `json:"ambient,omitempty"`
+
+	// id
+	// Example: 1
+	ID int64 `json:"id,omitempty"`
+
+	// location
+	// Example: temp sensor on midplane left
+	Location string `json:"location,omitempty"`
+
+	// state
+	// Example: ok
+	// Enum: [ok error]
+	State string `json:"state,omitempty"`
+
+	// Temperature, in degrees Celsius
+	// Example: 32
+	Temperature int64 `json:"temperature,omitempty"`
+
+	// threshold
+	Threshold *ShelfTemperatureSensorsItems0Threshold `json:"threshold,omitempty"`
+}
+
+// Validate validates this shelf temperature sensors items0
+func (m *ShelfTemperatureSensorsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateThreshold(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var shelfTemperatureSensorsItems0TypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		shelfTemperatureSensorsItems0TypeStatePropEnum = append(shelfTemperatureSensorsItems0TypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ShelfTemperatureSensorsItems0
+	// ShelfTemperatureSensorsItems0
+	// state
+	// State
+	// ok
+	// END DEBUGGING
+	// ShelfTemperatureSensorsItems0StateOk captures enum value "ok"
+	ShelfTemperatureSensorsItems0StateOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// ShelfTemperatureSensorsItems0
+	// ShelfTemperatureSensorsItems0
+	// state
+	// State
+	// error
+	// END DEBUGGING
+	// ShelfTemperatureSensorsItems0StateError captures enum value "error"
+	ShelfTemperatureSensorsItems0StateError string = "error"
+)
+
+// prop value enum
+func (m *ShelfTemperatureSensorsItems0) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfTemperatureSensorsItems0TypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ShelfTemperatureSensorsItems0) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ShelfTemperatureSensorsItems0) validateThreshold(formats strfmt.Registry) error {
+	if swag.IsZero(m.Threshold) { // not required
+		return nil
+	}
+
+	if m.Threshold != nil {
+		if err := m.Threshold.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("threshold")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this shelf temperature sensors items0 based on the context it is used
+func (m *ShelfTemperatureSensorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateThreshold(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfTemperatureSensorsItems0) contextValidateThreshold(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Threshold != nil {
+		if err := m.Threshold.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("threshold")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfTemperatureSensorsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfTemperatureSensorsItems0) UnmarshalBinary(b []byte) error {
+	var res ShelfTemperatureSensorsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfTemperatureSensorsItems0Threshold shelf temperature sensors items0 threshold
+//
+// swagger:model ShelfTemperatureSensorsItems0Threshold
+type ShelfTemperatureSensorsItems0Threshold struct {
+
+	// high
+	High *ShelfTemperatureSensorsItems0ThresholdHigh `json:"high,omitempty"`
+
+	// low
+	Low *ShelfTemperatureSensorsItems0ThresholdLow `json:"low,omitempty"`
+}
+
+// Validate validates this shelf temperature sensors items0 threshold
+func (m *ShelfTemperatureSensorsItems0Threshold) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateHigh(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLow(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfTemperatureSensorsItems0Threshold) validateHigh(formats strfmt.Registry) error {
+	if swag.IsZero(m.High) { // not required
+		return nil
+	}
+
+	if m.High != nil {
+		if err := m.High.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("threshold" + "." + "high")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ShelfTemperatureSensorsItems0Threshold) validateLow(formats strfmt.Registry) error {
+	if swag.IsZero(m.Low) { // not required
+		return nil
+	}
+
+	if m.Low != nil {
+		if err := m.Low.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("threshold" + "." + "low")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this shelf temperature sensors items0 threshold based on the context it is used
+func (m *ShelfTemperatureSensorsItems0Threshold) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateHigh(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLow(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ShelfTemperatureSensorsItems0Threshold) contextValidateHigh(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.High != nil {
+		if err := m.High.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("threshold" + "." + "high")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ShelfTemperatureSensorsItems0Threshold) contextValidateLow(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Low != nil {
+		if err := m.Low.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("threshold" + "." + "low")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfTemperatureSensorsItems0Threshold) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfTemperatureSensorsItems0Threshold) UnmarshalBinary(b []byte) error {
+	var res ShelfTemperatureSensorsItems0Threshold
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfTemperatureSensorsItems0ThresholdHigh shelf temperature sensors items0 threshold high
+//
+// swagger:model ShelfTemperatureSensorsItems0ThresholdHigh
+type ShelfTemperatureSensorsItems0ThresholdHigh struct {
+
+	// High critical threshold, in degrees Celsius
+	// Example: 60
+	Critical int64 `json:"critical,omitempty"`
+
+	// High warning threshold, in degrees Celsius
+	// Example: 55
+	Warning int64 `json:"warning,omitempty"`
+}
+
+// Validate validates this shelf temperature sensors items0 threshold high
+func (m *ShelfTemperatureSensorsItems0ThresholdHigh) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this shelf temperature sensors items0 threshold high based on context it is used
+func (m *ShelfTemperatureSensorsItems0ThresholdHigh) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfTemperatureSensorsItems0ThresholdHigh) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfTemperatureSensorsItems0ThresholdHigh) UnmarshalBinary(b []byte) error {
+	var res ShelfTemperatureSensorsItems0ThresholdHigh
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfTemperatureSensorsItems0ThresholdLow shelf temperature sensors items0 threshold low
+//
+// swagger:model ShelfTemperatureSensorsItems0ThresholdLow
+type ShelfTemperatureSensorsItems0ThresholdLow struct {
+
+	// Low critical threshold, in degrees Celsius
+	// Example: 0
+	Critical int64 `json:"critical,omitempty"`
+
+	// Low warning threshold, in degrees Celsius
+	// Example: 5
+	Warning int64 `json:"warning,omitempty"`
+}
+
+// Validate validates this shelf temperature sensors items0 threshold low
+func (m *ShelfTemperatureSensorsItems0ThresholdLow) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this shelf temperature sensors items0 threshold low based on context it is used
+func (m *ShelfTemperatureSensorsItems0ThresholdLow) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfTemperatureSensorsItems0ThresholdLow) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfTemperatureSensorsItems0ThresholdLow) UnmarshalBinary(b []byte) error {
+	var res ShelfTemperatureSensorsItems0ThresholdLow
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // ShelfVendor shelf vendor
 //
 // swagger:model ShelfVendor
 type ShelfVendor struct {
 
-	// Manufacturer name
+	// Support for this field will be removed in a future release. Please use vendor.name for this field.
 	// Example: XYZ
 	Manufacturer string `json:"manufacturer,omitempty"`
+
+	// name
+	// Example: XYZ
+	Name string `json:"name,omitempty"`
 
 	// Part number
 	// Example: A92831142733
@@ -2467,6 +4349,122 @@ func (m *ShelfVendor) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ShelfVendor) UnmarshalBinary(b []byte) error {
 	var res ShelfVendor
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ShelfVoltageSensorsItems0 shelf voltage sensors items0
+//
+// swagger:model ShelfVoltageSensorsItems0
+type ShelfVoltageSensorsItems0 struct {
+
+	// id
+	// Example: 1
+	ID int64 `json:"id,omitempty"`
+
+	// location
+	// Example: rear of the shelf on the lower left power supply
+	Location string `json:"location,omitempty"`
+
+	// state
+	// Example: ok
+	// Enum: [ok error]
+	State string `json:"state,omitempty"`
+
+	// Voltage, in volts
+	// Example: 12.18
+	Voltage float64 `json:"voltage,omitempty"`
+}
+
+// Validate validates this shelf voltage sensors items0
+func (m *ShelfVoltageSensorsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var shelfVoltageSensorsItems0TypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		shelfVoltageSensorsItems0TypeStatePropEnum = append(shelfVoltageSensorsItems0TypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ShelfVoltageSensorsItems0
+	// ShelfVoltageSensorsItems0
+	// state
+	// State
+	// ok
+	// END DEBUGGING
+	// ShelfVoltageSensorsItems0StateOk captures enum value "ok"
+	ShelfVoltageSensorsItems0StateOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// ShelfVoltageSensorsItems0
+	// ShelfVoltageSensorsItems0
+	// state
+	// State
+	// error
+	// END DEBUGGING
+	// ShelfVoltageSensorsItems0StateError captures enum value "error"
+	ShelfVoltageSensorsItems0StateError string = "error"
+)
+
+// prop value enum
+func (m *ShelfVoltageSensorsItems0) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, shelfVoltageSensorsItems0TypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ShelfVoltageSensorsItems0) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this shelf voltage sensors items0 based on context it is used
+func (m *ShelfVoltageSensorsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ShelfVoltageSensorsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ShelfVoltageSensorsItems0) UnmarshalBinary(b []byte) error {
+	var res ShelfVoltageSensorsItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

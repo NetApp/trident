@@ -24,6 +24,10 @@ type Audit struct {
 	// events
 	Events *AuditEvents `json:"events,omitempty"`
 
+	// Indicates whether there is a strict Guarantee of Auditing
+	// Example: false
+	Guarantee bool `json:"guarantee,omitempty"`
+
 	// log
 	Log *Log `json:"log,omitempty"`
 

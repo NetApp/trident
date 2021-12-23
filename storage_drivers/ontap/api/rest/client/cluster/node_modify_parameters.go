@@ -67,6 +67,8 @@ type NodeModifyParams struct {
 	     The shutdown action shuts the node down and transfers storage control to its HA group if storage failover is enabled.
 	The reboot action reboots the node and transfers storage control to its HA group if storage failover is enabled.
 	The giveback action transfers storage control back to the owner from its HA group.
+	The "power_off" action shuts the node down with the assistance of the service processor.
+	The "power_on" action restores power to the node with the assistance of the service processor.
 
 	*/
 	ActionQueryParameter *string
@@ -86,6 +88,20 @@ type NodeModifyParams struct {
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
 	ReturnTimeoutQueryParameter *int64
+
+	/* ServiceProcessorAction.
+
+	   Action used to reboot the service processor (SP).
+
+	*/
+	ServiceProcessorActionQueryParameter *string
+
+	/* ServiceProcessorFirmwareImage.
+
+	   Service processor image to boot with after a reboot.
+
+	*/
+	ServiceProcessorFirmwareImageQueryParameter *string
 
 	/* ShutdownRebootReason.
 
@@ -210,6 +226,28 @@ func (o *NodeModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) 
 	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
+// WithServiceProcessorActionQueryParameter adds the serviceProcessorAction to the node modify params
+func (o *NodeModifyParams) WithServiceProcessorActionQueryParameter(serviceProcessorAction *string) *NodeModifyParams {
+	o.SetServiceProcessorActionQueryParameter(serviceProcessorAction)
+	return o
+}
+
+// SetServiceProcessorActionQueryParameter adds the serviceProcessorAction to the node modify params
+func (o *NodeModifyParams) SetServiceProcessorActionQueryParameter(serviceProcessorAction *string) {
+	o.ServiceProcessorActionQueryParameter = serviceProcessorAction
+}
+
+// WithServiceProcessorFirmwareImageQueryParameter adds the serviceProcessorFirmwareImage to the node modify params
+func (o *NodeModifyParams) WithServiceProcessorFirmwareImageQueryParameter(serviceProcessorFirmwareImage *string) *NodeModifyParams {
+	o.SetServiceProcessorFirmwareImageQueryParameter(serviceProcessorFirmwareImage)
+	return o
+}
+
+// SetServiceProcessorFirmwareImageQueryParameter adds the serviceProcessorFirmwareImage to the node modify params
+func (o *NodeModifyParams) SetServiceProcessorFirmwareImageQueryParameter(serviceProcessorFirmwareImage *string) {
+	o.ServiceProcessorFirmwareImageQueryParameter = serviceProcessorFirmwareImage
+}
+
 // WithShutdownRebootReasonQueryParameter adds the shutdownRebootReason to the node modify params
 func (o *NodeModifyParams) WithShutdownRebootReasonQueryParameter(shutdownRebootReason *string) *NodeModifyParams {
 	o.SetShutdownRebootReasonQueryParameter(shutdownRebootReason)
@@ -291,6 +329,40 @@ func (o *NodeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorActionQueryParameter != nil {
+
+		// query param service_processor.action
+		var qrServiceProcessorAction string
+
+		if o.ServiceProcessorActionQueryParameter != nil {
+			qrServiceProcessorAction = *o.ServiceProcessorActionQueryParameter
+		}
+		qServiceProcessorAction := qrServiceProcessorAction
+		if qServiceProcessorAction != "" {
+
+			if err := r.SetQueryParam("service_processor.action", qServiceProcessorAction); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorFirmwareImageQueryParameter != nil {
+
+		// query param service_processor.firmware_image
+		var qrServiceProcessorFirmwareImage string
+
+		if o.ServiceProcessorFirmwareImageQueryParameter != nil {
+			qrServiceProcessorFirmwareImage = *o.ServiceProcessorFirmwareImageQueryParameter
+		}
+		qServiceProcessorFirmwareImage := qrServiceProcessorFirmwareImage
+		if qServiceProcessorFirmwareImage != "" {
+
+			if err := r.SetQueryParam("service_processor.firmware_image", qServiceProcessorFirmwareImage); err != nil {
 				return err
 			}
 		}

@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// SnapmirrorPolicy SnapMirror policy information. SnapMirror policy can either be of type "async" or "sync".<br>The policy type "async" can be associated with a SnapMirror relationship that has either the FlexVol volume or FlexGroup volume or SVM as the endpoint.<br>The policy type "sync" along with "sync_type" as "sync" or "strict_sync" can be associated with a SnapMirror relationship that has FlexVol volume as the endpoint. The policy type "sync" can have a "sync_type" of either "sync", "strict_sync" or "automated_failover". If the "sync_type" is "sync" then a write success is returned to the client after writing the data to the source endpoint and before writing the data to the destination endpoint. If the "sync_type" is "strict_sync" then a write success is returned to the client after writing the data to the both source and destination endpoints.<br>If the "sync_type" is "automated_failover" then the policy can be associated with a SnapMirror relationship that has Consistency Group as the endpoint. Use the "sync" policy with "sync_type" as "automated_failover" to establish SnapMirror relationships for business continuity usecases. SnapMirror relationships with policy type as "sync" and "sync_type" as "automated_failover" can be monitored by the Mediator, if configured. In case the source Consistency Group endpoint is not reachable, the Mediator may trigger a failover to the destination Consistency Group endpoint.
+// SnapmirrorPolicy SnapMirror policy information. SnapMirror policy can either be of type "async", "sync" or "continuous".<br>The policy type "async" can be associated with a SnapMirror relationship that has either the FlexVol volume or FlexGroup volume or SVM as the endpoint.<br>The policy type "sync" along with "sync_type" as "sync" or "strict_sync" can be associated with a SnapMirror relationship that has FlexVol volume as the endpoint. The policy type "sync" can have a "sync_type" of either "sync", "strict_sync" or "automated_failover". If the "sync_type" is "sync" then a write success is returned to the client after writing the data to the source endpoint and before writing the data to the destination endpoint. If the "sync_type" is "strict_sync" then a write success is returned to the client after writing the data to the both source and destination endpoints.<br>If the "sync_type" is "automated_failover" then the policy can be associated with a SnapMirror relationship that has Consistency Group as the endpoint. Use the "sync" policy with "sync_type" as "automated_failover" to establish SnapMirror relationships for business continuity usecases. SnapMirror relationships with policy type as "sync" and "sync_type" as "automated_failover" can be monitored by the Mediator, if configured. In case the source Consistency Group endpoint is not reachable, the Mediator may trigger a failover to the destination Consistency Group endpoint. A policy of type "continuous" can be associated with SnapMirror relationships that have either ONTAP S3 buckets or NON-ONTAP object stores as endpoints. This type of policy is used for FabricLink owned targets.
 //
 // swagger:model snapmirror_policy
 type SnapmirrorPolicy struct {
@@ -26,6 +26,9 @@ type SnapmirrorPolicy struct {
 
 	// Comment associated with the policy.
 	Comment string `json:"comment,omitempty"`
+
+	// Specifies whether all source Snapshot copies should be copied to the destination on a transfer rather than specifying specific retentions. This is applicable only to async policies.
+	CopyAllSourceSnapshots *bool `json:"copy_all_source_snapshots,omitempty"`
 
 	// Specifies which configuration of the source SVM is replicated to the destination SVM. This property is applicable only for SVM data protection with "async" policy type.
 	// Enum: [full exclude_network_config exclude_network_and_protocol_config]
@@ -38,8 +41,11 @@ type SnapmirrorPolicy struct {
 	// Specifies whether network compression is enabled for transfers. This is applicable only to the policies of type "async".
 	NetworkCompressionEnabled *bool `json:"network_compression_enabled,omitempty"`
 
-	// Policy on Snapshot copy retention.
+	// Rules for Snapshot copy retention.
 	Retention []*SnapmirrorPolicyRule `json:"retention,omitempty"`
+
+	// Specifies the duration of time for which a change to be propogated to a mirror should be delayed, in seconds. This is an intentional propagation delay between mirrors and is configurable down to zero, which means an immediate propogation. This is supported for policies of type 'continuous'.
+	Rpo *int64 `json:"rpo,omitempty"`
 
 	// Set to "svm" for policies owned by an SVM, otherwise set to "cluster".
 	// Read Only: true
@@ -63,7 +69,7 @@ type SnapmirrorPolicy struct {
 	TransferSchedule *SnapmirrorPolicyTransferSchedule `json:"transfer_schedule,omitempty"`
 
 	// type
-	// Enum: [async sync]
+	// Enum: [async sync continuous]
 	Type *string `json:"type,omitempty"`
 
 	// uuid
@@ -407,7 +413,7 @@ var snapmirrorPolicyTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["async","sync"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["async","sync","continuous"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -436,6 +442,16 @@ const (
 	// END DEBUGGING
 	// SnapmirrorPolicyTypeSync captures enum value "sync"
 	SnapmirrorPolicyTypeSync string = "sync"
+
+	// BEGIN DEBUGGING
+	// snapmirror_policy
+	// SnapmirrorPolicy
+	// type
+	// Type
+	// continuous
+	// END DEBUGGING
+	// SnapmirrorPolicyTypeContinuous captures enum value "continuous"
+	SnapmirrorPolicyTypeContinuous string = "continuous"
 )
 
 // prop value enum

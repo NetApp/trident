@@ -32,10 +32,10 @@ type Vscan struct {
 	OnAccessPolicies []*VscanOnAccess `json:"on_access_policies,omitempty"`
 
 	// on demand policies
-	OnDemandPolicies []*VscanOnDemand `json:"on_demand_policies,omitempty"`
+	OnDemandPolicies []*VscanOnDemandPolicy `json:"on_demand_policies,omitempty"`
 
 	// scanner pools
-	ScannerPools []*VscanScannerPool `json:"scanner_pools,omitempty"`
+	ScannerPools []*ScannerPool `json:"scanner_pools,omitempty"`
 
 	// svm
 	Svm *VscanSvm `json:"svm,omitempty"`
@@ -393,7 +393,7 @@ func (m *VscanLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VscanSvm SVM, applies only to SVM-scoped objects.
+// VscanSvm vscan svm
 //
 // swagger:model VscanSvm
 type VscanSvm struct {

@@ -19,11 +19,6 @@ import (
 // swagger:model nsswitch_source
 type NsswitchSource string
 
-func NewNsswitchSource(value NsswitchSource) *NsswitchSource {
-	v := value
-	return &v
-}
-
 const (
 
 	// NsswitchSourceFiles captures enum value "files"

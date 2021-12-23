@@ -54,7 +54,7 @@ type AzureKeyVaultRestoreAccepted struct {
 }
 
 func (o *AzureKeyVaultRestoreAccepted) Error() string {
-	return fmt.Sprintf("[POST /security/azure-key-vaults/{azure_key_vault.uuid}/restore][%d] azureKeyVaultRestoreAccepted ", 202)
+	return fmt.Sprintf("[POST /security/azure-key-vaults/{uuid}/restore][%d] azureKeyVaultRestoreAccepted ", 202)
 }
 
 func (o *AzureKeyVaultRestoreAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -90,7 +90,7 @@ func (o *AzureKeyVaultRestoreDefault) Code() int {
 }
 
 func (o *AzureKeyVaultRestoreDefault) Error() string {
-	return fmt.Sprintf("[POST /security/azure-key-vaults/{azure_key_vault.uuid}/restore][%d] azure_key_vault_restore default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[POST /security/azure-key-vaults/{uuid}/restore][%d] azure_key_vault_restore default  %+v", o._statusCode, o.Payload)
 }
 func (o *AzureKeyVaultRestoreDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

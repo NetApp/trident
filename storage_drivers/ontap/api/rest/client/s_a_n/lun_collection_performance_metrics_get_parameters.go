@@ -202,6 +202,7 @@ type LunCollectionPerformanceMetricsGetParams struct {
 	/* UUID.
 
 	   Unique identifier of the LUN.
+
 	*/
 	UUIDPathParameter string
 

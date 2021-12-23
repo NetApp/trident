@@ -121,6 +121,9 @@ func NewSnapmirrorRelationshipModifyDefault(code int) *SnapmirrorRelationshipMod
 | 13303867    | Modifying the policy of an async-mirror or a vault relationship is not supported. |
 | 13303884    | LIF and protocols details are configured incorrectly for SVM. |
 | 13303996    | The source and destination clusters both have a policy with the same name, but they have different properties. |
+| 13304062    | Cannot reverse the direction of a SnapMirror DP relationship when the source cluster version is earlier than the destination cluster version. |
+| 13304070    | Remote peer cluster requires the dp_rest_support capability to support reversing the direction of a DP relationship. |
+| 13304071    | Failed to access capabilities on remote cluster. |
 
 */
 type SnapmirrorRelationshipModifyDefault struct {

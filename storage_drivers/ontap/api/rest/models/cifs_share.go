@@ -44,10 +44,30 @@ type CifsShare struct {
 	// Min Length: 1
 	Comment string `json:"comment,omitempty"`
 
+	// Specifies whether or not the clients connecting to this share can open files in a persistent manner.
+	// Files opened in this way are protected from disruptive events, such as, failover and giveback.
+	//
+	ContinuouslyAvailable *bool `json:"continuously_available,omitempty"`
+
+	// Directory Mode Creation Mask to be viewed as an octal number.
+	// Example: 22
+	DirUmask int64 `json:"dir_umask,omitempty"`
+
 	// Specifies that SMB encryption must be used when accessing this share. Clients that do not support encryption are not
 	// able to access this share.
 	//
 	Encryption *bool `json:"encryption,omitempty"`
+
+	// File Mode Creation Mask to be viewed as an octal number.
+	// Example: 22
+	FileUmask int64 `json:"file_umask,omitempty"`
+
+	// Specifies that all files that CIFS users create in a specific share belong to the same group
+	// (also called the "force-group"). The "force-group" must be a predefined group in the UNIX group
+	// database. This setting has no effect unless the security style of the volume is UNIX or mixed
+	// security style.
+	//
+	ForceGroupForCreate string `json:"force_group_for_create,omitempty"`
 
 	// Specifies whether or not the share is a home directory share, where the share and path names are dynamic.
 	// ONTAP home directory functionality automatically offer each user a dynamic share to their home directory without creating an
@@ -70,9 +90,25 @@ type CifsShare struct {
 	// Min Length: 1
 	Name string `json:"name,omitempty"`
 
+	// Specifies whether or not the SMB clients connecting to this share can cache the directory enumeration
+	// results returned by the CIFS servers.
+	//
+	NamespaceCaching *bool `json:"namespace_caching,omitempty"`
+
 	// Specifies whether or not CIFS clients can follow a unix symlinks outside the share boundaries.
 	//
 	NoStrictSecurity *bool `json:"no_strict_security,omitempty"`
+
+	// Offline Files
+	// The supported values are:
+	//   * none - Clients are not permitted to cache files for offline access.
+	//   * manual - Clients may cache files that are explicitly selected by the user for offline access.
+	//   * documents - Clients may automatically cache files that are used by the user for offline access.
+	//   * programs - Clients may automatically cache files that are used by the user for offline access
+	//                and may use those files in an offline mode even if the share is available.
+	//
+	// Enum: [none manual documents programs]
+	OfflineFiles *string `json:"offline_files,omitempty"`
 
 	// Specify whether opportunistic locks are enabled on this share. "Oplocks" allow clients to lock files and cache content locally,
 	// which can increase performance for file operations.
@@ -90,6 +126,10 @@ type CifsShare struct {
 	// Min Length: 1
 	Path string `json:"path,omitempty"`
 
+	// Specifies whether or not the Snapshot copies can be viewed and traversed by clients.
+	//
+	ShowSnapshot *bool `json:"show_snapshot,omitempty"`
+
 	// svm
 	Svm *CifsShareSvm `json:"svm,omitempty"`
 
@@ -104,6 +144,16 @@ type CifsShare struct {
 
 	// volume
 	Volume *CifsShareVolume `json:"volume,omitempty"`
+
+	// Vscan File-Operations Profile
+	// The supported values are:
+	//   * no_scan - Virus scans are never triggered for accesses to this share.
+	//   * standard - Virus scans can be triggered by open, close, and rename operations.
+	//   * strict - Virus scans can be triggered by open, read, close, and rename operations.
+	//   * writes_only - Virus scans can be triggered only when a file that has been modified is closed.
+	//
+	// Enum: [no_scan standard strict writes_only]
+	VscanProfile *string `json:"vscan_profile,omitempty"`
 }
 
 // Validate validates this cifs share
@@ -126,6 +176,10 @@ func (m *CifsShare) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateOfflineFiles(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validatePath(formats); err != nil {
 		res = append(res, err)
 	}
@@ -139,6 +193,10 @@ func (m *CifsShare) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateVolume(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVscanProfile(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -215,6 +273,82 @@ func (m *CifsShare) validateName(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaxLength("name", "body", m.Name, 80); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var cifsShareTypeOfflineFilesPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["none","manual","documents","programs"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cifsShareTypeOfflineFilesPropEnum = append(cifsShareTypeOfflineFilesPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cifs_share
+	// CifsShare
+	// offline_files
+	// OfflineFiles
+	// none
+	// END DEBUGGING
+	// CifsShareOfflineFilesNone captures enum value "none"
+	CifsShareOfflineFilesNone string = "none"
+
+	// BEGIN DEBUGGING
+	// cifs_share
+	// CifsShare
+	// offline_files
+	// OfflineFiles
+	// manual
+	// END DEBUGGING
+	// CifsShareOfflineFilesManual captures enum value "manual"
+	CifsShareOfflineFilesManual string = "manual"
+
+	// BEGIN DEBUGGING
+	// cifs_share
+	// CifsShare
+	// offline_files
+	// OfflineFiles
+	// documents
+	// END DEBUGGING
+	// CifsShareOfflineFilesDocuments captures enum value "documents"
+	CifsShareOfflineFilesDocuments string = "documents"
+
+	// BEGIN DEBUGGING
+	// cifs_share
+	// CifsShare
+	// offline_files
+	// OfflineFiles
+	// programs
+	// END DEBUGGING
+	// CifsShareOfflineFilesPrograms captures enum value "programs"
+	CifsShareOfflineFilesPrograms string = "programs"
+)
+
+// prop value enum
+func (m *CifsShare) validateOfflineFilesEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsShareTypeOfflineFilesPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CifsShare) validateOfflineFiles(formats strfmt.Registry) error {
+	if swag.IsZero(m.OfflineFiles) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateOfflineFilesEnum("offline_files", "body", *m.OfflineFiles); err != nil {
 		return err
 	}
 
@@ -332,6 +466,82 @@ func (m *CifsShare) validateVolume(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var cifsShareTypeVscanProfilePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["no_scan","standard","strict","writes_only"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		cifsShareTypeVscanProfilePropEnum = append(cifsShareTypeVscanProfilePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cifs_share
+	// CifsShare
+	// vscan_profile
+	// VscanProfile
+	// no_scan
+	// END DEBUGGING
+	// CifsShareVscanProfileNoScan captures enum value "no_scan"
+	CifsShareVscanProfileNoScan string = "no_scan"
+
+	// BEGIN DEBUGGING
+	// cifs_share
+	// CifsShare
+	// vscan_profile
+	// VscanProfile
+	// standard
+	// END DEBUGGING
+	// CifsShareVscanProfileStandard captures enum value "standard"
+	CifsShareVscanProfileStandard string = "standard"
+
+	// BEGIN DEBUGGING
+	// cifs_share
+	// CifsShare
+	// vscan_profile
+	// VscanProfile
+	// strict
+	// END DEBUGGING
+	// CifsShareVscanProfileStrict captures enum value "strict"
+	CifsShareVscanProfileStrict string = "strict"
+
+	// BEGIN DEBUGGING
+	// cifs_share
+	// CifsShare
+	// vscan_profile
+	// VscanProfile
+	// writes_only
+	// END DEBUGGING
+	// CifsShareVscanProfileWritesOnly captures enum value "writes_only"
+	CifsShareVscanProfileWritesOnly string = "writes_only"
+)
+
+// prop value enum
+func (m *CifsShare) validateVscanProfileEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, cifsShareTypeVscanProfilePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *CifsShare) validateVscanProfile(formats strfmt.Registry) error {
+	if swag.IsZero(m.VscanProfile) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateVscanProfileEnum("vscan_profile", "body", *m.VscanProfile); err != nil {
+		return err
 	}
 
 	return nil

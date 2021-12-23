@@ -33,6 +33,7 @@ type S3PolicyStatement struct {
 	// * GetObjectTagging - retrieves the tag set of an object.
 	// * PutObjecttagging - sets the tag set for an object.
 	// * DeleteObjectTagging - deletes the tag set of an object.
+	// * GetBucketLocation - retrieves the location of a bucket.
 	// The wildcard character "*" can be used to form a regular expression for specifying actions.
 	//
 	// Example: ["*"]

@@ -40,6 +40,10 @@ type EmsConfig struct {
 	// User name for HTTP/HTTPS proxy
 	// Example: proxy_user
 	ProxyUser string `json:"proxy_user,omitempty"`
+
+	// Is Publish/Subscribe Messaging Enabled?
+	// Example: true
+	PubsubEnabled bool `json:"pubsub_enabled,omitempty"`
 }
 
 // Validate validates this ems config

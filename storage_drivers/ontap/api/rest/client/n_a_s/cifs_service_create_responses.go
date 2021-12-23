@@ -82,7 +82,11 @@ func NewCifsServiceCreateDefault(code int) *CifsServiceCreateDefault {
 
 /* CifsServiceCreateDefault describes a response with status code -1, with default header values.
 
-Error
+ ONTAP Error Response Codes
+| Error Code | Description |
+| ---------- | ----------- |
+| 4915251    | STARTTLS and LDAPS cannot be used together.|
+
 */
 type CifsServiceCreateDefault struct {
 	_statusCode int

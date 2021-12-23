@@ -60,6 +60,18 @@ func NewLunCollectionGetParamsWithHTTPClient(client *http.Client) *LunCollection
 */
 type LunCollectionGetParams struct {
 
+	/* AttributesName.
+
+	   Filter by attributes.name
+	*/
+	AttributesNameQueryParameter *string
+
+	/* AttributesValue.
+
+	   Filter by attributes.value
+	*/
+	AttributesValueQueryParameter *string
+
 	/* AutoDelete.
 
 	   Filter by auto_delete
@@ -77,6 +89,162 @@ type LunCollectionGetParams struct {
 	   Filter by comment
 	*/
 	CommentQueryParameter *string
+
+	/* ConsistencyGroupName.
+
+	   Filter by consistency_group.name
+	*/
+	ConsistencyGroupNameQueryParameter *string
+
+	/* ConsistencyGroupUUID.
+
+	   Filter by consistency_group.uuid
+	*/
+	ConsistencyGroupUUIDQueryParameter *string
+
+	/* CopyDestinationsMaxThroughput.
+
+	   Filter by copy.destinations.max_throughput
+	*/
+	CopyDestinationsMaxThroughputQueryParameter *int64
+
+	/* CopyDestinationsName.
+
+	   Filter by copy.destinations.name
+	*/
+	CopyDestinationsNameQueryParameter *string
+
+	/* CopyDestinationsProgressElapsed.
+
+	   Filter by copy.destinations.progress.elapsed
+	*/
+	CopyDestinationsProgressElapsedQueryParameter *int64
+
+	/* CopyDestinationsProgressFailureArgumentsCode.
+
+	   Filter by copy.destinations.progress.failure.arguments.code
+	*/
+	CopyDestinationsProgressFailureArgumentsCodeQueryParameter *string
+
+	/* CopyDestinationsProgressFailureArgumentsMessage.
+
+	   Filter by copy.destinations.progress.failure.arguments.message
+	*/
+	CopyDestinationsProgressFailureArgumentsMessageQueryParameter *string
+
+	/* CopyDestinationsProgressFailureCode.
+
+	   Filter by copy.destinations.progress.failure.code
+	*/
+	CopyDestinationsProgressFailureCodeQueryParameter *string
+
+	/* CopyDestinationsProgressFailureMessage.
+
+	   Filter by copy.destinations.progress.failure.message
+	*/
+	CopyDestinationsProgressFailureMessageQueryParameter *string
+
+	/* CopyDestinationsProgressFailureTarget.
+
+	   Filter by copy.destinations.progress.failure.target
+	*/
+	CopyDestinationsProgressFailureTargetQueryParameter *string
+
+	/* CopyDestinationsProgressPercentComplete.
+
+	   Filter by copy.destinations.progress.percent_complete
+	*/
+	CopyDestinationsProgressPercentCompleteQueryParameter *int64
+
+	/* CopyDestinationsProgressState.
+
+	   Filter by copy.destinations.progress.state
+	*/
+	CopyDestinationsProgressStateQueryParameter *string
+
+	/* CopyDestinationsProgressVolumeSnapshotBlocked.
+
+	   Filter by copy.destinations.progress.volume_snapshot_blocked
+	*/
+	CopyDestinationsProgressVolumeSnapshotBlockedQueryParameter *bool
+
+	/* CopyDestinationsUUID.
+
+	   Filter by copy.destinations.uuid
+	*/
+	CopyDestinationsUUIDQueryParameter *string
+
+	/* CopySourceMaxThroughput.
+
+	   Filter by copy.source.max_throughput
+	*/
+	CopySourceMaxThroughputQueryParameter *int64
+
+	/* CopySourceName.
+
+	   Filter by copy.source.name
+	*/
+	CopySourceNameQueryParameter *string
+
+	/* CopySourceProgressElapsed.
+
+	   Filter by copy.source.progress.elapsed
+	*/
+	CopySourceProgressElapsedQueryParameter *int64
+
+	/* CopySourceProgressFailureArgumentsCode.
+
+	   Filter by copy.source.progress.failure.arguments.code
+	*/
+	CopySourceProgressFailureArgumentsCodeQueryParameter *string
+
+	/* CopySourceProgressFailureArgumentsMessage.
+
+	   Filter by copy.source.progress.failure.arguments.message
+	*/
+	CopySourceProgressFailureArgumentsMessageQueryParameter *string
+
+	/* CopySourceProgressFailureCode.
+
+	   Filter by copy.source.progress.failure.code
+	*/
+	CopySourceProgressFailureCodeQueryParameter *string
+
+	/* CopySourceProgressFailureMessage.
+
+	   Filter by copy.source.progress.failure.message
+	*/
+	CopySourceProgressFailureMessageQueryParameter *string
+
+	/* CopySourceProgressFailureTarget.
+
+	   Filter by copy.source.progress.failure.target
+	*/
+	CopySourceProgressFailureTargetQueryParameter *string
+
+	/* CopySourceProgressPercentComplete.
+
+	   Filter by copy.source.progress.percent_complete
+	*/
+	CopySourceProgressPercentCompleteQueryParameter *int64
+
+	/* CopySourceProgressState.
+
+	   Filter by copy.source.progress.state
+	*/
+	CopySourceProgressStateQueryParameter *string
+
+	/* CopySourceProgressVolumeSnapshotBlocked.
+
+	   Filter by copy.source.progress.volume_snapshot_blocked
+	*/
+	CopySourceProgressVolumeSnapshotBlockedQueryParameter *bool
+
+	/* CopySourceUUID.
+
+	   Filter by copy.source.uuid
+	*/
+	CopySourceUUIDQueryParameter *string
 
 	/* CreateTime.
 
@@ -101,6 +269,18 @@ type LunCollectionGetParams struct {
 	   Filter by location.logical_unit
 	*/
 	LocationLogicalUnitQueryParameter *string
+
+	/* LocationNodeName.
+
+	   Filter by location.node.name
+	*/
+	LocationNodeNameQueryParameter *string
+
+	/* LocationNodeUUID.
+
+	   Filter by location.node.uuid
+	*/
+	LocationNodeUUIDQueryParameter *string
 
 	/* LocationQtreeID.
 
@@ -264,6 +444,18 @@ type LunCollectionGetParams struct {
 	*/
 	MovementProgressElapsedQueryParameter *int64
 
+	/* MovementProgressFailureArgumentsCode.
+
+	   Filter by movement.progress.failure.arguments.code
+	*/
+	MovementProgressFailureArgumentsCodeQueryParameter *string
+
+	/* MovementProgressFailureArgumentsMessage.
+
+	   Filter by movement.progress.failure.arguments.message
+	*/
+	MovementProgressFailureArgumentsMessageQueryParameter *string
+
 	/* MovementProgressFailureCode.
 
 	   Filter by movement.progress.failure.code
@@ -275,6 +467,12 @@ type LunCollectionGetParams struct {
 	   Filter by movement.progress.failure.message
 	*/
 	MovementProgressFailureMessageQueryParameter *string
+
+	/* MovementProgressFailureTarget.
+
+	   Filter by movement.progress.failure.target
+	*/
+	MovementProgressFailureTargetQueryParameter *string
 
 	/* MovementProgressPercentComplete.
 
@@ -357,6 +555,12 @@ type LunCollectionGetParams struct {
 	   Filter by space.guarantee.reserved
 	*/
 	SpaceGuaranteeReservedQueryParameter *bool
+
+	/* SpaceScsiThinProvisioningSupportEnabled.
+
+	   Filter by space.scsi_thin_provisioning_support_enabled
+	*/
+	SpaceScsiThinProvisioningSupportEnabledQueryParameter *bool
 
 	/* SpaceSize.
 
@@ -496,6 +700,30 @@ type LunCollectionGetParams struct {
 	*/
 	UUIDQueryParameter *string
 
+	/* VvolBindingsID.
+
+	   Filter by vvol.bindings.id
+	*/
+	VvolBindingsIDQueryParameter *int64
+
+	/* VvolBindingsPartnerName.
+
+	   Filter by vvol.bindings.partner.name
+	*/
+	VvolBindingsPartnerNameQueryParameter *string
+
+	/* VvolBindingsPartnerUUID.
+
+	   Filter by vvol.bindings.partner.uuid
+	*/
+	VvolBindingsPartnerUUIDQueryParameter *string
+
+	/* VvolIsBound.
+
+	   Filter by vvol.is_bound
+	*/
+	VvolIsBoundQueryParameter *bool
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -563,6 +791,28 @@ func (o *LunCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAttributesNameQueryParameter adds the attributesName to the lun collection get params
+func (o *LunCollectionGetParams) WithAttributesNameQueryParameter(attributesName *string) *LunCollectionGetParams {
+	o.SetAttributesNameQueryParameter(attributesName)
+	return o
+}
+
+// SetAttributesNameQueryParameter adds the attributesName to the lun collection get params
+func (o *LunCollectionGetParams) SetAttributesNameQueryParameter(attributesName *string) {
+	o.AttributesNameQueryParameter = attributesName
+}
+
+// WithAttributesValueQueryParameter adds the attributesValue to the lun collection get params
+func (o *LunCollectionGetParams) WithAttributesValueQueryParameter(attributesValue *string) *LunCollectionGetParams {
+	o.SetAttributesValueQueryParameter(attributesValue)
+	return o
+}
+
+// SetAttributesValueQueryParameter adds the attributesValue to the lun collection get params
+func (o *LunCollectionGetParams) SetAttributesValueQueryParameter(attributesValue *string) {
+	o.AttributesValueQueryParameter = attributesValue
+}
+
 // WithAutoDeleteQueryParameter adds the autoDelete to the lun collection get params
 func (o *LunCollectionGetParams) WithAutoDeleteQueryParameter(autoDelete *bool) *LunCollectionGetParams {
 	o.SetAutoDeleteQueryParameter(autoDelete)
@@ -594,6 +844,292 @@ func (o *LunCollectionGetParams) WithCommentQueryParameter(comment *string) *Lun
 // SetCommentQueryParameter adds the comment to the lun collection get params
 func (o *LunCollectionGetParams) SetCommentQueryParameter(comment *string) {
 	o.CommentQueryParameter = comment
+}
+
+// WithConsistencyGroupNameQueryParameter adds the consistencyGroupName to the lun collection get params
+func (o *LunCollectionGetParams) WithConsistencyGroupNameQueryParameter(consistencyGroupName *string) *LunCollectionGetParams {
+	o.SetConsistencyGroupNameQueryParameter(consistencyGroupName)
+	return o
+}
+
+// SetConsistencyGroupNameQueryParameter adds the consistencyGroupName to the lun collection get params
+func (o *LunCollectionGetParams) SetConsistencyGroupNameQueryParameter(consistencyGroupName *string) {
+	o.ConsistencyGroupNameQueryParameter = consistencyGroupName
+}
+
+// WithConsistencyGroupUUIDQueryParameter adds the consistencyGroupUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithConsistencyGroupUUIDQueryParameter(consistencyGroupUUID *string) *LunCollectionGetParams {
+	o.SetConsistencyGroupUUIDQueryParameter(consistencyGroupUUID)
+	return o
+}
+
+// SetConsistencyGroupUUIDQueryParameter adds the consistencyGroupUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetConsistencyGroupUUIDQueryParameter(consistencyGroupUUID *string) {
+	o.ConsistencyGroupUUIDQueryParameter = consistencyGroupUUID
+}
+
+// WithCopyDestinationsMaxThroughputQueryParameter adds the copyDestinationsMaxThroughput to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsMaxThroughputQueryParameter(copyDestinationsMaxThroughput *int64) *LunCollectionGetParams {
+	o.SetCopyDestinationsMaxThroughputQueryParameter(copyDestinationsMaxThroughput)
+	return o
+}
+
+// SetCopyDestinationsMaxThroughputQueryParameter adds the copyDestinationsMaxThroughput to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsMaxThroughputQueryParameter(copyDestinationsMaxThroughput *int64) {
+	o.CopyDestinationsMaxThroughputQueryParameter = copyDestinationsMaxThroughput
+}
+
+// WithCopyDestinationsNameQueryParameter adds the copyDestinationsName to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsNameQueryParameter(copyDestinationsName *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsNameQueryParameter(copyDestinationsName)
+	return o
+}
+
+// SetCopyDestinationsNameQueryParameter adds the copyDestinationsName to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsNameQueryParameter(copyDestinationsName *string) {
+	o.CopyDestinationsNameQueryParameter = copyDestinationsName
+}
+
+// WithCopyDestinationsProgressElapsedQueryParameter adds the copyDestinationsProgressElapsed to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressElapsedQueryParameter(copyDestinationsProgressElapsed *int64) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressElapsedQueryParameter(copyDestinationsProgressElapsed)
+	return o
+}
+
+// SetCopyDestinationsProgressElapsedQueryParameter adds the copyDestinationsProgressElapsed to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressElapsedQueryParameter(copyDestinationsProgressElapsed *int64) {
+	o.CopyDestinationsProgressElapsedQueryParameter = copyDestinationsProgressElapsed
+}
+
+// WithCopyDestinationsProgressFailureArgumentsCodeQueryParameter adds the copyDestinationsProgressFailureArgumentsCode to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureArgumentsCodeQueryParameter(copyDestinationsProgressFailureArgumentsCode *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressFailureArgumentsCodeQueryParameter(copyDestinationsProgressFailureArgumentsCode)
+	return o
+}
+
+// SetCopyDestinationsProgressFailureArgumentsCodeQueryParameter adds the copyDestinationsProgressFailureArgumentsCode to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureArgumentsCodeQueryParameter(copyDestinationsProgressFailureArgumentsCode *string) {
+	o.CopyDestinationsProgressFailureArgumentsCodeQueryParameter = copyDestinationsProgressFailureArgumentsCode
+}
+
+// WithCopyDestinationsProgressFailureArgumentsMessageQueryParameter adds the copyDestinationsProgressFailureArgumentsMessage to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureArgumentsMessageQueryParameter(copyDestinationsProgressFailureArgumentsMessage *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressFailureArgumentsMessageQueryParameter(copyDestinationsProgressFailureArgumentsMessage)
+	return o
+}
+
+// SetCopyDestinationsProgressFailureArgumentsMessageQueryParameter adds the copyDestinationsProgressFailureArgumentsMessage to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureArgumentsMessageQueryParameter(copyDestinationsProgressFailureArgumentsMessage *string) {
+	o.CopyDestinationsProgressFailureArgumentsMessageQueryParameter = copyDestinationsProgressFailureArgumentsMessage
+}
+
+// WithCopyDestinationsProgressFailureCodeQueryParameter adds the copyDestinationsProgressFailureCode to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureCodeQueryParameter(copyDestinationsProgressFailureCode *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressFailureCodeQueryParameter(copyDestinationsProgressFailureCode)
+	return o
+}
+
+// SetCopyDestinationsProgressFailureCodeQueryParameter adds the copyDestinationsProgressFailureCode to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureCodeQueryParameter(copyDestinationsProgressFailureCode *string) {
+	o.CopyDestinationsProgressFailureCodeQueryParameter = copyDestinationsProgressFailureCode
+}
+
+// WithCopyDestinationsProgressFailureMessageQueryParameter adds the copyDestinationsProgressFailureMessage to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureMessageQueryParameter(copyDestinationsProgressFailureMessage *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressFailureMessageQueryParameter(copyDestinationsProgressFailureMessage)
+	return o
+}
+
+// SetCopyDestinationsProgressFailureMessageQueryParameter adds the copyDestinationsProgressFailureMessage to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureMessageQueryParameter(copyDestinationsProgressFailureMessage *string) {
+	o.CopyDestinationsProgressFailureMessageQueryParameter = copyDestinationsProgressFailureMessage
+}
+
+// WithCopyDestinationsProgressFailureTargetQueryParameter adds the copyDestinationsProgressFailureTarget to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressFailureTargetQueryParameter(copyDestinationsProgressFailureTarget *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressFailureTargetQueryParameter(copyDestinationsProgressFailureTarget)
+	return o
+}
+
+// SetCopyDestinationsProgressFailureTargetQueryParameter adds the copyDestinationsProgressFailureTarget to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressFailureTargetQueryParameter(copyDestinationsProgressFailureTarget *string) {
+	o.CopyDestinationsProgressFailureTargetQueryParameter = copyDestinationsProgressFailureTarget
+}
+
+// WithCopyDestinationsProgressPercentCompleteQueryParameter adds the copyDestinationsProgressPercentComplete to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressPercentCompleteQueryParameter(copyDestinationsProgressPercentComplete *int64) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressPercentCompleteQueryParameter(copyDestinationsProgressPercentComplete)
+	return o
+}
+
+// SetCopyDestinationsProgressPercentCompleteQueryParameter adds the copyDestinationsProgressPercentComplete to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressPercentCompleteQueryParameter(copyDestinationsProgressPercentComplete *int64) {
+	o.CopyDestinationsProgressPercentCompleteQueryParameter = copyDestinationsProgressPercentComplete
+}
+
+// WithCopyDestinationsProgressStateQueryParameter adds the copyDestinationsProgressState to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressStateQueryParameter(copyDestinationsProgressState *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressStateQueryParameter(copyDestinationsProgressState)
+	return o
+}
+
+// SetCopyDestinationsProgressStateQueryParameter adds the copyDestinationsProgressState to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressStateQueryParameter(copyDestinationsProgressState *string) {
+	o.CopyDestinationsProgressStateQueryParameter = copyDestinationsProgressState
+}
+
+// WithCopyDestinationsProgressVolumeSnapshotBlockedQueryParameter adds the copyDestinationsProgressVolumeSnapshotBlocked to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsProgressVolumeSnapshotBlockedQueryParameter(copyDestinationsProgressVolumeSnapshotBlocked *bool) *LunCollectionGetParams {
+	o.SetCopyDestinationsProgressVolumeSnapshotBlockedQueryParameter(copyDestinationsProgressVolumeSnapshotBlocked)
+	return o
+}
+
+// SetCopyDestinationsProgressVolumeSnapshotBlockedQueryParameter adds the copyDestinationsProgressVolumeSnapshotBlocked to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsProgressVolumeSnapshotBlockedQueryParameter(copyDestinationsProgressVolumeSnapshotBlocked *bool) {
+	o.CopyDestinationsProgressVolumeSnapshotBlockedQueryParameter = copyDestinationsProgressVolumeSnapshotBlocked
+}
+
+// WithCopyDestinationsUUIDQueryParameter adds the copyDestinationsUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithCopyDestinationsUUIDQueryParameter(copyDestinationsUUID *string) *LunCollectionGetParams {
+	o.SetCopyDestinationsUUIDQueryParameter(copyDestinationsUUID)
+	return o
+}
+
+// SetCopyDestinationsUUIDQueryParameter adds the copyDestinationsUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetCopyDestinationsUUIDQueryParameter(copyDestinationsUUID *string) {
+	o.CopyDestinationsUUIDQueryParameter = copyDestinationsUUID
+}
+
+// WithCopySourceMaxThroughputQueryParameter adds the copySourceMaxThroughput to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceMaxThroughputQueryParameter(copySourceMaxThroughput *int64) *LunCollectionGetParams {
+	o.SetCopySourceMaxThroughputQueryParameter(copySourceMaxThroughput)
+	return o
+}
+
+// SetCopySourceMaxThroughputQueryParameter adds the copySourceMaxThroughput to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceMaxThroughputQueryParameter(copySourceMaxThroughput *int64) {
+	o.CopySourceMaxThroughputQueryParameter = copySourceMaxThroughput
+}
+
+// WithCopySourceNameQueryParameter adds the copySourceName to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceNameQueryParameter(copySourceName *string) *LunCollectionGetParams {
+	o.SetCopySourceNameQueryParameter(copySourceName)
+	return o
+}
+
+// SetCopySourceNameQueryParameter adds the copySourceName to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceNameQueryParameter(copySourceName *string) {
+	o.CopySourceNameQueryParameter = copySourceName
+}
+
+// WithCopySourceProgressElapsedQueryParameter adds the copySourceProgressElapsed to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressElapsedQueryParameter(copySourceProgressElapsed *int64) *LunCollectionGetParams {
+	o.SetCopySourceProgressElapsedQueryParameter(copySourceProgressElapsed)
+	return o
+}
+
+// SetCopySourceProgressElapsedQueryParameter adds the copySourceProgressElapsed to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressElapsedQueryParameter(copySourceProgressElapsed *int64) {
+	o.CopySourceProgressElapsedQueryParameter = copySourceProgressElapsed
+}
+
+// WithCopySourceProgressFailureArgumentsCodeQueryParameter adds the copySourceProgressFailureArgumentsCode to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressFailureArgumentsCodeQueryParameter(copySourceProgressFailureArgumentsCode *string) *LunCollectionGetParams {
+	o.SetCopySourceProgressFailureArgumentsCodeQueryParameter(copySourceProgressFailureArgumentsCode)
+	return o
+}
+
+// SetCopySourceProgressFailureArgumentsCodeQueryParameter adds the copySourceProgressFailureArgumentsCode to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressFailureArgumentsCodeQueryParameter(copySourceProgressFailureArgumentsCode *string) {
+	o.CopySourceProgressFailureArgumentsCodeQueryParameter = copySourceProgressFailureArgumentsCode
+}
+
+// WithCopySourceProgressFailureArgumentsMessageQueryParameter adds the copySourceProgressFailureArgumentsMessage to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressFailureArgumentsMessageQueryParameter(copySourceProgressFailureArgumentsMessage *string) *LunCollectionGetParams {
+	o.SetCopySourceProgressFailureArgumentsMessageQueryParameter(copySourceProgressFailureArgumentsMessage)
+	return o
+}
+
+// SetCopySourceProgressFailureArgumentsMessageQueryParameter adds the copySourceProgressFailureArgumentsMessage to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressFailureArgumentsMessageQueryParameter(copySourceProgressFailureArgumentsMessage *string) {
+	o.CopySourceProgressFailureArgumentsMessageQueryParameter = copySourceProgressFailureArgumentsMessage
+}
+
+// WithCopySourceProgressFailureCodeQueryParameter adds the copySourceProgressFailureCode to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressFailureCodeQueryParameter(copySourceProgressFailureCode *string) *LunCollectionGetParams {
+	o.SetCopySourceProgressFailureCodeQueryParameter(copySourceProgressFailureCode)
+	return o
+}
+
+// SetCopySourceProgressFailureCodeQueryParameter adds the copySourceProgressFailureCode to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressFailureCodeQueryParameter(copySourceProgressFailureCode *string) {
+	o.CopySourceProgressFailureCodeQueryParameter = copySourceProgressFailureCode
+}
+
+// WithCopySourceProgressFailureMessageQueryParameter adds the copySourceProgressFailureMessage to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressFailureMessageQueryParameter(copySourceProgressFailureMessage *string) *LunCollectionGetParams {
+	o.SetCopySourceProgressFailureMessageQueryParameter(copySourceProgressFailureMessage)
+	return o
+}
+
+// SetCopySourceProgressFailureMessageQueryParameter adds the copySourceProgressFailureMessage to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressFailureMessageQueryParameter(copySourceProgressFailureMessage *string) {
+	o.CopySourceProgressFailureMessageQueryParameter = copySourceProgressFailureMessage
+}
+
+// WithCopySourceProgressFailureTargetQueryParameter adds the copySourceProgressFailureTarget to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressFailureTargetQueryParameter(copySourceProgressFailureTarget *string) *LunCollectionGetParams {
+	o.SetCopySourceProgressFailureTargetQueryParameter(copySourceProgressFailureTarget)
+	return o
+}
+
+// SetCopySourceProgressFailureTargetQueryParameter adds the copySourceProgressFailureTarget to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressFailureTargetQueryParameter(copySourceProgressFailureTarget *string) {
+	o.CopySourceProgressFailureTargetQueryParameter = copySourceProgressFailureTarget
+}
+
+// WithCopySourceProgressPercentCompleteQueryParameter adds the copySourceProgressPercentComplete to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressPercentCompleteQueryParameter(copySourceProgressPercentComplete *int64) *LunCollectionGetParams {
+	o.SetCopySourceProgressPercentCompleteQueryParameter(copySourceProgressPercentComplete)
+	return o
+}
+
+// SetCopySourceProgressPercentCompleteQueryParameter adds the copySourceProgressPercentComplete to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressPercentCompleteQueryParameter(copySourceProgressPercentComplete *int64) {
+	o.CopySourceProgressPercentCompleteQueryParameter = copySourceProgressPercentComplete
+}
+
+// WithCopySourceProgressStateQueryParameter adds the copySourceProgressState to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressStateQueryParameter(copySourceProgressState *string) *LunCollectionGetParams {
+	o.SetCopySourceProgressStateQueryParameter(copySourceProgressState)
+	return o
+}
+
+// SetCopySourceProgressStateQueryParameter adds the copySourceProgressState to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressStateQueryParameter(copySourceProgressState *string) {
+	o.CopySourceProgressStateQueryParameter = copySourceProgressState
+}
+
+// WithCopySourceProgressVolumeSnapshotBlockedQueryParameter adds the copySourceProgressVolumeSnapshotBlocked to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceProgressVolumeSnapshotBlockedQueryParameter(copySourceProgressVolumeSnapshotBlocked *bool) *LunCollectionGetParams {
+	o.SetCopySourceProgressVolumeSnapshotBlockedQueryParameter(copySourceProgressVolumeSnapshotBlocked)
+	return o
+}
+
+// SetCopySourceProgressVolumeSnapshotBlockedQueryParameter adds the copySourceProgressVolumeSnapshotBlocked to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceProgressVolumeSnapshotBlockedQueryParameter(copySourceProgressVolumeSnapshotBlocked *bool) {
+	o.CopySourceProgressVolumeSnapshotBlockedQueryParameter = copySourceProgressVolumeSnapshotBlocked
+}
+
+// WithCopySourceUUIDQueryParameter adds the copySourceUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithCopySourceUUIDQueryParameter(copySourceUUID *string) *LunCollectionGetParams {
+	o.SetCopySourceUUIDQueryParameter(copySourceUUID)
+	return o
+}
+
+// SetCopySourceUUIDQueryParameter adds the copySourceUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetCopySourceUUIDQueryParameter(copySourceUUID *string) {
+	o.CopySourceUUIDQueryParameter = copySourceUUID
 }
 
 // WithCreateTimeQueryParameter adds the createTime to the lun collection get params
@@ -638,6 +1174,28 @@ func (o *LunCollectionGetParams) WithLocationLogicalUnitQueryParameter(locationL
 // SetLocationLogicalUnitQueryParameter adds the locationLogicalUnit to the lun collection get params
 func (o *LunCollectionGetParams) SetLocationLogicalUnitQueryParameter(locationLogicalUnit *string) {
 	o.LocationLogicalUnitQueryParameter = locationLogicalUnit
+}
+
+// WithLocationNodeNameQueryParameter adds the locationNodeName to the lun collection get params
+func (o *LunCollectionGetParams) WithLocationNodeNameQueryParameter(locationNodeName *string) *LunCollectionGetParams {
+	o.SetLocationNodeNameQueryParameter(locationNodeName)
+	return o
+}
+
+// SetLocationNodeNameQueryParameter adds the locationNodeName to the lun collection get params
+func (o *LunCollectionGetParams) SetLocationNodeNameQueryParameter(locationNodeName *string) {
+	o.LocationNodeNameQueryParameter = locationNodeName
+}
+
+// WithLocationNodeUUIDQueryParameter adds the locationNodeUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithLocationNodeUUIDQueryParameter(locationNodeUUID *string) *LunCollectionGetParams {
+	o.SetLocationNodeUUIDQueryParameter(locationNodeUUID)
+	return o
+}
+
+// SetLocationNodeUUIDQueryParameter adds the locationNodeUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetLocationNodeUUIDQueryParameter(locationNodeUUID *string) {
+	o.LocationNodeUUIDQueryParameter = locationNodeUUID
 }
 
 // WithLocationQtreeIDQueryParameter adds the locationQtreeID to the lun collection get params
@@ -937,6 +1495,28 @@ func (o *LunCollectionGetParams) SetMovementProgressElapsedQueryParameter(moveme
 	o.MovementProgressElapsedQueryParameter = movementProgressElapsed
 }
 
+// WithMovementProgressFailureArgumentsCodeQueryParameter adds the movementProgressFailureArgumentsCode to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementProgressFailureArgumentsCodeQueryParameter(movementProgressFailureArgumentsCode *string) *LunCollectionGetParams {
+	o.SetMovementProgressFailureArgumentsCodeQueryParameter(movementProgressFailureArgumentsCode)
+	return o
+}
+
+// SetMovementProgressFailureArgumentsCodeQueryParameter adds the movementProgressFailureArgumentsCode to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementProgressFailureArgumentsCodeQueryParameter(movementProgressFailureArgumentsCode *string) {
+	o.MovementProgressFailureArgumentsCodeQueryParameter = movementProgressFailureArgumentsCode
+}
+
+// WithMovementProgressFailureArgumentsMessageQueryParameter adds the movementProgressFailureArgumentsMessage to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementProgressFailureArgumentsMessageQueryParameter(movementProgressFailureArgumentsMessage *string) *LunCollectionGetParams {
+	o.SetMovementProgressFailureArgumentsMessageQueryParameter(movementProgressFailureArgumentsMessage)
+	return o
+}
+
+// SetMovementProgressFailureArgumentsMessageQueryParameter adds the movementProgressFailureArgumentsMessage to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementProgressFailureArgumentsMessageQueryParameter(movementProgressFailureArgumentsMessage *string) {
+	o.MovementProgressFailureArgumentsMessageQueryParameter = movementProgressFailureArgumentsMessage
+}
+
 // WithMovementProgressFailureCodeQueryParameter adds the movementProgressFailureCode to the lun collection get params
 func (o *LunCollectionGetParams) WithMovementProgressFailureCodeQueryParameter(movementProgressFailureCode *string) *LunCollectionGetParams {
 	o.SetMovementProgressFailureCodeQueryParameter(movementProgressFailureCode)
@@ -957,6 +1537,17 @@ func (o *LunCollectionGetParams) WithMovementProgressFailureMessageQueryParamete
 // SetMovementProgressFailureMessageQueryParameter adds the movementProgressFailureMessage to the lun collection get params
 func (o *LunCollectionGetParams) SetMovementProgressFailureMessageQueryParameter(movementProgressFailureMessage *string) {
 	o.MovementProgressFailureMessageQueryParameter = movementProgressFailureMessage
+}
+
+// WithMovementProgressFailureTargetQueryParameter adds the movementProgressFailureTarget to the lun collection get params
+func (o *LunCollectionGetParams) WithMovementProgressFailureTargetQueryParameter(movementProgressFailureTarget *string) *LunCollectionGetParams {
+	o.SetMovementProgressFailureTargetQueryParameter(movementProgressFailureTarget)
+	return o
+}
+
+// SetMovementProgressFailureTargetQueryParameter adds the movementProgressFailureTarget to the lun collection get params
+func (o *LunCollectionGetParams) SetMovementProgressFailureTargetQueryParameter(movementProgressFailureTarget *string) {
+	o.MovementProgressFailureTargetQueryParameter = movementProgressFailureTarget
 }
 
 // WithMovementProgressPercentCompleteQueryParameter adds the movementProgressPercentComplete to the lun collection get params
@@ -1100,6 +1691,17 @@ func (o *LunCollectionGetParams) WithSpaceGuaranteeReservedQueryParameter(spaceG
 // SetSpaceGuaranteeReservedQueryParameter adds the spaceGuaranteeReserved to the lun collection get params
 func (o *LunCollectionGetParams) SetSpaceGuaranteeReservedQueryParameter(spaceGuaranteeReserved *bool) {
 	o.SpaceGuaranteeReservedQueryParameter = spaceGuaranteeReserved
+}
+
+// WithSpaceScsiThinProvisioningSupportEnabledQueryParameter adds the spaceScsiThinProvisioningSupportEnabled to the lun collection get params
+func (o *LunCollectionGetParams) WithSpaceScsiThinProvisioningSupportEnabledQueryParameter(spaceScsiThinProvisioningSupportEnabled *bool) *LunCollectionGetParams {
+	o.SetSpaceScsiThinProvisioningSupportEnabledQueryParameter(spaceScsiThinProvisioningSupportEnabled)
+	return o
+}
+
+// SetSpaceScsiThinProvisioningSupportEnabledQueryParameter adds the spaceScsiThinProvisioningSupportEnabled to the lun collection get params
+func (o *LunCollectionGetParams) SetSpaceScsiThinProvisioningSupportEnabledQueryParameter(spaceScsiThinProvisioningSupportEnabled *bool) {
+	o.SpaceScsiThinProvisioningSupportEnabledQueryParameter = spaceScsiThinProvisioningSupportEnabled
 }
 
 // WithSpaceSizeQueryParameter adds the spaceSize to the lun collection get params
@@ -1355,6 +1957,50 @@ func (o *LunCollectionGetParams) SetUUIDQueryParameter(uuid *string) {
 	o.UUIDQueryParameter = uuid
 }
 
+// WithVvolBindingsIDQueryParameter adds the vvolBindingsID to the lun collection get params
+func (o *LunCollectionGetParams) WithVvolBindingsIDQueryParameter(vvolBindingsID *int64) *LunCollectionGetParams {
+	o.SetVvolBindingsIDQueryParameter(vvolBindingsID)
+	return o
+}
+
+// SetVvolBindingsIDQueryParameter adds the vvolBindingsId to the lun collection get params
+func (o *LunCollectionGetParams) SetVvolBindingsIDQueryParameter(vvolBindingsID *int64) {
+	o.VvolBindingsIDQueryParameter = vvolBindingsID
+}
+
+// WithVvolBindingsPartnerNameQueryParameter adds the vvolBindingsPartnerName to the lun collection get params
+func (o *LunCollectionGetParams) WithVvolBindingsPartnerNameQueryParameter(vvolBindingsPartnerName *string) *LunCollectionGetParams {
+	o.SetVvolBindingsPartnerNameQueryParameter(vvolBindingsPartnerName)
+	return o
+}
+
+// SetVvolBindingsPartnerNameQueryParameter adds the vvolBindingsPartnerName to the lun collection get params
+func (o *LunCollectionGetParams) SetVvolBindingsPartnerNameQueryParameter(vvolBindingsPartnerName *string) {
+	o.VvolBindingsPartnerNameQueryParameter = vvolBindingsPartnerName
+}
+
+// WithVvolBindingsPartnerUUIDQueryParameter adds the vvolBindingsPartnerUUID to the lun collection get params
+func (o *LunCollectionGetParams) WithVvolBindingsPartnerUUIDQueryParameter(vvolBindingsPartnerUUID *string) *LunCollectionGetParams {
+	o.SetVvolBindingsPartnerUUIDQueryParameter(vvolBindingsPartnerUUID)
+	return o
+}
+
+// SetVvolBindingsPartnerUUIDQueryParameter adds the vvolBindingsPartnerUuid to the lun collection get params
+func (o *LunCollectionGetParams) SetVvolBindingsPartnerUUIDQueryParameter(vvolBindingsPartnerUUID *string) {
+	o.VvolBindingsPartnerUUIDQueryParameter = vvolBindingsPartnerUUID
+}
+
+// WithVvolIsBoundQueryParameter adds the vvolIsBound to the lun collection get params
+func (o *LunCollectionGetParams) WithVvolIsBoundQueryParameter(vvolIsBound *bool) *LunCollectionGetParams {
+	o.SetVvolIsBoundQueryParameter(vvolIsBound)
+	return o
+}
+
+// SetVvolIsBoundQueryParameter adds the vvolIsBound to the lun collection get params
+func (o *LunCollectionGetParams) SetVvolIsBoundQueryParameter(vvolIsBound *bool) {
+	o.VvolIsBoundQueryParameter = vvolIsBound
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -1362,6 +2008,40 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		return err
 	}
 	var res []error
+
+	if o.AttributesNameQueryParameter != nil {
+
+		// query param attributes.name
+		var qrAttributesName string
+
+		if o.AttributesNameQueryParameter != nil {
+			qrAttributesName = *o.AttributesNameQueryParameter
+		}
+		qAttributesName := qrAttributesName
+		if qAttributesName != "" {
+
+			if err := r.SetQueryParam("attributes.name", qAttributesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AttributesValueQueryParameter != nil {
+
+		// query param attributes.value
+		var qrAttributesValue string
+
+		if o.AttributesValueQueryParameter != nil {
+			qrAttributesValue = *o.AttributesValueQueryParameter
+		}
+		qAttributesValue := qrAttributesValue
+		if qAttributesValue != "" {
+
+			if err := r.SetQueryParam("attributes.value", qAttributesValue); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.AutoDeleteQueryParameter != nil {
 
@@ -1409,6 +2089,448 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qComment != "" {
 
 			if err := r.SetQueryParam("comment", qComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupNameQueryParameter != nil {
+
+		// query param consistency_group.name
+		var qrConsistencyGroupName string
+
+		if o.ConsistencyGroupNameQueryParameter != nil {
+			qrConsistencyGroupName = *o.ConsistencyGroupNameQueryParameter
+		}
+		qConsistencyGroupName := qrConsistencyGroupName
+		if qConsistencyGroupName != "" {
+
+			if err := r.SetQueryParam("consistency_group.name", qConsistencyGroupName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupUUIDQueryParameter != nil {
+
+		// query param consistency_group.uuid
+		var qrConsistencyGroupUUID string
+
+		if o.ConsistencyGroupUUIDQueryParameter != nil {
+			qrConsistencyGroupUUID = *o.ConsistencyGroupUUIDQueryParameter
+		}
+		qConsistencyGroupUUID := qrConsistencyGroupUUID
+		if qConsistencyGroupUUID != "" {
+
+			if err := r.SetQueryParam("consistency_group.uuid", qConsistencyGroupUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsMaxThroughputQueryParameter != nil {
+
+		// query param copy.destinations.max_throughput
+		var qrCopyDestinationsMaxThroughput int64
+
+		if o.CopyDestinationsMaxThroughputQueryParameter != nil {
+			qrCopyDestinationsMaxThroughput = *o.CopyDestinationsMaxThroughputQueryParameter
+		}
+		qCopyDestinationsMaxThroughput := swag.FormatInt64(qrCopyDestinationsMaxThroughput)
+		if qCopyDestinationsMaxThroughput != "" {
+
+			if err := r.SetQueryParam("copy.destinations.max_throughput", qCopyDestinationsMaxThroughput); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsNameQueryParameter != nil {
+
+		// query param copy.destinations.name
+		var qrCopyDestinationsName string
+
+		if o.CopyDestinationsNameQueryParameter != nil {
+			qrCopyDestinationsName = *o.CopyDestinationsNameQueryParameter
+		}
+		qCopyDestinationsName := qrCopyDestinationsName
+		if qCopyDestinationsName != "" {
+
+			if err := r.SetQueryParam("copy.destinations.name", qCopyDestinationsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsProgressElapsedQueryParameter != nil {
+
+		// query param copy.destinations.progress.elapsed
+		var qrCopyDestinationsProgressElapsed int64
+
+		if o.CopyDestinationsProgressElapsedQueryParameter != nil {
+			qrCopyDestinationsProgressElapsed = *o.CopyDestinationsProgressElapsedQueryParameter
+		}
+		qCopyDestinationsProgressElapsed := swag.FormatInt64(qrCopyDestinationsProgressElapsed)
+		if qCopyDestinationsProgressElapsed != "" {
+
+			if err := r.SetQueryParam("copy.destinations.progress.elapsed", qCopyDestinationsProgressElapsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsProgressFailureArgumentsCodeQueryParameter != nil {
+
+		// query param copy.destinations.progress.failure.arguments.code
+		var qrCopyDestinationsProgressFailureArgumentsCode string
+
+		if o.CopyDestinationsProgressFailureArgumentsCodeQueryParameter != nil {
+			qrCopyDestinationsProgressFailureArgumentsCode = *o.CopyDestinationsProgressFailureArgumentsCodeQueryParameter
+		}
+		qCopyDestinationsProgressFailureArgumentsCode := qrCopyDestinationsProgressFailureArgumentsCode
+		if qCopyDestinationsProgressFailureArgumentsCode != "" {
+
+			if err := r.SetQueryParam("copy.destinations.progress.failure.arguments.code", qCopyDestinationsProgressFailureArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsProgressFailureArgumentsMessageQueryParameter != nil {
+
+		// query param copy.destinations.progress.failure.arguments.message
+		var qrCopyDestinationsProgressFailureArgumentsMessage string
+
+		if o.CopyDestinationsProgressFailureArgumentsMessageQueryParameter != nil {
+			qrCopyDestinationsProgressFailureArgumentsMessage = *o.CopyDestinationsProgressFailureArgumentsMessageQueryParameter
+		}
+		qCopyDestinationsProgressFailureArgumentsMessage := qrCopyDestinationsProgressFailureArgumentsMessage
+		if qCopyDestinationsProgressFailureArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("copy.destinations.progress.failure.arguments.message", qCopyDestinationsProgressFailureArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsProgressFailureCodeQueryParameter != nil {
+
+		// query param copy.destinations.progress.failure.code
+		var qrCopyDestinationsProgressFailureCode string
+
+		if o.CopyDestinationsProgressFailureCodeQueryParameter != nil {
+			qrCopyDestinationsProgressFailureCode = *o.CopyDestinationsProgressFailureCodeQueryParameter
+		}
+		qCopyDestinationsProgressFailureCode := qrCopyDestinationsProgressFailureCode
+		if qCopyDestinationsProgressFailureCode != "" {
+
+			if err := r.SetQueryParam("copy.destinations.progress.failure.code", qCopyDestinationsProgressFailureCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsProgressFailureMessageQueryParameter != nil {
+
+		// query param copy.destinations.progress.failure.message
+		var qrCopyDestinationsProgressFailureMessage string
+
+		if o.CopyDestinationsProgressFailureMessageQueryParameter != nil {
+			qrCopyDestinationsProgressFailureMessage = *o.CopyDestinationsProgressFailureMessageQueryParameter
+		}
+		qCopyDestinationsProgressFailureMessage := qrCopyDestinationsProgressFailureMessage
+		if qCopyDestinationsProgressFailureMessage != "" {
+
+			if err := r.SetQueryParam("copy.destinations.progress.failure.message", qCopyDestinationsProgressFailureMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsProgressFailureTargetQueryParameter != nil {
+
+		// query param copy.destinations.progress.failure.target
+		var qrCopyDestinationsProgressFailureTarget string
+
+		if o.CopyDestinationsProgressFailureTargetQueryParameter != nil {
+			qrCopyDestinationsProgressFailureTarget = *o.CopyDestinationsProgressFailureTargetQueryParameter
+		}
+		qCopyDestinationsProgressFailureTarget := qrCopyDestinationsProgressFailureTarget
+		if qCopyDestinationsProgressFailureTarget != "" {
+
+			if err := r.SetQueryParam("copy.destinations.progress.failure.target", qCopyDestinationsProgressFailureTarget); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsProgressPercentCompleteQueryParameter != nil {
+
+		// query param copy.destinations.progress.percent_complete
+		var qrCopyDestinationsProgressPercentComplete int64
+
+		if o.CopyDestinationsProgressPercentCompleteQueryParameter != nil {
+			qrCopyDestinationsProgressPercentComplete = *o.CopyDestinationsProgressPercentCompleteQueryParameter
+		}
+		qCopyDestinationsProgressPercentComplete := swag.FormatInt64(qrCopyDestinationsProgressPercentComplete)
+		if qCopyDestinationsProgressPercentComplete != "" {
+
+			if err := r.SetQueryParam("copy.destinations.progress.percent_complete", qCopyDestinationsProgressPercentComplete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsProgressStateQueryParameter != nil {
+
+		// query param copy.destinations.progress.state
+		var qrCopyDestinationsProgressState string
+
+		if o.CopyDestinationsProgressStateQueryParameter != nil {
+			qrCopyDestinationsProgressState = *o.CopyDestinationsProgressStateQueryParameter
+		}
+		qCopyDestinationsProgressState := qrCopyDestinationsProgressState
+		if qCopyDestinationsProgressState != "" {
+
+			if err := r.SetQueryParam("copy.destinations.progress.state", qCopyDestinationsProgressState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsProgressVolumeSnapshotBlockedQueryParameter != nil {
+
+		// query param copy.destinations.progress.volume_snapshot_blocked
+		var qrCopyDestinationsProgressVolumeSnapshotBlocked bool
+
+		if o.CopyDestinationsProgressVolumeSnapshotBlockedQueryParameter != nil {
+			qrCopyDestinationsProgressVolumeSnapshotBlocked = *o.CopyDestinationsProgressVolumeSnapshotBlockedQueryParameter
+		}
+		qCopyDestinationsProgressVolumeSnapshotBlocked := swag.FormatBool(qrCopyDestinationsProgressVolumeSnapshotBlocked)
+		if qCopyDestinationsProgressVolumeSnapshotBlocked != "" {
+
+			if err := r.SetQueryParam("copy.destinations.progress.volume_snapshot_blocked", qCopyDestinationsProgressVolumeSnapshotBlocked); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyDestinationsUUIDQueryParameter != nil {
+
+		// query param copy.destinations.uuid
+		var qrCopyDestinationsUUID string
+
+		if o.CopyDestinationsUUIDQueryParameter != nil {
+			qrCopyDestinationsUUID = *o.CopyDestinationsUUIDQueryParameter
+		}
+		qCopyDestinationsUUID := qrCopyDestinationsUUID
+		if qCopyDestinationsUUID != "" {
+
+			if err := r.SetQueryParam("copy.destinations.uuid", qCopyDestinationsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourceMaxThroughputQueryParameter != nil {
+
+		// query param copy.source.max_throughput
+		var qrCopySourceMaxThroughput int64
+
+		if o.CopySourceMaxThroughputQueryParameter != nil {
+			qrCopySourceMaxThroughput = *o.CopySourceMaxThroughputQueryParameter
+		}
+		qCopySourceMaxThroughput := swag.FormatInt64(qrCopySourceMaxThroughput)
+		if qCopySourceMaxThroughput != "" {
+
+			if err := r.SetQueryParam("copy.source.max_throughput", qCopySourceMaxThroughput); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourceNameQueryParameter != nil {
+
+		// query param copy.source.name
+		var qrCopySourceName string
+
+		if o.CopySourceNameQueryParameter != nil {
+			qrCopySourceName = *o.CopySourceNameQueryParameter
+		}
+		qCopySourceName := qrCopySourceName
+		if qCopySourceName != "" {
+
+			if err := r.SetQueryParam("copy.source.name", qCopySourceName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourceProgressElapsedQueryParameter != nil {
+
+		// query param copy.source.progress.elapsed
+		var qrCopySourceProgressElapsed int64
+
+		if o.CopySourceProgressElapsedQueryParameter != nil {
+			qrCopySourceProgressElapsed = *o.CopySourceProgressElapsedQueryParameter
+		}
+		qCopySourceProgressElapsed := swag.FormatInt64(qrCopySourceProgressElapsed)
+		if qCopySourceProgressElapsed != "" {
+
+			if err := r.SetQueryParam("copy.source.progress.elapsed", qCopySourceProgressElapsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourceProgressFailureArgumentsCodeQueryParameter != nil {
+
+		// query param copy.source.progress.failure.arguments.code
+		var qrCopySourceProgressFailureArgumentsCode string
+
+		if o.CopySourceProgressFailureArgumentsCodeQueryParameter != nil {
+			qrCopySourceProgressFailureArgumentsCode = *o.CopySourceProgressFailureArgumentsCodeQueryParameter
+		}
+		qCopySourceProgressFailureArgumentsCode := qrCopySourceProgressFailureArgumentsCode
+		if qCopySourceProgressFailureArgumentsCode != "" {
+
+			if err := r.SetQueryParam("copy.source.progress.failure.arguments.code", qCopySourceProgressFailureArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourceProgressFailureArgumentsMessageQueryParameter != nil {
+
+		// query param copy.source.progress.failure.arguments.message
+		var qrCopySourceProgressFailureArgumentsMessage string
+
+		if o.CopySourceProgressFailureArgumentsMessageQueryParameter != nil {
+			qrCopySourceProgressFailureArgumentsMessage = *o.CopySourceProgressFailureArgumentsMessageQueryParameter
+		}
+		qCopySourceProgressFailureArgumentsMessage := qrCopySourceProgressFailureArgumentsMessage
+		if qCopySourceProgressFailureArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("copy.source.progress.failure.arguments.message", qCopySourceProgressFailureArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourceProgressFailureCodeQueryParameter != nil {
+
+		// query param copy.source.progress.failure.code
+		var qrCopySourceProgressFailureCode string
+
+		if o.CopySourceProgressFailureCodeQueryParameter != nil {
+			qrCopySourceProgressFailureCode = *o.CopySourceProgressFailureCodeQueryParameter
+		}
+		qCopySourceProgressFailureCode := qrCopySourceProgressFailureCode
+		if qCopySourceProgressFailureCode != "" {
+
+			if err := r.SetQueryParam("copy.source.progress.failure.code", qCopySourceProgressFailureCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourceProgressFailureMessageQueryParameter != nil {
+
+		// query param copy.source.progress.failure.message
+		var qrCopySourceProgressFailureMessage string
+
+		if o.CopySourceProgressFailureMessageQueryParameter != nil {
+			qrCopySourceProgressFailureMessage = *o.CopySourceProgressFailureMessageQueryParameter
+		}
+		qCopySourceProgressFailureMessage := qrCopySourceProgressFailureMessage
+		if qCopySourceProgressFailureMessage != "" {
+
+			if err := r.SetQueryParam("copy.source.progress.failure.message", qCopySourceProgressFailureMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourceProgressFailureTargetQueryParameter != nil {
+
+		// query param copy.source.progress.failure.target
+		var qrCopySourceProgressFailureTarget string
+
+		if o.CopySourceProgressFailureTargetQueryParameter != nil {
+			qrCopySourceProgressFailureTarget = *o.CopySourceProgressFailureTargetQueryParameter
+		}
+		qCopySourceProgressFailureTarget := qrCopySourceProgressFailureTarget
+		if qCopySourceProgressFailureTarget != "" {
+
+			if err := r.SetQueryParam("copy.source.progress.failure.target", qCopySourceProgressFailureTarget); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourceProgressPercentCompleteQueryParameter != nil {
+
+		// query param copy.source.progress.percent_complete
+		var qrCopySourceProgressPercentComplete int64
+
+		if o.CopySourceProgressPercentCompleteQueryParameter != nil {
+			qrCopySourceProgressPercentComplete = *o.CopySourceProgressPercentCompleteQueryParameter
+		}
+		qCopySourceProgressPercentComplete := swag.FormatInt64(qrCopySourceProgressPercentComplete)
+		if qCopySourceProgressPercentComplete != "" {
+
+			if err := r.SetQueryParam("copy.source.progress.percent_complete", qCopySourceProgressPercentComplete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourceProgressStateQueryParameter != nil {
+
+		// query param copy.source.progress.state
+		var qrCopySourceProgressState string
+
+		if o.CopySourceProgressStateQueryParameter != nil {
+			qrCopySourceProgressState = *o.CopySourceProgressStateQueryParameter
+		}
+		qCopySourceProgressState := qrCopySourceProgressState
+		if qCopySourceProgressState != "" {
+
+			if err := r.SetQueryParam("copy.source.progress.state", qCopySourceProgressState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourceProgressVolumeSnapshotBlockedQueryParameter != nil {
+
+		// query param copy.source.progress.volume_snapshot_blocked
+		var qrCopySourceProgressVolumeSnapshotBlocked bool
+
+		if o.CopySourceProgressVolumeSnapshotBlockedQueryParameter != nil {
+			qrCopySourceProgressVolumeSnapshotBlocked = *o.CopySourceProgressVolumeSnapshotBlockedQueryParameter
+		}
+		qCopySourceProgressVolumeSnapshotBlocked := swag.FormatBool(qrCopySourceProgressVolumeSnapshotBlocked)
+		if qCopySourceProgressVolumeSnapshotBlocked != "" {
+
+			if err := r.SetQueryParam("copy.source.progress.volume_snapshot_blocked", qCopySourceProgressVolumeSnapshotBlocked); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopySourceUUIDQueryParameter != nil {
+
+		// query param copy.source.uuid
+		var qrCopySourceUUID string
+
+		if o.CopySourceUUIDQueryParameter != nil {
+			qrCopySourceUUID = *o.CopySourceUUIDQueryParameter
+		}
+		qCopySourceUUID := qrCopySourceUUID
+		if qCopySourceUUID != "" {
+
+			if err := r.SetQueryParam("copy.source.uuid", qCopySourceUUID); err != nil {
 				return err
 			}
 		}
@@ -1471,6 +2593,40 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qLocationLogicalUnit != "" {
 
 			if err := r.SetQueryParam("location.logical_unit", qLocationLogicalUnit); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationNodeNameQueryParameter != nil {
+
+		// query param location.node.name
+		var qrLocationNodeName string
+
+		if o.LocationNodeNameQueryParameter != nil {
+			qrLocationNodeName = *o.LocationNodeNameQueryParameter
+		}
+		qLocationNodeName := qrLocationNodeName
+		if qLocationNodeName != "" {
+
+			if err := r.SetQueryParam("location.node.name", qLocationNodeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationNodeUUIDQueryParameter != nil {
+
+		// query param location.node.uuid
+		var qrLocationNodeUUID string
+
+		if o.LocationNodeUUIDQueryParameter != nil {
+			qrLocationNodeUUID = *o.LocationNodeUUIDQueryParameter
+		}
+		qLocationNodeUUID := qrLocationNodeUUID
+		if qLocationNodeUUID != "" {
+
+			if err := r.SetQueryParam("location.node.uuid", qLocationNodeUUID); err != nil {
 				return err
 			}
 		}
@@ -1935,6 +3091,40 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.MovementProgressFailureArgumentsCodeQueryParameter != nil {
+
+		// query param movement.progress.failure.arguments.code
+		var qrMovementProgressFailureArgumentsCode string
+
+		if o.MovementProgressFailureArgumentsCodeQueryParameter != nil {
+			qrMovementProgressFailureArgumentsCode = *o.MovementProgressFailureArgumentsCodeQueryParameter
+		}
+		qMovementProgressFailureArgumentsCode := qrMovementProgressFailureArgumentsCode
+		if qMovementProgressFailureArgumentsCode != "" {
+
+			if err := r.SetQueryParam("movement.progress.failure.arguments.code", qMovementProgressFailureArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MovementProgressFailureArgumentsMessageQueryParameter != nil {
+
+		// query param movement.progress.failure.arguments.message
+		var qrMovementProgressFailureArgumentsMessage string
+
+		if o.MovementProgressFailureArgumentsMessageQueryParameter != nil {
+			qrMovementProgressFailureArgumentsMessage = *o.MovementProgressFailureArgumentsMessageQueryParameter
+		}
+		qMovementProgressFailureArgumentsMessage := qrMovementProgressFailureArgumentsMessage
+		if qMovementProgressFailureArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("movement.progress.failure.arguments.message", qMovementProgressFailureArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.MovementProgressFailureCodeQueryParameter != nil {
 
 		// query param movement.progress.failure.code
@@ -1964,6 +3154,23 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qMovementProgressFailureMessage != "" {
 
 			if err := r.SetQueryParam("movement.progress.failure.message", qMovementProgressFailureMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MovementProgressFailureTargetQueryParameter != nil {
+
+		// query param movement.progress.failure.target
+		var qrMovementProgressFailureTarget string
+
+		if o.MovementProgressFailureTargetQueryParameter != nil {
+			qrMovementProgressFailureTarget = *o.MovementProgressFailureTargetQueryParameter
+		}
+		qMovementProgressFailureTarget := qrMovementProgressFailureTarget
+		if qMovementProgressFailureTarget != "" {
+
+			if err := r.SetQueryParam("movement.progress.failure.target", qMovementProgressFailureTarget); err != nil {
 				return err
 			}
 		}
@@ -2179,6 +3386,23 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qSpaceGuaranteeReserved != "" {
 
 			if err := r.SetQueryParam("space.guarantee.reserved", qSpaceGuaranteeReserved); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceScsiThinProvisioningSupportEnabledQueryParameter != nil {
+
+		// query param space.scsi_thin_provisioning_support_enabled
+		var qrSpaceScsiThinProvisioningSupportEnabled bool
+
+		if o.SpaceScsiThinProvisioningSupportEnabledQueryParameter != nil {
+			qrSpaceScsiThinProvisioningSupportEnabled = *o.SpaceScsiThinProvisioningSupportEnabledQueryParameter
+		}
+		qSpaceScsiThinProvisioningSupportEnabled := swag.FormatBool(qrSpaceScsiThinProvisioningSupportEnabled)
+		if qSpaceScsiThinProvisioningSupportEnabled != "" {
+
+			if err := r.SetQueryParam("space.scsi_thin_provisioning_support_enabled", qSpaceScsiThinProvisioningSupportEnabled); err != nil {
 				return err
 			}
 		}
@@ -2570,6 +3794,74 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qUUID != "" {
 
 			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VvolBindingsIDQueryParameter != nil {
+
+		// query param vvol.bindings.id
+		var qrVvolBindingsID int64
+
+		if o.VvolBindingsIDQueryParameter != nil {
+			qrVvolBindingsID = *o.VvolBindingsIDQueryParameter
+		}
+		qVvolBindingsID := swag.FormatInt64(qrVvolBindingsID)
+		if qVvolBindingsID != "" {
+
+			if err := r.SetQueryParam("vvol.bindings.id", qVvolBindingsID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VvolBindingsPartnerNameQueryParameter != nil {
+
+		// query param vvol.bindings.partner.name
+		var qrVvolBindingsPartnerName string
+
+		if o.VvolBindingsPartnerNameQueryParameter != nil {
+			qrVvolBindingsPartnerName = *o.VvolBindingsPartnerNameQueryParameter
+		}
+		qVvolBindingsPartnerName := qrVvolBindingsPartnerName
+		if qVvolBindingsPartnerName != "" {
+
+			if err := r.SetQueryParam("vvol.bindings.partner.name", qVvolBindingsPartnerName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VvolBindingsPartnerUUIDQueryParameter != nil {
+
+		// query param vvol.bindings.partner.uuid
+		var qrVvolBindingsPartnerUUID string
+
+		if o.VvolBindingsPartnerUUIDQueryParameter != nil {
+			qrVvolBindingsPartnerUUID = *o.VvolBindingsPartnerUUIDQueryParameter
+		}
+		qVvolBindingsPartnerUUID := qrVvolBindingsPartnerUUID
+		if qVvolBindingsPartnerUUID != "" {
+
+			if err := r.SetQueryParam("vvol.bindings.partner.uuid", qVvolBindingsPartnerUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VvolIsBoundQueryParameter != nil {
+
+		// query param vvol.is_bound
+		var qrVvolIsBound bool
+
+		if o.VvolIsBoundQueryParameter != nil {
+			qrVvolIsBound = *o.VvolIsBoundQueryParameter
+		}
+		qVvolIsBound := swag.FormatBool(qrVvolIsBound)
+		if qVvolIsBound != "" {
+
+			if err := r.SetQueryParam("vvol.is_bound", qVvolIsBound); err != nil {
 				return err
 			}
 		}

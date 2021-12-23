@@ -406,7 +406,7 @@ func (m *PortsetInterfaceNoRecordsFcLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// PortsetInterfaceNoRecordsIP A network interface. Either UUID or name may be supplied on input.
+// PortsetInterfaceNoRecordsIP portset interface no records IP
 //
 // swagger:model PortsetInterfaceNoRecordsIP
 type PortsetInterfaceNoRecordsIP struct {

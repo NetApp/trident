@@ -124,6 +124,12 @@ type EmsDestinationCollectionGetParams struct {
 	*/
 	ReturnTimeoutQueryParameter *int64
 
+	/* SystemDefined.
+
+	   Filter by system_defined
+	*/
+	SystemDefinedQueryParameter *bool
+
 	/* Type.
 
 	   Filter by type
@@ -307,6 +313,17 @@ func (o *EmsDestinationCollectionGetParams) SetReturnTimeoutQueryParameter(retur
 	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
+// WithSystemDefinedQueryParameter adds the systemDefined to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) WithSystemDefinedQueryParameter(systemDefined *bool) *EmsDestinationCollectionGetParams {
+	o.SetSystemDefinedQueryParameter(systemDefined)
+	return o
+}
+
+// SetSystemDefinedQueryParameter adds the systemDefined to the ems destination collection get params
+func (o *EmsDestinationCollectionGetParams) SetSystemDefinedQueryParameter(systemDefined *bool) {
+	o.SystemDefinedQueryParameter = systemDefined
+}
+
 // WithTypeQueryParameter adds the typeVar to the ems destination collection get params
 func (o *EmsDestinationCollectionGetParams) WithTypeQueryParameter(typeVar *string) *EmsDestinationCollectionGetParams {
 	o.SetTypeQueryParameter(typeVar)
@@ -479,6 +496,23 @@ func (o *EmsDestinationCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SystemDefinedQueryParameter != nil {
+
+		// query param system_defined
+		var qrSystemDefined bool
+
+		if o.SystemDefinedQueryParameter != nil {
+			qrSystemDefined = *o.SystemDefinedQueryParameter
+		}
+		qSystemDefined := swag.FormatBool(qrSystemDefined)
+		if qSystemDefined != "" {
+
+			if err := r.SetQueryParam("system_defined", qSystemDefined); err != nil {
 				return err
 			}
 		}

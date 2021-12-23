@@ -39,6 +39,9 @@ type FileClone struct {
 	// Example: src_file1, dir1/src_file2, ./.snapshot/snap1/src_file3
 	SourcePath string `json:"source_path,omitempty"`
 
+	// UUID of existing clone token with reserved split load.
+	TokenUUID string `json:"token_uuid,omitempty"`
+
 	// volume
 	Volume *FileCloneVolume `json:"volume,omitempty"`
 }

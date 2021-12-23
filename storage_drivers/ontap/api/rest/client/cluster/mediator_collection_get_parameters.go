@@ -96,6 +96,12 @@ type MediatorCollectionGetParams struct {
 	*/
 	PeerClusterUUIDQueryParameter *string
 
+	/* PeerMediatorConnectivity.
+
+	   Filter by peer_mediator_connectivity
+	*/
+	PeerMediatorConnectivityQueryParameter *string
+
 	/* Port.
 
 	   Filter by port
@@ -263,6 +269,17 @@ func (o *MediatorCollectionGetParams) SetPeerClusterUUIDQueryParameter(peerClust
 	o.PeerClusterUUIDQueryParameter = peerClusterUUID
 }
 
+// WithPeerMediatorConnectivityQueryParameter adds the peerMediatorConnectivity to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithPeerMediatorConnectivityQueryParameter(peerMediatorConnectivity *string) *MediatorCollectionGetParams {
+	o.SetPeerMediatorConnectivityQueryParameter(peerMediatorConnectivity)
+	return o
+}
+
+// SetPeerMediatorConnectivityQueryParameter adds the peerMediatorConnectivity to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetPeerMediatorConnectivityQueryParameter(peerMediatorConnectivity *string) {
+	o.PeerMediatorConnectivityQueryParameter = peerMediatorConnectivity
+}
+
 // WithPortQueryParameter adds the port to the mediator collection get params
 func (o *MediatorCollectionGetParams) WithPortQueryParameter(port *int64) *MediatorCollectionGetParams {
 	o.SetPortQueryParameter(port)
@@ -411,6 +428,23 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qPeerClusterUUID != "" {
 
 			if err := r.SetQueryParam("peer_cluster.uuid", qPeerClusterUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PeerMediatorConnectivityQueryParameter != nil {
+
+		// query param peer_mediator_connectivity
+		var qrPeerMediatorConnectivity string
+
+		if o.PeerMediatorConnectivityQueryParameter != nil {
+			qrPeerMediatorConnectivity = *o.PeerMediatorConnectivityQueryParameter
+		}
+		qPeerMediatorConnectivity := qrPeerMediatorConnectivity
+		if qPeerMediatorConnectivity != "" {
+
+			if err := r.SetQueryParam("peer_mediator_connectivity", qPeerMediatorConnectivity); err != nil {
 				return err
 			}
 		}

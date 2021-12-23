@@ -108,6 +108,12 @@ type SnapshotCollectionGetParams struct {
 	*/
 	OwnersQueryParameter *string
 
+	/* ReclaimableSpace.
+
+	   Filter by reclaimable_space
+	*/
+	ReclaimableSpaceQueryParameter *int64
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -331,6 +337,17 @@ func (o *SnapshotCollectionGetParams) WithOwnersQueryParameter(owners *string) *
 // SetOwnersQueryParameter adds the owners to the snapshot collection get params
 func (o *SnapshotCollectionGetParams) SetOwnersQueryParameter(owners *string) {
 	o.OwnersQueryParameter = owners
+}
+
+// WithReclaimableSpaceQueryParameter adds the reclaimableSpace to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) WithReclaimableSpaceQueryParameter(reclaimableSpace *int64) *SnapshotCollectionGetParams {
+	o.SetReclaimableSpaceQueryParameter(reclaimableSpace)
+	return o
+}
+
+// SetReclaimableSpaceQueryParameter adds the reclaimableSpace to the snapshot collection get params
+func (o *SnapshotCollectionGetParams) SetReclaimableSpaceQueryParameter(reclaimableSpace *int64) {
+	o.ReclaimableSpaceQueryParameter = reclaimableSpace
 }
 
 // WithReturnRecordsQueryParameter adds the returnRecords to the snapshot collection get params
@@ -581,6 +598,23 @@ func (o *SnapshotCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qOwners != "" {
 
 			if err := r.SetQueryParam("owners", qOwners); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReclaimableSpaceQueryParameter != nil {
+
+		// query param reclaimable_space
+		var qrReclaimableSpace int64
+
+		if o.ReclaimableSpaceQueryParameter != nil {
+			qrReclaimableSpace = *o.ReclaimableSpaceQueryParameter
+		}
+		qReclaimableSpace := swag.FormatInt64(qrReclaimableSpace)
+		if qReclaimableSpace != "" {
+
+			if err := r.SetQueryParam("reclaimable_space", qReclaimableSpace); err != nil {
 				return err
 			}
 		}

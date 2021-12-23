@@ -43,6 +43,17 @@ type ACL struct {
 	// Enum: [access_allow access_deny access_allowed_callback access_denied_callback access_allowed_callback_object access_denied_callback_object system_audit_callback system_audit_callback_object system_resource_attribute system_scoped_policy_id audit_failure audit_success audit_success_and_failure]
 	Access string `json:"access,omitempty"`
 
+	// An Access Control Level specifies the access control of the task to be applied. Valid values
+	// are "file-directory" or "Storage-Level Access Guard (SLAG)". SLAG is used to apply the
+	// specified security descriptors with the task for the volume or qtree. Otherwise, the security
+	// descriptors are applied on files and directories at the specified path. The value slag is not
+	// supported on FlexGroups volumes. The default value is "file-directory".
+	//
+	// Example: file_directory
+	// Read Only: true
+	// Enum: [file_directory slag]
+	AccessControl string `json:"access_control,omitempty"`
+
 	// advanced rights
 	AdvancedRights *AdvancedRights `json:"advanced_rights,omitempty"`
 
@@ -76,6 +87,10 @@ func (m *ACL) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAccess(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAccessControl(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -263,6 +278,62 @@ func (m *ACL) validateAccess(formats strfmt.Registry) error {
 	return nil
 }
 
+var aclTypeAccessControlPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["file_directory","slag"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		aclTypeAccessControlPropEnum = append(aclTypeAccessControlPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// acl
+	// ACL
+	// access_control
+	// AccessControl
+	// file_directory
+	// END DEBUGGING
+	// ACLAccessControlFileDirectory captures enum value "file_directory"
+	ACLAccessControlFileDirectory string = "file_directory"
+
+	// BEGIN DEBUGGING
+	// acl
+	// ACL
+	// access_control
+	// AccessControl
+	// slag
+	// END DEBUGGING
+	// ACLAccessControlSlag captures enum value "slag"
+	ACLAccessControlSlag string = "slag"
+)
+
+// prop value enum
+func (m *ACL) validateAccessControlEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aclTypeAccessControlPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ACL) validateAccessControl(formats strfmt.Registry) error {
+	if swag.IsZero(m.AccessControl) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAccessControlEnum("access_control", "body", m.AccessControl); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *ACL) validateAdvancedRights(formats strfmt.Registry) error {
 	if swag.IsZero(m.AdvancedRights) { // not required
 		return nil
@@ -397,6 +468,10 @@ func (m *ACL) validateRights(formats strfmt.Registry) error {
 func (m *ACL) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateAccessControl(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateAdvancedRights(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -412,6 +487,15 @@ func (m *ACL) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ACL) contextValidateAccessControl(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "access_control", "body", string(m.AccessControl)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

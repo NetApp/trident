@@ -114,12 +114,6 @@ type CifsShareACLCollectionGetParams struct {
 
 	/* SvmUUID.
 
-	   Filter by svm.uuid
-	*/
-	SVMUUIDQueryParameter *string
-
-	/* SvmUUID.
-
 	   UUID of the SVM to which this object belongs.
 	*/
 	SVMUUIDPathParameter string
@@ -291,17 +285,6 @@ func (o *CifsShareACLCollectionGetParams) SetSVMNameQueryParameter(svmName *stri
 	o.SVMNameQueryParameter = svmName
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *CifsShareACLCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
-	return o
-}
-
-// SetSVMUUIDQueryParameter adds the svmUuid to the cifs share acl collection get params
-func (o *CifsShareACLCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
-}
-
 // WithSVMUUIDPathParameter adds the svmUUID to the cifs share acl collection get params
 func (o *CifsShareACLCollectionGetParams) WithSVMUUIDPathParameter(svmUUID string) *CifsShareACLCollectionGetParams {
 	o.SetSVMUUIDPathParameter(svmUUID)
@@ -450,23 +433,6 @@ func (o *CifsShareACLCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		if qSvmName != "" {
 
 			if err := r.SetQueryParam("svm.name", qSvmName); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.SVMUUIDQueryParameter != nil {
-
-		// query param svm.uuid
-		var qrSvmUUID string
-
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
-		}
-		qSvmUUID := qrSvmUUID
-		if qSvmUUID != "" {
-
-			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
 				return err
 			}
 		}

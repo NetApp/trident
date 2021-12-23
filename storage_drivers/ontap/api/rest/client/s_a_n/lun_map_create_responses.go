@@ -86,7 +86,7 @@ func NewLunMapCreateDefault(code int) *LunMapCreateDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 1254207 | The LUN is already mapped to the same initiator group. |
-| 2621462 | The specific SVM does not exist. |
+| 2621462 | The specified SVM does not exist or is not accessible to the caller. |
 | 2621706 | Both the SVM UUID and SVM name were supplied, but don't refer to the same SVM. |
 | 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied. |
 | 5374053 | The LUN is the destination of an ongoing restore operation and is inaccessible for I/O and management. Wait for the restore to complete and try the command again. |
@@ -101,6 +101,8 @@ func NewLunMapCreateDefault(code int) *LunMapCreateDefault {
 | 5374584 | Multiple nodes have no interface configured with the Fibre Channel protocol for the specified SVM. |
 | 5374901 | Either `lun.uuid` or `lun.name` must be provided to create a LUN map. |
 | 5374902 | Either `igroup.uuid` or `igroup.name` must be provided to create a LUN map. |
+| 5374920 | The cluster node specified in additional_reporting_node does not exist. |
+| 5374921 | The cluster node name and UUID specified in additional_reporting_node do not refer to the same cluster node. |
 
 */
 type LunMapCreateDefault struct {

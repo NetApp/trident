@@ -21,29 +21,39 @@ import (
 // swagger:model aggregate_spare
 type AggregateSpare struct {
 
-	// The checksum type that has been assigned to the spares
+	// The checksum type that has been assigned to the spares.
 	// Read Only: true
 	// Enum: [block advanced_zoned]
 	ChecksumStyle string `json:"checksum_style,omitempty"`
 
-	// Disk class of spares
+	// Disk class of spares.
 	// Example: solid_state
 	// Read Only: true
 	// Enum: [unknown capacity performance archive solid_state array virtual data_center capacity_flash]
 	DiskClass string `json:"disk_class,omitempty"`
 
-	// Available RAID protections and their restrictions
+	// Type of disk.
+	// Read Only: true
+	// Enum: [fc lun nl_sas nvme_ssd sas sata scsi ssd ssd_cap ssd_zns vm_disk]
+	DiskType string `json:"disk_type,omitempty"`
+
+	// Indicates whether a disk is partitioned (true) or whole (false)
+	// Example: true
+	// Read Only: true
+	IsPartition *bool `json:"is_partition,omitempty"`
+
+	// Available RAID protections and their restrictions.
 	LayoutRequirements []*LayoutRequirement `json:"layout_requirements,omitempty"`
 
 	// node
 	Node *AggregateSpareNode `json:"node,omitempty"`
 
-	// Usable size of each spare in bytes
+	// Usable size of each spare, in bytes.
 	// Example: 10156769280
 	// Read Only: true
 	Size int64 `json:"size,omitempty"`
 
-	// SyncMirror spare pool
+	// SyncMirror spare pool.
 	// Read Only: true
 	// Enum: [pool0 pool1]
 	SyncmirrorPool string `json:"syncmirror_pool,omitempty"`
@@ -63,6 +73,10 @@ func (m *AggregateSpare) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDiskClass(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDiskType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -266,6 +280,152 @@ func (m *AggregateSpare) validateDiskClass(formats strfmt.Registry) error {
 	return nil
 }
 
+var aggregateSpareTypeDiskTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["fc","lun","nl_sas","nvme_ssd","sas","sata","scsi","ssd","ssd_cap","ssd_zns","vm_disk"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		aggregateSpareTypeDiskTypePropEnum = append(aggregateSpareTypeDiskTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// aggregate_spare
+	// AggregateSpare
+	// disk_type
+	// DiskType
+	// fc
+	// END DEBUGGING
+	// AggregateSpareDiskTypeFc captures enum value "fc"
+	AggregateSpareDiskTypeFc string = "fc"
+
+	// BEGIN DEBUGGING
+	// aggregate_spare
+	// AggregateSpare
+	// disk_type
+	// DiskType
+	// lun
+	// END DEBUGGING
+	// AggregateSpareDiskTypeLun captures enum value "lun"
+	AggregateSpareDiskTypeLun string = "lun"
+
+	// BEGIN DEBUGGING
+	// aggregate_spare
+	// AggregateSpare
+	// disk_type
+	// DiskType
+	// nl_sas
+	// END DEBUGGING
+	// AggregateSpareDiskTypeNlSas captures enum value "nl_sas"
+	AggregateSpareDiskTypeNlSas string = "nl_sas"
+
+	// BEGIN DEBUGGING
+	// aggregate_spare
+	// AggregateSpare
+	// disk_type
+	// DiskType
+	// nvme_ssd
+	// END DEBUGGING
+	// AggregateSpareDiskTypeNvmeSsd captures enum value "nvme_ssd"
+	AggregateSpareDiskTypeNvmeSsd string = "nvme_ssd"
+
+	// BEGIN DEBUGGING
+	// aggregate_spare
+	// AggregateSpare
+	// disk_type
+	// DiskType
+	// sas
+	// END DEBUGGING
+	// AggregateSpareDiskTypeSas captures enum value "sas"
+	AggregateSpareDiskTypeSas string = "sas"
+
+	// BEGIN DEBUGGING
+	// aggregate_spare
+	// AggregateSpare
+	// disk_type
+	// DiskType
+	// sata
+	// END DEBUGGING
+	// AggregateSpareDiskTypeSata captures enum value "sata"
+	AggregateSpareDiskTypeSata string = "sata"
+
+	// BEGIN DEBUGGING
+	// aggregate_spare
+	// AggregateSpare
+	// disk_type
+	// DiskType
+	// scsi
+	// END DEBUGGING
+	// AggregateSpareDiskTypeScsi captures enum value "scsi"
+	AggregateSpareDiskTypeScsi string = "scsi"
+
+	// BEGIN DEBUGGING
+	// aggregate_spare
+	// AggregateSpare
+	// disk_type
+	// DiskType
+	// ssd
+	// END DEBUGGING
+	// AggregateSpareDiskTypeSsd captures enum value "ssd"
+	AggregateSpareDiskTypeSsd string = "ssd"
+
+	// BEGIN DEBUGGING
+	// aggregate_spare
+	// AggregateSpare
+	// disk_type
+	// DiskType
+	// ssd_cap
+	// END DEBUGGING
+	// AggregateSpareDiskTypeSsdCap captures enum value "ssd_cap"
+	AggregateSpareDiskTypeSsdCap string = "ssd_cap"
+
+	// BEGIN DEBUGGING
+	// aggregate_spare
+	// AggregateSpare
+	// disk_type
+	// DiskType
+	// ssd_zns
+	// END DEBUGGING
+	// AggregateSpareDiskTypeSsdZns captures enum value "ssd_zns"
+	AggregateSpareDiskTypeSsdZns string = "ssd_zns"
+
+	// BEGIN DEBUGGING
+	// aggregate_spare
+	// AggregateSpare
+	// disk_type
+	// DiskType
+	// vm_disk
+	// END DEBUGGING
+	// AggregateSpareDiskTypeVMDisk captures enum value "vm_disk"
+	AggregateSpareDiskTypeVMDisk string = "vm_disk"
+)
+
+// prop value enum
+func (m *AggregateSpare) validateDiskTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, aggregateSpareTypeDiskTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *AggregateSpare) validateDiskType(formats strfmt.Registry) error {
+	if swag.IsZero(m.DiskType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDiskTypeEnum("disk_type", "body", m.DiskType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *AggregateSpare) validateLayoutRequirements(formats strfmt.Registry) error {
 	if swag.IsZero(m.LayoutRequirements) { // not required
 		return nil
@@ -375,6 +535,14 @@ func (m *AggregateSpare) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateDiskType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsPartition(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateLayoutRequirements(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -413,6 +581,24 @@ func (m *AggregateSpare) contextValidateChecksumStyle(ctx context.Context, forma
 func (m *AggregateSpare) contextValidateDiskClass(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "disk_class", "body", string(m.DiskClass)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateSpare) contextValidateDiskType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "disk_type", "body", string(m.DiskType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AggregateSpare) contextValidateIsPartition(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_partition", "body", m.IsPartition); err != nil {
 		return err
 	}
 
@@ -496,7 +682,7 @@ func (m *AggregateSpare) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggregateSpareNode Node where the spares are assigned
+// AggregateSpareNode Node where the spares are assigned.
 //
 // swagger:model AggregateSpareNode
 type AggregateSpareNode struct {

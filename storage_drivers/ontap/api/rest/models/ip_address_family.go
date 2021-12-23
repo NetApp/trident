@@ -19,11 +19,6 @@ import (
 // swagger:model ip_address_family
 type IPAddressFamily string
 
-func NewIPAddressFamily(value IPAddressFamily) *IPAddressFamily {
-	v := value
-	return &v
-}
-
 const (
 
 	// IPAddressFamilyIPV4 captures enum value "ipv4"

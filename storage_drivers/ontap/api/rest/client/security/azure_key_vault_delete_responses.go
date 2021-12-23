@@ -74,7 +74,8 @@ func NewAzureKeyVaultDeleteDefault(code int) *AzureKeyVaultDeleteDefault {
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
-| 65536242 | One or more Storage Encryption devices are assigned an authentication key. |
+| 65536242 | One or more self-encrypting drives are assigned an authentication key. |
+| 65536243 | Cannot determine authentication key presence on one or more self-encrypting drives. |
 | 65536817 | Internal error. Failed to determine if key manager is safe to disable. |
 | 65536827 | Internal error. Failed to determine if the given SVM has any encrypted volumes. |
 | 65536834 | Internal error. Failed to get existing key-server details for the given SVM. |

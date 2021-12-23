@@ -66,6 +66,12 @@ type VolumeGetParams struct {
 	*/
 	FieldsQueryParameter []string
 
+	/* IsConstituent.
+
+	   When set to false, only FlexVol and FlexGroup volumes are returned.  When set to true, only FlexGroup constituent volumes are returned. Default for GET calls is false.
+	*/
+	IsConstituentQueryParameter *bool
+
 	/* UUID.
 
 	   Unique identifier of the volume.
@@ -89,7 +95,18 @@ func (o *VolumeGetParams) WithDefaults() *VolumeGetParams {
 //
 // All values with no default are reset to their zero value.
 func (o *VolumeGetParams) SetDefaults() {
-	// no default values defined for this parameter
+	var (
+		isConstituentQueryParameterDefault = bool(false)
+	)
+
+	val := VolumeGetParams{
+		IsConstituentQueryParameter: &isConstituentQueryParameterDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the volume get params
@@ -136,6 +153,17 @@ func (o *VolumeGetParams) SetFieldsQueryParameter(fields []string) {
 	o.FieldsQueryParameter = fields
 }
 
+// WithIsConstituentQueryParameter adds the isConstituent to the volume get params
+func (o *VolumeGetParams) WithIsConstituentQueryParameter(isConstituent *bool) *VolumeGetParams {
+	o.SetIsConstituentQueryParameter(isConstituent)
+	return o
+}
+
+// SetIsConstituentQueryParameter adds the isConstituent to the volume get params
+func (o *VolumeGetParams) SetIsConstituentQueryParameter(isConstituent *bool) {
+	o.IsConstituentQueryParameter = isConstituent
+}
+
 // WithUUIDPathParameter adds the uuid to the volume get params
 func (o *VolumeGetParams) WithUUIDPathParameter(uuid string) *VolumeGetParams {
 	o.SetUUIDPathParameter(uuid)
@@ -163,6 +191,23 @@ func (o *VolumeGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.IsConstituentQueryParameter != nil {
+
+		// query param is_constituent
+		var qrIsConstituent bool
+
+		if o.IsConstituentQueryParameter != nil {
+			qrIsConstituent = *o.IsConstituentQueryParameter
+		}
+		qIsConstituent := swag.FormatBool(qrIsConstituent)
+		if qIsConstituent != "" {
+
+			if err := r.SetQueryParam("is_constituent", qIsConstituent); err != nil {
+				return err
+			}
 		}
 	}
 

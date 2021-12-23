@@ -30,7 +30,6 @@ type MetroclusterInterconnect struct {
 	Adapter string `json:"adapter"`
 
 	// List of objects which contain interface information such as its IP address, netmask and gateway.
-	// Read Only: true
 	Interfaces []*MetroclusterInterconnectInterfacesItems0 `json:"interfaces,omitempty"`
 
 	// node
@@ -55,7 +54,7 @@ type MetroclusterInterconnect struct {
 	// VLAN ID
 	// Read Only: true
 	// Maximum: 4095
-	// Minimum: 100
+	// Minimum: 10
 	VlanID int64 `json:"vlan_id,omitempty"`
 }
 
@@ -362,7 +361,7 @@ func (m *MetroclusterInterconnect) validateVlanID(formats strfmt.Registry) error
 		return nil
 	}
 
-	if err := validate.MinimumInt("vlan_id", "body", m.VlanID, 100, false); err != nil {
+	if err := validate.MinimumInt("vlan_id", "body", m.VlanID, 10, false); err != nil {
 		return err
 	}
 
@@ -439,10 +438,6 @@ func (m *MetroclusterInterconnect) contextValidateAdapter(ctx context.Context, f
 }
 
 func (m *MetroclusterInterconnect) contextValidateInterfaces(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "interfaces", "body", []*MetroclusterInterconnectInterfacesItems0(m.Interfaces)); err != nil {
-		return err
-	}
 
 	for i := 0; i < len(m.Interfaces); i++ {
 

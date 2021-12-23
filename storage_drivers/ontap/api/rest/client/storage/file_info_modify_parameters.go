@@ -84,6 +84,12 @@ type FileInfoModifyParams struct {
 	*/
 	PathPathParameter string
 
+	/* ReturnRecords.
+
+	   The default is false.  If set to true, the records are returned.
+	*/
+	ReturnRecordsQueryParameter *bool
+
 	/* StreamName.
 
 	   Name of stream associated with the file to write data to.
@@ -113,7 +119,18 @@ func (o *FileInfoModifyParams) WithDefaults() *FileInfoModifyParams {
 //
 // All values with no default are reset to their zero value.
 func (o *FileInfoModifyParams) SetDefaults() {
-	// no default values defined for this parameter
+	var (
+		returnRecordsQueryParameterDefault = bool(false)
+	)
+
+	val := FileInfoModifyParams{
+		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the file info modify params
@@ -191,6 +208,17 @@ func (o *FileInfoModifyParams) WithPathPathParameter(path string) *FileInfoModif
 // SetPathPathParameter adds the path to the file info modify params
 func (o *FileInfoModifyParams) SetPathPathParameter(path string) {
 	o.PathPathParameter = path
+}
+
+// WithReturnRecordsQueryParameter adds the returnRecords to the file info modify params
+func (o *FileInfoModifyParams) WithReturnRecordsQueryParameter(returnRecords *bool) *FileInfoModifyParams {
+	o.SetReturnRecordsQueryParameter(returnRecords)
+	return o
+}
+
+// SetReturnRecordsQueryParameter adds the returnRecords to the file info modify params
+func (o *FileInfoModifyParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
+	o.ReturnRecordsQueryParameter = returnRecords
 }
 
 // WithStreamNameQueryParameter adds the streamName to the file info modify params
@@ -275,6 +303,23 @@ func (o *FileInfoModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	// path param path
 	if err := r.SetPathParam("path", o.PathPathParameter); err != nil {
 		return err
+	}
+
+	if o.ReturnRecordsQueryParameter != nil {
+
+		// query param return_records
+		var qrReturnRecords bool
+
+		if o.ReturnRecordsQueryParameter != nil {
+			qrReturnRecords = *o.ReturnRecordsQueryParameter
+		}
+		qReturnRecords := swag.FormatBool(qrReturnRecords)
+		if qReturnRecords != "" {
+
+			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
+				return err
+			}
+		}
 	}
 
 	if o.StreamNameQueryParameter != nil {

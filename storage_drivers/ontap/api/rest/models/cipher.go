@@ -20,11 +20,6 @@ import (
 // swagger:model cipher
 type Cipher string
 
-func NewCipher(value Cipher) *Cipher {
-	v := value
-	return &v
-}
-
 const (
 
 	// CipherAes256Ctr captures enum value "aes256_ctr"

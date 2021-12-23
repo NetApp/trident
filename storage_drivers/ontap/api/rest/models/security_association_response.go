@@ -911,7 +911,7 @@ type SecurityAssociationResponseRecordsItems0Ike struct {
 	State string `json:"state,omitempty"`
 
 	// Internet key exchange protocol version.
-	Version string `json:"version,omitempty"`
+	Version int64 `json:"version,omitempty"`
 }
 
 // Validate validates this security association response records items0 ike

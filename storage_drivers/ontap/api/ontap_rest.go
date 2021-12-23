@@ -74,7 +74,7 @@ type RestClient struct {
 	config       ClientConfig
 	tr           *http.Transport
 	httpClient   *http.Client
-	api          *client.ONTAPRESTAPI
+	api          *client.ONTAPRESTAPIOnlineReference
 	authInfo     runtime.ClientAuthInfoWriter
 	OntapVersion string
 	svmUUID      string
@@ -2077,6 +2077,73 @@ func (d RestClient) LunSetComment(
 	return nil
 }
 
+// LunGetAttribute gets an attribute by name for a given LUN.
+func (d RestClient) LunGetAttribute(
+	ctx context.Context,
+	lunPath, attributeName string,
+) (string, error) {
+
+	lun, err := d.LunGetByName(ctx, lunPath)
+	if err != nil {
+		return "", err
+	}
+	if lun == nil {
+		return "", fmt.Errorf("could not find LUN with name %v", lunPath)
+	}
+	if lun.Attributes == nil {
+		return "", fmt.Errorf("LUN did not have any attributes")
+	}
+	for _, attr := range lun.Attributes {
+		fmt.Printf("Checking attr name=%v value=%v\n", attr.Name, attr.Value)
+		if attributeName == attr.Name {
+			fmt.Printf("returning %v\n", attr.Value)
+			return attr.Value, nil
+		}
+	}
+
+	// LUN has no value for the specified attribute
+	return "", nil
+}
+
+// LunSetAttributes sets the attribute to the provided value for a given LUN.
+func (d RestClient) LunSetAttribute(
+	ctx context.Context,
+	lunPath, attributeName, attributeValue string,
+) error {
+
+	lun, err := d.LunGetByName(ctx, lunPath)
+	if err != nil {
+		return err
+	}
+	if lun == nil {
+		return fmt.Errorf("could not find LUN with name %v", lunPath)
+	}
+
+	uuid := lun.UUID
+
+	params := san.NewLunAttributeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = d.httpClient
+	params.LunUUIDPathParameter = uuid
+	params.NamePathParameter = attributeName
+
+	attrInfo := &models.LunAttribute{
+		// the attribute name is specified in the path as params.NamePathParameter
+		Value: attributeValue,
+	}
+	params.Info = attrInfo
+
+	lunModifyOK, err := d.api.San.LunAttributeModify(params, d.authInfo)
+	if err != nil {
+		return err
+	}
+	if lunModifyOK == nil {
+		return fmt.Errorf("unexpected response from LUN attribute modify")
+	}
+
+	return nil
+}
+
 // LunSetComment sets the comment for a given LUN.
 func (d RestClient) LunSetQosPolicyGroup(
 	ctx context.Context,
@@ -3520,9 +3587,9 @@ func (c RestClient) ExportRuleCreate(
 
 	info := &models.ExportRule{}
 
-	var clients []*models.ExportClient
+	var clients []*models.ExportClients
 	for _, match := range strings.Split(clientMatch, ",") {
-		clients = append(clients, &models.ExportClient{Match: match})
+		clients = append(clients, &models.ExportClients{Match: match})
 	}
 	info.Clients = clients
 

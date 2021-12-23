@@ -19,11 +19,6 @@ import (
 // swagger:model svm_peer_applications
 type SvmPeerApplications string
 
-func NewSvmPeerApplications(value SvmPeerApplications) *SvmPeerApplications {
-	v := value
-	return &v
-}
-
 const (
 
 	// SvmPeerApplicationsSnapmirror captures enum value "snapmirror"

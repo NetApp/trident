@@ -38,6 +38,8 @@ type ClientService interface {
 
 	DNSModify(params *DNSModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSModifyOK, error)
 
+	HostRecordGet(params *HostRecordGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostRecordGetOK, error)
+
 	LdapCollectionGet(params *LdapCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapCollectionGetOK, error)
 
 	LdapCreate(params *LdapCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapCreateCreated, error)
@@ -47,6 +49,16 @@ type ClientService interface {
 	LdapGet(params *LdapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapGetOK, error)
 
 	LdapModify(params *LdapModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LdapModifyOK, error)
+
+	LocalHostCollectionGet(params *LocalHostCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostCollectionGetOK, error)
+
+	LocalHostCreate(params *LocalHostCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostCreateCreated, error)
+
+	LocalHostDelete(params *LocalHostDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostDeleteOK, error)
+
+	LocalHostGet(params *LocalHostGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostGetOK, error)
+
+	LocalHostModify(params *LocalHostModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostModifyOK, error)
 
 	NameMappingCollectionGet(params *NameMappingCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NameMappingCollectionGetOK, error)
 
@@ -80,7 +92,11 @@ type ClientService interface {
 
 	UnixGroupUserDelete(params *UnixGroupUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUserDeleteOK, error)
 
-	UnixGroupUsersCreate(params *UnixGroupUsersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersCreateOK, error)
+	UnixGroupUsersCollectionGet(params *UnixGroupUsersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersCollectionGetOK, error)
+
+	UnixGroupUsersCreate(params *UnixGroupUsersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersCreateCreated, error)
+
+	UnixGroupUsersGet(params *UnixGroupUsersGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersGetOK, error)
 
 	UnixUserCollectionGet(params *UnixUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixUserCollectionGetOK, error)
 
@@ -367,6 +383,48 @@ func (a *Client) DNSModify(params *DNSModifyParams, authInfo runtime.ClientAuthI
 }
 
 /*
+  HostRecordGet Retrieves the IP address of the specified hostname.
+### Related ONTAP commands
+* `vserver services name-service getxxbyyy getnameinfo`
+* `vserver services name-service getxxbyyy getaddrinfo`
+
+*/
+func (a *Client) HostRecordGet(params *HostRecordGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*HostRecordGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewHostRecordGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "host_record_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/host-record/{svm.uuid}/{host}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &HostRecordGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*HostRecordGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*HostRecordGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   LdapCollectionGet Retrieves the LDAP configurations for all SVMs.
 
 */
@@ -435,7 +493,8 @@ func (a *Client) LdapCollectionGet(params *LdapCollectionGetParams, authInfo run
 - netgroup_byhost_scope
 - is_netgroup_byhost_enabled
 - group_membership_filter
-- skip_config_validation</br>
+- skip_config_validation
+- try_channel_binding</br>
 Configuring more than one LDAP server is recommended to avoid a single point of failure.
 Both FQDNs and IP addresses are supported for the "servers" field.
 The Acitve Directory domain or LDAP servers are validated as part of this operation.</br>
@@ -605,6 +664,225 @@ func (a *Client) LdapModify(params *LdapModifyParams, authInfo runtime.ClientAut
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*LdapModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalHostCollectionGet Retrieves all IP to hostname mappings for all SVMs of the cluster.
+### Related ONTAP commands
+* `vserver services name-service dns hosts show`
+### Learn more
+* [`DOC /name-services/local-hosts`](#docs-name-services-name-services_local-hosts)
+
+*/
+func (a *Client) LocalHostCollectionGet(params *LocalHostCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalHostCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_host_collection_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/local-hosts",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalHostCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalHostCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalHostCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalHostCreate Creates a new IP to hostname mapping.
+### Required properties
+* `owner.uuid` or `owner.name` - Existing SVM in which to create IP to host mapping.
+* `address` - IPv4/IPv6 address in dotted form.
+* `hostname` - Canonical hostname.
+### Related ONTAP commands
+* `vserver services name-service dns hosts create`
+### Learn more
+* [`DOC /name-services/local-hosts`](#docs-name-services-name-services_local-hosts)
+
+*/
+func (a *Client) LocalHostCreate(params *LocalHostCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalHostCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_host_create",
+		Method:             "POST",
+		PathPattern:        "/name-services/local-hosts",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalHostCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalHostCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalHostCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalHostDelete Deletes an existing host object.
+### Related ONTAP commands
+* `vserver services name-service dns hosts delete`
+### Learn more
+* [`DOC /name-services/local-hosts`](#docs-name-services-name-services_local-hosts)
+
+*/
+func (a *Client) LocalHostDelete(params *LocalHostDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalHostDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_host_delete",
+		Method:             "DELETE",
+		PathPattern:        "/name-services/local-hosts/{owner.uuid}/{address}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalHostDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalHostDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalHostDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalHostGet For a specified SVM and IP address, returns the corresponding IP to hostname mapping.
+### Related ONTAP commands
+* `vserver services name-service dns hosts show`
+### Learn more
+* [`DOC /name-services/local-hosts`](#docs-name-services-name-services_local-hosts)
+
+*/
+func (a *Client) LocalHostGet(params *LocalHostGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalHostGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_host_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/local-hosts/{owner.uuid}/{address}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalHostGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalHostGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalHostGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalHostModify For a specified SVM and IP address, modifies the corresponding IP to hostname mapping.
+### Related ONTAP commands
+* `vserver services name-service dns hosts modify`
+### Learn more
+* [`DOC /name-services/local-hosts`](#docs-name-services-name-services_local-hosts)
+
+*/
+func (a *Client) LocalHostModify(params *LocalHostModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalHostModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalHostModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_host_modify",
+		Method:             "PATCH",
+		PathPattern:        "/name-services/local-hosts/{owner.uuid}/{address}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalHostModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalHostModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalHostModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1324,6 +1602,47 @@ func (a *Client) UnixGroupUserDelete(params *UnixGroupUserDeleteParams, authInfo
 }
 
 /*
+  UnixGroupUsersCollectionGet Retrieves users for the specified UNIX group and SVM.
+### Related ONTAP commands
+* `vserver services name-service unix-group show`
+
+*/
+func (a *Client) UnixGroupUsersCollectionGet(params *UnixGroupUsersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupUsersCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_users_collection_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{unix_group.name}/users",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupUsersCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupUsersCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupUsersCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   UnixGroupUsersCreate Adds users to the specified UNIX group and SVM.
 ### Important notes
 - Multiple users can be added in a single call using the "records" parameter.
@@ -1335,7 +1654,7 @@ func (a *Client) UnixGroupUserDelete(params *UnixGroupUserDeleteParams, authInfo
 * `vserver services name-service unix-group addusers`
 
 */
-func (a *Client) UnixGroupUsersCreate(params *UnixGroupUsersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersCreateOK, error) {
+func (a *Client) UnixGroupUsersCreate(params *UnixGroupUsersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersCreateCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUnixGroupUsersCreateParams()
@@ -1361,12 +1680,53 @@ func (a *Client) UnixGroupUsersCreate(params *UnixGroupUsersCreateParams, authIn
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*UnixGroupUsersCreateOK)
+	success, ok := result.(*UnixGroupUsersCreateCreated)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*UnixGroupUsersCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UnixGroupUsersGet Retrieves users for the specified UNIX group and SVM.
+### Related ONTAP commands
+* `vserver services name-service unix-group show`
+
+*/
+func (a *Client) UnixGroupUsersGet(params *UnixGroupUsersGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UnixGroupUsersGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUnixGroupUsersGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "unix_group_users_get",
+		Method:             "GET",
+		PathPattern:        "/name-services/unix-groups/{svm.uuid}/{unix_group.name}/users/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UnixGroupUsersGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UnixGroupUsersGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UnixGroupUsersGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

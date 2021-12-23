@@ -54,7 +54,7 @@ type GcpKmsRestoreAccepted struct {
 }
 
 func (o *GcpKmsRestoreAccepted) Error() string {
-	return fmt.Sprintf("[POST /security/gcp-kms/{gcp_kms.uuid}/restore][%d] gcpKmsRestoreAccepted ", 202)
+	return fmt.Sprintf("[POST /security/gcp-kms/{uuid}/restore][%d] gcpKmsRestoreAccepted ", 202)
 }
 
 func (o *GcpKmsRestoreAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -90,7 +90,7 @@ func (o *GcpKmsRestoreDefault) Code() int {
 }
 
 func (o *GcpKmsRestoreDefault) Error() string {
-	return fmt.Sprintf("[POST /security/gcp-kms/{gcp_kms.uuid}/restore][%d] gcp_kms_restore default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[POST /security/gcp-kms/{uuid}/restore][%d] gcp_kms_restore default  %+v", o._statusCode, o.Payload)
 }
 func (o *GcpKmsRestoreDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

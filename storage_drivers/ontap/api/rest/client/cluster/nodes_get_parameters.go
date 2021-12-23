@@ -234,6 +234,30 @@ type NodesGetParams struct {
 	*/
 	DateQueryParameter *string
 
+	/* ExternalCacheIsEnabled.
+
+	   Filter by external_cache.is_enabled
+	*/
+	ExternalCacheIsEnabledQueryParameter *bool
+
+	/* ExternalCacheIsHyaEnabled.
+
+	   Filter by external_cache.is_hya_enabled
+	*/
+	ExternalCacheIsHyaEnabledQueryParameter *bool
+
+	/* ExternalCacheIsRewarmEnabled.
+
+	   Filter by external_cache.is_rewarm_enabled
+	*/
+	ExternalCacheIsRewarmEnabledQueryParameter *bool
+
+	/* ExternalCachePcsSize.
+
+	   Filter by external_cache.pcs_size
+	*/
+	ExternalCachePcsSizeQueryParameter *int64
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -312,6 +336,12 @@ type NodesGetParams struct {
 	*/
 	HaTakeoverStateQueryParameter *string
 
+	/* IsSparesLow.
+
+	   Filter by is_spares_low
+	*/
+	IsSparesLowQueryParameter *bool
+
 	/* Location.
 
 	   Filter by location
@@ -371,6 +401,12 @@ type NodesGetParams struct {
 	   Filter by metric.timestamp
 	*/
 	MetricTimestampQueryParameter *string
+
+	/* MetricUUID.
+
+	   Filter by metric.uuid
+	*/
+	MetricUUIDQueryParameter *string
 
 	/* MetroclusterCustomVlanCapable.
 
@@ -448,6 +484,30 @@ type NodesGetParams struct {
 	*/
 	SerialNumberQueryParameter *string
 
+	/* ServiceProcessorAutoupdateEnabled.
+
+	   Filter by service_processor.autoupdate_enabled
+	*/
+	ServiceProcessorAutoupdateEnabledQueryParameter *bool
+
+	/* ServiceProcessorBackupIsCurrent.
+
+	   Filter by service_processor.backup.is_current
+	*/
+	ServiceProcessorBackupIsCurrentQueryParameter *bool
+
+	/* ServiceProcessorBackupState.
+
+	   Filter by service_processor.backup.state
+	*/
+	ServiceProcessorBackupStateQueryParameter *string
+
+	/* ServiceProcessorBackupVersion.
+
+	   Filter by service_processor.backup.version
+	*/
+	ServiceProcessorBackupVersionQueryParameter *string
+
 	/* ServiceProcessorDhcpEnabled.
 
 	   Filter by service_processor.dhcp_enabled
@@ -496,6 +556,18 @@ type NodesGetParams struct {
 	*/
 	ServiceProcessorIPV6InterfaceNetmaskQueryParameter *int64
 
+	/* ServiceProcessorIsIPConfigured.
+
+	   Filter by service_processor.is_ip_configured
+	*/
+	ServiceProcessorIsIPConfiguredQueryParameter *bool
+
+	/* ServiceProcessorLastUpdateState.
+
+	   Filter by service_processor.last_update_state
+	*/
+	ServiceProcessorLastUpdateStateQueryParameter *string
+
 	/* ServiceProcessorLinkStatus.
 
 	   Filter by service_processor.link_status
@@ -508,11 +580,41 @@ type NodesGetParams struct {
 	*/
 	ServiceProcessorMacAddressQueryParameter *string
 
+	/* ServiceProcessorPrimaryIsCurrent.
+
+	   Filter by service_processor.primary.is_current
+	*/
+	ServiceProcessorPrimaryIsCurrentQueryParameter *bool
+
+	/* ServiceProcessorPrimaryState.
+
+	   Filter by service_processor.primary.state
+	*/
+	ServiceProcessorPrimaryStateQueryParameter *string
+
+	/* ServiceProcessorPrimaryVersion.
+
+	   Filter by service_processor.primary.version
+	*/
+	ServiceProcessorPrimaryVersionQueryParameter *string
+
+	/* ServiceProcessorSSHInfoAllowedAddresses.
+
+	   Filter by service_processor.ssh_info.allowed_addresses
+	*/
+	ServiceProcessorSSHInfoAllowedAddressesQueryParameter *string
+
 	/* ServiceProcessorState.
 
 	   Filter by service_processor.state
 	*/
 	ServiceProcessorStateQueryParameter *string
+
+	/* ServiceProcessorType.
+
+	   Filter by service_processor.type
+	*/
+	ServiceProcessorTypeQueryParameter *string
 
 	/* State.
 
@@ -996,6 +1098,50 @@ func (o *NodesGetParams) SetDateQueryParameter(date *string) {
 	o.DateQueryParameter = date
 }
 
+// WithExternalCacheIsEnabledQueryParameter adds the externalCacheIsEnabled to the nodes get params
+func (o *NodesGetParams) WithExternalCacheIsEnabledQueryParameter(externalCacheIsEnabled *bool) *NodesGetParams {
+	o.SetExternalCacheIsEnabledQueryParameter(externalCacheIsEnabled)
+	return o
+}
+
+// SetExternalCacheIsEnabledQueryParameter adds the externalCacheIsEnabled to the nodes get params
+func (o *NodesGetParams) SetExternalCacheIsEnabledQueryParameter(externalCacheIsEnabled *bool) {
+	o.ExternalCacheIsEnabledQueryParameter = externalCacheIsEnabled
+}
+
+// WithExternalCacheIsHyaEnabledQueryParameter adds the externalCacheIsHyaEnabled to the nodes get params
+func (o *NodesGetParams) WithExternalCacheIsHyaEnabledQueryParameter(externalCacheIsHyaEnabled *bool) *NodesGetParams {
+	o.SetExternalCacheIsHyaEnabledQueryParameter(externalCacheIsHyaEnabled)
+	return o
+}
+
+// SetExternalCacheIsHyaEnabledQueryParameter adds the externalCacheIsHyaEnabled to the nodes get params
+func (o *NodesGetParams) SetExternalCacheIsHyaEnabledQueryParameter(externalCacheIsHyaEnabled *bool) {
+	o.ExternalCacheIsHyaEnabledQueryParameter = externalCacheIsHyaEnabled
+}
+
+// WithExternalCacheIsRewarmEnabledQueryParameter adds the externalCacheIsRewarmEnabled to the nodes get params
+func (o *NodesGetParams) WithExternalCacheIsRewarmEnabledQueryParameter(externalCacheIsRewarmEnabled *bool) *NodesGetParams {
+	o.SetExternalCacheIsRewarmEnabledQueryParameter(externalCacheIsRewarmEnabled)
+	return o
+}
+
+// SetExternalCacheIsRewarmEnabledQueryParameter adds the externalCacheIsRewarmEnabled to the nodes get params
+func (o *NodesGetParams) SetExternalCacheIsRewarmEnabledQueryParameter(externalCacheIsRewarmEnabled *bool) {
+	o.ExternalCacheIsRewarmEnabledQueryParameter = externalCacheIsRewarmEnabled
+}
+
+// WithExternalCachePcsSizeQueryParameter adds the externalCachePcsSize to the nodes get params
+func (o *NodesGetParams) WithExternalCachePcsSizeQueryParameter(externalCachePcsSize *int64) *NodesGetParams {
+	o.SetExternalCachePcsSizeQueryParameter(externalCachePcsSize)
+	return o
+}
+
+// SetExternalCachePcsSizeQueryParameter adds the externalCachePcsSize to the nodes get params
+func (o *NodesGetParams) SetExternalCachePcsSizeQueryParameter(externalCachePcsSize *int64) {
+	o.ExternalCachePcsSizeQueryParameter = externalCachePcsSize
+}
+
 // WithFieldsQueryParameter adds the fields to the nodes get params
 func (o *NodesGetParams) WithFieldsQueryParameter(fields []string) *NodesGetParams {
 	o.SetFieldsQueryParameter(fields)
@@ -1139,6 +1285,17 @@ func (o *NodesGetParams) SetHaTakeoverStateQueryParameter(haTakeoverState *strin
 	o.HaTakeoverStateQueryParameter = haTakeoverState
 }
 
+// WithIsSparesLowQueryParameter adds the isSparesLow to the nodes get params
+func (o *NodesGetParams) WithIsSparesLowQueryParameter(isSparesLow *bool) *NodesGetParams {
+	o.SetIsSparesLowQueryParameter(isSparesLow)
+	return o
+}
+
+// SetIsSparesLowQueryParameter adds the isSparesLow to the nodes get params
+func (o *NodesGetParams) SetIsSparesLowQueryParameter(isSparesLow *bool) {
+	o.IsSparesLowQueryParameter = isSparesLow
+}
+
 // WithLocationQueryParameter adds the location to the nodes get params
 func (o *NodesGetParams) WithLocationQueryParameter(location *string) *NodesGetParams {
 	o.SetLocationQueryParameter(location)
@@ -1247,6 +1404,17 @@ func (o *NodesGetParams) WithMetricTimestampQueryParameter(metricTimestamp *stri
 // SetMetricTimestampQueryParameter adds the metricTimestamp to the nodes get params
 func (o *NodesGetParams) SetMetricTimestampQueryParameter(metricTimestamp *string) {
 	o.MetricTimestampQueryParameter = metricTimestamp
+}
+
+// WithMetricUUIDQueryParameter adds the metricUUID to the nodes get params
+func (o *NodesGetParams) WithMetricUUIDQueryParameter(metricUUID *string) *NodesGetParams {
+	o.SetMetricUUIDQueryParameter(metricUUID)
+	return o
+}
+
+// SetMetricUUIDQueryParameter adds the metricUuid to the nodes get params
+func (o *NodesGetParams) SetMetricUUIDQueryParameter(metricUUID *string) {
+	o.MetricUUIDQueryParameter = metricUUID
 }
 
 // WithMetroclusterCustomVlanCapableQueryParameter adds the metroclusterCustomVlanCapable to the nodes get params
@@ -1381,6 +1549,50 @@ func (o *NodesGetParams) SetSerialNumberQueryParameter(serialNumber *string) {
 	o.SerialNumberQueryParameter = serialNumber
 }
 
+// WithServiceProcessorAutoupdateEnabledQueryParameter adds the serviceProcessorAutoupdateEnabled to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorAutoupdateEnabledQueryParameter(serviceProcessorAutoupdateEnabled *bool) *NodesGetParams {
+	o.SetServiceProcessorAutoupdateEnabledQueryParameter(serviceProcessorAutoupdateEnabled)
+	return o
+}
+
+// SetServiceProcessorAutoupdateEnabledQueryParameter adds the serviceProcessorAutoupdateEnabled to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorAutoupdateEnabledQueryParameter(serviceProcessorAutoupdateEnabled *bool) {
+	o.ServiceProcessorAutoupdateEnabledQueryParameter = serviceProcessorAutoupdateEnabled
+}
+
+// WithServiceProcessorBackupIsCurrentQueryParameter adds the serviceProcessorBackupIsCurrent to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorBackupIsCurrentQueryParameter(serviceProcessorBackupIsCurrent *bool) *NodesGetParams {
+	o.SetServiceProcessorBackupIsCurrentQueryParameter(serviceProcessorBackupIsCurrent)
+	return o
+}
+
+// SetServiceProcessorBackupIsCurrentQueryParameter adds the serviceProcessorBackupIsCurrent to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorBackupIsCurrentQueryParameter(serviceProcessorBackupIsCurrent *bool) {
+	o.ServiceProcessorBackupIsCurrentQueryParameter = serviceProcessorBackupIsCurrent
+}
+
+// WithServiceProcessorBackupStateQueryParameter adds the serviceProcessorBackupState to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorBackupStateQueryParameter(serviceProcessorBackupState *string) *NodesGetParams {
+	o.SetServiceProcessorBackupStateQueryParameter(serviceProcessorBackupState)
+	return o
+}
+
+// SetServiceProcessorBackupStateQueryParameter adds the serviceProcessorBackupState to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorBackupStateQueryParameter(serviceProcessorBackupState *string) {
+	o.ServiceProcessorBackupStateQueryParameter = serviceProcessorBackupState
+}
+
+// WithServiceProcessorBackupVersionQueryParameter adds the serviceProcessorBackupVersion to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorBackupVersionQueryParameter(serviceProcessorBackupVersion *string) *NodesGetParams {
+	o.SetServiceProcessorBackupVersionQueryParameter(serviceProcessorBackupVersion)
+	return o
+}
+
+// SetServiceProcessorBackupVersionQueryParameter adds the serviceProcessorBackupVersion to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorBackupVersionQueryParameter(serviceProcessorBackupVersion *string) {
+	o.ServiceProcessorBackupVersionQueryParameter = serviceProcessorBackupVersion
+}
+
 // WithServiceProcessorDhcpEnabledQueryParameter adds the serviceProcessorDhcpEnabled to the nodes get params
 func (o *NodesGetParams) WithServiceProcessorDhcpEnabledQueryParameter(serviceProcessorDhcpEnabled *bool) *NodesGetParams {
 	o.SetServiceProcessorDhcpEnabledQueryParameter(serviceProcessorDhcpEnabled)
@@ -1469,6 +1681,28 @@ func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceNetmaskQueryParameter(s
 	o.ServiceProcessorIPV6InterfaceNetmaskQueryParameter = serviceProcessorIPV6InterfaceNetmask
 }
 
+// WithServiceProcessorIsIPConfiguredQueryParameter adds the serviceProcessorIsIPConfigured to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIsIPConfiguredQueryParameter(serviceProcessorIsIPConfigured *bool) *NodesGetParams {
+	o.SetServiceProcessorIsIPConfiguredQueryParameter(serviceProcessorIsIPConfigured)
+	return o
+}
+
+// SetServiceProcessorIsIPConfiguredQueryParameter adds the serviceProcessorIsIpConfigured to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIsIPConfiguredQueryParameter(serviceProcessorIsIPConfigured *bool) {
+	o.ServiceProcessorIsIPConfiguredQueryParameter = serviceProcessorIsIPConfigured
+}
+
+// WithServiceProcessorLastUpdateStateQueryParameter adds the serviceProcessorLastUpdateState to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorLastUpdateStateQueryParameter(serviceProcessorLastUpdateState *string) *NodesGetParams {
+	o.SetServiceProcessorLastUpdateStateQueryParameter(serviceProcessorLastUpdateState)
+	return o
+}
+
+// SetServiceProcessorLastUpdateStateQueryParameter adds the serviceProcessorLastUpdateState to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorLastUpdateStateQueryParameter(serviceProcessorLastUpdateState *string) {
+	o.ServiceProcessorLastUpdateStateQueryParameter = serviceProcessorLastUpdateState
+}
+
 // WithServiceProcessorLinkStatusQueryParameter adds the serviceProcessorLinkStatus to the nodes get params
 func (o *NodesGetParams) WithServiceProcessorLinkStatusQueryParameter(serviceProcessorLinkStatus *string) *NodesGetParams {
 	o.SetServiceProcessorLinkStatusQueryParameter(serviceProcessorLinkStatus)
@@ -1491,6 +1725,50 @@ func (o *NodesGetParams) SetServiceProcessorMacAddressQueryParameter(serviceProc
 	o.ServiceProcessorMacAddressQueryParameter = serviceProcessorMacAddress
 }
 
+// WithServiceProcessorPrimaryIsCurrentQueryParameter adds the serviceProcessorPrimaryIsCurrent to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorPrimaryIsCurrentQueryParameter(serviceProcessorPrimaryIsCurrent *bool) *NodesGetParams {
+	o.SetServiceProcessorPrimaryIsCurrentQueryParameter(serviceProcessorPrimaryIsCurrent)
+	return o
+}
+
+// SetServiceProcessorPrimaryIsCurrentQueryParameter adds the serviceProcessorPrimaryIsCurrent to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorPrimaryIsCurrentQueryParameter(serviceProcessorPrimaryIsCurrent *bool) {
+	o.ServiceProcessorPrimaryIsCurrentQueryParameter = serviceProcessorPrimaryIsCurrent
+}
+
+// WithServiceProcessorPrimaryStateQueryParameter adds the serviceProcessorPrimaryState to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorPrimaryStateQueryParameter(serviceProcessorPrimaryState *string) *NodesGetParams {
+	o.SetServiceProcessorPrimaryStateQueryParameter(serviceProcessorPrimaryState)
+	return o
+}
+
+// SetServiceProcessorPrimaryStateQueryParameter adds the serviceProcessorPrimaryState to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorPrimaryStateQueryParameter(serviceProcessorPrimaryState *string) {
+	o.ServiceProcessorPrimaryStateQueryParameter = serviceProcessorPrimaryState
+}
+
+// WithServiceProcessorPrimaryVersionQueryParameter adds the serviceProcessorPrimaryVersion to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorPrimaryVersionQueryParameter(serviceProcessorPrimaryVersion *string) *NodesGetParams {
+	o.SetServiceProcessorPrimaryVersionQueryParameter(serviceProcessorPrimaryVersion)
+	return o
+}
+
+// SetServiceProcessorPrimaryVersionQueryParameter adds the serviceProcessorPrimaryVersion to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorPrimaryVersionQueryParameter(serviceProcessorPrimaryVersion *string) {
+	o.ServiceProcessorPrimaryVersionQueryParameter = serviceProcessorPrimaryVersion
+}
+
+// WithServiceProcessorSSHInfoAllowedAddressesQueryParameter adds the serviceProcessorSSHInfoAllowedAddresses to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorSSHInfoAllowedAddressesQueryParameter(serviceProcessorSSHInfoAllowedAddresses *string) *NodesGetParams {
+	o.SetServiceProcessorSSHInfoAllowedAddressesQueryParameter(serviceProcessorSSHInfoAllowedAddresses)
+	return o
+}
+
+// SetServiceProcessorSSHInfoAllowedAddressesQueryParameter adds the serviceProcessorSshInfoAllowedAddresses to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorSSHInfoAllowedAddressesQueryParameter(serviceProcessorSSHInfoAllowedAddresses *string) {
+	o.ServiceProcessorSSHInfoAllowedAddressesQueryParameter = serviceProcessorSSHInfoAllowedAddresses
+}
+
 // WithServiceProcessorStateQueryParameter adds the serviceProcessorState to the nodes get params
 func (o *NodesGetParams) WithServiceProcessorStateQueryParameter(serviceProcessorState *string) *NodesGetParams {
 	o.SetServiceProcessorStateQueryParameter(serviceProcessorState)
@@ -1500,6 +1778,17 @@ func (o *NodesGetParams) WithServiceProcessorStateQueryParameter(serviceProcesso
 // SetServiceProcessorStateQueryParameter adds the serviceProcessorState to the nodes get params
 func (o *NodesGetParams) SetServiceProcessorStateQueryParameter(serviceProcessorState *string) {
 	o.ServiceProcessorStateQueryParameter = serviceProcessorState
+}
+
+// WithServiceProcessorTypeQueryParameter adds the serviceProcessorType to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorTypeQueryParameter(serviceProcessorType *string) *NodesGetParams {
+	o.SetServiceProcessorTypeQueryParameter(serviceProcessorType)
+	return o
+}
+
+// SetServiceProcessorTypeQueryParameter adds the serviceProcessorType to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorTypeQueryParameter(serviceProcessorType *string) {
+	o.ServiceProcessorTypeQueryParameter = serviceProcessorType
 }
 
 // WithStateQueryParameter adds the state to the nodes get params
@@ -2179,6 +2468,74 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.ExternalCacheIsEnabledQueryParameter != nil {
+
+		// query param external_cache.is_enabled
+		var qrExternalCacheIsEnabled bool
+
+		if o.ExternalCacheIsEnabledQueryParameter != nil {
+			qrExternalCacheIsEnabled = *o.ExternalCacheIsEnabledQueryParameter
+		}
+		qExternalCacheIsEnabled := swag.FormatBool(qrExternalCacheIsEnabled)
+		if qExternalCacheIsEnabled != "" {
+
+			if err := r.SetQueryParam("external_cache.is_enabled", qExternalCacheIsEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExternalCacheIsHyaEnabledQueryParameter != nil {
+
+		// query param external_cache.is_hya_enabled
+		var qrExternalCacheIsHyaEnabled bool
+
+		if o.ExternalCacheIsHyaEnabledQueryParameter != nil {
+			qrExternalCacheIsHyaEnabled = *o.ExternalCacheIsHyaEnabledQueryParameter
+		}
+		qExternalCacheIsHyaEnabled := swag.FormatBool(qrExternalCacheIsHyaEnabled)
+		if qExternalCacheIsHyaEnabled != "" {
+
+			if err := r.SetQueryParam("external_cache.is_hya_enabled", qExternalCacheIsHyaEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExternalCacheIsRewarmEnabledQueryParameter != nil {
+
+		// query param external_cache.is_rewarm_enabled
+		var qrExternalCacheIsRewarmEnabled bool
+
+		if o.ExternalCacheIsRewarmEnabledQueryParameter != nil {
+			qrExternalCacheIsRewarmEnabled = *o.ExternalCacheIsRewarmEnabledQueryParameter
+		}
+		qExternalCacheIsRewarmEnabled := swag.FormatBool(qrExternalCacheIsRewarmEnabled)
+		if qExternalCacheIsRewarmEnabled != "" {
+
+			if err := r.SetQueryParam("external_cache.is_rewarm_enabled", qExternalCacheIsRewarmEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExternalCachePcsSizeQueryParameter != nil {
+
+		// query param external_cache.pcs_size
+		var qrExternalCachePcsSize int64
+
+		if o.ExternalCachePcsSizeQueryParameter != nil {
+			qrExternalCachePcsSize = *o.ExternalCachePcsSizeQueryParameter
+		}
+		qExternalCachePcsSize := swag.FormatInt64(qrExternalCachePcsSize)
+		if qExternalCachePcsSize != "" {
+
+			if err := r.SetQueryParam("external_cache.pcs_size", qExternalCachePcsSize); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.FieldsQueryParameter != nil {
 
 		// binding items for fields
@@ -2394,6 +2751,23 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.IsSparesLowQueryParameter != nil {
+
+		// query param is_spares_low
+		var qrIsSparesLow bool
+
+		if o.IsSparesLowQueryParameter != nil {
+			qrIsSparesLow = *o.IsSparesLowQueryParameter
+		}
+		qIsSparesLow := swag.FormatBool(qrIsSparesLow)
+		if qIsSparesLow != "" {
+
+			if err := r.SetQueryParam("is_spares_low", qIsSparesLow); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.LocationQueryParameter != nil {
 
 		// query param location
@@ -2559,6 +2933,23 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qMetricTimestamp != "" {
 
 			if err := r.SetQueryParam("metric.timestamp", qMetricTimestamp); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricUUIDQueryParameter != nil {
+
+		// query param metric.uuid
+		var qrMetricUUID string
+
+		if o.MetricUUIDQueryParameter != nil {
+			qrMetricUUID = *o.MetricUUIDQueryParameter
+		}
+		qMetricUUID := qrMetricUUID
+		if qMetricUUID != "" {
+
+			if err := r.SetQueryParam("metric.uuid", qMetricUUID); err != nil {
 				return err
 			}
 		}
@@ -2762,6 +3153,74 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.ServiceProcessorAutoupdateEnabledQueryParameter != nil {
+
+		// query param service_processor.autoupdate_enabled
+		var qrServiceProcessorAutoupdateEnabled bool
+
+		if o.ServiceProcessorAutoupdateEnabledQueryParameter != nil {
+			qrServiceProcessorAutoupdateEnabled = *o.ServiceProcessorAutoupdateEnabledQueryParameter
+		}
+		qServiceProcessorAutoupdateEnabled := swag.FormatBool(qrServiceProcessorAutoupdateEnabled)
+		if qServiceProcessorAutoupdateEnabled != "" {
+
+			if err := r.SetQueryParam("service_processor.autoupdate_enabled", qServiceProcessorAutoupdateEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorBackupIsCurrentQueryParameter != nil {
+
+		// query param service_processor.backup.is_current
+		var qrServiceProcessorBackupIsCurrent bool
+
+		if o.ServiceProcessorBackupIsCurrentQueryParameter != nil {
+			qrServiceProcessorBackupIsCurrent = *o.ServiceProcessorBackupIsCurrentQueryParameter
+		}
+		qServiceProcessorBackupIsCurrent := swag.FormatBool(qrServiceProcessorBackupIsCurrent)
+		if qServiceProcessorBackupIsCurrent != "" {
+
+			if err := r.SetQueryParam("service_processor.backup.is_current", qServiceProcessorBackupIsCurrent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorBackupStateQueryParameter != nil {
+
+		// query param service_processor.backup.state
+		var qrServiceProcessorBackupState string
+
+		if o.ServiceProcessorBackupStateQueryParameter != nil {
+			qrServiceProcessorBackupState = *o.ServiceProcessorBackupStateQueryParameter
+		}
+		qServiceProcessorBackupState := qrServiceProcessorBackupState
+		if qServiceProcessorBackupState != "" {
+
+			if err := r.SetQueryParam("service_processor.backup.state", qServiceProcessorBackupState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorBackupVersionQueryParameter != nil {
+
+		// query param service_processor.backup.version
+		var qrServiceProcessorBackupVersion string
+
+		if o.ServiceProcessorBackupVersionQueryParameter != nil {
+			qrServiceProcessorBackupVersion = *o.ServiceProcessorBackupVersionQueryParameter
+		}
+		qServiceProcessorBackupVersion := qrServiceProcessorBackupVersion
+		if qServiceProcessorBackupVersion != "" {
+
+			if err := r.SetQueryParam("service_processor.backup.version", qServiceProcessorBackupVersion); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ServiceProcessorDhcpEnabledQueryParameter != nil {
 
 		// query param service_processor.dhcp_enabled
@@ -2898,6 +3357,40 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.ServiceProcessorIsIPConfiguredQueryParameter != nil {
+
+		// query param service_processor.is_ip_configured
+		var qrServiceProcessorIsIPConfigured bool
+
+		if o.ServiceProcessorIsIPConfiguredQueryParameter != nil {
+			qrServiceProcessorIsIPConfigured = *o.ServiceProcessorIsIPConfiguredQueryParameter
+		}
+		qServiceProcessorIsIPConfigured := swag.FormatBool(qrServiceProcessorIsIPConfigured)
+		if qServiceProcessorIsIPConfigured != "" {
+
+			if err := r.SetQueryParam("service_processor.is_ip_configured", qServiceProcessorIsIPConfigured); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorLastUpdateStateQueryParameter != nil {
+
+		// query param service_processor.last_update_state
+		var qrServiceProcessorLastUpdateState string
+
+		if o.ServiceProcessorLastUpdateStateQueryParameter != nil {
+			qrServiceProcessorLastUpdateState = *o.ServiceProcessorLastUpdateStateQueryParameter
+		}
+		qServiceProcessorLastUpdateState := qrServiceProcessorLastUpdateState
+		if qServiceProcessorLastUpdateState != "" {
+
+			if err := r.SetQueryParam("service_processor.last_update_state", qServiceProcessorLastUpdateState); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ServiceProcessorLinkStatusQueryParameter != nil {
 
 		// query param service_processor.link_status
@@ -2932,6 +3425,74 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.ServiceProcessorPrimaryIsCurrentQueryParameter != nil {
+
+		// query param service_processor.primary.is_current
+		var qrServiceProcessorPrimaryIsCurrent bool
+
+		if o.ServiceProcessorPrimaryIsCurrentQueryParameter != nil {
+			qrServiceProcessorPrimaryIsCurrent = *o.ServiceProcessorPrimaryIsCurrentQueryParameter
+		}
+		qServiceProcessorPrimaryIsCurrent := swag.FormatBool(qrServiceProcessorPrimaryIsCurrent)
+		if qServiceProcessorPrimaryIsCurrent != "" {
+
+			if err := r.SetQueryParam("service_processor.primary.is_current", qServiceProcessorPrimaryIsCurrent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorPrimaryStateQueryParameter != nil {
+
+		// query param service_processor.primary.state
+		var qrServiceProcessorPrimaryState string
+
+		if o.ServiceProcessorPrimaryStateQueryParameter != nil {
+			qrServiceProcessorPrimaryState = *o.ServiceProcessorPrimaryStateQueryParameter
+		}
+		qServiceProcessorPrimaryState := qrServiceProcessorPrimaryState
+		if qServiceProcessorPrimaryState != "" {
+
+			if err := r.SetQueryParam("service_processor.primary.state", qServiceProcessorPrimaryState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorPrimaryVersionQueryParameter != nil {
+
+		// query param service_processor.primary.version
+		var qrServiceProcessorPrimaryVersion string
+
+		if o.ServiceProcessorPrimaryVersionQueryParameter != nil {
+			qrServiceProcessorPrimaryVersion = *o.ServiceProcessorPrimaryVersionQueryParameter
+		}
+		qServiceProcessorPrimaryVersion := qrServiceProcessorPrimaryVersion
+		if qServiceProcessorPrimaryVersion != "" {
+
+			if err := r.SetQueryParam("service_processor.primary.version", qServiceProcessorPrimaryVersion); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorSSHInfoAllowedAddressesQueryParameter != nil {
+
+		// query param service_processor.ssh_info.allowed_addresses
+		var qrServiceProcessorSSHInfoAllowedAddresses string
+
+		if o.ServiceProcessorSSHInfoAllowedAddressesQueryParameter != nil {
+			qrServiceProcessorSSHInfoAllowedAddresses = *o.ServiceProcessorSSHInfoAllowedAddressesQueryParameter
+		}
+		qServiceProcessorSSHInfoAllowedAddresses := qrServiceProcessorSSHInfoAllowedAddresses
+		if qServiceProcessorSSHInfoAllowedAddresses != "" {
+
+			if err := r.SetQueryParam("service_processor.ssh_info.allowed_addresses", qServiceProcessorSSHInfoAllowedAddresses); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ServiceProcessorStateQueryParameter != nil {
 
 		// query param service_processor.state
@@ -2944,6 +3505,23 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qServiceProcessorState != "" {
 
 			if err := r.SetQueryParam("service_processor.state", qServiceProcessorState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ServiceProcessorTypeQueryParameter != nil {
+
+		// query param service_processor.type
+		var qrServiceProcessorType string
+
+		if o.ServiceProcessorTypeQueryParameter != nil {
+			qrServiceProcessorType = *o.ServiceProcessorTypeQueryParameter
+		}
+		qServiceProcessorType := qrServiceProcessorType
+		if qServiceProcessorType != "" {
+
+			if err := r.SetQueryParam("service_processor.type", qServiceProcessorType); err != nil {
 				return err
 			}
 		}

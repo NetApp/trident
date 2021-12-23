@@ -23,13 +23,13 @@ type Fpolicy struct {
 	Links *FpolicyLinks `json:"_links,omitempty"`
 
 	// engines
-	Engines []*FpolicyEngine `json:"engines,omitempty"`
+	Engines []*FpolicyEngines `json:"engines,omitempty"`
 
 	// events
-	Events []*FpolicyEvent `json:"events,omitempty"`
+	Events []*FpolicyEvents `json:"events,omitempty"`
 
 	// policies
-	Policies []*FpolicyPolicy `json:"policies,omitempty"`
+	Policies []*FpolicyPolicies `json:"policies,omitempty"`
 
 	// svm
 	Svm *FpolicySvm `json:"svm,omitempty"`

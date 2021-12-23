@@ -54,7 +54,7 @@ type GcpKmsRekeyInternalAccepted struct {
 }
 
 func (o *GcpKmsRekeyInternalAccepted) Error() string {
-	return fmt.Sprintf("[POST /security/gcp-kms/{gcp_kms.uuid}/rekey-internal][%d] gcpKmsRekeyInternalAccepted ", 202)
+	return fmt.Sprintf("[POST /security/gcp-kms/{uuid}/rekey-internal][%d] gcpKmsRekeyInternalAccepted ", 202)
 }
 
 func (o *GcpKmsRekeyInternalAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -91,7 +91,7 @@ func (o *GcpKmsRekeyInternalDefault) Code() int {
 }
 
 func (o *GcpKmsRekeyInternalDefault) Error() string {
-	return fmt.Sprintf("[POST /security/gcp-kms/{gcp_kms.uuid}/rekey-internal][%d] gcp_kms_rekey_internal default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[POST /security/gcp-kms/{uuid}/rekey-internal][%d] gcp_kms_rekey_internal default  %+v", o._statusCode, o.Payload)
 }
 func (o *GcpKmsRekeyInternalDefault) GetPayload() *models.ErrorResponse {
 	return o.Payload

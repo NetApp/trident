@@ -28,7 +28,7 @@ type ZappNvme struct {
 	Components []*ZappNvmeComponentsItems0 `json:"components"`
 
 	// The name of the host OS running the application.
-	// Enum: [linux vmware windows]
+	// Enum: [aix linux vmware windows]
 	OsType string `json:"os_type,omitempty"`
 
 	// rpo
@@ -96,7 +96,7 @@ var zappNvmeTypeOsTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["linux","vmware","windows"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["aix","linux","vmware","windows"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -105,6 +105,16 @@ func init() {
 }
 
 const (
+
+	// BEGIN DEBUGGING
+	// zapp_nvme
+	// ZappNvme
+	// os_type
+	// OsType
+	// aix
+	// END DEBUGGING
+	// ZappNvmeOsTypeAix captures enum value "aix"
+	ZappNvmeOsTypeAix string = "aix"
 
 	// BEGIN DEBUGGING
 	// zapp_nvme
@@ -260,7 +270,7 @@ type ZappNvmeComponentsItems0 struct {
 	NamespaceCount int64 `json:"namespace_count,omitempty"`
 
 	// The name of the host OS running the application.
-	// Enum: [linux vmware windows]
+	// Enum: [aix linux vmware windows]
 	OsType string `json:"os_type,omitempty"`
 
 	// performance
@@ -354,7 +364,7 @@ var zappNvmeComponentsItems0TypeOsTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["linux","vmware","windows"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["aix","linux","vmware","windows"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -363,6 +373,16 @@ func init() {
 }
 
 const (
+
+	// BEGIN DEBUGGING
+	// ZappNvmeComponentsItems0
+	// ZappNvmeComponentsItems0
+	// os_type
+	// OsType
+	// aix
+	// END DEBUGGING
+	// ZappNvmeComponentsItems0OsTypeAix captures enum value "aix"
+	ZappNvmeComponentsItems0OsTypeAix string = "aix"
 
 	// BEGIN DEBUGGING
 	// ZappNvmeComponentsItems0

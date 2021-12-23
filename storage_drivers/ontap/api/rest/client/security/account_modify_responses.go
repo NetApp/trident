@@ -88,7 +88,6 @@ func NewAccountModifyDefault(code int) *AccountModifyDefault {
 | 5636157 | If the authentication-method is domain, the second-authentication-method cannot be specified. |
 | 5636159 | For a given user and application, if the second-authentication-method is specified, only one such login entry is supported. |
 | 5636164 | If the value for either the authentication-method second-authentication-method is nsswitch or password, the other parameter must differ. |
-| 5636174 | You are not authorized to change the password for other users. |
 | 7077896 | Cannot lock the account of the last console admin user. |
 | 7077906 | A role with that name has not been defined for the Vserver. |
 | 7077911 | The user is not configured to use the password authentication method. |

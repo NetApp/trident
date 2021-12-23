@@ -78,7 +78,7 @@ func NewEmsConfigModifyDefault(code int) *EmsConfigModifyDefault {
 | 983136     | The proxy URL cannot contain a username or password |
 | 983137     | The proxy URL provided is invalid |
 | 983139     | The IPv6 proxy URL provided is invalid |
-| 983140     | The proxy URL provided contains an invalid scheme. Supported schemes are 'http' or 'https' |
+| 983140     | The proxy URL provided contains an invalid scheme. Supported scheme is 'http' |
 | 983160     | The provided parameter requires an effective cluster version of ONTAP 9.9.1 or later |
 
 */

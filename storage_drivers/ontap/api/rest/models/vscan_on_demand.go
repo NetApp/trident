@@ -38,6 +38,9 @@ type VscanOnDemand struct {
 
 	// scope
 	Scope *VscanOnDemandScope `json:"scope,omitempty"`
+
+	// svm
+	Svm *VscanOnDemandSvm `json:"svm,omitempty"`
 }
 
 // Validate validates this vscan on demand
@@ -53,6 +56,10 @@ func (m *VscanOnDemand) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateScope(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -112,6 +119,23 @@ func (m *VscanOnDemand) validateScope(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *VscanOnDemand) validateSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.Svm) { // not required
+		return nil
+	}
+
+	if m.Svm != nil {
+		if err := m.Svm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this vscan on demand based on the context it is used
 func (m *VscanOnDemand) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -121,6 +145,10 @@ func (m *VscanOnDemand) ContextValidate(ctx context.Context, formats strfmt.Regi
 	}
 
 	if err := m.contextValidateScope(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -150,6 +178,20 @@ func (m *VscanOnDemand) contextValidateScope(ctx context.Context, formats strfmt
 		if err := m.Scope.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("scope")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VscanOnDemand) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Svm != nil {
+		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
 			}
 			return err
 		}
@@ -453,6 +495,188 @@ func (m *VscanOnDemandScope) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *VscanOnDemandScope) UnmarshalBinary(b []byte) error {
 	var res VscanOnDemandScope
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VscanOnDemandSvm vscan on demand svm
+//
+// swagger:model VscanOnDemandSvm
+type VscanOnDemandSvm struct {
+
+	// links
+	Links *VscanOnDemandSvmLinks `json:"_links,omitempty"`
+
+	// The name of the SVM.
+	//
+	// Example: svm1
+	Name string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM.
+	//
+	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this vscan on demand svm
+func (m *VscanOnDemandSvm) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VscanOnDemandSvm) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this vscan on demand svm based on the context it is used
+func (m *VscanOnDemandSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VscanOnDemandSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VscanOnDemandSvm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VscanOnDemandSvm) UnmarshalBinary(b []byte) error {
+	var res VscanOnDemandSvm
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VscanOnDemandSvmLinks vscan on demand svm links
+//
+// swagger:model VscanOnDemandSvmLinks
+type VscanOnDemandSvmLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this vscan on demand svm links
+func (m *VscanOnDemandSvmLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VscanOnDemandSvmLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this vscan on demand svm links based on the context it is used
+func (m *VscanOnDemandSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VscanOnDemandSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VscanOnDemandSvmLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VscanOnDemandSvmLinks) UnmarshalBinary(b []byte) error {
+	var res VscanOnDemandSvmLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

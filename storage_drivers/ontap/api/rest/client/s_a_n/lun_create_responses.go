@@ -114,9 +114,12 @@ func NewLunCreateDefault(code int) *LunCreateDefault {
 | 5374875 | The specified `clone.source` was not found. |
 | 5374876 | The specified `clone.source` was not found. |
 | 5374883 | The property cannot be specified when creating a LUN clone. The `target` property of the error object identifies the property. |
-| 5374884 | The property is required except when creating a LUN clone. The `target` property of the error object identifies the property. |
+| 5374884 | A property that is required when creating a new LUN that is not a LUN clone or LUN copy was not supplied. The `target` property of the error object identifies the property. |
 | 5374886 | An error occurred after successfully creating the LUN preventing the retrieval of its properties. |
 | 5374899 | The `clone.source.uuid` property is not supported when specifying a source LUN from a Snapshot copy. |
+| 5374928 | An incomplete attribute name/value pair was supplied. |
+| 5374929 | The combined sizes of an attribute name and value are too large. |
+| 5374932 | A name for an attribute was duplicated. |
 | 13565952 | The LUN clone request failed. |
 
 */

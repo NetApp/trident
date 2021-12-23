@@ -39,13 +39,30 @@ type FpolicyPolicy struct {
 	// Example: fp_policy_1
 	Name string `json:"name,omitempty"`
 
+	// Specifies whether passthrough-read should be allowed for FPolicy servers
+	// registered for the policy. Passthrough-read is a way to read data for
+	// offline files without restoring the files to primary storage. Offline
+	// files are files that have been moved to secondary storage.
+	//
+	PassthroughRead *bool `json:"passthrough_read,omitempty"`
+
 	// Specifies the priority that is assigned to this policy.
 	// Maximum: 10
 	// Minimum: 1
 	Priority int64 `json:"priority,omitempty"`
 
+	// Specifies the privileged user name for accessing files on the cluster
+	// using a separate data channel with privileged access. The input for
+	// this field should be in "domain\username" format.
+	//
+	// Example: mydomain\\testuser
+	PrivilegedUser string `json:"privileged_user,omitempty"`
+
 	// scope
 	Scope *FpolicyPolicyScope `json:"scope,omitempty"`
+
+	// svm
+	Svm *FpolicyPolicySvm `json:"svm,omitempty"`
 }
 
 // Validate validates this fpolicy policy
@@ -65,6 +82,10 @@ func (m *FpolicyPolicy) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateScope(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -148,6 +169,23 @@ func (m *FpolicyPolicy) validateScope(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *FpolicyPolicy) validateSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.Svm) { // not required
+		return nil
+	}
+
+	if m.Svm != nil {
+		if err := m.Svm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this fpolicy policy based on the context it is used
 func (m *FpolicyPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -161,6 +199,10 @@ func (m *FpolicyPolicy) ContextValidate(ctx context.Context, formats strfmt.Regi
 	}
 
 	if err := m.contextValidateScope(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -208,6 +250,20 @@ func (m *FpolicyPolicy) contextValidateScope(ctx context.Context, formats strfmt
 		if err := m.Scope.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("scope")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FpolicyPolicy) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Svm != nil {
+		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
 			}
 			return err
 		}
@@ -288,6 +344,62 @@ func (m *FpolicyPolicyScope) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *FpolicyPolicyScope) UnmarshalBinary(b []byte) error {
 	var res FpolicyPolicyScope
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FpolicyPolicySvm fpolicy policy svm
+//
+// swagger:model FpolicyPolicySvm
+type FpolicyPolicySvm struct {
+
+	// SVM UUID
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this fpolicy policy svm
+func (m *FpolicyPolicySvm) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this fpolicy policy svm based on the context it is used
+func (m *FpolicyPolicySvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FpolicyPolicySvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "svm"+"."+"uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FpolicyPolicySvm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FpolicyPolicySvm) UnmarshalBinary(b []byte) error {
+	var res FpolicyPolicySvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

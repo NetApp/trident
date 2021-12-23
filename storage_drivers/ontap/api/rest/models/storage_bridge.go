@@ -736,7 +736,7 @@ type StorageBridgeErrorsItems0 struct {
 	Component *StorageBridgeErrorsItems0Component `json:"component,omitempty"`
 
 	// reason
-	Reason *StorageBridgeErrorsItems0Reason `json:"reason,omitempty"`
+	Reason *Error `json:"reason,omitempty"`
 
 	// Bridge error severity
 	// Enum: [unknown notice warning error]
@@ -1129,46 +1129,6 @@ func (m *StorageBridgeErrorsItems0Component) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *StorageBridgeErrorsItems0Component) UnmarshalBinary(b []byte) error {
 	var res StorageBridgeErrorsItems0Component
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// StorageBridgeErrorsItems0Reason storage bridge errors items0 reason
-//
-// swagger:model StorageBridgeErrorsItems0Reason
-type StorageBridgeErrorsItems0Reason struct {
-
-	// code
-	Code string `json:"code,omitempty"`
-
-	// message
-	Message string `json:"message,omitempty"`
-}
-
-// Validate validates this storage bridge errors items0 reason
-func (m *StorageBridgeErrorsItems0Reason) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validates this storage bridge errors items0 reason based on context it is used
-func (m *StorageBridgeErrorsItems0Reason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *StorageBridgeErrorsItems0Reason) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *StorageBridgeErrorsItems0Reason) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeErrorsItems0Reason
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1651,8 +1611,8 @@ func (m *StorageBridgeFcPortsItems0Sfp) UnmarshalBinary(b []byte) error {
 // swagger:model StorageBridgeLastReboot
 type StorageBridgeLastReboot struct {
 
-	// reason
-	Reason *StorageBridgeLastRebootReason `json:"reason,omitempty"`
+	// The error message and code explaining why the bridge rebooted.
+	Reason *Error `json:"reason,omitempty"`
 
 	// time
 	// Example: 2020-12-09T00:47:58-05:00
@@ -1746,48 +1706,6 @@ func (m *StorageBridgeLastReboot) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *StorageBridgeLastReboot) UnmarshalBinary(b []byte) error {
 	var res StorageBridgeLastReboot
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// StorageBridgeLastRebootReason storage bridge last reboot reason
-//
-// swagger:model StorageBridgeLastRebootReason
-type StorageBridgeLastRebootReason struct {
-
-	// This field provides the error code explaining why did the bridge reboot.
-	// Example: 39321683
-	Code string `json:"code,omitempty"`
-
-	// This field provides the error message explaining why did the bridge reboot.
-	// Example: FirmwareRestart Command
-	Message string `json:"message,omitempty"`
-}
-
-// Validate validates this storage bridge last reboot reason
-func (m *StorageBridgeLastRebootReason) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validates this storage bridge last reboot reason based on context it is used
-func (m *StorageBridgeLastRebootReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *StorageBridgeLastRebootReason) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *StorageBridgeLastRebootReason) UnmarshalBinary(b []byte) error {
-	var res StorageBridgeLastRebootReason
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

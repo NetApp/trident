@@ -104,8 +104,11 @@ func NewAzureKeyVaultModifyDefault(code int) *AzureKeyVaultModifyDefault {
 | 65537120 | Azure Key Vault is not configured for the given SVM. |
 | 65537504 | Internal error. Failed to store configuration in internal database. |
 | 65537517 | The field \"client_secret\" must be specified. |
+| 65537540 | Invalid client secret. |
 | 65537541 | No inputs were provided for the patch request. |
 | 65537547 | One or more volume encryption keys for encrypted volumes of this data SVM are stored in the key manager configured for the admin SVM. Use the REST API POST method to migrate this data SVM's keys from the admin SVM's key manager to this data SVM's key manager before running the rekey operation. |
+| 65537573 | Invalid client certificate. |
+| 65537577 | The AKV certificate authentication method cannot be configured for the given SVM as not all nodes in the cluster support the AKV certificate authentication. |
 
 */
 type AzureKeyVaultModifyDefault struct {

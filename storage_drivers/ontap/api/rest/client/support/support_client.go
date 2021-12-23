@@ -28,6 +28,22 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	AutoUpdateConfigurationCollectionGet(params *AutoUpdateConfigurationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateConfigurationCollectionGetOK, error)
+
+	AutoUpdateConfigurationGet(params *AutoUpdateConfigurationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateConfigurationGetOK, error)
+
+	AutoUpdateConfigurationModify(params *AutoUpdateConfigurationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateConfigurationModifyOK, error)
+
+	AutoUpdateInfoGet(params *AutoUpdateInfoGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateInfoGetOK, error)
+
+	AutoUpdateInfoModify(params *AutoUpdateInfoModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateInfoModifyOK, error)
+
+	AutoUpdateStatusCollectionGet(params *AutoUpdateStatusCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateStatusCollectionGetOK, error)
+
+	AutoUpdateStatusGet(params *AutoUpdateStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateStatusGetOK, error)
+
+	AutoUpdateStatusModify(params *AutoUpdateStatusModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateStatusModifyOK, error)
+
 	AutosupportCreate(params *AutosupportCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutosupportCreateCreated, error)
 
 	AutosupportGet(params *AutosupportGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutosupportGetOK, error)
@@ -47,6 +63,12 @@ type ClientService interface {
 	ConfigurationBackupGet(params *ConfigurationBackupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupGetOK, error)
 
 	ConfigurationBackupModify(params *ConfigurationBackupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConfigurationBackupModifyOK, error)
+
+	CoredumpCollectionGet(params *CoredumpCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpCollectionGetOK, error)
+
+	CoredumpDelete(params *CoredumpDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpDeleteOK, error)
+
+	CoredumpGet(params *CoredumpGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpGetOK, error)
 
 	EmsConfigGet(params *EmsConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EmsConfigGetOK, error)
 
@@ -109,6 +131,318 @@ type ClientService interface {
 	SnmpUsersModify(params *SnmpUsersModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SnmpUsersModifyOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+  AutoUpdateConfigurationCollectionGet Retrieves the configuration for automatic updates.
+
+*/
+func (a *Client) AutoUpdateConfigurationCollectionGet(params *AutoUpdateConfigurationCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateConfigurationCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAutoUpdateConfigurationCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "auto_update_configuration_collection_get",
+		Method:             "GET",
+		PathPattern:        "/support/auto-update/configurations",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AutoUpdateConfigurationCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AutoUpdateConfigurationCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AutoUpdateConfigurationCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  AutoUpdateConfigurationGet Retrieves the configuration for a specified automatic update.
+
+*/
+func (a *Client) AutoUpdateConfigurationGet(params *AutoUpdateConfigurationGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateConfigurationGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAutoUpdateConfigurationGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "auto_update_configuration_get",
+		Method:             "GET",
+		PathPattern:        "/support/auto-update/configurations/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AutoUpdateConfigurationGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AutoUpdateConfigurationGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AutoUpdateConfigurationGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  AutoUpdateConfigurationModify Updates the configuration for a specified automatic update.
+
+*/
+func (a *Client) AutoUpdateConfigurationModify(params *AutoUpdateConfigurationModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateConfigurationModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAutoUpdateConfigurationModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "auto_update_configuration_modify",
+		Method:             "PATCH",
+		PathPattern:        "/support/auto-update/configurations/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AutoUpdateConfigurationModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AutoUpdateConfigurationModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AutoUpdateConfigurationModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  AutoUpdateInfoGet Retrieves the current status of the automatic update feature and the End User License Agreement (EULA).
+
+*/
+func (a *Client) AutoUpdateInfoGet(params *AutoUpdateInfoGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateInfoGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAutoUpdateInfoGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "auto_update_info_get",
+		Method:             "GET",
+		PathPattern:        "/support/auto-update",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AutoUpdateInfoGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AutoUpdateInfoGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AutoUpdateInfoGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  AutoUpdateInfoModify Updates the current enabled status of the automatic update feature and accepts the EULA.
+
+*/
+func (a *Client) AutoUpdateInfoModify(params *AutoUpdateInfoModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateInfoModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAutoUpdateInfoModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "auto_update_info_modify",
+		Method:             "PATCH",
+		PathPattern:        "/support/auto-update",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AutoUpdateInfoModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AutoUpdateInfoModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AutoUpdateInfoModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  AutoUpdateStatusCollectionGet Retrieves the status of all updates.
+
+*/
+func (a *Client) AutoUpdateStatusCollectionGet(params *AutoUpdateStatusCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateStatusCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAutoUpdateStatusCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "auto_update_status_collection_get",
+		Method:             "GET",
+		PathPattern:        "/support/auto-update/updates",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AutoUpdateStatusCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AutoUpdateStatusCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AutoUpdateStatusCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  AutoUpdateStatusGet Retrieves the status of an update.
+
+*/
+func (a *Client) AutoUpdateStatusGet(params *AutoUpdateStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateStatusGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAutoUpdateStatusGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "auto_update_status_get",
+		Method:             "GET",
+		PathPattern:        "/support/auto-update/updates/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AutoUpdateStatusGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AutoUpdateStatusGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AutoUpdateStatusGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  AutoUpdateStatusModify Perform an action on the update.
+
+*/
+func (a *Client) AutoUpdateStatusModify(params *AutoUpdateStatusModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AutoUpdateStatusModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAutoUpdateStatusModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "auto_update_status_modify",
+		Method:             "PATCH",
+		PathPattern:        "/support/auto-update/updates/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AutoUpdateStatusModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AutoUpdateStatusModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AutoUpdateStatusModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -539,6 +873,129 @@ func (a *Client) ConfigurationBackupModify(params *ConfigurationBackupModifyPara
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ConfigurationBackupModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CoredumpCollectionGet Retrieves a collection of coredumps.
+### Related ONTAP commands
+* `system node coredump show`
+
+*/
+func (a *Client) CoredumpCollectionGet(params *CoredumpCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCoredumpCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "coredump_collection_get",
+		Method:             "GET",
+		PathPattern:        "/support/coredump/coredumps",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CoredumpCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CoredumpCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CoredumpCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CoredumpDelete Deletes a core dump.
+### Related ONTAP commands
+* `system node coredump delete`
+
+*/
+func (a *Client) CoredumpDelete(params *CoredumpDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCoredumpDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "coredump_delete",
+		Method:             "DELETE",
+		PathPattern:        "/support/coredump/coredumps/{node.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CoredumpDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CoredumpDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CoredumpDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CoredumpGet Retrieves a specific core dump.
+### Related ONTAP commands
+* `system node coredump show`
+
+*/
+func (a *Client) CoredumpGet(params *CoredumpGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CoredumpGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCoredumpGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "coredump_get",
+		Method:             "GET",
+		PathPattern:        "/support/coredump/coredumps/{node.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CoredumpGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CoredumpGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CoredumpGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -1059,8 +1516,6 @@ func (a *Client) EmsFilterGet(params *EmsFilterGetParams, authInfo runtime.Clien
 * `new_name` - New string that uniquely identifies a filter.
 * `rules` - New list of criteria used to match the filter with an event. The existing list is discarded.
 ### Related ONTAP commands
-* `event filter create`
-* `event filter delete`
 * `event filter rename`
 * `event filter rule add`
 * `event filter rule delete`
@@ -1400,10 +1855,11 @@ func (a *Client) SnmpGet(params *SnmpGetParams, authInfo runtime.ClientAuthInfoW
 }
 
 /*
-  SnmpModify Updates the cluster wide SNMP configuration, such as enabling or disabling SNMP and enabling or disabling authentication traps.
+  SnmpModify Updates the cluster wide SNMP configuration, such as, enabling or disabling SNMP, enabling or disabling SNMP traps, and enabling or disabling authentication traps. It can also be used to trigger an SNMP test trap.
 ### Related ONTAP commands
 * `options snmp.enable`
 * `system snmp authtrap`
+* `system snmp init`
 ### Learn more
 * [`DOC /support/snmp`](#docs-support-support_snmp)
 

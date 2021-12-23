@@ -72,6 +72,12 @@ type SvmCollectionGetParams struct {
 	*/
 	AggregatesUUIDQueryParameter *string
 
+	/* AntiRansomwareDefaultVolumeState.
+
+	   Filter by anti_ransomware_default_volume_state
+	*/
+	AntiRansomwareDefaultVolumeStateQueryParameter *string
+
 	/* CertificateUUID.
 
 	   Filter by certificate.uuid
@@ -233,6 +239,12 @@ type SvmCollectionGetParams struct {
 	   Filter by name
 	*/
 	NameQueryParameter *string
+
+	/* NdmpAllowed.
+
+	   Filter by ndmp.allowed
+	*/
+	NdmpAllowedQueryParameter *bool
 
 	/* NfsAllowed.
 
@@ -469,6 +481,17 @@ func (o *SvmCollectionGetParams) WithAggregatesUUIDQueryParameter(aggregatesUUID
 // SetAggregatesUUIDQueryParameter adds the aggregatesUuid to the svm collection get params
 func (o *SvmCollectionGetParams) SetAggregatesUUIDQueryParameter(aggregatesUUID *string) {
 	o.AggregatesUUIDQueryParameter = aggregatesUUID
+}
+
+// WithAntiRansomwareDefaultVolumeStateQueryParameter adds the antiRansomwareDefaultVolumeState to the svm collection get params
+func (o *SvmCollectionGetParams) WithAntiRansomwareDefaultVolumeStateQueryParameter(antiRansomwareDefaultVolumeState *string) *SvmCollectionGetParams {
+	o.SetAntiRansomwareDefaultVolumeStateQueryParameter(antiRansomwareDefaultVolumeState)
+	return o
+}
+
+// SetAntiRansomwareDefaultVolumeStateQueryParameter adds the antiRansomwareDefaultVolumeState to the svm collection get params
+func (o *SvmCollectionGetParams) SetAntiRansomwareDefaultVolumeStateQueryParameter(antiRansomwareDefaultVolumeState *string) {
+	o.AntiRansomwareDefaultVolumeStateQueryParameter = antiRansomwareDefaultVolumeState
 }
 
 // WithCertificateUUIDQueryParameter adds the certificateUUID to the svm collection get params
@@ -766,6 +789,17 @@ func (o *SvmCollectionGetParams) WithNameQueryParameter(name *string) *SvmCollec
 // SetNameQueryParameter adds the name to the svm collection get params
 func (o *SvmCollectionGetParams) SetNameQueryParameter(name *string) {
 	o.NameQueryParameter = name
+}
+
+// WithNdmpAllowedQueryParameter adds the ndmpAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) WithNdmpAllowedQueryParameter(ndmpAllowed *bool) *SvmCollectionGetParams {
+	o.SetNdmpAllowedQueryParameter(ndmpAllowed)
+	return o
+}
+
+// SetNdmpAllowedQueryParameter adds the ndmpAllowed to the svm collection get params
+func (o *SvmCollectionGetParams) SetNdmpAllowedQueryParameter(ndmpAllowed *bool) {
+	o.NdmpAllowedQueryParameter = ndmpAllowed
 }
 
 // WithNfsAllowedQueryParameter adds the nfsAllowed to the svm collection get params
@@ -1069,6 +1103,23 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qAggregatesUUID != "" {
 
 			if err := r.SetQueryParam("aggregates.uuid", qAggregatesUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareDefaultVolumeStateQueryParameter != nil {
+
+		// query param anti_ransomware_default_volume_state
+		var qrAntiRansomwareDefaultVolumeState string
+
+		if o.AntiRansomwareDefaultVolumeStateQueryParameter != nil {
+			qrAntiRansomwareDefaultVolumeState = *o.AntiRansomwareDefaultVolumeStateQueryParameter
+		}
+		qAntiRansomwareDefaultVolumeState := qrAntiRansomwareDefaultVolumeState
+		if qAntiRansomwareDefaultVolumeState != "" {
+
+			if err := r.SetQueryParam("anti_ransomware_default_volume_state", qAntiRansomwareDefaultVolumeState); err != nil {
 				return err
 			}
 		}
@@ -1522,6 +1573,23 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qName != "" {
 
 			if err := r.SetQueryParam("name", qName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NdmpAllowedQueryParameter != nil {
+
+		// query param ndmp.allowed
+		var qrNdmpAllowed bool
+
+		if o.NdmpAllowedQueryParameter != nil {
+			qrNdmpAllowed = *o.NdmpAllowedQueryParameter
+		}
+		qNdmpAllowed := swag.FormatBool(qrNdmpAllowed)
+		if qNdmpAllowed != "" {
+
+			if err := r.SetQueryParam("ndmp.allowed", qNdmpAllowed); err != nil {
 				return err
 			}
 		}

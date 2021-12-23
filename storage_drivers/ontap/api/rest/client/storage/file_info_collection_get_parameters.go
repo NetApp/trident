@@ -179,6 +179,18 @@ type FileInfoCollectionGetParams struct {
 	*/
 	ChangedTimeQueryParameter *string
 
+	/* ConstituentName.
+
+	   Filter by constituent.name
+	*/
+	ConstituentNameQueryParameter *string
+
+	/* ConstituentUUID.
+
+	   Filter by constituent.uuid
+	*/
+	ConstituentUUIDQueryParameter *string
+
 	/* CreationTime.
 
 	   Filter by creation_time
@@ -635,6 +647,28 @@ func (o *FileInfoCollectionGetParams) WithChangedTimeQueryParameter(changedTime 
 // SetChangedTimeQueryParameter adds the changedTime to the file info collection get params
 func (o *FileInfoCollectionGetParams) SetChangedTimeQueryParameter(changedTime *string) {
 	o.ChangedTimeQueryParameter = changedTime
+}
+
+// WithConstituentNameQueryParameter adds the constituentName to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithConstituentNameQueryParameter(constituentName *string) *FileInfoCollectionGetParams {
+	o.SetConstituentNameQueryParameter(constituentName)
+	return o
+}
+
+// SetConstituentNameQueryParameter adds the constituentName to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetConstituentNameQueryParameter(constituentName *string) {
+	o.ConstituentNameQueryParameter = constituentName
+}
+
+// WithConstituentUUIDQueryParameter adds the constituentUUID to the file info collection get params
+func (o *FileInfoCollectionGetParams) WithConstituentUUIDQueryParameter(constituentUUID *string) *FileInfoCollectionGetParams {
+	o.SetConstituentUUIDQueryParameter(constituentUUID)
+	return o
+}
+
+// SetConstituentUUIDQueryParameter adds the constituentUuid to the file info collection get params
+func (o *FileInfoCollectionGetParams) SetConstituentUUIDQueryParameter(constituentUUID *string) {
+	o.ConstituentUUIDQueryParameter = constituentUUID
 }
 
 // WithCreationTimeQueryParameter adds the creationTime to the file info collection get params
@@ -1281,6 +1315,40 @@ func (o *FileInfoCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qChangedTime != "" {
 
 			if err := r.SetQueryParam("changed_time", qChangedTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentNameQueryParameter != nil {
+
+		// query param constituent.name
+		var qrConstituentName string
+
+		if o.ConstituentNameQueryParameter != nil {
+			qrConstituentName = *o.ConstituentNameQueryParameter
+		}
+		qConstituentName := qrConstituentName
+		if qConstituentName != "" {
+
+			if err := r.SetQueryParam("constituent.name", qConstituentName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentUUIDQueryParameter != nil {
+
+		// query param constituent.uuid
+		var qrConstituentUUID string
+
+		if o.ConstituentUUIDQueryParameter != nil {
+			qrConstituentUUID = *o.ConstituentUUIDQueryParameter
+		}
+		qConstituentUUID := qrConstituentUUID
+		if qConstituentUUID != "" {
+
+			if err := r.SetQueryParam("constituent.uuid", qConstituentUUID); err != nil {
 				return err
 			}
 		}

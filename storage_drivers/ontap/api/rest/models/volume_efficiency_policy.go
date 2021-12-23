@@ -26,7 +26,7 @@ type VolumeEfficiencyPolicy struct {
 	// A comment associated with the volume efficiency policy.
 	Comment string `json:"comment,omitempty"`
 
-	// This field is used with the policy types "scheduled" and "auto" to indicate the allowed duration for a session, in hours. Possible value is a number between 0 and 999 inclusive. Default is unlimited indicated by value 0.
+	// This field is used with the policy type "scheduled" to indicate the allowed duration for a session, in hours. Possible value is a number between 0 and 999 inclusive. Default is unlimited indicated by value 0.
 	// Example: 5
 	Duration int64 `json:"duration,omitempty"`
 
@@ -53,7 +53,7 @@ type VolumeEfficiencyPolicy struct {
 	Svm *VolumeEfficiencyPolicySvm `json:"svm,omitempty"`
 
 	// Type of volume efficiency policy.
-	// Enum: [threshold scheduled auto]
+	// Enum: [threshold scheduled]
 	Type string `json:"type,omitempty"`
 
 	// Unique identifier of volume efficiency policy.
@@ -203,7 +203,7 @@ var volumeEfficiencyPolicyTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["threshold","scheduled","auto"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["threshold","scheduled"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -232,16 +232,6 @@ const (
 	// END DEBUGGING
 	// VolumeEfficiencyPolicyTypeScheduled captures enum value "scheduled"
 	VolumeEfficiencyPolicyTypeScheduled string = "scheduled"
-
-	// BEGIN DEBUGGING
-	// volume_efficiency_policy
-	// VolumeEfficiencyPolicy
-	// type
-	// Type
-	// auto
-	// END DEBUGGING
-	// VolumeEfficiencyPolicyTypeAuto captures enum value "auto"
-	VolumeEfficiencyPolicyTypeAuto string = "auto"
 )
 
 // prop value enum
@@ -484,7 +474,7 @@ func (m *VolumeEfficiencyPolicySchedule) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeEfficiencyPolicySvm SVM, applies only to SVM-scoped objects.
+// VolumeEfficiencyPolicySvm volume efficiency policy svm
 //
 // swagger:model VolumeEfficiencyPolicySvm
 type VolumeEfficiencyPolicySvm struct {

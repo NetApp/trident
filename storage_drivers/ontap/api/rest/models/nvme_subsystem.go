@@ -51,7 +51,7 @@ type NvmeSubsystem struct {
 
 	// The host operating system of the NVMe subsystem's hosts. Required in POST.
 	//
-	// Enum: [linux vmware windows]
+	// Enum: [aix linux vmware windows]
 	OsType string `json:"os_type,omitempty"`
 
 	// The serial number of the NVMe subsystem.
@@ -234,7 +234,7 @@ var nvmeSubsystemTypeOsTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["linux","vmware","windows"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["aix","linux","vmware","windows"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -243,6 +243,16 @@ func init() {
 }
 
 const (
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem
+	// NvmeSubsystem
+	// os_type
+	// OsType
+	// aix
+	// END DEBUGGING
+	// NvmeSubsystemOsTypeAix captures enum value "aix"
+	NvmeSubsystemOsTypeAix string = "aix"
 
 	// BEGIN DEBUGGING
 	// nvme_subsystem

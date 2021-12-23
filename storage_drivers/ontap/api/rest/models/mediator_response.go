@@ -308,6 +308,11 @@ type MediatorResponseRecordsItems0 struct {
 	// peer cluster
 	PeerCluster *MediatorResponseRecordsItems0PeerCluster `json:"peer_cluster,omitempty"`
 
+	// Indicates the mediator connectivity status of the peer cluster. Possible values are connected, unreachable, unknown.
+	// Example: connected
+	// Read Only: true
+	PeerMediatorConnectivity string `json:"peer_mediator_connectivity,omitempty"`
+
 	// The REST server's port number on the mediator.
 	// Example: 31784
 	Port *int64 `json:"port,omitempty"`
@@ -406,6 +411,10 @@ func (m *MediatorResponseRecordsItems0) ContextValidate(ctx context.Context, for
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePeerMediatorConnectivity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateReachable(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -443,6 +452,15 @@ func (m *MediatorResponseRecordsItems0) contextValidatePeerCluster(ctx context.C
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *MediatorResponseRecordsItems0) contextValidatePeerMediatorConnectivity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "peer_mediator_connectivity", "body", string(m.PeerMediatorConnectivity)); err != nil {
+		return err
 	}
 
 	return nil

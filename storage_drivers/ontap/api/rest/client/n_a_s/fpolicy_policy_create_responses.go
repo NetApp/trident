@@ -87,6 +87,7 @@ func NewFpolicyPolicyCreateDefault(code int) *FpolicyPolicyCreateDefault {
 | ---------- | ----------- |
 | 9765027    | FPolicy creation is successful but it cannot be enabled as the priority is already in use by another policy |
 | 9764898    | An FPolicy policy cannot be created without defining its scope |
+| 9765037    | FPolicy creation failed as passthrough-read cannot be enabled for policy without privileged user |
 
 */
 type FpolicyPolicyCreateDefault struct {

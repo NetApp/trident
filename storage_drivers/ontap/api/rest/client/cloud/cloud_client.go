@@ -115,8 +115,7 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
   - _storage.googleapis.com_ - if `provider_type` is _GoogleCloud_
 * `ssl_enabled` - _true_
 * `port`
-  - _443_ if `ssl_enabled` is _true_ and `provider_type` is not _SGWS_
-  - _8082_ if `ssl_enabled` is _true_ and `provider_type` is _SGWS_
+  - _443_ if `ssl_enabled` is _true_
   - _80_ if `ssl_enabled` is _false_ and `provider_type` is not _SGWS_
   - _8084_ if `ssl_enabled` is _false_ and `provider_type` is _SGWS_
 * `ipspace` - _Default_

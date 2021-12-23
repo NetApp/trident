@@ -114,6 +114,12 @@ type AuditCollectionGetParams struct {
 	*/
 	FieldsQueryParameter []string
 
+	/* Guarantee.
+
+	   Filter by guarantee
+	*/
+	GuaranteeQueryParameter *bool
+
 	/* LogFormat.
 
 	   Filter by log.format
@@ -378,6 +384,17 @@ func (o *AuditCollectionGetParams) WithFieldsQueryParameter(fields []string) *Au
 // SetFieldsQueryParameter adds the fields to the audit collection get params
 func (o *AuditCollectionGetParams) SetFieldsQueryParameter(fields []string) {
 	o.FieldsQueryParameter = fields
+}
+
+// WithGuaranteeQueryParameter adds the guarantee to the audit collection get params
+func (o *AuditCollectionGetParams) WithGuaranteeQueryParameter(guarantee *bool) *AuditCollectionGetParams {
+	o.SetGuaranteeQueryParameter(guarantee)
+	return o
+}
+
+// SetGuaranteeQueryParameter adds the guarantee to the audit collection get params
+func (o *AuditCollectionGetParams) SetGuaranteeQueryParameter(guarantee *bool) {
+	o.GuaranteeQueryParameter = guarantee
 }
 
 // WithLogFormatQueryParameter adds the logFormat to the audit collection get params
@@ -708,6 +725,23 @@ func (o *AuditCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.GuaranteeQueryParameter != nil {
+
+		// query param guarantee
+		var qrGuarantee bool
+
+		if o.GuaranteeQueryParameter != nil {
+			qrGuarantee = *o.GuaranteeQueryParameter
+		}
+		qGuarantee := swag.FormatBool(qrGuarantee)
+		if qGuarantee != "" {
+
+			if err := r.SetQueryParam("guarantee", qGuarantee); err != nil {
+				return err
+			}
 		}
 	}
 

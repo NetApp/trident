@@ -1477,7 +1477,7 @@ type MetroclusterMccipPortsItems0 struct {
 	// VLAN ID
 	// Example: 200
 	// Maximum: 4095
-	// Minimum: 101
+	// Minimum: 10
 	VlanID int64 `json:"vlan_id,omitempty"`
 }
 
@@ -1542,7 +1542,7 @@ func (m *MetroclusterMccipPortsItems0) validateVlanID(formats strfmt.Registry) e
 		return nil
 	}
 
-	if err := validate.MinimumInt("vlan_id", "body", m.VlanID, 101, false); err != nil {
+	if err := validate.MinimumInt("vlan_id", "body", m.VlanID, 10, false); err != nil {
 		return err
 	}
 
@@ -1996,6 +1996,11 @@ type MetroclusterMediator struct {
 	// peer cluster
 	PeerCluster *MetroclusterMediatorPeerCluster `json:"peer_cluster,omitempty"`
 
+	// Indicates the mediator connectivity status of the peer cluster. Possible values are connected, unreachable, unknown.
+	// Example: connected
+	// Read Only: true
+	PeerMediatorConnectivity string `json:"peer_mediator_connectivity,omitempty"`
+
 	// The REST server's port number on the mediator.
 	// Example: 31784
 	Port *int64 `json:"port,omitempty"`
@@ -2094,6 +2099,10 @@ func (m *MetroclusterMediator) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePeerMediatorConnectivity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateReachable(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -2131,6 +2140,15 @@ func (m *MetroclusterMediator) contextValidatePeerCluster(ctx context.Context, f
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterMediator) contextValidatePeerMediatorConnectivity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "mediator"+"."+"peer_mediator_connectivity", "body", string(m.PeerMediatorConnectivity)); err != nil {
+		return err
 	}
 
 	return nil

@@ -19,11 +19,6 @@ import (
 // swagger:model ndmp_mover_mode
 type NdmpMoverMode string
 
-func NewNdmpMoverMode(value NdmpMoverMode) *NdmpMoverMode {
-	v := value
-	return &v
-}
-
 const (
 
 	// NdmpMoverModeRead captures enum value "read"

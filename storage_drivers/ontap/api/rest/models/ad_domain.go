@@ -27,7 +27,7 @@ type AdDomain struct {
 	// The account password used to add this CIFS server to the Active Directory. This is not audited.
 	Password string `json:"password,omitempty"`
 
-	// The user account used to add this CIFS server to the Active Directory. POST and DELETE only.
+	// The user account used to add this CIFS server to the Active Directory.
 	User string `json:"user,omitempty"`
 }
 

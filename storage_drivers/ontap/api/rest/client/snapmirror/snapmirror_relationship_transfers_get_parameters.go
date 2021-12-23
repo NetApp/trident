@@ -72,6 +72,24 @@ type SnapmirrorRelationshipTransfersGetParams struct {
 	*/
 	CheckpointSizeQueryParameter *int64
 
+	/* EndTime.
+
+	   Filter by end_time
+	*/
+	EndTimeQueryParameter *string
+
+	/* ErrorInfoCode.
+
+	   Filter by error_info.code
+	*/
+	ErrorInfoCodeQueryParameter *int64
+
+	/* ErrorInfoMessage.
+
+	   Filter by error_info.message
+	*/
+	ErrorInfoMessageQueryParameter *string
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -178,6 +196,12 @@ type SnapmirrorRelationshipTransfersGetParams struct {
 	*/
 	ThrottleQueryParameter *int64
 
+	/* TotalDuration.
+
+	   Filter by total_duration
+	*/
+	TotalDurationQueryParameter *string
+
 	/* UUID.
 
 	   Filter by uuid
@@ -271,6 +295,39 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WithCheckpointSizeQueryParame
 // SetCheckpointSizeQueryParameter adds the checkpointSize to the snapmirror relationship transfers get params
 func (o *SnapmirrorRelationshipTransfersGetParams) SetCheckpointSizeQueryParameter(checkpointSize *int64) {
 	o.CheckpointSizeQueryParameter = checkpointSize
+}
+
+// WithEndTimeQueryParameter adds the endTime to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithEndTimeQueryParameter(endTime *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetEndTimeQueryParameter(endTime)
+	return o
+}
+
+// SetEndTimeQueryParameter adds the endTime to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetEndTimeQueryParameter(endTime *string) {
+	o.EndTimeQueryParameter = endTime
+}
+
+// WithErrorInfoCodeQueryParameter adds the errorInfoCode to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithErrorInfoCodeQueryParameter(errorInfoCode *int64) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetErrorInfoCodeQueryParameter(errorInfoCode)
+	return o
+}
+
+// SetErrorInfoCodeQueryParameter adds the errorInfoCode to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetErrorInfoCodeQueryParameter(errorInfoCode *int64) {
+	o.ErrorInfoCodeQueryParameter = errorInfoCode
+}
+
+// WithErrorInfoMessageQueryParameter adds the errorInfoMessage to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithErrorInfoMessageQueryParameter(errorInfoMessage *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetErrorInfoMessageQueryParameter(errorInfoMessage)
+	return o
+}
+
+// SetErrorInfoMessageQueryParameter adds the errorInfoMessage to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetErrorInfoMessageQueryParameter(errorInfoMessage *string) {
+	o.ErrorInfoMessageQueryParameter = errorInfoMessage
 }
 
 // WithFieldsQueryParameter adds the fields to the snapmirror relationship transfers get params
@@ -460,6 +517,17 @@ func (o *SnapmirrorRelationshipTransfersGetParams) SetThrottleQueryParameter(thr
 	o.ThrottleQueryParameter = throttle
 }
 
+// WithTotalDurationQueryParameter adds the totalDuration to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) WithTotalDurationQueryParameter(totalDuration *string) *SnapmirrorRelationshipTransfersGetParams {
+	o.SetTotalDurationQueryParameter(totalDuration)
+	return o
+}
+
+// SetTotalDurationQueryParameter adds the totalDuration to the snapmirror relationship transfers get params
+func (o *SnapmirrorRelationshipTransfersGetParams) SetTotalDurationQueryParameter(totalDuration *string) {
+	o.TotalDurationQueryParameter = totalDuration
+}
+
 // WithUUIDQueryParameter adds the uuid to the snapmirror relationship transfers get params
 func (o *SnapmirrorRelationshipTransfersGetParams) WithUUIDQueryParameter(uuid *string) *SnapmirrorRelationshipTransfersGetParams {
 	o.SetUUIDQueryParameter(uuid)
@@ -508,6 +576,57 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		if qCheckpointSize != "" {
 
 			if err := r.SetQueryParam("checkpoint_size", qCheckpointSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EndTimeQueryParameter != nil {
+
+		// query param end_time
+		var qrEndTime string
+
+		if o.EndTimeQueryParameter != nil {
+			qrEndTime = *o.EndTimeQueryParameter
+		}
+		qEndTime := qrEndTime
+		if qEndTime != "" {
+
+			if err := r.SetQueryParam("end_time", qEndTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ErrorInfoCodeQueryParameter != nil {
+
+		// query param error_info.code
+		var qrErrorInfoCode int64
+
+		if o.ErrorInfoCodeQueryParameter != nil {
+			qrErrorInfoCode = *o.ErrorInfoCodeQueryParameter
+		}
+		qErrorInfoCode := swag.FormatInt64(qrErrorInfoCode)
+		if qErrorInfoCode != "" {
+
+			if err := r.SetQueryParam("error_info.code", qErrorInfoCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ErrorInfoMessageQueryParameter != nil {
+
+		// query param error_info.message
+		var qrErrorInfoMessage string
+
+		if o.ErrorInfoMessageQueryParameter != nil {
+			qrErrorInfoMessage = *o.ErrorInfoMessageQueryParameter
+		}
+		qErrorInfoMessage := qrErrorInfoMessage
+		if qErrorInfoMessage != "" {
+
+			if err := r.SetQueryParam("error_info.message", qErrorInfoMessage); err != nil {
 				return err
 			}
 		}
@@ -773,6 +892,23 @@ func (o *SnapmirrorRelationshipTransfersGetParams) WriteToRequest(r runtime.Clie
 		if qThrottle != "" {
 
 			if err := r.SetQueryParam("throttle", qThrottle); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TotalDurationQueryParameter != nil {
+
+		// query param total_duration
+		var qrTotalDuration string
+
+		if o.TotalDurationQueryParameter != nil {
+			qrTotalDuration = *o.TotalDurationQueryParameter
+		}
+		qTotalDuration := qrTotalDuration
+		if qTotalDuration != "" {
+
+			if err := r.SetQueryParam("total_duration", qTotalDuration); err != nil {
 				return err
 			}
 		}

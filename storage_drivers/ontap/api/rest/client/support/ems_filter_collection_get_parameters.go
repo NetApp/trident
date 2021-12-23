@@ -130,6 +130,12 @@ type EmsFilterCollectionGetParams struct {
 	*/
 	RulesTypeQueryParameter *string
 
+	/* SystemDefined.
+
+	   Filter by system_defined
+	*/
+	SystemDefinedQueryParameter *bool
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -318,6 +324,17 @@ func (o *EmsFilterCollectionGetParams) SetRulesTypeQueryParameter(rulesType *str
 	o.RulesTypeQueryParameter = rulesType
 }
 
+// WithSystemDefinedQueryParameter adds the systemDefined to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) WithSystemDefinedQueryParameter(systemDefined *bool) *EmsFilterCollectionGetParams {
+	o.SetSystemDefinedQueryParameter(systemDefined)
+	return o
+}
+
+// SetSystemDefinedQueryParameter adds the systemDefined to the ems filter collection get params
+func (o *EmsFilterCollectionGetParams) SetSystemDefinedQueryParameter(systemDefined *bool) {
+	o.SystemDefinedQueryParameter = systemDefined
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -496,6 +513,23 @@ func (o *EmsFilterCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qRulesType != "" {
 
 			if err := r.SetQueryParam("rules.type", qRulesType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SystemDefinedQueryParameter != nil {
+
+		// query param system_defined
+		var qrSystemDefined bool
+
+		if o.SystemDefinedQueryParameter != nil {
+			qrSystemDefined = *o.SystemDefinedQueryParameter
+		}
+		qSystemDefined := swag.FormatBool(qrSystemDefined)
+		if qSystemDefined != "" {
+
+			if err := r.SetQueryParam("system_defined", qSystemDefined); err != nil {
 				return err
 			}
 		}

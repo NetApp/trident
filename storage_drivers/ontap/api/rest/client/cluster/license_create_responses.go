@@ -101,14 +101,19 @@ func NewLicenseCreateDefault(code int) *LicenseCreateDefault {
 | 1115159    | License is not in an acceptable format |
 | 1115160    | License has already expired |
 | 1115164    | Minimum ONTAP version requirements not met |
+| 1115165    | Minimum ONTAP version requirements are not met for license type enabled |
+| 1115166    | Minimum ONTAP version requirements are not met for license protocol SEC-COMP-BNDL-ENBLD |
 | 1115179    | FlexCache is not supported on this system |
 | 1115180    | FlexCache is not supported on cloud systems |
 | 1115407    | Capacity pool licenses cannot be installed directly |
 | 1115427    | License is incompatible with capacity pools licensing mode |
 | 1115562    | One or more errors occurred when installing a NLFv2 license |
 | 1115563    | Package details and serial number of license contained within the NLFv2 failure |
+| 1115564    | Package cannot be deleted individually as it part of a bundle |
+| 1115565    | NLFv2 install failed as the license serial number is already in use |
 | 1115616    | Package details and serial number of license included in the install conflict |
 | 1115617    | NLFv2 license install failed with summary of conflicting licenses |
+| 1115618    | NLFv2 license install failed as a license with newer timestamp already exists |
 | 66846818   | Failed to interpret FlexCache license information |
 | 66846821   | FlexCache is not supported on cloud systems |
 | 66846822   | Invalid FlexCache capacity information provided |

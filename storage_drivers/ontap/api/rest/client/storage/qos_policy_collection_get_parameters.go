@@ -66,17 +66,35 @@ type QosPolicyCollectionGetParams struct {
 	*/
 	AdaptiveAbsoluteMinIopsQueryParameter *int64
 
+	/* AdaptiveBlockSize.
+
+	   Filter by adaptive.block_size
+	*/
+	AdaptiveBlockSizeQueryParameter *string
+
 	/* AdaptiveExpectedIops.
 
 	   Filter by adaptive.expected_iops
 	*/
 	AdaptiveExpectedIopsQueryParameter *int64
 
+	/* AdaptiveExpectedIopsAllocation.
+
+	   Filter by adaptive.expected_iops_allocation
+	*/
+	AdaptiveExpectedIopsAllocationQueryParameter *string
+
 	/* AdaptivePeakIops.
 
 	   Filter by adaptive.peak_iops
 	*/
 	AdaptivePeakIopsQueryParameter *int64
+
+	/* AdaptivePeakIopsAllocation.
+
+	   Filter by adaptive.peak_iops_allocation
+	*/
+	AdaptivePeakIopsAllocationQueryParameter *string
 
 	/* Fields.
 
@@ -137,6 +155,18 @@ type QosPolicyCollectionGetParams struct {
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
 	OrderByQueryParameter []string
+
+	/* Pgid.
+
+	   Filter by pgid
+	*/
+	PgIDQueryParameter *int64
+
+	/* PolicyClass.
+
+	   Filter by policy_class
+	*/
+	PolicyClassQueryParameter *string
 
 	/* ReturnRecords.
 
@@ -250,6 +280,17 @@ func (o *QosPolicyCollectionGetParams) SetAdaptiveAbsoluteMinIopsQueryParameter(
 	o.AdaptiveAbsoluteMinIopsQueryParameter = adaptiveAbsoluteMinIops
 }
 
+// WithAdaptiveBlockSizeQueryParameter adds the adaptiveBlockSize to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithAdaptiveBlockSizeQueryParameter(adaptiveBlockSize *string) *QosPolicyCollectionGetParams {
+	o.SetAdaptiveBlockSizeQueryParameter(adaptiveBlockSize)
+	return o
+}
+
+// SetAdaptiveBlockSizeQueryParameter adds the adaptiveBlockSize to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetAdaptiveBlockSizeQueryParameter(adaptiveBlockSize *string) {
+	o.AdaptiveBlockSizeQueryParameter = adaptiveBlockSize
+}
+
 // WithAdaptiveExpectedIopsQueryParameter adds the adaptiveExpectedIops to the qos policy collection get params
 func (o *QosPolicyCollectionGetParams) WithAdaptiveExpectedIopsQueryParameter(adaptiveExpectedIops *int64) *QosPolicyCollectionGetParams {
 	o.SetAdaptiveExpectedIopsQueryParameter(adaptiveExpectedIops)
@@ -261,6 +302,17 @@ func (o *QosPolicyCollectionGetParams) SetAdaptiveExpectedIopsQueryParameter(ada
 	o.AdaptiveExpectedIopsQueryParameter = adaptiveExpectedIops
 }
 
+// WithAdaptiveExpectedIopsAllocationQueryParameter adds the adaptiveExpectedIopsAllocation to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithAdaptiveExpectedIopsAllocationQueryParameter(adaptiveExpectedIopsAllocation *string) *QosPolicyCollectionGetParams {
+	o.SetAdaptiveExpectedIopsAllocationQueryParameter(adaptiveExpectedIopsAllocation)
+	return o
+}
+
+// SetAdaptiveExpectedIopsAllocationQueryParameter adds the adaptiveExpectedIopsAllocation to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetAdaptiveExpectedIopsAllocationQueryParameter(adaptiveExpectedIopsAllocation *string) {
+	o.AdaptiveExpectedIopsAllocationQueryParameter = adaptiveExpectedIopsAllocation
+}
+
 // WithAdaptivePeakIopsQueryParameter adds the adaptivePeakIops to the qos policy collection get params
 func (o *QosPolicyCollectionGetParams) WithAdaptivePeakIopsQueryParameter(adaptivePeakIops *int64) *QosPolicyCollectionGetParams {
 	o.SetAdaptivePeakIopsQueryParameter(adaptivePeakIops)
@@ -270,6 +322,17 @@ func (o *QosPolicyCollectionGetParams) WithAdaptivePeakIopsQueryParameter(adapti
 // SetAdaptivePeakIopsQueryParameter adds the adaptivePeakIops to the qos policy collection get params
 func (o *QosPolicyCollectionGetParams) SetAdaptivePeakIopsQueryParameter(adaptivePeakIops *int64) {
 	o.AdaptivePeakIopsQueryParameter = adaptivePeakIops
+}
+
+// WithAdaptivePeakIopsAllocationQueryParameter adds the adaptivePeakIopsAllocation to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithAdaptivePeakIopsAllocationQueryParameter(adaptivePeakIopsAllocation *string) *QosPolicyCollectionGetParams {
+	o.SetAdaptivePeakIopsAllocationQueryParameter(adaptivePeakIopsAllocation)
+	return o
+}
+
+// SetAdaptivePeakIopsAllocationQueryParameter adds the adaptivePeakIopsAllocation to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetAdaptivePeakIopsAllocationQueryParameter(adaptivePeakIopsAllocation *string) {
+	o.AdaptivePeakIopsAllocationQueryParameter = adaptivePeakIopsAllocation
 }
 
 // WithFieldsQueryParameter adds the fields to the qos policy collection get params
@@ -382,6 +445,28 @@ func (o *QosPolicyCollectionGetParams) SetOrderByQueryParameter(orderBy []string
 	o.OrderByQueryParameter = orderBy
 }
 
+// WithPgIDQueryParameter adds the pgid to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithPgIDQueryParameter(pgid *int64) *QosPolicyCollectionGetParams {
+	o.SetPgIDQueryParameter(pgid)
+	return o
+}
+
+// SetPgIDQueryParameter adds the pgid to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetPgIDQueryParameter(pgid *int64) {
+	o.PgIDQueryParameter = pgid
+}
+
+// WithPolicyClassQueryParameter adds the policyClass to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithPolicyClassQueryParameter(policyClass *string) *QosPolicyCollectionGetParams {
+	o.SetPolicyClassQueryParameter(policyClass)
+	return o
+}
+
+// SetPolicyClassQueryParameter adds the policyClass to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetPolicyClassQueryParameter(policyClass *string) {
+	o.PolicyClassQueryParameter = policyClass
+}
+
 // WithReturnRecordsQueryParameter adds the returnRecords to the qos policy collection get params
 func (o *QosPolicyCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *QosPolicyCollectionGetParams {
 	o.SetReturnRecordsQueryParameter(returnRecords)
@@ -462,6 +547,23 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.AdaptiveBlockSizeQueryParameter != nil {
+
+		// query param adaptive.block_size
+		var qrAdaptiveBlockSize string
+
+		if o.AdaptiveBlockSizeQueryParameter != nil {
+			qrAdaptiveBlockSize = *o.AdaptiveBlockSizeQueryParameter
+		}
+		qAdaptiveBlockSize := qrAdaptiveBlockSize
+		if qAdaptiveBlockSize != "" {
+
+			if err := r.SetQueryParam("adaptive.block_size", qAdaptiveBlockSize); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.AdaptiveExpectedIopsQueryParameter != nil {
 
 		// query param adaptive.expected_iops
@@ -479,6 +581,23 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.AdaptiveExpectedIopsAllocationQueryParameter != nil {
+
+		// query param adaptive.expected_iops_allocation
+		var qrAdaptiveExpectedIopsAllocation string
+
+		if o.AdaptiveExpectedIopsAllocationQueryParameter != nil {
+			qrAdaptiveExpectedIopsAllocation = *o.AdaptiveExpectedIopsAllocationQueryParameter
+		}
+		qAdaptiveExpectedIopsAllocation := qrAdaptiveExpectedIopsAllocation
+		if qAdaptiveExpectedIopsAllocation != "" {
+
+			if err := r.SetQueryParam("adaptive.expected_iops_allocation", qAdaptiveExpectedIopsAllocation); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.AdaptivePeakIopsQueryParameter != nil {
 
 		// query param adaptive.peak_iops
@@ -491,6 +610,23 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qAdaptivePeakIops != "" {
 
 			if err := r.SetQueryParam("adaptive.peak_iops", qAdaptivePeakIops); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AdaptivePeakIopsAllocationQueryParameter != nil {
+
+		// query param adaptive.peak_iops_allocation
+		var qrAdaptivePeakIopsAllocation string
+
+		if o.AdaptivePeakIopsAllocationQueryParameter != nil {
+			qrAdaptivePeakIopsAllocation = *o.AdaptivePeakIopsAllocationQueryParameter
+		}
+		qAdaptivePeakIopsAllocation := qrAdaptivePeakIopsAllocation
+		if qAdaptivePeakIopsAllocation != "" {
+
+			if err := r.SetQueryParam("adaptive.peak_iops_allocation", qAdaptivePeakIopsAllocation); err != nil {
 				return err
 			}
 		}
@@ -651,6 +787,40 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.PgIDQueryParameter != nil {
+
+		// query param pgid
+		var qrPgid int64
+
+		if o.PgIDQueryParameter != nil {
+			qrPgid = *o.PgIDQueryParameter
+		}
+		qPgid := swag.FormatInt64(qrPgid)
+		if qPgid != "" {
+
+			if err := r.SetQueryParam("pgid", qPgid); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyClassQueryParameter != nil {
+
+		// query param policy_class
+		var qrPolicyClass string
+
+		if o.PolicyClassQueryParameter != nil {
+			qrPolicyClass = *o.PolicyClassQueryParameter
+		}
+		qPolicyClass := qrPolicyClass
+		if qPolicyClass != "" {
+
+			if err := r.SetQueryParam("policy_class", qPolicyClass); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
@@ -68,18 +67,6 @@ type SecurityAuditModifyParams struct {
 	*/
 	Info *models.SecurityAudit
 
-	/* ReturnRecords.
-
-	   The default is false.  If set to true, the records are returned.
-	*/
-	ReturnRecordsQueryParameter *bool
-
-	/* ReturnTimeout.
-
-	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
-	*/
-	ReturnTimeoutQueryParameter *int64
-
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -97,21 +84,7 @@ func (o *SecurityAuditModifyParams) WithDefaults() *SecurityAuditModifyParams {
 //
 // All values with no default are reset to their zero value.
 func (o *SecurityAuditModifyParams) SetDefaults() {
-	var (
-		returnRecordsQueryParameterDefault = bool(false)
-
-		returnTimeoutQueryParameterDefault = int64(0)
-	)
-
-	val := SecurityAuditModifyParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
-	}
-
-	val.timeout = o.timeout
-	val.Context = o.Context
-	val.HTTPClient = o.HTTPClient
-	*o = val
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the security audit modify params
@@ -158,28 +131,6 @@ func (o *SecurityAuditModifyParams) SetInfo(info *models.SecurityAudit) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the security audit modify params
-func (o *SecurityAuditModifyParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecurityAuditModifyParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
-	return o
-}
-
-// SetReturnRecordsQueryParameter adds the returnRecords to the security audit modify params
-func (o *SecurityAuditModifyParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
-}
-
-// WithReturnTimeoutQueryParameter adds the returnTimeout to the security audit modify params
-func (o *SecurityAuditModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SecurityAuditModifyParams {
-	o.SetReturnTimeoutQueryParameter(returnTimeout)
-	return o
-}
-
-// SetReturnTimeoutQueryParameter adds the returnTimeout to the security audit modify params
-func (o *SecurityAuditModifyParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
-	o.ReturnTimeoutQueryParameter = returnTimeout
-}
-
 // WriteToRequest writes these params to a swagger request
 func (o *SecurityAuditModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -190,40 +141,6 @@ func (o *SecurityAuditModifyParams) WriteToRequest(r runtime.ClientRequest, reg 
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
-		}
-	}
-
-	if o.ReturnRecordsQueryParameter != nil {
-
-		// query param return_records
-		var qrReturnRecords bool
-
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
-		}
-		qReturnRecords := swag.FormatBool(qrReturnRecords)
-		if qReturnRecords != "" {
-
-			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.ReturnTimeoutQueryParameter != nil {
-
-		// query param return_timeout
-		var qrReturnTimeout int64
-
-		if o.ReturnTimeoutQueryParameter != nil {
-			qrReturnTimeout = *o.ReturnTimeoutQueryParameter
-		}
-		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
-		if qReturnTimeout != "" {
-
-			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
-				return err
-			}
 		}
 	}
 

@@ -66,6 +66,12 @@ type SnapmirrorPoliciesGetParams struct {
 	*/
 	CommentQueryParameter *string
 
+	/* CopyAllSourceSnapshots.
+
+	   Filter by copy_all_source_snapshots
+	*/
+	CopyAllSourceSnapshotsQueryParameter *bool
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -147,6 +153,12 @@ type SnapmirrorPoliciesGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeoutQueryParameter *int64
+
+	/* Rpo.
+
+	   Filter by rpo
+	*/
+	RpoQueryParameter *int64
 
 	/* Scope.
 
@@ -292,6 +304,17 @@ func (o *SnapmirrorPoliciesGetParams) SetCommentQueryParameter(comment *string) 
 	o.CommentQueryParameter = comment
 }
 
+// WithCopyAllSourceSnapshotsQueryParameter adds the copyAllSourceSnapshots to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithCopyAllSourceSnapshotsQueryParameter(copyAllSourceSnapshots *bool) *SnapmirrorPoliciesGetParams {
+	o.SetCopyAllSourceSnapshotsQueryParameter(copyAllSourceSnapshots)
+	return o
+}
+
+// SetCopyAllSourceSnapshotsQueryParameter adds the copyAllSourceSnapshots to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetCopyAllSourceSnapshotsQueryParameter(copyAllSourceSnapshots *bool) {
+	o.CopyAllSourceSnapshotsQueryParameter = copyAllSourceSnapshots
+}
+
 // WithFieldsQueryParameter adds the fields to the snapmirror policies get params
 func (o *SnapmirrorPoliciesGetParams) WithFieldsQueryParameter(fields []string) *SnapmirrorPoliciesGetParams {
 	o.SetFieldsQueryParameter(fields)
@@ -435,6 +458,17 @@ func (o *SnapmirrorPoliciesGetParams) SetReturnTimeoutQueryParameter(returnTimeo
 	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
+// WithRpoQueryParameter adds the rpo to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) WithRpoQueryParameter(rpo *int64) *SnapmirrorPoliciesGetParams {
+	o.SetRpoQueryParameter(rpo)
+	return o
+}
+
+// SetRpoQueryParameter adds the rpo to the snapmirror policies get params
+func (o *SnapmirrorPoliciesGetParams) SetRpoQueryParameter(rpo *int64) {
+	o.RpoQueryParameter = rpo
+}
+
 // WithScopeQueryParameter adds the scope to the snapmirror policies get params
 func (o *SnapmirrorPoliciesGetParams) WithScopeQueryParameter(scope *string) *SnapmirrorPoliciesGetParams {
 	o.SetScopeQueryParameter(scope)
@@ -576,6 +610,23 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qComment != "" {
 
 			if err := r.SetQueryParam("comment", qComment); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CopyAllSourceSnapshotsQueryParameter != nil {
+
+		// query param copy_all_source_snapshots
+		var qrCopyAllSourceSnapshots bool
+
+		if o.CopyAllSourceSnapshotsQueryParameter != nil {
+			qrCopyAllSourceSnapshots = *o.CopyAllSourceSnapshotsQueryParameter
+		}
+		qCopyAllSourceSnapshots := swag.FormatBool(qrCopyAllSourceSnapshots)
+		if qCopyAllSourceSnapshots != "" {
+
+			if err := r.SetQueryParam("copy_all_source_snapshots", qCopyAllSourceSnapshots); err != nil {
 				return err
 			}
 		}
@@ -785,6 +836,23 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RpoQueryParameter != nil {
+
+		// query param rpo
+		var qrRpo int64
+
+		if o.RpoQueryParameter != nil {
+			qrRpo = *o.RpoQueryParameter
+		}
+		qRpo := swag.FormatInt64(qrRpo)
+		if qRpo != "" {
+
+			if err := r.SetQueryParam("rpo", qRpo); err != nil {
 				return err
 			}
 		}

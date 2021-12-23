@@ -301,6 +301,11 @@ type EmsFilterResponseRecordsItems0 struct {
 
 	// Array of event filter rules on which to match.
 	Rules []*EmsFilterResponseRecordsItems0RulesItems0 `json:"rules,omitempty"`
+
+	// Flag indicating system-defined filters.
+	// Example: true
+	// Read Only: true
+	SystemDefined *bool `json:"system_defined,omitempty"`
 }
 
 // Validate validates this ems filter response records items0
@@ -374,6 +379,10 @@ func (m *EmsFilterResponseRecordsItems0) ContextValidate(ctx context.Context, fo
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSystemDefined(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -407,6 +416,15 @@ func (m *EmsFilterResponseRecordsItems0) contextValidateRules(ctx context.Contex
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *EmsFilterResponseRecordsItems0) contextValidateSystemDefined(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "system_defined", "body", m.SystemDefined); err != nil {
+		return err
 	}
 
 	return nil

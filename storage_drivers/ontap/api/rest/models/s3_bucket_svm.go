@@ -52,8 +52,16 @@ type S3BucketSvm struct {
 	// policy
 	Policy *S3BucketSvmPolicy `json:"policy,omitempty"`
 
+	// protection status
+	ProtectionStatus *S3BucketSvmProtectionStatus `json:"protection_status,omitempty"`
+
 	// qos policy
 	QosPolicy *S3BucketSvmQosPolicy `json:"qos_policy,omitempty"`
+
+	// Specifies the role of the bucket.
+	// Read Only: true
+	// Enum: [standalone active passive]
+	Role string `json:"role,omitempty"`
 
 	// Specifies the bucket size in bytes; ranges from 80MB to 64TB.
 	// Example: 1677721600
@@ -107,7 +115,15 @@ func (m *S3BucketSvm) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateProtectionStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateQosPolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRole(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -243,6 +259,23 @@ func (m *S3BucketSvm) validatePolicy(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *S3BucketSvm) validateProtectionStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.ProtectionStatus) { // not required
+		return nil
+	}
+
+	if m.ProtectionStatus != nil {
+		if err := m.ProtectionStatus.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("protection_status")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *S3BucketSvm) validateQosPolicy(formats strfmt.Registry) error {
 	if swag.IsZero(m.QosPolicy) { // not required
 		return nil
@@ -255,6 +288,72 @@ func (m *S3BucketSvm) validateQosPolicy(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var s3BucketSvmTypeRolePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["standalone","active","passive"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		s3BucketSvmTypeRolePropEnum = append(s3BucketSvmTypeRolePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// s3_bucket_svm
+	// S3BucketSvm
+	// role
+	// Role
+	// standalone
+	// END DEBUGGING
+	// S3BucketSvmRoleStandalone captures enum value "standalone"
+	S3BucketSvmRoleStandalone string = "standalone"
+
+	// BEGIN DEBUGGING
+	// s3_bucket_svm
+	// S3BucketSvm
+	// role
+	// Role
+	// active
+	// END DEBUGGING
+	// S3BucketSvmRoleActive captures enum value "active"
+	S3BucketSvmRoleActive string = "active"
+
+	// BEGIN DEBUGGING
+	// s3_bucket_svm
+	// S3BucketSvm
+	// role
+	// Role
+	// passive
+	// END DEBUGGING
+	// S3BucketSvmRolePassive captures enum value "passive"
+	S3BucketSvmRolePassive string = "passive"
+)
+
+// prop value enum
+func (m *S3BucketSvm) validateRoleEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, s3BucketSvmTypeRolePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *S3BucketSvm) validateRole(formats strfmt.Registry) error {
+	if swag.IsZero(m.Role) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateRoleEnum("role", "body", m.Role); err != nil {
+		return err
 	}
 
 	return nil
@@ -408,7 +507,15 @@ func (m *S3BucketSvm) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateProtectionStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateQosPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRole(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -485,6 +592,20 @@ func (m *S3BucketSvm) contextValidatePolicy(ctx context.Context, formats strfmt.
 	return nil
 }
 
+func (m *S3BucketSvm) contextValidateProtectionStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ProtectionStatus != nil {
+		if err := m.ProtectionStatus.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("protection_status")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *S3BucketSvm) contextValidateQosPolicy(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.QosPolicy != nil {
@@ -494,6 +615,15 @@ func (m *S3BucketSvm) contextValidateQosPolicy(ctx context.Context, formats strf
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketSvm) contextValidateRole(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "role", "body", string(m.Role)); err != nil {
+		return err
 	}
 
 	return nil
@@ -873,7 +1003,183 @@ func (m *S3BucketSvmPolicy) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// S3BucketSvmQosPolicy Specifes "qos_policy.max_throughput_iops" and/or "qos_policy.max_throughput_mbps" or "qos_policy.min_throughput_iops". Specifes "min_throughput_iops" is only supported on volumes hosted on a node that is flash optimized. A pre-created QoS policy can also be used by specifying "qos_policy.name" or "qos_policy.uuid" properties. Setting or assigning a QoS policy to a bucket is not supported if its containing volume or SVM already has a QoS policy attached.
+// S3BucketSvmProtectionStatus Specifies attributes of bucket protection.
+//
+// swagger:model S3BucketSvmProtectionStatus
+type S3BucketSvmProtectionStatus struct {
+
+	// destination
+	Destination *S3BucketSvmProtectionStatusDestination `json:"destination,omitempty"`
+
+	// Specifies whether a bucket is a source and if it is protected within ONTAP and/or an external cloud.
+	// Read Only: true
+	IsProtected *bool `json:"is_protected,omitempty"`
+}
+
+// Validate validates this s3 bucket svm protection status
+func (m *S3BucketSvmProtectionStatus) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateDestination(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketSvmProtectionStatus) validateDestination(formats strfmt.Registry) error {
+	if swag.IsZero(m.Destination) { // not required
+		return nil
+	}
+
+	if m.Destination != nil {
+		if err := m.Destination.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("protection_status" + "." + "destination")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s3 bucket svm protection status based on the context it is used
+func (m *S3BucketSvmProtectionStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDestination(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsProtected(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketSvmProtectionStatus) contextValidateDestination(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Destination != nil {
+		if err := m.Destination.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("protection_status" + "." + "destination")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *S3BucketSvmProtectionStatus) contextValidateIsProtected(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "protection_status"+"."+"is_protected", "body", m.IsProtected); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketSvmProtectionStatus) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketSvmProtectionStatus) UnmarshalBinary(b []byte) error {
+	var res S3BucketSvmProtectionStatus
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketSvmProtectionStatusDestination s3 bucket svm protection status destination
+//
+// swagger:model S3BucketSvmProtectionStatusDestination
+type S3BucketSvmProtectionStatusDestination struct {
+
+	// Specifies whether a bucket is protected within the Cloud.
+	// Read Only: true
+	IsCloud *bool `json:"is_cloud,omitempty"`
+
+	// Specifies whether a bucket is protected within ONTAP.
+	// Read Only: true
+	IsOntap *bool `json:"is_ontap,omitempty"`
+}
+
+// Validate validates this s3 bucket svm protection status destination
+func (m *S3BucketSvmProtectionStatusDestination) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this s3 bucket svm protection status destination based on the context it is used
+func (m *S3BucketSvmProtectionStatusDestination) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIsCloud(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsOntap(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *S3BucketSvmProtectionStatusDestination) contextValidateIsCloud(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "protection_status"+"."+"destination"+"."+"is_cloud", "body", m.IsCloud); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *S3BucketSvmProtectionStatusDestination) contextValidateIsOntap(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "protection_status"+"."+"destination"+"."+"is_ontap", "body", m.IsOntap); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *S3BucketSvmProtectionStatusDestination) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *S3BucketSvmProtectionStatusDestination) UnmarshalBinary(b []byte) error {
+	var res S3BucketSvmProtectionStatusDestination
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// S3BucketSvmQosPolicy Specifes "qos_policy.max_throughput_iops" and/or "qos_policy.max_throughput_mbps" or "qos_policy.min_throughput_iops" and/or "qos_policy.min_throughput_mbps". Specifying "min_throughput_iops" or "min_throughput_mbps" is only supported on volumes hosted on a node that is flash optimized. A pre-created QoS policy can also be used by specifying "qos_policy.name" or "qos_policy.uuid" properties. Setting or assigning a QoS policy to a bucket is not supported if its containing volume or SVM already has a QoS policy attached.
 //
 // swagger:model S3BucketSvmQosPolicy
 type S3BucketSvmQosPolicy struct {

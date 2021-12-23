@@ -91,6 +91,9 @@ type Cluster struct {
 	// Format: password
 	Password strfmt.Password `json:"password,omitempty"`
 
+	// peering policy
+	PeeringPolicy *ClusterPeeringPolicy `json:"peering_policy,omitempty"`
+
 	// Specifies if this cluster is an All SAN Array.
 	// Read Only: true
 	SanOptimized *bool `json:"san_optimized,omitempty"`
@@ -156,6 +159,10 @@ func (m *Cluster) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePassword(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePeeringPolicy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -383,6 +390,23 @@ func (m *Cluster) validatePassword(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Cluster) validatePeeringPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.PeeringPolicy) { // not required
+		return nil
+	}
+
+	if m.PeeringPolicy != nil {
+		if err := m.PeeringPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("peering_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Cluster) validateStatistics(formats strfmt.Registry) error {
 	if swag.IsZero(m.Statistics) { // not required
 		return nil
@@ -479,6 +503,10 @@ func (m *Cluster) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 	}
 
 	if err := m.contextValidateNodes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePeeringPolicy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -632,6 +660,20 @@ func (m *Cluster) contextValidateNodes(ctx context.Context, formats strfmt.Regis
 	return nil
 }
 
+func (m *Cluster) contextValidatePeeringPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.PeeringPolicy != nil {
+		if err := m.PeeringPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("peering_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Cluster) contextValidateSanOptimized(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "san_optimized", "body", m.SanOptimized); err != nil {
@@ -710,7 +752,7 @@ func (m *Cluster) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ClusterCertificate Certificate used by cluster and node management interfaces for TLS connection requests.
+// ClusterCertificate Support for this field will be removed in a future release. Please use /api/cluster/web for this field. Certificate used by cluster and node management interfaces for TLS connection requests.
 //
 // swagger:model ClusterCertificate
 type ClusterCertificate struct {
@@ -2374,8 +2416,15 @@ type ClusterNodesItems0 struct {
 	// Format: date-time
 	Date *strfmt.DateTime `json:"date,omitempty"`
 
+	// external cache
+	ExternalCache *ClusterNodesItems0ExternalCache `json:"external_cache,omitempty"`
+
 	// ha
 	Ha *ClusterNodesItems0Ha `json:"ha,omitempty"`
+
+	// Specifies whether or not the node is in spares low condition.
+	// Read Only: true
+	IsSparesLow *bool `json:"is_spares_low,omitempty"`
 
 	// location
 	// Example: rack 2 row 5
@@ -2512,6 +2561,10 @@ func (m *ClusterNodesItems0) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExternalCache(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2659,6 +2712,23 @@ func (m *ClusterNodesItems0) validateDate(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("date", "body", "date-time", m.Date.String(), formats); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0) validateExternalCache(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExternalCache) { // not required
+		return nil
+	}
+
+	if m.ExternalCache != nil {
+		if err := m.ExternalCache.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("external_cache")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -3175,7 +3245,15 @@ func (m *ClusterNodesItems0) ContextValidate(ctx context.Context, formats strfmt
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateExternalCache(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateHa(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsSparesLow(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3334,6 +3412,20 @@ func (m *ClusterNodesItems0) contextValidateDate(ctx context.Context, formats st
 	return nil
 }
 
+func (m *ClusterNodesItems0) contextValidateExternalCache(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ExternalCache != nil {
+		if err := m.ExternalCache.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("external_cache")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ClusterNodesItems0) contextValidateHa(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Ha != nil {
@@ -3343,6 +3435,15 @@ func (m *ClusterNodesItems0) contextValidateHa(ctx context.Context, formats strf
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0) contextValidateIsSparesLow(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_spares_low", "body", m.IsSparesLow); err != nil {
+		return err
 	}
 
 	return nil
@@ -5405,6 +5506,55 @@ func (m *ClusterNodesItems0ControllerFrusItems0) UnmarshalBinary(b []byte) error
 	return nil
 }
 
+// ClusterNodesItems0ExternalCache Cache used for buffer management.
+//
+// swagger:model ClusterNodesItems0ExternalCache
+type ClusterNodesItems0ExternalCache struct {
+
+	// Indicates whether the external cache is enabled.
+	// Example: true
+	IsEnabled bool `json:"is_enabled,omitempty"`
+
+	// Indicates whether HyA caching is enabled.
+	// Example: true
+	IsHyaEnabled bool `json:"is_hya_enabled,omitempty"`
+
+	// Indicates whether rewarm is enabled.
+	// Example: true
+	IsRewarmEnabled bool `json:"is_rewarm_enabled,omitempty"`
+
+	// PCS size in gigabytes.
+	PcsSize int64 `json:"pcs_size,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 external cache
+func (m *ClusterNodesItems0ExternalCache) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this cluster nodes items0 external cache based on context it is used
+func (m *ClusterNodesItems0ExternalCache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0ExternalCache) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0ExternalCache) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0ExternalCache
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // ClusterNodesItems0Ha cluster nodes items0 ha
 //
 // swagger:model ClusterNodesItems0Ha
@@ -6989,6 +7139,10 @@ type ClusterNodesItems0Metric struct {
 	// Example: 2017-01-25T11:20:13Z
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID string `json:"uuid,omitempty"`
 }
 
 // Validate validates this cluster nodes items0 metric
@@ -7869,7 +8023,13 @@ func (m *ClusterNodesItems0Nvram) UnmarshalBinary(b []byte) error {
 // swagger:model ClusterNodesItems0ServiceProcessor
 type ClusterNodesItems0ServiceProcessor struct {
 
-	// Set to "true" to use DHCP to configure an IPv4 interface.
+	// Indicates whether the service processor can be automatically updated from ONTAP.
+	AutoupdateEnabled bool `json:"autoupdate_enabled,omitempty"`
+
+	// backup
+	Backup *ClusterNodesItems0ServiceProcessorBackup `json:"backup,omitempty"`
+
+	// Set to "true" to use DHCP to configure an IPv4 interface. Do not provide values for address, netmask and gateway when set to "true".
 	DhcpEnabled bool `json:"dhcp_enabled,omitempty"`
 
 	// The version of firmware installed.
@@ -7882,6 +8042,15 @@ type ClusterNodesItems0ServiceProcessor struct {
 	// ipv6 interface
 	IPV6Interface *ClusterNodesItems0ServiceProcessorIPV6Interface `json:"ipv6_interface,omitempty"`
 
+	// Indicates whether the service processor network is configured.
+	// Read Only: true
+	IsIPConfigured *bool `json:"is_ip_configured,omitempty"`
+
+	// Provides the "update status" of the last service processor update.
+	// Read Only: true
+	// Enum: [failed passed]
+	LastUpdateState string `json:"last_update_state,omitempty"`
+
 	// link status
 	// Read Only: true
 	// Enum: [up down disabled unknown]
@@ -7891,15 +8060,30 @@ type ClusterNodesItems0ServiceProcessor struct {
 	// Read Only: true
 	MacAddress string `json:"mac_address,omitempty"`
 
+	// primary
+	Primary *ClusterNodesItems0ServiceProcessorPrimary `json:"primary,omitempty"`
+
+	// ssh info
+	SSHInfo *ClusterNodesItems0ServiceProcessorSSHInfo `json:"ssh_info,omitempty"`
+
 	// state
 	// Read Only: true
 	// Enum: [online offline degraded rebooting unknown updating node_offline sp_daemon_offline]
 	State string `json:"state,omitempty"`
+
+	// type
+	// Read Only: true
+	// Enum: [sp none bmc]
+	Type string `json:"type,omitempty"`
 }
 
 // Validate validates this cluster nodes items0 service processor
 func (m *ClusterNodesItems0ServiceProcessor) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateBackup(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateIPV4Interface(formats); err != nil {
 		res = append(res, err)
@@ -7909,7 +8093,19 @@ func (m *ClusterNodesItems0ServiceProcessor) Validate(formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
+	if err := m.validateLastUpdateState(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateLinkStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePrimary(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSSHInfo(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -7917,9 +8113,30 @@ func (m *ClusterNodesItems0ServiceProcessor) Validate(formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) validateBackup(formats strfmt.Registry) error {
+	if swag.IsZero(m.Backup) { // not required
+		return nil
+	}
+
+	if m.Backup != nil {
+		if err := m.Backup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "backup")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -7952,6 +8169,62 @@ func (m *ClusterNodesItems0ServiceProcessor) validateIPV6Interface(formats strfm
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var clusterNodesItems0ServiceProcessorTypeLastUpdateStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["failed","passed"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0ServiceProcessorTypeLastUpdateStatePropEnum = append(clusterNodesItems0ServiceProcessorTypeLastUpdateStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessor
+	// ClusterNodesItems0ServiceProcessor
+	// last_update_state
+	// LastUpdateState
+	// failed
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorLastUpdateStateFailed captures enum value "failed"
+	ClusterNodesItems0ServiceProcessorLastUpdateStateFailed string = "failed"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessor
+	// ClusterNodesItems0ServiceProcessor
+	// last_update_state
+	// LastUpdateState
+	// passed
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorLastUpdateStatePassed captures enum value "passed"
+	ClusterNodesItems0ServiceProcessorLastUpdateStatePassed string = "passed"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0ServiceProcessor) validateLastUpdateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0ServiceProcessorTypeLastUpdateStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) validateLastUpdateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.LastUpdateState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateLastUpdateStateEnum("service_processor"+"."+"last_update_state", "body", m.LastUpdateState); err != nil {
+		return err
 	}
 
 	return nil
@@ -8028,6 +8301,40 @@ func (m *ClusterNodesItems0ServiceProcessor) validateLinkStatus(formats strfmt.R
 	// value enum
 	if err := m.validateLinkStatusEnum("service_processor"+"."+"link_status", "body", m.LinkStatus); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) validatePrimary(formats strfmt.Registry) error {
+	if swag.IsZero(m.Primary) { // not required
+		return nil
+	}
+
+	if m.Primary != nil {
+		if err := m.Primary.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "primary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) validateSSHInfo(formats strfmt.Registry) error {
+	if swag.IsZero(m.SSHInfo) { // not required
+		return nil
+	}
+
+	if m.SSHInfo != nil {
+		if err := m.SSHInfo.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "ssh_info")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -8149,9 +8456,79 @@ func (m *ClusterNodesItems0ServiceProcessor) validateState(formats strfmt.Regist
 	return nil
 }
 
+var clusterNodesItems0ServiceProcessorTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["sp","none","bmc"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0ServiceProcessorTypeTypePropEnum = append(clusterNodesItems0ServiceProcessorTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessor
+	// ClusterNodesItems0ServiceProcessor
+	// type
+	// Type
+	// sp
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorTypeSp captures enum value "sp"
+	ClusterNodesItems0ServiceProcessorTypeSp string = "sp"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessor
+	// ClusterNodesItems0ServiceProcessor
+	// type
+	// Type
+	// none
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorTypeNone captures enum value "none"
+	ClusterNodesItems0ServiceProcessorTypeNone string = "none"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessor
+	// ClusterNodesItems0ServiceProcessor
+	// type
+	// Type
+	// bmc
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorTypeBmc captures enum value "bmc"
+	ClusterNodesItems0ServiceProcessorTypeBmc string = "bmc"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0ServiceProcessor) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0ServiceProcessorTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("service_processor"+"."+"type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this cluster nodes items0 service processor based on the context it is used
 func (m *ClusterNodesItems0ServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateBackup(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateFirmwareVersion(ctx, formats); err != nil {
 		res = append(res, err)
@@ -8165,6 +8542,14 @@ func (m *ClusterNodesItems0ServiceProcessor) ContextValidate(ctx context.Context
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIsIPConfigured(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateLinkStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -8173,13 +8558,39 @@ func (m *ClusterNodesItems0ServiceProcessor) ContextValidate(ctx context.Context
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePrimary(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSSHInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) contextValidateBackup(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Backup != nil {
+		if err := m.Backup.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "backup")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -8220,6 +8631,24 @@ func (m *ClusterNodesItems0ServiceProcessor) contextValidateIPV6Interface(ctx co
 	return nil
 }
 
+func (m *ClusterNodesItems0ServiceProcessor) contextValidateIsIPConfigured(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"is_ip_configured", "body", m.IsIPConfigured); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) contextValidateLastUpdateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"last_update_state", "body", string(m.LastUpdateState)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *ClusterNodesItems0ServiceProcessor) contextValidateLinkStatus(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "service_processor"+"."+"link_status", "body", string(m.LinkStatus)); err != nil {
@@ -8238,9 +8667,46 @@ func (m *ClusterNodesItems0ServiceProcessor) contextValidateMacAddress(ctx conte
 	return nil
 }
 
+func (m *ClusterNodesItems0ServiceProcessor) contextValidatePrimary(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Primary != nil {
+		if err := m.Primary.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "primary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) contextValidateSSHInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SSHInfo != nil {
+		if err := m.SSHInfo.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "ssh_info")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ClusterNodesItems0ServiceProcessor) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "service_processor"+"."+"state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessor) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"type", "body", string(m.Type)); err != nil {
 		return err
 	}
 
@@ -8258,6 +8724,193 @@ func (m *ClusterNodesItems0ServiceProcessor) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ClusterNodesItems0ServiceProcessor) UnmarshalBinary(b []byte) error {
 	var res ClusterNodesItems0ServiceProcessor
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0ServiceProcessorBackup Provides the properties of the service processor backup partition.
+//
+// swagger:model ClusterNodesItems0ServiceProcessorBackup
+type ClusterNodesItems0ServiceProcessorBackup struct {
+
+	// Indicates whether the service processor is currently booted from the backup partition.
+	// Read Only: true
+	IsCurrent *bool `json:"is_current,omitempty"`
+
+	// Status of the backup partition.
+	// Read Only: true
+	// Enum: [installed corrupt updating auto_updating none]
+	State string `json:"state,omitempty"`
+
+	// Firmware version of the backup partition.
+	// Example: 11.6
+	// Read Only: true
+	Version string `json:"version,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 service processor backup
+func (m *ClusterNodesItems0ServiceProcessorBackup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var clusterNodesItems0ServiceProcessorBackupTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["installed","corrupt","updating","auto_updating","none"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0ServiceProcessorBackupTypeStatePropEnum = append(clusterNodesItems0ServiceProcessorBackupTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessorBackup
+	// ClusterNodesItems0ServiceProcessorBackup
+	// state
+	// State
+	// installed
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorBackupStateInstalled captures enum value "installed"
+	ClusterNodesItems0ServiceProcessorBackupStateInstalled string = "installed"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessorBackup
+	// ClusterNodesItems0ServiceProcessorBackup
+	// state
+	// State
+	// corrupt
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorBackupStateCorrupt captures enum value "corrupt"
+	ClusterNodesItems0ServiceProcessorBackupStateCorrupt string = "corrupt"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessorBackup
+	// ClusterNodesItems0ServiceProcessorBackup
+	// state
+	// State
+	// updating
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorBackupStateUpdating captures enum value "updating"
+	ClusterNodesItems0ServiceProcessorBackupStateUpdating string = "updating"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessorBackup
+	// ClusterNodesItems0ServiceProcessorBackup
+	// state
+	// State
+	// auto_updating
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorBackupStateAutoUpdating captures enum value "auto_updating"
+	ClusterNodesItems0ServiceProcessorBackupStateAutoUpdating string = "auto_updating"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessorBackup
+	// ClusterNodesItems0ServiceProcessorBackup
+	// state
+	// State
+	// none
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorBackupStateNone captures enum value "none"
+	ClusterNodesItems0ServiceProcessorBackupStateNone string = "none"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0ServiceProcessorBackup) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0ServiceProcessorBackupTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorBackup) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("service_processor"+"."+"backup"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 service processor backup based on the context it is used
+func (m *ClusterNodesItems0ServiceProcessorBackup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIsCurrent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorBackup) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"backup"+"."+"is_current", "body", m.IsCurrent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorBackup) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"backup"+"."+"state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorBackup) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"backup"+"."+"version", "body", string(m.Version)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0ServiceProcessorBackup) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0ServiceProcessorBackup) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0ServiceProcessorBackup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -8394,6 +9047,283 @@ func (m *ClusterNodesItems0ServiceProcessorIPV6Interface) MarshalBinary() ([]byt
 // UnmarshalBinary interface implementation
 func (m *ClusterNodesItems0ServiceProcessorIPV6Interface) UnmarshalBinary(b []byte) error {
 	var res ClusterNodesItems0ServiceProcessorIPV6Interface
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0ServiceProcessorPrimary Provides the properties of the service processor primary partition.
+//
+// swagger:model ClusterNodesItems0ServiceProcessorPrimary
+type ClusterNodesItems0ServiceProcessorPrimary struct {
+
+	// Indicates whether the service processor is currently booted from the primary partition.
+	// Read Only: true
+	IsCurrent *bool `json:"is_current,omitempty"`
+
+	// Status of the primary partition.
+	// Read Only: true
+	// Enum: [installed corrupt updating auto_updating none]
+	State string `json:"state,omitempty"`
+
+	// Firmware version of the primary partition.
+	// Example: 11.6
+	// Read Only: true
+	Version string `json:"version,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 service processor primary
+func (m *ClusterNodesItems0ServiceProcessorPrimary) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var clusterNodesItems0ServiceProcessorPrimaryTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["installed","corrupt","updating","auto_updating","none"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterNodesItems0ServiceProcessorPrimaryTypeStatePropEnum = append(clusterNodesItems0ServiceProcessorPrimaryTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessorPrimary
+	// ClusterNodesItems0ServiceProcessorPrimary
+	// state
+	// State
+	// installed
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorPrimaryStateInstalled captures enum value "installed"
+	ClusterNodesItems0ServiceProcessorPrimaryStateInstalled string = "installed"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessorPrimary
+	// ClusterNodesItems0ServiceProcessorPrimary
+	// state
+	// State
+	// corrupt
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorPrimaryStateCorrupt captures enum value "corrupt"
+	ClusterNodesItems0ServiceProcessorPrimaryStateCorrupt string = "corrupt"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessorPrimary
+	// ClusterNodesItems0ServiceProcessorPrimary
+	// state
+	// State
+	// updating
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorPrimaryStateUpdating captures enum value "updating"
+	ClusterNodesItems0ServiceProcessorPrimaryStateUpdating string = "updating"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessorPrimary
+	// ClusterNodesItems0ServiceProcessorPrimary
+	// state
+	// State
+	// auto_updating
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorPrimaryStateAutoUpdating captures enum value "auto_updating"
+	ClusterNodesItems0ServiceProcessorPrimaryStateAutoUpdating string = "auto_updating"
+
+	// BEGIN DEBUGGING
+	// ClusterNodesItems0ServiceProcessorPrimary
+	// ClusterNodesItems0ServiceProcessorPrimary
+	// state
+	// State
+	// none
+	// END DEBUGGING
+	// ClusterNodesItems0ServiceProcessorPrimaryStateNone captures enum value "none"
+	ClusterNodesItems0ServiceProcessorPrimaryStateNone string = "none"
+)
+
+// prop value enum
+func (m *ClusterNodesItems0ServiceProcessorPrimary) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterNodesItems0ServiceProcessorPrimaryTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorPrimary) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("service_processor"+"."+"primary"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 service processor primary based on the context it is used
+func (m *ClusterNodesItems0ServiceProcessorPrimary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIsCurrent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorPrimary) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"primary"+"."+"is_current", "body", m.IsCurrent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorPrimary) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"primary"+"."+"state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorPrimary) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "service_processor"+"."+"primary"+"."+"version", "body", string(m.Version)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0ServiceProcessorPrimary) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0ServiceProcessorPrimary) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0ServiceProcessorPrimary
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterNodesItems0ServiceProcessorSSHInfo Service processor SSH allowed IP address configuration applied across the cluster.
+//
+// swagger:model ClusterNodesItems0ServiceProcessorSSHInfo
+type ClusterNodesItems0ServiceProcessorSSHInfo struct {
+
+	// Allowed IP addresses
+	AllowedAddresses []IPAddressAndNetmask `json:"allowed_addresses,omitempty"`
+}
+
+// Validate validates this cluster nodes items0 service processor SSH info
+func (m *ClusterNodesItems0ServiceProcessorSSHInfo) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAllowedAddresses(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorSSHInfo) validateAllowedAddresses(formats strfmt.Registry) error {
+	if swag.IsZero(m.AllowedAddresses) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AllowedAddresses); i++ {
+
+		if err := m.AllowedAddresses[i].Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "ssh_info" + "." + "allowed_addresses" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster nodes items0 service processor SSH info based on the context it is used
+func (m *ClusterNodesItems0ServiceProcessorSSHInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAllowedAddresses(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterNodesItems0ServiceProcessorSSHInfo) contextValidateAllowedAddresses(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.AllowedAddresses); i++ {
+
+		if err := m.AllowedAddresses[i].ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("service_processor" + "." + "ssh_info" + "." + "allowed_addresses" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterNodesItems0ServiceProcessorSSHInfo) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterNodesItems0ServiceProcessorSSHInfo) UnmarshalBinary(b []byte) error {
+	var res ClusterNodesItems0ServiceProcessorSSHInfo
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -8850,6 +9780,123 @@ func (m *ClusterNodesItems0Version) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ClusterNodesItems0Version) UnmarshalBinary(b []byte) error {
 	var res ClusterNodesItems0Version
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterPeeringPolicy cluster peering policy
+//
+// swagger:model ClusterPeeringPolicy
+type ClusterPeeringPolicy struct {
+
+	// Indicates whether authentication is required in the communication between cluster peers. If true, authentication is required to establish communication between cluster peers.
+	// Read Only: true
+	AuthenticationRequired *bool `json:"authentication_required,omitempty"`
+
+	// Indicates whether encryption is required in the communication between cluster peers. If true, encryption is required to establish communication between cluster peers.
+	// Read Only: true
+	EncryptionRequired *bool `json:"encryption_required,omitempty"`
+
+	// Minimum required length for a passphrase. For more information on password strength best practices, see: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#implement-proper-password-strength-controls
+	// Read Only: true
+	// Maximum: 1500
+	// Minimum: 0
+	MinimumPassphraseLength int64 `json:"minimum_passphrase_length,omitempty"`
+}
+
+// Validate validates this cluster peering policy
+func (m *ClusterPeeringPolicy) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMinimumPassphraseLength(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterPeeringPolicy) validateMinimumPassphraseLength(formats strfmt.Registry) error {
+	if swag.IsZero(m.MinimumPassphraseLength) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("peering_policy"+"."+"minimum_passphrase_length", "body", m.MinimumPassphraseLength, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("peering_policy"+"."+"minimum_passphrase_length", "body", m.MinimumPassphraseLength, 1500, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster peering policy based on the context it is used
+func (m *ClusterPeeringPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAuthenticationRequired(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEncryptionRequired(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMinimumPassphraseLength(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterPeeringPolicy) contextValidateAuthenticationRequired(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "peering_policy"+"."+"authentication_required", "body", m.AuthenticationRequired); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterPeeringPolicy) contextValidateEncryptionRequired(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "peering_policy"+"."+"encryption_required", "body", m.EncryptionRequired); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterPeeringPolicy) contextValidateMinimumPassphraseLength(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "peering_policy"+"."+"minimum_passphrase_length", "body", int64(m.MinimumPassphraseLength)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterPeeringPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterPeeringPolicy) UnmarshalBinary(b []byte) error {
+	var res ClusterPeeringPolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
@@ -68,12 +67,6 @@ type SnmpModifyParams struct {
 	*/
 	Info *models.Snmp
 
-	/* ReturnRecords.
-
-	   The default is false.  If set to true, the records are returned.
-	*/
-	ReturnRecordsQueryParameter *bool
-
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -91,18 +84,7 @@ func (o *SnmpModifyParams) WithDefaults() *SnmpModifyParams {
 //
 // All values with no default are reset to their zero value.
 func (o *SnmpModifyParams) SetDefaults() {
-	var (
-		returnRecordsQueryParameterDefault = bool(false)
-	)
-
-	val := SnmpModifyParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-	}
-
-	val.timeout = o.timeout
-	val.Context = o.Context
-	val.HTTPClient = o.HTTPClient
-	*o = val
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the snmp modify params
@@ -149,17 +131,6 @@ func (o *SnmpModifyParams) SetInfo(info *models.Snmp) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the snmp modify params
-func (o *SnmpModifyParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SnmpModifyParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
-	return o
-}
-
-// SetReturnRecordsQueryParameter adds the returnRecords to the snmp modify params
-func (o *SnmpModifyParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
-}
-
 // WriteToRequest writes these params to a swagger request
 func (o *SnmpModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -170,23 +141,6 @@ func (o *SnmpModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
-		}
-	}
-
-	if o.ReturnRecordsQueryParameter != nil {
-
-		// query param return_records
-		var qrReturnRecords bool
-
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
-		}
-		qReturnRecords := swag.FormatBool(qrReturnRecords)
-		if qReturnRecords != "" {
-
-			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
-				return err
-			}
 		}
 	}
 

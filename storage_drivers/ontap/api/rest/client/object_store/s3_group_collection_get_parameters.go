@@ -130,12 +130,6 @@ type S3GroupCollectionGetParams struct {
 	*/
 	SVMUUIDPathParameter string
 
-	/* SvmUUID.
-
-	   Filter by svm.uuid
-	*/
-	SVMUUIDQueryParameter *string
-
 	/* UsersName.
 
 	   Filter by users.name
@@ -330,17 +324,6 @@ func (o *S3GroupCollectionGetParams) SetSVMUUIDPathParameter(svmUUID string) {
 	o.SVMUUIDPathParameter = svmUUID
 }
 
-// WithSVMUUIDQueryParameter adds the svmUUID to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *S3GroupCollectionGetParams {
-	o.SetSVMUUIDQueryParameter(svmUUID)
-	return o
-}
-
-// SetSVMUUIDQueryParameter adds the svmUuid to the s3 group collection get params
-func (o *S3GroupCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
-	o.SVMUUIDQueryParameter = svmUUID
-}
-
 // WithUsersNameQueryParameter adds the usersName to the s3 group collection get params
 func (o *S3GroupCollectionGetParams) WithUsersNameQueryParameter(usersName *string) *S3GroupCollectionGetParams {
 	o.SetUsersNameQueryParameter(usersName)
@@ -521,23 +504,6 @@ func (o *S3GroupCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 	// path param svm.uuid
 	if err := r.SetPathParam("svm.uuid", o.SVMUUIDPathParameter); err != nil {
 		return err
-	}
-
-	if o.SVMUUIDQueryParameter != nil {
-
-		// query param svm.uuid
-		var qrSvmUUID string
-
-		if o.SVMUUIDQueryParameter != nil {
-			qrSvmUUID = *o.SVMUUIDQueryParameter
-		}
-		qSvmUUID := qrSvmUUID
-		if qSvmUUID != "" {
-
-			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
-				return err
-			}
-		}
 	}
 
 	if o.UsersNameQueryParameter != nil {

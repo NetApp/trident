@@ -96,6 +96,18 @@ type NvmeNamespaceCollectionGetParams struct {
 	*/
 	LocationNamespaceQueryParameter *string
 
+	/* LocationNodeName.
+
+	   Filter by location.node.name
+	*/
+	LocationNodeNameQueryParameter *string
+
+	/* LocationNodeUUID.
+
+	   Filter by location.node.uuid
+	*/
+	LocationNodeUUIDQueryParameter *string
+
 	/* LocationQtreeID.
 
 	   Filter by location.qtree.id
@@ -549,6 +561,28 @@ func (o *NvmeNamespaceCollectionGetParams) WithLocationNamespaceQueryParameter(l
 // SetLocationNamespaceQueryParameter adds the locationNamespace to the nvme namespace collection get params
 func (o *NvmeNamespaceCollectionGetParams) SetLocationNamespaceQueryParameter(locationNamespace *string) {
 	o.LocationNamespaceQueryParameter = locationNamespace
+}
+
+// WithLocationNodeNameQueryParameter adds the locationNodeName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithLocationNodeNameQueryParameter(locationNodeName *string) *NvmeNamespaceCollectionGetParams {
+	o.SetLocationNodeNameQueryParameter(locationNodeName)
+	return o
+}
+
+// SetLocationNodeNameQueryParameter adds the locationNodeName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetLocationNodeNameQueryParameter(locationNodeName *string) {
+	o.LocationNodeNameQueryParameter = locationNodeName
+}
+
+// WithLocationNodeUUIDQueryParameter adds the locationNodeUUID to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithLocationNodeUUIDQueryParameter(locationNodeUUID *string) *NvmeNamespaceCollectionGetParams {
+	o.SetLocationNodeUUIDQueryParameter(locationNodeUUID)
+	return o
+}
+
+// SetLocationNodeUUIDQueryParameter adds the locationNodeUuid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetLocationNodeUUIDQueryParameter(locationNodeUUID *string) {
+	o.LocationNodeUUIDQueryParameter = locationNodeUUID
 }
 
 // WithLocationQtreeIDQueryParameter adds the locationQtreeID to the nvme namespace collection get params
@@ -1233,6 +1267,40 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qLocationNamespace != "" {
 
 			if err := r.SetQueryParam("location.namespace", qLocationNamespace); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationNodeNameQueryParameter != nil {
+
+		// query param location.node.name
+		var qrLocationNodeName string
+
+		if o.LocationNodeNameQueryParameter != nil {
+			qrLocationNodeName = *o.LocationNodeNameQueryParameter
+		}
+		qLocationNodeName := qrLocationNodeName
+		if qLocationNodeName != "" {
+
+			if err := r.SetQueryParam("location.node.name", qLocationNodeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocationNodeUUIDQueryParameter != nil {
+
+		// query param location.node.uuid
+		var qrLocationNodeUUID string
+
+		if o.LocationNodeUUIDQueryParameter != nil {
+			qrLocationNodeUUID = *o.LocationNodeUUIDQueryParameter
+		}
+		qLocationNodeUUID := qrLocationNodeUUID
+		if qLocationNodeUUID != "" {
+
+			if err := r.SetQueryParam("location.node.uuid", qLocationNodeUUID); err != nil {
 				return err
 			}
 		}

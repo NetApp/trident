@@ -275,6 +275,9 @@ func (m *ClusterSpace) UnmarshalBinary(b []byte) error {
 // swagger:model ClusterSpaceBlockStorage
 type ClusterSpaceBlockStorage struct {
 
+	// Available space across the cluster
+	Available int64 `json:"available,omitempty"`
+
 	// Inactive data across all aggregates
 	InactiveData int64 `json:"inactive_data,omitempty"`
 
@@ -395,6 +398,9 @@ type ClusterSpaceBlockStorageMediasItems0 struct {
 
 	// Storage efficiency that does not include the savings provided by Snapshot copies and FlexClones.
 	EfficiencyWithoutSnapshotsFlexclones *SpaceEfficiency `json:"efficiency_without_snapshots_flexclones,omitempty"`
+
+	// Total physical used space
+	PhysicalUsed int64 `json:"physical_used,omitempty"`
 
 	// Total space
 	Size int64 `json:"size,omitempty"`

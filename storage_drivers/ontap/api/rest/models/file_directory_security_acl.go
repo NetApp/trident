@@ -32,6 +32,16 @@ type FileDirectorySecurityACL struct {
 	// Enum: [access_allow access_deny audit_failure audit_success]
 	Access string `json:"access,omitempty"`
 
+	// Access Control Level specifies the access control of the task to be applied. Valid values
+	// are "file-directory" or "Storage-Level Access Guard (SLAG)". SLAG is used to apply the
+	// specified security descriptors with the task for the volume or qtree. Otherwise, the
+	// security descriptors are applied on files and directories at the specified path. The
+	// value slag is not supported on FlexGroups volumes. The default value is "file-directory".
+	//
+	// Example: file_directory
+	// Enum: [file_directory slag]
+	AccessControl *string `json:"access_control,omitempty"`
+
 	// advanced rights
 	AdvancedRights *AdvancedRights `json:"advanced_rights,omitempty"`
 
@@ -74,6 +84,10 @@ func (m *FileDirectorySecurityACL) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAccess(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAccessControl(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -169,6 +183,62 @@ func (m *FileDirectorySecurityACL) validateAccess(formats strfmt.Registry) error
 
 	// value enum
 	if err := m.validateAccessEnum("access", "body", m.Access); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var fileDirectorySecurityAclTypeAccessControlPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["file_directory","slag"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		fileDirectorySecurityAclTypeAccessControlPropEnum = append(fileDirectorySecurityAclTypeAccessControlPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// file_directory_security_acl
+	// FileDirectorySecurityACL
+	// access_control
+	// AccessControl
+	// file_directory
+	// END DEBUGGING
+	// FileDirectorySecurityACLAccessControlFileDirectory captures enum value "file_directory"
+	FileDirectorySecurityACLAccessControlFileDirectory string = "file_directory"
+
+	// BEGIN DEBUGGING
+	// file_directory_security_acl
+	// FileDirectorySecurityACL
+	// access_control
+	// AccessControl
+	// slag
+	// END DEBUGGING
+	// FileDirectorySecurityACLAccessControlSlag captures enum value "slag"
+	FileDirectorySecurityACLAccessControlSlag string = "slag"
+)
+
+// prop value enum
+func (m *FileDirectorySecurityACL) validateAccessControlEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, fileDirectorySecurityAclTypeAccessControlPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *FileDirectorySecurityACL) validateAccessControl(formats strfmt.Registry) error {
+	if swag.IsZero(m.AccessControl) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAccessControlEnum("access_control", "body", *m.AccessControl); err != nil {
 		return err
 	}
 

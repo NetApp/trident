@@ -78,8 +78,8 @@ func NewSecurityKeyManagerDeleteDefault(code int) *SecurityKeyManagerDeleteDefau
 | 65536233 | Internal error. Deletion of km_wrapped_kdb key database has failed for the Onboard Key Manager. |
 | 65536234 | Internal error. Deletion of cluster_kdb key database has failed for the Onboard Key Manager. |
 | 65536239 | Encrypted volumes are found for the SVM. |
-| 65536242 | One or more Storage Encryption devices are assigned an authentication key. |
-| 65536242 | One or more Storage Encryption devices are assigned an authentication key. |
+| 65536242 | One or more self-encrypting drives are assigned an authentication key. |
+| 65536243 | Cannot determine authentication key presence on one or more self-encrypting drives. |
 | 65536800 | Failed to lookup onboard keys. |
 | 65536813 | Encrypted kernel core files found. |
 | 65536817 | Failed to determine if key manager is safe to disable. |

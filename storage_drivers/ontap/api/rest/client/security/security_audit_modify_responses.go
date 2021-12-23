@@ -23,8 +23,8 @@ type SecurityAuditModifyReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *SecurityAuditModifyReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-	case 202:
-		result := NewSecurityAuditModifyAccepted()
+	case 200:
+		result := NewSecurityAuditModifyOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -41,27 +41,27 @@ func (o *SecurityAuditModifyReader) ReadResponse(response runtime.ClientResponse
 	}
 }
 
-// NewSecurityAuditModifyAccepted creates a SecurityAuditModifyAccepted with default headers values
-func NewSecurityAuditModifyAccepted() *SecurityAuditModifyAccepted {
-	return &SecurityAuditModifyAccepted{}
+// NewSecurityAuditModifyOK creates a SecurityAuditModifyOK with default headers values
+func NewSecurityAuditModifyOK() *SecurityAuditModifyOK {
+	return &SecurityAuditModifyOK{}
 }
 
-/* SecurityAuditModifyAccepted describes a response with status code 202, with default header values.
+/* SecurityAuditModifyOK describes a response with status code 200, with default header values.
 
-Accepted
+OK
 */
-type SecurityAuditModifyAccepted struct {
+type SecurityAuditModifyOK struct {
 	Payload *models.SecurityAudit
 }
 
-func (o *SecurityAuditModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /security/audit][%d] securityAuditModifyAccepted  %+v", 202, o.Payload)
+func (o *SecurityAuditModifyOK) Error() string {
+	return fmt.Sprintf("[PATCH /security/audit][%d] securityAuditModifyOK  %+v", 200, o.Payload)
 }
-func (o *SecurityAuditModifyAccepted) GetPayload() *models.SecurityAudit {
+func (o *SecurityAuditModifyOK) GetPayload() *models.SecurityAudit {
 	return o.Payload
 }
 
-func (o *SecurityAuditModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *SecurityAuditModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.SecurityAudit)
 

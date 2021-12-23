@@ -19,11 +19,6 @@ import (
 // swagger:model ip_service_policy_svm_enum
 type IPServicePolicySvmEnum string
 
-func NewIPServicePolicySvmEnum(value IPServicePolicySvmEnum) *IPServicePolicySvmEnum {
-	v := value
-	return &v
-}
-
 const (
 
 	// IPServicePolicySvmEnumDefaultDashManagement captures enum value "default-management"

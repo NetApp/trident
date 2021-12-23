@@ -126,6 +126,12 @@ type ExportRuleCollectionGetParams struct {
 	*/
 	PolicyIDPathParameter int64
 
+	/* PolicyName.
+
+	   Filter by policy.name
+	*/
+	PolicyNameQueryParameter *string
+
 	/* Protocols.
 
 	   Filter by protocols
@@ -165,6 +171,18 @@ type ExportRuleCollectionGetParams struct {
 	   Filter by superuser
 	*/
 	SuperuserQueryParameter *string
+
+	/* SvmName.
+
+	   Filter by svm.name
+	*/
+	SVMNameQueryParameter *string
+
+	/* SvmUUID.
+
+	   Filter by svm.uuid
+	*/
+	SVMUUIDQueryParameter *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -354,6 +372,17 @@ func (o *ExportRuleCollectionGetParams) SetPolicyIDPathParameter(policyID int64)
 	o.PolicyIDPathParameter = policyID
 }
 
+// WithPolicyNameQueryParameter adds the policyName to the export rule collection get params
+func (o *ExportRuleCollectionGetParams) WithPolicyNameQueryParameter(policyName *string) *ExportRuleCollectionGetParams {
+	o.SetPolicyNameQueryParameter(policyName)
+	return o
+}
+
+// SetPolicyNameQueryParameter adds the policyName to the export rule collection get params
+func (o *ExportRuleCollectionGetParams) SetPolicyNameQueryParameter(policyName *string) {
+	o.PolicyNameQueryParameter = policyName
+}
+
 // WithProtocolsQueryParameter adds the protocols to the export rule collection get params
 func (o *ExportRuleCollectionGetParams) WithProtocolsQueryParameter(protocols *string) *ExportRuleCollectionGetParams {
 	o.SetProtocolsQueryParameter(protocols)
@@ -418,6 +447,28 @@ func (o *ExportRuleCollectionGetParams) WithSuperuserQueryParameter(superuser *s
 // SetSuperuserQueryParameter adds the superuser to the export rule collection get params
 func (o *ExportRuleCollectionGetParams) SetSuperuserQueryParameter(superuser *string) {
 	o.SuperuserQueryParameter = superuser
+}
+
+// WithSVMNameQueryParameter adds the svmName to the export rule collection get params
+func (o *ExportRuleCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *ExportRuleCollectionGetParams {
+	o.SetSVMNameQueryParameter(svmName)
+	return o
+}
+
+// SetSVMNameQueryParameter adds the svmName to the export rule collection get params
+func (o *ExportRuleCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
+	o.SVMNameQueryParameter = svmName
+}
+
+// WithSVMUUIDQueryParameter adds the svmUUID to the export rule collection get params
+func (o *ExportRuleCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *ExportRuleCollectionGetParams {
+	o.SetSVMUUIDQueryParameter(svmUUID)
+	return o
+}
+
+// SetSVMUUIDQueryParameter adds the svmUuid to the export rule collection get params
+func (o *ExportRuleCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
+	o.SVMUUIDQueryParameter = svmUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -591,6 +642,23 @@ func (o *ExportRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		return err
 	}
 
+	if o.PolicyNameQueryParameter != nil {
+
+		// query param policy.name
+		var qrPolicyName string
+
+		if o.PolicyNameQueryParameter != nil {
+			qrPolicyName = *o.PolicyNameQueryParameter
+		}
+		qPolicyName := qrPolicyName
+		if qPolicyName != "" {
+
+			if err := r.SetQueryParam("policy.name", qPolicyName); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ProtocolsQueryParameter != nil {
 
 		// query param protocols
@@ -688,6 +756,40 @@ func (o *ExportRuleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		if qSuperuser != "" {
 
 			if err := r.SetQueryParam("superuser", qSuperuser); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SVMNameQueryParameter != nil {
+
+		// query param svm.name
+		var qrSvmName string
+
+		if o.SVMNameQueryParameter != nil {
+			qrSvmName = *o.SVMNameQueryParameter
+		}
+		qSvmName := qrSvmName
+		if qSvmName != "" {
+
+			if err := r.SetQueryParam("svm.name", qSvmName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SVMUUIDQueryParameter != nil {
+
+		// query param svm.uuid
+		var qrSvmUUID string
+
+		if o.SVMUUIDQueryParameter != nil {
+			qrSvmUUID = *o.SVMUUIDQueryParameter
+		}
+		qSvmUUID := qrSvmUUID
+		if qSvmUUID != "" {
+
+			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
 				return err
 			}
 		}

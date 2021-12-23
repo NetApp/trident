@@ -76,6 +76,7 @@ func NewNetworkIPInterfacesCreateDefault(code int) *NetworkIPInterfacesCreateDef
 | ---------- | ----------- |
 | 1376656 | Cluster interfaces must be in the same subnet. Verify the address and netmask are set to the correct values. |
 | 1376663 | All LIFs from a single DNS zone must be in the same SVM. |
+| 1376663 | Cannot add interface to DNS zone because all interfaces from a single DNS zone must be in the same SVM. |
 | 1376963 | Duplicate IP address. |
 | 1966138 | The same IP address may not be used for both a mgmt interface and a gateway address. |
 | 1966140 | An interface with the same name already exists. |
@@ -83,6 +84,7 @@ func NewNetworkIPInterfacesCreateDefault(code int) *NetworkIPInterfacesCreateDef
 | 1966142 | Only data LIFs can be assigned a DNS zone. |
 | 1966267 | IPv6 addresses must have a prefix length between 1 and 127. |
 | 1966269 | IPv4 addresses must have a prefix length between 1 and 32. |
+| 1966270 | Operation not support on SAN LIFs. |
 | 1966476 | DNS Update is supported only on data LIFs. |
 | 1966477 | DNS Update is supported only on LIFs configured with the NFS or CIFS protocol. |
 | 1966987 | The Vserver Broadcast-Domain Home-Node and Home-Port combination is not valid. |
@@ -122,9 +124,12 @@ func NewNetworkIPInterfacesCreateDefault(code int) *NetworkIPInterfacesCreateDef
 | 1967387 | The specified IP address is in use by a subnet in this IPspace. |
 | 1967391 | Setting the DNS zone requires an effective cluster version of 9.9.1 or later. |
 | 1967392 | Setting the DDNS enable parameter requires an effective cluster version of 9.9.1 or later. |
+| 1967394 | Setting the probe port parameter requires an effective cluster version of 9.10.1 or later. |
 | 5373966 | An iSCSI interface cannot be created in an SVM configured for NVMe. |
+| 53281036 | Setting the probe port parameter is not allowed on this platform. |
 | 53281065 | The service_policy does not exist in the SVM. |
 | 53281086 | LIF would exceed the maximum number of supported intercluster LIFs in IPspace. |
+| 53281087 | Cannot configure SAN LIF on SVM. |
 
 */
 type NetworkIPInterfacesCreateDefault struct {

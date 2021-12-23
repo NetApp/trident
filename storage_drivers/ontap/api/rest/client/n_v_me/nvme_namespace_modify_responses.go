@@ -75,6 +75,8 @@ func NewNvmeNamespaceModifyDefault(code int) *NvmeNamespaceModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 13565952 | The namespace clone request failed. |
+| 72089724 | The specified namespace size is too large. |
+| 72089730 | The specified namespace cannot be updated as it resides in a Snapshot copy. |
 | 72090005 | The specified `clone.source.uuid` and `clone.source.name` do not refer to the same LUN. |
 | 72090006 | The specified namespace was not found. This can apply to `clone.source` or the target namespace. The `target` property of the error object identifies the property. |
 | 72090007 | The specified namespace was not found. This can apply to `clone.source` or the target namespace. The `target` property of the error object identifies the property. |
@@ -82,6 +84,7 @@ func NewNvmeNamespaceModifyDefault(code int) *NvmeNamespaceModifyDefault {
 | 72090011 | An error occurred after successfully modifying some of the properties of the namespace. Some properties were not modified. |
 | 72090016 | The namespace's aggregate is offline. The aggregate must be online to modify or remove the namespace. |
 | 72090017 | The namespace's volume is offline. The volume must be online to modify or remove the namespace. |
+| 72090038 | An attempt was made to reduce the size of the specified namespace. |
 
 */
 type NvmeNamespaceModifyDefault struct {

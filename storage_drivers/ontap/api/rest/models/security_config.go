@@ -7,10 +7,13 @@ package models
 
 import (
 	"context"
+	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // SecurityConfig security config
@@ -24,11 +27,17 @@ type SecurityConfig struct {
 	// fips
 	Fips *SecurityConfigFips `json:"fips,omitempty"`
 
+	// management protocols
+	ManagementProtocols *SecurityConfigManagementProtocols `json:"management_protocols,omitempty"`
+
 	// onboard key manager configurable status
 	OnboardKeyManagerConfigurableStatus *SecurityConfigOnboardKeyManagerConfigurableStatus `json:"onboard_key_manager_configurable_status,omitempty"`
 
 	// software data encryption
 	SoftwareDataEncryption *SecurityConfigSoftwareDataEncryption `json:"software_data_encryption,omitempty"`
+
+	// tls
+	TLS *SecurityConfigTLS `json:"tls,omitempty"`
 }
 
 // Validate validates this security config
@@ -43,11 +52,19 @@ func (m *SecurityConfig) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateManagementProtocols(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateOnboardKeyManagerConfigurableStatus(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateSoftwareDataEncryption(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTLS(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -91,6 +108,23 @@ func (m *SecurityConfig) validateFips(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SecurityConfig) validateManagementProtocols(formats strfmt.Registry) error {
+	if swag.IsZero(m.ManagementProtocols) { // not required
+		return nil
+	}
+
+	if m.ManagementProtocols != nil {
+		if err := m.ManagementProtocols.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("management_protocols")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *SecurityConfig) validateOnboardKeyManagerConfigurableStatus(formats strfmt.Registry) error {
 	if swag.IsZero(m.OnboardKeyManagerConfigurableStatus) { // not required
 		return nil
@@ -125,6 +159,23 @@ func (m *SecurityConfig) validateSoftwareDataEncryption(formats strfmt.Registry)
 	return nil
 }
 
+func (m *SecurityConfig) validateTLS(formats strfmt.Registry) error {
+	if swag.IsZero(m.TLS) { // not required
+		return nil
+	}
+
+	if m.TLS != nil {
+		if err := m.TLS.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tls")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this security config based on the context it is used
 func (m *SecurityConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -137,11 +188,19 @@ func (m *SecurityConfig) ContextValidate(ctx context.Context, formats strfmt.Reg
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateManagementProtocols(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateOnboardKeyManagerConfigurableStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateSoftwareDataEncryption(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTLS(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -179,6 +238,20 @@ func (m *SecurityConfig) contextValidateFips(ctx context.Context, formats strfmt
 	return nil
 }
 
+func (m *SecurityConfig) contextValidateManagementProtocols(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ManagementProtocols != nil {
+		if err := m.ManagementProtocols.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("management_protocols")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *SecurityConfig) contextValidateOnboardKeyManagerConfigurableStatus(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.OnboardKeyManagerConfigurableStatus != nil {
@@ -199,6 +272,20 @@ func (m *SecurityConfig) contextValidateSoftwareDataEncryption(ctx context.Conte
 		if err := m.SoftwareDataEncryption.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("software_data_encryption")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SecurityConfig) contextValidateTLS(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.TLS != nil {
+		if err := m.TLS.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tls")
 			}
 			return err
 		}
@@ -349,6 +436,47 @@ func (m *SecurityConfigLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// SecurityConfigManagementProtocols Cluster-wide security protocols related information.
+//
+//
+// swagger:model SecurityConfigManagementProtocols
+type SecurityConfigManagementProtocols struct {
+
+	// Indicates whether or not security protocol rsh is enabled on the cluster.
+	RshEnabled bool `json:"rsh_enabled,omitempty"`
+
+	// Indicates whether or not security protocol telnet is enabled on the cluster.
+	TelnetEnabled bool `json:"telnet_enabled,omitempty"`
+}
+
+// Validate validates this security config management protocols
+func (m *SecurityConfigManagementProtocols) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this security config management protocols based on context it is used
+func (m *SecurityConfigManagementProtocols) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityConfigManagementProtocols) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityConfigManagementProtocols) UnmarshalBinary(b []byte) error {
+	var res SecurityConfigManagementProtocols
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // SecurityConfigOnboardKeyManagerConfigurableStatus Indicates whether the Onboard Key Manager can be configured in the cluster.
 //
 //
@@ -429,6 +557,92 @@ func (m *SecurityConfigSoftwareDataEncryption) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *SecurityConfigSoftwareDataEncryption) UnmarshalBinary(b []byte) error {
 	var res SecurityConfigSoftwareDataEncryption
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SecurityConfigTLS Cluster-wide Transport Layer Security (TLS) configuration information
+//
+//
+// swagger:model SecurityConfigTLS
+type SecurityConfigTLS struct {
+
+	// Names a cipher suite that the system can select during TLS handshakes. A list of available options can be found on the Internet Assigned Number Authority (IANA) website.
+	CipherSuites []string `json:"cipher_suites,omitempty"`
+
+	// Names a TLS protocol version that the system can select during TLS handshakes. The use of SSLv3 or TLSv1 is discouraged.
+	ProtocolVersions []string `json:"protocol_versions,omitempty"`
+}
+
+// Validate validates this security config TLS
+func (m *SecurityConfigTLS) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateProtocolVersions(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var securityConfigTlsProtocolVersionsItemsEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["SSLv3","TLSv1","TLSv1.1","TLSv1.2"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		securityConfigTlsProtocolVersionsItemsEnum = append(securityConfigTlsProtocolVersionsItemsEnum, v)
+	}
+}
+
+func (m *SecurityConfigTLS) validateProtocolVersionsItemsEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, securityConfigTlsProtocolVersionsItemsEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SecurityConfigTLS) validateProtocolVersions(formats strfmt.Registry) error {
+	if swag.IsZero(m.ProtocolVersions) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.ProtocolVersions); i++ {
+
+		// value enum
+		if err := m.validateProtocolVersionsItemsEnum("tls"+"."+"protocol_versions"+"."+strconv.Itoa(i), "body", m.ProtocolVersions[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validates this security config TLS based on context it is used
+func (m *SecurityConfigTLS) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SecurityConfigTLS) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SecurityConfigTLS) UnmarshalBinary(b []byte) error {
+	var res SecurityConfigTLS
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

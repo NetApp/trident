@@ -6,6 +6,8 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"fmt"
+
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -41,6 +43,10 @@ type ClientService interface {
 	AccountPasswordCreate(params *AccountPasswordCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountPasswordCreateCreated, error)
 
 	AccountPublickeyDelete(params *AccountPublickeyDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountPublickeyDeleteOK, error)
+
+	AntiRansomwareSuspectCollectionGet(params *AntiRansomwareSuspectCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectCollectionGetOK, error)
+
+	AntiRansomwareSuspectDelete(params *AntiRansomwareSuspectDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectDeleteAccepted, error)
 
 	AuditLogForwardingGet(params *AuditLogForwardingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditLogForwardingGetOK, error)
 
@@ -98,6 +104,14 @@ type ClientService interface {
 
 	GcpKmsRestore(params *GcpKmsRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GcpKmsRestoreAccepted, error)
 
+	IpsecCaCertificateCollectionGet(params *IpsecCaCertificateCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateCollectionGetOK, error)
+
+	IpsecCaCertificateCreate(params *IpsecCaCertificateCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateCreateCreated, error)
+
+	IpsecCaCertificateDelete(params *IpsecCaCertificateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateDeleteOK, error)
+
+	IpsecCaCertificateGet(params *IpsecCaCertificateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateGetOK, error)
+
 	IpsecGet(params *IpsecGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecGetOK, error)
 
 	IpsecModify(params *IpsecModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecModifyOK, error)
@@ -111,6 +125,10 @@ type ClientService interface {
 	IpsecPolicyGet(params *IpsecPolicyGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyGetOK, error)
 
 	IpsecPolicyModify(params *IpsecPolicyModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecPolicyModifyOK, error)
+
+	KeyManagerConfigGet(params *KeyManagerConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerConfigGetOK, error)
+
+	KeyManagerConfigModify(params *KeyManagerConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerConfigModifyOK, error)
 
 	LoginMessagesCollectionGet(params *LoginMessagesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LoginMessagesCollectionGetOK, error)
 
@@ -152,7 +170,7 @@ type ClientService interface {
 
 	SecurityAuditLogCollectionGet(params *SecurityAuditLogCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityAuditLogCollectionGetOK, error)
 
-	SecurityAuditModify(params *SecurityAuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityAuditModifyAccepted, error)
+	SecurityAuditModify(params *SecurityAuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityAuditModifyOK, error)
 
 	SecurityCertificateCollectionGet(params *SecurityCertificateCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateCollectionGetOK, error)
 
@@ -190,6 +208,8 @@ type ClientService interface {
 
 	SecurityKeyManagerModify(params *SecurityKeyManagerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerModifyOK, error)
 
+	SecurityKeystoreCollectionGet(params *SecurityKeystoreCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreCollectionGetOK, error)
+
 	SecurityLogForwardingCreate(params *SecurityLogForwardingCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingCreateAccepted, error)
 
 	SecurityLogForwardingDelete(params *SecurityLogForwardingDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityLogForwardingDeleteOK, error)
@@ -209,6 +229,12 @@ type ClientService interface {
 	SSHGet(params *SSHGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SSHGetOK, error)
 
 	SSHModify(params *SSHModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SSHModifyOK, error)
+
+	SvmSSHServerCollectionGet(params *SvmSSHServerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerCollectionGetOK, error)
+
+	SvmSSHServerGet(params *SvmSSHServerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerGetOK, error)
+
+	SvmSSHServerModify(params *SvmSSHServerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerModifyOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -552,6 +578,89 @@ func (a *Client) AccountPublickeyDelete(params *AccountPublickeyDeleteParams, au
 }
 
 /*
+  AntiRansomwareSuspectCollectionGet Retrieves information on the suspects generated by the anti-ransomware analytics.
+### Related ONTAP commands
+* `security anti-ransomware volume attack generate-report`
+
+*/
+func (a *Client) AntiRansomwareSuspectCollectionGet(params *AntiRansomwareSuspectCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAntiRansomwareSuspectCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "anti_ransomware_suspect_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/anti-ransomware/suspects",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AntiRansomwareSuspectCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AntiRansomwareSuspectCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AntiRansomwareSuspectCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  AntiRansomwareSuspectDelete Clears either all the suspect files of a volume or suspect files of a volume based on file format or suspect time provided.
+### Related ONTAP commands
+* `security anti-ransomware volume attack clear-suspect`
+
+*/
+func (a *Client) AntiRansomwareSuspectDelete(params *AntiRansomwareSuspectDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAntiRansomwareSuspectDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "anti_ransomware_suspect_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/anti-ransomware/suspects/{volume.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AntiRansomwareSuspectDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AntiRansomwareSuspectDeleteAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for anti_ransomware_suspect_delete: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
   AuditLogForwardingGet Defines a remote syslog/splunk server for sending audit information to.
 */
 func (a *Client) AuditLogForwardingGet(params *AuditLogForwardingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditLogForwardingGetOK, error) {
@@ -637,7 +746,8 @@ func (a *Client) AzureKeyVaultCollectionGet(params *AzureKeyVaultCollectionGetPa
 * `svm.uuid` or `svm.name` - Existing SVM in which to create a AKV.
 * `client_id` - Application (client) ID of the deployed Azure application with appropriate access to an AKV.
 * `tenant_id` - Directory (tenant) ID of the deployed Azure application with appropriate access to an AKV.
-* `client_secret` - Password used by the application to prove its identity to AKV.
+* `client_secret` - Secret used by the application to prove its identity to AKV.
+* `client_certificate` - PKCS12 Certificate used by the application to prove its identity to AKV.
 * `key_id`- Key Identifier of AKV encryption key.
 * `name` - Name of the deployed AKV used by ONTAP for storing keys.
 ### Optional properties
@@ -772,9 +882,10 @@ func (a *Client) AzureKeyVaultGet(params *AzureKeyVaultGetParams, authInfo runti
 /*
   AzureKeyVaultModify Updates the AKV configuration.
 ### Optional properties
-* `client_secret` - New password used to prove the application's identity to the AKV.
+* `client_secret` - New secret used to prove the application's identity to the AKV.
+* `client_certificate` - New PKCS12 certificate used to prove the application's identity to the AKV.
 * `key_id`- Key Identifier of the new AKV key encryption key.
-* `proxy_type`` - Type of proxy (http, https etc.) if proxy configuration is used.
+* `proxy_type` - Type of proxy (http, https etc.) if proxy configuration is used.
 * `proxy_host` - Proxy hostname if proxy configuration is used.
 * `proxy_port` - Proxy port number if proxy configuration is used.
 * `proxy_username` - Proxy username if proxy configuration is used.
@@ -783,6 +894,7 @@ func (a *Client) AzureKeyVaultGet(params *AzureKeyVaultGetParams, authInfo runti
 * `tenant_id` - Directory (tenant) ID of the deployed Azure application with appropriate access to an AKV.
 ### Related ONTAP commands
 * `security key-manager external azure update-client-secret`
+* `security key-manager external azure update-credentials`
 * `security key-manager external azure rekey-external`
 * `security key-manager external azure update-config`
 
@@ -838,7 +950,7 @@ func (a *Client) AzureKeyVaultRekeyInternal(params *AzureKeyVaultRekeyInternalPa
 	op := &runtime.ClientOperation{
 		ID:                 "azure_key_vault_rekey_internal",
 		Method:             "POST",
-		PathPattern:        "/security/azure-key-vaults/{azure_key_vault.uuid}/rekey-internal",
+		PathPattern:        "/security/azure-key-vaults/{uuid}/rekey-internal",
 		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
 		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
 		Schemes:            []string{"https"},
@@ -879,7 +991,7 @@ func (a *Client) AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authIn
 	op := &runtime.ClientOperation{
 		ID:                 "azure_key_vault_restore",
 		Method:             "POST",
-		PathPattern:        "/security/azure-key-vaults/{azure_key_vault.uuid}/restore",
+		PathPattern:        "/security/azure-key-vaults/{uuid}/restore",
 		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
 		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
 		Schemes:            []string{"https"},
@@ -1127,6 +1239,7 @@ func (a *Client) ClusterAccountAdProxyModify(params *ClusterAccountAdProxyModify
 * `netgroup_byhost_scope` - _subtree_
 * `is_netgroup_byhost_enabled` - _false_
 * `skip_config_validation` - _false_
+* `try_channel_binding` - _true_
 <br/>
 Configuring more than one LDAP server is recommended to avoid a single point of failure. Both FQDNs and IP addresses are supported for the `servers` property.
 The LDAP servers are validated as part of this operation. LDAP validation fails in the following scenarios:<br/>
@@ -1753,7 +1866,7 @@ func (a *Client) GcpKmsRekeyInternal(params *GcpKmsRekeyInternalParams, authInfo
 	op := &runtime.ClientOperation{
 		ID:                 "gcp_kms_rekey_internal",
 		Method:             "POST",
-		PathPattern:        "/security/gcp-kms/{gcp_kms.uuid}/rekey-internal",
+		PathPattern:        "/security/gcp-kms/{uuid}/rekey-internal",
 		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
 		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
 		Schemes:            []string{"https"},
@@ -1794,7 +1907,7 @@ func (a *Client) GcpKmsRestore(params *GcpKmsRestoreParams, authInfo runtime.Cli
 	op := &runtime.ClientOperation{
 		ID:                 "gcp_kms_restore",
 		Method:             "POST",
-		PathPattern:        "/security/gcp-kms/{gcp_kms.uuid}/restore",
+		PathPattern:        "/security/gcp-kms/{uuid}/restore",
 		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
 		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
 		Schemes:            []string{"https"},
@@ -1818,6 +1931,172 @@ func (a *Client) GcpKmsRestore(params *GcpKmsRestoreParams, authInfo runtime.Cli
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*GcpKmsRestoreDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IpsecCaCertificateCollectionGet Retrieves the collection of IPsec CA certificates configured for cluster and all SVMs.
+### Related ONTAP commands
+* `security ipsec ca-certificate show`
+
+*/
+func (a *Client) IpsecCaCertificateCollectionGet(params *IpsecCaCertificateCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIpsecCaCertificateCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ipsec_ca_certificate_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/ipsec/ca-certificates",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IpsecCaCertificateCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IpsecCaCertificateCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IpsecCaCertificateCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IpsecCaCertificateCreate Add CA certificate to IPsec. The CA certificate should already be installed on the cluster prior to adding them to IPsec.
+The CA certificate can be installed on the cluster using the /security/certificates endpoint.
+The svm.uuid or svm.name should not be supplied for certificates that have a scope of cluster.
+### Related ONTAP commands
+* `security ipsec ca-certificate add`
+
+*/
+func (a *Client) IpsecCaCertificateCreate(params *IpsecCaCertificateCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIpsecCaCertificateCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ipsec_ca_certificate_create",
+		Method:             "POST",
+		PathPattern:        "/security/ipsec/ca-certificates",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IpsecCaCertificateCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IpsecCaCertificateCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IpsecCaCertificateCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IpsecCaCertificateDelete Deletes the IPsec CA certificate with the specified UUID from IPsec.
+### Related ONTAP commands
+* `security ipsec ca-certificate remove`
+
+*/
+func (a *Client) IpsecCaCertificateDelete(params *IpsecCaCertificateDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIpsecCaCertificateDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ipsec_ca_certificate_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/ipsec/ca-certificates/{certificate.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IpsecCaCertificateDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IpsecCaCertificateDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IpsecCaCertificateDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  IpsecCaCertificateGet Retrieves a specific CA certificate configured for IPsec.
+### Related ONTAP commands
+* `security ipsec ca-certificate show`
+
+*/
+func (a *Client) IpsecCaCertificateGet(params *IpsecCaCertificateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*IpsecCaCertificateGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewIpsecCaCertificateGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ipsec_ca_certificate_get",
+		Method:             "GET",
+		PathPattern:        "/security/ipsec/ca-certificates/{certificate.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &IpsecCaCertificateGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*IpsecCaCertificateGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*IpsecCaCertificateGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -2105,6 +2384,88 @@ func (a *Client) IpsecPolicyModify(params *IpsecPolicyModifyParams, authInfo run
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*IpsecPolicyModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  KeyManagerConfigGet Retrieves key manager configurations.
+### Related ONTAP commands
+* `security key-manager config show`
+
+*/
+func (a *Client) KeyManagerConfigGet(params *KeyManagerConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerConfigGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewKeyManagerConfigGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "key_manager_config_get",
+		Method:             "GET",
+		PathPattern:        "/security/key-manager-configs",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &KeyManagerConfigGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*KeyManagerConfigGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*KeyManagerConfigGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  KeyManagerConfigModify Updates key manager configurations.
+### Related ONTAP commands
+* `security key-manager config modify`
+
+*/
+func (a *Client) KeyManagerConfigModify(params *KeyManagerConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KeyManagerConfigModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewKeyManagerConfigModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "key_manager_config_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/key-manager-configs",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &KeyManagerConfigModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*KeyManagerConfigModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*KeyManagerConfigModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -2638,7 +2999,7 @@ func (a *Client) RolePrivilegeCollectionGet(params *RolePrivilegeCollectionGetPa
 ### Required parameters
 * `owner.uuid` - UUID of the SVM that houses this role.
 * `name` - Name of the role to be updated.
-* `path` - REST URI path (example: "/api/storage/volumes").
+* `path` - REST URI path (example: <i>/api/storage/volumes</i>). Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the "snapshots" endpoint: <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
 * `access` - Desired access level for the REST URI path (one of "all", "readonly" or "none").
 ### Related ONTAP commands
 * `security login rest-role create`
@@ -2683,11 +3044,11 @@ func (a *Client) RolePrivilegeCreate(params *RolePrivilegeCreateParams, authInfo
 }
 
 /*
-  RolePrivilegeDelete Deletes a privilege tuple (of REST URI and its access level) from the role.
+  RolePrivilegeDelete Deletes a privilege tuple (of REST URI and its access level) from the role. The REST URI can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
 ### Required parameters
 * `owner.uuid` - UUID of the SVM which houses this role.
 * `name` - Name of the role to be updated.
-* `path` - Constituent REST API path to be deleted from this role.
+* `path` - Constituent REST API path to be deleted from this role. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the "snapshots" endpoint: <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
 ### Related ONTAP commands
 * `security login rest-role delete`
 ### Learn more
@@ -2731,7 +3092,7 @@ func (a *Client) RolePrivilegeDelete(params *RolePrivilegeDeleteParams, authInfo
 }
 
 /*
-  RolePrivilegeGet Retrieves the privilege level for a REST API path for the specified role.
+  RolePrivilegeGet Retrieves the privilege level for a REST API path for the specified role. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
 ### Related ONTAP commands
 * `security login rest-role show`
 ### Learn more
@@ -2775,11 +3136,11 @@ func (a *Client) RolePrivilegeGet(params *RolePrivilegeGetParams, authInfo runti
 }
 
 /*
-  RolePrivilegeModify Updates the privilege level for a REST API path.
+  RolePrivilegeModify Updates the privilege level for a REST API path. The REST API path can be a resource-qualified endpoint. Currently, the only supported resource-qualified endpoints are <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
 ### Required parameters
 * `owner.uuid` - UUID of the SVM that houses this role.
 * `name` - Name of the role to be updated.
-* `path` - Constituent REST API path whose access level has to be updated.
+* `path` - Constituent REST API path whose access level is to be updated. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the "snapshots" endpoint: <i>/api/storage/volumes/{volume.uuid}/snapshots</i> and <i>/api/storage/volumes/\[*]/snapshots</i>. "*" is a wildcard character denoting "all" volumes.
 * `access` - Access level for the path (one of "all", "readonly", or "none")
 ### Related ONTAP commands
 * `security login rest-role modify`
@@ -2988,7 +3349,7 @@ func (a *Client) SecurityAuditLogCollectionGet(params *SecurityAuditLogCollectio
 All of the fields are optional. An empty body will make no changes.
 
 */
-func (a *Client) SecurityAuditModify(params *SecurityAuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityAuditModifyAccepted, error) {
+func (a *Client) SecurityAuditModify(params *SecurityAuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityAuditModifyOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewSecurityAuditModifyParams()
@@ -3014,7 +3375,7 @@ func (a *Client) SecurityAuditModify(params *SecurityAuditModifyParams, authInfo
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*SecurityAuditModifyAccepted)
+	success, ok := result.(*SecurityAuditModifyOK)
 	if ok {
 		return success, nil
 	}
@@ -3340,7 +3701,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `status.message`
 * `status.code`
 ### Related ONTAP commands
-* `security key-manager show-keystore`
+* `security key-manager show-key-store`
 * `security key-manager external show`
 * `security key-manager external show-status`
 * `security key-manager onboard show-backup`
@@ -3480,7 +3841,7 @@ There is an added cost to retrieving values for these properties. They are not i
 * `status.message`
 * `status.code`
 ### Related ONTAP commands
-* `security key-manager show-keystore`
+* `security key-manager show-key-store`
 * `security key-manager external show`
 * `security key-manager external show-status`
 * `security key-manager onboard show-backup`
@@ -3523,6 +3884,10 @@ func (a *Client) SecurityKeyManagerGet(params *SecurityKeyManagerGetParams, auth
 
 /*
   SecurityKeyManagerKeyServersCollectionGet Retrieves the list of key servers configured in an external key manager.
+### Related ONTAP commands
+* `security key-manager external show`
+* `security key-manager external show-status`
+
 */
 func (a *Client) SecurityKeyManagerKeyServersCollectionGet(params *SecurityKeyManagerKeyServersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerKeyServersCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -3817,6 +4182,52 @@ func (a *Client) SecurityKeyManagerModify(params *SecurityKeyManagerModifyParams
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SecurityKeyManagerModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SecurityKeystoreCollectionGet Retrieves keystores.
+### Expensive properties
+There is an added cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+* `keystore.location`
+* `svm.name`
+* `svm.uuid`
+### Related ONTAP commands
+* `security key-manager show-key-store`
+
+*/
+func (a *Client) SecurityKeystoreCollectionGet(params *SecurityKeystoreCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityKeystoreCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_keystore_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/key-stores",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityKeystoreCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityKeystoreCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityKeystoreCollectionGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -4230,6 +4641,134 @@ func (a *Client) SSHModify(params *SSHModifyParams, authInfo runtime.ClientAuthI
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SSHModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SvmSSHServerCollectionGet Retrieves the SSH server configuration for all the SVMs.
+### Related ONTAP commands
+* `security ssh`
+
+*/
+func (a *Client) SvmSSHServerCollectionGet(params *SvmSSHServerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmSSHServerCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_ssh_server_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/ssh/svms",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmSSHServerCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmSSHServerCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmSSHServerCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SvmSSHServerGet Retrieves the SSH server configuration for the specified SVM.
+### Related ONTAP commands
+* `security ssh`
+
+*/
+func (a *Client) SvmSSHServerGet(params *SvmSSHServerGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmSSHServerGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_ssh_server_get",
+		Method:             "GET",
+		PathPattern:        "/security/ssh/svms/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmSSHServerGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmSSHServerGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmSSHServerGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  SvmSSHServerModify Updates the SSH server configuration for the specified SVM.
+### Optional parameters
+* `ciphers` - Encryption algorithms for the payload
+* `key_exchange_algorithms` - SSH key exchange algorithms
+* `mac_algorithms` - MAC algorithms
+* `max_authentication_retry_count` - Maximum authentication retries allowed before closing the connection
+### Related ONTAP commands
+* `security ssh`
+
+*/
+func (a *Client) SvmSSHServerModify(params *SvmSSHServerModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SvmSSHServerModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSvmSSHServerModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "svm_ssh_server_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/ssh/svms/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SvmSSHServerModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SvmSSHServerModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SvmSSHServerModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

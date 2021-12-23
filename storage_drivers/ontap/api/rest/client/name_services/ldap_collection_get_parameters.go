@@ -268,6 +268,12 @@ type LdapCollectionGetParams struct {
 	*/
 	SVMUUIDQueryParameter *string
 
+	/* TryChannelBinding.
+
+	   Filter by try_channel_binding
+	*/
+	TryChannelBindingQueryParameter *bool
+
 	/* UseStartTLS.
 
 	   Filter by use_start_tls
@@ -725,6 +731,17 @@ func (o *LdapCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *Ld
 // SetSVMUUIDQueryParameter adds the svmUuid to the ldap collection get params
 func (o *LdapCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
 	o.SVMUUIDQueryParameter = svmUUID
+}
+
+// WithTryChannelBindingQueryParameter adds the tryChannelBinding to the ldap collection get params
+func (o *LdapCollectionGetParams) WithTryChannelBindingQueryParameter(tryChannelBinding *bool) *LdapCollectionGetParams {
+	o.SetTryChannelBindingQueryParameter(tryChannelBinding)
+	return o
+}
+
+// SetTryChannelBindingQueryParameter adds the tryChannelBinding to the ldap collection get params
+func (o *LdapCollectionGetParams) SetTryChannelBindingQueryParameter(tryChannelBinding *bool) {
+	o.TryChannelBindingQueryParameter = tryChannelBinding
 }
 
 // WithUseStartTLSQueryParameter adds the useStartTLS to the ldap collection get params
@@ -1329,6 +1346,23 @@ func (o *LdapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qSvmUUID != "" {
 
 			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TryChannelBindingQueryParameter != nil {
+
+		// query param try_channel_binding
+		var qrTryChannelBinding bool
+
+		if o.TryChannelBindingQueryParameter != nil {
+			qrTryChannelBinding = *o.TryChannelBindingQueryParameter
+		}
+		qTryChannelBinding := swag.FormatBool(qrTryChannelBinding)
+		if qTryChannelBinding != "" {
+
+			if err := r.SetQueryParam("try_channel_binding", qTryChannelBinding); err != nil {
 				return err
 			}
 		}

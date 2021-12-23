@@ -102,6 +102,36 @@ type NvmeInterfaceCollectionGetParams struct {
 	*/
 	FieldsQueryParameter []string
 
+	/* InterfaceType.
+
+	   Filter by interface_type
+	*/
+	InterfaceTypeQueryParameter *string
+
+	/* IPInterfaceIPAddress.
+
+	   Filter by ip_interface.ip.address
+	*/
+	IPInterfaceIPAddressQueryParameter *string
+
+	/* IPInterfaceLocationPortName.
+
+	   Filter by ip_interface.location.port.name
+	*/
+	IPInterfaceLocationPortNameQueryParameter *string
+
+	/* IPInterfaceLocationPortNodeName.
+
+	   Filter by ip_interface.location.port.node.name
+	*/
+	IPInterfaceLocationPortNodeNameQueryParameter *string
+
+	/* IPInterfaceLocationPortUUID.
+
+	   Filter by ip_interface.location.port.uuid
+	*/
+	IPInterfaceLocationPortUUIDQueryParameter *string
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
@@ -165,6 +195,12 @@ type NvmeInterfaceCollectionGetParams struct {
 	   Filter by transport_address
 	*/
 	TransportAddressQueryParameter *string
+
+	/* TransportProtocols.
+
+	   Filter by transport_protocols
+	*/
+	TransportProtocolsQueryParameter *string
 
 	/* UUID.
 
@@ -316,6 +352,61 @@ func (o *NvmeInterfaceCollectionGetParams) SetFieldsQueryParameter(fields []stri
 	o.FieldsQueryParameter = fields
 }
 
+// WithInterfaceTypeQueryParameter adds the interfaceType to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithInterfaceTypeQueryParameter(interfaceType *string) *NvmeInterfaceCollectionGetParams {
+	o.SetInterfaceTypeQueryParameter(interfaceType)
+	return o
+}
+
+// SetInterfaceTypeQueryParameter adds the interfaceType to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetInterfaceTypeQueryParameter(interfaceType *string) {
+	o.InterfaceTypeQueryParameter = interfaceType
+}
+
+// WithIPInterfaceIPAddressQueryParameter adds the iPInterfaceIPAddress to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceIPAddressQueryParameter(iPInterfaceIPAddress *string) *NvmeInterfaceCollectionGetParams {
+	o.SetIPInterfaceIPAddressQueryParameter(iPInterfaceIPAddress)
+	return o
+}
+
+// SetIPInterfaceIPAddressQueryParameter adds the ipInterfaceIpAddress to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceIPAddressQueryParameter(iPInterfaceIPAddress *string) {
+	o.IPInterfaceIPAddressQueryParameter = iPInterfaceIPAddress
+}
+
+// WithIPInterfaceLocationPortNameQueryParameter adds the iPInterfaceLocationPortName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortNameQueryParameter(iPInterfaceLocationPortName *string) *NvmeInterfaceCollectionGetParams {
+	o.SetIPInterfaceLocationPortNameQueryParameter(iPInterfaceLocationPortName)
+	return o
+}
+
+// SetIPInterfaceLocationPortNameQueryParameter adds the ipInterfaceLocationPortName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortNameQueryParameter(iPInterfaceLocationPortName *string) {
+	o.IPInterfaceLocationPortNameQueryParameter = iPInterfaceLocationPortName
+}
+
+// WithIPInterfaceLocationPortNodeNameQueryParameter adds the iPInterfaceLocationPortNodeName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortNodeNameQueryParameter(iPInterfaceLocationPortNodeName *string) *NvmeInterfaceCollectionGetParams {
+	o.SetIPInterfaceLocationPortNodeNameQueryParameter(iPInterfaceLocationPortNodeName)
+	return o
+}
+
+// SetIPInterfaceLocationPortNodeNameQueryParameter adds the ipInterfaceLocationPortNodeName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortNodeNameQueryParameter(iPInterfaceLocationPortNodeName *string) {
+	o.IPInterfaceLocationPortNodeNameQueryParameter = iPInterfaceLocationPortNodeName
+}
+
+// WithIPInterfaceLocationPortUUIDQueryParameter adds the iPInterfaceLocationPortUUID to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortUUIDQueryParameter(iPInterfaceLocationPortUUID *string) *NvmeInterfaceCollectionGetParams {
+	o.SetIPInterfaceLocationPortUUIDQueryParameter(iPInterfaceLocationPortUUID)
+	return o
+}
+
+// SetIPInterfaceLocationPortUUIDQueryParameter adds the ipInterfaceLocationPortUuid to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortUUIDQueryParameter(iPInterfaceLocationPortUUID *string) {
+	o.IPInterfaceLocationPortUUIDQueryParameter = iPInterfaceLocationPortUUID
+}
+
 // WithMaxRecordsQueryParameter adds the maxRecords to the nvme interface collection get params
 func (o *NvmeInterfaceCollectionGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *NvmeInterfaceCollectionGetParams {
 	o.SetMaxRecordsQueryParameter(maxRecords)
@@ -424,6 +515,17 @@ func (o *NvmeInterfaceCollectionGetParams) WithTransportAddressQueryParameter(tr
 // SetTransportAddressQueryParameter adds the transportAddress to the nvme interface collection get params
 func (o *NvmeInterfaceCollectionGetParams) SetTransportAddressQueryParameter(transportAddress *string) {
 	o.TransportAddressQueryParameter = transportAddress
+}
+
+// WithTransportProtocolsQueryParameter adds the transportProtocols to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithTransportProtocolsQueryParameter(transportProtocols *string) *NvmeInterfaceCollectionGetParams {
+	o.SetTransportProtocolsQueryParameter(transportProtocols)
+	return o
+}
+
+// SetTransportProtocolsQueryParameter adds the transportProtocols to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) SetTransportProtocolsQueryParameter(transportProtocols *string) {
+	o.TransportProtocolsQueryParameter = transportProtocols
 }
 
 // WithUUIDQueryParameter adds the uuid to the nvme interface collection get params
@@ -555,6 +657,91 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.InterfaceTypeQueryParameter != nil {
+
+		// query param interface_type
+		var qrInterfaceType string
+
+		if o.InterfaceTypeQueryParameter != nil {
+			qrInterfaceType = *o.InterfaceTypeQueryParameter
+		}
+		qInterfaceType := qrInterfaceType
+		if qInterfaceType != "" {
+
+			if err := r.SetQueryParam("interface_type", qInterfaceType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IPInterfaceIPAddressQueryParameter != nil {
+
+		// query param ip_interface.ip.address
+		var qrIPInterfaceIPAddress string
+
+		if o.IPInterfaceIPAddressQueryParameter != nil {
+			qrIPInterfaceIPAddress = *o.IPInterfaceIPAddressQueryParameter
+		}
+		qIPInterfaceIPAddress := qrIPInterfaceIPAddress
+		if qIPInterfaceIPAddress != "" {
+
+			if err := r.SetQueryParam("ip_interface.ip.address", qIPInterfaceIPAddress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IPInterfaceLocationPortNameQueryParameter != nil {
+
+		// query param ip_interface.location.port.name
+		var qrIPInterfaceLocationPortName string
+
+		if o.IPInterfaceLocationPortNameQueryParameter != nil {
+			qrIPInterfaceLocationPortName = *o.IPInterfaceLocationPortNameQueryParameter
+		}
+		qIPInterfaceLocationPortName := qrIPInterfaceLocationPortName
+		if qIPInterfaceLocationPortName != "" {
+
+			if err := r.SetQueryParam("ip_interface.location.port.name", qIPInterfaceLocationPortName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IPInterfaceLocationPortNodeNameQueryParameter != nil {
+
+		// query param ip_interface.location.port.node.name
+		var qrIPInterfaceLocationPortNodeName string
+
+		if o.IPInterfaceLocationPortNodeNameQueryParameter != nil {
+			qrIPInterfaceLocationPortNodeName = *o.IPInterfaceLocationPortNodeNameQueryParameter
+		}
+		qIPInterfaceLocationPortNodeName := qrIPInterfaceLocationPortNodeName
+		if qIPInterfaceLocationPortNodeName != "" {
+
+			if err := r.SetQueryParam("ip_interface.location.port.node.name", qIPInterfaceLocationPortNodeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IPInterfaceLocationPortUUIDQueryParameter != nil {
+
+		// query param ip_interface.location.port.uuid
+		var qrIPInterfaceLocationPortUUID string
+
+		if o.IPInterfaceLocationPortUUIDQueryParameter != nil {
+			qrIPInterfaceLocationPortUUID = *o.IPInterfaceLocationPortUUIDQueryParameter
+		}
+		qIPInterfaceLocationPortUUID := qrIPInterfaceLocationPortUUID
+		if qIPInterfaceLocationPortUUID != "" {
+
+			if err := r.SetQueryParam("ip_interface.location.port.uuid", qIPInterfaceLocationPortUUID); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -717,6 +904,23 @@ func (o *NvmeInterfaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qTransportAddress != "" {
 
 			if err := r.SetQueryParam("transport_address", qTransportAddress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TransportProtocolsQueryParameter != nil {
+
+		// query param transport_protocols
+		var qrTransportProtocols string
+
+		if o.TransportProtocolsQueryParameter != nil {
+			qrTransportProtocols = *o.TransportProtocolsQueryParameter
+		}
+		qTransportProtocols := qrTransportProtocols
+		if qTransportProtocols != "" {
+
+			if err := r.SetQueryParam("transport_protocols", qTransportProtocols); err != nil {
 				return err
 			}
 		}

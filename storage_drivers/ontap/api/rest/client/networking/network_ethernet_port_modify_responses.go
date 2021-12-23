@@ -75,6 +75,7 @@ func NewNetworkEthernetPortModifyDefault(code int) *NetworkEthernetPortModifyDef
 | Error Code | Description |
 | ---------- | ----------- |
 | 1376361 | Port is already a member of a LAG. |
+| 1376488 | Disabling the last operational cluster port on a node is not allowed. |
 | 1377562 | Port cannot be used because it is currently the home port or current port of an interface. |
 | 1377563 | Port is already a member of a LAG. |
 | 1967087 | The specified broadcast domain UUID is not valid. |

@@ -60,12 +60,6 @@ func NewAzureKeyVaultRestoreParamsWithHTTPClient(client *http.Client) *AzureKeyV
 */
 type AzureKeyVaultRestoreParams struct {
 
-	/* AzureKeyVaultUUID.
-
-	   UUID of the existing AKV configuration.
-	*/
-	AzureKeyVaultUUIDPathParameter string
-
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
@@ -77,6 +71,12 @@ type AzureKeyVaultRestoreParams struct {
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
 	*/
 	ReturnTimeoutQueryParameter *int64
+
+	/* UUID.
+
+	   UUID of the existing AKV configuration.
+	*/
+	UUIDPathParameter string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -145,17 +145,6 @@ func (o *AzureKeyVaultRestoreParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAzureKeyVaultUUIDPathParameter adds the azureKeyVaultUUID to the azure key vault restore params
-func (o *AzureKeyVaultRestoreParams) WithAzureKeyVaultUUIDPathParameter(azureKeyVaultUUID string) *AzureKeyVaultRestoreParams {
-	o.SetAzureKeyVaultUUIDPathParameter(azureKeyVaultUUID)
-	return o
-}
-
-// SetAzureKeyVaultUUIDPathParameter adds the azureKeyVaultUuid to the azure key vault restore params
-func (o *AzureKeyVaultRestoreParams) SetAzureKeyVaultUUIDPathParameter(azureKeyVaultUUID string) {
-	o.AzureKeyVaultUUIDPathParameter = azureKeyVaultUUID
-}
-
 // WithReturnRecordsQueryParameter adds the returnRecords to the azure key vault restore params
 func (o *AzureKeyVaultRestoreParams) WithReturnRecordsQueryParameter(returnRecords *bool) *AzureKeyVaultRestoreParams {
 	o.SetReturnRecordsQueryParameter(returnRecords)
@@ -178,6 +167,17 @@ func (o *AzureKeyVaultRestoreParams) SetReturnTimeoutQueryParameter(returnTimeou
 	o.ReturnTimeoutQueryParameter = returnTimeout
 }
 
+// WithUUIDPathParameter adds the uuid to the azure key vault restore params
+func (o *AzureKeyVaultRestoreParams) WithUUIDPathParameter(uuid string) *AzureKeyVaultRestoreParams {
+	o.SetUUIDPathParameter(uuid)
+	return o
+}
+
+// SetUUIDPathParameter adds the uuid to the azure key vault restore params
+func (o *AzureKeyVaultRestoreParams) SetUUIDPathParameter(uuid string) {
+	o.UUIDPathParameter = uuid
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *AzureKeyVaultRestoreParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -185,11 +185,6 @@ func (o *AzureKeyVaultRestoreParams) WriteToRequest(r runtime.ClientRequest, reg
 		return err
 	}
 	var res []error
-
-	// path param azure_key_vault.uuid
-	if err := r.SetPathParam("azure_key_vault.uuid", o.AzureKeyVaultUUIDPathParameter); err != nil {
-		return err
-	}
 
 	if o.ReturnRecordsQueryParameter != nil {
 
@@ -223,6 +218,11 @@ func (o *AzureKeyVaultRestoreParams) WriteToRequest(r runtime.ClientRequest, reg
 				return err
 			}
 		}
+	}
+
+	// path param uuid
+	if err := r.SetPathParam("uuid", o.UUIDPathParameter); err != nil {
+		return err
 	}
 
 	if len(res) > 0 {

@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
@@ -68,12 +67,6 @@ type ClusterNisModifyParams struct {
 	*/
 	Info *models.ClusterNisService
 
-	/* ReturnRecords.
-
-	   The default is false.  If set to true, the records are returned.
-	*/
-	ReturnRecordsQueryParameter *bool
-
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -91,18 +84,7 @@ func (o *ClusterNisModifyParams) WithDefaults() *ClusterNisModifyParams {
 //
 // All values with no default are reset to their zero value.
 func (o *ClusterNisModifyParams) SetDefaults() {
-	var (
-		returnRecordsQueryParameterDefault = bool(false)
-	)
-
-	val := ClusterNisModifyParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-	}
-
-	val.timeout = o.timeout
-	val.Context = o.Context
-	val.HTTPClient = o.HTTPClient
-	*o = val
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the cluster nis modify params
@@ -149,17 +131,6 @@ func (o *ClusterNisModifyParams) SetInfo(info *models.ClusterNisService) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the cluster nis modify params
-func (o *ClusterNisModifyParams) WithReturnRecordsQueryParameter(returnRecords *bool) *ClusterNisModifyParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
-	return o
-}
-
-// SetReturnRecordsQueryParameter adds the returnRecords to the cluster nis modify params
-func (o *ClusterNisModifyParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
-}
-
 // WriteToRequest writes these params to a swagger request
 func (o *ClusterNisModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -170,23 +141,6 @@ func (o *ClusterNisModifyParams) WriteToRequest(r runtime.ClientRequest, reg str
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
-		}
-	}
-
-	if o.ReturnRecordsQueryParameter != nil {
-
-		// query param return_records
-		var qrReturnRecords bool
-
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
-		}
-		qReturnRecords := swag.FormatBool(qrReturnRecords)
-		if qReturnRecords != "" {
-
-			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
-				return err
-			}
 		}
 	}
 

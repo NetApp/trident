@@ -19,11 +19,6 @@ import (
 // swagger:model failover_scope
 type FailoverScope string
 
-func NewFailoverScope(value FailoverScope) *FailoverScope {
-	v := value
-	return &v
-}
-
 const (
 
 	// FailoverScopeHomePortOnly captures enum value "home_port_only"

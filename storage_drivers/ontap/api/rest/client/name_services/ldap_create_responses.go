@@ -103,6 +103,7 @@ func NewLdapCreateDefault(code int) *LdapCreateDefault {
 | 4915264    | Certificate verification failed. Verify that a valid certificate is installed |
 | 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
+| 4915252    | LDAP Referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
 
 */
 type LdapCreateDefault struct {

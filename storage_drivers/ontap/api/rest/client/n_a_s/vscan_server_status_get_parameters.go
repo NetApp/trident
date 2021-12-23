@@ -72,6 +72,24 @@ type VscanServerStatusGetParams struct {
 	*/
 	FieldsQueryParameter []string
 
+	/* InterfaceIPAddress.
+
+	   Filter by interface.ip.address
+	*/
+	InterfaceIPAddressQueryParameter *string
+
+	/* InterfaceName.
+
+	   Filter by interface.name
+	*/
+	InterfaceNameQueryParameter *string
+
+	/* InterfaceUUID.
+
+	   Filter by interface.uuid
+	*/
+	InterfaceUUIDQueryParameter *string
+
 	/* IP.
 
 	   Filter by ip
@@ -247,6 +265,39 @@ func (o *VscanServerStatusGetParams) WithFieldsQueryParameter(fields []string) *
 // SetFieldsQueryParameter adds the fields to the vscan server status get params
 func (o *VscanServerStatusGetParams) SetFieldsQueryParameter(fields []string) {
 	o.FieldsQueryParameter = fields
+}
+
+// WithInterfaceIPAddressQueryParameter adds the interfaceIPAddress to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithInterfaceIPAddressQueryParameter(interfaceIPAddress *string) *VscanServerStatusGetParams {
+	o.SetInterfaceIPAddressQueryParameter(interfaceIPAddress)
+	return o
+}
+
+// SetInterfaceIPAddressQueryParameter adds the interfaceIpAddress to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetInterfaceIPAddressQueryParameter(interfaceIPAddress *string) {
+	o.InterfaceIPAddressQueryParameter = interfaceIPAddress
+}
+
+// WithInterfaceNameQueryParameter adds the interfaceName to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithInterfaceNameQueryParameter(interfaceName *string) *VscanServerStatusGetParams {
+	o.SetInterfaceNameQueryParameter(interfaceName)
+	return o
+}
+
+// SetInterfaceNameQueryParameter adds the interfaceName to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetInterfaceNameQueryParameter(interfaceName *string) {
+	o.InterfaceNameQueryParameter = interfaceName
+}
+
+// WithInterfaceUUIDQueryParameter adds the interfaceUUID to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithInterfaceUUIDQueryParameter(interfaceUUID *string) *VscanServerStatusGetParams {
+	o.SetInterfaceUUIDQueryParameter(interfaceUUID)
+	return o
+}
+
+// SetInterfaceUUIDQueryParameter adds the interfaceUuid to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetInterfaceUUIDQueryParameter(interfaceUUID *string) {
+	o.InterfaceUUIDQueryParameter = interfaceUUID
 }
 
 // WithIPQueryParameter adds the ip to the vscan server status get params
@@ -436,6 +487,57 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.InterfaceIPAddressQueryParameter != nil {
+
+		// query param interface.ip.address
+		var qrInterfaceIPAddress string
+
+		if o.InterfaceIPAddressQueryParameter != nil {
+			qrInterfaceIPAddress = *o.InterfaceIPAddressQueryParameter
+		}
+		qInterfaceIPAddress := qrInterfaceIPAddress
+		if qInterfaceIPAddress != "" {
+
+			if err := r.SetQueryParam("interface.ip.address", qInterfaceIPAddress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.InterfaceNameQueryParameter != nil {
+
+		// query param interface.name
+		var qrInterfaceName string
+
+		if o.InterfaceNameQueryParameter != nil {
+			qrInterfaceName = *o.InterfaceNameQueryParameter
+		}
+		qInterfaceName := qrInterfaceName
+		if qInterfaceName != "" {
+
+			if err := r.SetQueryParam("interface.name", qInterfaceName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.InterfaceUUIDQueryParameter != nil {
+
+		// query param interface.uuid
+		var qrInterfaceUUID string
+
+		if o.InterfaceUUIDQueryParameter != nil {
+			qrInterfaceUUID = *o.InterfaceUUIDQueryParameter
+		}
+		qInterfaceUUID := qrInterfaceUUID
+		if qInterfaceUUID != "" {
+
+			if err := r.SetQueryParam("interface.uuid", qInterfaceUUID); err != nil {
+				return err
+			}
 		}
 	}
 

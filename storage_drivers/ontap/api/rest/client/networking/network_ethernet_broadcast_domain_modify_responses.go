@@ -82,6 +82,7 @@ func NewNetworkEthernetBroadcastDomainModifyDefault(code int) *NetworkEthernetBr
 | 1967150 | The specified ipspace.uuid is not valid. |
 | 1967151 | The specified ipspace.uuid and ipspace.name do not match. |
 | 1967152 | Patching IPspace for a broadcast domain requires an effective cluster version of 9.7 or later. |
+| 53280884 | The MTU of the broadcast domain cannot be modified on this platform. |
 
 */
 type NetworkEthernetBroadcastDomainModifyDefault struct {

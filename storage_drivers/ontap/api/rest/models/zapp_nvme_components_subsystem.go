@@ -28,7 +28,7 @@ type ZappNvmeComponentsSubsystem struct {
 	Name string `json:"name,omitempty"`
 
 	// The name of the host OS accessing the component. The default value is the host OS that is running the application.
-	// Enum: [linux vmware windows]
+	// Enum: [aix linux vmware windows]
 	OsType string `json:"os_type,omitempty"`
 
 	// The UUID of an existing subsystem to be granted access to the component. Usage: &lt;UUID&gt;
@@ -81,7 +81,7 @@ var zappNvmeComponentsSubsystemTypeOsTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["linux","vmware","windows"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["aix","linux","vmware","windows"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -90,6 +90,16 @@ func init() {
 }
 
 const (
+
+	// BEGIN DEBUGGING
+	// zapp_nvme_components_subsystem
+	// ZappNvmeComponentsSubsystem
+	// os_type
+	// OsType
+	// aix
+	// END DEBUGGING
+	// ZappNvmeComponentsSubsystemOsTypeAix captures enum value "aix"
+	ZappNvmeComponentsSubsystemOsTypeAix string = "aix"
 
 	// BEGIN DEBUGGING
 	// zapp_nvme_components_subsystem

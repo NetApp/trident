@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -20,7 +21,13 @@ import (
 // swagger:model service_processor
 type ServiceProcessor struct {
 
-	// Set to "true" to use DHCP to configure an IPv4 interface.
+	// Indicates whether the service processor can be automatically updated from ONTAP.
+	AutoupdateEnabled bool `json:"autoupdate_enabled,omitempty"`
+
+	// backup
+	Backup *ServiceProcessorBackup `json:"backup,omitempty"`
+
+	// Set to "true" to use DHCP to configure an IPv4 interface. Do not provide values for address, netmask and gateway when set to "true".
 	DhcpEnabled bool `json:"dhcp_enabled,omitempty"`
 
 	// The version of firmware installed.
@@ -33,6 +40,15 @@ type ServiceProcessor struct {
 	// ipv6 interface
 	IPV6Interface *ServiceProcessorIPV6Interface `json:"ipv6_interface,omitempty"`
 
+	// Indicates whether the service processor network is configured.
+	// Read Only: true
+	IsIPConfigured *bool `json:"is_ip_configured,omitempty"`
+
+	// Provides the "update status" of the last service processor update.
+	// Read Only: true
+	// Enum: [failed passed]
+	LastUpdateState string `json:"last_update_state,omitempty"`
+
 	// link status
 	// Read Only: true
 	// Enum: [up down disabled unknown]
@@ -42,15 +58,30 @@ type ServiceProcessor struct {
 	// Read Only: true
 	MacAddress string `json:"mac_address,omitempty"`
 
+	// primary
+	Primary *ServiceProcessorPrimary `json:"primary,omitempty"`
+
+	// ssh info
+	SSHInfo *ServiceProcessorSSHInfo `json:"ssh_info,omitempty"`
+
 	// state
 	// Read Only: true
 	// Enum: [online offline degraded rebooting unknown updating node_offline sp_daemon_offline]
 	State string `json:"state,omitempty"`
+
+	// type
+	// Read Only: true
+	// Enum: [sp none bmc]
+	Type string `json:"type,omitempty"`
 }
 
 // Validate validates this service processor
 func (m *ServiceProcessor) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateBackup(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateIPV4Interface(formats); err != nil {
 		res = append(res, err)
@@ -60,7 +91,19 @@ func (m *ServiceProcessor) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateLastUpdateState(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateLinkStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePrimary(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSSHInfo(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -68,9 +111,30 @@ func (m *ServiceProcessor) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ServiceProcessor) validateBackup(formats strfmt.Registry) error {
+	if swag.IsZero(m.Backup) { // not required
+		return nil
+	}
+
+	if m.Backup != nil {
+		if err := m.Backup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("backup")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -103,6 +167,62 @@ func (m *ServiceProcessor) validateIPV6Interface(formats strfmt.Registry) error 
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var serviceProcessorTypeLastUpdateStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["failed","passed"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		serviceProcessorTypeLastUpdateStatePropEnum = append(serviceProcessorTypeLastUpdateStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// service_processor
+	// ServiceProcessor
+	// last_update_state
+	// LastUpdateState
+	// failed
+	// END DEBUGGING
+	// ServiceProcessorLastUpdateStateFailed captures enum value "failed"
+	ServiceProcessorLastUpdateStateFailed string = "failed"
+
+	// BEGIN DEBUGGING
+	// service_processor
+	// ServiceProcessor
+	// last_update_state
+	// LastUpdateState
+	// passed
+	// END DEBUGGING
+	// ServiceProcessorLastUpdateStatePassed captures enum value "passed"
+	ServiceProcessorLastUpdateStatePassed string = "passed"
+)
+
+// prop value enum
+func (m *ServiceProcessor) validateLastUpdateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, serviceProcessorTypeLastUpdateStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ServiceProcessor) validateLastUpdateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.LastUpdateState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateLastUpdateStateEnum("last_update_state", "body", m.LastUpdateState); err != nil {
+		return err
 	}
 
 	return nil
@@ -179,6 +299,40 @@ func (m *ServiceProcessor) validateLinkStatus(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validateLinkStatusEnum("link_status", "body", m.LinkStatus); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessor) validatePrimary(formats strfmt.Registry) error {
+	if swag.IsZero(m.Primary) { // not required
+		return nil
+	}
+
+	if m.Primary != nil {
+		if err := m.Primary.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("primary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessor) validateSSHInfo(formats strfmt.Registry) error {
+	if swag.IsZero(m.SSHInfo) { // not required
+		return nil
+	}
+
+	if m.SSHInfo != nil {
+		if err := m.SSHInfo.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ssh_info")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -300,9 +454,79 @@ func (m *ServiceProcessor) validateState(formats strfmt.Registry) error {
 	return nil
 }
 
+var serviceProcessorTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["sp","none","bmc"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		serviceProcessorTypeTypePropEnum = append(serviceProcessorTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// service_processor
+	// ServiceProcessor
+	// type
+	// Type
+	// sp
+	// END DEBUGGING
+	// ServiceProcessorTypeSp captures enum value "sp"
+	ServiceProcessorTypeSp string = "sp"
+
+	// BEGIN DEBUGGING
+	// service_processor
+	// ServiceProcessor
+	// type
+	// Type
+	// none
+	// END DEBUGGING
+	// ServiceProcessorTypeNone captures enum value "none"
+	ServiceProcessorTypeNone string = "none"
+
+	// BEGIN DEBUGGING
+	// service_processor
+	// ServiceProcessor
+	// type
+	// Type
+	// bmc
+	// END DEBUGGING
+	// ServiceProcessorTypeBmc captures enum value "bmc"
+	ServiceProcessorTypeBmc string = "bmc"
+)
+
+// prop value enum
+func (m *ServiceProcessor) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, serviceProcessorTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ServiceProcessor) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this service processor based on the context it is used
 func (m *ServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateBackup(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateFirmwareVersion(ctx, formats); err != nil {
 		res = append(res, err)
@@ -316,6 +540,14 @@ func (m *ServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIsIPConfigured(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateLinkStatus(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -324,13 +556,39 @@ func (m *ServiceProcessor) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePrimary(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSSHInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ServiceProcessor) contextValidateBackup(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Backup != nil {
+		if err := m.Backup.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("backup")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -371,6 +629,24 @@ func (m *ServiceProcessor) contextValidateIPV6Interface(ctx context.Context, for
 	return nil
 }
 
+func (m *ServiceProcessor) contextValidateIsIPConfigured(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "is_ip_configured", "body", m.IsIPConfigured); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessor) contextValidateLastUpdateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "last_update_state", "body", string(m.LastUpdateState)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *ServiceProcessor) contextValidateLinkStatus(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "link_status", "body", string(m.LinkStatus)); err != nil {
@@ -389,9 +665,46 @@ func (m *ServiceProcessor) contextValidateMacAddress(ctx context.Context, format
 	return nil
 }
 
+func (m *ServiceProcessor) contextValidatePrimary(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Primary != nil {
+		if err := m.Primary.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("primary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessor) contextValidateSSHInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SSHInfo != nil {
+		if err := m.SSHInfo.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ssh_info")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ServiceProcessor) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessor) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
 		return err
 	}
 
@@ -409,6 +722,193 @@ func (m *ServiceProcessor) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ServiceProcessor) UnmarshalBinary(b []byte) error {
 	var res ServiceProcessor
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ServiceProcessorBackup Provides the properties of the service processor backup partition.
+//
+// swagger:model ServiceProcessorBackup
+type ServiceProcessorBackup struct {
+
+	// Indicates whether the service processor is currently booted from the backup partition.
+	// Read Only: true
+	IsCurrent *bool `json:"is_current,omitempty"`
+
+	// Status of the backup partition.
+	// Read Only: true
+	// Enum: [installed corrupt updating auto_updating none]
+	State string `json:"state,omitempty"`
+
+	// Firmware version of the backup partition.
+	// Example: 11.6
+	// Read Only: true
+	Version string `json:"version,omitempty"`
+}
+
+// Validate validates this service processor backup
+func (m *ServiceProcessorBackup) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var serviceProcessorBackupTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["installed","corrupt","updating","auto_updating","none"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		serviceProcessorBackupTypeStatePropEnum = append(serviceProcessorBackupTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ServiceProcessorBackup
+	// ServiceProcessorBackup
+	// state
+	// State
+	// installed
+	// END DEBUGGING
+	// ServiceProcessorBackupStateInstalled captures enum value "installed"
+	ServiceProcessorBackupStateInstalled string = "installed"
+
+	// BEGIN DEBUGGING
+	// ServiceProcessorBackup
+	// ServiceProcessorBackup
+	// state
+	// State
+	// corrupt
+	// END DEBUGGING
+	// ServiceProcessorBackupStateCorrupt captures enum value "corrupt"
+	ServiceProcessorBackupStateCorrupt string = "corrupt"
+
+	// BEGIN DEBUGGING
+	// ServiceProcessorBackup
+	// ServiceProcessorBackup
+	// state
+	// State
+	// updating
+	// END DEBUGGING
+	// ServiceProcessorBackupStateUpdating captures enum value "updating"
+	ServiceProcessorBackupStateUpdating string = "updating"
+
+	// BEGIN DEBUGGING
+	// ServiceProcessorBackup
+	// ServiceProcessorBackup
+	// state
+	// State
+	// auto_updating
+	// END DEBUGGING
+	// ServiceProcessorBackupStateAutoUpdating captures enum value "auto_updating"
+	ServiceProcessorBackupStateAutoUpdating string = "auto_updating"
+
+	// BEGIN DEBUGGING
+	// ServiceProcessorBackup
+	// ServiceProcessorBackup
+	// state
+	// State
+	// none
+	// END DEBUGGING
+	// ServiceProcessorBackupStateNone captures enum value "none"
+	ServiceProcessorBackupStateNone string = "none"
+)
+
+// prop value enum
+func (m *ServiceProcessorBackup) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, serviceProcessorBackupTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ServiceProcessorBackup) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("backup"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this service processor backup based on the context it is used
+func (m *ServiceProcessorBackup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIsCurrent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ServiceProcessorBackup) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "backup"+"."+"is_current", "body", m.IsCurrent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessorBackup) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "backup"+"."+"state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessorBackup) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "backup"+"."+"version", "body", string(m.Version)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ServiceProcessorBackup) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ServiceProcessorBackup) UnmarshalBinary(b []byte) error {
+	var res ServiceProcessorBackup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -545,6 +1045,283 @@ func (m *ServiceProcessorIPV6Interface) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ServiceProcessorIPV6Interface) UnmarshalBinary(b []byte) error {
 	var res ServiceProcessorIPV6Interface
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ServiceProcessorPrimary Provides the properties of the service processor primary partition.
+//
+// swagger:model ServiceProcessorPrimary
+type ServiceProcessorPrimary struct {
+
+	// Indicates whether the service processor is currently booted from the primary partition.
+	// Read Only: true
+	IsCurrent *bool `json:"is_current,omitempty"`
+
+	// Status of the primary partition.
+	// Read Only: true
+	// Enum: [installed corrupt updating auto_updating none]
+	State string `json:"state,omitempty"`
+
+	// Firmware version of the primary partition.
+	// Example: 11.6
+	// Read Only: true
+	Version string `json:"version,omitempty"`
+}
+
+// Validate validates this service processor primary
+func (m *ServiceProcessorPrimary) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var serviceProcessorPrimaryTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["installed","corrupt","updating","auto_updating","none"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		serviceProcessorPrimaryTypeStatePropEnum = append(serviceProcessorPrimaryTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// ServiceProcessorPrimary
+	// ServiceProcessorPrimary
+	// state
+	// State
+	// installed
+	// END DEBUGGING
+	// ServiceProcessorPrimaryStateInstalled captures enum value "installed"
+	ServiceProcessorPrimaryStateInstalled string = "installed"
+
+	// BEGIN DEBUGGING
+	// ServiceProcessorPrimary
+	// ServiceProcessorPrimary
+	// state
+	// State
+	// corrupt
+	// END DEBUGGING
+	// ServiceProcessorPrimaryStateCorrupt captures enum value "corrupt"
+	ServiceProcessorPrimaryStateCorrupt string = "corrupt"
+
+	// BEGIN DEBUGGING
+	// ServiceProcessorPrimary
+	// ServiceProcessorPrimary
+	// state
+	// State
+	// updating
+	// END DEBUGGING
+	// ServiceProcessorPrimaryStateUpdating captures enum value "updating"
+	ServiceProcessorPrimaryStateUpdating string = "updating"
+
+	// BEGIN DEBUGGING
+	// ServiceProcessorPrimary
+	// ServiceProcessorPrimary
+	// state
+	// State
+	// auto_updating
+	// END DEBUGGING
+	// ServiceProcessorPrimaryStateAutoUpdating captures enum value "auto_updating"
+	ServiceProcessorPrimaryStateAutoUpdating string = "auto_updating"
+
+	// BEGIN DEBUGGING
+	// ServiceProcessorPrimary
+	// ServiceProcessorPrimary
+	// state
+	// State
+	// none
+	// END DEBUGGING
+	// ServiceProcessorPrimaryStateNone captures enum value "none"
+	ServiceProcessorPrimaryStateNone string = "none"
+)
+
+// prop value enum
+func (m *ServiceProcessorPrimary) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, serviceProcessorPrimaryTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ServiceProcessorPrimary) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("primary"+"."+"state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this service processor primary based on the context it is used
+func (m *ServiceProcessorPrimary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIsCurrent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ServiceProcessorPrimary) contextValidateIsCurrent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "primary"+"."+"is_current", "body", m.IsCurrent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessorPrimary) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "primary"+"."+"state", "body", string(m.State)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ServiceProcessorPrimary) contextValidateVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "primary"+"."+"version", "body", string(m.Version)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ServiceProcessorPrimary) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ServiceProcessorPrimary) UnmarshalBinary(b []byte) error {
+	var res ServiceProcessorPrimary
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ServiceProcessorSSHInfo Service processor SSH allowed IP address configuration applied across the cluster.
+//
+// swagger:model ServiceProcessorSSHInfo
+type ServiceProcessorSSHInfo struct {
+
+	// Allowed IP addresses
+	AllowedAddresses []IPAddressAndNetmask `json:"allowed_addresses,omitempty"`
+}
+
+// Validate validates this service processor SSH info
+func (m *ServiceProcessorSSHInfo) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAllowedAddresses(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ServiceProcessorSSHInfo) validateAllowedAddresses(formats strfmt.Registry) error {
+	if swag.IsZero(m.AllowedAddresses) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.AllowedAddresses); i++ {
+
+		if err := m.AllowedAddresses[i].Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ssh_info" + "." + "allowed_addresses" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this service processor SSH info based on the context it is used
+func (m *ServiceProcessorSSHInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAllowedAddresses(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ServiceProcessorSSHInfo) contextValidateAllowedAddresses(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.AllowedAddresses); i++ {
+
+		if err := m.AllowedAddresses[i].ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ssh_info" + "." + "allowed_addresses" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ServiceProcessorSSHInfo) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ServiceProcessorSSHInfo) UnmarshalBinary(b []byte) error {
+	var res ServiceProcessorSSHInfo
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

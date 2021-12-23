@@ -85,8 +85,8 @@ func NewLunMapGetDefault(code int) *LunMapGetDefault {
  ONTAP Error Response Codes
 | Error Code | Description |
 | ---------- | ----------- |
-| 5374852 | The initiator group was not found. |
-| 5374875 | The LUN was not found. |
+| 5374852 | The initiator group does not exist or is not accessible to the caller. |
+| 5374875 | The LUN does not exist or is not accessible to the caller. |
 
 */
 type LunMapGetDefault struct {

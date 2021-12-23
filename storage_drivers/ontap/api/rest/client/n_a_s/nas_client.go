@@ -40,6 +40,18 @@ type ClientService interface {
 
 	CifsCollectionPerformanceMetricsGet(params *CifsCollectionPerformanceMetricsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsCollectionPerformanceMetricsGetOK, error)
 
+	CifsDomainCollectionGet(params *CifsDomainCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainCollectionGetOK, error)
+
+	CifsDomainGet(params *CifsDomainGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainGetOK, error)
+
+	CifsDomainPreferredDcCollectionGet(params *CifsDomainPreferredDcCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcCollectionGetOK, error)
+
+	CifsDomainPreferredDcCreate(params *CifsDomainPreferredDcCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcCreateCreated, error)
+
+	CifsDomainPreferredDcDelete(params *CifsDomainPreferredDcDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcDeleteOK, error)
+
+	CifsDomainPreferredDcGet(params *CifsDomainPreferredDcGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcGetOK, error)
+
 	CifsHomedirSearchPathGet(params *CifsHomedirSearchPathGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsHomedirSearchPathGetOK, error)
 
 	CifsSearchPathCollectionGet(params *CifsSearchPathCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSearchPathCollectionGetOK, error)
@@ -96,6 +108,12 @@ type ClientService interface {
 
 	CifsSymlinkMappingModify(params *CifsSymlinkMappingModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsSymlinkMappingModifyOK, error)
 
+	ClientLockCollectionGet(params *ClientLockCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockCollectionGetOK, error)
+
+	ClientLockDelete(params *ClientLockDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockDeleteOK, error)
+
+	ClientLockGet(params *ClientLockGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockGetOK, error)
+
 	EffectivePermissionGet(params *EffectivePermissionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*EffectivePermissionGetOK, error)
 
 	ExportPolicyCollectionGet(params *ExportPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyCollectionGetOK, error)
@@ -148,11 +166,19 @@ type ClientService interface {
 
 	FileDirectorySecurityCreate(params *FileDirectorySecurityCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityCreateAccepted, error)
 
+	FileDirectorySecurityDelete(params *FileDirectorySecurityDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityDeleteOK, error)
+
 	FileDirectorySecurityGet(params *FileDirectorySecurityGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityGetOK, error)
 
 	FileDirectorySecurityModify(params *FileDirectorySecurityModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityModifyAccepted, error)
 
 	FpolicyCollectionGet(params *FpolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyCollectionGetOK, error)
+
+	FpolicyConnectionCollectionGet(params *FpolicyConnectionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyConnectionCollectionGetOK, error)
+
+	FpolicyConnectionGet(params *FpolicyConnectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyConnectionGetOK, error)
+
+	FpolicyConnectionModify(params *FpolicyConnectionModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyConnectionModifyOK, error)
 
 	FpolicyCreate(params *FpolicyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyCreateCreated, error)
 
@@ -206,6 +232,36 @@ type ClientService interface {
 
 	KerberosRealmModify(params *KerberosRealmModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*KerberosRealmModifyOK, error)
 
+	LocalCifsGroupCollectionGet(params *LocalCifsGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupCollectionGetOK, error)
+
+	LocalCifsGroupCreate(params *LocalCifsGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupCreateCreated, error)
+
+	LocalCifsGroupDelete(params *LocalCifsGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupDeleteOK, error)
+
+	LocalCifsGroupGet(params *LocalCifsGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupGetOK, error)
+
+	LocalCifsGroupMembersBulkDelete(params *LocalCifsGroupMembersBulkDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersBulkDeleteOK, error)
+
+	LocalCifsGroupMembersCollectionGet(params *LocalCifsGroupMembersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersCollectionGetOK, error)
+
+	LocalCifsGroupMembersCreate(params *LocalCifsGroupMembersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersCreateCreated, error)
+
+	LocalCifsGroupMembersDelete(params *LocalCifsGroupMembersDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersDeleteOK, error)
+
+	LocalCifsGroupMembersGet(params *LocalCifsGroupMembersGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersGetOK, error)
+
+	LocalCifsGroupModify(params *LocalCifsGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupModifyOK, error)
+
+	LocalCifsUserCollectionGet(params *LocalCifsUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserCollectionGetOK, error)
+
+	LocalCifsUserCreate(params *LocalCifsUserCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserCreateCreated, error)
+
+	LocalCifsUserDelete(params *LocalCifsUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserDeleteOK, error)
+
+	LocalCifsUserGet(params *LocalCifsUserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserGetOK, error)
+
+	LocalCifsUserModify(params *LocalCifsUserModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserModifyOK, error)
+
 	NfsClientsGet(params *NfsClientsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsClientsGetOK, error)
 
 	NfsCollectionGet(params *NfsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsCollectionGetOK, error)
@@ -219,6 +275,34 @@ type ClientService interface {
 	NfsGet(params *NfsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsGetOK, error)
 
 	NfsModify(params *NfsModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NfsModifyOK, error)
+
+	S3AuditCollectionGet(params *S3AuditCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCollectionGetOK, error)
+
+	S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCreateAccepted, error)
+
+	S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditDeleteAccepted, error)
+
+	S3AuditEventSelectorCollectionGet(params *S3AuditEventSelectorCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorCollectionGetOK, error)
+
+	S3AuditEventSelectorCreate(params *S3AuditEventSelectorCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorCreateAccepted, error)
+
+	S3AuditEventSelectorDelete(params *S3AuditEventSelectorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorDeleteAccepted, error)
+
+	S3AuditEventSelectorGet(params *S3AuditEventSelectorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorGetOK, error)
+
+	S3AuditEventSelectorModify(params *S3AuditEventSelectorModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorModifyAccepted, error)
+
+	S3AuditGet(params *S3AuditGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditGetOK, error)
+
+	S3AuditModify(params *S3AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditModifyAccepted, error)
+
+	UserGroupPrivilegesCollectionGet(params *UserGroupPrivilegesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesCollectionGetOK, error)
+
+	UserGroupPrivilegesCreate(params *UserGroupPrivilegesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesCreateCreated, error)
+
+	UserGroupPrivilegesGet(params *UserGroupPrivilegesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesGetOK, error)
+
+	UserGroupPrivilegesModify(params *UserGroupPrivilegesModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesModifyOK, error)
 
 	VscanCollectionGet(params *VscanCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VscanCollectionGetOK, error)
 
@@ -328,6 +412,7 @@ If not specified in POST, the following default property values are assigned:
 * `log.retention.duration` - _PT0S_
 * `log.rotation.size` - _100MB_
 * `log.rotation.now` - _false_
+* `guarantee` - _true_
 ### Related ONTAP commands
 * `vserver audit create`
 * `vserver audit enable`
@@ -535,6 +620,282 @@ func (a *Client) CifsCollectionPerformanceMetricsGet(params *CifsCollectionPerfo
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*CifsCollectionPerformanceMetricsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CifsDomainCollectionGet Retrieves the CIFS domain-related information of all SVMs.
+### Related ONTAP commands
+* `vserver cifs domain preferred-dc show`
+* `vserver cifs domain trusts show`
+* `vserver cifs domain discovered-servers show`
+* `vserver cifs domain name-mapping-search show`
+* `vserver cifs domain schedule show`
+### Learn more
+* [`DOC /protocols/cifs/domains`](#docs-NAS-protocols_cifs_domains)
+
+*/
+func (a *Client) CifsDomainCollectionGet(params *CifsDomainCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsDomainCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_domain_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/domains",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsDomainCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsDomainCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsDomainCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CifsDomainGet Retrieves the CIFS domain-related information of the specified SVM.
+### Important notes
+GET operation with query parameter `rediscover_trusts` and `reset_discovered_servers` returns available CIFS domain configurations and also triggers trusts rediscovery and discovered servers reset asynchronously for that SVM.
+### Related ONTAP commands
+* `vserver cifs domain preferred-dc show`
+* `vserver cifs domain trusts show`
+* `vserver cifs domain discovered-servers show`
+* `vserver cifs domain name-mapping-search show`
+* `vserver cifs domain schedule show`
+### Learn more
+* [`DOC /protocols/cifs/domains/{svm.uuid}`](#docs-NAS-protocols_cifs_domains_{svm.uuid})
+
+*/
+func (a *Client) CifsDomainGet(params *CifsDomainGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsDomainGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_domain_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/domains/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsDomainGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsDomainGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsDomainGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CifsDomainPreferredDcCollectionGet Retrieves the CIFS domain preferred DC configuration of an SVM.
+### Related ONTAP commands
+* `vserver cifs domain preferred-dc show`
+### Learn more
+* [`DOC /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers`](#docs-NAS-protocols_cifs_domains_{svm.uuid}_preferred-domain-controllers)
+
+*/
+func (a *Client) CifsDomainPreferredDcCollectionGet(params *CifsDomainPreferredDcCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsDomainPreferredDcCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_domain_preferred_dc_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsDomainPreferredDcCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsDomainPreferredDcCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsDomainPreferredDcCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CifsDomainPreferredDcCreate Creates a CIFS preferred DC configuration for an SVM.
+### Important notes
+* In the case of bulk POST requests, the create operation should be performed serially since there can be interdependence between records. In order to avoid issues, it is advisable to always use the query parameter "serial_records=true".
+### Required properties
+* `svm.uuid` - Existing SVM in which to create the preferred-dc.
+* `domain` - Fully Qualified Domain Name.
+* `server_ip` - IPv4/IPv6 address of the Preferred Domain Controller.
+#### The following parameters are optional:
+- skip_config_validation
+### Related ONTAP commands
+* `vserver cifs domain preferred-dc add`
+### Learn more
+* [`DOC /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers`](#docs-NAS-protocols_cifs_domains_{svm.uuid}_preferred-domain-controllers)
+
+*/
+func (a *Client) CifsDomainPreferredDcCreate(params *CifsDomainPreferredDcCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsDomainPreferredDcCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_domain_preferred_dc_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsDomainPreferredDcCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsDomainPreferredDcCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsDomainPreferredDcCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CifsDomainPreferredDcDelete Deletes the CIFS domain preferred DC configuration of the specified SVM and domain.
+### Related ONTAP commands
+* `vserver cifs domain preferred-dc delete`
+### Learn more
+* [`DOC /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers`](#docs-NAS-protocols_cifs_domains_{svm.uuid}_preferred-domain-controllers)
+
+*/
+func (a *Client) CifsDomainPreferredDcDelete(params *CifsDomainPreferredDcDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsDomainPreferredDcDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_domain_preferred_dc_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsDomainPreferredDcDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsDomainPreferredDcDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsDomainPreferredDcDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  CifsDomainPreferredDcGet Retrieves the CIFS domain preferred DC configuration of an SVM.
+### Related ONTAP commands
+* `vserver cifs domain preferred-dc show`
+### Learn more
+* [`DOC /protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers`](#docs-NAS-protocols_cifs_domains_{svm.uuid}_preferred-domain-controllers)
+
+*/
+func (a *Client) CifsDomainPreferredDcGet(params *CifsDomainPreferredDcGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CifsDomainPreferredDcGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCifsDomainPreferredDcGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "cifs_domain_preferred_dc_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/domains/{svm.uuid}/preferred-domain-controllers/{fqdn}/{server_ip}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CifsDomainPreferredDcGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CifsDomainPreferredDcGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CifsDomainPreferredDcGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -832,6 +1193,9 @@ If not specified in POST, the following default property values are assigned:
 * `kdc_encryption` - _false_
 * `default_unix_user` - _pcuser_
 * `netbios_enabled` - _false_ However, if either "netbios.wins-server" or "netbios.aliases" is set during POST and if `netbios_enabled` is not specified then `netbios_enabled` is set to true.
+* `aes_netlogon_enabled` - _false_
+* `try_ldap_channel_binding` - _true_
+* `ldap_referral_enabled` - _false_
 ### Related ONTAP commands
 * `vserver cifs server create`
 * `vserver cifs server options modify`
@@ -1058,8 +1422,8 @@ func (a *Client) CifsSessionCollectionGet(params *CifsSessionCollectionGetParams
 /*
   CifsSessionDelete Deletes SMB session information on a node for an SVM.
 * To delete the specific SMB session information, pass the relavant SMB session's identifier and connection Id.
+* To delete all the SMB session information on specific node and SVM, pass the both SMB session's identifier and connection Id as zero(0)
 * To delete all the SMB session information on specific connection, pass the specific SMB session's Identifier value as zero(0).
-* To delete all the SMB session information, pass the specific session's identifier and connection Id values as zero(0).
 * To delete all the SMB session information on specific Identifier alone is not allowed.
 ### Learn more
 * [`DOC /protocols/cifs/sessions`](#docs-NAS-protocols_cifs_sessions)
@@ -1820,6 +2184,129 @@ func (a *Client) CifsSymlinkMappingModify(params *CifsSymlinkMappingModifyParams
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*CifsSymlinkMappingModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  ClientLockCollectionGet Retrieves locks details.
+### Related ONTAP commands
+* `vserver locks  show`
+
+*/
+func (a *Client) ClientLockCollectionGet(params *ClientLockCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewClientLockCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "client_lock_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/locks",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ClientLockCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ClientLockCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ClientLockCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  ClientLockDelete Deletes locks of given parameter.
+### Related ONTAP commands
+* `vserver locks break`
+
+*/
+func (a *Client) ClientLockDelete(params *ClientLockDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewClientLockDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "client_lock_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/locks/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ClientLockDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ClientLockDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ClientLockDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  ClientLockGet Retrieves the lock for a specific UUID.
+### Related ONTAP commands
+* `vserver locks show`
+
+*/
+func (a *Client) ClientLockGet(params *ClientLockGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClientLockGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewClientLockGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "client_lock_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/locks/{uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ClientLockGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ClientLockGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ClientLockGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -2779,7 +3266,12 @@ func (a *Client) FileAccessFilterModify(params *FileAccessFilterModifyParams, au
 }
 
 /*
-  FileDirectorySecurityACLCreate Adds the new SACL/DACL ACL.
+  FileDirectorySecurityACLCreate Adds the new SACL/DACL ACE.
+You must keep the following points in mind while using these endpoints:
+* SLAG applies to all files and/or directories in a volume hence, inheritance is not required to be propagated.
+* Set access_control field to slag while adding SLAG ACE.
+* Set access_control field to file_directory while adding file-directory ACE. By Default access_control field is set to file_directory.
+* For SLAG, valid apply_to combinations are "this-folder, sub-folders", "files", "this-folder, sub-folders, files".
 ### Related ONTAP commands
 * `vserver security file-directory ntfs dacl add`
 * `vserver security file-directory ntfs sacl add`
@@ -2822,6 +3314,11 @@ func (a *Client) FileDirectorySecurityACLCreate(params *FileDirectorySecurityACL
 
 /*
   FileDirectorySecurityACLDelete Deletes the SACL/DACL ACL
+You must keep the following points in mind while using these endpoints:
+* SLAG applies to all files and/or directories in a volume hence, inheritance is not required to be propagated.
+* Set access_control field to slag while deleting SLAG ACE.
+* Set access_control field to file_directory while deleting file-directory ACE. By Default access_control field is set to file_directory.
+* For SLAG, valid apply_to combinations are "this-folder, sub-folders", "files", "this-folder, sub-folders, files".
 ### Related ONTAP commands
 * `vserver security file-directory ntfs dacl remove`
 * `vserver security file-directory ntfs sacl remove`
@@ -2864,6 +3361,11 @@ func (a *Client) FileDirectorySecurityACLDelete(params *FileDirectorySecurityACL
 
 /*
   FileDirectorySecurityACLModify Updates the SACLs/DACLs
+You must keep the following points in mind while using these endpoints:
+* SLAG applies to all files and/or directories in a volume hence, inheritance is not required to be propagated.
+* Set access_control field to slag while updating SLAG ACE.
+* Set access_control field to file_directory while updating file-directory ACE. By Default access_control field is set to file_directory.
+* For SLAG, valid apply_to combinations are "this-folder, sub-folders", "files", "this-folder, sub-folders, files".
 ### Related ONTAP commands
 * `vserver security file-directory ntfs dacl modify`
 * `vserver security file-directory ntfs sacl modify`
@@ -2906,6 +3408,12 @@ func (a *Client) FileDirectorySecurityACLModify(params *FileDirectorySecurityACL
 
 /*
   FileDirectorySecurityCreate Applies an SD  to the given path.
+You must keep the following points in mind while using these endpoints:
+* Either SLAG ACL/s or file-directory ACL/s can be configured in one API call. Both cannot be configured in the same API call.
+* SLAG applies to all files and/or directories in a volume hence, inheritance is not required to be propagated.
+* Set access_control field to slag while configuring SLAG ACLs.
+* Set access_control field to file_directory while configuring file-directory ACLs. By Default access_control field is set to file_directory.
+* For SLAG, valid apply_to combinations are "this-folder, sub-folders", "files", "this-folder, sub-folders, files".
 ### Related ONTAP commands
 * `vserver security file-directory ntfs create`
 * `vserver security file-directory ntfs dacl add`
@@ -2951,6 +3459,47 @@ func (a *Client) FileDirectorySecurityCreate(params *FileDirectorySecurityCreate
 }
 
 /*
+  FileDirectorySecurityDelete Remove all SLAG ACLs for specified path. Bulk deletion is supported only for SLAG
+# Related ONTAP Commands
+* `vserver security file-directory remove-slag`
+
+*/
+func (a *Client) FileDirectorySecurityDelete(params *FileDirectorySecurityDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FileDirectorySecurityDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFileDirectorySecurityDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "file_directory_security_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/file-security/permissions/{svm.uuid}/{path}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FileDirectorySecurityDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FileDirectorySecurityDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FileDirectorySecurityDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   FileDirectorySecurityGet Retrieves  file permissions
 ### Related ONTAP commands
 * `vserver security file-directory show`
@@ -2992,7 +3541,7 @@ func (a *Client) FileDirectorySecurityGet(params *FileDirectorySecurityGetParams
 }
 
 /*
-  FileDirectorySecurityModify Updates SD specific Information i.e owner, group & control-flags
+  FileDirectorySecurityModify Updates SD specific Information. For example, owner, group and control-flags. SD specific information of SLAG ACLs is not modifiable.
 ### Related ONTAP commands
 * `vserver security file-directory ntfs modify`
 
@@ -3076,6 +3625,137 @@ func (a *Client) FpolicyCollectionGet(params *FpolicyCollectionGetParams, authIn
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*FpolicyCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FpolicyConnectionCollectionGet Retrieves the statuses of FPolicy servers.
+### Related ONTAP commands
+* `vserver fpolicy show-engine`
+* `vserver fpolicy show-passthrough-read-connection`
+### Learn more
+* [`DOC /protocols/fpolicy/{svm.uuid}/connections`](#docs-NAS-protocols_fpolicy_{svm.uuid}_connections)
+
+*/
+func (a *Client) FpolicyConnectionCollectionGet(params *FpolicyConnectionCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyConnectionCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyConnectionCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_connection_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/connections",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyConnectionCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyConnectionCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyConnectionCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FpolicyConnectionGet Retrieves the status of an FPolicy server.
+### Related ONTAP commands
+* `vserver fpolicy show-engine`
+### Learn more
+* [`DOC /protocols/fpolicy/{svm.uuid}/connections`](#docs-NAS-protocols_fpolicy_{svm.uuid}_connections)
+
+*/
+func (a *Client) FpolicyConnectionGet(params *FpolicyConnectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyConnectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyConnectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_connection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/connections/{node.uuid}/{policy.name}/{server}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyConnectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyConnectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyConnectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  FpolicyConnectionModify Updates the status of an FPolicy server.
+### Related ONTAP commands
+* `vserver fpolicy engine-connect`
+* `vserver fpolicy engine-disconnect`
+### Learn more
+* [`DOC /protocols/fpolicy/{svm.uuid}/connections`](#docs-NAS-protocols_fpolicy_{svm.uuid}_connections)
+
+*/
+func (a *Client) FpolicyConnectionModify(params *FpolicyConnectionModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FpolicyConnectionModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFpolicyConnectionModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "fpolicy_connection_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/fpolicy/{svm.uuid}/connections/{node.uuid}/{policy.name}/{server}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FpolicyConnectionModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*FpolicyConnectionModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*FpolicyConnectionModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -4279,6 +4959,696 @@ func (a *Client) KerberosRealmModify(params *KerberosRealmModifyParams, authInfo
 }
 
 /*
+  LocalCifsGroupCollectionGet Retrieves the local groups for all of the SVMs.
+### Advanced properties
+* `members`
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-group show`
+* `vserver cifs users-and-groups local-group show-members`
+### Learn more
+* [`DOC /protocols/cifs/local-groups`](#docs-NAS-protocols_cifs_local-groups)
+
+*/
+func (a *Client) LocalCifsGroupCollectionGet(params *LocalCifsGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsGroupCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_group_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/local-groups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsGroupCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsGroupCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsGroupCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsGroupCreate Creates the local group configuration for the specified SVM.
+### Important notes
+* The group name can contain up to 256 characters.
+* The group name cannot be terminated by a period.
+* The group name does not support any of the following characters: \" / ? [ ] , : | < > + = ; ? * @ or ASCII characters in the range 1-31.
+### Required properties
+* `svm.uuid` or `svm.name` - Existing SVM in which to create the local group.
+* `name` - Name of the local group.
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-group create`
+### Learn more
+* [`DOC /protocols/cifs/local-groups`](#docs-NAS-protocols_cifs_local-groups)
+
+*/
+func (a *Client) LocalCifsGroupCreate(params *LocalCifsGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsGroupCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_group_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/cifs/local-groups",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsGroupCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsGroupCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsGroupCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsGroupDelete Deletes a local group configuration for the specified SVM.
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-group delete`
+### Learn more
+* [`DOC /protocols/cifs/local-groups`](#docs-NAS-protocols_cifs_local-groups)
+
+*/
+func (a *Client) LocalCifsGroupDelete(params *LocalCifsGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsGroupDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_group_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{sid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsGroupDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsGroupDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsGroupDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsGroupGet Retrieves local group information for the specified group and SVM.
+### Advanced properties
+* `members`
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-group show`
+* `vserver cifs users-and-groups local-group show-members`
+### Learn more
+* [`DOC /protocols/cifs/local-groups`](#docs-NAS-protocols_cifs_local-groups)
+
+*/
+func (a *Client) LocalCifsGroupGet(params *LocalCifsGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsGroupGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_group_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{sid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsGroupGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsGroupGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsGroupGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsGroupMembersBulkDelete Deletes the local users, Active Directory users and/or Active Directory groups from the specified local group and SVM.
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-group remove-members`
+### Learn more
+* [`DOC /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members`](#docs-NAS-protocols_cifs_local-groups_{svm.uuid}_{local_cifs_group.sid}_members)
+
+*/
+func (a *Client) LocalCifsGroupMembersBulkDelete(params *LocalCifsGroupMembersBulkDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersBulkDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsGroupMembersBulkDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_group_members_bulk_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsGroupMembersBulkDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsGroupMembersBulkDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsGroupMembersBulkDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsGroupMembersCollectionGet Retrieves local users, Active Directory users and Active Directory groups which are members of the specified local group and SVM.
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-group show-members`
+### Learn more
+* [`DOC /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members`](#docs-NAS-protocols_cifs_local-groups_{svm.uuid}_{local_cifs_group.sid}_members)
+
+*/
+func (a *Client) LocalCifsGroupMembersCollectionGet(params *LocalCifsGroupMembersCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsGroupMembersCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_group_members_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsGroupMembersCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsGroupMembersCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsGroupMembersCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsGroupMembersCreate Adds local users, Active Directory users and Active Directory groups to the specified local group and SVM.
+### Important note
+* Specified members are appended to the existing list of members.
+### Required properties
+* `svm.uuid` or `svm.name` - Existing SVM for which members are added to local group.
+* `local_cifs_group.sid` -  Security ID of the local group to which members are added.
+* `name` or `records` - Local users, Active Directory users, or Active Directory groups to be added to a particular local group.
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-group add-members`
+### Learn more
+* [`DOC /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members`](#docs-NAS-protocols_cifs_local-groups_{svm.uuid}_{local_cifs_group.sid}_members)
+
+*/
+func (a *Client) LocalCifsGroupMembersCreate(params *LocalCifsGroupMembersCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsGroupMembersCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_group_members_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsGroupMembersCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsGroupMembersCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsGroupMembersCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsGroupMembersDelete Deletes the local user, Active Directory user and/or Active Directory group from the specified local group and SVM.
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-group remove-members`
+### Learn more
+* [`DOC /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members`](#docs-NAS-protocols_cifs_local-groups_{svm.uuid}_{local_cifs_group.sid}_members)
+
+*/
+func (a *Client) LocalCifsGroupMembersDelete(params *LocalCifsGroupMembersDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsGroupMembersDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_group_members_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsGroupMembersDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsGroupMembersDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsGroupMembersDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsGroupMembersGet Retrieves local user, Active Directory user and Active Directory group which is member of the specified local group and SVM.
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-group show-members`
+### Learn more
+* [`DOC /protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members`](#docs-NAS-protocols_cifs_local-groups_{svm.uuid}_{local_cifs_group.sid}_members)
+
+*/
+func (a *Client) LocalCifsGroupMembersGet(params *LocalCifsGroupMembersGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupMembersGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsGroupMembersGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_group_members_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{local_cifs_group.sid}/members/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsGroupMembersGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsGroupMembersGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsGroupMembersGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsGroupModify Updates the local group information of the specified group in the specified SVM. This API can also be used to rename a local group.
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-group modify`
+* `vserver cifs users-and-groups local-group rename`
+### Learn more
+* [`DOC /protocols/cifs/local-groups`](#docs-NAS-protocols_cifs_local-groups)
+
+*/
+func (a *Client) LocalCifsGroupModify(params *LocalCifsGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsGroupModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsGroupModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_group_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/local-groups/{svm.uuid}/{sid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsGroupModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsGroupModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsGroupModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsUserCollectionGet Retrieves local users for all of the SVMs. Local groups to which this user belongs to are also displayed.
+### Advanced properties
+* `membership`
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-user show`
+* `vserver cifs users-and-groups local-user show-membership`
+### Learn more
+* [`DOC /protocols/cifs/local-users`](#docs-NAS-protocols_cifs_local-users)
+
+*/
+func (a *Client) LocalCifsUserCollectionGet(params *LocalCifsUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsUserCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_user_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/local-users",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsUserCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsUserCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsUserCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsUserCreate Creates the local user configuration for an SVM.<br/>
+### Important notes
+* The user name can contain up to 20 characters.
+* The user name cannot be terminated by a period.
+* The user name does not support any of the following characters: \" / ? [ ] , : | < > + = ; ? * @ or ASCII characters in the range 1-31.
+* The password must be at least six characters in length and must not contain the user account name.
+* The password must contain characters from three of the following four categories:
+  - English uppercase characters (A through Z)
+  - English lowercase characters (a through z)
+  - Base 10 digits (0 through 9)
+  - Special characters: ~ ! @ \# 0 ^ & * _ - + = ` ? | ( ) [ ] : ; \" \' < > , . ? /
+### Required properties
+* `svm.uuid` or `svm.name` - Existing SVM in which to create the local user.
+* `name` - Name of the local user.
+* `password` - Password for the local user.
+### Default property values
+If not specified in POST, the following default property value is assigned:
+* `account_disabled` - false
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-user create`
+### Learn more
+* [`DOC /protocols/cifs/local-users`](#docs-NAS-protocols_cifs_local-users)
+
+*/
+func (a *Client) LocalCifsUserCreate(params *LocalCifsUserCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsUserCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_user_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/cifs/local-users",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsUserCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsUserCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsUserCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsUserDelete Deletes a local user configuration for the specified SVM.
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-user delete`
+### Learn more
+* [`DOC /protocols/cifs/local-users`](#docs-NAS-protocols_cifs_local-users)
+
+*/
+func (a *Client) LocalCifsUserDelete(params *LocalCifsUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsUserDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_user_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/cifs/local-users/{svm.uuid}/{sid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsUserDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsUserDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsUserDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsUserGet Retrieves local user information for the specified user and SVM.
+### Advanced properties
+* `membership`
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-user show`
+* `vserver cifs users-and-groups local-user show-membership`
+### Learn more
+* [`DOC /protocols/cifs/local-users`](#docs-NAS-protocols_cifs_local-users)
+
+*/
+func (a *Client) LocalCifsUserGet(params *LocalCifsUserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsUserGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_user_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/local-users/{svm.uuid}/{sid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsUserGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsUserGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsUserGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  LocalCifsUserModify Updates local user information for the specified user and SVM. The PATCH endpoint is also used to rename a user and to set the password for the user.
+### Related ONTAP commands
+* `vserver cifs users-and-groups local-user modify`
+* `vserver cifs users-and-groups local-user rename`
+* `vserver cifs users-and-groups local-user set-password`
+### Learn more
+* [`DOC /protocols/cifs/local-users`](#docs-NAS-protocols_cifs_local-users)
+
+*/
+func (a *Client) LocalCifsUserModify(params *LocalCifsUserModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LocalCifsUserModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLocalCifsUserModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "local_cifs_user_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/local-users/{svm.uuid}/{sid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LocalCifsUserModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LocalCifsUserModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LocalCifsUserModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
   NfsClientsGet Retrieves the NFS configuration of SVMs.
 ### Expensive properties
 export_policy.id is expensive field. It is not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
@@ -4435,8 +5805,16 @@ If not specified in POST, the following default property values are assigned:
 * `auth_sys_extended_groups_enabled` - _false_
 * `extended_groups_limit` - _32_
 * `positive_cached_credential_ttl` - _7200000_
+* `qtree.export_enabled` - _false_
+* `qtree.validate_export` - _true_
+* `access_cache_config.ttl_positive` - _60_
+* `access_cache_config.ttl_negative` - _30_
+* `access_cache_config.ttl_failure` - _1_
+* `access_cache_config.harvest_timeout` - _3600_
+* `access_cache_config.isDnsTTLEnabled` - _false_
 ### Related ONTAP commands
 * `vserver nfs create`
+* `export-policy access-cache config show`
 ### Learn more
 * [`DOC /protocols/nfs/services`](#docs-NAS-protocols_nfs_services)
 
@@ -4607,6 +5985,639 @@ func (a *Client) NfsModify(params *NfsModifyParams, authInfo runtime.ClientAuthI
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NfsModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3AuditCollectionGet Retrieves S3 audit configurations.
+### Related ONTAP commands
+* `vserver object-store-server audit show`
+### Learn more
+* [`DOC /protocols/s3audits`](#docs-NAS-protocols_s3audits)
+
+*/
+func (a *Client) S3AuditCollectionGet(params *S3AuditCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3AuditCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_audit_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/s3audits",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3AuditCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3AuditCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3AuditCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3AuditCreate Creates an S3 audit configuration.
+### Required properties
+* `svm.uuid` or `svm.name` - Existing SVM for which audit configuration is to be created.
+* `log_path` - Path in the owning SVM namespace that is used to store audit logs.
+### Default property values
+If not specified in POST, the following default property values are assigned:
+* `enabled` - _true_
+* `events.data` - _false_
+* `events.management` - _false_
+* `log.format` - _json_
+* `log.retention.count` - _0_
+* `log.retention.duration` - _PT0S_
+* `log.rotation.size` - _100MB_
+* `log.rotation.now` - _false_
+### Related ONTAP commands
+* `vserver object-store-server audit create`
+* `vserver object-store-server audit enable`
+### Learn more
+* [`DOC /protocols/s3audits`](#docs-NAS-protocols_s3audits)
+
+*/
+func (a *Client) S3AuditCreate(params *S3AuditCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3AuditCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_audit_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/s3audits",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3AuditCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3AuditCreateAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3AuditCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3AuditDelete Deletes an S3 audit configuration.
+### Related ONTAP commands
+* `vserver object-store-server audit disable`
+* `vserver object-store-server audit delete`
+### Learn more
+* [`DOC /protocols/s3audits`](#docs-NAS-protocols_s3audits)
+
+*/
+func (a *Client) S3AuditDelete(params *S3AuditDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3AuditDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_audit_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/s3audits/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3AuditDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3AuditDeleteAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3AuditDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3AuditEventSelectorCollectionGet Retrieves all S3 audit event-selector configurations for all SVMs.
+### Related ONTAP commands
+* `vserver object-store-server audit event-selector show`
+### Learn more
+* [`DOC /protocols/event-selectors`](#docs-NAS-protocols_event-selectors)
+
+*/
+func (a *Client) S3AuditEventSelectorCollectionGet(params *S3AuditEventSelectorCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3AuditEventSelectorCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_audit_event_selector_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/event-selectors",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3AuditEventSelectorCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3AuditEventSelectorCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3AuditEventSelectorCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3AuditEventSelectorCreate Creates an S3 audit event selector configuration.
+### Required properties
+* `svm.name` - Existing SVM for which an S3 audit event selector configuration is to be created.
+* `bucket` - Existing bucket name for which an S3 audit event selector is to be created.
+### Default property values
+If not specified in POST, the following default property values are assigned:
+* `access` - _all_
+* `permission` - _all_
+### Related ONTAP commands
+* `vserver object-store-server audit event-selector create`
+### Learn more
+* [`DOC /protocols/event-selectors`](#docs-NAS-protocols_event-selectors)
+
+*/
+func (a *Client) S3AuditEventSelectorCreate(params *S3AuditEventSelectorCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3AuditEventSelectorCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_audit_event_selector_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/event-selectors",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3AuditEventSelectorCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3AuditEventSelectorCreateAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3AuditEventSelectorCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3AuditEventSelectorDelete Deletes an S3 audit event selector configuration.
+### Related ONTAP commands
+* `vserver object-store-server audit event selector delete`
+### Learn more
+* [`DOC /protocols/event-selectors`](#docs-NAS-protocols_event-selectors)
+
+*/
+func (a *Client) S3AuditEventSelectorDelete(params *S3AuditEventSelectorDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3AuditEventSelectorDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_audit_event_selector_delete",
+		Method:             "DELETE",
+		PathPattern:        "/protocols/event-selectors/{svm.uuid}/{bucket}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3AuditEventSelectorDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3AuditEventSelectorDeleteAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3AuditEventSelectorDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3AuditEventSelectorGet Retrieves an S3 audit event selector configuration for an SVM.
+### Related ONTAP commands
+* `vserver object-store-server audit event-selector show`
+### Learn more
+* [`DOC /protocols/event-selectors`](#docs-NAS-protocols_event-selectors)
+
+*/
+func (a *Client) S3AuditEventSelectorGet(params *S3AuditEventSelectorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3AuditEventSelectorGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_audit_event_selector_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/event-selectors/{svm.uuid}/{bucket}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3AuditEventSelectorGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3AuditEventSelectorGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3AuditEventSelectorGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3AuditEventSelectorModify Updates an S3 audit event selector configuration for an SVM.
+### Related ONTAP commands
+* `vserver object-store-server audit event-selector modify`
+### Learn more
+* [`DOC /protocols/event-selectors`](#docs-NAS-protocols_event-selectors)
+
+*/
+func (a *Client) S3AuditEventSelectorModify(params *S3AuditEventSelectorModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditEventSelectorModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3AuditEventSelectorModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_audit_event_selector_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/event-selectors/{svm.uuid}/{bucket}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3AuditEventSelectorModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3AuditEventSelectorModifyAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3AuditEventSelectorModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3AuditGet Retrieves an S3 audit configuration for an SVM.
+### Related ONTAP commands
+* `vserver object-store-server audit show`
+### Learn more
+* [`DOC /protocols/s3audits`](#docs-NAS-protocols_s3audits)
+
+*/
+func (a *Client) S3AuditGet(params *S3AuditGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3AuditGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_audit_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/s3audits/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3AuditGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3AuditGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3AuditGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  S3AuditModify Updates an S3 audit configuration for an SVM.
+### Related ONTAP commands
+* `vserver object-store-server audit modify`
+### Learn more
+* [`DOC /protocols/s3audits`](#docs-NAS-protocols_s3audits)
+
+*/
+func (a *Client) S3AuditModify(params *S3AuditModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3AuditModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewS3AuditModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "s3_audit_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/s3audits/{svm.uuid}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &S3AuditModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*S3AuditModifyAccepted)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*S3AuditModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UserGroupPrivilegesCollectionGet Retrieves privileges of the specified local or Active Directory user or group and SVM.
+### Related ONTAP commands
+* `vserver cifs users-and-groups privilege show`
+### Learn more
+* [`DOC /protocols/cifs/users-and-groups/privileges`](#docs-NAS-protocols_cifs_users-and-groups_privileges)
+
+*/
+func (a *Client) UserGroupPrivilegesCollectionGet(params *UserGroupPrivilegesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUserGroupPrivilegesCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "user_group_privileges_collection_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/users-and-groups/privileges",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UserGroupPrivilegesCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UserGroupPrivilegesCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UserGroupPrivilegesCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UserGroupPrivilegesCreate Adds privileges to the specified local or Active Directory user or group and SVM.
+### Important note
+* Specified privileges are appended to the existing list of privileges.
+### Required properties
+* `svm.uuid` or `svm.name` - Existing SVM for which privileges are added to user or group.
+* `name` - Exising local or Active Directory user or group for which privileges are to be added.
+* `privileges` - List of privileges to be added to a user or group.
+### Related ONTAP commands
+* `vserver cifs users-and-groups privilege add-privilege`
+### Learn more
+* [`DOC /protocols/cifs/users-and-groups/privileges`](#docs-NAS-protocols_cifs_users-and-groups_privileges)
+
+*/
+func (a *Client) UserGroupPrivilegesCreate(params *UserGroupPrivilegesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUserGroupPrivilegesCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "user_group_privileges_create",
+		Method:             "POST",
+		PathPattern:        "/protocols/cifs/users-and-groups/privileges",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UserGroupPrivilegesCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UserGroupPrivilegesCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UserGroupPrivilegesCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UserGroupPrivilegesGet Retrieves privileges of the specified local or Active Directory user or group and SVM.
+### Related ONTAP commands
+* `vserver cifs users-and-groups privilege show`
+### Learn more
+* [`DOC /protocols/cifs/users-and-groups/privileges`](#docs-NAS-protocols_cifs_users-and-groups_privileges)
+
+*/
+func (a *Client) UserGroupPrivilegesGet(params *UserGroupPrivilegesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUserGroupPrivilegesGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "user_group_privileges_get",
+		Method:             "GET",
+		PathPattern:        "/protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UserGroupPrivilegesGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UserGroupPrivilegesGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UserGroupPrivilegesGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  UserGroupPrivilegesModify Updates privileges of the specified local or Active Directory user or group and SVM.
+### Important note
+* Specified privileges will replace all the existing privileges associated with the user or group.
+* To reset privileges associated with the user or group, specify the privileges list as empty.
+### Related ONTAP commands
+* `vserver cifs users-and-groups privilege reset-privilege`
+### Learn more
+* [`DOC /protocols/cifs/users-and-groups/privileges`](#docs-NAS-protocols_cifs_users-and-groups_privileges)
+
+*/
+func (a *Client) UserGroupPrivilegesModify(params *UserGroupPrivilegesModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UserGroupPrivilegesModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUserGroupPrivilegesModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "user_group_privileges_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/cifs/users-and-groups/privileges/{svm.uuid}/{name}",
+		ProducesMediaTypes: []string{"application/hal+json", "application/json"},
+		ConsumesMediaTypes: []string{"application/hal+json", "application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UserGroupPrivilegesModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UserGroupPrivilegesModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UserGroupPrivilegesModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

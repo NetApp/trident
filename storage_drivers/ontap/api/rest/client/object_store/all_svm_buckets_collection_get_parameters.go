@@ -168,6 +168,24 @@ type AllSvmBucketsCollectionGetParams struct {
 	*/
 	PolicyStatementsSIDQueryParameter *string
 
+	/* ProtectionStatusDestinationIsCloud.
+
+	   Filter by protection_status.destination.is_cloud
+	*/
+	ProtectionStatusDestinationIsCloudQueryParameter *bool
+
+	/* ProtectionStatusDestinationIsOntap.
+
+	   Filter by protection_status.destination.is_ontap
+	*/
+	ProtectionStatusDestinationIsOntapQueryParameter *bool
+
+	/* ProtectionStatusIsProtected.
+
+	   Filter by protection_status.is_protected
+	*/
+	ProtectionStatusIsProtectedQueryParameter *bool
+
 	/* QosPolicyMaxThroughputIops.
 
 	   Filter by qos_policy.max_throughput_iops
@@ -219,6 +237,12 @@ type AllSvmBucketsCollectionGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeoutQueryParameter *int64
+
+	/* Role.
+
+	   Filter by role
+	*/
+	RoleQueryParameter *string
 
 	/* Size.
 
@@ -521,6 +545,39 @@ func (o *AllSvmBucketsCollectionGetParams) SetPolicyStatementsSIDQueryParameter(
 	o.PolicyStatementsSIDQueryParameter = policyStatementsSid
 }
 
+// WithProtectionStatusDestinationIsCloudQueryParameter adds the protectionStatusDestinationIsCloud to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithProtectionStatusDestinationIsCloudQueryParameter(protectionStatusDestinationIsCloud *bool) *AllSvmBucketsCollectionGetParams {
+	o.SetProtectionStatusDestinationIsCloudQueryParameter(protectionStatusDestinationIsCloud)
+	return o
+}
+
+// SetProtectionStatusDestinationIsCloudQueryParameter adds the protectionStatusDestinationIsCloud to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetProtectionStatusDestinationIsCloudQueryParameter(protectionStatusDestinationIsCloud *bool) {
+	o.ProtectionStatusDestinationIsCloudQueryParameter = protectionStatusDestinationIsCloud
+}
+
+// WithProtectionStatusDestinationIsOntapQueryParameter adds the protectionStatusDestinationIsOntap to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithProtectionStatusDestinationIsOntapQueryParameter(protectionStatusDestinationIsOntap *bool) *AllSvmBucketsCollectionGetParams {
+	o.SetProtectionStatusDestinationIsOntapQueryParameter(protectionStatusDestinationIsOntap)
+	return o
+}
+
+// SetProtectionStatusDestinationIsOntapQueryParameter adds the protectionStatusDestinationIsOntap to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetProtectionStatusDestinationIsOntapQueryParameter(protectionStatusDestinationIsOntap *bool) {
+	o.ProtectionStatusDestinationIsOntapQueryParameter = protectionStatusDestinationIsOntap
+}
+
+// WithProtectionStatusIsProtectedQueryParameter adds the protectionStatusIsProtected to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithProtectionStatusIsProtectedQueryParameter(protectionStatusIsProtected *bool) *AllSvmBucketsCollectionGetParams {
+	o.SetProtectionStatusIsProtectedQueryParameter(protectionStatusIsProtected)
+	return o
+}
+
+// SetProtectionStatusIsProtectedQueryParameter adds the protectionStatusIsProtected to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetProtectionStatusIsProtectedQueryParameter(protectionStatusIsProtected *bool) {
+	o.ProtectionStatusIsProtectedQueryParameter = protectionStatusIsProtected
+}
+
 // WithQosPolicyMaxThroughputIopsQueryParameter adds the qosPolicyMaxThroughputIops to the all svm buckets collection get params
 func (o *AllSvmBucketsCollectionGetParams) WithQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops *int64) *AllSvmBucketsCollectionGetParams {
 	o.SetQosPolicyMaxThroughputIopsQueryParameter(qosPolicyMaxThroughputIops)
@@ -607,6 +664,17 @@ func (o *AllSvmBucketsCollectionGetParams) WithReturnTimeoutQueryParameter(retur
 // SetReturnTimeoutQueryParameter adds the returnTimeout to the all svm buckets collection get params
 func (o *AllSvmBucketsCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
 	o.ReturnTimeoutQueryParameter = returnTimeout
+}
+
+// WithRoleQueryParameter adds the role to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithRoleQueryParameter(role *string) *AllSvmBucketsCollectionGetParams {
+	o.SetRoleQueryParameter(role)
+	return o
+}
+
+// SetRoleQueryParameter adds the role to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetRoleQueryParameter(role *string) {
+	o.RoleQueryParameter = role
 }
 
 // WithSizeQueryParameter adds the size to the all svm buckets collection get params
@@ -977,6 +1045,57 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.ProtectionStatusDestinationIsCloudQueryParameter != nil {
+
+		// query param protection_status.destination.is_cloud
+		var qrProtectionStatusDestinationIsCloud bool
+
+		if o.ProtectionStatusDestinationIsCloudQueryParameter != nil {
+			qrProtectionStatusDestinationIsCloud = *o.ProtectionStatusDestinationIsCloudQueryParameter
+		}
+		qProtectionStatusDestinationIsCloud := swag.FormatBool(qrProtectionStatusDestinationIsCloud)
+		if qProtectionStatusDestinationIsCloud != "" {
+
+			if err := r.SetQueryParam("protection_status.destination.is_cloud", qProtectionStatusDestinationIsCloud); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtectionStatusDestinationIsOntapQueryParameter != nil {
+
+		// query param protection_status.destination.is_ontap
+		var qrProtectionStatusDestinationIsOntap bool
+
+		if o.ProtectionStatusDestinationIsOntapQueryParameter != nil {
+			qrProtectionStatusDestinationIsOntap = *o.ProtectionStatusDestinationIsOntapQueryParameter
+		}
+		qProtectionStatusDestinationIsOntap := swag.FormatBool(qrProtectionStatusDestinationIsOntap)
+		if qProtectionStatusDestinationIsOntap != "" {
+
+			if err := r.SetQueryParam("protection_status.destination.is_ontap", qProtectionStatusDestinationIsOntap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtectionStatusIsProtectedQueryParameter != nil {
+
+		// query param protection_status.is_protected
+		var qrProtectionStatusIsProtected bool
+
+		if o.ProtectionStatusIsProtectedQueryParameter != nil {
+			qrProtectionStatusIsProtected = *o.ProtectionStatusIsProtectedQueryParameter
+		}
+		qProtectionStatusIsProtected := swag.FormatBool(qrProtectionStatusIsProtected)
+		if qProtectionStatusIsProtected != "" {
+
+			if err := r.SetQueryParam("protection_status.is_protected", qProtectionStatusIsProtected); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.QosPolicyMaxThroughputIopsQueryParameter != nil {
 
 		// query param qos_policy.max_throughput_iops
@@ -1108,6 +1227,23 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RoleQueryParameter != nil {
+
+		// query param role
+		var qrRole string
+
+		if o.RoleQueryParameter != nil {
+			qrRole = *o.RoleQueryParameter
+		}
+		qRole := qrRole
+		if qRole != "" {
+
+			if err := r.SetQueryParam("role", qRole); err != nil {
 				return err
 			}
 		}

@@ -25,7 +25,7 @@ type Vlan struct {
 	// VLAN ID
 	// Example: 200
 	// Maximum: 4095
-	// Minimum: 100
+	// Minimum: 10
 	Tag int64 `json:"tag,omitempty"`
 }
 
@@ -69,7 +69,7 @@ func (m *Vlan) validateTag(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("tag", "body", m.Tag, 100, false); err != nil {
+	if err := validate.MinimumInt("tag", "body", m.Tag, 10, false); err != nil {
 		return err
 	}
 

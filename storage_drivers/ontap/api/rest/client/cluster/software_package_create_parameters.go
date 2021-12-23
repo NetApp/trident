@@ -68,12 +68,6 @@ type SoftwarePackageCreateParams struct {
 	*/
 	Info *models.SoftwarePackageDownload
 
-	/* ReturnRecords.
-
-	   The default is false.  If set to true, the records are returned.
-	*/
-	ReturnRecordsQueryParameter *bool
-
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
@@ -98,13 +92,10 @@ func (o *SoftwarePackageCreateParams) WithDefaults() *SoftwarePackageCreateParam
 // All values with no default are reset to their zero value.
 func (o *SoftwarePackageCreateParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
-
 		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := SoftwarePackageCreateParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
@@ -158,17 +149,6 @@ func (o *SoftwarePackageCreateParams) SetInfo(info *models.SoftwarePackageDownlo
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the software package create params
-func (o *SoftwarePackageCreateParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SoftwarePackageCreateParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
-	return o
-}
-
-// SetReturnRecordsQueryParameter adds the returnRecords to the software package create params
-func (o *SoftwarePackageCreateParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
-}
-
 // WithReturnTimeoutQueryParameter adds the returnTimeout to the software package create params
 func (o *SoftwarePackageCreateParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SoftwarePackageCreateParams {
 	o.SetReturnTimeoutQueryParameter(returnTimeout)
@@ -190,23 +170,6 @@ func (o *SoftwarePackageCreateParams) WriteToRequest(r runtime.ClientRequest, re
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
-		}
-	}
-
-	if o.ReturnRecordsQueryParameter != nil {
-
-		// query param return_records
-		var qrReturnRecords bool
-
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
-		}
-		qReturnRecords := swag.FormatBool(qrReturnRecords)
-		if qReturnRecords != "" {
-
-			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
-				return err
-			}
 		}
 	}
 

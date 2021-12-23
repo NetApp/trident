@@ -23,6 +23,9 @@ type NfsService struct {
 	// links
 	Links *NfsServiceLinks `json:"_links,omitempty"`
 
+	// access cache config
+	AccessCacheConfig *NfsServiceAccessCacheConfig `json:"access_cache_config,omitempty"`
+
 	// Specifies whether or not extended groups support over AUTH_SYS is enabled.
 	AuthSysExtendedGroupsEnabled *bool `json:"auth_sys_extended_groups_enabled,omitempty"`
 
@@ -47,6 +50,12 @@ type NfsService struct {
 
 	// protocol
 	Protocol *NfsServiceProtocol `json:"protocol,omitempty"`
+
+	// protocol access rules
+	ProtocolAccessRules *NfsServiceProtocolAccessRules `json:"protocol_access_rules,omitempty"`
+
+	// qtree
+	Qtree *NfsServiceQtree `json:"qtree,omitempty"`
 
 	// Specifies whether or not the remote quota feature is enabled.
 	RquotaEnabled *bool `json:"rquota_enabled,omitempty"`
@@ -83,6 +92,10 @@ func (m *NfsService) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAccessCacheConfig(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateExtendedGroupsLimit(formats); err != nil {
 		res = append(res, err)
 	}
@@ -96,6 +109,14 @@ func (m *NfsService) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateProtocol(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProtocolAccessRules(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateQtree(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -130,6 +151,23 @@ func (m *NfsService) validateLinks(formats strfmt.Registry) error {
 		if err := m.Links.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) validateAccessCacheConfig(formats strfmt.Registry) error {
+	if swag.IsZero(m.AccessCacheConfig) { // not required
+		return nil
+	}
+
+	if m.AccessCacheConfig != nil {
+		if err := m.AccessCacheConfig.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_cache_config")
 			}
 			return err
 		}
@@ -196,6 +234,40 @@ func (m *NfsService) validateProtocol(formats strfmt.Registry) error {
 		if err := m.Protocol.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("protocol")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) validateProtocolAccessRules(formats strfmt.Registry) error {
+	if swag.IsZero(m.ProtocolAccessRules) { // not required
+		return nil
+	}
+
+	if m.ProtocolAccessRules != nil {
+		if err := m.ProtocolAccessRules.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("protocol_access_rules")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) validateQtree(formats strfmt.Registry) error {
+	if swag.IsZero(m.Qtree) { // not required
+		return nil
+	}
+
+	if m.Qtree != nil {
+		if err := m.Qtree.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qtree")
 			}
 			return err
 		}
@@ -319,11 +391,23 @@ func (m *NfsService) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAccessCacheConfig(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateMetric(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateProtocol(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProtocolAccessRules(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateQtree(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -363,6 +447,20 @@ func (m *NfsService) contextValidateLinks(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
+func (m *NfsService) contextValidateAccessCacheConfig(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AccessCacheConfig != nil {
+		if err := m.AccessCacheConfig.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("access_cache_config")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *NfsService) contextValidateMetric(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Metric != nil {
@@ -383,6 +481,34 @@ func (m *NfsService) contextValidateProtocol(ctx context.Context, formats strfmt
 		if err := m.Protocol.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("protocol")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) contextValidateProtocolAccessRules(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ProtocolAccessRules != nil {
+		if err := m.ProtocolAccessRules.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("protocol_access_rules")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *NfsService) contextValidateQtree(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Qtree != nil {
+		if err := m.Qtree.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("qtree")
 			}
 			return err
 		}
@@ -453,6 +579,55 @@ func (m *NfsService) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *NfsService) UnmarshalBinary(b []byte) error {
 	var res NfsService
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceAccessCacheConfig nfs service access cache config
+//
+// swagger:model NfsServiceAccessCacheConfig
+type NfsServiceAccessCacheConfig struct {
+
+	// Specifies the time after which an entry is deleted from the access cache, if unused.
+	HarvestTimeout *int64 `json:"harvest_timeout,omitempty"`
+
+	// Specifies whether Dns TTL is enabled.
+	IsDNSTTLEnabled *bool `json:"isDnsTTLEnabled,omitempty"`
+
+	// Specifies the time to live value for entries for which a failure was encountered, in seconds.
+	TTLFailure *int64 `json:"ttl_failure,omitempty"`
+
+	// Specifies the time to live value of a negative access cache, in seconds.
+	TTLNegative *int64 `json:"ttl_negative,omitempty"`
+
+	// Specifies the time to live value of a positive access cache, in seconds.
+	TTLPositive *int64 `json:"ttl_positive,omitempty"`
+}
+
+// Validate validates this nfs service access cache config
+func (m *NfsServiceAccessCacheConfig) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this nfs service access cache config based on context it is used
+func (m *NfsServiceAccessCacheConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceAccessCacheConfig) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceAccessCacheConfig) UnmarshalBinary(b []byte) error {
+	var res NfsServiceAccessCacheConfig
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -3207,6 +3382,267 @@ func (m *NfsServiceProtocol) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// NfsServiceProtocolAccessRules nfs service protocol access rules
+//
+// swagger:model NfsServiceProtocolAccessRules
+type NfsServiceProtocolAccessRules struct {
+
+	// Access available for the CIFS protocol.
+	// Enum: [read read_write denied]
+	CifsAccessType string `json:"cifs_access_type,omitempty"`
+
+	// Access available for the NFSv3 protocol.
+	// Enum: [read read_write denied]
+	Nfs3AccessType string `json:"nfs3_access_type,omitempty"`
+
+	// Access available for the NFSv4 protocol.
+	// Enum: [read read_write denied]
+	Nfs4AccessType string `json:"nfs4_access_type,omitempty"`
+}
+
+// Validate validates this nfs service protocol access rules
+func (m *NfsServiceProtocolAccessRules) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateCifsAccessType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNfs3AccessType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNfs4AccessType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nfsServiceProtocolAccessRulesTypeCifsAccessTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["read","read_write","denied"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceProtocolAccessRulesTypeCifsAccessTypePropEnum = append(nfsServiceProtocolAccessRulesTypeCifsAccessTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NfsServiceProtocolAccessRules
+	// NfsServiceProtocolAccessRules
+	// cifs_access_type
+	// CifsAccessType
+	// read
+	// END DEBUGGING
+	// NfsServiceProtocolAccessRulesCifsAccessTypeRead captures enum value "read"
+	NfsServiceProtocolAccessRulesCifsAccessTypeRead string = "read"
+
+	// BEGIN DEBUGGING
+	// NfsServiceProtocolAccessRules
+	// NfsServiceProtocolAccessRules
+	// cifs_access_type
+	// CifsAccessType
+	// read_write
+	// END DEBUGGING
+	// NfsServiceProtocolAccessRulesCifsAccessTypeReadWrite captures enum value "read_write"
+	NfsServiceProtocolAccessRulesCifsAccessTypeReadWrite string = "read_write"
+
+	// BEGIN DEBUGGING
+	// NfsServiceProtocolAccessRules
+	// NfsServiceProtocolAccessRules
+	// cifs_access_type
+	// CifsAccessType
+	// denied
+	// END DEBUGGING
+	// NfsServiceProtocolAccessRulesCifsAccessTypeDenied captures enum value "denied"
+	NfsServiceProtocolAccessRulesCifsAccessTypeDenied string = "denied"
+)
+
+// prop value enum
+func (m *NfsServiceProtocolAccessRules) validateCifsAccessTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceProtocolAccessRulesTypeCifsAccessTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceProtocolAccessRules) validateCifsAccessType(formats strfmt.Registry) error {
+	if swag.IsZero(m.CifsAccessType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateCifsAccessTypeEnum("protocol_access_rules"+"."+"cifs_access_type", "body", m.CifsAccessType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var nfsServiceProtocolAccessRulesTypeNfs3AccessTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["read","read_write","denied"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceProtocolAccessRulesTypeNfs3AccessTypePropEnum = append(nfsServiceProtocolAccessRulesTypeNfs3AccessTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NfsServiceProtocolAccessRules
+	// NfsServiceProtocolAccessRules
+	// nfs3_access_type
+	// Nfs3AccessType
+	// read
+	// END DEBUGGING
+	// NfsServiceProtocolAccessRulesNfs3AccessTypeRead captures enum value "read"
+	NfsServiceProtocolAccessRulesNfs3AccessTypeRead string = "read"
+
+	// BEGIN DEBUGGING
+	// NfsServiceProtocolAccessRules
+	// NfsServiceProtocolAccessRules
+	// nfs3_access_type
+	// Nfs3AccessType
+	// read_write
+	// END DEBUGGING
+	// NfsServiceProtocolAccessRulesNfs3AccessTypeReadWrite captures enum value "read_write"
+	NfsServiceProtocolAccessRulesNfs3AccessTypeReadWrite string = "read_write"
+
+	// BEGIN DEBUGGING
+	// NfsServiceProtocolAccessRules
+	// NfsServiceProtocolAccessRules
+	// nfs3_access_type
+	// Nfs3AccessType
+	// denied
+	// END DEBUGGING
+	// NfsServiceProtocolAccessRulesNfs3AccessTypeDenied captures enum value "denied"
+	NfsServiceProtocolAccessRulesNfs3AccessTypeDenied string = "denied"
+)
+
+// prop value enum
+func (m *NfsServiceProtocolAccessRules) validateNfs3AccessTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceProtocolAccessRulesTypeNfs3AccessTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceProtocolAccessRules) validateNfs3AccessType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Nfs3AccessType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateNfs3AccessTypeEnum("protocol_access_rules"+"."+"nfs3_access_type", "body", m.Nfs3AccessType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var nfsServiceProtocolAccessRulesTypeNfs4AccessTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["read","read_write","denied"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nfsServiceProtocolAccessRulesTypeNfs4AccessTypePropEnum = append(nfsServiceProtocolAccessRulesTypeNfs4AccessTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// NfsServiceProtocolAccessRules
+	// NfsServiceProtocolAccessRules
+	// nfs4_access_type
+	// Nfs4AccessType
+	// read
+	// END DEBUGGING
+	// NfsServiceProtocolAccessRulesNfs4AccessTypeRead captures enum value "read"
+	NfsServiceProtocolAccessRulesNfs4AccessTypeRead string = "read"
+
+	// BEGIN DEBUGGING
+	// NfsServiceProtocolAccessRules
+	// NfsServiceProtocolAccessRules
+	// nfs4_access_type
+	// Nfs4AccessType
+	// read_write
+	// END DEBUGGING
+	// NfsServiceProtocolAccessRulesNfs4AccessTypeReadWrite captures enum value "read_write"
+	NfsServiceProtocolAccessRulesNfs4AccessTypeReadWrite string = "read_write"
+
+	// BEGIN DEBUGGING
+	// NfsServiceProtocolAccessRules
+	// NfsServiceProtocolAccessRules
+	// nfs4_access_type
+	// Nfs4AccessType
+	// denied
+	// END DEBUGGING
+	// NfsServiceProtocolAccessRulesNfs4AccessTypeDenied captures enum value "denied"
+	NfsServiceProtocolAccessRulesNfs4AccessTypeDenied string = "denied"
+)
+
+// prop value enum
+func (m *NfsServiceProtocolAccessRules) validateNfs4AccessTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nfsServiceProtocolAccessRulesTypeNfs4AccessTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NfsServiceProtocolAccessRules) validateNfs4AccessType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Nfs4AccessType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateNfs4AccessTypeEnum("protocol_access_rules"+"."+"nfs4_access_type", "body", m.Nfs4AccessType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this nfs service protocol access rules based on context it is used
+func (m *NfsServiceProtocolAccessRules) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceProtocolAccessRules) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceProtocolAccessRules) UnmarshalBinary(b []byte) error {
+	var res NfsServiceProtocolAccessRules
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NfsServiceProtocolV40Features nfs service protocol v40 features
 //
 // swagger:model NfsServiceProtocolV40Features
@@ -3289,6 +3725,46 @@ func (m *NfsServiceProtocolV41Features) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *NfsServiceProtocolV41Features) UnmarshalBinary(b []byte) error {
 	var res NfsServiceProtocolV41Features
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NfsServiceQtree nfs service qtree
+//
+// swagger:model NfsServiceQtree
+type NfsServiceQtree struct {
+
+	// Specifies whether qtree export is enabled.
+	ExportEnabled *bool `json:"export_enabled,omitempty"`
+
+	// Specifies whether qtree export validation is enabled.
+	ValidateExport *bool `json:"validate_export,omitempty"`
+}
+
+// Validate validates this nfs service qtree
+func (m *NfsServiceQtree) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this nfs service qtree based on context it is used
+func (m *NfsServiceQtree) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NfsServiceQtree) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NfsServiceQtree) UnmarshalBinary(b []byte) error {
+	var res NfsServiceQtree
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

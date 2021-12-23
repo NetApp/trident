@@ -116,13 +116,14 @@ type Disk struct {
 	Pool string `json:"pool,omitempty"`
 
 	// Mode of drive data protection and FIPS compliance. Possible values are:
-	// - _open_ - Disk is unprotected
-	// - _data_ - Data protection only without FIPS compliance
-	// - _part_ - Partial protection with FIPS compliance only
+	// - _open_ - Data is unprotected
+	// - _data_ - Data protection only, without FIPS compliance
+	// - _part_ - Data is unprotected; other FIPS compliance settings present
 	// - _full_ - Full data and FIPS compliance protection
+	// - _miss_ - Protection mode information is not available
 	//
 	// Read Only: true
-	// Enum: [open data part full]
+	// Enum: [open data part full miss]
 	ProtectionMode string `json:"protection_mode,omitempty"`
 
 	// Percentage of rated life used
@@ -164,7 +165,7 @@ type Disk struct {
 	// Disk interface type
 	// Example: ssd
 	// Read Only: true
-	// Enum: [ata bsas fcal fsas lun sas msata ssd vmdisk unknown ssd_cap ssd_nvm]
+	// Enum: [ata bsas fcal fsas lun sas msata ssd vmdisk unknown ssd_cap ssd_nvm ssd_zns]
 	Type string `json:"type,omitempty"`
 
 	// The unique identifier for a disk
@@ -937,7 +938,7 @@ var diskTypeProtectionModePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["open","data","part","full"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["open","data","part","full","miss"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -986,6 +987,16 @@ const (
 	// END DEBUGGING
 	// DiskProtectionModeFull captures enum value "full"
 	DiskProtectionModeFull string = "full"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// protection_mode
+	// ProtectionMode
+	// miss
+	// END DEBUGGING
+	// DiskProtectionModeMiss captures enum value "miss"
+	DiskProtectionModeMiss string = "miss"
 )
 
 // prop value enum
@@ -1193,7 +1204,7 @@ var diskTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["ata","bsas","fcal","fsas","lun","sas","msata","ssd","vmdisk","unknown","ssd_cap","ssd_nvm"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ata","bsas","fcal","fsas","lun","sas","msata","ssd","vmdisk","unknown","ssd_cap","ssd_nvm","ssd_zns"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1322,6 +1333,16 @@ const (
 	// END DEBUGGING
 	// DiskTypeSsdNvm captures enum value "ssd_nvm"
 	DiskTypeSsdNvm string = "ssd_nvm"
+
+	// BEGIN DEBUGGING
+	// disk
+	// Disk
+	// type
+	// Type
+	// ssd_zns
+	// END DEBUGGING
+	// DiskTypeSsdZns captures enum value "ssd_zns"
+	DiskTypeSsdZns string = "ssd_zns"
 )
 
 // prop value enum
@@ -2562,8 +2583,8 @@ type DiskOutage struct {
 	// Read Only: true
 	PersistentlyFailed *bool `json:"persistently_failed,omitempty"`
 
-	// reason
-	Reason *DiskOutageReason `json:"reason,omitempty"`
+	// This error message and code explaining the disk failure.
+	Reason *Error `json:"reason,omitempty"`
 }
 
 // Validate validates this disk outage
@@ -2649,81 +2670,6 @@ func (m *DiskOutage) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *DiskOutage) UnmarshalBinary(b []byte) error {
 	var res DiskOutage
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// DiskOutageReason disk outage reason
-//
-// swagger:model DiskOutageReason
-type DiskOutageReason struct {
-
-	// This field provides the error code explaining why a disk failed.
-	// Example: 721081
-	// Read Only: true
-	Code string `json:"code,omitempty"`
-
-	// This field provides the error message explaining why a disk failed.
-	// Example: not responding
-	// Read Only: true
-	Message string `json:"message,omitempty"`
-}
-
-// Validate validates this disk outage reason
-func (m *DiskOutageReason) Validate(formats strfmt.Registry) error {
-	return nil
-}
-
-// ContextValidate validate this disk outage reason based on the context it is used
-func (m *DiskOutageReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateCode(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateMessage(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *DiskOutageReason) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "outage"+"."+"reason"+"."+"code", "body", string(m.Code)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *DiskOutageReason) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "outage"+"."+"reason"+"."+"message", "body", string(m.Message)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *DiskOutageReason) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *DiskOutageReason) UnmarshalBinary(b []byte) error {
-	var res DiskOutageReason
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

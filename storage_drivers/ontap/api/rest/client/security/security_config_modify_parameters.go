@@ -68,12 +68,6 @@ type SecurityConfigModifyParams struct {
 	*/
 	Info *models.SecurityConfig
 
-	/* ReturnRecords.
-
-	   The default is false.  If set to true, the records are returned.
-	*/
-	ReturnRecordsQueryParameter *bool
-
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
@@ -98,13 +92,10 @@ func (o *SecurityConfigModifyParams) WithDefaults() *SecurityConfigModifyParams 
 // All values with no default are reset to their zero value.
 func (o *SecurityConfigModifyParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(false)
-
 		returnTimeoutQueryParameterDefault = int64(0)
 	)
 
 	val := SecurityConfigModifyParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
@@ -158,17 +149,6 @@ func (o *SecurityConfigModifyParams) SetInfo(info *models.SecurityConfig) {
 	o.Info = info
 }
 
-// WithReturnRecordsQueryParameter adds the returnRecords to the security config modify params
-func (o *SecurityConfigModifyParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SecurityConfigModifyParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
-	return o
-}
-
-// SetReturnRecordsQueryParameter adds the returnRecords to the security config modify params
-func (o *SecurityConfigModifyParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
-}
-
 // WithReturnTimeoutQueryParameter adds the returnTimeout to the security config modify params
 func (o *SecurityConfigModifyParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SecurityConfigModifyParams {
 	o.SetReturnTimeoutQueryParameter(returnTimeout)
@@ -190,23 +170,6 @@ func (o *SecurityConfigModifyParams) WriteToRequest(r runtime.ClientRequest, reg
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
-		}
-	}
-
-	if o.ReturnRecordsQueryParameter != nil {
-
-		// query param return_records
-		var qrReturnRecords bool
-
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
-		}
-		qReturnRecords := swag.FormatBool(qrReturnRecords)
-		if qReturnRecords != "" {
-
-			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
-				return err
-			}
 		}
 	}
 

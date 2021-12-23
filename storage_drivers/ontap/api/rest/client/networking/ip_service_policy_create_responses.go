@@ -79,6 +79,7 @@ func NewIPServicePolicyCreateDefault(code int) *IPServicePolicyCreateDefault {
 | 1967147 | Svm.uuid does not exist. |
 | 53281929 | Service policies cannot combine block and file services. |
 | 53281931 | Service policy names cannot start with "default-". |
+| 53281932 | Service cannot be added because the service does not exist for the specified SVM or IPspace. |
 | 53281933 | A Cluster-scoped service cannot be added to a SVM-scoped service policy. |
 | 53281934 | An SVM-scoped service cannot be added to a Cluster-scoped service policy. |
 | 53281935 | Scope is set to "svm" and svm.uuid or svm.name have not been specified. |

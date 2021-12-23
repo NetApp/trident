@@ -84,6 +84,8 @@ func NewIpsecPolicyModifyDefault(code int) *IpsecPolicyModifyDefault {
 | 66257115 | Port ranges containing more than one port are not supported. |
 | 66257116 | IPsec policy with the specified UUID was not found. |
 | 66257120 | The subnet selector must be a host address (An IPv4 address with a 32-bit netmask or an IPv6 address with a 128-bit netmask). |
+| 66257139 | Certificate with the specified UUID was not found. |
+| 66257140 | Only certificates with a client or server type are supported. |
 
 */
 type IpsecPolicyModifyDefault struct {

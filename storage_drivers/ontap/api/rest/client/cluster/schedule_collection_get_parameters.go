@@ -148,6 +148,24 @@ type ScheduleCollectionGetParams struct {
 	*/
 	ReturnTimeoutQueryParameter *int64
 
+	/* Scope.
+
+	   Filter by scope
+	*/
+	ScopeQueryParameter *string
+
+	/* SvmName.
+
+	   Filter by svm.name
+	*/
+	SVMNameQueryParameter *string
+
+	/* SvmUUID.
+
+	   Filter by svm.uuid
+	*/
+	SVMUUIDQueryParameter *string
+
 	/* Type.
 
 	   Filter by type
@@ -379,6 +397,39 @@ func (o *ScheduleCollectionGetParams) WithReturnTimeoutQueryParameter(returnTime
 // SetReturnTimeoutQueryParameter adds the returnTimeout to the schedule collection get params
 func (o *ScheduleCollectionGetParams) SetReturnTimeoutQueryParameter(returnTimeout *int64) {
 	o.ReturnTimeoutQueryParameter = returnTimeout
+}
+
+// WithScopeQueryParameter adds the scope to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithScopeQueryParameter(scope *string) *ScheduleCollectionGetParams {
+	o.SetScopeQueryParameter(scope)
+	return o
+}
+
+// SetScopeQueryParameter adds the scope to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetScopeQueryParameter(scope *string) {
+	o.ScopeQueryParameter = scope
+}
+
+// WithSVMNameQueryParameter adds the svmName to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithSVMNameQueryParameter(svmName *string) *ScheduleCollectionGetParams {
+	o.SetSVMNameQueryParameter(svmName)
+	return o
+}
+
+// SetSVMNameQueryParameter adds the svmName to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetSVMNameQueryParameter(svmName *string) {
+	o.SVMNameQueryParameter = svmName
+}
+
+// WithSVMUUIDQueryParameter adds the svmUUID to the schedule collection get params
+func (o *ScheduleCollectionGetParams) WithSVMUUIDQueryParameter(svmUUID *string) *ScheduleCollectionGetParams {
+	o.SetSVMUUIDQueryParameter(svmUUID)
+	return o
+}
+
+// SetSVMUUIDQueryParameter adds the svmUuid to the schedule collection get params
+func (o *ScheduleCollectionGetParams) SetSVMUUIDQueryParameter(svmUUID *string) {
+	o.SVMUUIDQueryParameter = svmUUID
 }
 
 // WithTypeQueryParameter adds the typeVar to the schedule collection get params
@@ -632,6 +683,57 @@ func (o *ScheduleCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ScopeQueryParameter != nil {
+
+		// query param scope
+		var qrScope string
+
+		if o.ScopeQueryParameter != nil {
+			qrScope = *o.ScopeQueryParameter
+		}
+		qScope := qrScope
+		if qScope != "" {
+
+			if err := r.SetQueryParam("scope", qScope); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SVMNameQueryParameter != nil {
+
+		// query param svm.name
+		var qrSvmName string
+
+		if o.SVMNameQueryParameter != nil {
+			qrSvmName = *o.SVMNameQueryParameter
+		}
+		qSvmName := qrSvmName
+		if qSvmName != "" {
+
+			if err := r.SetQueryParam("svm.name", qSvmName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SVMUUIDQueryParameter != nil {
+
+		// query param svm.uuid
+		var qrSvmUUID string
+
+		if o.SVMUUIDQueryParameter != nil {
+			qrSvmUUID = *o.SVMUUIDQueryParameter
+		}
+		qSvmUUID := qrSvmUUID
+		if qSvmUUID != "" {
+
+			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
 				return err
 			}
 		}

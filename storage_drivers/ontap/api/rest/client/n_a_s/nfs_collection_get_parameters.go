@@ -60,6 +60,36 @@ func NewNfsCollectionGetParamsWithHTTPClient(client *http.Client) *NfsCollection
 */
 type NfsCollectionGetParams struct {
 
+	/* AccessCacheConfigHarvestTimeout.
+
+	   Filter by access_cache_config.harvest_timeout
+	*/
+	AccessCacheConfigHarvestTimeoutQueryParameter *int64
+
+	/* AccessCacheConfigIsDNSTTLEnabled.
+
+	   Filter by access_cache_config.isDnsTTLEnabled
+	*/
+	AccessCacheConfigIsDNSTTLEnabledQueryParameter *bool
+
+	/* AccessCacheConfigTTLFailure.
+
+	   Filter by access_cache_config.ttl_failure
+	*/
+	AccessCacheConfigTTLFailureQueryParameter *int64
+
+	/* AccessCacheConfigTTLNegative.
+
+	   Filter by access_cache_config.ttl_negative
+	*/
+	AccessCacheConfigTTLNegativeQueryParameter *int64
+
+	/* AccessCacheConfigTTLPositive.
+
+	   Filter by access_cache_config.ttl_positive
+	*/
+	AccessCacheConfigTTLPositiveQueryParameter *int64
+
 	/* AuthSysExtendedGroupsEnabled.
 
 	   Filter by auth_sys_extended_groups_enabled
@@ -432,6 +462,56 @@ type NfsCollectionGetParams struct {
 	*/
 	ProtocolV4IDDomainQueryParameter *string
 
+	/* ProtocolAccessRulesAuthType.
+
+	   Authentication method used to check the client's access to the volume.
+
+	   Default: "sys"
+	*/
+	ProtocolAccessRulesAuthTypeQueryParameter *string
+
+	/* ProtocolAccessRulesCifsAccessType.
+
+	   Filter by protocol_access_rules.cifs_access_type
+	*/
+	ProtocolAccessRulesCifsAccessTypeQueryParameter *string
+
+	/* ProtocolAccessRulesClientIP.
+
+	   IP address for the client for which access needs to be checked.
+	*/
+	ProtocolAccessRulesClientIPQueryParameter *string
+
+	/* ProtocolAccessRulesNfs3AccessType.
+
+	   Filter by protocol_access_rules.nfs3_access_type
+	*/
+	ProtocolAccessRulesNfs3AccessTypeQueryParameter *string
+
+	/* ProtocolAccessRulesNfs4AccessType.
+
+	   Filter by protocol_access_rules.nfs4_access_type
+	*/
+	ProtocolAccessRulesNfs4AccessTypeQueryParameter *string
+
+	/* ProtocolAccessRulesVolume.
+
+	   Volume on which access needs to be checked.
+	*/
+	ProtocolAccessRulesVolumeQueryParameter *string
+
+	/* QtreeExportEnabled.
+
+	   Filter by qtree.export_enabled
+	*/
+	QtreeExportEnabledQueryParameter *bool
+
+	/* QtreeValidateExport.
+
+	   Filter by qtree.validate_export
+	*/
+	QtreeValidateExportQueryParameter *bool
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -748,14 +828,17 @@ func (o *NfsCollectionGetParams) WithDefaults() *NfsCollectionGetParams {
 // All values with no default are reset to their zero value.
 func (o *NfsCollectionGetParams) SetDefaults() {
 	var (
+		protocolAccessRulesAuthTypeQueryParameterDefault = string("sys")
+
 		returnRecordsQueryParameterDefault = bool(true)
 
 		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := NfsCollectionGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
-		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
+		ProtocolAccessRulesAuthTypeQueryParameter: &protocolAccessRulesAuthTypeQueryParameterDefault,
+		ReturnRecordsQueryParameter:               &returnRecordsQueryParameterDefault,
+		ReturnTimeoutQueryParameter:               &returnTimeoutQueryParameterDefault,
 	}
 
 	val.timeout = o.timeout
@@ -795,6 +878,61 @@ func (o *NfsCollectionGetParams) WithHTTPClient(client *http.Client) *NfsCollect
 // SetHTTPClient adds the HTTPClient to the nfs collection get params
 func (o *NfsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAccessCacheConfigHarvestTimeoutQueryParameter adds the accessCacheConfigHarvestTimeout to the nfs collection get params
+func (o *NfsCollectionGetParams) WithAccessCacheConfigHarvestTimeoutQueryParameter(accessCacheConfigHarvestTimeout *int64) *NfsCollectionGetParams {
+	o.SetAccessCacheConfigHarvestTimeoutQueryParameter(accessCacheConfigHarvestTimeout)
+	return o
+}
+
+// SetAccessCacheConfigHarvestTimeoutQueryParameter adds the accessCacheConfigHarvestTimeout to the nfs collection get params
+func (o *NfsCollectionGetParams) SetAccessCacheConfigHarvestTimeoutQueryParameter(accessCacheConfigHarvestTimeout *int64) {
+	o.AccessCacheConfigHarvestTimeoutQueryParameter = accessCacheConfigHarvestTimeout
+}
+
+// WithAccessCacheConfigIsDNSTTLEnabledQueryParameter adds the accessCacheConfigIsDNSTTLEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) WithAccessCacheConfigIsDNSTTLEnabledQueryParameter(accessCacheConfigIsDNSTTLEnabled *bool) *NfsCollectionGetParams {
+	o.SetAccessCacheConfigIsDNSTTLEnabledQueryParameter(accessCacheConfigIsDNSTTLEnabled)
+	return o
+}
+
+// SetAccessCacheConfigIsDNSTTLEnabledQueryParameter adds the accessCacheConfigIsDnsTtlEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) SetAccessCacheConfigIsDNSTTLEnabledQueryParameter(accessCacheConfigIsDNSTTLEnabled *bool) {
+	o.AccessCacheConfigIsDNSTTLEnabledQueryParameter = accessCacheConfigIsDNSTTLEnabled
+}
+
+// WithAccessCacheConfigTTLFailureQueryParameter adds the accessCacheConfigTTLFailure to the nfs collection get params
+func (o *NfsCollectionGetParams) WithAccessCacheConfigTTLFailureQueryParameter(accessCacheConfigTTLFailure *int64) *NfsCollectionGetParams {
+	o.SetAccessCacheConfigTTLFailureQueryParameter(accessCacheConfigTTLFailure)
+	return o
+}
+
+// SetAccessCacheConfigTTLFailureQueryParameter adds the accessCacheConfigTtlFailure to the nfs collection get params
+func (o *NfsCollectionGetParams) SetAccessCacheConfigTTLFailureQueryParameter(accessCacheConfigTTLFailure *int64) {
+	o.AccessCacheConfigTTLFailureQueryParameter = accessCacheConfigTTLFailure
+}
+
+// WithAccessCacheConfigTTLNegativeQueryParameter adds the accessCacheConfigTTLNegative to the nfs collection get params
+func (o *NfsCollectionGetParams) WithAccessCacheConfigTTLNegativeQueryParameter(accessCacheConfigTTLNegative *int64) *NfsCollectionGetParams {
+	o.SetAccessCacheConfigTTLNegativeQueryParameter(accessCacheConfigTTLNegative)
+	return o
+}
+
+// SetAccessCacheConfigTTLNegativeQueryParameter adds the accessCacheConfigTtlNegative to the nfs collection get params
+func (o *NfsCollectionGetParams) SetAccessCacheConfigTTLNegativeQueryParameter(accessCacheConfigTTLNegative *int64) {
+	o.AccessCacheConfigTTLNegativeQueryParameter = accessCacheConfigTTLNegative
+}
+
+// WithAccessCacheConfigTTLPositiveQueryParameter adds the accessCacheConfigTTLPositive to the nfs collection get params
+func (o *NfsCollectionGetParams) WithAccessCacheConfigTTLPositiveQueryParameter(accessCacheConfigTTLPositive *int64) *NfsCollectionGetParams {
+	o.SetAccessCacheConfigTTLPositiveQueryParameter(accessCacheConfigTTLPositive)
+	return o
+}
+
+// SetAccessCacheConfigTTLPositiveQueryParameter adds the accessCacheConfigTtlPositive to the nfs collection get params
+func (o *NfsCollectionGetParams) SetAccessCacheConfigTTLPositiveQueryParameter(accessCacheConfigTTLPositive *int64) {
+	o.AccessCacheConfigTTLPositiveQueryParameter = accessCacheConfigTTLPositive
 }
 
 // WithAuthSysExtendedGroupsEnabledQueryParameter adds the authSysExtendedGroupsEnabled to the nfs collection get params
@@ -1479,6 +1617,94 @@ func (o *NfsCollectionGetParams) SetProtocolV4IDDomainQueryParameter(protocolV4I
 	o.ProtocolV4IDDomainQueryParameter = protocolV4IDDomain
 }
 
+// WithProtocolAccessRulesAuthTypeQueryParameter adds the protocolAccessRulesAuthType to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolAccessRulesAuthTypeQueryParameter(protocolAccessRulesAuthType *string) *NfsCollectionGetParams {
+	o.SetProtocolAccessRulesAuthTypeQueryParameter(protocolAccessRulesAuthType)
+	return o
+}
+
+// SetProtocolAccessRulesAuthTypeQueryParameter adds the protocolAccessRulesAuthType to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolAccessRulesAuthTypeQueryParameter(protocolAccessRulesAuthType *string) {
+	o.ProtocolAccessRulesAuthTypeQueryParameter = protocolAccessRulesAuthType
+}
+
+// WithProtocolAccessRulesCifsAccessTypeQueryParameter adds the protocolAccessRulesCifsAccessType to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolAccessRulesCifsAccessTypeQueryParameter(protocolAccessRulesCifsAccessType *string) *NfsCollectionGetParams {
+	o.SetProtocolAccessRulesCifsAccessTypeQueryParameter(protocolAccessRulesCifsAccessType)
+	return o
+}
+
+// SetProtocolAccessRulesCifsAccessTypeQueryParameter adds the protocolAccessRulesCifsAccessType to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolAccessRulesCifsAccessTypeQueryParameter(protocolAccessRulesCifsAccessType *string) {
+	o.ProtocolAccessRulesCifsAccessTypeQueryParameter = protocolAccessRulesCifsAccessType
+}
+
+// WithProtocolAccessRulesClientIPQueryParameter adds the protocolAccessRulesClientIP to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolAccessRulesClientIPQueryParameter(protocolAccessRulesClientIP *string) *NfsCollectionGetParams {
+	o.SetProtocolAccessRulesClientIPQueryParameter(protocolAccessRulesClientIP)
+	return o
+}
+
+// SetProtocolAccessRulesClientIPQueryParameter adds the protocolAccessRulesClientIp to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolAccessRulesClientIPQueryParameter(protocolAccessRulesClientIP *string) {
+	o.ProtocolAccessRulesClientIPQueryParameter = protocolAccessRulesClientIP
+}
+
+// WithProtocolAccessRulesNfs3AccessTypeQueryParameter adds the protocolAccessRulesNfs3AccessType to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolAccessRulesNfs3AccessTypeQueryParameter(protocolAccessRulesNfs3AccessType *string) *NfsCollectionGetParams {
+	o.SetProtocolAccessRulesNfs3AccessTypeQueryParameter(protocolAccessRulesNfs3AccessType)
+	return o
+}
+
+// SetProtocolAccessRulesNfs3AccessTypeQueryParameter adds the protocolAccessRulesNfs3AccessType to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolAccessRulesNfs3AccessTypeQueryParameter(protocolAccessRulesNfs3AccessType *string) {
+	o.ProtocolAccessRulesNfs3AccessTypeQueryParameter = protocolAccessRulesNfs3AccessType
+}
+
+// WithProtocolAccessRulesNfs4AccessTypeQueryParameter adds the protocolAccessRulesNfs4AccessType to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolAccessRulesNfs4AccessTypeQueryParameter(protocolAccessRulesNfs4AccessType *string) *NfsCollectionGetParams {
+	o.SetProtocolAccessRulesNfs4AccessTypeQueryParameter(protocolAccessRulesNfs4AccessType)
+	return o
+}
+
+// SetProtocolAccessRulesNfs4AccessTypeQueryParameter adds the protocolAccessRulesNfs4AccessType to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolAccessRulesNfs4AccessTypeQueryParameter(protocolAccessRulesNfs4AccessType *string) {
+	o.ProtocolAccessRulesNfs4AccessTypeQueryParameter = protocolAccessRulesNfs4AccessType
+}
+
+// WithProtocolAccessRulesVolumeQueryParameter adds the protocolAccessRulesVolume to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolAccessRulesVolumeQueryParameter(protocolAccessRulesVolume *string) *NfsCollectionGetParams {
+	o.SetProtocolAccessRulesVolumeQueryParameter(protocolAccessRulesVolume)
+	return o
+}
+
+// SetProtocolAccessRulesVolumeQueryParameter adds the protocolAccessRulesVolume to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolAccessRulesVolumeQueryParameter(protocolAccessRulesVolume *string) {
+	o.ProtocolAccessRulesVolumeQueryParameter = protocolAccessRulesVolume
+}
+
+// WithQtreeExportEnabledQueryParameter adds the qtreeExportEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) WithQtreeExportEnabledQueryParameter(qtreeExportEnabled *bool) *NfsCollectionGetParams {
+	o.SetQtreeExportEnabledQueryParameter(qtreeExportEnabled)
+	return o
+}
+
+// SetQtreeExportEnabledQueryParameter adds the qtreeExportEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) SetQtreeExportEnabledQueryParameter(qtreeExportEnabled *bool) {
+	o.QtreeExportEnabledQueryParameter = qtreeExportEnabled
+}
+
+// WithQtreeValidateExportQueryParameter adds the qtreeValidateExport to the nfs collection get params
+func (o *NfsCollectionGetParams) WithQtreeValidateExportQueryParameter(qtreeValidateExport *bool) *NfsCollectionGetParams {
+	o.SetQtreeValidateExportQueryParameter(qtreeValidateExport)
+	return o
+}
+
+// SetQtreeValidateExportQueryParameter adds the qtreeValidateExport to the nfs collection get params
+func (o *NfsCollectionGetParams) SetQtreeValidateExportQueryParameter(qtreeValidateExport *bool) {
+	o.QtreeValidateExportQueryParameter = qtreeValidateExport
+}
+
 // WithReturnRecordsQueryParameter adds the returnRecords to the nfs collection get params
 func (o *NfsCollectionGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *NfsCollectionGetParams {
 	o.SetReturnRecordsQueryParameter(returnRecords)
@@ -2025,6 +2251,91 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		return err
 	}
 	var res []error
+
+	if o.AccessCacheConfigHarvestTimeoutQueryParameter != nil {
+
+		// query param access_cache_config.harvest_timeout
+		var qrAccessCacheConfigHarvestTimeout int64
+
+		if o.AccessCacheConfigHarvestTimeoutQueryParameter != nil {
+			qrAccessCacheConfigHarvestTimeout = *o.AccessCacheConfigHarvestTimeoutQueryParameter
+		}
+		qAccessCacheConfigHarvestTimeout := swag.FormatInt64(qrAccessCacheConfigHarvestTimeout)
+		if qAccessCacheConfigHarvestTimeout != "" {
+
+			if err := r.SetQueryParam("access_cache_config.harvest_timeout", qAccessCacheConfigHarvestTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AccessCacheConfigIsDNSTTLEnabledQueryParameter != nil {
+
+		// query param access_cache_config.isDnsTTLEnabled
+		var qrAccessCacheConfigIsDNSTTLEnabled bool
+
+		if o.AccessCacheConfigIsDNSTTLEnabledQueryParameter != nil {
+			qrAccessCacheConfigIsDNSTTLEnabled = *o.AccessCacheConfigIsDNSTTLEnabledQueryParameter
+		}
+		qAccessCacheConfigIsDNSTTLEnabled := swag.FormatBool(qrAccessCacheConfigIsDNSTTLEnabled)
+		if qAccessCacheConfigIsDNSTTLEnabled != "" {
+
+			if err := r.SetQueryParam("access_cache_config.isDnsTTLEnabled", qAccessCacheConfigIsDNSTTLEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AccessCacheConfigTTLFailureQueryParameter != nil {
+
+		// query param access_cache_config.ttl_failure
+		var qrAccessCacheConfigTTLFailure int64
+
+		if o.AccessCacheConfigTTLFailureQueryParameter != nil {
+			qrAccessCacheConfigTTLFailure = *o.AccessCacheConfigTTLFailureQueryParameter
+		}
+		qAccessCacheConfigTTLFailure := swag.FormatInt64(qrAccessCacheConfigTTLFailure)
+		if qAccessCacheConfigTTLFailure != "" {
+
+			if err := r.SetQueryParam("access_cache_config.ttl_failure", qAccessCacheConfigTTLFailure); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AccessCacheConfigTTLNegativeQueryParameter != nil {
+
+		// query param access_cache_config.ttl_negative
+		var qrAccessCacheConfigTTLNegative int64
+
+		if o.AccessCacheConfigTTLNegativeQueryParameter != nil {
+			qrAccessCacheConfigTTLNegative = *o.AccessCacheConfigTTLNegativeQueryParameter
+		}
+		qAccessCacheConfigTTLNegative := swag.FormatInt64(qrAccessCacheConfigTTLNegative)
+		if qAccessCacheConfigTTLNegative != "" {
+
+			if err := r.SetQueryParam("access_cache_config.ttl_negative", qAccessCacheConfigTTLNegative); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AccessCacheConfigTTLPositiveQueryParameter != nil {
+
+		// query param access_cache_config.ttl_positive
+		var qrAccessCacheConfigTTLPositive int64
+
+		if o.AccessCacheConfigTTLPositiveQueryParameter != nil {
+			qrAccessCacheConfigTTLPositive = *o.AccessCacheConfigTTLPositiveQueryParameter
+		}
+		qAccessCacheConfigTTLPositive := swag.FormatInt64(qrAccessCacheConfigTTLPositive)
+		if qAccessCacheConfigTTLPositive != "" {
+
+			if err := r.SetQueryParam("access_cache_config.ttl_positive", qAccessCacheConfigTTLPositive); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.AuthSysExtendedGroupsEnabledQueryParameter != nil {
 
@@ -3063,6 +3374,142 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qProtocolV4IDDomain != "" {
 
 			if err := r.SetQueryParam("protocol.v4_id_domain", qProtocolV4IDDomain); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolAccessRulesAuthTypeQueryParameter != nil {
+
+		// query param protocol_access_rules.auth_type
+		var qrProtocolAccessRulesAuthType string
+
+		if o.ProtocolAccessRulesAuthTypeQueryParameter != nil {
+			qrProtocolAccessRulesAuthType = *o.ProtocolAccessRulesAuthTypeQueryParameter
+		}
+		qProtocolAccessRulesAuthType := qrProtocolAccessRulesAuthType
+		if qProtocolAccessRulesAuthType != "" {
+
+			if err := r.SetQueryParam("protocol_access_rules.auth_type", qProtocolAccessRulesAuthType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolAccessRulesCifsAccessTypeQueryParameter != nil {
+
+		// query param protocol_access_rules.cifs_access_type
+		var qrProtocolAccessRulesCifsAccessType string
+
+		if o.ProtocolAccessRulesCifsAccessTypeQueryParameter != nil {
+			qrProtocolAccessRulesCifsAccessType = *o.ProtocolAccessRulesCifsAccessTypeQueryParameter
+		}
+		qProtocolAccessRulesCifsAccessType := qrProtocolAccessRulesCifsAccessType
+		if qProtocolAccessRulesCifsAccessType != "" {
+
+			if err := r.SetQueryParam("protocol_access_rules.cifs_access_type", qProtocolAccessRulesCifsAccessType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolAccessRulesClientIPQueryParameter != nil {
+
+		// query param protocol_access_rules.client_ip
+		var qrProtocolAccessRulesClientIP string
+
+		if o.ProtocolAccessRulesClientIPQueryParameter != nil {
+			qrProtocolAccessRulesClientIP = *o.ProtocolAccessRulesClientIPQueryParameter
+		}
+		qProtocolAccessRulesClientIP := qrProtocolAccessRulesClientIP
+		if qProtocolAccessRulesClientIP != "" {
+
+			if err := r.SetQueryParam("protocol_access_rules.client_ip", qProtocolAccessRulesClientIP); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolAccessRulesNfs3AccessTypeQueryParameter != nil {
+
+		// query param protocol_access_rules.nfs3_access_type
+		var qrProtocolAccessRulesNfs3AccessType string
+
+		if o.ProtocolAccessRulesNfs3AccessTypeQueryParameter != nil {
+			qrProtocolAccessRulesNfs3AccessType = *o.ProtocolAccessRulesNfs3AccessTypeQueryParameter
+		}
+		qProtocolAccessRulesNfs3AccessType := qrProtocolAccessRulesNfs3AccessType
+		if qProtocolAccessRulesNfs3AccessType != "" {
+
+			if err := r.SetQueryParam("protocol_access_rules.nfs3_access_type", qProtocolAccessRulesNfs3AccessType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolAccessRulesNfs4AccessTypeQueryParameter != nil {
+
+		// query param protocol_access_rules.nfs4_access_type
+		var qrProtocolAccessRulesNfs4AccessType string
+
+		if o.ProtocolAccessRulesNfs4AccessTypeQueryParameter != nil {
+			qrProtocolAccessRulesNfs4AccessType = *o.ProtocolAccessRulesNfs4AccessTypeQueryParameter
+		}
+		qProtocolAccessRulesNfs4AccessType := qrProtocolAccessRulesNfs4AccessType
+		if qProtocolAccessRulesNfs4AccessType != "" {
+
+			if err := r.SetQueryParam("protocol_access_rules.nfs4_access_type", qProtocolAccessRulesNfs4AccessType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolAccessRulesVolumeQueryParameter != nil {
+
+		// query param protocol_access_rules.volume
+		var qrProtocolAccessRulesVolume string
+
+		if o.ProtocolAccessRulesVolumeQueryParameter != nil {
+			qrProtocolAccessRulesVolume = *o.ProtocolAccessRulesVolumeQueryParameter
+		}
+		qProtocolAccessRulesVolume := qrProtocolAccessRulesVolume
+		if qProtocolAccessRulesVolume != "" {
+
+			if err := r.SetQueryParam("protocol_access_rules.volume", qProtocolAccessRulesVolume); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QtreeExportEnabledQueryParameter != nil {
+
+		// query param qtree.export_enabled
+		var qrQtreeExportEnabled bool
+
+		if o.QtreeExportEnabledQueryParameter != nil {
+			qrQtreeExportEnabled = *o.QtreeExportEnabledQueryParameter
+		}
+		qQtreeExportEnabled := swag.FormatBool(qrQtreeExportEnabled)
+		if qQtreeExportEnabled != "" {
+
+			if err := r.SetQueryParam("qtree.export_enabled", qQtreeExportEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QtreeValidateExportQueryParameter != nil {
+
+		// query param qtree.validate_export
+		var qrQtreeValidateExport bool
+
+		if o.QtreeValidateExportQueryParameter != nil {
+			qrQtreeValidateExport = *o.QtreeValidateExportQueryParameter
+		}
+		qQtreeValidateExport := swag.FormatBool(qrQtreeValidateExport)
+		if qQtreeValidateExport != "" {
+
+			if err := r.SetQueryParam("qtree.validate_export", qQtreeValidateExport); err != nil {
 				return err
 			}
 		}

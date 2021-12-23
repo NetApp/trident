@@ -66,26 +66,6 @@ type SoftwareDownloadGetParams struct {
 	*/
 	FieldsQueryParameter []string
 
-	/* MaxRecords.
-
-	   Limit the number of records returned.
-	*/
-	MaxRecordsQueryParameter *int64
-
-	/* OrderBy.
-
-	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
-	*/
-	OrderByQueryParameter []string
-
-	/* ReturnRecords.
-
-	   The default is true for GET calls.  When set to false, only the number of records is returned.
-
-	   Default: true
-	*/
-	ReturnRecordsQueryParameter *bool
-
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning.  When iterating over a collection, the default is 15 seconds.  ONTAP returns earlier if either max records or the end of the collection is reached.
@@ -112,13 +92,10 @@ func (o *SoftwareDownloadGetParams) WithDefaults() *SoftwareDownloadGetParams {
 // All values with no default are reset to their zero value.
 func (o *SoftwareDownloadGetParams) SetDefaults() {
 	var (
-		returnRecordsQueryParameterDefault = bool(true)
-
 		returnTimeoutQueryParameterDefault = int64(15)
 	)
 
 	val := SoftwareDownloadGetParams{
-		ReturnRecordsQueryParameter: &returnRecordsQueryParameterDefault,
 		ReturnTimeoutQueryParameter: &returnTimeoutQueryParameterDefault,
 	}
 
@@ -172,39 +149,6 @@ func (o *SoftwareDownloadGetParams) SetFieldsQueryParameter(fields []string) {
 	o.FieldsQueryParameter = fields
 }
 
-// WithMaxRecordsQueryParameter adds the maxRecords to the software download get params
-func (o *SoftwareDownloadGetParams) WithMaxRecordsQueryParameter(maxRecords *int64) *SoftwareDownloadGetParams {
-	o.SetMaxRecordsQueryParameter(maxRecords)
-	return o
-}
-
-// SetMaxRecordsQueryParameter adds the maxRecords to the software download get params
-func (o *SoftwareDownloadGetParams) SetMaxRecordsQueryParameter(maxRecords *int64) {
-	o.MaxRecordsQueryParameter = maxRecords
-}
-
-// WithOrderByQueryParameter adds the orderBy to the software download get params
-func (o *SoftwareDownloadGetParams) WithOrderByQueryParameter(orderBy []string) *SoftwareDownloadGetParams {
-	o.SetOrderByQueryParameter(orderBy)
-	return o
-}
-
-// SetOrderByQueryParameter adds the orderBy to the software download get params
-func (o *SoftwareDownloadGetParams) SetOrderByQueryParameter(orderBy []string) {
-	o.OrderByQueryParameter = orderBy
-}
-
-// WithReturnRecordsQueryParameter adds the returnRecords to the software download get params
-func (o *SoftwareDownloadGetParams) WithReturnRecordsQueryParameter(returnRecords *bool) *SoftwareDownloadGetParams {
-	o.SetReturnRecordsQueryParameter(returnRecords)
-	return o
-}
-
-// SetReturnRecordsQueryParameter adds the returnRecords to the software download get params
-func (o *SoftwareDownloadGetParams) SetReturnRecordsQueryParameter(returnRecords *bool) {
-	o.ReturnRecordsQueryParameter = returnRecords
-}
-
 // WithReturnTimeoutQueryParameter adds the returnTimeout to the software download get params
 func (o *SoftwareDownloadGetParams) WithReturnTimeoutQueryParameter(returnTimeout *int64) *SoftwareDownloadGetParams {
 	o.SetReturnTimeoutQueryParameter(returnTimeout)
@@ -232,51 +176,6 @@ func (o *SoftwareDownloadGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
-		}
-	}
-
-	if o.MaxRecordsQueryParameter != nil {
-
-		// query param max_records
-		var qrMaxRecords int64
-
-		if o.MaxRecordsQueryParameter != nil {
-			qrMaxRecords = *o.MaxRecordsQueryParameter
-		}
-		qMaxRecords := swag.FormatInt64(qrMaxRecords)
-		if qMaxRecords != "" {
-
-			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.OrderByQueryParameter != nil {
-
-		// binding items for order_by
-		joinedOrderBy := o.bindParamOrderBy(reg)
-
-		// query array param order_by
-		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
-			return err
-		}
-	}
-
-	if o.ReturnRecordsQueryParameter != nil {
-
-		// query param return_records
-		var qrReturnRecords bool
-
-		if o.ReturnRecordsQueryParameter != nil {
-			qrReturnRecords = *o.ReturnRecordsQueryParameter
-		}
-		qReturnRecords := swag.FormatBool(qrReturnRecords)
-		if qReturnRecords != "" {
-
-			if err := r.SetQueryParam("return_records", qReturnRecords); err != nil {
-				return err
-			}
 		}
 	}
 
@@ -318,21 +217,4 @@ func (o *SoftwareDownloadGetParams) bindParamFields(formats strfmt.Registry) []s
 	fieldsIS := swag.JoinByFormat(fieldsIC, "csv")
 
 	return fieldsIS
-}
-
-// bindParamSoftwareDownloadGet binds the parameter order_by
-func (o *SoftwareDownloadGetParams) bindParamOrderBy(formats strfmt.Registry) []string {
-	orderByIR := o.OrderByQueryParameter
-
-	var orderByIC []string
-	for _, orderByIIR := range orderByIR { // explode []string
-
-		orderByIIV := orderByIIR // string as string
-		orderByIC = append(orderByIC, orderByIIV)
-	}
-
-	// items.CollectionFormat: "csv"
-	orderByIS := swag.JoinByFormat(orderByIC, "csv")
-
-	return orderByIS
 }

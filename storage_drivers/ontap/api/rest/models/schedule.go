@@ -39,6 +39,14 @@ type Schedule struct {
 	// Min Length: 1
 	Name string `json:"name,omitempty"`
 
+	// If the schedule is owned by a data SVM, then the scope is set to svm. Otherwise it will be set to cluster.
+	// Read Only: true
+	// Enum: [cluster svm]
+	Scope string `json:"scope,omitempty"`
+
+	// svm
+	Svm *ScheduleSvm `json:"svm,omitempty"`
+
 	// Schedule type
 	// Read Only: true
 	// Enum: [cron interval]
@@ -68,6 +76,14 @@ func (m *Schedule) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScope(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -147,6 +163,79 @@ func (m *Schedule) validateName(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("name", "body", m.Name, 256); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+var scheduleTypeScopePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["cluster","svm"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		scheduleTypeScopePropEnum = append(scheduleTypeScopePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// schedule
+	// Schedule
+	// scope
+	// Scope
+	// cluster
+	// END DEBUGGING
+	// ScheduleScopeCluster captures enum value "cluster"
+	ScheduleScopeCluster string = "cluster"
+
+	// BEGIN DEBUGGING
+	// schedule
+	// Schedule
+	// scope
+	// Scope
+	// svm
+	// END DEBUGGING
+	// ScheduleScopeSvm captures enum value "svm"
+	ScheduleScopeSvm string = "svm"
+)
+
+// prop value enum
+func (m *Schedule) validateScopeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, scheduleTypeScopePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Schedule) validateScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.Scope) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateScopeEnum("scope", "body", m.Scope); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Schedule) validateSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.Svm) { // not required
+		return nil
+	}
+
+	if m.Svm != nil {
+		if err := m.Svm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -236,6 +325,14 @@ func (m *Schedule) ContextValidate(ctx context.Context, formats strfmt.Registry)
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateScope(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -284,6 +381,29 @@ func (m *Schedule) contextValidateCron(ctx context.Context, formats strfmt.Regis
 		if err := m.Cron.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("cron")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Schedule) contextValidateScope(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "scope", "body", string(m.Scope)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Schedule) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Svm != nil {
+		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
 			}
 			return err
 		}
@@ -654,6 +774,188 @@ func (m *ScheduleLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ScheduleLinks) UnmarshalBinary(b []byte) error {
 	var res ScheduleLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ScheduleSvm schedule svm
+//
+// swagger:model ScheduleSvm
+type ScheduleSvm struct {
+
+	// links
+	Links *ScheduleSvmLinks `json:"_links,omitempty"`
+
+	// The name of the SVM.
+	//
+	// Example: svm1
+	Name string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM.
+	//
+	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this schedule svm
+func (m *ScheduleSvm) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ScheduleSvm) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this schedule svm based on the context it is used
+func (m *ScheduleSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ScheduleSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ScheduleSvm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ScheduleSvm) UnmarshalBinary(b []byte) error {
+	var res ScheduleSvm
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ScheduleSvmLinks schedule svm links
+//
+// swagger:model ScheduleSvmLinks
+type ScheduleSvmLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this schedule svm links
+func (m *ScheduleSvmLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ScheduleSvmLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this schedule svm links based on the context it is used
+func (m *ScheduleSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ScheduleSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ScheduleSvmLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ScheduleSvmLinks) UnmarshalBinary(b []byte) error {
+	var res ScheduleSvmLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

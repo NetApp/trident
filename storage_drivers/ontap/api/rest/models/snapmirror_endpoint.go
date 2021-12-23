@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// SnapmirrorEndpoint Endpoint of a SnapMirror relationship. For a GET request, the property "cluster" is populated when the endpoint is on a remote cluster. A POST request to create the destination SVM endpoint or to establish an SVM DR relationship must have the property "cluster" populated with the remote cluster details. A POST request to create the destination FlexVol volume, FlexGroup volume, and Consistency Group endpoints can optionally specify the "cluster" property when the source SVM and the destination SVM are peered. A POST request to establish a SnapMirror relationship between the source endpoint and destination endpoint and when the source SVM and the destination SVM are not peered, must specify the "cluster" property for the remote endpoint.
+// SnapmirrorEndpoint Endpoint of a SnapMirror relationship. For a GET request, the property "cluster" is populated when the endpoint is on a remote cluster. A POST request to create the destination SVM endpoint or to establish an SVM DR relationship must have the property "cluster" populated with the remote cluster details. A POST request to create the destination FlexVol volume, FlexGroup volume, Consistency Group, ONTAP S3 bucket and NON-ONTAP object-store endpoints can optionally specify the "cluster" property when the source SVM and the destination SVM are peered. A POST request to establish a SnapMirror relationship between the source endpoint and destination endpoint and when the source SVM and the destination SVM are not peered, must specify the "cluster" property for the remote endpoint.
 //
 // swagger:model snapmirror_endpoint
 type SnapmirrorEndpoint struct {
@@ -33,6 +33,8 @@ type SnapmirrorEndpoint struct {
 	// ONTAP FlexVol/FlexGroup - svm1:volume1
 	// ONTAP SVM               - svm1:
 	// ONTAP Consistency Group - svm1:/cg/cg_name
+	// ONTAP S3                - svm1:/bucket/bucket1
+	// NON-ONTAP               - objstore1:/objstore
 	//
 	// Example: svm1:volume1
 	Path string `json:"path,omitempty"`

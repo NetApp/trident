@@ -138,6 +138,18 @@ type LunMapCollectionGetParams struct {
 	*/
 	OrderByQueryParameter []string
 
+	/* ReportingNodesName.
+
+	   Filter by reporting_nodes.name
+	*/
+	ReportingNodesNameQueryParameter *string
+
+	/* ReportingNodesUUID.
+
+	   Filter by reporting_nodes.uuid
+	*/
+	ReportingNodesUUIDQueryParameter *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -374,6 +386,28 @@ func (o *LunMapCollectionGetParams) WithOrderByQueryParameter(orderBy []string) 
 // SetOrderByQueryParameter adds the orderBy to the lun map collection get params
 func (o *LunMapCollectionGetParams) SetOrderByQueryParameter(orderBy []string) {
 	o.OrderByQueryParameter = orderBy
+}
+
+// WithReportingNodesNameQueryParameter adds the reportingNodesName to the lun map collection get params
+func (o *LunMapCollectionGetParams) WithReportingNodesNameQueryParameter(reportingNodesName *string) *LunMapCollectionGetParams {
+	o.SetReportingNodesNameQueryParameter(reportingNodesName)
+	return o
+}
+
+// SetReportingNodesNameQueryParameter adds the reportingNodesName to the lun map collection get params
+func (o *LunMapCollectionGetParams) SetReportingNodesNameQueryParameter(reportingNodesName *string) {
+	o.ReportingNodesNameQueryParameter = reportingNodesName
+}
+
+// WithReportingNodesUUIDQueryParameter adds the reportingNodesUUID to the lun map collection get params
+func (o *LunMapCollectionGetParams) WithReportingNodesUUIDQueryParameter(reportingNodesUUID *string) *LunMapCollectionGetParams {
+	o.SetReportingNodesUUIDQueryParameter(reportingNodesUUID)
+	return o
+}
+
+// SetReportingNodesUUIDQueryParameter adds the reportingNodesUuid to the lun map collection get params
+func (o *LunMapCollectionGetParams) SetReportingNodesUUIDQueryParameter(reportingNodesUUID *string) {
+	o.ReportingNodesUUIDQueryParameter = reportingNodesUUID
 }
 
 // WithReturnRecordsQueryParameter adds the returnRecords to the lun map collection get params
@@ -634,6 +668,40 @@ func (o *LunMapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.ReportingNodesNameQueryParameter != nil {
+
+		// query param reporting_nodes.name
+		var qrReportingNodesName string
+
+		if o.ReportingNodesNameQueryParameter != nil {
+			qrReportingNodesName = *o.ReportingNodesNameQueryParameter
+		}
+		qReportingNodesName := qrReportingNodesName
+		if qReportingNodesName != "" {
+
+			if err := r.SetQueryParam("reporting_nodes.name", qReportingNodesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReportingNodesUUIDQueryParameter != nil {
+
+		// query param reporting_nodes.uuid
+		var qrReportingNodesUUID string
+
+		if o.ReportingNodesUUIDQueryParameter != nil {
+			qrReportingNodesUUID = *o.ReportingNodesUUIDQueryParameter
+		}
+		qReportingNodesUUID := qrReportingNodesUUID
+		if qReportingNodesUUID != "" {
+
+			if err := r.SetQueryParam("reporting_nodes.uuid", qReportingNodesUUID); err != nil {
+				return err
+			}
 		}
 	}
 

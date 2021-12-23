@@ -33,6 +33,12 @@ type UnixGroupUsers struct {
 
 	// Indicates whether or not the validation for the specified UNIX user names is disabled.
 	SkipNameValidation *bool `json:"skip_name_validation,omitempty"`
+
+	// svm
+	Svm *UnixGroupUsersSvm `json:"svm,omitempty"`
+
+	// unix group
+	UnixGroup *UnixGroupUsersUnixGroup `json:"unix_group,omitempty"`
 }
 
 // Validate validates this unix group users
@@ -44,6 +50,14 @@ func (m *UnixGroupUsers) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRecords(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUnixGroup(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -94,6 +108,40 @@ func (m *UnixGroupUsers) validateRecords(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *UnixGroupUsers) validateSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.Svm) { // not required
+		return nil
+	}
+
+	if m.Svm != nil {
+		if err := m.Svm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *UnixGroupUsers) validateUnixGroup(formats strfmt.Registry) error {
+	if swag.IsZero(m.UnixGroup) { // not required
+		return nil
+	}
+
+	if m.UnixGroup != nil {
+		if err := m.UnixGroup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("unix_group")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this unix group users based on the context it is used
 func (m *UnixGroupUsers) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -103,6 +151,14 @@ func (m *UnixGroupUsers) ContextValidate(ctx context.Context, formats strfmt.Reg
 	}
 
 	if err := m.contextValidateRecords(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUnixGroup(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -139,6 +195,34 @@ func (m *UnixGroupUsers) contextValidateRecords(ctx context.Context, formats str
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *UnixGroupUsers) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Svm != nil {
+		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *UnixGroupUsers) contextValidateUnixGroup(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.UnixGroup != nil {
+		if err := m.UnixGroup.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("unix_group")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -279,6 +363,225 @@ func (m *UnixGroupUsersRecordsItems0) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *UnixGroupUsersRecordsItems0) UnmarshalBinary(b []byte) error {
 	var res UnixGroupUsersRecordsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// UnixGroupUsersSvm unix group users svm
+//
+// swagger:model UnixGroupUsersSvm
+type UnixGroupUsersSvm struct {
+
+	// links
+	Links *UnixGroupUsersSvmLinks `json:"_links,omitempty"`
+
+	// The name of the SVM.
+	//
+	// Example: svm1
+	Name string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM.
+	//
+	// Example: 02c9e252-41be-11e9-81d5-00a0986138f7
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this unix group users svm
+func (m *UnixGroupUsersSvm) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *UnixGroupUsersSvm) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this unix group users svm based on the context it is used
+func (m *UnixGroupUsersSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *UnixGroupUsersSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *UnixGroupUsersSvm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *UnixGroupUsersSvm) UnmarshalBinary(b []byte) error {
+	var res UnixGroupUsersSvm
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// UnixGroupUsersSvmLinks unix group users svm links
+//
+// swagger:model UnixGroupUsersSvmLinks
+type UnixGroupUsersSvmLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this unix group users svm links
+func (m *UnixGroupUsersSvmLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *UnixGroupUsersSvmLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this unix group users svm links based on the context it is used
+func (m *UnixGroupUsersSvmLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *UnixGroupUsersSvmLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *UnixGroupUsersSvmLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *UnixGroupUsersSvmLinks) UnmarshalBinary(b []byte) error {
+	var res UnixGroupUsersSvmLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// UnixGroupUsersUnixGroup unix group users unix group
+//
+// swagger:model UnixGroupUsersUnixGroup
+type UnixGroupUsersUnixGroup struct {
+
+	// UNIX group name.
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this unix group users unix group
+func (m *UnixGroupUsersUnixGroup) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this unix group users unix group based on context it is used
+func (m *UnixGroupUsersUnixGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *UnixGroupUsersUnixGroup) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *UnixGroupUsersUnixGroup) UnmarshalBinary(b []byte) error {
+	var res UnixGroupUsersUnixGroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

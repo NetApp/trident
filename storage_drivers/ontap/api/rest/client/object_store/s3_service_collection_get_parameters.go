@@ -150,6 +150,24 @@ type S3ServiceCollectionGetParams struct {
 	*/
 	BucketsPolicyStatementsSIDQueryParameter *string
 
+	/* BucketsProtectionStatusDestinationIsCloud.
+
+	   Filter by buckets.protection_status.destination.is_cloud
+	*/
+	BucketsProtectionStatusDestinationIsCloudQueryParameter *bool
+
+	/* BucketsProtectionStatusDestinationIsOntap.
+
+	   Filter by buckets.protection_status.destination.is_ontap
+	*/
+	BucketsProtectionStatusDestinationIsOntapQueryParameter *bool
+
+	/* BucketsProtectionStatusIsProtected.
+
+	   Filter by buckets.protection_status.is_protected
+	*/
+	BucketsProtectionStatusIsProtectedQueryParameter *bool
+
 	/* BucketsQosPolicyMaxThroughputIops.
 
 	   Filter by buckets.qos_policy.max_throughput_iops
@@ -185,6 +203,12 @@ type S3ServiceCollectionGetParams struct {
 	   Filter by buckets.qos_policy.uuid
 	*/
 	BucketsQosPolicyUUIDQueryParameter *string
+
+	/* BucketsRole.
+
+	   Filter by buckets.role
+	*/
+	BucketsRoleQueryParameter *string
 
 	/* BucketsSize.
 
@@ -746,6 +770,39 @@ func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsSIDQueryParamet
 	o.BucketsPolicyStatementsSIDQueryParameter = bucketsPolicyStatementsSid
 }
 
+// WithBucketsProtectionStatusDestinationIsCloudQueryParameter adds the bucketsProtectionStatusDestinationIsCloud to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsProtectionStatusDestinationIsCloudQueryParameter(bucketsProtectionStatusDestinationIsCloud *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsProtectionStatusDestinationIsCloudQueryParameter(bucketsProtectionStatusDestinationIsCloud)
+	return o
+}
+
+// SetBucketsProtectionStatusDestinationIsCloudQueryParameter adds the bucketsProtectionStatusDestinationIsCloud to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsProtectionStatusDestinationIsCloudQueryParameter(bucketsProtectionStatusDestinationIsCloud *bool) {
+	o.BucketsProtectionStatusDestinationIsCloudQueryParameter = bucketsProtectionStatusDestinationIsCloud
+}
+
+// WithBucketsProtectionStatusDestinationIsOntapQueryParameter adds the bucketsProtectionStatusDestinationIsOntap to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsProtectionStatusDestinationIsOntapQueryParameter(bucketsProtectionStatusDestinationIsOntap *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsProtectionStatusDestinationIsOntapQueryParameter(bucketsProtectionStatusDestinationIsOntap)
+	return o
+}
+
+// SetBucketsProtectionStatusDestinationIsOntapQueryParameter adds the bucketsProtectionStatusDestinationIsOntap to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsProtectionStatusDestinationIsOntapQueryParameter(bucketsProtectionStatusDestinationIsOntap *bool) {
+	o.BucketsProtectionStatusDestinationIsOntapQueryParameter = bucketsProtectionStatusDestinationIsOntap
+}
+
+// WithBucketsProtectionStatusIsProtectedQueryParameter adds the bucketsProtectionStatusIsProtected to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsProtectionStatusIsProtectedQueryParameter(bucketsProtectionStatusIsProtected *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsProtectionStatusIsProtectedQueryParameter(bucketsProtectionStatusIsProtected)
+	return o
+}
+
+// SetBucketsProtectionStatusIsProtectedQueryParameter adds the bucketsProtectionStatusIsProtected to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsProtectionStatusIsProtectedQueryParameter(bucketsProtectionStatusIsProtected *bool) {
+	o.BucketsProtectionStatusIsProtectedQueryParameter = bucketsProtectionStatusIsProtected
+}
+
 // WithBucketsQosPolicyMaxThroughputIopsQueryParameter adds the bucketsQosPolicyMaxThroughputIops to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyMaxThroughputIopsQueryParameter(bucketsQosPolicyMaxThroughputIops *int64) *S3ServiceCollectionGetParams {
 	o.SetBucketsQosPolicyMaxThroughputIopsQueryParameter(bucketsQosPolicyMaxThroughputIops)
@@ -810,6 +867,17 @@ func (o *S3ServiceCollectionGetParams) WithBucketsQosPolicyUUIDQueryParameter(bu
 // SetBucketsQosPolicyUUIDQueryParameter adds the bucketsQosPolicyUuid to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) SetBucketsQosPolicyUUIDQueryParameter(bucketsQosPolicyUUID *string) {
 	o.BucketsQosPolicyUUIDQueryParameter = bucketsQosPolicyUUID
+}
+
+// WithBucketsRoleQueryParameter adds the bucketsRole to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsRoleQueryParameter(bucketsRole *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsRoleQueryParameter(bucketsRole)
+	return o
+}
+
+// SetBucketsRoleQueryParameter adds the bucketsRole to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsRoleQueryParameter(bucketsRole *string) {
+	o.BucketsRoleQueryParameter = bucketsRole
 }
 
 // WithBucketsSizeQueryParameter adds the bucketsSize to the s3 service collection get params
@@ -1669,6 +1737,57 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.BucketsProtectionStatusDestinationIsCloudQueryParameter != nil {
+
+		// query param buckets.protection_status.destination.is_cloud
+		var qrBucketsProtectionStatusDestinationIsCloud bool
+
+		if o.BucketsProtectionStatusDestinationIsCloudQueryParameter != nil {
+			qrBucketsProtectionStatusDestinationIsCloud = *o.BucketsProtectionStatusDestinationIsCloudQueryParameter
+		}
+		qBucketsProtectionStatusDestinationIsCloud := swag.FormatBool(qrBucketsProtectionStatusDestinationIsCloud)
+		if qBucketsProtectionStatusDestinationIsCloud != "" {
+
+			if err := r.SetQueryParam("buckets.protection_status.destination.is_cloud", qBucketsProtectionStatusDestinationIsCloud); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsProtectionStatusDestinationIsOntapQueryParameter != nil {
+
+		// query param buckets.protection_status.destination.is_ontap
+		var qrBucketsProtectionStatusDestinationIsOntap bool
+
+		if o.BucketsProtectionStatusDestinationIsOntapQueryParameter != nil {
+			qrBucketsProtectionStatusDestinationIsOntap = *o.BucketsProtectionStatusDestinationIsOntapQueryParameter
+		}
+		qBucketsProtectionStatusDestinationIsOntap := swag.FormatBool(qrBucketsProtectionStatusDestinationIsOntap)
+		if qBucketsProtectionStatusDestinationIsOntap != "" {
+
+			if err := r.SetQueryParam("buckets.protection_status.destination.is_ontap", qBucketsProtectionStatusDestinationIsOntap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsProtectionStatusIsProtectedQueryParameter != nil {
+
+		// query param buckets.protection_status.is_protected
+		var qrBucketsProtectionStatusIsProtected bool
+
+		if o.BucketsProtectionStatusIsProtectedQueryParameter != nil {
+			qrBucketsProtectionStatusIsProtected = *o.BucketsProtectionStatusIsProtectedQueryParameter
+		}
+		qBucketsProtectionStatusIsProtected := swag.FormatBool(qrBucketsProtectionStatusIsProtected)
+		if qBucketsProtectionStatusIsProtected != "" {
+
+			if err := r.SetQueryParam("buckets.protection_status.is_protected", qBucketsProtectionStatusIsProtected); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.BucketsQosPolicyMaxThroughputIopsQueryParameter != nil {
 
 		// query param buckets.qos_policy.max_throughput_iops
@@ -1766,6 +1885,23 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qBucketsQosPolicyUUID != "" {
 
 			if err := r.SetQueryParam("buckets.qos_policy.uuid", qBucketsQosPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsRoleQueryParameter != nil {
+
+		// query param buckets.role
+		var qrBucketsRole string
+
+		if o.BucketsRoleQueryParameter != nil {
+			qrBucketsRole = *o.BucketsRoleQueryParameter
+		}
+		qBucketsRole := qrBucketsRole
+		if qBucketsRole != "" {
+
+			if err := r.SetQueryParam("buckets.role", qBucketsRole); err != nil {
 				return err
 			}
 		}

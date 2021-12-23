@@ -27,6 +27,7 @@ def pascalize(s):
     s = s.replace("_tls", "_TLS")
     s = s.replace("_ttl", "_TTL")
     s = s.replace("_cpu", "_CPU")
+    s = s.replace("_ssh", "_SSH")
     #s = s.replace("_kdc", "_KDC")
 
     s = s.replace("url_", "URL_")
@@ -46,6 +47,7 @@ def pascalize(s):
     s = s.replace("tls_", "TLS_")
     s = s.replace("ttl_", "TTL_")
     s = s.replace("cpu_", "CPU_")
+    s = s.replace("ssh_", "SSH_")
     #s = s.replace("kdc_", "KDC_")
 
     # fix sas_ports.phy_1.state etc..
@@ -53,6 +55,8 @@ def pascalize(s):
     s = s.replace("phy_2", "phy2")
     s = s.replace("phy_3", "phy3")
     s = s.replace("phy_4", "phy4")
+
+    s = s.replace("isDns", "isDNS")  # AccessCacheConfigIsDnsTTLEnabledQueryParameter
 
     s = humps.pascalize(s)
     s = s.replace("IPv4", "IPV4")
@@ -155,17 +159,24 @@ def fix_incorrect_default_value_for_include_extensions(d):
 
 def fix_incorrect_min_max_for_name_mapping(d):
     # these are set as a string value, probably should be minLength and maxLength
-    d['definitions']['name_mapping']['properties']['pattern'].pop('minimum')
-    d['definitions']['name_mapping']['properties']['pattern'].pop('maximum')
-    d['definitions']['name_mapping']['properties']['replacement'].pop('minimum')
-    d['definitions']['name_mapping']['properties']['replacement'].pop('maximum')
+    if "minimum" in d['definitions']['name_mapping']['properties']['pattern']:
+        d['definitions']['name_mapping']['properties']['pattern'].pop('minimum')
+        d['definitions']['name_mapping']['properties']['pattern'].pop('maximum')
+    if "minimum" in d['definitions']['name_mapping']['properties']['replacement']:
+        d['definitions']['name_mapping']['properties']['replacement'].pop('minimum')
+        d['definitions']['name_mapping']['properties']['replacement'].pop('maximum')
 
 def fix_duplicate_parameter_in_metrocluster_modify(d):
     # - duplicate parameter name "return_timeout" for "query" in operation "metrocluster_modify"
     # remove the 1st one, the other one is more complete
-    if d['paths']['/cluster/metrocluster']['patch']['parameters'][1]['name'] == "return_timeout" and \
-       d['paths']['/cluster/metrocluster']['patch']['parameters'][3]['name'] == "return_timeout":
-        d['paths']['/cluster/metrocluster']['patch']['parameters'].pop(1)
+    if len(d['paths']['/cluster/metrocluster']['patch']['parameters']) >= 4:
+        if d['paths']['/cluster/metrocluster']['patch']['parameters'][1]['name'] == "return_timeout" and \
+           d['paths']['/cluster/metrocluster']['patch']['parameters'][3]['name'] == "return_timeout":
+            d['paths']['/cluster/metrocluster']['patch']['parameters'].pop(1)
+    elif len(d['paths']['/cluster/metrocluster']['patch']['parameters']) == 3:
+        if d['paths']['/cluster/metrocluster']['patch']['parameters'][1]['name'] == "return_timeout" and \
+           d['paths']['/cluster/metrocluster']['patch']['parameters'][2]['name'] == "return_timeout":
+            d['paths']['/cluster/metrocluster']['patch']['parameters'].pop(1)
 
 def fix_incorrect_body_and_form_data(d):
     # - operation "file_info_modify" has both formData and body parameters. Only one such In: type may be used for a given operation
@@ -273,6 +284,71 @@ def add_unique_types_for_properties(d):
 
     d["definitions"]["volume"]["properties"]["efficiency"]["x-go-name"] = "VolumeEfficiencyType"
     d["definitions"]["volume"]["properties"]["efficiency"]["properties"]["policy"]["x-go-name"] = "VolumeEfficiencyTypePolicyType"
+
+    # 9.10.1 changes (need a way to verify we are on 9.10.1 or higher)
+    d["definitions"]["cifs_domain"]["properties"]["name_mapping"]["x-go-name"] = "CifsDomainNameMappingType"
+    d["definitions"]["cifs_domain"]["properties"]["password_schedule"]["x-go-name"] = "CifsDomainPasswordScheduleType"
+
+    d["definitions"]["consistency_group"]["properties"]["qos"]["x-go-name"] = "ConsistencyGroupQosType"
+    d["definitions"]["consistency_group"]["properties"]["qos"]["properties"]["policy"]["x-go-name"] = "ConsistencyGroupQosTypePolicyType"
+
+    d["definitions"]["consistency_group"]["properties"]["space"]["x-go-name"] = "ConsistencyGroupSpaceType"
+    d["definitions"]["consistency_group"]["properties"]["tiering"]["x-go-name"] = "ConsistencyGroupTieringType"
+
+    d["definitions"]["consistency_group_lun"]["properties"]["space"]["x-go-name"] = "ConsistencyGroupLunSpaceType"
+
+    d["definitions"]["consistency_group_namespace_space"]["properties"]["guarantee"]["x-go-name"] = "ConsistencyGroupNamespaceSpaceGuaranteeType"
+
+    d["definitions"]["consistency_group_volume"]["properties"]["space"]["x-go-name"] = "ConsistencyGroupVolumeSpaceType"
+
+    d["definitions"]["consistency_group_qos"]["properties"]["policy"]["x-go-name"]  = "ConsistencyGroupQosPolicyType"
+
+    # nvme_service
+
+    # + metric
+    d["definitions"]["nvme_service"]["properties"]["metric"]["x-go-name"] = "NvmeServiceMetricType"
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["_links"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricLinksType"
+
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["fc"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricFcType"
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["fc"]["properties"]["_links"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLinksType"
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["fc"]["properties"]["iops"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcIopsType"
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["fc"]["properties"]["latency"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcLatencyType"
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["fc"]["properties"]["throughput"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricFcTypeNvmeServiceMetricFcThroughputType"
+
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["iops"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricIopsType"
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["latency"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricLatencyType"
+
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["tcp"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricTCPType"
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["tcp"]["properties"]["_links"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLinksType"
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["tcp"]["properties"]["iops"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPIopsType"
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["tcp"]["properties"]["latency"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPLatencyType"
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["tcp"]["properties"]["throughput"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricTCPTypeNvmeServiceMetricTCPThroughputType"
+
+    d["definitions"]["nvme_service"]["properties"]["metric"]["properties"]["throughput"]["x-go-name"] = "NvmeServiceMetricTypeNvmeServiceMetricThroughputType"
+
+    # + statistics
+    d["definitions"]["nvme_service"]["properties"]["statistics"]["x-go-name"] = "NvmeServiceStatisticsType"
+
+    d["definitions"]["nvme_service"]["properties"]["statistics"]["properties"]["fc"]["x-go-name"] = "NvmeServiceStatisticsTypeNvmeServiceStatisticsFcType"
+    d["definitions"]["nvme_service"]["properties"]["statistics"]["properties"]["fc"]["properties"]["iops_raw"]["x-go-name"] = "NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcIopsRawType"
+    d["definitions"]["nvme_service"]["properties"]["statistics"]["properties"]["fc"]["properties"]["latency_raw"]["x-go-name"] = "NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcLatencyRawType"
+    d["definitions"]["nvme_service"]["properties"]["statistics"]["properties"]["fc"]["properties"]["throughput_raw"]["x-go-name"] = "NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsFcThroughputRawType"
+
+    d["definitions"]["nvme_service"]["properties"]["statistics"]["properties"]["iops_raw"]["x-go-name"] = "NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsIopsRawType"
+    d["definitions"]["nvme_service"]["properties"]["statistics"]["properties"]["latency_raw"]["x-go-name"] = "NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsLatencyRawType"
+
+    d["definitions"]["nvme_service"]["properties"]["statistics"]["properties"]["tcp"]["x-go-name"] = "NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPType"
+    d["definitions"]["nvme_service"]["properties"]["statistics"]["properties"]["tcp"]["properties"]["iops_raw"]["x-go-name"] = "NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPIopsRawType"
+    d["definitions"]["nvme_service"]["properties"]["statistics"]["properties"]["tcp"]["properties"]["latency_raw"]["x-go-name"] = "NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPLatencyRawType"
+    d["definitions"]["nvme_service"]["properties"]["statistics"]["properties"]["tcp"]["properties"]["throughput_raw"]["x-go-name"] = "NvmeServiceStatisticsTypeNvmeServiceStatisticsTCPTypeNvmeServiceStatisticsTCPThroughputRawType"
+
+    d["definitions"]["nvme_service"]["properties"]["statistics"]["properties"]["throughput_raw"]["x-go-name"] = "NvmeServiceStatisticsTypeNvmeServiceStatisticsFcTypeNvmeServiceStatisticsThroughputRawType"
+
+    # volume
+    d["definitions"]["volume"]["properties"]["anti_ransomware"]["x-go-name"] = "VolumeAntiRansomwareType"
+
+
+
 
 # def add_go_package_names(d):
 #     d["definitions"]["application"]["properties"]["template"]["x-go-name"] = "ApplicationTemplateType"

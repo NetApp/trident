@@ -40,6 +40,9 @@ type FpolicyEvent struct {
 	// Enum: [cifs nfsv3 nfsv4]
 	Protocol string `json:"protocol,omitempty"`
 
+	// svm
+	Svm *FpolicyEventSvm `json:"svm,omitempty"`
+
 	// Specifies whether volume operation monitoring is required.
 	VolumeMonitoring *bool `json:"volume_monitoring,omitempty"`
 }
@@ -57,6 +60,10 @@ func (m *FpolicyEvent) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateProtocol(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSvm(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -166,6 +173,23 @@ func (m *FpolicyEvent) validateProtocol(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *FpolicyEvent) validateSvm(formats strfmt.Registry) error {
+	if swag.IsZero(m.Svm) { // not required
+		return nil
+	}
+
+	if m.Svm != nil {
+		if err := m.Svm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this fpolicy event based on the context it is used
 func (m *FpolicyEvent) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -175,6 +199,10 @@ func (m *FpolicyEvent) ContextValidate(ctx context.Context, formats strfmt.Regis
 	}
 
 	if err := m.contextValidateFilters(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSvm(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -204,6 +232,20 @@ func (m *FpolicyEvent) contextValidateFilters(ctx context.Context, formats strfm
 		if err := m.Filters.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("filters")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FpolicyEvent) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Svm != nil {
+		if err := m.Svm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("svm")
 			}
 			return err
 		}
@@ -403,6 +445,62 @@ func (m *FpolicyEventFilters) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *FpolicyEventFilters) UnmarshalBinary(b []byte) error {
 	var res FpolicyEventFilters
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FpolicyEventSvm fpolicy event svm
+//
+// swagger:model FpolicyEventSvm
+type FpolicyEventSvm struct {
+
+	// SVM UUID
+	// Read Only: true
+	UUID string `json:"uuid,omitempty"`
+}
+
+// Validate validates this fpolicy event svm
+func (m *FpolicyEventSvm) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this fpolicy event svm based on the context it is used
+func (m *FpolicyEventSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FpolicyEventSvm) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "svm"+"."+"uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FpolicyEventSvm) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FpolicyEventSvm) UnmarshalBinary(b []byte) error {
+	var res FpolicyEventSvm
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
