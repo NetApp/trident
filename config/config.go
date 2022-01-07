@@ -123,8 +123,8 @@ const (
 	PlatformCSI        Platform = "csi" // plain CSI, no other CO present
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin = "v1.17.0"
-	KubernetesVersionMax = "v1.22.0"
+	KubernetesVersionMin = "v1.17"
+	KubernetesVersionMax = "v1.23"
 
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
 	KubernetesCSISidecarRegistry = "k8s.gcr.io/sig-storage"
@@ -229,8 +229,8 @@ func version() string {
 func ValidateKubernetesVersion(k8sMinVersion string, k8sVersion *utils.Version) error {
 
 	k8sMMVersion := k8sVersion.ToMajorMinorVersion()
-	minSupportedMMVersion := utils.MustParseSemantic(k8sMinVersion).ToMajorMinorVersion()
-	maxSupportedMMVersion := utils.MustParseSemantic(KubernetesVersionMax).ToMajorMinorVersion()
+	minSupportedMMVersion := utils.MustParseMajorMinorVersion(k8sMinVersion)
+	maxSupportedMMVersion := utils.MustParseMajorMinorVersion(KubernetesVersionMax)
 
 	if k8sMMVersion.LessThan(minSupportedMMVersion) || k8sMMVersion.GreaterThan(maxSupportedMMVersion) {
 		return utils.UnsupportedKubernetesVersionError(

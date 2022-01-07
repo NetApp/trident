@@ -131,6 +131,12 @@ func MustParseSemantic(str string) *Version {
 	return v
 }
 
+// MustParseMajorMinorVersion accepts a major-minor version and adds a dummy patch value to the version to
+// satisfy the parser. There are circumstances where the caller is only concerned with the major-minor version
+func MustParseMajorMinorVersion(str string) *Version {
+	return MustParseSemantic(str + ".0").ToMajorMinorVersion()
+}
+
 // ParseDate parses a version string that mostly obeys the syntax and semantics of
 // the "Semantic Versioning" specification (http://semver.org/) (although it ignores
 // leading and trailing whitespace, and allows the version to be preceded by "v").

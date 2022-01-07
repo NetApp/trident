@@ -721,3 +721,16 @@ func TestValidateOctalUnixPermissions(t *testing.T) {
 		assert.Equal(t, test.errNotNil, err != nil)
 	}
 }
+
+func TestMustParseMajorMinorVersion(t *testing.T) {
+	majorMinor := "v1.23"
+	majorMinorVersion := MustParseSemantic(majorMinor + ".0").ToMajorMinorVersion()
+	invalid := "v1.23.0"
+	majorOnly := "v1"
+
+	assert.Equal(t, majorMinorVersion, MustParseMajorMinorVersion(majorMinor))
+	assert.Panics(t, func(){ MustParseMajorMinorVersion(invalid) }, "a version including the patch version" +
+		" should cause a panic")
+	assert.Panics(t, func(){ MustParseMajorMinorVersion(majorOnly) }, "a version consisting of only the" +
+		" major version should cause a panic")
+}

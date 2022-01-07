@@ -83,8 +83,8 @@ func listImages() error {
 	var yamlErr error
 
 	if K8sVersion == "all" {
-		minMinorVersion := utils.MustParseSemantic(tridentconfig.KubernetesVersionMin).MinorVersion()
-		maxMinorVersion := utils.MustParseSemantic(tridentconfig.KubernetesVersionMax).MinorVersion()
+		minMinorVersion := utils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMin).MinorVersion()
+		maxMinorVersion := utils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMax).MinorVersion()
 		for i := minMinorVersion; i <= maxMinorVersion; i++ {
 			semVersion := fmt.Sprintf("v1.%d.0", i)
 			k8sVersions = append(k8sVersions, semVersion)
@@ -113,8 +113,8 @@ func listImages() error {
 func getInstallYaml(semVersion *utils.Version) (string, error) {
 
 	minorVersion := semVersion.ToMajorMinorVersion().MinorVersion()
-	isSupportedVersion := minorVersion <= utils.MustParseSemantic(tridentconfig.KubernetesVersionMax).MinorVersion() &&
-		minorVersion >= utils.MustParseSemantic(tridentconfig.KubernetesVersionMin).MinorVersion()
+	isSupportedVersion := minorVersion <= utils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMax).MinorVersion() &&
+		minorVersion >= utils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMin).MinorVersion()
 
 	if !isSupportedVersion {
 		return "", errors.New(versionNotSupported)

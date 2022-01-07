@@ -26,7 +26,7 @@ func (p *Plugin) validateKubeVersion() error {
 	// Parse Kubernetes version into a SemVer object for simple comparisons
 	if version, err := utils.ParseSemantic(p.kubeVersion.GitVersion); err != nil {
 		return err
-	} else if !version.AtLeast(utils.MustParseSemantic(config.KubernetesVersionMin)) {
+	} else if !version.AtLeast(utils.MustParseMajorMinorVersion(config.KubernetesVersionMin)) {
 		log.Warnf("%s v%s may not support container orchestrator version %s.%s (%s)! Supported "+
 			"Kubernetes versions are %s-%s. K8S helper frontend proceeds as if you are running Kubernetes %s!",
 			config.OrchestratorName, config.OrchestratorVersion, p.kubeVersion.Major, p.kubeVersion.Minor,
