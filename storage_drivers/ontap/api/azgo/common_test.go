@@ -13,10 +13,10 @@ import (
 func TestValidateZAPIResponse(t *testing.T) {
 	// Sample of exploit-capable xml
 	// from https://github.com/mattermost/xml-roundtrip-validator/blob/master/validator_test.go used as a sanity test
-	simpleInvalidResponseBody := `<Root><Element ::attr="foo"></Element></Root>`
+	simpleInvalidResponseBody := `<Root ::attr="x">]]><x::Element/></Root>`
 
 	sampleResponse := &http.Response{
-		Body: ioutil.NopCloser(bytes.NewBufferString(simpleInvalidResponseBody)),
+		Body:          ioutil.NopCloser(bytes.NewBufferString(simpleInvalidResponseBody)),
 		ContentLength: int64(len(simpleInvalidResponseBody)),
 	}
 	_, err := ValidateZAPIResponse(sampleResponse)
@@ -24,8 +24,8 @@ func TestValidateZAPIResponse(t *testing.T) {
 
 	// <! <<!-- -->!-->"--> " ><! ">" <X/>>
 	// Is an invalid xml directive
-	// make sure that the validator catches the invalid directive in a ZAPI XML response that would be valid in
-	// versions of Trident without the validation
+	// Make sure that the validator combined with Go 1.17+ passes the invalid directive in a ZAPI XML response
+	// that would be valid in versions of Trident without the validation or would fail validation with older Go versions.
 	validToUnpatchedTridentResponseBody := `<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'><netapp version='1.180' xmlns='http://www.netapp.com/filer/admin'>
 <! <<!-- -->!-->"--> " ><! ">" <X/>><results status="passed"><attributes-list><initiator-group-info>
@@ -41,12 +41,12 @@ func TestValidateZAPIResponse(t *testing.T) {
 </num-records></results></netapp>"`
 
 	sampleResponse = &http.Response{
-		Body: ioutil.NopCloser(bytes.NewBufferString(validToUnpatchedTridentResponseBody)),
+		Body:          ioutil.NopCloser(bytes.NewBufferString(validToUnpatchedTridentResponseBody)),
 		ContentLength: int64(len(validToUnpatchedTridentResponseBody)),
 	}
 
 	_, err = ValidateZAPIResponse(sampleResponse)
-	assert.Error(t, err, "an invalid XML directive in an otherwise valid ZAPI XML response should cause" +
+	assert.NoError(t, err, "an invalid XML directive in an otherwise valid ZAPI XML response caused"+
 		" the validation to return an error")
 
 	var zapiResp IgroupGetIterResponse
