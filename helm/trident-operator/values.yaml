@@ -19,6 +19,14 @@ tolerations: []
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 affinity: {}
 
+# tridentNodePluginNodeSelector additional nodeSelectors for Pods running the Trident Node CSI Plugin
+# tridentNodePluginNodeSelector : {}
+
+# tridentNodePluginTolerations overrides tolerations for Pods running the Trident Node CSI Plugin 
+# tridentNodePluginTolerations: []
+
+
+
 # imageRegistry identifies the registry for the trident-operator, trident, and other images.  Leave empty to accept the default.
 imageRegistry: ""
 

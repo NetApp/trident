@@ -74,6 +74,9 @@ var (
 	appLabelKey   string
 	appLabelValue string
 
+	nodePluginNodeSelector map[string]string
+	nodePluginTolerations  []netappv1.Toleration
+
 	CRDnames = []string{
 		BackendCRDName,
 		BackendConfigCRDName,
@@ -339,6 +342,13 @@ func (i *Installer) setInstallationParams(
 	appLabelKey = TridentCSILabelKey
 	appLabelValue = TridentCSILabelValue
 
+	if cr.Spec.NodePluginNodeSelector != nil {
+		nodePluginNodeSelector = cr.Spec.NodePluginNodeSelector
+	}
+	if cr.Spec.NodePluginTolerations != nil {
+		nodePluginTolerations = cr.Spec.NodePluginTolerations
+	}
+
 	// Owner Reference details set on each of the Trident object created by the operator
 	controllingCRDetails := make(map[string]string)
 	managedByCR := "true"
@@ -524,6 +534,8 @@ func (i *Installer) InstallOrPatchTrident(
 		HTTPRequestTimeout:      httpTimeout,
 		ImagePullSecrets:        imagePullSecrets,
 		EnableNodePrep:          strconv.FormatBool(enableNodePrep),
+		NodePluginNodeSelector:  nodePluginNodeSelector,
+		NodePluginTolerations:   nodePluginTolerations,
 	}
 
 	log.WithFields(log.Fields{
@@ -1109,6 +1121,14 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 
 	labels[appLabelKey] = TridentNodeLabelValue
 
+	var tolerations []map[string]string
+	if nodePluginTolerations != nil {
+		tolerations = make([]map[string]string, 0)
+		for _, t := range nodePluginTolerations {
+			tolerations = append(tolerations, t.GetMap())
+		}
+	}
+
 	daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
 		DaemonsetName:        daemonSetName,
 		TridentImage:         tridentImage,
@@ -1123,6 +1143,8 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		NodePrep:             enableNodePrep,
 		Version:              i.client.ServerVersion(),
 		HTTPRequestTimeout:   httpTimeout,
+		NodeSelector:         nodePluginNodeSelector,
+		Tolerations:          tolerations,
 	}
 	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonSetArgs)
 

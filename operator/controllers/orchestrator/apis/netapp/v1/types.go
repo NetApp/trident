@@ -3,6 +3,8 @@
 package v1
 
 import (
+	"fmt"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -31,25 +33,62 @@ type TridentOrchestratorList struct {
 
 // TridentOrchestratorSpec defines the desired state of TridentOrchestrator
 type TridentOrchestratorSpec struct {
-	Debug                   bool     `json:"debug"`
-	Namespace               string   `json:"namespace"`
-	IPv6                    bool     `json:"IPv6,omitempty"`
-	K8sTimeout              int      `json:"k8sTimeout,omitempty"`
-	HTTPRequestTimeout      string   `json:"httpRequestTimeout,omitempty"`
-	SilenceAutosupport      bool     `json:"silenceAutosupport,omitempty"`
-	AutosupportImage        string   `json:"autosupportImage,omitempty"`
-	AutosupportProxy        string   `json:"autosupportProxy,omitempty"`
-	AutosupportSerialNumber string   `json:"autosupportSerialNumber,omitempty"`
-	AutosupportHostname     string   `json:"autosupportHostname,omitempty"`
-	Uninstall               bool     `json:"uninstall,omitempty"`
-	LogFormat               string   `json:"logFormat,omitempty"`
-	ProbePort               *int64   `json:"probePort,omitempty"`
-	TridentImage            string   `json:"tridentImage,omitempty"`
-	ImageRegistry           string   `json:"imageRegistry,omitempty"`
-	KubeletDir              string   `json:"kubeletDir,omitempty"`
-	Wipeout                 []string `json:"wipeout,omitempty"`
-	ImagePullSecrets        []string `json:"imagePullSecrets,omitempty"`
-	EnableNodePrep          bool     `json:"enableNodePrep,omitempty"`
+	Debug                   bool              `json:"debug"`
+	Namespace               string            `json:"namespace"`
+	IPv6                    bool              `json:"IPv6,omitempty"`
+	K8sTimeout              int               `json:"k8sTimeout,omitempty"`
+	HTTPRequestTimeout      string            `json:"httpRequestTimeout,omitempty"`
+	SilenceAutosupport      bool              `json:"silenceAutosupport,omitempty"`
+	AutosupportImage        string            `json:"autosupportImage,omitempty"`
+	AutosupportProxy        string            `json:"autosupportProxy,omitempty"`
+	AutosupportSerialNumber string            `json:"autosupportSerialNumber,omitempty"`
+	AutosupportHostname     string            `json:"autosupportHostname,omitempty"`
+	Uninstall               bool              `json:"uninstall,omitempty"`
+	LogFormat               string            `json:"logFormat,omitempty"`
+	ProbePort               *int64            `json:"probePort,omitempty"`
+	TridentImage            string            `json:"tridentImage,omitempty"`
+	ImageRegistry           string            `json:"imageRegistry,omitempty"`
+	KubeletDir              string            `json:"kubeletDir,omitempty"`
+	Wipeout                 []string          `json:"wipeout,omitempty"`
+	ImagePullSecrets        []string          `json:"imagePullSecrets,omitempty"`
+	EnableNodePrep          bool              `json:"enableNodePrep,omitempty"`
+	NodePluginNodeSelector  map[string]string `json:"nodePluginNodeSelector,omitempty"`
+	NodePluginTolerations   []Toleration      `json:"nodePluginTolerations,omitempty"`
+}
+
+// Toleration
+type Toleration struct {
+	Effect            string `json:"effect,omitempty"`
+	Key               string `json:"key,omitempty"`
+	Value             string `json:"value,omitempty"`
+	Operator          string `json:"operator,omitempty"`
+	TolerationSeconds int    `json:"tolerationSeconds,omitempty"`
+}
+
+func (t *Toleration) GetMap() map[string]string {
+	toleration := map[string]string{}
+
+	if t.Key != "" {
+		toleration["key"] = t.Key
+	}
+
+	if t.Effect != "" {
+		toleration["effect"] = t.Effect
+	}
+
+	if t.Value != "" {
+		toleration["value"] = t.Value
+	}
+
+	if t.Operator != "" {
+		toleration["operator"] = t.Operator
+	}
+
+	if t.TolerationSeconds != 0 {
+		toleration["tolerationSeconds"] = fmt.Sprintf("%d", t.TolerationSeconds)
+	}
+
+	return toleration
 }
 
 // TridentOrchestratorStatus defines the observed state of TridentOrchestrator
@@ -62,20 +101,22 @@ type TridentOrchestratorStatus struct {
 }
 
 type TridentOrchestratorSpecValues struct {
-	Debug                   string   `json:"debug"`
-	IPv6                    string   `json:"IPv6"`
-	SilenceAutosupport      string   `json:"silenceAutosupport"`
-	AutosupportImage        string   `json:"autosupportImage"`
-	AutosupportProxy        string   `json:"autosupportProxy"`
-	AutosupportSerialNumber string   `json:"autosupportSerialNumber"`
-	AutosupportHostname     string   `json:"autosupportHostname"`
-	K8sTimeout              string   `json:"k8sTimeout"`
-	HTTPRequestTimeout      string   `json:"httpRequestTimeout"`
-	LogFormat               string   `json:"logFormat"`
-	ProbePort               string   `json:"probePort"`
-	TridentImage            string   `json:"tridentImage"`
-	ImageRegistry           string   `json:"imageRegistry"`
-	KubeletDir              string   `json:"kubeletDir"`
-	ImagePullSecrets        []string `json:"imagePullSecrets"`
-	EnableNodePrep          string   `json:"enableNodePrep"`
+	Debug                   string            `json:"debug"`
+	IPv6                    string            `json:"IPv6"`
+	SilenceAutosupport      string            `json:"silenceAutosupport"`
+	AutosupportImage        string            `json:"autosupportImage"`
+	AutosupportProxy        string            `json:"autosupportProxy"`
+	AutosupportSerialNumber string            `json:"autosupportSerialNumber"`
+	AutosupportHostname     string            `json:"autosupportHostname"`
+	K8sTimeout              string            `json:"k8sTimeout"`
+	HTTPRequestTimeout      string            `json:"httpRequestTimeout"`
+	LogFormat               string            `json:"logFormat"`
+	ProbePort               string            `json:"probePort"`
+	TridentImage            string            `json:"tridentImage"`
+	ImageRegistry           string            `json:"imageRegistry"`
+	KubeletDir              string            `json:"kubeletDir"`
+	ImagePullSecrets        []string          `json:"imagePullSecrets"`
+	EnableNodePrep          string            `json:"enableNodePrep"`
+	NodePluginNodeSelector  map[string]string `json:"nodePluginNodeSelector,omitempty"`
+	NodePluginTolerations   []Toleration      `json:"nodePluginTolerations,omitempty"`
 }

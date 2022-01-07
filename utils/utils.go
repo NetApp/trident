@@ -499,22 +499,21 @@ func FilterIPs(ctx context.Context, ips, cidrs []string) ([]string, error) {
 	return filteredIPs, nil
 }
 
-// GetYAMLTagWithSpaceCount returns the line that matches the pattern, tag name, and the spaces before the tag
-func GetYAMLTagWithSpaceCount(text string) (string, string, int) {
+func GetYAMLTagWithSpaceCount(text, tagName string) (string, int) {
 
 	// This matches pattern in a multiline string of type "    {something}\n"
-	tagsWithIndentationRegex := regexp.MustCompile(`(?m)^[\t ]*{(?P<tagName>[\w-]+)}$\n`)
+	tagsWithIndentationRegex := regexp.MustCompile(`(?m)^[\t ]*{` + tagName + `}$\n`)
 	tag := tagsWithIndentationRegex.FindStringSubmatch(text)
 
 	// Since we have two of `()` in the pattern, we want to use the tag identified by the second `()`.
-	if len(tag) > 1 {
+	if len(tag) > 0 {
 		tagWithSpaces := tagsWithIndentationRegex.FindString(text)
 		indentation := CountSpacesBeforeText(tagWithSpaces)
 
-		return tagWithSpaces, tag[1], indentation
+		return tagWithSpaces, indentation
 	}
 
-	return "", "", 0
+	return "", 0
 }
 
 func CountSpacesBeforeText(text string) int {
@@ -645,6 +644,16 @@ func SplitString(_ context.Context, s, sep string) []string {
 	}
 
 	return strings.Split(s, sep)
+}
+
+// ReplaceAtIndex returns a string with the rune at the specified index replaced
+func ReplaceAtIndex(in string, r rune, index int) (string, error) {
+	if index < 0 || index >= len(in) {
+		return in, fmt.Errorf("index '%d' out of bounds for string '%s'", index, in)
+	}
+	out := []rune(in)
+	out[index] = r
+	return string(out), nil
 }
 
 // MinInt64 returns the lower of the two integers specified

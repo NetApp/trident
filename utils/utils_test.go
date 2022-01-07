@@ -393,30 +393,26 @@ text
 func TestGetYAMLTagWithSpaceCount(t *testing.T) {
 	log.Debug("Running TestGetYAMLTagWithSpaceCount...")
 
-	tagWithSpaces, tag, spaces := GetYAMLTagWithSpaceCount(inputString)
+	tagWithSpaces, spaces := GetYAMLTagWithSpaceCount(inputString, "REPLACE-1")
 	assert.Equal(t, tagWithSpaces, "{REPLACE-1}\n")
-	assert.Equal(t, tag, "REPLACE-1")
 	assert.Equal(t, spaces, 0)
 
 	inputStringCopy := strings.ReplaceAll(inputString, tagWithSpaces, "#"+tagWithSpaces)
 
-	tagWithSpaces, tag, spaces = GetYAMLTagWithSpaceCount(inputStringCopy)
+	tagWithSpaces, spaces = GetYAMLTagWithSpaceCount(inputString, "REPLACE-2")
 	assert.Equal(t, tagWithSpaces, "  {REPLACE-2}\n")
-	assert.Equal(t, tag, "REPLACE-2")
 	assert.Equal(t, spaces, 2)
 
 	inputStringCopy = strings.ReplaceAll(inputStringCopy, tagWithSpaces, "#"+tagWithSpaces)
 
-	tagWithSpaces, tag, spaces = GetYAMLTagWithSpaceCount(inputStringCopy)
+	tagWithSpaces, spaces = GetYAMLTagWithSpaceCount(inputString, "REPLACE-3")
 	assert.Equal(t, tagWithSpaces, "    {REPLACE-3}\n")
-	assert.Equal(t, tag, "REPLACE-3")
 	assert.Equal(t, spaces, 4)
 
 	inputStringCopy = strings.ReplaceAll(inputStringCopy, tagWithSpaces, "#"+tagWithSpaces)
 
-	tagWithSpaces, tag, spaces = GetYAMLTagWithSpaceCount(inputStringCopy)
+	tagWithSpaces, spaces = GetYAMLTagWithSpaceCount(inputString, "REPLACE-4")
 	assert.Equal(t, tagWithSpaces, "    {REPLACE-4}\n")
-	assert.Equal(t, tag, "REPLACE-4")
 	assert.Equal(t, spaces, 4)
 }
 
@@ -589,6 +585,32 @@ func TestSplitString(t *testing.T) {
 
 	stringList = SplitString(ctx, ";a;b", ";")
 	assert.Equal(t, []string{"", "a", "b"}, stringList)
+}
+
+func TestReplaceAtIndex(t *testing.T) {
+	actual, err := ReplaceAtIndex("foo", 'f', 0)
+	assert.Nil(t, err)
+	assert.Equal(t, "foo", actual)
+
+	actual, err = ReplaceAtIndex("boo", 'f', 0)
+	assert.Nil(t, err)
+	assert.Equal(t, "foo", actual)
+
+	actual, err = ReplaceAtIndex("fof", 'o', 2)
+	assert.Nil(t, err)
+	assert.Equal(t, "foo", actual)
+
+	actual, err = ReplaceAtIndex("boo", 'f', -1)
+	assert.NotNil(t, err)
+	assert.Equal(t, "boo", actual)
+
+	actual, err = ReplaceAtIndex("boo", 'f', 3)
+	assert.NotNil(t, err)
+	assert.Equal(t, "boo", actual)
+
+	actual, err = ReplaceAtIndex("boo", 'f', 50)
+	assert.NotNil(t, err)
+	assert.Equal(t, "boo", actual)
 }
 
 func TestMinInt64(t *testing.T) {

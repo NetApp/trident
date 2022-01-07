@@ -162,17 +162,19 @@ type DeploymentYAMLArguments struct {
 }
 
 type DaemonsetYAMLArguments struct {
-	DaemonsetName        string            `json:"daemonsetName"`
-	TridentImage         string            `json:"tridentImage"`
-	ImageRegistry        string            `json:"imageRegistry"`
-	KubeletDir           string            `json:"kubeletDir"`
-	LogFormat            string            `json:"logFormat"`
-	ProbePort            string            `json:"probePort"`
-	ImagePullSecrets     []string          `json:"imagePullSecrets"`
-	Labels               map[string]string `json:"labels"`
-	ControllingCRDetails map[string]string `json:"controllingCRDetails"`
-	Debug                bool              `json:"debug"`
-	NodePrep             bool              `json:"nodePrep"`
-	Version              *utils.Version    `json:"version"`
-	HTTPRequestTimeout   string            `json:"httpRequestTimeout"`
+	DaemonsetName        string              `json:"daemonsetName"`
+	TridentImage         string              `json:"tridentImage"`
+	ImageRegistry        string              `json:"imageRegistry"`
+	KubeletDir           string              `json:"kubeletDir"`
+	LogFormat            string              `json:"logFormat"`
+	ProbePort            string              `json:"probePort"`
+	ImagePullSecrets     []string            `json:"imagePullSecrets"`
+	Labels               map[string]string   `json:"labels"`
+	ControllingCRDetails map[string]string   `json:"controllingCRDetails"`
+	Debug                bool                `json:"debug"`
+	NodePrep             bool                `json:"nodePrep"`
+	Version              *utils.Version      `json:"version"`
+	HTTPRequestTimeout   string              `json:"httpRequestTimeout"`
+	NodeSelector         map[string]string   `json:"nodeSelector"`
+	Tolerations          []map[string]string `json:"tolerations"`
 }

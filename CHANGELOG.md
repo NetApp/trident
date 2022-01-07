@@ -13,6 +13,7 @@
 **Enhancements:**
 
 - Allow cross-region volumes in GCP driver (Issue [#633](https://github.com/NetApp/trident/issues/633))
+- **Kubernetes:** Add scheduling options for Trident pods when installed via Trident Operator or Helm (Issue [#651](https://github.com/NetApp/trident/issues/651))
 - Added support for 'unixPermissions' option to ANF volumes.  (Issue [#666](https://github.com/NetApp/trident/issues/666))
 
 **Deprecations:**

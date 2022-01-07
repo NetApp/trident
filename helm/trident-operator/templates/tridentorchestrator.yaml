@@ -23,3 +23,17 @@ spec:
   {{- toYaml . | nindent 2 }}
   {{- end }}
   enableNodePrep: {{ include "trident.enableNodePrep" $ }}
+  {{- if .Values.tridentNodePluginNodeSelector }}
+  nodePluginNodeSelector:
+    {{- range $key, $value := .Values.tridentNodePluginNodeSelector }}
+    {{ $key }}: "{{ $value }}"
+    {{- end}}
+  {{- end }}
+  {{- if .Values.tridentNodePluginTolerations }}
+  nodePluginTolerations:
+    {{- range $value := .Values.tridentNodePluginTolerations }}
+    - {{- range $k, $v := $value }}
+      {{ $k }}: "{{ $v }}"
+      {{- end}}
+    {{- end}}
+  {{- end }}

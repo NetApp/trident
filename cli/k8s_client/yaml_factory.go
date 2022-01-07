@@ -41,7 +41,8 @@ func GetServiceAccountYAML(
 	}
 
 	saYAML = strings.ReplaceAll(saYAML, "{NAME}", serviceAccountName)
-	saYAML = replaceMultiline(saYAML, labels, controllingCRDetails, nil)
+	saYAML = replaceMultilineYAMLTag(saYAML, "LABELS", constructLabels(labels))
+	saYAML = replaceMultilineYAMLTag(saYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	return saYAML
 }
@@ -85,7 +86,8 @@ func GetClusterRoleYAML(
 	}
 
 	clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{CLUSTER_ROLE_NAME}", clusterRoleName)
-	clusterRoleYAML = replaceMultiline(clusterRoleYAML, labels, controllingCRDetails, nil)
+	clusterRoleYAML = replaceMultilineYAMLTag(clusterRoleYAML, "LABELS", constructLabels(labels))
+	clusterRoleYAML = replaceMultilineYAMLTag(clusterRoleYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	return clusterRoleYAML
 }
@@ -216,7 +218,8 @@ func GetClusterRoleBindingYAML(
 
 	crbYAML = strings.ReplaceAll(crbYAML, "{NAMESPACE}", namespace)
 	crbYAML = strings.ReplaceAll(crbYAML, "{NAME}", name)
-	crbYAML = replaceMultiline(crbYAML, labels, controllingCRDetails, nil)
+	crbYAML = replaceMultilineYAMLTag(crbYAML, "LABELS", constructLabels(labels))
+	crbYAML = replaceMultilineYAMLTag(crbYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 	return crbYAML
 }
 
@@ -256,7 +259,8 @@ func GetCSIServiceYAML(serviceName string, labels, controllingCRDetails map[stri
 
 	serviceYAML := strings.ReplaceAll(serviceYAMLTemplate, "{LABEL_APP}", labels[TridentAppLabelKey])
 	serviceYAML = strings.ReplaceAll(serviceYAML, "{SERVICE_NAME}", serviceName)
-	serviceYAML = replaceMultiline(serviceYAML, labels, controllingCRDetails, nil)
+	serviceYAML = replaceMultilineYAMLTag(serviceYAML, "LABELS", constructLabels(labels))
+	serviceYAML = replaceMultilineYAMLTag(serviceYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 	return serviceYAML
 }
 
@@ -373,7 +377,9 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		strconv.FormatBool(args.SilenceAutosupport))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{PROVISIONER_FEATURE_GATES}", provisionerFeatureGates)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
-	deploymentYAML = replaceMultiline(deploymentYAML, args.Labels, args.ControllingCRDetails, args.ImagePullSecrets)
+	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "LABELS", constructLabels(args.Labels))
+	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "IMAGE_PULL_SECRETS", constructImagePullSecrets(args.ImagePullSecrets))
 
 	return deploymentYAML
 }
@@ -712,7 +718,18 @@ func GetCSIDaemonSetYAML(args *DaemonsetYAMLArguments) string {
 		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
 	}
 
+	if args.Labels == nil {
+		args.Labels = map[string]string{}
+	}
 	args.Labels[DefaultContainerLabelKey] = "trident-main"
+	tolerations := args.Tolerations
+	if args.Tolerations == nil {
+		// Default to tolerating everything
+		tolerations = []map[string]string{
+			{"effect": "NoExecute", "operator": "Exists"},
+			{"effect": "NoSchedule", "operator": "Exists"},
+		}
+	}
 
 	kubeletDir := strings.TrimRight(args.KubeletDir, "/")
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{TRIDENT_IMAGE}", args.TridentImage)
@@ -726,7 +743,11 @@ func GetCSIDaemonSetYAML(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{NODE_PREP}", strconv.FormatBool(args.NodePrep))
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", args.ProbePort)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
-	daemonSetYAML = replaceMultiline(daemonSetYAML, args.Labels, args.ControllingCRDetails, args.ImagePullSecrets)
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "IMAGE_PULL_SECRETS", constructImagePullSecrets(args.ImagePullSecrets))
 
 	return daemonSetYAML
 }
@@ -845,11 +866,8 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
-      tolerations:
-      - effect: NoExecute
-        operator: Exists
-      - effect: NoSchedule
-        operator: Exists
+        {NODE_SELECTOR}
+      {NODE_TOLERATIONS}
       volumes:
       - name: plugin-dir
         hostPath:
@@ -1010,11 +1028,8 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
-      tolerations:
-      - effect: NoExecute
-        operator: Exists
-      - effect: NoSchedule
-        operator: Exists
+        {NODE_SELECTOR}
+      {NODE_TOLERATIONS}
       volumes:
       - name: plugin-dir
         hostPath:
@@ -1061,7 +1076,9 @@ func GetTridentVersionPodYAML(
 	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", name)
 	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{TRIDENT_IMAGE}", tridentImage)
 	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{SERVICE_ACCOUNT}", serviceAccountName)
-	versionPodYAML = replaceMultiline(versionPodYAML, labels, controllingCRDetails, imagePullSecrets)
+	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "LABELS", constructLabels(labels))
+	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "IMAGE_PULL_SECRETS", constructImagePullSecrets(imagePullSecrets))
 
 	return versionPodYAML
 }
@@ -1096,7 +1113,8 @@ func GetOpenShiftSCCYAML(sccName, user, namespace string, labels, controllingCRD
 	sccYAML = strings.ReplaceAll(sccYAML, "{SCC}", sccName)
 	sccYAML = strings.ReplaceAll(sccYAML, "{NAMESPACE}", namespace)
 	sccYAML = strings.ReplaceAll(sccYAML, "{USER}", user)
-	sccYAML = replaceMultiline(sccYAML, labels, controllingCRDetails, nil)
+	sccYAML = replaceMultilineYAMLTag(sccYAML, "LABELS", constructLabels(labels))
+	sccYAML = replaceMultilineYAMLTag(sccYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 	return sccYAML
 }
 
@@ -1201,7 +1219,8 @@ func GetSecretYAML(
 
 	secretYAML := strings.ReplaceAll(secretYAMLTemplate, "{SECRET_NAME}", secretName)
 	secretYAML = strings.ReplaceAll(secretYAML, "{NAMESPACE}", namespace)
-	secretYAML = replaceMultiline(secretYAML, labels, controllingCRDetails, nil)
+	secretYAML = replaceMultilineYAMLTag(secretYAML, "LABELS", constructLabels(labels))
+	secretYAML = replaceMultilineYAMLTag(secretYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	if data != nil {
 		secretYAML += "data:\n"
@@ -1885,7 +1904,8 @@ func GetCSIDriverYAML(name string, version *utils.Version, labels, controllingCR
 		csiDriver = strings.ReplaceAll(CSIDriverYAMLv1beta1, "{NAME}", name)
 	}
 
-	csiDriver = replaceMultiline(csiDriver, labels, controllingCRDetails, nil)
+	csiDriver = replaceMultilineYAMLTag(csiDriver, "LABELS", constructLabels(labels))
+	csiDriver = replaceMultilineYAMLTag(csiDriver, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 	return csiDriver
 }
 
@@ -1914,7 +1934,8 @@ spec:
 func GetPrivilegedPodSecurityPolicyYAML(pspName string, labels, controllingCRDetails map[string]string) string {
 
 	pspYAML := strings.ReplaceAll(PrivilegedPodSecurityPolicyYAML, "{PSP_NAME}", pspName)
-	pspYAML = replaceMultiline(pspYAML, labels, controllingCRDetails, nil)
+	pspYAML = replaceMultilineYAMLTag(pspYAML, "LABELS", constructLabels(labels))
+	pspYAML = replaceMultilineYAMLTag(pspYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 	return pspYAML
 }
 
@@ -1948,7 +1969,8 @@ spec:
 func GetUnprivilegedPodSecurityPolicyYAML(pspName string, labels, controllingCRDetails map[string]string) string {
 
 	pspYAML := strings.ReplaceAll(UnprivilegedPodSecurityPolicyYAML, "{PSP_NAME}", pspName)
-	pspYAML = replaceMultiline(pspYAML, labels, controllingCRDetails, nil)
+	pspYAML = replaceMultilineYAMLTag(pspYAML, "LABELS", constructLabels(labels))
+	pspYAML = replaceMultilineYAMLTag(pspYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 	return pspYAML
 }
 
@@ -1973,67 +1995,108 @@ spec:
     - '*'
 `
 
-// replaceMultiline replaces tags with multiline indented YAML, to make sure it works properly:
-// 1. It should be called last after all single line replacements have been made.
-// 2. Use only spaces before the tag
-// 3. No space(s) or any other special character (other than newline) should be there after the tag
-func replaceMultiline(originalYAML string, labels, ownerRef map[string]string, imagePullSecrets []string) string {
+func shiftTextRight(text string, count int) string {
+	if text == "" {
+		return ""
+	}
+	lines := strings.Split(text, "\n")
+	newLines := make([]string, len(lines))
+	for i, line := range lines {
+		if line != "" {
+			newLines[i] = strings.Repeat(" ", count) + line
+		}
+	}
+
+	return strings.Join(newLines, "\n")
+}
+
+func replaceMultilineYAMLTag(originalYAML, tag, tagText string) string {
 	for {
-		tagWithSpaces, tag, spaceCount := utils.GetYAMLTagWithSpaceCount(originalYAML)
+		tagWithSpaces, spaceCount := utils.GetYAMLTagWithSpaceCount(originalYAML, tag)
 
 		if tagWithSpaces == "" {
 			break
 		}
-
-		switch tag {
-		case "LABELS":
-			originalYAML = strings.Replace(originalYAML, tagWithSpaces,
-				contructLabels(labels, createSpaces(spaceCount)), 1)
-		case "OWNER_REF":
-			originalYAML = strings.Replace(originalYAML, tagWithSpaces,
-				constructOwnerRef(ownerRef, createSpaces(spaceCount)), 1)
-		case "IMAGE_PULL_SECRETS":
-			originalYAML = strings.Replace(originalYAML, tagWithSpaces,
-				constructImagePullSecrets(imagePullSecrets, createSpaces(spaceCount)), 1)
-		default:
-			// Unsupported tag
-			return ""
-		}
+		originalYAML = strings.Replace(originalYAML, tagWithSpaces, shiftTextRight(tagText, spaceCount), 1)
 	}
 
 	return originalYAML
 }
 
-func createSpaces(spaceCount int) string {
-	return strings.Repeat(" ", spaceCount)
+func constructNodeSelector(nodeLabels map[string]string) string {
+
+	var nodeSelector string
+
+	if nodeLabels != nil {
+		for key, value := range nodeLabels {
+			nodeSelector += fmt.Sprintf("%s: %s\n", key, value)
+		}
+	}
+
+	return nodeSelector
 }
 
-func contructLabels(labels map[string]string, spaces string) string {
+func constructTolerations(tolerations []map[string]string) string {
+
+	var tolerationsString string
+
+	if tolerations != nil && len(tolerations) > 0 {
+		tolerationsString += "tolerations:\n"
+		for _, t := range tolerations {
+			toleration := ""
+			if t["key"] != "" {
+				toleration += fmt.Sprintf("  key: \"%s\"\n", t["key"])
+			}
+			if t["value"] != "" {
+				toleration += fmt.Sprintf("  value: \"%s\"\n", t["value"])
+			}
+			if t["effect"] != "" {
+				toleration += fmt.Sprintf("  effect: \"%s\"\n", t["effect"])
+			}
+			if t["operator"] != "" {
+				toleration += fmt.Sprintf("  operator: \"%s\"\n", t["operator"])
+			}
+			if t["tolerationSeconds"] != "" {
+				toleration += fmt.Sprintf("  tolerationSeconds: %s\n", t["tolerationSeconds"])
+			}
+			if toleration != "" {
+				toleration, _ = utils.ReplaceAtIndex(toleration, '-', 0)
+				tolerationsString += toleration
+			}
+		}
+	} else if len(tolerations) == 0 {
+		tolerationsString = "tolerations: []\n"
+	}
+
+	return tolerationsString
+}
+
+func constructLabels(labels map[string]string) string {
 
 	var labelData string
 
 	if labels != nil {
-		labelData += spaces + "labels:\n"
+		labelData += "labels:\n"
 		for key, value := range labels {
-			labelData += fmt.Sprintf(spaces+"  %s: %s\n", key, value)
+			labelData += fmt.Sprintf("  %s: %s\n", key, value)
 		}
 	}
 
 	return labelData
 }
 
-func constructOwnerRef(ownerRef map[string]string, spaces string) string {
+func constructOwnerRef(ownerRef map[string]string) string {
 
 	var ownerRefData string
 	if ownerRef != nil {
 		isFirst := true
-		ownerRefData += spaces + "ownerReferences:\n"
+		ownerRefData += "ownerReferences:\n"
 		for key, value := range ownerRef {
 			if isFirst {
-				ownerRefData += fmt.Sprintf(spaces+"- %s: %s\n", key, value)
+				ownerRefData += fmt.Sprintf("- %s: %s\n", key, value)
 				isFirst = false
 			} else {
-				ownerRefData += fmt.Sprintf(spaces+"  %s: %s\n", key, value)
+				ownerRefData += fmt.Sprintf("  %s: %s\n", key, value)
 			}
 		}
 	}
@@ -2041,13 +2104,13 @@ func constructOwnerRef(ownerRef map[string]string, spaces string) string {
 	return ownerRefData
 }
 
-func constructImagePullSecrets(imagePullSecrets []string, spaces string) string {
+func constructImagePullSecrets(imagePullSecrets []string) string {
 
 	var imagePullSecretsData string
 	if len(imagePullSecrets) > 0 {
-		imagePullSecretsData += spaces + "imagePullSecrets:\n"
+		imagePullSecretsData += "imagePullSecrets:\n"
 		for _, value := range imagePullSecrets {
-			imagePullSecretsData += fmt.Sprintf(spaces+"- name: %s\n", value)
+			imagePullSecretsData += fmt.Sprintf("- name: %s\n", value)
 		}
 	}
 
