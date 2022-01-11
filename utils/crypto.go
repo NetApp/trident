@@ -9,7 +9,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/sha1"
+	"crypto/sha256"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/base64"
@@ -188,8 +188,10 @@ func certToBase64String(derBytes []byte) string {
 	return base64.StdEncoding.EncodeToString(certBytes)
 }
 
+// bigIntHash is used to hash subject key ids. The standard says we should derive the id from the public key, but it
+// only suggests using sha-1. Since that's risky, we're using sha-256.
 func bigIntHash(n *big.Int) ([]byte, error) {
-	hash := sha1.New()
+	hash := sha256.New()
 	if _, err := hash.Write(n.Bytes()); err != nil {
 		return nil, err
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	"math/big"
 	"testing"
 )
 
@@ -144,5 +145,27 @@ func TestPKCS7Pad(t *testing.T) {
 		if !bytes.Equal(output, input) {
 			t.Error("padding was properly removed")
 		}
+	}
+}
+
+func TestBigIntHash(t *testing.T) {
+	var n big.Int
+	h, err := bigIntHash(&n)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if bytes.Compare(h, n.Bytes()) == 0 {
+		t.Error("bigIntHash returned big int unchanged")
+	}
+
+	n.SetInt64(1)
+	h1, err := bigIntHash(&n)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if bytes.Compare(h, h1) == 0 {
+		t.Error("bigIntHash returned same result for different inputs")
 	}
 }
