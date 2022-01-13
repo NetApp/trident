@@ -3,7 +3,7 @@
 GOARCH ?= amd64
 GOGC ?= ""
 GOPROXY ?= https://proxy.golang.org
-GO_IMAGE = golang:1.16
+GO_IMAGE = golang:1.17
 OPERATOR_VOLUME = operator_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 OPERATOR_VOLUME_PATH = /go/src/github.com/netapp/trident/operator
