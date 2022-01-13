@@ -35,7 +35,7 @@ again. Under most circumstances, this is a matter of seconds.
 
    .. code-block:: bash
 
-     docker plugin upgrade --skip-remote-check --grant-all-permissions netapp:latest netapp/trident-plugin:21.07
+     docker plugin upgrade --skip-remote-check --grant-all-permissions netapp:latest docker.io/netapp/trident-plugin:21.07
 
    .. note::
 

@@ -126,7 +126,7 @@ Install Trident
     tridentctl install [flags]
 
   Flags:
-      --autosupport-image string   The container image for Autosupport Telemetry (default "netapp/trident-autosupport:20.07.0")
+      --autosupport-image string   The container image for Autosupport Telemetry (default "docker.io/netapp/trident-autosupport:20.07.0")
       --autosupport-proxy string   The address/port of a proxy for sending Autosupport Telemetry
       --csi                        Install CSI Trident (override for Kubernetes 1.13 only, requires feature gates).
       --enable-node-prep           Attempt to install required packages on nodes.

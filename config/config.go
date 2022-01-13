@@ -109,6 +109,7 @@ const (
 	MinTLSVersion      = tls.VersionTLS12
 
 	/* Docker constants */
+	ImageRegistry               = "docker.io"
 	DockerPluginModeEnvVariable = "DOCKER_PLUGIN_MODE" // set via contrib/docker/plugin/plugin.json
 	DockerPluginConfigLocation  = "/etc/netappdvp"
 
@@ -134,7 +135,7 @@ const (
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
 
-	DefaultAutosupportImage = "netapp/trident-autosupport:21.10"
+	DefaultAutosupportImage = ImageRegistry + "/netapp/trident-autosupport:21.10"
 )
 
 var (
@@ -157,7 +158,7 @@ var (
 	BuildTime = "unknown"
 
 	// BuildImage is the Trident image that was built
-	BuildImage = "netapp/trident:" + DefaultOrchestratorVersion + "-custom.0"
+	BuildImage = ImageRegistry + "/netapp/trident:" + DefaultOrchestratorVersion + "-custom.0"
 
 	OrchestratorVersion = utils.MustParseDate(version())
 

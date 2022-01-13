@@ -44,7 +44,7 @@ find that's not enough, you can enable debug logging:
   .. code-block:: bash
 
      # install the plugin with debug logging enabled
-     docker plugin install netapp/trident-plugin:<version> --alias <alias> debug=true
+     docker plugin install docker.io/netapp/trident-plugin:<version> --alias <alias> debug=true
 
      # or, enable debug logging when the plugin is already installed
      docker plugin disable <plugin>

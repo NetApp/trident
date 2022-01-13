@@ -226,7 +226,7 @@ installation in the ``trident`` namespace.
      Current Installation Params:
        IPv6:                       false
        Autosupport Hostname:
-       Autosupport Image:          netapp/trident-autosupport:21.01
+       Autosupport Image:          docker.io/netapp/trident-autosupport:21.01
        Autosupport Proxy:
        Autosupport Serial Number:
        Debug:                      true
@@ -237,7 +237,7 @@ installation in the ``trident`` namespace.
        Kubelet Dir:          /var/lib/kubelet
        Log Format:           text
        Silence Autosupport:  false
-       Trident Image:        netapp/trident:21.07.0
+       Trident Image:        docker.io/netapp/trident:21.07.0
      Message:                Trident installed
      Namespace:              trident
      Status:                 Installed
@@ -265,11 +265,11 @@ useIPv6                   Install Trident over IPv6                             
 k8sTimeout                Timeout for Kubernetes operations                                              30sec
 silenceAutosupport        Don't send autosupport bundles to NetApp automatically                         'false'
 enableNodePrep            Manage worker node dependencies automatically (**BETA**)                       'false'
-autosupportImage          The container image for Autosupport Telemetry                                  "netapp/trident-autosupport:21.01.0"
+autosupportImage          The container image for Autosupport Telemetry                                  "docker.io/netapp/trident-autosupport:21.01.0"
 autosupportProxy          The address/port of a proxy for sending Autosupport Telemetry                  "http://proxy.example.com:8888"
 uninstall                 A flag used to uninstall Trident                                               'false'
 logFormat                 Trident logging format to be used [text,json]                                  "text"
-tridentImage              Trident image to install                                                       "netapp/trident:21.07"
+tridentImage              Trident image to install                                                       "docker.io/netapp/trident:21.07"
 imageRegistry             Path to internal registry, of the format ``<registry FQDN>[:port][/subpath]``  "k8s.gcr.io/sig-storage"
 kubeletDir                Path to the kubelet directory on the host                                      "/var/lib/kubelet"
 wipeout                   A list of resources to delete to perform a complete removal of Trident
@@ -302,7 +302,7 @@ customize your Trident installation. Here's an example:
    spec:
      debug: true
      namespace: trident
-     tridentImage: netapp/trident:21.07.0
+     tridentImage: docker.io/netapp/trident:21.07.0
      imagePullSecrets:
      - thisisasecret
 

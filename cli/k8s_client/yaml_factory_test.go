@@ -131,8 +131,8 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 
 	deploymentArgs := &DeploymentYAMLArguments{
 		DeploymentName:          "trident-csi",
-		TridentImage:            "netapp/trident:20.10.0-custom",
-		AutosupportImage:        "netapp/trident-autosupport:20.10.0-custom",
+		TridentImage:            "docker.io/netapp/trident:20.10.0-custom",
+		AutosupportImage:        "docker.io/netapp/trident-autosupport:20.10.0-custom",
 		AutosupportSerialNumber: "0000-0000",
 		AutosupportHostname:     "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
 		AutosupportProxy:        "http://127.0.0.1/",
@@ -179,8 +179,8 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 
 	deploymentArgs := &DeploymentYAMLArguments{
 		DeploymentName:          "\ntrident-csi",
-		TridentImage:            "netapp/trident:20.10.0-custom",
-		AutosupportImage:        "netapp/trident-autosupport:20.10.0-custom",
+		TridentImage:            "docker.io/netapp/trident:20.10.0-custom",
+		AutosupportImage:        "docker.io/netapp/trident-autosupport:20.10.0-custom",
 		AutosupportProxy:        "http://127.0.0.1/",
 		AutosupportCustomURL:    "http://172.16.150.125:8888/",
 		AutosupportSerialNumber: "0000-0000",

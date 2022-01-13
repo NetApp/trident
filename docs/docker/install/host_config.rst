@@ -276,7 +276,7 @@ Docker Managed Plugin Method (Docker >= 1.13 / 17.03)
 
    .. code-block:: bash
 
-     docker plugin install --grant-all-permissions --alias netapp netapp/trident-plugin:21.07 config=myConfigFile.json
+     docker plugin install --grant-all-permissions --alias docker.io/netapp netapp/trident-plugin:21.07 config=myConfigFile.json
 
 #. Begin using Trident to consume storage from the configured system.
 
