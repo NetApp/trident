@@ -19,6 +19,12 @@ tolerations: []
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 affinity: {}
 
+# tridentControllerPluginNodeSelector additional nodeSelectors for the Pod running the Trident Controller CSI Plugin
+# tridentControllerPluginNodeSelector : {}
+
+# tridentControllerPluginTolerations overrides tolerations for the Pod running the Trident Controler CSI Plugin
+# tridentControllerPluginTolerations: []
+
 # tridentNodePluginNodeSelector additional nodeSelectors for Pods running the Trident Node CSI Plugin
 # tridentNodePluginNodeSelector : {}
 

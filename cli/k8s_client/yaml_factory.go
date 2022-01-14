@@ -380,6 +380,8 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "LABELS", constructLabels(args.Labels))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "IMAGE_PULL_SECRETS", constructImagePullSecrets(args.ImagePullSecrets))
+	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
+	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
 
 	return deploymentYAML
 }
@@ -527,6 +529,8 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
+        {NODE_SELECTOR}
+      {NODE_TOLERATIONS}
       volumes:
       - name: socket-dir
         emptyDir:
@@ -682,6 +686,8 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
+        {NODE_SELECTOR}
+      {NODE_TOLERATIONS}
       volumes:
       - name: socket-dir
         emptyDir:

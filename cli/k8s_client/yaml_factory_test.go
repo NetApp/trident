@@ -212,6 +212,121 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 	}
 }
 
+func TestGetCSIDeploymentYAML(t *testing.T) {
+	versions := []string{"1.17.0", "1.18.0", "1.19.1", "1.21.0"}
+
+	for _, versionString := range versions {
+		version := utils.MustParseSemantic(versionString)
+		deploymentArgs := &DeploymentYAMLArguments{Version: version}
+
+		yamlData := GetCSIDeploymentYAML(deploymentArgs)
+		_, err := yaml.YAMLToJSON([]byte(yamlData))
+		if err != nil {
+			t.Fatalf("expected valid YAML for version %s", versionString)
+		}
+	}
+}
+
+func TestGetCSIDeploymentYAML_NodeSelectors(t *testing.T) {
+	deploymentArgs := &DeploymentYAMLArguments{
+		NodeSelector: map[string]string{"foo": "bar"},
+	}
+	expectedNodeSelectorString := `
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+        foo: bar
+`
+
+	yamlData := GetCSIDeploymentYAML(deploymentArgs)
+	_, err := yaml.YAMLToJSON([]byte(yamlData))
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+	assert.Contains(t, yamlData, expectedNodeSelectorString, fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
+
+	// Defaults
+	deploymentArgs = &DeploymentYAMLArguments{}
+	expectedNodeSelectorString = `
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+`
+
+	yamlData = GetCSIDeploymentYAML(deploymentArgs)
+	_, err = yaml.YAMLToJSON([]byte(yamlData))
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+	assert.Contains(t, yamlData, expectedNodeSelectorString, fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
+
+	// Defaults used when empty list specified
+	deploymentArgs = &DeploymentYAMLArguments{
+		NodeSelector: map[string]string{},
+	}
+	expectedNodeSelectorString = `
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+`
+
+	yamlData = GetCSIDeploymentYAML(deploymentArgs)
+	_, err = yaml.YAMLToJSON([]byte(yamlData))
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+	assert.Contains(t, yamlData, expectedNodeSelectorString, fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
+}
+
+func TestGetCSIDeploymentYAMLTolerations(t *testing.T) {
+	deploymentArgs := &DeploymentYAMLArguments{
+		Tolerations: []map[string]string{
+			{"key": "foo", "value": "bar", "operator": "Exists", "effect": "NoSchedule"},
+			{"key": "foo2", "value": "bar2", "operator": "Equals", "effect": "NoExecute", "tolerationSeconds": "20"},
+		},
+	}
+	expectedTolerationString := `
+      tolerations:
+      - key: "foo"
+        value: "bar"
+        effect: "NoSchedule"
+        operator: "Exists"
+      - key: "foo2"
+        value: "bar2"
+        effect: "NoExecute"
+        operator: "Equals"
+        tolerationSeconds: 20
+`
+
+	yamlData := GetCSIDeploymentYAML(deploymentArgs)
+	_, err := yaml.YAMLToJSON([]byte(yamlData))
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+	assert.Contains(t, yamlData, expectedTolerationString, fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
+
+	// Test empty tolerations specified
+	deploymentArgs = &DeploymentYAMLArguments{Tolerations: []map[string]string{}}
+	expectedTolerationString = `
+      tolerations: []
+`
+	defaultTolerationString := `
+      tolerations:
+      - effect: "NoExecute"
+        operator: "Exists"
+      - effect: "NoSchedule"
+        operator: "Exists"
+`
+
+	yamlData = GetCSIDeploymentYAML(deploymentArgs)
+	_, err = yaml.YAMLToJSON([]byte(yamlData))
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+	assert.Contains(t, yamlData, expectedTolerationString, fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
+	assert.NotContains(t, yamlData, defaultTolerationString, fmt.Sprintf("expected default tolerations to not appear in final YAML: %s", yamlData))
+}
+
 func TestGetCSIDaemonSetYAML(t *testing.T) {
 	versions := []string{"1.17.0", "1.18.0", "1.21.0"}
 

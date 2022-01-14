@@ -74,8 +74,10 @@ var (
 	appLabelKey   string
 	appLabelValue string
 
-	nodePluginNodeSelector map[string]string
-	nodePluginTolerations  []netappv1.Toleration
+	controllerPluginNodeSelector map[string]string
+	controllerPluginTolerations  []netappv1.Toleration
+	nodePluginNodeSelector       map[string]string
+	nodePluginTolerations        []netappv1.Toleration
 
 	CRDnames = []string{
 		BackendCRDName,
@@ -342,6 +344,12 @@ func (i *Installer) setInstallationParams(
 	appLabelKey = TridentCSILabelKey
 	appLabelValue = TridentCSILabelValue
 
+	if cr.Spec.ControllerPluginNodeSelector != nil {
+		controllerPluginNodeSelector = cr.Spec.ControllerPluginNodeSelector
+	}
+	if cr.Spec.ControllerPluginTolerations != nil {
+		controllerPluginTolerations = cr.Spec.ControllerPluginTolerations
+	}
 	if cr.Spec.NodePluginNodeSelector != nil {
 		nodePluginNodeSelector = cr.Spec.NodePluginNodeSelector
 	}
@@ -1047,6 +1055,14 @@ func (i *Installer) createOrPatchTridentDeployment(
 		createDeployment = true
 	}
 
+	var tolerations []map[string]string
+	if controllerPluginTolerations != nil {
+		tolerations = make([]map[string]string, 0)
+		for _, t := range controllerPluginTolerations {
+			tolerations = append(tolerations, t.GetMap())
+		}
+	}
+
 	if err = i.client.RemoveMultipleDeployments(unwantedDeployments); err != nil {
 		return fmt.Errorf("failed to remove unwanted Trident deployments; %v", err)
 	}
@@ -1073,6 +1089,8 @@ func (i *Installer) createOrPatchTridentDeployment(
 		Version:                 i.client.ServerVersion(),
 		TopologyEnabled:         topologyEnabled,
 		HTTPRequestTimeout:      httpTimeout,
+		NodeSelector:            controllerPluginNodeSelector,
+		Tolerations:             tolerations,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)

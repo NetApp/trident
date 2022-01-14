@@ -140,25 +140,27 @@ type KubernetesClient interface {
 }
 
 type DeploymentYAMLArguments struct {
-	DeploymentName          string            `json:"deploymentName"`
-	TridentImage            string            `json:"tridentImage"`
-	AutosupportImage        string            `json:"autosupportImage"`
-	AutosupportProxy        string            `json:"autosupportProxy"`
-	AutosupportCustomURL    string            `json:"autosupportCustomURL"`
-	AutosupportSerialNumber string            `json:"autosupportSerialNumber"`
-	AutosupportHostname     string            `json:"autosupportHostname"`
-	ImageRegistry           string            `json:"imageRegistry"`
-	LogFormat               string            `json:"logFormat"`
-	SnapshotCRDVersion      string            `json:"snapshotCRDVersion"`
-	ImagePullSecrets        []string          `json:"imagePullSecrets"`
-	Labels                  map[string]string `json:"labels"`
-	ControllingCRDetails    map[string]string `json:"controllingCRDetails"`
-	Debug                   bool              `json:"debug"`
-	UseIPv6                 bool              `json:"useIPv6"`
-	SilenceAutosupport      bool              `json:"silenceAutosupport"`
-	Version                 *utils.Version    `json:"version"`
-	TopologyEnabled         bool              `json:"topologyEnabled"`
-	HTTPRequestTimeout      string            `json:"httpRequestTimeout"`
+	DeploymentName          string              `json:"deploymentName"`
+	TridentImage            string              `json:"tridentImage"`
+	AutosupportImage        string              `json:"autosupportImage"`
+	AutosupportProxy        string              `json:"autosupportProxy"`
+	AutosupportCustomURL    string              `json:"autosupportCustomURL"`
+	AutosupportSerialNumber string              `json:"autosupportSerialNumber"`
+	AutosupportHostname     string              `json:"autosupportHostname"`
+	ImageRegistry           string              `json:"imageRegistry"`
+	LogFormat               string              `json:"logFormat"`
+	SnapshotCRDVersion      string              `json:"snapshotCRDVersion"`
+	ImagePullSecrets        []string            `json:"imagePullSecrets"`
+	Labels                  map[string]string   `json:"labels"`
+	ControllingCRDetails    map[string]string   `json:"controllingCRDetails"`
+	Debug                   bool                `json:"debug"`
+	UseIPv6                 bool                `json:"useIPv6"`
+	SilenceAutosupport      bool                `json:"silenceAutosupport"`
+	Version                 *utils.Version      `json:"version"`
+	TopologyEnabled         bool                `json:"topologyEnabled"`
+	HTTPRequestTimeout      string              `json:"httpRequestTimeout"`
+	NodeSelector            map[string]string   `json:"nodeSelector"`
+	Tolerations             []map[string]string `json:"tolerations"`
 }
 
 type DaemonsetYAMLArguments struct {
