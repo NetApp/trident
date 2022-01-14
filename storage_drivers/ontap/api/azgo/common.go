@@ -266,7 +266,7 @@ func ValidateZAPIResponse(response *http.Response) (*http.Response, error) {
 
 	respString := string(resp)
 	// Remove newlines
-	sanitizedString := strings.ReplaceAll(respString,"\n", "")
+	sanitizedString := strings.ReplaceAll(respString, "\n", "")
 
 	if errs := xrv.ValidateAll(strings.NewReader(sanitizedString)); len(errs) > 0 {
 		for verr := range errs {
@@ -280,14 +280,14 @@ func ValidateZAPIResponse(response *http.Response) (*http.Response, error) {
 	// of azgo files. Creating a response manually with only the Body would not be seen as valid by consumers of the
 	// response
 	return &http.Response{
-		Status: response.Status,
-		StatusCode: response.StatusCode,
-		Proto: response.Proto,
-		ProtoMajor: response.ProtoMajor,
-		ProtoMinor: response.ProtoMinor,
-		Body: ioutil.NopCloser(bytes.NewBufferString(respString)),
+		Status:        response.Status,
+		StatusCode:    response.StatusCode,
+		Proto:         response.Proto,
+		ProtoMajor:    response.ProtoMajor,
+		ProtoMinor:    response.ProtoMinor,
+		Body:          ioutil.NopCloser(bytes.NewBufferString(respString)),
 		ContentLength: int64(len(respString)),
-		Request: response.Request,
-		Header: response.Header,
+		Request:       response.Request,
+		Header:        response.Header,
 	}, nil
 }

@@ -1,6 +1,6 @@
 // Copyright 2020 NetApp, Inc. All Rights Reserved.
 
-// +build linux
+//go:build linux
 
 package cmd
 

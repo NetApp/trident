@@ -2,8 +2,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // SnapmirrorPolicyRuleInfoType is a structure to represent a snapmirror-policy-rule-info ZAPI object

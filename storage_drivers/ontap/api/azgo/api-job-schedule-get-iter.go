@@ -2,8 +2,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // JobScheduleGetIterRequest is a structure to represent a job-schedule-get-iter Request ZAPI object

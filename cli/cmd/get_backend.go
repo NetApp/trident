@@ -13,8 +13,8 @@ import (
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
 	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/utils"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"

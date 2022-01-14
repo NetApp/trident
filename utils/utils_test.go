@@ -729,8 +729,8 @@ func TestMustParseMajorMinorVersion(t *testing.T) {
 	majorOnly := "v1"
 
 	assert.Equal(t, majorMinorVersion, MustParseMajorMinorVersion(majorMinor))
-	assert.Panics(t, func(){ MustParseMajorMinorVersion(invalid) }, "a version including the patch version" +
+	assert.Panics(t, func() { MustParseMajorMinorVersion(invalid) }, "a version including the patch version"+
 		" should cause a panic")
-	assert.Panics(t, func(){ MustParseMajorMinorVersion(majorOnly) }, "a version consisting of only the" +
+	assert.Panics(t, func() { MustParseMajorMinorVersion(majorOnly) }, "a version consisting of only the"+
 		" major version should cause a panic")
 }

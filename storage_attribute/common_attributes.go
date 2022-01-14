@@ -7,9 +7,9 @@ const (
 	IOPS = "IOPS"
 
 	// Constants for boolean storage category attributes
-	Snapshots  = "snapshots"
-	Clones     = "clones"
-	Encryption = "encryption"
+	Snapshots   = "snapshots"
+	Clones      = "clones"
+	Encryption  = "encryption"
 	Replication = "trident.netapp.io/replication"
 
 	// Constants for string list attributes

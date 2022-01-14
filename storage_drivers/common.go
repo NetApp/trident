@@ -198,7 +198,7 @@ func CheckVolumeSizeLimits(
 // volume size
 func CheckMinVolumeSize(requestedSizeBytes uint64, minVolumeSizeBytes uint64) error {
 	if requestedSizeBytes < minVolumeSizeBytes {
-		return utils.UnsupportedCapacityRangeError(fmt.Errorf("requested volume size (" +
+		return utils.UnsupportedCapacityRangeError(fmt.Errorf("requested volume size ("+
 			"%d bytes) is too small; the minimum volume size is %d bytes",
 			requestedSizeBytes, minVolumeSizeBytes))
 	}

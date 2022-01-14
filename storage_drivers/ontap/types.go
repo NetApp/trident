@@ -8,8 +8,8 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/storage_drivers"
+	storageattribute "github.com/netapp/trident/storage_attribute"
+	storagedrivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 )
 

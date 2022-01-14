@@ -2,8 +2,9 @@ package azgo
 
 import (
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // SnapmirrorResyncRequest is a structure to represent a snapmirror-resync Request ZAPI object
