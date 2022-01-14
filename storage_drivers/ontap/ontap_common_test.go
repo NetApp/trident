@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"os"
 	"testing"
@@ -951,4 +952,31 @@ func TestEnsureSVMWithRest(t *testing.T) {
 	).AnyTimes()
 	err = ontap.EnsureSVMWithRest(ctx, ontapConfig, mockRestClient)
 	assert.Nil(t, err)
+}
+
+func TestSanitizeDataLIF(t *testing.T) {
+	var cases = []struct {
+		Input  string
+		Output string
+	}{
+		{
+			Input:  "127.0.0.1",
+			Output: "127.0.0.1",
+		},
+		{
+			Input:  "[2001:db8::1]",
+			Output: "2001:db8::1",
+		},
+		{
+			Input:  "[2a00:1450:400a:804::2004]",
+			Output: "2a00:1450:400a:804::2004",
+		},
+	}
+
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("test%v", i), func(t *testing.T) {
+			result := sanitizeDataLIF(c.Input)
+			assert.Equal(t, c.Output, result)
+		})
+	}
 }

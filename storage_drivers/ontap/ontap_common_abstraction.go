@@ -930,26 +930,29 @@ func ValidateSANDriverAbstraction(
 
 	// If the user sets the LIF to use in the config, disable multipathing and use just the one IP address
 	if config.DataLIF != "" {
+		cleanDataLIF := sanitizeDataLIF(config.DataLIF)
+
 		// Make sure it's actually a valid address
-		if ip := net.ParseIP(config.DataLIF); nil == ip {
-			return fmt.Errorf("data LIF is not a valid IP: %s", config.DataLIF)
+		if ip := net.ParseIP(cleanDataLIF); nil == ip {
+			return fmt.Errorf("data LIF is not a valid IP: %s", cleanDataLIF)
 		}
 		// Make sure the IP matches one of the LIFs
 		found := false
 		for _, ip := range ips {
-			if config.DataLIF == ip {
+			if cleanDataLIF == ip {
 				found = true
 				break
 			}
 		}
 		if found {
-			Logc(ctx).WithField("ip", config.DataLIF).Debug("Found matching Data LIF.")
+			Logc(ctx).WithField("ip", cleanDataLIF).Debug("Found matching Data LIF.")
 		} else {
-			Logc(ctx).WithField("ip", config.DataLIF).Debug("Could not find matching Data LIF.")
-			return fmt.Errorf("could not find Data LIF for %s", config.DataLIF)
+			Logc(ctx).WithField("ip", cleanDataLIF).Debug("Could not find matching Data LIF.")
+			return fmt.Errorf("could not find Data LIF for %s", cleanDataLIF)
 		}
+
 		// Replace the IPs with a singleton list
-		ips = []string{config.DataLIF}
+		ips = []string{cleanDataLIF}
 	}
 
 	if config.DriverContext == tridentconfig.ContextDocker {
@@ -993,8 +996,7 @@ func ValidateNASDriverAbstraction(
 			config.DataLIF = dataLIFs[0]
 		}
 	} else {
-		cleanDataLIF := strings.Replace(config.DataLIF, "[", "", 1)
-		cleanDataLIF = strings.Replace(cleanDataLIF, "]", "", 1)
+		cleanDataLIF := sanitizeDataLIF(config.DataLIF)
 		_, err := ValidateDataLIF(ctx, cleanDataLIF, dataLIFs)
 		if err != nil {
 			return fmt.Errorf("data LIF validation failed: %v", err)
