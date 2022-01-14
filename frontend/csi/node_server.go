@@ -185,7 +185,7 @@ func (p *Plugin) NodeUnpublishVolume(
 	}
 
 	if notMountPoint {
-		Logc(ctx).Debug( "Volume not mounted, proceeding to unpublish volume")
+		Logc(ctx).Debug("Volume not mounted, proceeding to unpublish volume")
 	} else {
 		if err = utils.WaitForUmount(ctx, targetPath, umountMaxDuration); err != nil {
 			Logc(ctx).WithFields(log.Fields{"path": targetPath, "error": err}).Error("unable to unmount volume.")
@@ -496,9 +496,9 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 	}
 
 	registerNodeBackoff := backoff.NewExponentialBackOff()
-	registerNodeBackoff.InitialInterval = 1 * time.Second
+	registerNodeBackoff.InitialInterval = 10 * time.Second
 	registerNodeBackoff.Multiplier = 2
-	registerNodeBackoff.MaxInterval = 5 * time.Second
+	registerNodeBackoff.MaxInterval = 120 * time.Second
 	registerNodeBackoff.RandomizationFactor = 0.1
 	registerNodeBackoff.MaxElapsedTime = timeout
 
@@ -514,7 +514,8 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 	p.nodeIsRegistered = true
 }
 
-func (p *Plugin) nodeStageNFSVolume(ctx context.Context, req *csi.NodeStageVolumeRequest,
+func (p *Plugin) nodeStageNFSVolume(
+	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
 
 	if p.nodePrep.Enabled {
@@ -780,7 +781,8 @@ func (p *Plugin) readNodePrepBreadcrumbFile(ctx context.Context) (*utils.NodePre
 }
 
 func (p *Plugin) nodeUnstageNFSVolume(
-	ctx context.Context, req *csi.NodeUnstageVolumeRequest) (*csi.NodeUnstageVolumeResponse, error) {
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
+) (*csi.NodeUnstageVolumeResponse, error) {
 
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
 	if err != nil {
