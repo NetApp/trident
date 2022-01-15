@@ -837,17 +837,17 @@ func (mr *MockKubernetesClientMockRecorder) DeleteService(arg0, arg1 interface{}
 }
 
 // DeleteServiceAccount mocks base method.
-func (m *MockKubernetesClient) DeleteServiceAccount(arg0, arg1 string) error {
+func (m *MockKubernetesClient) DeleteServiceAccount(arg0, arg1 string, arg2 bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteServiceAccount", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteServiceAccount", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteServiceAccount indicates an expected call of DeleteServiceAccount.
-func (mr *MockKubernetesClientMockRecorder) DeleteServiceAccount(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockKubernetesClientMockRecorder) DeleteServiceAccount(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteServiceAccount", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteServiceAccount), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteServiceAccount", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteServiceAccount), arg0, arg1, arg2)
 }
 
 // DeleteServiceAccountByLabel mocks base method.

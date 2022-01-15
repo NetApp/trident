@@ -261,7 +261,7 @@ func (i *Installer) setInstallationParams(
 
 	var identifiedImageVersion string
 	var defaultImageOverride bool
-	var imageUpdateNeeded bool
+	var tridentUpdateNeeded bool
 	var returnError error
 
 	// Get default values
@@ -400,7 +400,7 @@ func (i *Installer) setInstallationParams(
 			"newVersion":     identifiedImageVersion,
 		}).Infof("Current installed Trident version is not same as the new Trident image version; need" +
 			" to update the Trident installation.")
-		imageUpdateNeeded = true
+		tridentUpdateNeeded = true
 	}
 	// Perform log prechecks
 	if returnError = i.logFormatPrechecks(); returnError != nil {
@@ -410,18 +410,18 @@ func (i *Installer) setInstallationParams(
 	// Update the label with the correct version
 	labels[TridentVersionLabelKey] = identifiedImageVersion
 
-	return controllingCRDetails, labels, imageUpdateNeeded, nil
+	return controllingCRDetails, labels, tridentUpdateNeeded, nil
 }
 
 func (i *Installer) InstallOrPatchTrident(
-	cr netappv1.TridentOrchestrator, currentInstallationVersion string, shouldUpdate bool,
+	cr netappv1.TridentOrchestrator, currentInstallationVersion string, k8sUpdateNeeded bool,
 ) (*netappv1.TridentOrchestratorSpecValues, string, error) {
 
 	var returnError error
 	var newServiceAccount bool
 
 	// Set installation params
-	controllingCRDetails, labels, imageUpdateNeeded, err := i.setInstallationParams(cr, currentInstallationVersion)
+	controllingCRDetails, labels, tridentUpdateNeeded, err := i.setInstallationParams(cr, currentInstallationVersion)
 	if err != nil {
 		return nil, "", err
 	}
@@ -434,7 +434,7 @@ func (i *Installer) InstallOrPatchTrident(
 	}
 
 	// Identify if update is required because of change in K8s version or Trident Operator version
-	shouldUpdate = shouldUpdate || imageUpdateNeeded
+	shouldUpdate := k8sUpdateNeeded || tridentUpdateNeeded
 
 	// Begin Trident installation logic...
 
@@ -734,7 +734,7 @@ func (i *Installer) createRBACObjects(
 ) (newServiceAccount bool, returnError error) {
 
 	// Create service account
-	newServiceAccount, returnError = i.createOrPatchTridentServiceAccount(controllingCRDetails, labels, shouldUpdate)
+	newServiceAccount, returnError = i.createOrPatchTridentServiceAccount(controllingCRDetails, labels, false)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident service account; %v", returnError)
 		return

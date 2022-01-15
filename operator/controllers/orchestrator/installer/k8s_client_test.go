@@ -4560,7 +4560,7 @@ func TestGetServiceAccountInformation(t *testing.T) {
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
 				// mock calls here
 				mockKubeClient.EXPECT().GetServiceAccountsByLabel(args[0], false).Return(emptyServiceAccounts, nil)
-				mockKubeClient.EXPECT().DeleteServiceAccount(args[1], args[2]).Return(nil)
+				mockKubeClient.EXPECT().DeleteServiceAccount(args[1], args[2], false).Return(nil)
 			},
 		},
 		"expect to pass with valid current service accounts found and no k8s error": {
@@ -4840,7 +4840,7 @@ func TestDeleteTridentServiceAccount(t *testing.T) {
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetServiceAccountsByLabel(appLabel, false).Return(emptyServiceAccountList, nil)
-				mockK8sClient.EXPECT().DeleteServiceAccount(serviceAccountName, namespace).Return(nil)
+				mockK8sClient.EXPECT().DeleteServiceAccount(serviceAccountName, namespace, false).Return(nil)
 			},
 		},
 		"expect to fail when GetServiceAccountsByLabel succeeds but RemoveMultipleServiceAccounts fails": {
@@ -4853,7 +4853,7 @@ func TestDeleteTridentServiceAccount(t *testing.T) {
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetServiceAccountsByLabel(appLabel, false).Return(unwantedServiceAccounts, nil)
 				mockK8sClient.EXPECT().DeleteServiceAccount(serviceAccountName,
-					namespace).Return(fmt.Errorf("")).
+					namespace, true).Return(fmt.Errorf("")).
 					MaxTimes(len(unwantedServiceAccounts))
 			},
 		},
@@ -4867,7 +4867,7 @@ func TestDeleteTridentServiceAccount(t *testing.T) {
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetServiceAccountsByLabel(appLabel, false).Return(unwantedServiceAccounts, nil)
 				mockK8sClient.EXPECT().DeleteServiceAccount(serviceAccountName,
-					namespace).Return(nil).
+					namespace, true).Return(nil).
 					MaxTimes(len(unwantedServiceAccounts))
 			},
 		},
@@ -4947,7 +4947,7 @@ func TestRemoveMultipleServiceAccounts(t *testing.T) {
 			output: fmt.Errorf("unable to delete service account(s): %v", undeletedServiceDataList),
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().DeleteServiceAccount(serviceName,
-					serviceNamespace).Return(deleteSecretsErr).
+					serviceNamespace, true).Return(deleteSecretsErr).
 					MaxTimes(len(undeletedServiceAccounts))
 			},
 		},
@@ -4956,7 +4956,7 @@ func TestRemoveMultipleServiceAccounts(t *testing.T) {
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().DeleteServiceAccount(serviceName,
-					serviceNamespace).Return(nil).
+					serviceNamespace, true).Return(nil).
 					MaxTimes(len(unwantedServiceAccounts))
 			},
 		},

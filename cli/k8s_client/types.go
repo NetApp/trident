@@ -85,7 +85,7 @@ type KubernetesClient interface {
 	GetServiceAccountsByLabel(label string, allNamespaces bool) ([]v1.ServiceAccount, error)
 	CheckServiceAccountExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteServiceAccountByLabel(label string) error
-	DeleteServiceAccount(name, namespace string) error
+	DeleteServiceAccount(name, namespace string, foreground bool) error
 	PatchServiceAccountByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	GetClusterRoleByLabel(label string) (*v13.ClusterRole, error)
 	GetClusterRolesByLabel(label string) ([]v13.ClusterRole, error)

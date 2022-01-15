@@ -1584,7 +1584,7 @@ func (k *K8sClient) GetServiceAccountInformation(serviceAccountName, appLabel, n
 		log.Info("Trident service account not found.")
 
 		log.Debug("Deleting unlabeled Trident service account by name as it can cause issues during installation.")
-		if err = k.DeleteServiceAccount(serviceAccountName, namespace); err != nil {
+		if err = k.DeleteServiceAccount(serviceAccountName, namespace, false); err != nil {
 			if !utils.IsResourceNotFoundError(err) {
 				log.WithField("error", err).Warning("Could not delete Trident service account.")
 			}
@@ -1688,7 +1688,7 @@ func (k *K8sClient) DeleteTridentServiceAccount(serviceAccountName, appLabel, na
 
 		log.Debug("Deleting unlabeled Trident service account by name as it may have been created outside of the" +
 			" Trident Operator.")
-		if err = k.DeleteServiceAccount(serviceAccountName, namespace); err != nil {
+		if err = k.DeleteServiceAccount(serviceAccountName, namespace, false); err != nil {
 			if !utils.IsResourceNotFoundError(err) {
 				log.WithField("error", err).Warning("Could not delete Trident service account.")
 			}
@@ -1725,7 +1725,7 @@ func (k *K8sClient) RemoveMultipleServiceAccounts(unwantedServiceAccounts []core
 		// Delete the service accounts
 		for _, serviceAccountToRemove := range unwantedServiceAccounts {
 			if err = k.DeleteServiceAccount(serviceAccountToRemove.Name,
-				serviceAccountToRemove.Namespace); err != nil {
+				serviceAccountToRemove.Namespace, true); err != nil {
 				log.WithFields(log.Fields{
 					"serviceAccount": serviceAccountToRemove.Name,
 					"namespace":      serviceAccountToRemove.Namespace,

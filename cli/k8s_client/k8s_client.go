@@ -1358,6 +1358,18 @@ func (k *KubeClient) GetServiceAccountsByLabel(label string, allNamespaces bool)
 	return serviceAccountList.Items, nil
 }
 
+// CheckServiceAccountExists returns true if a matching service account exists.
+func (k *KubeClient) CheckServiceAccountExists(name, namespace string) (bool, error) {
+
+	if _, err := k.clientset.CoreV1().ServiceAccounts(namespace).Get(ctx(), name, getOpts); err != nil {
+		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 // CheckServiceAccountExistsByLabel returns true if one or more service account objects
 // matching the specified label exist.
 func (k *KubeClient) CheckServiceAccountExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
@@ -1402,7 +1414,15 @@ func (k *KubeClient) DeleteServiceAccountByLabel(label string) error {
 
 // DeleteServiceAccount deletes a service account object matching the specified
 // name and namespace.
-func (k *KubeClient) DeleteServiceAccount(name, namespace string) error {
+func (k *KubeClient) DeleteServiceAccount(name, namespace string, foreground bool) error {
+
+	if !foreground {
+		return k.deleteServiceAccountBackground(name, namespace)
+	}
+	return k.deleteServiceAccountForeground(name, namespace)
+}
+
+func (k *KubeClient) deleteServiceAccountBackground(name, namespace string) error {
 
 	if err := k.clientset.CoreV1().ServiceAccounts(namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
 		return err
@@ -1412,6 +1432,57 @@ func (k *KubeClient) DeleteServiceAccount(name, namespace string) error {
 		"serviceAccount": name,
 		"namespace":      namespace,
 	}).Debug("Deleted Kubernetes service account.")
+
+	return nil
+}
+
+// DeleteServiceAccountForeground deletes a service account object matching the specified
+// name and namespace in the foreground
+func (k *KubeClient) deleteServiceAccountForeground(name, namespace string) error {
+
+	logFields := log.Fields{"name": name, "namespace": namespace}
+	log.WithFields(logFields).Debug("Starting foreground deletion of Service Account.")
+
+	propagationPolicy := metav1.DeletePropagationForeground
+	gracePeriodSeconds := int64(10)
+	deleteOptions := metav1.DeleteOptions{
+		PropagationPolicy: &propagationPolicy,
+		GracePeriodSeconds: &gracePeriodSeconds,
+	}
+
+	if err := k.clientset.CoreV1().ServiceAccounts(namespace).Delete(ctx(), name, deleteOptions); err != nil {
+		return err
+	}
+
+	checkServiceAccountExists := func() error {
+
+		if exists, err := k.CheckServiceAccountExists(name, namespace); err != nil {
+			return err
+		} else if exists {
+			return fmt.Errorf("service account %s/%s exists", namespace, name)
+		}
+		return nil
+	}
+
+	checkServiceAccountNotify := func(err error, duration time.Duration) {
+		log.WithFields(log.Fields{
+			"name":      name,
+			"namespace": namespace,
+			"increment": duration,
+			"err":       err,
+		}).Debugf("Service Account still exists, waiting.")
+	}
+	checkServiceAccountBackoff := backoff.NewExponentialBackOff()
+	checkServiceAccountBackoff.MaxElapsedTime = k.timeout
+
+	log.WithFields(logFields).Trace("Waiting for Service Account to be deleted.")
+
+	if err := backoff.RetryNotify(checkServiceAccountExists, checkServiceAccountBackoff, checkServiceAccountNotify); err != nil {
+		return fmt.Errorf("service account %s/%s was not deleted after %3.2f seconds",
+			namespace, name, k.timeout.Seconds())
+	}
+
+	log.WithFields(logFields).Debug("Completed foreground deletion of Service Account.")
 
 	return nil
 }
