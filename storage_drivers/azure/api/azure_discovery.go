@@ -10,7 +10,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-06-01/netapp"
+	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-08-01/netapp"
 	"github.com/Azure/azure-sdk-for-go/services/resourcegraph/mgmt/2021-03-01/resourcegraph"
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/multierr"

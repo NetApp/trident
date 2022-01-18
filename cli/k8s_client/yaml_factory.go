@@ -318,7 +318,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		deploymentYAML = csiDeployment120YAMLTemplate
 
 		if args.SnapshotCRDVersion == "v1" {
-			csiSnapshotterVersion = "v4.2.1"
+			csiSnapshotterVersion = "v5.0.0"
 		}
 	}
 
@@ -489,7 +489,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v3.3.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v3.4.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -631,7 +631,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.0.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.1.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=600s"
@@ -646,7 +646,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v3.3.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v3.4.0
         args:
         - "--v={LOG_LEVEL}"
         - "--timeout=60s"
@@ -849,7 +849,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.3.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.4.0
         args:
         - "--v={LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
@@ -1011,7 +1011,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.3.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.4.0
         args:
         - "--v={LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
