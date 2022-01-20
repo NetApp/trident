@@ -1132,7 +1132,7 @@ func (p *Plugin) nodeStageNFSBlockVolume(ctx context.Context, req *csi.NodeStage
 	}
 
 	publishInfo := &utils.VolumePublishInfo{
-		Localhost:      true,
+		Localhost: true,
 	}
 
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
@@ -1176,25 +1176,37 @@ func (p *Plugin) nodeUnstageNFSBlockVolume(
 	nfsMountpoint := path.Join(tridentDeviceInfoPath, publishInfo.BackendUUID, publishInfo.NfsPath)
 	loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
 
-	if err = utils.DetachBlockOnFileVolume(ctx, nfsMountpoint, loopFile, publishInfo); err != nil {
+	// Before detaching the loop device, check if it is actually attached and count how many total devices
+	// are using the same mountpoint so we know if we can detach the device and remove the mountpoint.
+	// The node lock prevents this from racing with other stage workflows.
+	deviceAttached, deviceCount, err := utils.CountAttachedLoopDevices(ctx, nfsMountpoint, loopFile)
+	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	// This is a temporary logic in lieu of book keeping
-	time.Sleep(2 * time.Second) // losetup output takes some time to reflect the detached device, loop file.
-	safeToRemoveNFSMount, err := utils.IsSafeToUnmountNFSMountpoint(ctx, nfsMountpoint)
-	if err != nil {
-		return nil, err
+	if deviceAttached {
+
+		// Detach the loop device from the NFS mountpoint.
+		if err = utils.DetachBlockOnFileVolume(ctx, nfsMountpoint, loopFile, publishInfo); err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		// Wait for the loop device to disappear (it can take a second or two) and update the device count.
+		deviceCount, err = utils.WaitForLoopDeviceDetach(ctx, nfsMountpoint, loopFile, 10*time.Second)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
 	}
 
-	if safeToRemoveNFSMount {
+	// If the loop device we just detached was the only one on the mountpoint, remove the mountpoint.
+	if deviceCount == 0 {
 		if err = utils.RemoveMountPoint(ctx, nfsMountpoint); err != nil {
-			return nil, err
+			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
 
 	// Delete the device info we saved to the staging path so unstage can succeed
-	if err := p.clearStagedDeviceInfo(ctx, stagingTargetPath, volumeId); err != nil {
+	if err = p.clearStagedDeviceInfo(ctx, stagingTargetPath, volumeId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -1469,4 +1481,3 @@ func (p *Plugin) getVolumeIdAndStagingPath(req RequestHandler) (string, string, 
 
 	return volumeId, stagingTargetPath, nil
 }
-

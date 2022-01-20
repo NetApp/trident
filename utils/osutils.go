@@ -1401,23 +1401,33 @@ func UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) e
 	return nil
 }
 
-// RemoveMountPoint attempts to unmount and remove the directory of the mountPointPath
+// RemoveMountPoint attempts to unmount and remove the directory of the mountPointPath.  This method should
+// be idempotent and safe to call again if it fails the first time.
 func RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 
 	Logc(ctx).Debug(">>>> osutils.RemoveMountPoint")
 	defer Logc(ctx).Debug("<<<< osutils.RemoveMountPoint")
 
-	err := Umount(ctx, mountPointPath)
-	if err != nil {
+	// If the directory does not exist, return nil.
+	if _, err := os.Stat(mountPointPath); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("could not check for mount path %s; %v", mountPointPath, err)
+	}
+
+	// Unmount the path.  Umount() returns nil if the path exists but is not a mount.
+	if err := Umount(ctx, mountPointPath); err != nil {
 		Logc(ctx).WithField("mountPointPath", mountPointPath).Errorf("Umount failed; %s", err)
 		return err
 	}
 
-	err = os.Remove(mountPointPath)
-	if err != nil {
+	// Delete the mount path after it is unmounted (or confirmed to not be a mount point).
+	if err := os.Remove(mountPointPath); err != nil {
 		Logc(ctx).WithField("mountPointPath", mountPointPath).Errorf("Remove dir failed; %s", err)
 		return fmt.Errorf("failed to remove dir %s; %s", mountPointPath, err)
 	}
+
 	return nil
 }
 
@@ -3097,13 +3107,17 @@ type LoopDevicesResponse struct {
 	LoopDevices []LoopDevice `json:"loopdevices"`
 }
 
+// LoopDevice contains the details of a loopback device and is designed to be populated from the result
+// of "losetup --list --json".  Note that some fields changed from string to int/bool between Ubuntu 16.04
+// and 18.04, and likely other Linux distributions as well.  The affected fields are unneeded here and are
+// included but commented out for clarity.
 type LoopDevice struct {
-	Name      string `json:"name"`
-	Sizelimit string `json:"sizelimit"`
-	Offset    string `json:"offset"`
-	Autoclear string `json:"autoclear"`
-	Ro        string `json:"ro"`
-	BackFile  string `json:"back-file"`
+	Name string `json:"name"`
+	//Sizelimit int    `json:"sizelimit"`
+	//Offset    int    `json:"offset"`
+	//Autoclear bool   `json:"autoclear"`
+	//Ro        bool   `json:"ro"`
+	BackFile string `json:"back-file"`
 }
 
 func getLoopDeviceInfo(ctx context.Context) ([]LoopDevice, error) {
@@ -3204,23 +3218,98 @@ func detachLoopDevice(ctx context.Context, loopDeviceName string) error {
 	return nil
 }
 
-func IsSafeToUnmountNFSMountpoint(ctx context.Context, nfsMountpoint string) (bool, error) {
+// CountAttachedLoopDevices returns the number of loopback devices backed by the specified NFS mountpoint, as well
+// as whether the specified backing file is one of those attached devices.
+func CountAttachedLoopDevices(
+	ctx context.Context, nfsMountpoint, loopFile string,
+) (deviceAttached bool, attachCount int, err error) {
 
-	Logc(ctx).WithField("nfsMountpoint", nfsMountpoint).Debug(">>>> osutils.IsSafeToUnmountNFSMountpoint")
-	defer Logc(ctx).Debug("<<<< osutils.IsSafeToUnmountNFSMountpoint")
+	Logc(ctx).WithFields(log.Fields{
+		"nfsMountpoint": nfsMountpoint,
+		"loopFile":      loopFile,
+	}).Debug(">>>> osutils.CountLoopDevicesForNFSMountpoint")
+	defer func() {
+		Logc(ctx).WithFields(log.Fields{
+			"nfsMountpoint":  nfsMountpoint,
+			"loopFile":       loopFile,
+			"attachCount":    attachCount,
+			"deviceAttached": deviceAttached,
+		}).Debug("<<<< osutils.CountLoopDevicesForNFSMountpoint")
+	}()
 
+	// Ensure we match the mountpoint exactly
+	mountpoint := strings.TrimSuffix(nfsMountpoint, "/") + "/"
+
+	// Get loopback devices
 	devices, err := getLoopDeviceInfo(ctx)
 	if err != nil {
-		return false, err
+		return
 	}
 
+	// Count the loopback devices backed by the specified mountpoint
 	for _, device := range devices {
-		if strings.Contains(device.BackFile, nfsMountpoint) {
-			return false, nil
+		if strings.HasPrefix(device.BackFile, mountpoint) {
+			attachCount++
+		}
+		if device.BackFile == loopFile {
+			deviceAttached = true
 		}
 	}
 
-	return true, nil
+	return
+}
+
+// WaitForLoopDeviceDetach waits until a loop device is detached from the specified NFS mountpoint, and it returns
+// the remaining number of attached devices.
+func WaitForLoopDeviceDetach(
+	ctx context.Context, nfsMountpoint, loopFile string, maxDuration time.Duration,
+) (int, error) {
+
+	logFields := log.Fields{"nfsMountpoint": nfsMountpoint, "loopFile": loopFile}
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.WaitForLoopDevicesOnNFSMountpoint")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.WaitForLoopDevicesOnNFSMountpoint")
+
+	var deviceAttached bool
+	var attachCount int
+
+	checkLoopDevices := func() error {
+
+		var err error
+
+		if deviceAttached, attachCount, err = CountAttachedLoopDevices(ctx, nfsMountpoint, loopFile); err != nil {
+			return backoff.Permanent(err)
+		} else if deviceAttached {
+			return fmt.Errorf("loopback device still attached to %s", loopFile)
+		}
+		return nil
+	}
+
+	loopDeviceNotifyNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(log.Fields{
+			"increment":     duration,
+			"nfsMountpoint": nfsMountpoint,
+			"error":         err,
+		}).Debug("Loopback device still attached, waiting.")
+	}
+
+	loopDeviceBackoff := backoff.NewExponentialBackOff()
+	loopDeviceBackoff.InitialInterval = 1 * time.Second
+	loopDeviceBackoff.Multiplier = 1.414 // approx sqrt(2)
+	loopDeviceBackoff.RandomizationFactor = 0.1
+	loopDeviceBackoff.MaxElapsedTime = maxDuration
+
+	// Run the check using an exponential backoff
+	if err := backoff.RetryNotify(checkLoopDevices, loopDeviceBackoff, loopDeviceNotifyNotify); err != nil {
+		return attachCount, fmt.Errorf("loopback device still attached after %3.2f seconds", maxDuration.Seconds())
+	} else {
+		Logc(ctx).WithFields(log.Fields{
+			"nfsMountpoint": nfsMountpoint,
+			"loopFile":      loopFile,
+			"attachCount":   attachCount,
+		}).Debug("Loopback device detached.")
+
+		return attachCount, nil
+	}
 }
 
 // loginISCSITarget logs in to an iSCSI target.
