@@ -72,15 +72,16 @@ func (c *TridentCrdController) updateMirrorRelationship(old, new interface{}) {
 
 	newRelationship := new.(*netappv1.TridentMirrorRelationship)
 	oldRelationship := old.(*netappv1.TridentMirrorRelationship)
+
 	currentState := ""
 	needsUpdate := false
 	logFields := log.Fields{}
 
-	if len(newRelationship.Status.Conditions) > 0 {
-		currentState = newRelationship.Status.Conditions[0].MirrorState
-	}
-
 	if newRelationship != nil {
+		if len(newRelationship.Status.Conditions) > 0 {
+			currentState = newRelationship.Status.Conditions[0].MirrorState
+		}
+
 		logFields = log.Fields{"TridentMirrorRelationship": newRelationship.Name}
 		Logx(ctx).WithFields(logFields).Debugf("Checking if update is needed %v", currentState)
 

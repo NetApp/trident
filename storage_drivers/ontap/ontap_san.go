@@ -623,16 +623,12 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		}
 	} else {
 		// Volume import is not managed by Trident
-		if flexvol == nil {
-			return fmt.Errorf("unable to read volume id attributes of volume %s", originalName)
-		}
 		if lunInfo.Name != targetPath {
 			return fmt.Errorf("could not import volume, LUN is nammed incorrectly: %s", lunInfo.Name)
 		}
 		if !lunInfo.Mapped {
 			return fmt.Errorf("could not import volume, LUN is not mapped: %s", lunInfo.Name)
 		}
-
 	}
 
 	return nil

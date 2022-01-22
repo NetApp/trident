@@ -999,7 +999,7 @@ func (c Client) newSnapshotFromANFSnapshot(_ context.Context, anfSnapshot *netap
 	}
 
 	if anfSnapshot.Location == nil {
-		return nil, fmt.Errorf("snapshot %s has no location", *anfSnapshot.Location)
+		return nil, fmt.Errorf("snapshot %s has no location", *anfSnapshot.Name)
 	}
 
 	if anfSnapshot.SnapshotProperties == nil {
