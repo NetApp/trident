@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package main
 
@@ -57,7 +57,8 @@ var (
 	csiEndpoint = flag.String("csi_endpoint", "", "Register as a CSI storage "+
 		"provider with this endpoint")
 	csiNodeName = flag.String("csi_node_name", "", "CSI node name")
-	csiRole     = flag.String("csi_role", "", fmt.Sprintf("CSI role to play: '%s' or '%s'", csi.CSIController, csi.CSINode))
+	csiRole     = flag.String("csi_role", "",
+		fmt.Sprintf("CSI role to play: '%s' or '%s'", csi.CSIController, csi.CSINode))
 
 	csiUnsafeNodeDetach = flag.Bool("csi_unsafe_detach", false, "Prefer to detach successfully rather than safely")
 
@@ -74,7 +75,8 @@ var (
 	address            = flag.String("address", "127.0.0.1", "Storage orchestrator HTTP API address")
 	port               = flag.String("port", "8000", "Storage orchestrator HTTP API port")
 	enableREST         = flag.Bool("rest", true, "Enable HTTP REST interface")
-	httpRequestTimeout = flag.Duration("http_request_timeout", config.HTTPTimeout, "Override the HTTP request timeout for Trident controller’s REST API")
+	httpRequestTimeout = flag.Duration("http_request_timeout", config.HTTPTimeout,
+		"Override the HTTP request timeout for Trident controller’s REST API")
 
 	// HTTPS REST interface
 	httpsAddress    = flag.String("https_address", "", "Storage orchestrator HTTPS API address")
@@ -281,7 +283,7 @@ func main() {
 	}
 
 	enableMutualTLS := true
-	handler := rest.NewRouter()
+	handler := rest.NewRouter(true)
 
 	// Create Docker *or* CSI/K8S frontend
 	if enableDocker {

@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package rest
 
@@ -27,7 +27,7 @@ func NewHTTPServer(p core.Orchestrator, address, port string, writeTimeout time.
 	apiServer := &APIServerHTTP{
 		server: &http.Server{
 			Addr:         fmt.Sprintf("%s:%s", address, port),
-			Handler:      NewRouter(),
+			Handler:      NewRouter(false),
 			ReadTimeout:  config.HTTPTimeout,
 			WriteTimeout: writeTimeout,
 		},

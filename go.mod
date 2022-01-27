@@ -23,6 +23,7 @@ require (
 	github.com/google/go-cmp v0.5.6
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
+	github.com/kr/secureheader v0.2.0
 	github.com/kubernetes-csi/external-snapshotter/client/v4 v4.2.0
 	github.com/mattermost/xml-roundtrip-validator v0.1.0
 	github.com/mitchellh/copystructure v1.2.0

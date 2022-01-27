@@ -6,7 +6,8 @@
 
 **Enhancements**
 
-- Inbound connections to Trident's secure endpoints now require a minimum of TLS 1.3. (Issue [#698](https://github.com/NetApp/trident/issues/698)) 
+- Inbound connections to Trident's secure endpoints now require a minimum of TLS 1.3. (Issue [#698](https://github.com/NetApp/trident/issues/698))
+- Trident now adds HSTS headers to responses from its secure endpoints.
 
 ## v22.01.0
 
