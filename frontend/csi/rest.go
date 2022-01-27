@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -26,7 +26,7 @@ type RestClient struct {
 }
 
 func CreateTLSRestClient(url, caFile, certFile, keyFile string) (*RestClient, error) {
-	tlsConfig := &tls.Config{MinVersion: config.MinTLSVersion}
+	tlsConfig := &tls.Config{MinVersion: config.MinClientTLSVersion}
 	if "" != caFile {
 		caCert, err := ioutil.ReadFile(caFile)
 		if err != nil {

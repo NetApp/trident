@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 // This package provides a high-level interface to the E-series Web Services Proxy REST API.
 package api
@@ -53,7 +53,7 @@ type ClientConfig struct {
 	DebugTraceFlags       map[string]bool
 
 	// Host Connectivity
-	HostDataIP string //for iSCSI with multipathing this can be either IP or host
+	HostDataIP string // for iSCSI with multipathing this can be either IP or host
 
 	// Internal Config Variables
 	ArrayID                       string // Unique ID for array once added to web proxy services
@@ -162,7 +162,7 @@ func (d Client) InvokeAPI(
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: !d.config.WebProxyVerifyTLS, // Allow certificate validation override
-			MinVersion:         tridentconfig.MinTLSVersion,
+			MinVersion:         tridentconfig.MinClientTLSVersion,
 		},
 	}
 	client := &http.Client{

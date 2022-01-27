@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package docker
 
@@ -174,7 +174,7 @@ func (p *Plugin) Activate() error {
 				"volumePath": p.volumePath,
 			}).Info("Activating Docker frontend.")
 			err = handler.ServeTCP(p.driverName, ":"+p.driverPort, "",
-				&tls.Config{InsecureSkipVerify: true, MinVersion: config.MinTLSVersion})
+				&tls.Config{InsecureSkipVerify: true, MinVersion: config.MinServerTLSVersion})
 		} else {
 			log.WithFields(log.Fields{
 				"driverName": p.driverName,
@@ -235,7 +235,8 @@ func (p *Plugin) Create(request *volume.CreateRequest) error {
 
 	// Convert volume creation options into a Trident volume config
 	volConfig, err := frontendcommon.GetVolumeConfig(
-		request.Name, scConfig.Name, int64(sizeBytes), request.Options, config.ProtocolAny, config.ModeAny, config.Filesystem, nil, nil)
+		request.Name, scConfig.Name, int64(sizeBytes), request.Options, config.ProtocolAny, config.ModeAny,
+		config.Filesystem, nil, nil)
 	if err != nil {
 		return p.dockerError(ctx, err)
 	}

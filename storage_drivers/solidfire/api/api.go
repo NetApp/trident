@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -42,7 +42,7 @@ type Config struct {
 	EndPoint         string
 	MountPoint       string
 	SVIP             string
-	InitiatorIFace   string //iface to use of iSCSI initiator
+	InitiatorIFace   string // iface to use of iSCSI initiator
 	Types            *[]VolType
 	LegacyNamePrefix string
 	AccessGroups     []int64
@@ -108,7 +108,7 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 
 	// Send the request
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true, MinVersion: tridentconfig.MinTLSVersion},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true, MinVersion: tridentconfig.MinClientTLSVersion},
 	}
 	httpClient := &http.Client{
 		Transport: tr,

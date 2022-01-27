@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package config
 
@@ -105,8 +105,9 @@ const (
 	SANResizeDelta           = 50000000 // 50mb
 
 	/* REST frontend constants */
-	MaxRESTRequestSize = 10240
-	MinTLSVersion      = tls.VersionTLS12
+	MaxRESTRequestSize  = 10240
+	MinServerTLSVersion = tls.VersionTLS13
+	MinClientTLSVersion = tls.VersionTLS12
 
 	/* Docker constants */
 	DockerPluginModeEnvVariable = "DOCKER_PLUGIN_MODE" // set via contrib/docker/plugin/plugin.json

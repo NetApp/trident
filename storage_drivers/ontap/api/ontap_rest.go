@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -133,7 +133,7 @@ func NewRestClient(ctx context.Context, config ClientConfig) (*RestClient, error
 	result.tr = &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: skipVerify,
-			MinVersion:         tridentconfig.MinTLSVersion,
+			MinVersion:         tridentconfig.MinClientTLSVersion,
 			Certificates:       []tls.Certificate{cert},
 			RootCAs:            caCertPool,
 		},

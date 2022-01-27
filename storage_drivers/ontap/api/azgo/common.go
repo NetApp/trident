@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package azgo
 
@@ -154,8 +154,10 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 	}
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: skipVerify, MinVersion: tridentconfig.MinTLSVersion,
-			Certificates: []tls.Certificate{cert}, RootCAs: caCertPool},
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: skipVerify, MinVersion: tridentconfig.MinClientTLSVersion,
+			Certificates: []tls.Certificate{cert}, RootCAs: caCertPool,
+		},
 	}
 
 	client := &http.Client{
@@ -206,7 +208,7 @@ func (o *ZapiRunner) ExecuteWithoutIteration(z ZAPIRequest, requestType string, 
 		log.Debugf("response Body:\n%s", string(body))
 	}
 
-	//unmarshalErr := xml.Unmarshal(body, &v)
+	// unmarshalErr := xml.Unmarshal(body, &v)
 	unmarshalErr := xml.Unmarshal(body, v)
 	if unmarshalErr != nil {
 		log.WithField("body", string(body)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())

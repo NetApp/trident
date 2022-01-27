@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 // This package provides a high-level interface to the NetApp AWS Cloud Volumes NFS REST API.
 package api
@@ -94,7 +94,7 @@ func (d *Client) InvokeAPI(ctx context.Context, requestBody []byte, method strin
 	proxyURL := d.config.ProxyURL
 
 	tr.TLSClientConfig = &tls.Config{
-		MinVersion: config.MinTLSVersion,
+		MinVersion: config.MinClientTLSVersion,
 	}
 
 	if proxyURL != "" {

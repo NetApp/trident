@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 // This package provides a high-level interface to the NetApp GCP Cloud Volumes NFS REST API.
 package api
@@ -180,7 +180,7 @@ func (d *Client) InvokeAPI(
 	proxyURL := d.config.ProxyURL
 
 	tr.TLSClientConfig = &tls.Config{
-		MinVersion: config.MinTLSVersion,
+		MinVersion: config.MinClientTLSVersion,
 	}
 
 	if proxyURL != "" {
@@ -563,11 +563,11 @@ func (d *Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest)
 		return err
 	}
 
-	//var volume Volume
-	//err = json.Unmarshal(responseBody, &volume)
-	//if err != nil {
+	// var volume Volume
+	// err = json.Unmarshal(responseBody, &volume)
+	// if err != nil {
 	//	return fmt.Errorf("could not parse volume data: %s; %v", string(responseBody), err)
-	//}
+	// }
 
 	Logc(ctx).WithFields(log.Fields{
 		"name":          request.Name,
@@ -619,7 +619,8 @@ func (d *Client) RenameVolume(ctx context.Context, volume *Volume, newName strin
 	return volume, nil
 }
 
-func (d *Client) ChangeVolumeUnixPermissions(ctx context.Context, volume *Volume, newUnixPermissions string) (*Volume, error) {
+func (d *Client) ChangeVolumeUnixPermissions(ctx context.Context, volume *Volume, newUnixPermissions string) (*Volume,
+	error) {
 
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
@@ -713,7 +714,7 @@ func (d *Client) RenameRelabelVolume(
 		Region:        volume.Region,
 		CreationToken: volume.CreationToken,
 		ProtocolTypes: volume.ProtocolTypes,
-		//ServiceLevel:  volume.ServiceLevel,
+		// ServiceLevel:  volume.ServiceLevel,
 		Labels: labels,
 	}
 
