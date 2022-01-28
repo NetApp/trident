@@ -134,7 +134,7 @@ const (
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
 
-	DefaultAutosupportImage = "netapp/trident-autosupport:21.10"
+	DefaultAutosupportImage = "netapp/trident-autosupport:22.01"
 )
 
 var (
