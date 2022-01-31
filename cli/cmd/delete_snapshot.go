@@ -6,10 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/api"
+	"github.com/netapp/trident/utils"
 )
 
 var (
@@ -72,9 +74,15 @@ func snapshotDelete(snapshotIDs []string) error {
 			return err
 		}
 	} else {
-		// Not using --all or --volume, so make sure one or more volumes were specified
+		// Not using --all or --volume, each snapshot must have volume specified
 		if len(snapshotIDs) == 0 {
 			return errors.New("volume/snapshot not specified")
+		}
+		for _, snapshotID := range snapshotIDs {
+			if !strings.ContainsRune(snapshotID, '/') {
+				return utils.InvalidInputError(fmt.Sprintf("invalid snapshot ID: %s; Please use the format "+
+					"<volume name>/<snapshot name>", snapshotID))
+			}
 		}
 	}
 
