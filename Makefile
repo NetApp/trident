@@ -4,7 +4,7 @@
 GOARCH ?= amd64
 GOGC ?= ""
 GOPROXY ?= https://proxy.golang.org
-GO_IMAGE = golang:1.17
+GO_IMAGE ?= golang:1.17
 HELM_IMAGE = alpine/helm:3.6.1
 GOLANGCI-LINT_VERSION ?= v1.31.0
 TRIDENT_VOLUME = trident_build
@@ -14,6 +14,7 @@ OPERATOR_CONFIG_PKG = github.com/netapp/trident/operator/config
 TRIDENT_KUBERNETES_PKG = github.com/netapp/trident/persistent_store/crd
 VERSION_FILE = github.com/netapp/trident/hack/VERSION
 K8S_CODE_GENERATOR = code-generator-kubernetes-1.18.2
+BUILD_CONTAINER_NAME ?= trident-build
 
 ## build flags variables
 GITHASH ?= `git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty || echo unknown`
@@ -34,8 +35,13 @@ CLI_PKG ?= github.com/netapp/trident/cli
 K8S ?= ""
 BUILD = build
 VERSION ?= $(shell cat ${ROOT}/hack/VERSION)
+VOLUME_ARG = -v ${TRIDENT_VOLUME}:/go
+ifdef CREATE_BASE_IMAGE
+	VOLUME_ARG =
+endif
 
-DR_LINUX = docker run --rm \
+DR_LINUX = docker run \
+	--name=${BUILD_CONTAINER_NAME} \
 	--net=host \
 	-e CGO_ENABLED=0 \
 	-e GOOS=linux \
@@ -43,19 +49,20 @@ DR_LINUX = docker run --rm \
 	-e GOGC=$(GOGC) \
 	-e GOPROXY=$(GOPROXY) \
 	-e XDG_CACHE_HOME=/go/cache \
-	-v $(TRIDENT_VOLUME):/go \
+	${VOLUME_ARG} \
 	-v "${ROOT}":"${TRIDENT_VOLUME_PATH}" \
 	-w $(TRIDENT_VOLUME_PATH) \
 	$(GO_IMAGE)
 
-DR_MACOS = docker run --rm \
+DR_MACOS = docker run \
+	--name=${BUILD_CONTAINER_NAME} \
 	--net=host \
 	-e GOOS=darwin \
 	-e GOARCH=$(GOARCH) \
 	-e GOGC=$(GOGC) \
 	-e GOPROXY=$(GOPROXY) \
 	-e XDG_CACHE_HOME=/go/cache \
-	-v $(TRIDENT_VOLUME):/go \
+	${VOLUME_ARG} \
 	-v "${ROOT}":"${TRIDENT_VOLUME_PATH}" \
 	-w $(TRIDENT_VOLUME_PATH) \
 	$(GO_IMAGE)
@@ -105,8 +112,20 @@ trident_build:
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
 	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
+ifdef CREATE_BASE_IMAGE
+	@docker commit ${BUILD_CONTAINER_NAME} ${CREATE_BASE_IMAGE}
+endif
+	@docker rm ${BUILD_CONTAINER_NAME}
 	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
+ifdef CREATE_BASE_IMAGE
+	@docker commit ${BUILD_CONTAINER_NAME} ${CREATE_BASE_IMAGE}
+endif
+	@docker rm ${BUILD_CONTAINER_NAME}
 	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/chwrap chwrap/chwrap.go
+ifdef CREATE_BASE_IMAGE
+	@docker commit ${BUILD_CONTAINER_NAME} ${CREATE_BASE_IMAGE}
+endif
+	@docker rm ${BUILD_CONTAINER_NAME}
 	cp ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} .
 	chwrap/make-tarball.sh ${BIN_DIR}/chwrap chwrap.tar
 	docker build --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
@@ -119,6 +138,10 @@ tridentctl_build:
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
 	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
+ifdef CREATE_BASE_IMAGE
+	@docker commit ${BUILD_CONTAINER_NAME} ${CREATE_BASE_IMAGE}
+endif
+	@docker rm ${BUILD_CONTAINER_NAME}
 	cp ${BIN_DIR}/${CLI_BIN} .
 	# docker build --build-arg PORT=${PORT} --build-arg CLI_BIN=${CLI_BIN} --build-arg K8S=${K8S} -t ${TRIDENT_TAG} --rm .
 	rm ${CLI_BIN}
@@ -127,6 +150,10 @@ tridentctl_macos_build:
 	@mkdir -p ${MACOS_BIN_DIR}
 	@chmod 777 ${MACOS_BIN_DIR}
 	@${GO_MACOS} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/macos/${CLI_BIN} ${CLI_PKG}
+ifdef CREATE_BASE_IMAGE
+	@docker commit ${BUILD_CONTAINER_NAME} ${CREATE_BASE_IMAGE}
+endif
+	@docker rm ${BUILD_CONTAINER_NAME}
 
 tridentctl_images:
 	${BIN_DIR}/${CLI_BIN} images -o markdown > trident-required-images.md
@@ -240,4 +267,3 @@ lint-precommit: .git/hooks install-lint
 
 lint-prepush: .git/hooks install-lint .git/hooks/pre-push
 	cp hooks/golangci-lint.sh .git/hooks/pre-push
-

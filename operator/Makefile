@@ -3,7 +3,7 @@
 GOARCH ?= amd64
 GOGC ?= ""
 GOPROXY ?= https://proxy.golang.org
-GO_IMAGE = golang:1.17
+GO_IMAGE ?= golang:1.17
 OPERATOR_VOLUME = operator_build
 TRIDENT_VOLUME_PATH = /go/src/github.com/netapp/trident
 OPERATOR_VOLUME_PATH = /go/src/github.com/netapp/trident/operator
@@ -12,6 +12,7 @@ OPERATOR_INSTALLER_CONFIG_PKG = github.com/netapp/trident/operator/controllers/o
 TRIDENT_ORCHESTRATOR_PKG = github.com/netapp/trident/operator/controllers/orchestrator
 VERSION_FILE = github.com/netapp/trident/hack/VERSION
 K8S_CODE_GENERATOR = ./../code-generator-kubernetes-1.18.2
+BUILD_CONTAINER_NAME ?= operator-build
 
 ## build flags variables
 GITHASH ?= `git rev-parse HEAD || echo unknown`
@@ -28,8 +29,13 @@ TARBALL_BIN ?= trident-operator
 K8S ?= ""
 BUILD = build
 VERSION ?= $(shell cat ${ROOT}/hack/VERSION)
+VOLUME_ARG = -v ${OPERATOR_VOLUME}:/go
+ifdef CREATE_BASE_IMAGE
+	VOLUME_ARG =
+endif
 
-DR_LINUX = docker run --rm \
+DR_LINUX = docker run \
+	--name=${BUILD_CONTAINER_NAME} \
 	--net=host \
 	-e CGO_ENABLED=0 \
 	-e GOOS=linux \
@@ -37,7 +43,7 @@ DR_LINUX = docker run --rm \
 	-e GOGC=$(GOGC) \
 	-e GOPROXY=$(GOPROXY) \
 	-e XDG_CACHE_HOME=/go/cache \
-	-v $(OPERATOR_VOLUME):/go \
+	${VOLUME_ARG} \
 	-v "${ROOT}":"${TRIDENT_VOLUME_PATH}" \
 	-w $(OPERATOR_VOLUME_PATH) \
 	$(GO_IMAGE)
@@ -85,6 +91,10 @@ build:
 	@mkdir -p ${BIN_DIR}
 	@chmod 777 ${BIN_DIR}
 	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${BIN}
+ifdef CREATE_BASE_IMAGE
+	@docker commit ${BUILD_CONTAINER_NAME} ${CREATE_BASE_IMAGE}
+endif
+	@docker rm ${BUILD_CONTAINER_NAME}
 	cp ${BIN_DIR}/${BIN} .
 	docker build --build-arg BIN=${BIN} --build-arg K8S=${K8S} -t ${OPERATOR_TAG} --rm .
 ifdef REGISTRY_ADDR
