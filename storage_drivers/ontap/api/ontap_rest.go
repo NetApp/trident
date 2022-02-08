@@ -1041,6 +1041,7 @@ func (c RestClient) createCloneNAS(
 	params := storage.NewVolumeCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
+	params.ReturnRecordsQueryParameter = ToBoolPointer(true)
 
 	cloneInfo := &models.VolumeClone{
 		ParentVolume: &models.VolumeCloneParentVolume{
@@ -1882,6 +1883,38 @@ func (c RestClient) IgroupGetByName(ctx context.Context, initiatorGroupName stri
 // LUN operations
 // ////////////////////////////////////////////////////////////////////////////
 
+// pollLunCreate polls for the created LUN to appear, with backoff retry logic
+func (c RestClient) pollLunCreate(ctx context.Context, lunPath string) error {
+
+	checkCreateStatus := func() error {
+		lun, err := c.LunGetByName(ctx, lunPath)
+		if err != nil {
+			return err
+		}
+		if lun == nil {
+			return fmt.Errorf("could not find LUN with name %v", lunPath)
+		}
+		return nil
+	}
+	createStatusNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("LUN creation not finished, waiting.")
+	}
+	createStatusBackoff := backoff.NewExponentialBackOff()
+	createStatusBackoff.InitialInterval = 1 * time.Second
+	createStatusBackoff.Multiplier = 2
+	createStatusBackoff.RandomizationFactor = 0.1
+	createStatusBackoff.MaxElapsedTime = 2 * time.Minute
+
+	// Run the creation check using an exponential backoff
+	if err := backoff.RetryNotify(checkCreateStatus, createStatusBackoff, createStatusNotify); err != nil {
+		Logc(ctx).WithField("LUN", lunPath).Warnf("LUN not found after %3.2f seconds.",
+			createStatusBackoff.MaxElapsedTime.Seconds())
+		return err
+	}
+
+	return nil
+}
+
 // LunCreate creates a LUN
 func (c RestClient) LunCreate(
 	ctx context.Context, lunPath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup,
@@ -1894,6 +1927,7 @@ func (c RestClient) LunCreate(
 	params := san.NewLunCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
+	params.ReturnRecordsQueryParameter = ToBoolPointer(true)
 
 	lunInfo := &models.Lun{
 		Name:   lunPath, // example:  /vol/myVolume/myLun1
@@ -1917,7 +1951,8 @@ func (c RestClient) LunCreate(
 		return fmt.Errorf("unexpected response from lun create")
 	}
 
-	return nil
+	// verify the created LUN can be found
+	return c.pollLunCreate(ctx, lunPath)
 }
 
 // LunGet gets the LUN with the specified uuid

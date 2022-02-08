@@ -12,7 +12,9 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 
 	. "github.com/netapp/trident/logger"
@@ -1048,12 +1050,45 @@ func (d OntapAPIREST) VolumeSnapshotCreate(ctx context.Context, snapshotName, so
 	return nil
 }
 
+// pollVolumeExistence polls for the volume, with backoff retry logic
+func (c OntapAPIREST) pollVolumeExistence(ctx context.Context, volumeName string) error {
+
+	checkVolumeStatus := func() error {
+		volume, err := c.VolumeInfo(ctx, volumeName)
+		if err != nil {
+			return err
+		}
+		if volume == nil {
+			return fmt.Errorf("could not find Volume with name %v", volumeName)
+		}
+		return nil
+	}
+	volumeStatusNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Volume not found, waiting.")
+	}
+	volumeStatusBackoff := backoff.NewExponentialBackOff()
+	volumeStatusBackoff.InitialInterval = 1 * time.Second
+	volumeStatusBackoff.Multiplier = 2
+	volumeStatusBackoff.RandomizationFactor = 0.1
+	volumeStatusBackoff.MaxElapsedTime = 2 * time.Minute
+
+	// Run the check using an exponential backoff
+	if err := backoff.RetryNotify(checkVolumeStatus, volumeStatusBackoff, volumeStatusNotify); err != nil {
+		Logc(ctx).WithField("Volume", volumeName).Warnf("Volume not found after %3.2f seconds.",
+			volumeStatusBackoff.MaxElapsedTime.Seconds())
+		return err
+	}
+
+	return nil
+}
+
 func (d OntapAPIREST) VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error {
 	err := d.api.VolumeCloneCreateAsync(ctx, cloneName, sourceName, snapshot)
 	if err != nil {
 		return fmt.Errorf("error creating clone: %v", err)
 	}
-	return nil
+
+	return d.pollVolumeExistence(ctx, cloneName)
 }
 
 func (d OntapAPIREST) VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {

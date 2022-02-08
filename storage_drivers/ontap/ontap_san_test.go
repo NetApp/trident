@@ -13,6 +13,8 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/storage"
+	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
@@ -361,4 +363,65 @@ func TestOntapSanTerminate(t *testing.T) {
 		}
 
 	}
+}
+
+func expectLunAndVolumeCreateSequence(ctx context.Context, mockAPI *mockapi.MockOntapAPI) {
+
+	// expected call sequenece is:
+	//   check the volume exists (should return false)
+	//   create the volume
+	//   create the LUN
+	//   set attributes on the LUN
+
+	mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, volumeName string) (bool, error) {
+			return false, nil
+		},
+	).MaxTimes(1)
+
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, volume api.Volume) error {
+			return nil
+		},
+	).MaxTimes(1)
+
+	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, lun api.Lun) error {
+			return nil
+		},
+	).MaxTimes(1)
+
+	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
+		func(ctx context.Context, lunPath, attribute, fstype, context string) error {
+			return nil
+		},
+	).MaxTimes(1)
+}
+
+func TestOntapSanVolumeCreate(t *testing.T) {
+
+	ctx := context.Background()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	expectLunAndVolumeCreateSequence(ctx, mockAPI)
+
+	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d.API = mockAPI
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	volConfig := &storage.VolumeConfig{
+		Size:       "1g",
+		Encryption: "false",
+		FileSystem: "xfs",
+	}
+	volAttrs := map[string]sa.Request{}
+
+	err := d.Create(ctx, volConfig, pool1, volAttrs)
+	assert.Nil(t, err, "Error is not nil")
 }
