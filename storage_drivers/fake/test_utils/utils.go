@@ -151,5 +151,6 @@ func GenerateVolumeConfig(
 		SnapshotPolicy:  "none",
 		SnapshotDir:     "none",
 		UnixPermissions: "",
+		VolumeMode:      config.Filesystem,
 	}
 }

@@ -93,7 +93,8 @@ func (p *Plugin) NodeUnstageVolume(
 			return &csi.NodeUnstageVolumeResponse{}, nil
 		} else {
 			Logc(ctx).WithFields(fields).WithError(err).Errorf("Unable to read the staging path %s", stagingTargetPath)
-			return nil, status.Errorf(codes.Internal, "unable to read the staging path %s; %s", stagingTargetPath, err)
+			return nil, status.Errorf(codes.Internal, "unable to read the staging path %s; %s",
+				stagingTargetPath, err)
 		}
 	}
 
@@ -344,6 +345,64 @@ func (p *Plugin) NodeExpandVolume(
 		}
 	}
 
+	protocol, err := p.getVolumeProtocolFromPublishInfo(publishInfo)
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, "unable to read protocol info from publish info; %s", err)
+	}
+
+	var fsType, mountOptions string
+
+	switch protocol {
+	case tridentconfig.File:
+		return nil, status.Error(codes.InvalidArgument, "NFS does not need to explicitly expand the filesystem")
+	case tridentconfig.Block:
+		if fsType, err = utils.VerifyFilesystemSupport(publishInfo.FilesystemType); err != nil {
+			break
+		}
+		err = nodePrepareISCSIVolumeForExpansion(ctx, publishInfo, requiredBytes)
+		mountOptions = publishInfo.MountOptions
+	case tridentconfig.BlockOnFile:
+		if fsType, err = utils.GetVerifiedBlockFsType(publishInfo.FilesystemType); err != nil {
+			break
+		}
+		err = nodePrepareBlockOnFileVolumeForExpansion(ctx, publishInfo, requiredBytes)
+		mountOptions = publishInfo.SubvolumeMountOptions
+	default:
+		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
+	}
+
+	if err != nil {
+		Logc(ctx).WithField("devicePath", publishInfo.DevicePath).WithError(err).Error(
+			"Unable to expand volume")
+		return nil, err
+	}
+
+	// Expand filesystem
+	if fsType != tridentconfig.FsRaw {
+		filesystemSize, err := utils.ExpandFilesystemOnNode(ctx, publishInfo.DevicePath, stagingTargetPath, fsType,
+			mountOptions)
+		if err != nil {
+			Logc(ctx).WithFields(log.Fields{
+				"device":         publishInfo.DevicePath,
+				"filesystemType": publishInfo.FilesystemType,
+			}).WithError(err).Error("Unable to expand filesystem.")
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		Logc(ctx).WithFields(log.Fields{
+			"filesystemSize": filesystemSize,
+			"requiredBytes":  requiredBytes,
+			"limitBytes":     limitBytes,
+		}).Debug("Filesystem size after expand.")
+	}
+
+	Logc(ctx).WithField("volumeId", volumeId).Info("Filesystem expansion completed.")
+	return &csi.NodeExpandVolumeResponse{}, nil
+}
+
+// nodePrepareISCSIVolumeForExpansion readies volume expansion for Block (i.e. iSCSI) volumes
+func nodePrepareISCSIVolumeForExpansion(
+	ctx context.Context, publishInfo *utils.VolumePublishInfo, requiredBytes int64,
+) error {
 	lunID := int(publishInfo.IscsiLunNumber)
 
 	Logc(ctx).WithFields(log.Fields{
@@ -352,7 +411,9 @@ func (p *Plugin) NodeExpandVolume(
 		"devicePath":     publishInfo.DevicePath,
 		"mountOptions":   publishInfo.MountOptions,
 		"filesystemType": publishInfo.FilesystemType,
-	}).Debug("PublishInfo for device to expand.")
+	}).Debug("PublishInfo for block device to expand.")
+
+	var err error
 
 	// Make sure device is ready
 	if utils.IsAlreadyAttached(ctx, lunID, publishInfo.IscsiTargetIQN) {
@@ -364,38 +425,55 @@ func (p *Plugin) NodeExpandVolume(
 				"device": publishInfo.DevicePath,
 				"error":  err,
 			}).Error("Unable to scan device.")
-			return nil, status.Error(codes.Internal, err.Error())
+			err = status.Error(codes.Internal, err.Error())
 		}
 
-		// Expand filesystem
-		if publishInfo.FilesystemType != tridentconfig.FsRaw {
-			filesystemSize, err := utils.ExpandISCSIFilesystem(ctx, publishInfo, stagingTargetPath)
-			if err != nil {
-				Logc(ctx).WithFields(log.Fields{
-					"device":         publishInfo.DevicePath,
-					"filesystemType": publishInfo.FilesystemType,
-					"error":          err,
-				}).Error("Unable to expand filesystem.")
-				return nil, status.Error(codes.Internal, err.Error())
-			}
-			Logc(ctx).WithFields(log.Fields{
-				"filesystemSize": filesystemSize,
-				"requiredBytes":  requiredBytes,
-				"limitBytes":     limitBytes,
-			}).Debug("Filesystem size after expand.")
+	} else {
+		err = fmt.Errorf("device %s to expand is not attached", publishInfo.DevicePath)
+		Logc(ctx).WithField("devicePath", publishInfo.DevicePath).WithError(err).Error(
+			"Unable to expand volume.")
+		return status.Error(codes.Internal, err.Error())
+	}
+	return err
+}
+
+// nodePrepareBlockOnFileVolumeForExpansion readies volume expansion for BlockOnFile volumes
+func nodePrepareBlockOnFileVolumeForExpansion(
+	ctx context.Context, publishInfo *utils.VolumePublishInfo, requiredBytes int64,
+) error {
+
+	Logc(ctx).WithFields(log.Fields{
+		"backendUUID":   publishInfo.BackendUUID,
+		"nfsPath":       publishInfo.NfsPath,
+		"subvolumeName": publishInfo.SubvolumeName,
+		"devicePath":    publishInfo.DevicePath,
+	}).Debug("PublishInfo for device to expand.")
+
+	nfsMountpoint := path.Join(tridentDeviceInfoPath, publishInfo.BackendUUID, publishInfo.NfsPath)
+	loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
+
+	var err error = nil
+
+	loopDeviceAttached, err := utils.IsLoopDeviceAttachedToFile(ctx, publishInfo.DevicePath, loopFile)
+	if err != nil {
+		return fmt.Errorf("unable to identify if loop device '%s' is attached to file '%s': %v",
+			publishInfo.DevicePath, loopFile, err)
+	}
+
+	// Make sure device is ready
+	if loopDeviceAttached {
+		if err = utils.ResizeLoopDevice(ctx, publishInfo.DevicePath, loopFile, requiredBytes); err != nil {
+			Logc(ctx).WithField("device", publishInfo.DevicePath).WithError(err).Error(
+				"Unable to resize loop device.")
+			err = status.Error(codes.Internal, err.Error())
 		}
 	} else {
 		Logc(ctx).WithField("devicePath", publishInfo.DevicePath).Error(
 			"Unable to expand volume as device is not attached.")
 		err = fmt.Errorf("device %s to expand is not attached", publishInfo.DevicePath)
-		return nil, status.Error(codes.Internal, err.Error())
+		return status.Error(codes.Internal, err.Error())
 	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"volumePath": volumePath,
-		"volumeId":   volumeId,
-	}).Debug("Filesystem expansion completed.")
-	return &csi.NodeExpandVolumeResponse{}, nil
+	return err
 }
 
 func (p *Plugin) NodeGetCapabilities(
@@ -1135,12 +1213,13 @@ func (p *Plugin) nodeStageNFSBlockVolume(ctx context.Context, req *csi.NodeStage
 		Localhost: true,
 	}
 
-	publishInfo.MountOptions = req.PublishContext["mountOptions"]
+	publishInfo.MountOptions = utils.SanitizeMountOptions(req.PublishContext["mountOptions"], []string{"ro"})
 	publishInfo.NfsServerIP = req.PublishContext["nfsServerIp"]
 	publishInfo.NfsPath = req.PublishContext["nfsPath"]
 	publishInfo.SubvolumeName = req.PublishContext["subvolumeName"]
 	publishInfo.BackendUUID = req.PublishContext["backendUUID"]
 	publishInfo.FilesystemType = req.PublishContext["filesystemType"]
+	publishInfo.SubvolumeMountOptions = utils.SanitizeMountOptions(req.PublishContext["subvolumeMountOptions"], []string{"ro"})
 
 	nfsMountpoint := path.Join(tridentDeviceInfoPath, publishInfo.BackendUUID, publishInfo.NfsPath)
 	loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
@@ -1232,18 +1311,9 @@ func (p *Plugin) nodePublishNFSBlockVolume(
 		}
 	}
 
-	// TODO: May be consolidate this with iSCSI mounting
-	if req.GetReadonly() {
-		publishInfo.SubvolumeMountOptions = utils.AppendToStringList(publishInfo.SubvolumeMountOptions, "ro", ",")
-	}
-
-	publishInfo.SubvolumeMountOptions = utils.AppendToStringList(publishInfo.SubvolumeMountOptions, "loop", ",")
-
 	isRawBlock := publishInfo.FilesystemType == tridentconfig.FsNFSRaw
-
-	if isRawBlock {
-		publishInfo.SubvolumeMountOptions = utils.AppendToStringList(publishInfo.SubvolumeMountOptions, "bind", ",")
-	}
+	publishInfo.SubvolumeMountOptions = getSubvolumeMountOptions(req.GetReadonly(), isRawBlock,
+		publishInfo.SubvolumeMountOptions)
 
 	err = utils.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.SubvolumeMountOptions, isRawBlock)
 	if err != nil {
@@ -1257,6 +1327,18 @@ func (p *Plugin) nodePublishNFSBlockVolume(
 	}
 
 	return &csi.NodePublishVolumeResponse{}, nil
+}
+
+func getSubvolumeMountOptions(readOnly, isRawBlock bool, subvolumeMountOptions string) string {
+	if readOnly && !utils.AreMountOptionsInList(subvolumeMountOptions, []string{"ro"}) {
+		subvolumeMountOptions = utils.AppendToStringList(subvolumeMountOptions, "ro", ",")
+	}
+
+	if isRawBlock && !utils.AreMountOptionsInList(subvolumeMountOptions, []string{"bind"}) {
+		subvolumeMountOptions = utils.AppendToStringList(subvolumeMountOptions, "bind", ",")
+	}
+
+	return subvolumeMountOptions
 }
 
 // writeStagedDeviceInfo writes the volume publish info to the staging target path.
@@ -1282,7 +1364,7 @@ func (p *Plugin) writeStagedDeviceInfo(
 	return nil
 }
 
-// writeStagedDeviceInfo reads the volume publish info from the staging target path.
+// readStagedDeviceInfo reads the volume publish info from the staging target path.
 func (p *Plugin) readStagedDeviceInfo(
 	ctx context.Context, stagingTargetPath string,
 ) (*utils.VolumePublishInfo, error) {

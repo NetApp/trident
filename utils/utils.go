@@ -604,6 +604,39 @@ func GetFindMultipathValue(text string) string {
 	return ""
 }
 
+// AreMountOptionsInList returns true if any of the options are in mountOptions
+func AreMountOptionsInList(mountOptions string, optionList []string) bool {
+	if mountOptions == "" || len(optionList) == 0 {
+		return false
+	}
+
+	mountOptionsSlice := strings.Split(strings.TrimPrefix(mountOptions, "-o"), ",")
+
+	for _, mountOptionItem := range mountOptionsSlice {
+		if SliceContainsString(optionList, mountOptionItem) {
+			return true
+		}
+	}
+	return false
+}
+
+// SanitizeMountOptions removes the options provided from the string list and spaces around options
+func SanitizeMountOptions(mountOptions string, removeMountOptions []string) string {
+	if mountOptions == "" || len(removeMountOptions) == 0 {
+		return mountOptions
+	}
+
+	sanitized := make([]string, 0)
+
+	for _, mountOption := range strings.Split(mountOptions, ",") {
+		if !SliceContainsString(removeMountOptions, mountOption) {
+			sanitized = append(sanitized, mountOption)
+		}
+	}
+
+	return strings.Join(sanitized, ",")
+}
+
 // GetNFSVersionFromMountOptions accepts a set of mount options, a default NFS version, and a list of
 // supported NFS versions, and it returns the NFS version specified by the mount options, or the default
 // if none is found, plus an error (if any).  If a set of supported versions is supplied, and the returned

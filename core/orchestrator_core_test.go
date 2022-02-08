@@ -1045,6 +1045,7 @@ func TestCloneVolumes(t *testing.T) {
 			Name:              cloneName,
 			StorageClass:      s.config.StorageClass,
 			CloneSourceVolume: s.config.Name,
+			VolumeMode:        s.config.VolumeMode,
 		}
 		cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
 		if err != nil {
@@ -2614,7 +2615,7 @@ func TestValidateImportVolumeNasBackend(t *testing.T) {
 			name:         "accessMode",
 			volumeConfig: accessModeVolConfig,
 			valid:        false,
-			error:        "incompatible volume mode (), access mode",
+			error:        "incompatible",
 		},
 		{name: "volumeMode", volumeConfig: volumeModeVolConfig, valid: false, error: "incompatible volume mode "},
 		{name: "protocol", volumeConfig: protocolVolConfig, valid: false, error: "incompatible with the backend"},
@@ -3597,20 +3598,19 @@ func TestGetProtocol(t *testing.T) {
 		{config.Filesystem, config.ReadWriteOnce, config.File, config.File},
 		{config.Filesystem, config.ReadWriteOnce, config.Block, config.Block},
 		{config.Filesystem, config.ReadWriteOnce, config.BlockOnFile, config.BlockOnFile},
-		{config.Filesystem, config.ReadOnlyMany, config.ProtocolAny, config.File},
+		{config.Filesystem, config.ReadOnlyMany, config.Block, config.Block},
+		{config.Filesystem, config.ReadOnlyMany, config.ProtocolAny, config.ProtocolAny},
 		{config.Filesystem, config.ReadOnlyMany, config.File, config.File},
 		{config.Filesystem, config.ReadWriteMany, config.ProtocolAny, config.File},
 		{config.Filesystem, config.ReadWriteMany, config.File, config.File},
-		//{config.Filesystem, config.ReadWriteMany, config.Block, config.ProtocolAny},
-		//{config.Filesystem, config.ReadWriteMany, config.BlockOnFile, config.ProtocolAny},
+		// {config.Filesystem, config.ReadWriteMany, config.Block, config.ProtocolAny},
+		// {config.Filesystem, config.ReadWriteMany, config.BlockOnFile, config.ProtocolAny},
 		{config.RawBlock, config.ModeAny, config.ProtocolAny, config.Block},
 		// {config.RawBlock, config.ModeAny, config.File, config.ProtocolAny},
 		{config.RawBlock, config.ModeAny, config.Block, config.Block},
-		{config.RawBlock, config.ModeAny, config.BlockOnFile, config.BlockOnFile},
 		{config.RawBlock, config.ReadWriteOnce, config.ProtocolAny, config.Block},
 		// {config.RawBlock, config.ReadWriteOnce, config.File, config.ProtocolAny},
 		{config.RawBlock, config.ReadWriteOnce, config.Block, config.Block},
-		{config.RawBlock, config.ReadWriteOnce, config.BlockOnFile, config.BlockOnFile},
 		{config.RawBlock, config.ReadOnlyMany, config.ProtocolAny, config.Block},
 		// {config.RawBlock, config.ReadOnlyMany, config.File, config.ProtocolAny},
 		{config.RawBlock, config.ReadOnlyMany, config.Block, config.Block},
@@ -3620,28 +3620,31 @@ func TestGetProtocol(t *testing.T) {
 	}
 
 	var accessModesNegativeTests = []accessVariables{
-		{config.Filesystem, config.ReadOnlyMany, config.Block, config.ProtocolAny},
 		{config.Filesystem, config.ReadOnlyMany, config.BlockOnFile, config.ProtocolAny},
 		{config.Filesystem, config.ReadWriteMany, config.Block, config.ProtocolAny},
 		{config.Filesystem, config.ReadWriteMany, config.BlockOnFile, config.ProtocolAny},
 		{config.RawBlock, config.ModeAny, config.File, config.ProtocolAny},
+		{config.RawBlock, config.ModeAny, config.BlockOnFile, config.ProtocolAny},
 		{config.RawBlock, config.ReadWriteOnce, config.File, config.ProtocolAny},
+		{config.RawBlock, config.ReadWriteOnce, config.BlockOnFile, config.ProtocolAny},
+
 		{config.RawBlock, config.ReadOnlyMany, config.File, config.ProtocolAny},
 		{config.RawBlock, config.ReadWriteMany, config.File, config.ProtocolAny},
+
 		{config.RawBlock, config.ReadOnlyMany, config.BlockOnFile, config.ProtocolAny},
 		{config.RawBlock, config.ReadWriteMany, config.BlockOnFile, config.ProtocolAny},
 	}
 
 	for _, tc := range accessModesPositiveTests {
 		protocolLocal, err := orchestrator.getProtocol(ctx(), tc.volumeMode, tc.accessMode, tc.protocol)
-		assert.True(t, err == nil, "error should be nil!")
-		assert.True(t, tc.expected == protocolLocal, "expected both the protocols to be equal!")
+		assert.Nil(t, err, nil)
+		assert.Equal(t, tc.expected, protocolLocal, "expected both the protocols to be equal!")
 	}
 
 	for _, tc := range accessModesNegativeTests {
 		protocolLocal, err := orchestrator.getProtocol(ctx(), tc.volumeMode, tc.accessMode, tc.protocol)
-		assert.True(t, err != nil, "error should not be nil!")
-		assert.True(t, tc.expected == protocolLocal, "expected both the protocols to be equal!")
+		assert.NotNil(t, err)
+		assert.Equal(t, tc.expected, protocolLocal, "expected both the protocols to be equal!")
 	}
 }
 

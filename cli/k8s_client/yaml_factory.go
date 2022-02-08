@@ -856,6 +856,7 @@ spec:
           mountPropagation: "Bidirectional"
         - name: trident-tracking-dir
           mountPath: /var/lib/trident/tracking
+          mountPropagation: "Bidirectional"
         - name: certs
           mountPath: /certs
           readOnly: true
@@ -1023,6 +1024,7 @@ spec:
           mountPropagation: "Bidirectional"
         - name: trident-tracking-dir
           mountPath: /var/lib/trident/tracking
+          mountPropagation: "Bidirectional"
         - name: certs
           mountPath: /certs
           readOnly: true

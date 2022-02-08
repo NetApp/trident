@@ -138,7 +138,7 @@ func AttachBlockOnFileVolume(
 	}
 
 	// Attach the NFS-backed loop file to a loop device only if it isn't already attached
-	attached, loopDevice, err := isLoopDeviceFileAttached(ctx, loopFile)
+	attached, loopDevice, err := getLoopDeviceAttachedToFile(ctx, loopFile)
 	if err != nil {
 		return "", err
 	}
@@ -147,7 +147,7 @@ func AttachBlockOnFileVolume(
 			return "", err
 		}
 
-		if attached, loopDevice, err = isLoopDeviceFileAttached(ctx, loopFile); err != nil {
+		if attached, loopDevice, err = getLoopDeviceAttachedToFile(ctx, loopFile); err != nil {
 			return "", err
 		} else if !attached {
 			return "", fmt.Errorf("could not detect new loop device attachment to %s", loopFile)
@@ -174,7 +174,7 @@ func DetachBlockOnFileVolume(ctx context.Context, nfsMountpoint, loopFile string
 	Logc(ctx).Debug(">>>> osutils.DetachBlockOnFileVolume")
 	defer Logc(ctx).Debug("<<<< osutils.DetachBlockOnFileVolume")
 
-	loopDeviceAttached, err := isLoopDeviceAttachedToFile(ctx, publishInfo.DevicePath, loopFile)
+	loopDeviceAttached, err := IsLoopDeviceAttachedToFile(ctx, publishInfo.DevicePath, loopFile)
 	if err != nil {
 		return fmt.Errorf("unable to identify if loop device '%s' is attached to file '%s': %v",
 			publishInfo.DevicePath, loopFile, err)
@@ -1434,16 +1434,15 @@ func RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 // mountFilesystemForResize expands a filesystem. The xfs_growfs utility requires a mount point to expand the
 // filesystem. Determining the size of the filesystem requires that the filesystem be mounted.
 func mountFilesystemForResize(
-	ctx context.Context, devicePath string, stagedTargetPath string, mountOptions string,
-) (string, error) {
+	ctx context.Context, devicePath string, stagedTargetPath string, mountOptions string) (string, error) {
 
 	logFields := log.Fields{
 		"devicePath":       devicePath,
 		"stagedTargetPath": stagedTargetPath,
 		"mountOptions":     mountOptions,
 	}
-	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.mountAndExpandFilesystem")
-	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.mountAndExpandFilesystem")
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.mountFilesystemForResize")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.mountFilesystemForResize")
 
 	tmpMountPoint := path.Join(stagedTargetPath, temporaryMountDir)
 	err := MountDevice(ctx, devicePath, tmpMountPoint, mountOptions, false)
@@ -1453,38 +1452,34 @@ func mountFilesystemForResize(
 	return tmpMountPoint, nil
 }
 
-// ExpandISCSIFilesystem will expand the filesystem of an already expanded volume.
-func ExpandISCSIFilesystem(
-	ctx context.Context, publishInfo *VolumePublishInfo, stagedTargetPath string,
-) (int64, error) {
+// ExpandFilesystemOnNode will expand the filesystem of an already expanded volume.
+func ExpandFilesystemOnNode(
+	ctx context.Context, devicePath, stagedTargetPath, fsType, mountOptions string) (int64, error) {
 
-	devicePath := publishInfo.DevicePath
 	logFields := log.Fields{
 		"devicePath":       devicePath,
 		"stagedTargetPath": stagedTargetPath,
-		"mountOptions":     publishInfo.MountOptions,
-		"filesystemType":   publishInfo.FilesystemType,
+		"mountOptions":     mountOptions,
+		"filesystemType":   fsType,
 	}
-	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.ExpandISCSIFilesystem")
-	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.ExpandISCSIFilesystem")
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.ExpandFilesystemOnNode")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.ExpandFilesystemOnNode")
 
-	tmpMountPoint, err := mountFilesystemForResize(
-		ctx, publishInfo.DevicePath, stagedTargetPath, publishInfo.MountOptions)
+	tmpMountPoint, err := mountFilesystemForResize(ctx, devicePath, stagedTargetPath, mountOptions)
 	if err != nil {
 		return 0, err
 	}
-
-	defer RemoveMountPoint(ctx, tmpMountPoint) //nolint
+	defer RemoveMountPoint(ctx, tmpMountPoint) // nolint
 	// Don't need to verify the filesystem type as the resize utilities will throw an error if the filesystem
 	// is not the correct type.
 	var size int64
-	switch publishInfo.FilesystemType {
+	switch fsType {
 	case "xfs":
 		size, err = expandFilesystem(ctx, "xfs_growfs", tmpMountPoint, tmpMountPoint)
 	case "ext3", "ext4":
 		size, err = expandFilesystem(ctx, "resize2fs", devicePath, tmpMountPoint)
 	default:
-		err = fmt.Errorf("unsupported file system type: %s", publishInfo.FilesystemType)
+		err = fmt.Errorf("unsupported file system type: %s", fsType)
 	}
 	if err != nil {
 		return 0, err
@@ -3113,10 +3108,10 @@ type LoopDevicesResponse struct {
 // included but commented out for clarity.
 type LoopDevice struct {
 	Name string `json:"name"`
-	//Sizelimit int    `json:"sizelimit"`
-	//Offset    int    `json:"offset"`
-	//Autoclear bool   `json:"autoclear"`
-	//Ro        bool   `json:"ro"`
+	// Sizelimit int64  `json:"sizelimit"`
+	// Offset    int64  `json:"offset"`
+	// Autoclear bool   `json:"autoclear"`
+	// Ro        bool   `json:"ro"`
 	BackFile string `json:"back-file"`
 }
 
@@ -3127,7 +3122,7 @@ func getLoopDeviceInfo(ctx context.Context) ([]LoopDevice, error) {
 
 	out, err := execCommandWithTimeout(ctx, "losetup", 10, true, "--list", "--json")
 	if err != nil {
-		Logc(ctx).WithField("error", err).Error("losetup failed.")
+		Logc(ctx).WithError(err).Error("Getting loop device information failed")
 		return nil, err
 	}
 
@@ -3144,10 +3139,10 @@ func getLoopDeviceInfo(ctx context.Context) ([]LoopDevice, error) {
 	return loopDevicesResponse.LoopDevices, nil
 }
 
-func isLoopDeviceFileAttached(ctx context.Context, loopFile string) (bool, *LoopDevice, error) {
+func getLoopDeviceAttachedToFile(ctx context.Context, loopFile string) (bool, *LoopDevice, error) {
 
-	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> osutils.isLoopDeviceAttached")
-	defer Logc(ctx).Debug("<<<< osutils.isLoopDeviceAttached")
+	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> osutils.getLoopDeviceAttachedToFile")
+	defer Logc(ctx).Debug("<<<< osutils.getLoopDeviceAttachedToFile")
 
 	devices, err := getLoopDeviceInfo(ctx)
 	if err != nil {
@@ -3163,9 +3158,9 @@ func isLoopDeviceFileAttached(ctx context.Context, loopFile string) (bool, *Loop
 	return false, nil, nil
 }
 
-func isLoopDeviceAttachedToFile(ctx context.Context, loopDevice, loopFile string) (bool, error) {
-	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> osutils.isLoopDeviceAttachedToFile")
-	defer Logc(ctx).Debug("<<<< osutils.isLoopDeviceAttachedToFile")
+func IsLoopDeviceAttachedToFile(ctx context.Context, loopDevice, loopFile string) (bool, error) {
+	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> osutils.IsLoopDeviceAttachedToFile")
+	defer Logc(ctx).Debug("<<<< osutils.IsLoopDeviceAttachedToFile")
 
 	var isAttached bool
 	devices, err := getLoopDeviceInfo(ctx)
@@ -3182,6 +3177,57 @@ func isLoopDeviceAttachedToFile(ctx context.Context, loopDevice, loopFile string
 	return false, nil
 }
 
+func ResizeLoopDevice(ctx context.Context, loopDevice, loopFile string, requiredBytes int64) error {
+
+	Logc(ctx).Debug(">>>> osutils.ResizeLoopDevice")
+	defer Logc(ctx).Debug("<<<< osutils.ResizeLoopDevice")
+
+	var err error = nil
+
+	loopFileInfo, err := os.Stat(loopFile)
+	if err != nil {
+		Logc(ctx).WithField("loopFile", loopFile).WithError(err).Error("Failed to get loop file size")
+		return fmt.Errorf("failed to get loop file size: %s, %s", loopFile, err.Error())
+	}
+
+	loopFileSize := loopFileInfo.Size()
+
+	if loopFileSize < requiredBytes {
+		err = fmt.Errorf("loopFileSize must be greater than or equal to requiredBytes: %d, %d", loopFileSize,
+			requiredBytes)
+		Logc(ctx).WithFields(log.Fields{
+			"loopFileSize":  loopFileSize,
+			"requiredBytes": requiredBytes,
+		}).WithError(err).Error("LoopFileSize must be greater than or equal to requiredBytes")
+		return err
+	}
+
+	_, err = execCommandWithTimeout(ctx, "losetup", 10, true, "--set-capacity",
+		loopDevice)
+	if err != nil {
+		Logc(ctx).WithField("loopDevice", loopDevice).WithError(err).Error("Failed to resize the loop device")
+		return fmt.Errorf("failed to resize the loop device: %s, %s", loopDevice, err.Error())
+	}
+
+	loopDeviceSize, err := getISCSIDiskSize(ctx, loopDevice)
+	if err != nil {
+		Logc(ctx).WithField("loopDevice", loopDevice).WithError(err).Error(
+			"Failed to get the loop device size")
+		return fmt.Errorf("failed to get the loop device size: %s, %s", loopDevice, err.Error())
+	}
+
+	if loopDeviceSize < requiredBytes {
+		err = fmt.Errorf("disk size not large enough after resize: %d < %d", loopDeviceSize, requiredBytes)
+		Logc(ctx).WithFields(log.Fields{
+			"loopDeviceSize": loopDeviceSize,
+			"requiredBytes":  requiredBytes,
+		}).WithError(err).Error("Disk size not large enough after resize.")
+		return err
+	}
+
+	return err
+}
+
 // attachLoopDevice invokes losetup to attach a file to a loop device.
 func attachLoopDevice(ctx context.Context, loopFile string) (string, error) {
 
@@ -3191,7 +3237,7 @@ func attachLoopDevice(ctx context.Context, loopFile string) (string, error) {
 	out, err := execCommandWithTimeout(ctx, "losetup", 10, true, "--find", "--show", "--direct-io", "--nooverlap",
 		loopFile)
 	if err != nil {
-		Logc(ctx).WithField("error", err).Error("losetup failed.")
+		Logc(ctx).WithError(err).Error("Failed to attach loop file.")
 		return "", fmt.Errorf("failed to attach loop file: %v", err)
 	}
 
@@ -3211,7 +3257,7 @@ func detachLoopDevice(ctx context.Context, loopDeviceName string) error {
 
 	_, err := execCommandWithTimeout(ctx, "losetup", 10, true, "--detach", loopDeviceName)
 	if err != nil {
-		Logc(ctx).WithField("error", err).Error("losetup failed.")
+		Logc(ctx).WithError(err).Error("Failed to detach loop device")
 		return fmt.Errorf("failed to detach loop device '%s': %v", loopDeviceName, err)
 	}
 
@@ -3370,10 +3416,10 @@ func loginWithChap(
 	args := []string{"-m", "node", "-T", tiqn, "-p", formatPortal(portal)}
 
 	secretsToRedact := map[string]string{
-		"--value="+username: "--value="+REDACTED,
-		"--value="+password: "--value="+REDACTED,
-		"--value="+targetUsername: "--value="+REDACTED,
-		"--value="+targetInitiatorSecret: "--value="+REDACTED,
+		"--value=" + username:              "--value=" + REDACTED,
+		"--value=" + password:              "--value=" + REDACTED,
+		"--value=" + targetUsername:        "--value=" + REDACTED,
+		"--value=" + targetInitiatorSecret: "--value=" + REDACTED,
 	}
 
 	listAllISCSIDevices(ctx)

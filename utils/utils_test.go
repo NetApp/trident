@@ -1093,3 +1093,48 @@ func TestAppendToStringList(t *testing.T) {
 		assert.Equal(t, test.newStringList, newStringList)
 	}
 }
+
+func TestSanitizeMountOptions(t *testing.T) {
+	log.Debug("Running TestSanitizeMountOptions...")
+
+	var tests = []struct {
+		mountOptions          string
+		removeMountOptions    []string
+		SanitizedMountOptions string
+	}{
+		{"", []string{"ro"}, ""},
+		{"ro", []string{"ro"}, ""},
+		{"rw", []string{"ro"}, "rw"},
+		{"ro,nfsvers=3", []string{"ro"}, "nfsvers=3"},
+		{"ro,nfsvers=3", []string{"bind"}, "ro,nfsvers=3"},
+		{"nouuid,ro,loop,nfsvers=4", []string{"ro"}, "nouuid,loop,nfsvers=4"},
+	}
+
+	for _, test := range tests {
+
+		assert.Equal(t, test.SanitizedMountOptions, SanitizeMountOptions(test.mountOptions, test.removeMountOptions))
+	}
+}
+
+func TestAreMountOptionsInList(t *testing.T) {
+	log.Debug("Running TestAreMountOptionsInList...")
+
+	var tests = []struct {
+		mountOptions string
+		optionList   []string
+		found        bool
+	}{
+		{"", []string{"ro"}, false},
+		{"ro", []string{"ro"}, true},
+		{"rw", []string{"ro"}, false},
+		{"ro,nfsvers=3", []string{"ro"}, true},
+		{"nouuid,ro,loop,nfsvers=4", []string{"ro"}, true},
+		{"nouuid,ro,loop,nfsvers=4", []string{"bind"}, false},
+		{"nouuid,ro,loop,bind,nfsvers=4", []string{"bind"}, true},
+		{"-o nouuid,ro,loop,bind,nfsvers=4", []string{"bind"}, true},
+	}
+
+	for _, test := range tests {
+		assert.Equal(t, test.found, AreMountOptionsInList(test.mountOptions, test.optionList))
+	}
+}

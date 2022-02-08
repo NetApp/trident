@@ -579,6 +579,12 @@ func (d *NASBlockStorageDriver) validate(ctx context.Context) error {
 		return fmt.Errorf("storage prefix '%s' ends with '-'", storagePrefix)
 	}
 
+	// Ensure user does not provide "ro" mount option
+	if utils.AreMountOptionsInList(d.Config.NfsMountOptions, []string{"ro"}) {
+		return fmt.Errorf("ReadOnly (ro) option is not supported in ANF subvolume backend nfsMountOptions; %s",
+			d.Config.NfsMountOptions)
+	}
+
 	// Validate pool-level attributes
 	allPools := make([]storage.Pool, 0, len(d.physicalPools)+len(d.virtualPools))
 
@@ -1540,10 +1546,10 @@ func (d *NASBlockStorageDriver) GetExternalConfig(ctx context.Context) interface
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.AzureNFSStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
-	cloneConfig.ClientSecret = drivers.REDACTED // redact the Secret
+	cloneConfig.ClientSecret = utils.REDACTED // redact the Secret
 	cloneConfig.Credentials = map[string]string{
-		drivers.KeyName: drivers.REDACTED,
-		drivers.KeyType: drivers.REDACTED,
+		drivers.KeyName: utils.REDACTED,
+		drivers.KeyType: utils.REDACTED,
 	} // redact the credentials
 	return cloneConfig
 }
@@ -1658,7 +1664,7 @@ func (d *NASBlockStorageDriver) getSubvolumeExternal(subVolumeAttrs *api.Subvolu
 
 // Implement stringer interface for the NASBlockStorageDriver driver.
 func (d NASBlockStorageDriver) String() string {
-	return drivers.ToString(&d, []string{"SDK"}, d.GetExternalConfig(context.Background()))
+	return utils.ToStringRedacted(&d, []string{"SDK"}, d.GetExternalConfig(context.Background()))
 }
 
 // GoString implements GoStringer interface for the NASBlockStorageDriver driver.

@@ -394,6 +394,7 @@ func (p *Plugin) ControllerPublishVolume(
 	mount := req.VolumeCapability.GetMount()
 	if mount != nil && len(mount.MountFlags) > 0 {
 		if volume.Config.Protocol == tridentconfig.BlockOnFile {
+			mount.MountFlags = utils.RemoveStringFromSlice(mount.MountFlags, "ro")
 			volumePublishInfo.SubvolumeMountOptions = strings.Join(mount.MountFlags, ",")
 		} else {
 			volumePublishInfo.MountOptions = strings.Join(mount.MountFlags, ",")

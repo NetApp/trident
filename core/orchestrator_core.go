@@ -20,6 +20,7 @@ import (
 	"go.uber.org/multierr"
 
 	"github.com/netapp/trident/config"
+	cfg "github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	. "github.com/netapp/trident/logger"
@@ -3172,8 +3173,6 @@ func (o *TridentOrchestrator) AttachVolume(
 		nfsMountpoint := path.Join(mountpointDir, publishInfo.NfsPath)
 		loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
 
-		publishInfo.SubvolumeMountOptions = utils.AppendToStringList(publishInfo.SubvolumeMountOptions, "loop", ",")
-
 		// TODO: Check if Docker can do raw block volumes, if not, then remove this part
 		isRawBlock := publishInfo.FilesystemType == "nfs/"+config.FsRaw
 		if isRawBlock {
@@ -3930,43 +3929,9 @@ func (o *TridentOrchestrator) resizeVolumeCleanup(
 
 // getProtocol returns the appropriate protocol based on a specified volume mode, access mode and protocol, or
 // an error if the two settings are incompatible.
-//
-// The below truth table depicts these combinations:
-//
-//  VolumeMode/AccessType   AccessMode    Protocol                      Result Protocol
-//  Filesystem              Any           Any                           Any
-//  Filesystem              Any           NFS                           NFS
-//  Filesystem              Any           iSCSI                         iSCSI
-//  Filesystem              Any           NFSBlock                      NFSBlock
-//  Filesystem              RWO           Any                           Any
-//  Filesystem              RWO           NFS                           NFS
-//  Filesystem              RWO           iSCSI                         iSCSI
-//  Filesystem              RWO           NFSBlock                      NFSBlock
-//  Filesystem              ROX           Any                           **NFS**
-//  Filesystem              ROX           NFS                           NFS
-//  Filesystem              ROX           iSCSI                         **Error**
-//  Filesystem              ROX           NFSBlock                      **Error**
-//  Filesystem              RWX           Any                           **NFS**
-//  Filesystem              RWX           NFS                           NFS
-//  Filesystem              RWX           iSCSI                         **Error**
-//  Filesystem              RWX           NFSBlock                      **Error**
-//  RawBlock                Any           Any                           **iSCSI**
-//  RawBlock                Any           NFS                           **Error**
-//  RawBlock                Any           iSCSI                         iSCSI
-//  RawBlock                Any           NFSBlock                      **Error**
-//  RawBlock                RWO           Any                           **iSCSI**
-//  RawBlock                RWO           NFS                           **Error**
-//  RawBlock                RWO           iSCSI                         iSCSI
-//  RawBlock                RWO           NFSBlock                      **Error**
-//  RawBlock                ROX           Any                           **iSCSI**
-//  RawBlock                ROX           NFS                           **Error**
-//  RawBlock                ROX           iSCSI                         iSCSI
-//  RawBlock                ROX           NFSBlock                      **Error**
-//  RawBlock                RWX           Any                           **iSCSI**
-//  RawBlock                RWX           NFS                           **Error**
-//  RawBlock                RWX           iSCSI                         iSCSI
-//  RawBlock                RWX           NFSBlock                      **Error**
-//
+// NOTE: 1. DO NOT ALLOW ROX and RWX for block on file
+// 2. 'BlockOnFile' protocol set via the PVC annotation with multi-node access mode
+// 3. We do not support raw block volumes with block on file or NFS protocol.
 func (o *TridentOrchestrator) getProtocol(
 	ctx context.Context, volumeMode config.VolumeMode, accessMode config.AccessMode, protocol config.Protocol,
 ) (config.Protocol, error) {
@@ -3985,55 +3950,68 @@ func (o *TridentOrchestrator) getProtocol(
 		"err":            err,
 	}).Debug("Orchestrator#getProtocol")
 
-	// ROX and RWX (multi-node access) has certain limitations
-	// DO NOT ALLOW:
-	// 1. Protocol: Block,          Volume Mode: filesystem                 Result: Error
-	// 2. Protocol: BlockOnFile,    Volume Mode: raw block, filesystem      Result: Error
-	// NOTE: 'BlockOnFile' protocol set via the PVC annotation with multi-node access mode
-	//
-	// ENSURE:
-	// 1. Protocol: Any,            Volume Mode: filesystem                 Result: Protocol - File
-	if accessMode == config.ReadOnlyMany || accessMode == config.ReadWriteMany {
-		if protocol == config.BlockOnFile {
-			resultProtocol = config.ProtocolAny
-			err = fmt.Errorf("incompatible access mode (%s) and protocol (%s)", accessMode, protocol)
-		} else if protocol == config.Block && volumeMode == config.Filesystem {
-			resultProtocol = config.ProtocolAny
-			err = fmt.Errorf("incompatible volume mode (%s), access mode (%s) and protocol (%s)",
-				volumeMode, accessMode, protocol)
-		} else if protocol == config.ProtocolAny && volumeMode == config.Filesystem {
-			resultProtocol = config.File
-		}
+	type accessVariables struct {
+		volumeMode config.VolumeMode
+		accessMode config.AccessMode
+		protocol   config.Protocol
+	}
+	type protocolResult struct {
+		protocol config.Protocol
+		err      error
 	}
 
-	if err != nil {
-		return resultProtocol, err
+	err = fmt.Errorf("incompatible volume mode (%s), access mode (%s) and protocol (%s)", volumeMode, accessMode, protocol)
+
+	var protocolTable = map[accessVariables]protocolResult{
+
+		{cfg.Filesystem, cfg.ModeAny, cfg.ProtocolAny}: {cfg.ProtocolAny, nil},
+		{cfg.Filesystem, cfg.ModeAny, cfg.File}:        {cfg.File, nil},
+		{cfg.Filesystem, cfg.ModeAny, cfg.Block}:       {cfg.Block, nil},
+		{cfg.Filesystem, cfg.ModeAny, cfg.BlockOnFile}: {cfg.BlockOnFile, nil},
+
+		{cfg.Filesystem, cfg.ReadWriteOnce, cfg.ProtocolAny}: {cfg.ProtocolAny, nil},
+		{cfg.Filesystem, cfg.ReadWriteOnce, cfg.File}:        {cfg.File, nil},
+		{cfg.Filesystem, cfg.ReadWriteOnce, cfg.Block}:       {cfg.Block, nil},
+		{cfg.Filesystem, cfg.ReadWriteOnce, cfg.BlockOnFile}: {cfg.BlockOnFile, nil},
+
+		{cfg.Filesystem, cfg.ReadOnlyMany, cfg.ProtocolAny}: {cfg.ProtocolAny, nil},
+		{cfg.Filesystem, cfg.ReadOnlyMany, cfg.File}:        {cfg.File, nil},
+		{cfg.Filesystem, cfg.ReadOnlyMany, cfg.Block}:       {cfg.Block, nil},
+		{cfg.Filesystem, cfg.ReadOnlyMany, cfg.BlockOnFile}: {cfg.ProtocolAny, err},
+
+		{cfg.Filesystem, cfg.ReadWriteMany, cfg.ProtocolAny}: {cfg.File, nil},
+		{cfg.Filesystem, cfg.ReadWriteMany, cfg.File}:        {cfg.File, nil},
+		{cfg.Filesystem, cfg.ReadWriteMany, cfg.Block}:       {cfg.ProtocolAny, err},
+		{cfg.Filesystem, cfg.ReadWriteMany, cfg.BlockOnFile}: {cfg.ProtocolAny, err},
+
+		{cfg.RawBlock, cfg.ModeAny, cfg.ProtocolAny}: {cfg.Block, nil},
+		{cfg.RawBlock, cfg.ModeAny, cfg.File}:        {cfg.ProtocolAny, err},
+		{cfg.RawBlock, cfg.ModeAny, cfg.Block}:       {cfg.Block, nil},
+		{cfg.RawBlock, cfg.ModeAny, cfg.BlockOnFile}: {cfg.ProtocolAny, err},
+
+		{cfg.RawBlock, cfg.ReadWriteOnce, cfg.ProtocolAny}: {cfg.Block, nil},
+		{cfg.RawBlock, cfg.ReadWriteOnce, cfg.File}:        {cfg.ProtocolAny, err},
+		{cfg.RawBlock, cfg.ReadWriteOnce, cfg.Block}:       {cfg.Block, nil},
+		{cfg.RawBlock, cfg.ReadWriteOnce, cfg.BlockOnFile}: {cfg.ProtocolAny, err},
+
+		{cfg.RawBlock, cfg.ReadOnlyMany, cfg.ProtocolAny}: {cfg.Block, nil},
+		{cfg.RawBlock, cfg.ReadOnlyMany, cfg.File}:        {cfg.ProtocolAny, err},
+		{cfg.RawBlock, cfg.ReadOnlyMany, cfg.Block}:       {cfg.Block, nil},
+		{cfg.RawBlock, cfg.ReadOnlyMany, cfg.BlockOnFile}: {cfg.ProtocolAny, err},
+
+		{cfg.RawBlock, cfg.ReadWriteMany, cfg.ProtocolAny}: {cfg.Block, nil},
+		{cfg.RawBlock, cfg.ReadWriteMany, cfg.File}:        {cfg.ProtocolAny, err},
+		{cfg.RawBlock, cfg.ReadWriteMany, cfg.Block}:       {cfg.Block, nil},
+		{cfg.RawBlock, cfg.ReadWriteMany, cfg.BlockOnFile}: {cfg.ProtocolAny, err},
 	}
 
-	// For Raw block volume, supported config:
-	// 1. Protocol File       :  -
-	// 2. Protocol Any        :  RWO, ROX, RWX (Result protocol is Block)
-	// 3. Protocol Block      :  RWO, ROX, RWX
-	// 4. Protocol BlockOnFile:  -
-	//
-	// For Filesystem volume, supported config:
-	// 1. Protocol File       :  RWO, ROX, RWX
-	// 2. Protocol Any        :  RWO, ROX, RWX (Result protocol is File)
-	// 3. Protocol Block      :  RWO
-	// 4. Protocol BlockOnFile:  RWO
-	if volumeMode == config.RawBlock {
-		// In `Block` volume-mode, Protocol: file (NFS) is unsupported i.e. we do not support raw block volumes
-		// with NFS protocol.
-		// AddRawBlockSupportOnBoF: Remove config.BlockOnFile from below if-else to support raw block on BlockOnFile
-		if protocol == config.File || protocol == config.BlockOnFile {
-			resultProtocol = config.ProtocolAny
-			err = fmt.Errorf("incompatible volume mode (%s) and protocol (%s)", volumeMode, protocol)
-		} else if protocol == config.ProtocolAny {
-			resultProtocol = config.Block
-		}
+	res, isValid := protocolTable[accessVariables{volumeMode, accessMode, protocol}]
+
+	if !isValid {
+		return cfg.ProtocolAny, fmt.Errorf("invalid volume mode (%s), access mode (%s) or protocol (%s)", volumeMode, accessMode, protocol)
 	}
 
-	return resultProtocol, err
+	return res.protocol, res.err
 }
 
 func (o *TridentOrchestrator) AddStorageClass(
