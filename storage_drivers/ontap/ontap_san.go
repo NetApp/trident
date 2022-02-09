@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -158,7 +158,8 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
 	}
 
-	if err := validateReplicationConfig(ctx, d.Config.ReplicationPolicy, d.Config.ReplicationSchedule, d.API); err != nil {
+	if err := validateReplicationConfig(ctx, d.Config.ReplicationPolicy, d.Config.ReplicationSchedule,
+		d.API); err != nil {
 		return fmt.Errorf("replication validation failed: %v", err)
 	}
 
@@ -1285,7 +1286,7 @@ func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*uti
 
 // String makes SANStorageDriver satisfy the Stringer interface.
 func (d SANStorageDriver) String() string {
-	return drivers.ToString(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return utils.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes SANStorageDriver satisfy the GoStringer interface.
@@ -1326,4 +1327,14 @@ func (d *SANStorageDriver) GetMirrorStatus(
 	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
 ) (string, error) {
 	return getMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle, d.API)
+}
+
+func (d *SANStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*utils.IscsiChapInfo, error) {
+	return &utils.IscsiChapInfo{
+		UseCHAP:              d.Config.UseCHAP,
+		IscsiUsername:        d.Config.ChapUsername,
+		IscsiInitiatorSecret: d.Config.ChapInitiatorSecret,
+		IscsiTargetUsername:  d.Config.ChapTargetUsername,
+		IscsiTargetSecret:    d.Config.ChapTargetInitiatorSecret,
+	}, nil
 }

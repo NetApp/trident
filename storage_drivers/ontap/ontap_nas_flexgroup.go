@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 package ontap
 
 import (
@@ -1514,7 +1514,7 @@ func (d *NASFlexGroupStorageDriver) ReconcileNodeAccess(
 
 // String makes NASFlexGroupStorageDriver satisfy the Stringer interface.
 func (d NASFlexGroupStorageDriver) String() string {
-	return drivers.ToString(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return utils.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes NASFlexGroupStorageDriver satisfy the GoStringer interface.

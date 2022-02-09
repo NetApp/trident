@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -2682,7 +2682,7 @@ func (o *TridentOrchestrator) importVolumeCleanup(
 }
 
 func (o *TridentOrchestrator) GetVolume(
-	_ context.Context, volume string,
+	ctx context.Context, volume string,
 ) (volExternal *storage.VolumeExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
@@ -2693,6 +2693,12 @@ func (o *TridentOrchestrator) GetVolume(
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
+	return o.getVolume(ctx, volume)
+}
+
+func (o *TridentOrchestrator) getVolume(
+	_ context.Context, volume string,
+) (volExternal *storage.VolumeExternal, err error) {
 	vol, found := o.volumes[volume]
 	if !found {
 		return nil, utils.NotFoundError(fmt.Sprintf("volume %v was not found", volume))
@@ -4586,4 +4592,29 @@ func (o *TridentOrchestrator) CanBackendMirror(_ context.Context, backendUUID st
 		return false, err
 	}
 	return backend.CanMirror(), nil
+}
+
+func (o *TridentOrchestrator) GetCHAP(
+	ctx context.Context, volumeName, nodeName string,
+) (chapInfo *utils.IscsiChapInfo, err error) {
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("get_chap", &err)()
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	volume, err := o.getVolume(ctx, volumeName)
+	if err != nil {
+		return nil, err
+	}
+
+	backend, err := o.getBackendByBackendUUID(volume.BackendUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	return backend.GetChapInfo(ctx, volumeName, nodeName)
 }

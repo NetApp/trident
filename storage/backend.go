@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -1204,4 +1204,13 @@ func (b *StorageBackend) GetMirrorStatus(
 func (b *StorageBackend) CanMirror() bool {
 	_, ok := b.driver.(Mirrorer)
 	return ok
+}
+
+func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error) {
+	chapEnabledDriver, ok := b.driver.(ChapEnabled)
+	if !ok {
+		return nil, utils.UnsupportedError(fmt.Sprintf(
+			"retrieving chap credentials is not supported on backends of type %v", b.driver.Name()))
+	}
+	return chapEnabledDriver.GetChapInfo(ctx, volumeName, nodeName)
 }

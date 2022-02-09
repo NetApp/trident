@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package solidfire
 
@@ -1778,12 +1778,12 @@ func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	if strings.Contains(cloneConfig.EndPoint, "@") {
 		endpointHalves := strings.Split(cloneConfig.EndPoint, "@")
 		if len(endpointHalves) > 0 {
-			cloneConfig.EndPoint = fmt.Sprintf("https://%s@%s", drivers.REDACTED, endpointHalves[1])
+			cloneConfig.EndPoint = fmt.Sprintf("https://%s@%s", utils.REDACTED, endpointHalves[1])
 		}
 	}
 
 	// redact the credentials
-	cloneConfig.Credentials = map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED}
+	cloneConfig.Credentials = map[string]string{drivers.KeyName: utils.REDACTED, drivers.KeyType: utils.REDACTED}
 
 	return cloneConfig
 }
@@ -1849,7 +1849,7 @@ func (d *SANStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
 
 // String implements stringer interface for the SANStorageDriver driver
 func (d SANStorageDriver) String() string {
-	return drivers.ToString(&d, []string{"Client", "AccountID"}, d.GetExternalConfig(context.Background()))
+	return utils.ToStringRedacted(&d, []string{"Client", "AccountID"}, d.GetExternalConfig(context.Background()))
 }
 
 // GoString implements GoStringer interface for the SANStorageDriver driver

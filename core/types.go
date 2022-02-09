@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -103,6 +103,8 @@ type Orchestrator interface {
 	) (bool, error)
 	GetMirrorStatus(ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string) (string, error)
 	CanBackendMirror(ctx context.Context, backendUUID string) (bool, error)
+
+	GetCHAP(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
 }
 
 type VolumeCallback func(*storage.VolumeExternal, string) error

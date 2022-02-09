@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package eseries
 
@@ -1243,12 +1243,12 @@ func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.ESeriesStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
-	cloneConfig.Username = drivers.REDACTED      // redact the username
-	cloneConfig.Password = drivers.REDACTED      // redact the password
-	cloneConfig.PasswordArray = drivers.REDACTED // redact the password
+	cloneConfig.Username = utils.REDACTED      // redact the username
+	cloneConfig.Password = utils.REDACTED      // redact the password
+	cloneConfig.PasswordArray = utils.REDACTED // redact the password
 	cloneConfig.Credentials = map[string]string{
-		drivers.KeyName: drivers.REDACTED,
-		drivers.KeyType: drivers.REDACTED,
+		drivers.KeyName: utils.REDACTED,
+		drivers.KeyType: utils.REDACTED,
 	} // redact the credentials
 	return cloneConfig
 }
@@ -1307,7 +1307,7 @@ func (d *SANStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
 // String implements stringer interface for the E-Series driver
 func (d SANStorageDriver) String() string {
 	// Cannot use GetExternalConfig as it contains log statements
-	return drivers.ToString(&d, []string{"API"}, nil)
+	return utils.ToStringRedacted(&d, []string{"API"}, nil)
 }
 
 // GoString implements GoStringer interface for the E-Series driver

@@ -382,6 +382,21 @@ func (mr *MockOrchestratorMockRecorder) GetBackendByBackendUUID(arg0, arg1 inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackendByBackendUUID", reflect.TypeOf((*MockOrchestrator)(nil).GetBackendByBackendUUID), arg0, arg1)
 }
 
+// GetCHAP mocks base method.
+func (m *MockOrchestrator) GetCHAP(arg0 context.Context, arg1, arg2 string) (*utils.IscsiChapInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCHAP", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*utils.IscsiChapInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCHAP indicates an expected call of GetCHAP.
+func (mr *MockOrchestratorMockRecorder) GetCHAP(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCHAP", reflect.TypeOf((*MockOrchestrator)(nil).GetCHAP), arg0, arg1, arg2)
+}
+
 // GetDriverTypeForVolume mocks base method.
 func (m *MockOrchestrator) GetDriverTypeForVolume(arg0 context.Context, arg1 *storage.VolumeExternal) (string, error) {
 	m.ctrl.T.Helper()

@@ -1,11 +1,10 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package storagedrivers
 
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -89,7 +88,7 @@ type CommonStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the CommonStorageDriverConfig driver
 func (d CommonStorageDriverConfig) String() string {
-	return ToString(&d, []string{"Credentials"}, nil)
+	return utils.ToStringRedacted(&d, []string{"Credentials"}, nil)
 }
 
 // GetCredentials function returns secret name and type  (if set), otherwise empty strings
@@ -122,10 +121,10 @@ type ESeriesStorageDriverConfig struct {
 	// Array Info
 	ControllerA   string `json:"controllerA"`
 	ControllerB   string `json:"controllerB"`
-	PasswordArray string `json:"passwordArray"` //optional
+	PasswordArray string `json:"passwordArray"` // optional
 
 	// Options
-	PoolNameSearchPattern string `json:"poolNameSearchPattern"` //optional
+	PoolNameSearchPattern string `json:"poolNameSearchPattern"` // optional
 
 	// Host Networking
 	HostDataIPDeprecated string `json:"hostData_IP,omitempty"` // for backward compatibility only
@@ -151,7 +150,7 @@ type EseriesStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the E-Series driver
 func (d ESeriesStorageDriverConfig) String() string {
-	return ToString(&d, []string{"Password", "PasswordArray", "Username"}, nil)
+	return utils.ToStringRedacted(&d, []string{"Password", "PasswordArray", "Username"}, nil)
 }
 
 // Implement GoStringer interface for the ESeriesStorageDriverConfig driver
@@ -261,7 +260,7 @@ type OntapStorageDriverConfig struct {
 
 // String makes OntapStorageDriverConfig satisfy the Stringer interface.
 func (d OntapStorageDriverConfig) String() string {
-	return ToString(&d, GetOntapConfigRedactList(), nil)
+	return utils.ToStringRedacted(&d, GetOntapConfigRedactList(), nil)
 }
 
 // GoString makes OntapStorageDriverConfig satisfy the GoStringer interface.
@@ -404,12 +403,12 @@ type SolidfireStorageDriverConfig struct {
 	TenantName                 string
 	EndPoint                   string
 	SVIP                       string
-	InitiatorIFace             string //iface to use of iSCSI initiator
+	InitiatorIFace             string // iface to use of iSCSI initiator
 	Types                      *[]sfapi.VolType
-	LegacyNamePrefix           string //name prefix used in earlier ndvp versions
+	LegacyNamePrefix           string // name prefix used in earlier ndvp versions
 	AccessGroups               []int64
 	UseCHAP                    bool
-	DefaultBlockSize           int64 //blocksize to use on create when not specified  (512|4096, 512 is default)
+	DefaultBlockSize           int64 // blocksize to use on create when not specified  (512|4096, 512 is default)
 
 	SolidfireStorageDriverPool
 	Storage []SolidfireStorageDriverPool `json:"storage"`
@@ -430,7 +429,7 @@ type SolidfireStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the Solidfire driver
 func (d SolidfireStorageDriverConfig) String() string {
-	return ToString(&d, []string{"TenantName", "EndPoint"}, nil)
+	return utils.ToStringRedacted(&d, []string{"TenantName", "EndPoint"}, nil)
 }
 
 // Implement GoStringer interface for the SolidfireStorageDriverConfig driver
@@ -524,7 +523,7 @@ type AWSNFSStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the AWSNFSStorageDriverConfig driver
 func (d AWSNFSStorageDriverConfig) String() string {
-	return ToString(&d, []string{"APIURL", "APIKey", "SecretKey"}, nil)
+	return utils.ToStringRedacted(&d, []string{"APIURL", "APIKey", "SecretKey"}, nil)
 }
 
 // Implement GoStringer interface for the AWSNFSStorageDriverConfig driver
@@ -632,7 +631,7 @@ type AzureNFSStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the AzureNFSStorageDriverConfig driver
 func (d AzureNFSStorageDriverConfig) String() string {
-	return ToString(&d, []string{"SubscriptionID", "TenantID", "ClientID", "ClientSecret"}, nil)
+	return utils.ToStringRedacted(&d, []string{"SubscriptionID", "TenantID", "ClientID", "ClientSecret"}, nil)
 }
 
 // Implement GoStringer interface for the AzureNFSStorageDriverConfig driver
@@ -749,7 +748,7 @@ type GCPPrivateKey struct {
 
 // Implement stringer interface for the GCPNFSStorageDriverConfig driver
 func (d GCPNFSStorageDriverConfig) String() string {
-	return ToString(&d, []string{"ProjectNumber", "HostProjectNumber", "APIKey"}, nil)
+	return utils.ToStringRedacted(&d, []string{"ProjectNumber", "HostProjectNumber", "APIKey"}, nil)
 }
 
 // Implement GoStringer interface for the GCPNFSStorageDriverConfig driver
@@ -852,7 +851,7 @@ type AstraDSStorageDriverConfigDefaults struct {
 
 // Implement stringer interface for the GCPNFSStorageDriverConfig driver
 func (d AstraDSStorageDriverConfig) String() string {
-	return ToString(&d, []string{"Kubeconfig"}, nil)
+	return utils.ToStringRedacted(&d, []string{"Kubeconfig"}, nil)
 }
 
 // GoString implements the GoStringer interface for the AstraDS driver config
@@ -929,7 +928,7 @@ type FakeStorageDriverConfig struct {
 
 // Implement Stringer interface for the FakeStorageDriverConfig driver
 func (d FakeStorageDriverConfig) String() string {
-	return ToString(&d, []string{"Username", "Password"}, nil)
+	return utils.ToStringRedacted(&d, []string{"Username", "Password"}, nil)
 }
 
 // Implement GoStringer interface for the FakeStorageDriverConfig driver
@@ -1053,37 +1052,6 @@ func IsVolumeExistsError(err error) bool {
 	}
 	_, ok := err.(*VolumeExistsError)
 	return ok
-}
-
-// ToString identifies attributes of a struct, stringifies them such that they can be consumed by the
-// struct's stringer interface, and redacts elements specified in the redactList.
-func ToString(structPointer interface{}, redactList []string, configVal interface{}) (out string) {
-
-	defer func() {
-		if r := recover(); r != nil {
-			log.Errorf("Panic in types#ToString; err: %v", r)
-			out = "<panic>"
-		}
-	}()
-
-	elements := reflect.ValueOf(structPointer).Elem()
-
-	var output strings.Builder
-
-	for i := 0; i < elements.NumField(); i++ {
-		fieldName := elements.Type().Field(i).Name
-		switch {
-		case fieldName == "Config" && configVal != nil:
-			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, configVal))
-		case utils.SliceContainsString(redactList, fieldName):
-			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, REDACTED))
-		default:
-			output.WriteString(fmt.Sprintf("%v:%#v ", fieldName, elements.Field(i)))
-		}
-	}
-
-	out = output.String()
-	return
 }
 
 func injectionError(fieldName string) error {

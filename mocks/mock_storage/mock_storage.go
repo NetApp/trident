@@ -208,6 +208,21 @@ func (mr *MockBackendMockRecorder) Driver() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Driver", reflect.TypeOf((*MockBackend)(nil).Driver))
 }
 
+// GetChapInfo mocks base method.
+func (m *MockBackend) GetChapInfo(arg0 context.Context, arg1, arg2 string) (*utils.IscsiChapInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetChapInfo", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*utils.IscsiChapInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetChapInfo indicates an expected call of GetChapInfo.
+func (mr *MockBackendMockRecorder) GetChapInfo(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChapInfo", reflect.TypeOf((*MockBackend)(nil).GetChapInfo), arg0, arg1, arg2)
+}
+
 // GetDebugTraceFlags mocks base method.
 func (m *MockBackend) GetDebugTraceFlags(arg0 context.Context) map[string]bool {
 	m.ctrl.T.Helper()

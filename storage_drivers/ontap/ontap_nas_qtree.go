@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -1831,7 +1831,7 @@ func (d *NASQtreeStorageDriver) ReconcileNodeAccess(
 
 // String makes NASQtreeStorageDriver satisfy the Stringer interface.
 func (d NASQtreeStorageDriver) String() string {
-	return drivers.ToString(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return utils.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes NASQtreeStorageDriver satisfy the GoStringer interface.

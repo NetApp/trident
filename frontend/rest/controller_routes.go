@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package rest
 
@@ -180,5 +180,11 @@ var controllerRoutes = Routes{
 		"DELETE",
 		config.SnapshotURL + "/{volume}/{snapshot}",
 		DeleteSnapshot,
+	},
+	Route{
+		"GetCHAP",
+		"GET",
+		config.ChapURL + "/{volume}/{node}",
+		GetCHAP,
 	},
 }

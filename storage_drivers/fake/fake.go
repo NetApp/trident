@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package fake
 
@@ -78,7 +78,7 @@ type StorageDriver struct {
 
 // String implements Stringer interface for the FakeStorageDriver driver
 func (d StorageDriver) String() string {
-	return drivers.ToString(&d, []string{"Secret"}, nil)
+	return utils.ToStringRedacted(&d, []string{"Secret"}, nil)
 }
 
 // GoString implements GoStringer interface for the FakeStorageDriver driver

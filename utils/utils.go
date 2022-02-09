@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -41,6 +42,8 @@ const (
 	Centos = "centos"
 	RHEL   = "rhel"
 	Ubuntu = "ubuntu"
+
+	REDACTED = "<REDACTED>"
 )
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -677,4 +680,35 @@ func ValidateOctalUnixPermissions(perms string) error {
 
 func GenerateVolumePublishName(volumeID, nodeID string) string {
 	return fmt.Sprintf(volumeID + "." + nodeID)
+}
+
+// ToStringRedacted identifies attributes of a struct, stringifies them such that they can be consumed by the
+// struct's stringer interface, and redacts elements specified in the redactList.
+func ToStringRedacted(structPointer interface{}, redactList []string, configVal interface{}) (out string) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Panic in utils#ToStringRedacted; err: %v", r)
+			out = "<panic>"
+		}
+	}()
+
+	elements := reflect.ValueOf(structPointer).Elem()
+
+	var output strings.Builder
+
+	for i := 0; i < elements.NumField(); i++ {
+		fieldName := elements.Type().Field(i).Name
+		switch {
+		case fieldName == "Config" && configVal != nil:
+			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, configVal))
+		case SliceContainsString(redactList, fieldName):
+			output.WriteString(fmt.Sprintf("%v:%v ", fieldName, REDACTED))
+		default:
+			output.WriteString(fmt.Sprintf("%v:%#v ", fieldName, elements.Field(i)))
+		}
+	}
+
+	out = output.String()
+	return
 }

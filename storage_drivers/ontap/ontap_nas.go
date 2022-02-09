@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -159,7 +159,8 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
 	}
 
-	if err := validateReplicationConfig(ctx, d.Config.ReplicationPolicy, d.Config.ReplicationSchedule, d.API); err != nil {
+	if err := validateReplicationConfig(ctx, d.Config.ReplicationPolicy, d.Config.ReplicationSchedule,
+		d.API); err != nil {
 		return fmt.Errorf("replication validation failed: %v", err)
 	}
 
@@ -369,7 +370,9 @@ func (d *NASStorageDriver) Create(
 		// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 		if !enableSnapshotDir {
 			if err := d.API.VolumeDisableSnapshotDirectoryAccess(ctx, name); err != nil {
-				createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v", storagePool.Name(), name, err))
+				createErrors = append(createErrors,
+					fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v",
+						storagePool.Name(), name, err))
 				return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 			}
 		}
@@ -657,7 +660,8 @@ func (d *NASStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotCon
 // and a non-existent snapshot, this method may return (nil, nil).
 func getFlexvolSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client api.OntapAPI) (*storage.Snapshot, error) {
+	client api.OntapAPI,
+) (*storage.Snapshot, error) {
 
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -1026,8 +1030,10 @@ func (d *NASStorageDriver) GetVolumeExternalWrappers(
 
 	// Convert all volumes to VolumeExternal and write them to the channel
 	for _, volume := range volumes {
-		channel <- &storage.VolumeExternalWrapper{Volume: getVolumeExternalCommon(*volume, *d.Config.StoragePrefix,
-			d.Config.SVM), Error: nil}
+		channel <- &storage.VolumeExternalWrapper{
+			Volume: getVolumeExternalCommon(*volume, *d.Config.StoragePrefix,
+				d.Config.SVM), Error: nil,
+		}
 	}
 }
 
@@ -1152,7 +1158,7 @@ func (d *NASStorageDriver) ReconcileNodeAccess(
 
 // String makes NASStorageDriver satisfy the Stringer interface.
 func (d NASStorageDriver) String() string {
-	return drivers.ToString(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return utils.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes NASStorageDriver satisfy the GoStringer interface.

@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package storagedrivers
 
@@ -48,8 +48,6 @@ const TridentLabelTag = "trident"
 
 // Topology label names
 const TopologyLabelPrefix = "topology.kubernetes.io"
-
-const REDACTED = "<REDACTED>"
 
 // Backend Credentials specific
 type CredentialStore string

@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -8,19 +8,29 @@ type VolumeAccessInfo struct {
 	MountOptions string `json:"mountOptions,omitempty"`
 }
 
+type IscsiChapInfo struct {
+	UseCHAP              bool   `json:"useCHAP"`
+	IscsiUsername        string `json:"iscsiUsername,omitempty"`
+	IscsiInitiatorSecret string `json:"iscsiInitiatorSecret,omitempty"`
+	IscsiTargetUsername  string `json:"iscsiTargetUsername,omitempty"`
+	IscsiTargetSecret    string `json:"iscsiTargetSecret,omitempty"`
+}
+
+// String implements the stringer interface and ensures that sensitive fields are redacted before being logged/printed
+func (i IscsiChapInfo) String() string {
+	return ToStringRedacted(&i, []string{"Username", "Secret"}, nil)
+}
+
 type IscsiAccessInfo struct {
-	IscsiTargetPortal    string   `json:"iscsiTargetPortal,omitempty"`
-	IscsiPortals         []string `json:"iscsiPortals,omitempty"`
-	IscsiTargetIQN       string   `json:"iscsiTargetIqn,omitempty"`
-	IscsiLunNumber       int32    `json:"iscsiLunNumber,omitempty"`
-	IscsiInterface       string   `json:"iscsiInterface,omitempty"`
-	IscsiIgroup          string   `json:"iscsiIgroup,omitempty"`
-	IscsiVAGs            []int64  `json:"iscsiVags,omitempty"`
-	IscsiUsername        string   `json:"iscsiUsername,omitempty"`
-	IscsiInitiatorSecret string   `json:"iscsiInitiatorSecret,omitempty"`
-	IscsiTargetUsername  string   `json:"iscsiTargetUsername,omitempty"`
-	IscsiTargetSecret    string   `json:"iscsiTargetSecret,omitempty"`
-	IscsiLunSerial       string   `json:"iscsiLunSerial,omitempty"`
+	IscsiTargetPortal string   `json:"iscsiTargetPortal,omitempty"`
+	IscsiPortals      []string `json:"iscsiPortals,omitempty"`
+	IscsiTargetIQN    string   `json:"iscsiTargetIqn,omitempty"`
+	IscsiLunNumber    int32    `json:"iscsiLunNumber,omitempty"`
+	IscsiInterface    string   `json:"iscsiInterface,omitempty"`
+	IscsiIgroup       string   `json:"iscsiIgroup,omitempty"`
+	IscsiVAGs         []int64  `json:"iscsiVags,omitempty"`
+	IscsiLunSerial    string   `json:"iscsiLunSerial,omitempty"`
+	IscsiChapInfo
 }
 
 type NfsAccessInfo struct {
@@ -36,7 +46,6 @@ type VolumePublishInfo struct {
 	Nodes          []*Node  `json:"nodes,omitempty"`
 	HostName       string   `json:"hostName,omitempty"`
 	FilesystemType string   `json:"fstype,omitempty"`
-	UseCHAP        bool     `json:"useCHAP,omitempty"`
 	SharedTarget   bool     `json:"sharedTarget,omitempty"`
 	DevicePath     string   `json:"devicePath,omitempty"`
 	Unmanaged      bool     `json:"unmanaged,omitempty"`

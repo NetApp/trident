@@ -172,6 +172,7 @@ var (
 	StorageClassURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"
 	NodeURL         = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/node"
 	SnapshotURL     = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/snapshot"
+	ChapURL         = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/chap"
 	StoreURL        = "/" + OrchestratorName + "/store"
 
 	UsingPassthroughStore bool

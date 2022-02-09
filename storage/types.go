@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -68,6 +68,11 @@ type Backend interface {
 	ConstructExternal(ctx context.Context) *BackendExternal
 	ConstructPersistent(ctx context.Context) *BackendPersistent
 	CanMirror() bool
+	ChapEnabled
+}
+
+type ChapEnabled interface {
+	GetChapInfo(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
 }
 
 type Pool interface {

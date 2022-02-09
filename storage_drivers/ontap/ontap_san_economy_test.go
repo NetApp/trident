@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+
+	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 
 	log "github.com/sirupsen/logrus"
@@ -498,5 +500,93 @@ func TestOntapSanEconomyTerminate(t *testing.T) {
 			assert.NotContains(t, api.FakeIgroups, api.FakeIgroups[driverInfo.igroupName])
 		}
 
+	}
+}
+
+func TestEconomyGetChapInfo(t *testing.T) {
+	type fields struct {
+		initialized   bool
+		Config        drivers.OntapStorageDriverConfig
+		ips           []string
+		physicalPools map[string]storage.Pool
+		virtualPools  map[string]storage.Pool
+	}
+	type args struct {
+		in0 context.Context
+		in1 string
+		in2 string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   *utils.IscsiChapInfo
+	}{
+		{
+			name: "driverInitialized", fields: fields{
+				initialized: true,
+				Config: drivers.OntapStorageDriverConfig{
+					UseCHAP:                   true,
+					ChapUsername:              "foo",
+					ChapInitiatorSecret:       "bar",
+					ChapTargetUsername:        "baz",
+					ChapTargetInitiatorSecret: "biz",
+				},
+				ips:           nil,
+				physicalPools: nil,
+				virtualPools:  nil,
+			}, args: args{
+				in0: nil,
+				in1: "volume",
+				in2: "node",
+			}, want: &utils.IscsiChapInfo{
+				UseCHAP:              true,
+				IscsiUsername:        "foo",
+				IscsiInitiatorSecret: "bar",
+				IscsiTargetUsername:  "baz",
+				IscsiTargetSecret:    "biz",
+			},
+		},
+		{
+			name: "driverUninitialized", fields: fields{
+				initialized: false,
+				Config: drivers.OntapStorageDriverConfig{
+					UseCHAP:                   true,
+					ChapUsername:              "biz",
+					ChapInitiatorSecret:       "baz",
+					ChapTargetUsername:        "bar",
+					ChapTargetInitiatorSecret: "foo",
+				},
+				ips:           nil,
+				physicalPools: nil,
+				virtualPools:  nil,
+			}, args: args{
+				in0: nil,
+				in1: "volume",
+				in2: "node",
+			}, want: &utils.IscsiChapInfo{
+				UseCHAP:              true,
+				IscsiUsername:        "biz",
+				IscsiInitiatorSecret: "baz",
+				IscsiTargetUsername:  "bar",
+				IscsiTargetSecret:    "foo",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &SANEconomyStorageDriver{
+				initialized:   tt.fields.initialized,
+				Config:        tt.fields.Config,
+				ips:           tt.fields.ips,
+				physicalPools: tt.fields.physicalPools,
+				virtualPools:  tt.fields.virtualPools,
+			}
+			got, err := d.GetChapInfo(tt.args.in0, tt.args.in1, tt.args.in2)
+			if err != nil {
+				t.Errorf("GetChapInfo(%v, %v, %v)", tt.args.in0, tt.args.in1, tt.args.in2)
+			}
+			assert.Equalf(t, tt.want, got, "GetChapInfo(%v, %v, %v)", tt.args.in0, tt.args.in1, tt.args.in2)
+		})
 	}
 }

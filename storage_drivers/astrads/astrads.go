@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package astrads
 
@@ -566,7 +566,8 @@ func (d *StorageDriver) Create(
 		}
 
 		// The creation succeeded, so place a finalizer on the volume
-		if err = d.API.SetVolumeAttributes(ctx, extantVolume, roaring.BitmapOf(api.UpdateFlagAddFinalizer)); err != nil {
+		if err = d.API.SetVolumeAttributes(ctx, extantVolume,
+			roaring.BitmapOf(api.UpdateFlagAddFinalizer)); err != nil {
 			Logc(ctx).WithField("volume", extantVolume.Name).WithError(err).Error("Could not add finalizer to volume.")
 		}
 
@@ -836,7 +837,8 @@ func (d *StorageDriver) CreateClone(
 		}
 
 		// The creation succeeded, so place a finalizer on the volume
-		if err = d.API.SetVolumeAttributes(ctx, extantVolume, roaring.BitmapOf(api.UpdateFlagAddFinalizer)); err != nil {
+		if err = d.API.SetVolumeAttributes(ctx, extantVolume,
+			roaring.BitmapOf(api.UpdateFlagAddFinalizer)); err != nil {
 			Logc(ctx).WithField("volume", extantVolume.Name).WithError(err).Error("Could not add finalizer to volume.")
 		}
 
@@ -1779,7 +1781,8 @@ func (d *StorageDriver) DeleteSnapshot(
 	}
 
 	// Remove finalizer from the snapshot
-	if err = d.API.SetSnapshotAttributes(ctx, extantSnapshot, roaring.BitmapOf(api.UpdateFlagRemoveFinalizer)); err != nil {
+	if err = d.API.SetSnapshotAttributes(ctx, extantSnapshot,
+		roaring.BitmapOf(api.UpdateFlagRemoveFinalizer)); err != nil {
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Could not remove finalizer from snapshot.")
 		return err
 	}
@@ -2048,7 +2051,7 @@ func (d *StorageDriver) GetVolumeExternal(ctx context.Context, name string) (*st
 // String implements the stringer interface for the StorageDriver driver
 func (d StorageDriver) String() string {
 	// Cannot use GetExternalConfig as it contains log statements
-	return drivers.ToString(&d, []string{"API"}, nil)
+	return utils.ToStringRedacted(&d, []string{"API"}, nil)
 }
 
 // GoString implements the GoStringer interface for the StorageDriver driver

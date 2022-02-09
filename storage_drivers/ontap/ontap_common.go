@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -2973,16 +2973,16 @@ func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverCon
 
 	drivers.SanitizeCommonStorageDriverConfig(cloneConfig.CommonStorageDriverConfig)
 
-	cloneConfig.Username = drivers.REDACTED         // redact the username
-	cloneConfig.Password = drivers.REDACTED         // redact the password
-	cloneConfig.ClientPrivateKey = drivers.REDACTED // redact the client private key
-	cloneConfig.ChapInitiatorSecret = drivers.REDACTED
-	cloneConfig.ChapTargetInitiatorSecret = drivers.REDACTED
-	cloneConfig.ChapTargetUsername = drivers.REDACTED
-	cloneConfig.ChapUsername = drivers.REDACTED
+	cloneConfig.Username = utils.REDACTED         // redact the username
+	cloneConfig.Password = utils.REDACTED         // redact the password
+	cloneConfig.ClientPrivateKey = utils.REDACTED // redact the client private key
+	cloneConfig.ChapInitiatorSecret = utils.REDACTED
+	cloneConfig.ChapTargetInitiatorSecret = utils.REDACTED
+	cloneConfig.ChapTargetUsername = utils.REDACTED
+	cloneConfig.ChapUsername = utils.REDACTED
 	cloneConfig.Credentials = map[string]string{
-		drivers.KeyName: drivers.REDACTED,
-		drivers.KeyType: drivers.REDACTED,
+		drivers.KeyName: utils.REDACTED,
+		drivers.KeyType: utils.REDACTED,
 	} // redact the credentials
 	return cloneConfig
 }

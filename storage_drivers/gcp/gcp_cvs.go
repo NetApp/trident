@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package gcp
 
@@ -2139,20 +2139,20 @@ func (d *NFSStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	}
 
 	cloneConfig.APIKey = drivers.GCPPrivateKey{
-		Type:                    drivers.REDACTED,
-		ProjectID:               drivers.REDACTED,
-		PrivateKeyID:            drivers.REDACTED,
-		PrivateKey:              drivers.REDACTED,
-		ClientEmail:             drivers.REDACTED,
-		ClientID:                drivers.REDACTED,
-		AuthURI:                 drivers.REDACTED,
-		TokenURI:                drivers.REDACTED,
-		AuthProviderX509CertURL: drivers.REDACTED,
-		ClientX509CertURL:       drivers.REDACTED,
+		Type:                    utils.REDACTED,
+		ProjectID:               utils.REDACTED,
+		PrivateKeyID:            utils.REDACTED,
+		PrivateKey:              utils.REDACTED,
+		ClientEmail:             utils.REDACTED,
+		ClientID:                utils.REDACTED,
+		AuthURI:                 utils.REDACTED,
+		TokenURI:                utils.REDACTED,
+		AuthProviderX509CertURL: utils.REDACTED,
+		ClientX509CertURL:       utils.REDACTED,
 	}
 	cloneConfig.Credentials = map[string]string{
-		drivers.KeyName: drivers.REDACTED,
-		drivers.KeyType: drivers.REDACTED,
+		drivers.KeyName: utils.REDACTED,
+		drivers.KeyType: utils.REDACTED,
 	} // redact the credentials
 	return cloneConfig
 }
@@ -2174,7 +2174,7 @@ func (d *NFSStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
 // String implements stringer interface for the NFSStorageDriver driver
 func (d NFSStorageDriver) String() string {
 	// Cannot use GetExternalConfig as it contains log statements
-	return drivers.ToString(&d, []string{"API"}, nil)
+	return utils.ToStringRedacted(&d, []string{"API"}, nil)
 }
 
 // GoString implements GoStringer interface for the NFSStorageDriver driver

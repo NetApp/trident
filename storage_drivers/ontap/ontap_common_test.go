@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -25,6 +25,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
+	"github.com/netapp/trident/utils"
 )
 
 const (
@@ -736,7 +737,7 @@ func TestGetExternalConfigRedactSecrets(t *testing.T) {
 	}
 
 	expectedCommonConfig := &drivers.CommonStorageDriverConfig{
-		Credentials:      map[string]string{drivers.KeyName: drivers.REDACTED, drivers.KeyType: drivers.REDACTED},
+		Credentials:      map[string]string{drivers.KeyName: utils.REDACTED, drivers.KeyType: utils.REDACTED},
 		StoragePrefixRaw: json.RawMessage("\"\""),
 		StoragePrefix:    nil,
 	}
@@ -760,13 +761,13 @@ func TestGetExternalConfigRedactSecrets(t *testing.T) {
 				CommonStorageDriverConfig: commonConfig,
 			},
 			externalConfig: drivers.OntapStorageDriverConfig{
-				Username:                  drivers.REDACTED,
-				Password:                  drivers.REDACTED,
-				ClientPrivateKey:          drivers.REDACTED,
-				ChapInitiatorSecret:       drivers.REDACTED,
-				ChapTargetInitiatorSecret: drivers.REDACTED,
-				ChapTargetUsername:        drivers.REDACTED,
-				ChapUsername:              drivers.REDACTED,
+				Username:                  utils.REDACTED,
+				Password:                  utils.REDACTED,
+				ClientPrivateKey:          utils.REDACTED,
+				ChapInitiatorSecret:       utils.REDACTED,
+				ChapTargetInitiatorSecret: utils.REDACTED,
+				ChapTargetUsername:        utils.REDACTED,
+				ChapUsername:              utils.REDACTED,
 				CommonStorageDriverConfig: expectedCommonConfig,
 			},
 			errorMessage: "sensitive information not redacted correctly",
@@ -784,13 +785,13 @@ func TestGetExternalConfigRedactSecrets(t *testing.T) {
 				CommonStorageDriverConfig: commonConfigNoCredentials,
 			},
 			externalConfig: drivers.OntapStorageDriverConfig{
-				Username:                  drivers.REDACTED,
-				Password:                  drivers.REDACTED,
-				ClientPrivateKey:          drivers.REDACTED,
-				ChapInitiatorSecret:       drivers.REDACTED,
-				ChapTargetInitiatorSecret: drivers.REDACTED,
-				ChapTargetUsername:        drivers.REDACTED,
-				ChapUsername:              drivers.REDACTED,
+				Username:                  utils.REDACTED,
+				Password:                  utils.REDACTED,
+				ClientPrivateKey:          utils.REDACTED,
+				ChapInitiatorSecret:       utils.REDACTED,
+				ChapTargetInitiatorSecret: utils.REDACTED,
+				ChapTargetUsername:        utils.REDACTED,
+				ChapUsername:              utils.REDACTED,
 				CommonStorageDriverConfig: expectedCommonConfig,
 			},
 			errorMessage: "sensitive information not redacted correctly",
@@ -904,7 +905,7 @@ func TestEnsureSVMWithRest(t *testing.T) {
 	ontapConfig := newOntapStorageDriverConfig()
 	ontapConfig.SVM = ""
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// negative case:  no SVM set && we CANNOT derive an SVM because of a nil result
 	mockRestClient := newMockRestClient(t)
 	mockRestClient.EXPECT().SvmGetByName(ctx, gomock.Any()).AnyTimes()
@@ -912,7 +913,7 @@ func TestEnsureSVMWithRest(t *testing.T) {
 	err := ontap.EnsureSVMWithRest(ctx, ontapConfig, mockRestClient)
 	assert.Equal(t, "cannot derive SVM to use; please specify SVM in config file; result was nil", err.Error())
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// negative case:  no SVM set && we CANNOT derive an SVM because there are no matching records
 	mockRestClient = newMockRestClient(t)
 	mockRestClient.EXPECT().SvmGetByName(ctx, gomock.Any()).AnyTimes()
@@ -927,7 +928,7 @@ func TestEnsureSVMWithRest(t *testing.T) {
 	err = ontap.EnsureSVMWithRest(ctx, ontapConfig, mockRestClient)
 	assert.Equal(t, "cannot derive SVM to use; please specify SVM in config file", err.Error())
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// positive case:  no SVM set && we CAN derive an SVM
 	svmName := "mySVM"
 	svmUUID := svmName + "U-U-I-D"

@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -2050,7 +2050,7 @@ func (d *SANEconomyStorageDriver) ReconcileNodeAccess(
 
 // String makes SANEconomyStorageDriver satisfy the Stringer interface.
 func (d SANEconomyStorageDriver) String() string {
-	return drivers.ToString(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+	return utils.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes SANEconomyStorageDriver satisfy the GoStringer interface.
@@ -2061,4 +2061,14 @@ func (d SANEconomyStorageDriver) GoString() string {
 // GetCommonConfig returns driver's CommonConfig
 func (d SANEconomyStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
+}
+
+func (d *SANEconomyStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*utils.IscsiChapInfo, error) {
+	return &utils.IscsiChapInfo{
+		UseCHAP:              d.Config.UseCHAP,
+		IscsiUsername:        d.Config.ChapUsername,
+		IscsiInitiatorSecret: d.Config.ChapInitiatorSecret,
+		IscsiTargetUsername:  d.Config.ChapTargetUsername,
+		IscsiTargetSecret:    d.Config.ChapTargetInitiatorSecret,
+	}, nil
 }

@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -921,9 +921,9 @@ func (p *Plugin) nodeStageISCSIVolume(
 	publishInfo := &utils.VolumePublishInfo{
 		Localhost:      true,
 		FilesystemType: fstype,
-		UseCHAP:        useCHAP,
 		SharedTarget:   sharedTarget,
 	}
+	publishInfo.UseCHAP = useCHAP
 
 	err = unstashIscsiTargetPortals(publishInfo, req.PublishContext)
 	if nil != err {

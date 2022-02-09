@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -3838,4 +3838,62 @@ func TestPublishVolumeFailedToUpdatePersistentStore(t *testing.T) {
 		t.Log("Did not get expected error from Publish Volume")
 		t.Fail()
 	}
+}
+
+func TestGetCHAP(t *testing.T) {
+	// Boilerplate mocking code
+	mockCtrl := gomock.NewController(t)
+
+	// Set fake values
+	backendUUID := "1234"
+	volumeName := "foobar"
+	volume := &storage.Volume{
+		BackendUUID: backendUUID,
+	}
+	nodeName := "foobar"
+	expectedChapInfo := &utils.IscsiChapInfo{
+		UseCHAP:              true,
+		IscsiUsername:        "foo",
+		IscsiInitiatorSecret: "bar",
+		IscsiTargetUsername:  "baz",
+		IscsiTargetSecret:    "biz",
+	}
+
+	// Create mocked backend that returns the expected object
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend.EXPECT().GetChapInfo(gomock.Any(), volumeName, nodeName).Return(expectedChapInfo, nil)
+	// Create an instance of the orchestrator
+	orchestrator := getOrchestrator(t)
+	// Add the mocked backend and fake volume to the orchestrator
+	orchestrator.backends[backendUUID] = mockBackend
+	orchestrator.volumes[volumeName] = volume
+	actualChapInfo, err := orchestrator.GetCHAP(ctx(), volumeName, nodeName)
+	assert.Nil(t, err, "Unexpected error")
+	assert.Equal(t, expectedChapInfo, actualChapInfo, "Unexpected chap info returned.")
+}
+
+func TestGetCHAPFailure(t *testing.T) {
+	// Boilerplate mocking code
+	mockCtrl := gomock.NewController(t)
+
+	// Set fake values
+	backendUUID := "1234"
+	volumeName := "foobar"
+	volume := &storage.Volume{
+		BackendUUID: backendUUID,
+	}
+	nodeName := "foobar"
+	expectedError := fmt.Errorf("some error")
+
+	// Create mocked backend that returns the expected object
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend.EXPECT().GetChapInfo(gomock.Any(), volumeName, nodeName).Return(nil, expectedError)
+	// Create an instance of the orchestrator
+	orchestrator := getOrchestrator(t)
+	// Add the mocked backend and fake volume to the orchestrator
+	orchestrator.backends[backendUUID] = mockBackend
+	orchestrator.volumes[volumeName] = volume
+	actualChapInfo, actualErr := orchestrator.GetCHAP(ctx(), volumeName, nodeName)
+	assert.Nil(t, actualChapInfo, "Unexpected CHAP info")
+	assert.Equal(t, expectedError, actualErr, "Unexpected error")
 }

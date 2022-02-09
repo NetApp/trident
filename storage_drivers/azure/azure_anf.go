@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package azure
 
@@ -1759,10 +1759,10 @@ func (d *NFSStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.AzureNFSStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
-	cloneConfig.ClientSecret = drivers.REDACTED // redact the Secret
+	cloneConfig.ClientSecret = utils.REDACTED // redact the Secret
 	cloneConfig.Credentials = map[string]string{
-		drivers.KeyName: drivers.REDACTED,
-		drivers.KeyType: drivers.REDACTED,
+		drivers.KeyName: utils.REDACTED,
+		drivers.KeyType: utils.REDACTED,
 	} // redact the credentials
 	return cloneConfig
 }
@@ -1864,7 +1864,7 @@ func (d *NFSStorageDriver) getVolumeExternal(volumeAttrs *api.FileSystem) *stora
 
 // String implements stringer interface for the NFSStorageDriver driver.
 func (d NFSStorageDriver) String() string {
-	return drivers.ToString(&d, []string{"SDK"}, d.GetExternalConfig(context.Background()))
+	return utils.ToStringRedacted(&d, []string{"SDK"}, d.GetExternalConfig(context.Background()))
 }
 
 // GoString implements GoStringer interface for the NFSStorageDriver driver.

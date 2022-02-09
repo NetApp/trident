@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package rest
 
@@ -1128,4 +1128,23 @@ func AddSnapshot(w http.ResponseWriter, r *http.Request) {
 
 func DeleteSnapshot(w http.ResponseWriter, r *http.Request) {
 	DeleteGenericTwoArg(w, r, orchestrator.DeleteSnapshot, "volume", "snapshot")
+}
+
+type GetCHAPResponse struct {
+	CHAP  *utils.IscsiChapInfo `json:"chap"`
+	Error string               `json:"error,omitempty"`
+}
+
+func GetCHAP(w http.ResponseWriter, r *http.Request) {
+	response := &GetCHAPResponse{}
+	GetGenericTwoArg(w, r, "volume", "node", response,
+		func(volume, node string) int {
+			chapInfo, err := orchestrator.GetCHAP(r.Context(), volume, node)
+			if err != nil {
+				response.Error = err.Error()
+			}
+			response.CHAP = chapInfo
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
 }
