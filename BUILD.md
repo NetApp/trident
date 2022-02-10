@@ -22,6 +22,8 @@ The targets take the following environment variables as parameters:
 * `$TRIDENT_VERSION`: tag for the Trident Docker image; defaults to the last
   stable release version for Trident.
 * `$BIN`:  name of the output binary.  Defaults to `trident_orchestrator`.
+* `$GO_IMAGE`: Image name used to compile Trident
+* `$CREATE_BASE_IMAGE`: Creates an image of the specified name that contains pre-cached Trident Go dependencies, which can be used by subsequent builds via `$GO_IMAGE` to speed up builds.
 
 ### Targets
 
