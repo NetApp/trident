@@ -779,6 +779,7 @@ spec:
       hostIPC: true
       hostPID: true
       dnsPolicy: ClusterFirstWithHostNet
+      priorityClassName: system-node-critical
       containers:
       - name: trident-main
         securityContext:
@@ -933,6 +934,7 @@ spec:
       hostIPC: true
       hostPID: true
       dnsPolicy: ClusterFirstWithHostNet
+      priorityClassName: system-node-critical
       containers:
       - name: trident-main
         securityContext:

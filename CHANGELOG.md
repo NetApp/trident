@@ -12,6 +12,7 @@
 
 - Inbound connections to Trident's secure endpoints now require a minimum of TLS 1.3. (Issue [#698](https://github.com/NetApp/trident/issues/698))
 - Trident now adds HSTS headers to responses from its secure endpoints.
+- **Kubernetes** Trident daemonset now runs at system-node-critical priority class. (Issue [#694](https://github.com/NetApp/trident/issues/694))
 
 ## v22.01.0
 
