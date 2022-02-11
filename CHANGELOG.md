@@ -4,6 +4,10 @@
 
 ## Changes since v22.01.0
 
+**Fixes:**
+
+- Improved parsing of iSCSI initiator names. (Issue [#681](https://github.com/NetApp/trident/issues/681))
+
 **Enhancements**
 
 - Inbound connections to Trident's secure endpoints now require a minimum of TLS 1.3. (Issue [#698](https://github.com/NetApp/trident/issues/698))

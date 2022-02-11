@@ -36,11 +36,15 @@ const (
 	unknownFstype                       = "<unknown>"
 )
 
-var xtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
-var portalPortPattern = regexp.MustCompile(`.+:\d+$`)
-var pidRunningOrIdleRegex = regexp.MustCompile(`pid \d+ (running|idle)`)
-var pidRegex = regexp.MustCompile(`^\d+$`)
-var chrootPathPrefix string
+var (
+	iqnRegex              = regexp.MustCompile(`^\s*InitiatorName\s*=\s*(?P<iqn>\S+)(|\s+.*)$`)
+	xtermControlRegex     = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
+	portalPortPattern     = regexp.MustCompile(`.+:\d+$`)
+	pidRunningOrIdleRegex = regexp.MustCompile(`pid \d+ (running|idle)`)
+	pidRegex              = regexp.MustCompile(`^\d+$`)
+
+	chrootPathPrefix string
+)
 
 func IPv6Check(ip string) bool {
 	return strings.Count(ip, ":") >= 2
@@ -322,20 +326,42 @@ func GetInitiatorIqns(ctx context.Context) ([]string, error) {
 	Logc(ctx).Debug(">>>> osutils.GetInitiatorIqns")
 	defer Logc(ctx).Debug("<<<< osutils.GetInitiatorIqns")
 
-	iqns := make([]string, 0)
-
 	out, err := execCommand(ctx, "cat", "/etc/iscsi/initiatorname.iscsi")
 	if err != nil {
 		Logc(ctx).WithField("Error", err).Warn("Could not read initiatorname.iscsi; perhaps iSCSI is not installed?")
 		return nil, err
 	}
-	lines := strings.Split(string(out), "\n")
-	for _, l := range lines {
-		if strings.Contains(l, "InitiatorName=") {
-			iqns = append(iqns, strings.Split(l, "=")[1])
+
+	return parseInitiatorIQNs(ctx, string(out)), nil
+}
+
+// parseInitiatorIQNs accepts the contents of /etc/iscsi/initiatorname.iscsi and returns the IQN(s).
+func parseInitiatorIQNs(ctx context.Context, contents string) []string {
+
+	iqns := make([]string, 0)
+
+	lines := strings.Split(contents, "\n")
+	for _, line := range lines {
+
+		match := iqnRegex.FindStringSubmatch(line)
+
+		if match == nil {
+			continue
+		}
+
+		paramsMap := make(map[string]string)
+		for i, name := range iqnRegex.SubexpNames() {
+			if i > 0 && i <= len(match) {
+				paramsMap[name] = match[i]
+			}
+		}
+
+		if iqn, ok := paramsMap["iqn"]; ok {
+			iqns = append(iqns, iqn)
 		}
 	}
-	return iqns, nil
+
+	return iqns
 }
 
 // GetIPAddresses returns the sorted list of Global Unicast IP addresses available to Trident

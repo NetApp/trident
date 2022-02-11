@@ -3,6 +3,7 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -376,6 +377,76 @@ func TestFilterTargets(t *testing.T) {
 		t.Run(testCase.InputPortal, func(t *testing.T) {
 			targets := filterTargets(testCase.CommandOutput, testCase.InputPortal)
 			assert.Equal(t, testCase.OutputIQNs, targets, "Wrong targets returned")
+		})
+	}
+}
+
+func TestParseInitiatorIQNs(t *testing.T) {
+	ctx := context.TODO()
+	tests := map[string]struct {
+		input     string
+		output    []string
+		predicate func(string) []string
+	}{
+		"Single valid initiator": {
+			input:  "InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de",
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de"},
+		},
+		"initiator with space": {
+			input:  "InitiatorName=iqn 2005-03.org.open-iscsi:123abc456de",
+			output: []string{"iqn"},
+		},
+		"Multiple valid initiators": {
+			input: `InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de
+InitiatorName=iqn.2005-03.org.open-iscsi:secondIQN12`,
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de", "iqn.2005-03.org.open-iscsi:secondIQN12"},
+		},
+		"Ignore comment initiator": {
+			input: `#InitiatorName=iqn.1994-05.demo.netapp.com
+InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de`,
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de"},
+		},
+		"Ignore inline comment": {
+			input:  "InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de #inline comment in file",
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de"},
+		},
+		"Tolerate space around equal sign": {
+			input:  "InitiatorName = iqn.2005-03.org.open-iscsi:123abc456de",
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de"},
+		},
+		"Tolerate leading space": {
+			input:  " InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de",
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de"},
+		},
+		"Tolerate trailing space multiple initiators": {
+			input: `InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de
+InitiatorName=iqn.2005-03.org.open-iscsi:secondIQN12 `,
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de", "iqn.2005-03.org.open-iscsi:secondIQN12"},
+		},
+		"Full iscsi file": {
+			input: `## DO NOT EDIT OR REMOVE THIS FILE!
+## If you remove this file, the iSCSI daemon will not start.
+## If you change the InitiatorName, existing access control lists
+## may reject this initiator.  The InitiatorName must be unique
+## for each iSCSI initiator.  Do NOT duplicate iSCSI InitiatorNames.
+InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de
+#InitiatorName=iqn.1994-05.demo.netapp.com`,
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de"},
+		},
+		"Full iscsi file no initiator": {
+			input: `## DO NOT EDIT OR REMOVE THIS FILE!
+## If you remove this file, the iSCSI daemon will not start.
+## If you change the InitiatorName, existing access control lists
+## may reject this initiator.  The InitiatorName must be unique
+## for each iSCSI initiator.  Do NOT duplicate iSCSI InitiatorNames.
+#InitiatorName=iqn.1994-05.demo.netapp.com`,
+			output: []string{},
+		},
+	}
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			iqns := parseInitiatorIQNs(ctx, test.input)
+			assert.Equal(t, test.output, iqns, "Failed to parse initiators")
 		})
 	}
 }
