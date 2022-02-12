@@ -28,7 +28,8 @@ const (
 	CacheBackoffMaxInterval         = 5 * time.Second
 
 	// Kubernetes-defined storage class parameters
-	K8sFsType = "fsType"
+	K8sFsType          = "fsType"
+	CSIParameterPrefix = "csi.storage.k8s.io/"
 
 	// Kubernetes-defined annotations
 	// (Based on kubernetes/pkg/controller/volume/persistentvolume/controller.go)

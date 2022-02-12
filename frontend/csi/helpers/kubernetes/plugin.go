@@ -762,9 +762,13 @@ func (p *Plugin) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 
 	// Populate storage class config attributes and backend storage pools
 	for k, v := range sc.Parameters {
+
+		// Ignore Kubernetes-defined storage class parameters handled by CSI
+		if strings.HasPrefix(k, CSIParameterPrefix) || k == K8sFsType {
+			continue
+		}
+
 		switch k {
-		case K8sFsType:
-			// Ignore Kubernetes-defined storage class parameters handled by CSI
 
 		case storageattribute.RequiredStorage, storageattribute.AdditionalStoragePools:
 			// format:  additionalStoragePools: "backend1:pool1,pool2;backend2:pool1"

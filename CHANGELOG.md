@@ -7,6 +7,7 @@
 **Fixes:**
 
 - Improved parsing of iSCSI initiator names. (Issue [#681](https://github.com/NetApp/trident/issues/681))
+- Fixed issue where CSI storage class parameters weren't allowed. (Issue [#598](https://github.com/NetApp/trident/issues/598))
 
 **Enhancements**
 
