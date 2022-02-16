@@ -94,6 +94,10 @@ func NewClient(config ClientConfig) *Client {
 	return d
 }
 
+func (c *Client) ClientConfig() ClientConfig {
+	return c.config
+}
+
 func (c *Client) SetSVMUUID(svmUUID string) {
 	c.svmUUID = svmUUID
 }

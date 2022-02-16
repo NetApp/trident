@@ -117,6 +117,20 @@ func (mr *MockRestClientInterfaceMockRecorder) CliPassthroughVolumePatch(ctx, vo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CliPassthroughVolumePatch", reflect.TypeOf((*MockRestClientInterface)(nil).CliPassthroughVolumePatch), ctx, volumeName, jsonString)
 }
 
+// ClientConfig mocks base method.
+func (m *MockRestClientInterface) ClientConfig() api.ClientConfig {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ClientConfig")
+	ret0, _ := ret[0].(api.ClientConfig)
+	return ret0
+}
+
+// ClientConfig indicates an expected call of ClientConfig.
+func (mr *MockRestClientInterfaceMockRecorder) ClientConfig() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClientConfig", reflect.TypeOf((*MockRestClientInterface)(nil).ClientConfig))
+}
+
 // ClusterInfo mocks base method.
 func (m *MockRestClientInterface) ClusterInfo(ctx context.Context) (*cluster.ClusterGetOK, error) {
 	m.ctrl.T.Helper()

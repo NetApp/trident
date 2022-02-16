@@ -80,6 +80,10 @@ type RestClient struct {
 	svmUUID      string
 }
 
+func (c RestClient) ClientConfig() ClientConfig {
+	return c.config
+}
+
 func (c *RestClient) SetSVMUUID(svmUUID string) {
 	c.svmUUID = svmUUID
 }
@@ -244,7 +248,7 @@ func NewRestClientFromOntapConfig(
 		return nil, err
 	}
 
-	apiREST, err := NewOntapAPIREST(*restClient)
+	apiREST, err := NewOntapAPIREST(restClient)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get REST API client for ontap: %v", err)
 	}
@@ -1107,7 +1111,7 @@ func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volu
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 // -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 // -encrypt false
-func (c *RestClient) createVolumeByStyle(
+func (c RestClient) createVolumeByStyle(
 	ctx context.Context,
 	name string, sizeInBytes int64, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions,
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool,
@@ -1198,12 +1202,12 @@ func (c *RestClient) createVolumeByStyle(
 // ////////////////////////////////////////////////////////////////////////////
 
 // VolumeList returns the names of all Flexvols whose names match the supplied pattern
-func (c *RestClient) VolumeList(ctx context.Context, pattern string) (*storage.VolumeCollectionGetOK, error) {
+func (c RestClient) VolumeList(ctx context.Context, pattern string) (*storage.VolumeCollectionGetOK, error) {
 
 	return c.getAllVolumesByPatternStyleAndState(ctx, pattern, models.VolumeStyleFlexvol, models.VolumeStateOnline)
 }
 
-func (c *RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) (Volumes, error) {
+func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) (Volumes, error) {
 	// TODO (akerr): remove CLI passthrough once REST supports snapshot dir access
 	results, err := c.CliPassthroughVolumeGet(ctx, volumeAttrs)
 	if err != nil {
@@ -1232,7 +1236,7 @@ func (c *RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume)
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 // -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 // -encrypt false
-func (c *RestClient) VolumeCreate(
+func (c RestClient) VolumeCreate(
 	ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool,
 	snapshotReserve int,
@@ -1332,7 +1336,7 @@ func (c RestClient) VolumeDestroy(ctx context.Context, name string) error {
 // ////////////////////////////////////////////////////////////////////////////
 
 // SnapshotCreate creates a snapshot
-func (c *RestClient) SnapshotCreate(
+func (c RestClient) SnapshotCreate(
 	ctx context.Context, volumeUUID, snapshotName string,
 ) (*storage.SnapshotCreateAccepted, error) {
 	params := storage.NewSnapshotCreateParamsWithTimeout(c.httpClient.Timeout)
@@ -1353,7 +1357,7 @@ func (c *RestClient) SnapshotCreate(
 }
 
 // SnapshotCreateAndWait creates a snapshot and waits on the job to complete
-func (c *RestClient) SnapshotCreateAndWait(ctx context.Context, volumeUUID, snapshotName string) error {
+func (c RestClient) SnapshotCreateAndWait(ctx context.Context, volumeUUID, snapshotName string) error {
 	snapshotCreateResult, err := c.SnapshotCreate(ctx, volumeUUID, snapshotName)
 	if err != nil {
 		return fmt.Errorf("could not create snapshot: %v", err)
@@ -1366,7 +1370,7 @@ func (c *RestClient) SnapshotCreateAndWait(ctx context.Context, volumeUUID, snap
 }
 
 // SnapshotList lists snapshots
-func (c *RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*storage.SnapshotCollectionGetOK, error) {
+func (c RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*storage.SnapshotCollectionGetOK, error) {
 	params := storage.NewSnapshotCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1415,7 +1419,7 @@ func (c *RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*stor
 }
 
 // SnapshotListByName lists snapshots by name
-func (c *RestClient) SnapshotListByName(ctx context.Context, volumeUUID, snapshotName string) (
+func (c RestClient) SnapshotListByName(ctx context.Context, volumeUUID, snapshotName string) (
 	*storage.SnapshotCollectionGetOK, error) {
 	params := storage.NewSnapshotCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
@@ -1431,7 +1435,7 @@ func (c *RestClient) SnapshotListByName(ctx context.Context, volumeUUID, snapsho
 }
 
 // SnapshotGet returns info on the snapshot
-func (c *RestClient) SnapshotGet(ctx context.Context, volumeUUID, snapshotUUID string) (*storage.SnapshotGetOK, error) {
+func (c RestClient) SnapshotGet(ctx context.Context, volumeUUID, snapshotUUID string) (*storage.SnapshotGetOK, error) {
 	params := storage.NewSnapshotGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1454,7 +1458,7 @@ func (c RestClient) SnapshotGetByName(ctx context.Context, volumeUUID, snapshotN
 }
 
 // SnapshotDelete deletes a snapshot
-func (c *RestClient) SnapshotDelete(
+func (c RestClient) SnapshotDelete(
 	ctx context.Context,
 	volumeUUID, snapshotUUID string,
 ) (*storage.SnapshotDeleteAccepted, error) {
@@ -2362,7 +2366,7 @@ func (d RestClient) LunMap(
 	return result, nil
 }
 
-func (d *RestClient) CliPassthroughLunMappingGet(
+func (d RestClient) CliPassthroughLunMappingGet(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
 ) (*CliPassthroughResult, error) {
@@ -2602,7 +2606,7 @@ func (c RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string
 // ////////////////////////////////////////////////////////////////////////////
 
 // JobGet returns the job by ID
-func (c *RestClient) JobGet(ctx context.Context, jobUUID string) (*cluster.JobGetOK, error) {
+func (c RestClient) JobGet(ctx context.Context, jobUUID string) (*cluster.JobGetOK, error) {
 
 	params := cluster.NewJobGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
@@ -2615,7 +2619,7 @@ func (c *RestClient) JobGet(ctx context.Context, jobUUID string) (*cluster.JobGe
 }
 
 // IsJobFinished lookus up the supplied JobLinkResponse's UUID to see if it's reached a terminal state
-func (c *RestClient) IsJobFinished(ctx context.Context, payload *models.JobLinkResponse) (bool, error) {
+func (c RestClient) IsJobFinished(ctx context.Context, payload *models.JobLinkResponse) (bool, error) {
 
 	if payload == nil {
 		return false, fmt.Errorf("payload is nil")
@@ -2745,7 +2749,7 @@ func (c RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkRe
 // ////////////////////////////////////////////////////////////////////////////
 
 // AggregateList returns the names of all Aggregates whose names match the supplied pattern
-func (c *RestClient) AggregateList(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error) {
+func (c RestClient) AggregateList(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error) {
 
 	params := storage.NewAggregateCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 
@@ -2810,7 +2814,7 @@ func (c RestClient) SvmGet(ctx context.Context, uuid string) (*svm.SvmGetOK, err
 }
 
 // SvmList returns the names of all SVMs whose names match the supplied pattern
-func (c *RestClient) SvmList(ctx context.Context, pattern string) (*svm.SvmCollectionGetOK, error) {
+func (c RestClient) SvmList(ctx context.Context, pattern string) (*svm.SvmCollectionGetOK, error) {
 
 	params := svm.NewSvmCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 
@@ -2907,7 +2911,7 @@ func getType(i interface{}) string {
 }
 
 // SvmGetByName gets the volume with the specified name
-func (c *RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.Svm, error) {
+func (c RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.Svm, error) {
 
 	result, err := c.SvmList(ctx, svmName)
 	if err != nil {
@@ -2924,7 +2928,7 @@ func (c *RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.
 	return nil, fmt.Errorf("unexpected result")
 }
 
-func (c *RestClient) SVMGetAggregateNames(
+func (c RestClient) SVMGetAggregateNames(
 	ctx context.Context,
 ) ([]string, error) {
 
@@ -2949,7 +2953,7 @@ func (c *RestClient) SVMGetAggregateNames(
 // ////////////////////////////////////////////////////////////////////////////
 
 // ClusterInfo returns information about the cluster
-func (c *RestClient) ClusterInfo(
+func (c RestClient) ClusterInfo(
 	ctx context.Context,
 ) (*cluster.ClusterGetOK, error) {
 
@@ -2963,7 +2967,7 @@ func (c *RestClient) ClusterInfo(
 }
 
 // SystemGetOntapVersion gets the ONTAP version using the credentials, and caches & returns the result.
-func (c *RestClient) SystemGetOntapVersion(
+func (c RestClient) SystemGetOntapVersion(
 	ctx context.Context,
 ) (string, error) {
 
@@ -2989,7 +2993,7 @@ func (c *RestClient) SystemGetOntapVersion(
 }
 
 // ClusterInfo returns information about the cluster
-func (c *RestClient) NodeList(ctx context.Context, pattern string) (*cluster.NodesGetOK, error) {
+func (c RestClient) NodeList(ctx context.Context, pattern string) (*cluster.NodesGetOK, error) {
 
 	params := cluster.NewNodesGetParamsWithTimeout(c.httpClient.Timeout)
 
@@ -3037,7 +3041,7 @@ func (c *RestClient) NodeList(ctx context.Context, pattern string) (*cluster.Nod
 	return result, nil
 }
 
-func (c *RestClient) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
+func (c RestClient) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
 
 	serialNumbers := make([]string, 0)
 
@@ -3100,7 +3104,7 @@ type CliPassthroughResult struct {
 	models.Volume
 }
 
-func (c *RestClient) CliPassthroughVolumePatch(
+func (c RestClient) CliPassthroughVolumePatch(
 	ctx context.Context, volumeName, jsonString string,
 ) (*CliPassthroughResult, error) {
 	// See also:
@@ -3157,7 +3161,7 @@ type EMSEvent struct {
 	Values      []interface{} `json:"values"`
 }
 
-func (c *RestClient) CliPassthroughEventGeneratePost(
+func (c RestClient) CliPassthroughEventGeneratePost(
 	ctx context.Context,
 	appVersion string,
 	autoSupport bool,
@@ -3269,7 +3273,7 @@ func (c *RestClient) CliPassthroughEventGeneratePost(
 }
 
 // EmsAutosupportLog generates an auto support message with the supplied parameters
-func (c *RestClient) EmsAutosupportLog(
+func (c RestClient) EmsAutosupportLog(
 	ctx context.Context,
 	appVersion string,
 	autoSupport bool,
@@ -3297,7 +3301,7 @@ func (c *RestClient) EmsAutosupportLog(
 	return err
 }
 
-func (c *RestClient) CliPassthroughVolumeGet(ctx context.Context, volume *Volume) (*CliPassthroughResult, error) {
+func (c RestClient) CliPassthroughVolumeGet(ctx context.Context, volume *Volume) (*CliPassthroughResult, error) {
 	// See also:
 	//   https://docs.netapp.com/us-en/ontap-automation/accessing_the_ontap_cli_through_the_rest_api.html
 	//   https://library.netapp.com/ecmdocs/ECMLP2858435/html/resources/cli.html
@@ -3379,7 +3383,7 @@ func (c *RestClient) CliPassthroughVolumeGet(ctx context.Context, volume *Volume
 	return result, nil
 }
 
-func (c *RestClient) generateGETRequest(url string) *http.Request {
+func (c RestClient) generateGETRequest(url string) *http.Request {
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("Content-Type", "application/json")
 	if c.config.Username != "" && c.config.Password != "" {
@@ -3388,7 +3392,7 @@ func (c *RestClient) generateGETRequest(url string) *http.Request {
 	return req
 }
 
-func (c *RestClient) executeCLIRequest(
+func (c RestClient) executeCLIRequest(
 	ctx context.Context, client *http.Client, req *http.Request,
 ) (*CliPassthroughResult, error) {
 	Logc(ctx).WithFields(log.Fields{
@@ -3465,7 +3469,7 @@ func (c RestClient) ExportPolicyGet(ctx context.Context, id int64) (*nas.ExportP
 }
 
 // ExportPolicyList returns the names of all export polices whose names match the supplied pattern
-func (c *RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.ExportPolicyCollectionGetOK, error) {
+func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.ExportPolicyCollectionGetOK, error) {
 
 	params := nas.NewExportPolicyCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 
@@ -3515,7 +3519,7 @@ func (c *RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas
 }
 
 // ExportPolicyGetByName gets the volume with the specified name
-func (c *RestClient) ExportPolicyGetByName(ctx context.Context, exportPolicyName string) (*models.ExportPolicy, error) {
+func (c RestClient) ExportPolicyGetByName(ctx context.Context, exportPolicyName string) (*models.ExportPolicy, error) {
 
 	// TODO validate/improve this logic?
 	result, err := c.ExportPolicyList(ctx, exportPolicyName)

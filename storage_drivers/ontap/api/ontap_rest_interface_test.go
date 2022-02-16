@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestRestClientInterface confirms RestClient impelments the RestClientInterface
+// TestRestClientInterface confirms RestClient implements the RestClientInterface
 func TestRestClientInterface(t *testing.T) {
 	// use reflection to lookup the interface for RestClientInterface
 	iface := reflect.TypeOf((*RestClientInterface)(nil)).Elem()

@@ -85,10 +85,19 @@ func (e RestError) Code() string {
 }
 
 type OntapAPIREST struct {
-	api RestClient
+	api RestClientInterface
 }
 
-func NewOntapAPIREST(restClient RestClient) (OntapAPIREST, error) {
+func NewOntapAPIREST(restClient *RestClient) (OntapAPIREST, error) {
+	result := OntapAPIREST{
+		api: restClient,
+	}
+
+	return result, nil
+}
+
+// NewOntapAPIRESTFromRestClientInterface added for testing
+func NewOntapAPIRESTFromRestClientInterface(restClient RestClientInterface) (OntapAPIREST, error) {
 	result := OntapAPIREST{
 		api: restClient,
 	}
@@ -117,7 +126,7 @@ func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 
 func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
 
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "VolumeCreate",
 			"Type":   "OntapAPIREST",
@@ -353,7 +362,7 @@ func (d OntapAPIREST) FlexgroupExists(ctx context.Context, volumeName string) (b
 }
 
 func (d OntapAPIREST) FlexgroupCreate(ctx context.Context, volume Volume) error {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "FlexgroupCreate",
 			"Type":   "OntapAPIREST",
@@ -625,6 +634,16 @@ func (d OntapAPIREST) TieringPolicyValue(ctx context.Context) string {
 	return d.api.TieringPolicyValue(ctx)
 }
 
+func hasRestAggrSpaceInformation(ctx context.Context, aggrSpace *models.AggregateSpace) bool {
+	if aggrSpace == nil {
+		return false
+	}
+	if aggrSpace.BlockStorage == nil {
+		return false
+	}
+	return true
+}
+
 func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string) ([]SVMAggregateSpace, error) {
 
 	response, aggrSpaceErr := d.api.AggregateList(ctx, aggregate)
@@ -635,9 +654,19 @@ func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string
 		return nil, fmt.Errorf("error looking up aggregate: %v", aggregate)
 	}
 
+	if response.Payload == nil {
+		return nil, fmt.Errorf("error looking up aggregate: %v", aggregate)
+	}
+
 	var svmAggregateSpaceList []SVMAggregateSpace
 
 	for _, aggr := range response.Payload.Records {
+
+		if aggr == nil {
+			Logc(ctx).Debugf("Skipping empty record")
+			continue
+		}
+
 		aggrName := aggr.Name
 		if aggregate != aggrName {
 			Logc(ctx).Debugf("Skipping " + aggrName)
@@ -645,6 +674,10 @@ func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string
 		}
 
 		aggrSpace := aggr.Space
+		if !hasRestAggrSpaceInformation(ctx, aggrSpace) {
+			Logc(ctx).Debugf("Skipping entry with missing aggregate space information")
+			continue
+		}
 
 		Logc(ctx).WithFields(log.Fields{
 			"aggrName": aggrName,
@@ -783,7 +816,7 @@ func (d OntapAPIREST) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume
 }
 
 func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRules string) error {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":             "ExportRuleCreate",
 			"Type":               "OntapAPIREST",
@@ -1342,7 +1375,7 @@ func (d OntapAPIREST) LunList(ctx context.Context, pattern string) (Luns, error)
 
 func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "LunCreate",
 			"Type":   "OntapAPIREST",
@@ -1363,7 +1396,7 @@ func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 }
 
 func (d OntapAPIREST) LunDestroy(ctx context.Context, lunPath string) error {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "LunDestroy",
 			"Type":   "OntapAPIREST",
@@ -1468,7 +1501,7 @@ func (d OntapAPIREST) LunSetQosPolicyGroup(ctx context.Context, lunPath string, 
 }
 
 func (d OntapAPIREST) LunGetByName(ctx context.Context, name string) (*Lun, error) {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":  "LunGetByName",
 			"Type":    "OntapAPIREST",
@@ -1490,7 +1523,7 @@ func (d OntapAPIREST) LunGetByName(ctx context.Context, name string) (*Lun, erro
 }
 
 func (d OntapAPIREST) LunRename(ctx context.Context, lunPath, newLunPath string) error {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":     "LunRename",
 			"Type":       "OntapAPIREST",
@@ -1646,7 +1679,7 @@ func (d OntapAPIREST) LunSize(ctx context.Context, flexvolName string) (int, err
 }
 
 func (d OntapAPIREST) LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error) {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":  "LunSetSize",
 			"Type":    "OntapAPIREST",
@@ -1750,7 +1783,7 @@ func (d OntapAPIREST) IscsiNodeGetNameRequest(ctx context.Context) (string, erro
 }
 
 func (d OntapAPIREST) IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":             "IgroupCreate",
 			"Type":               "OntapAPIREST",
@@ -1780,7 +1813,7 @@ func (d OntapAPIREST) IgroupCreate(ctx context.Context, initiatorGroupName, init
 }
 
 func (d OntapAPIREST) IgroupDestroy(ctx context.Context, initiatorGroupName string) error {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":             "IgroupDestroy",
 			"Type":               "OntapAPIREST",
@@ -1795,7 +1828,7 @@ func (d OntapAPIREST) IgroupDestroy(ctx context.Context, initiatorGroupName stri
 func (d OntapAPIREST) EnsureIgroupAdded(
 	ctx context.Context, initiatorGroupName, initiator string,
 ) error {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":             "EnsureIgroupAdded",
 			"Type":               "OntapAPIREST",
@@ -1837,7 +1870,7 @@ func (d OntapAPIREST) isIgroupAdded(ctx context.Context, initiator, initiatorGro
 }
 
 func (d OntapAPIREST) IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":             "IgroupRemove",
 			"Type":               "OntapAPIREST",

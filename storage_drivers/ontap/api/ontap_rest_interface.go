@@ -16,6 +16,7 @@ import (
 
 // RestClientInterface is the interface which RestClient implements
 type RestClientInterface interface {
+	ClientConfig() ClientConfig
 	SetSVMUUID(svmUUID string)
 	SVMUUID() string
 	// SupportsFeature returns true if the Ontap version supports the supplied feature
