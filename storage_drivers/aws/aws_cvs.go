@@ -1201,11 +1201,6 @@ func (d *NFSStorageDriver) GetSnapshot(
 		}
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"snapshotName": internalSnapName,
-		"volumeName":   internalVolName,
-	}).Warning("Snapshot not found.")
-
 	return nil, nil
 }
 
@@ -1316,6 +1311,11 @@ func (d *NFSStorageDriver) CreateSnapshot(
 	if err != nil {
 		return nil, err
 	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}).Info("Snapshot created.")
 
 	return &storage.Snapshot{
 		Config:    snapConfig,

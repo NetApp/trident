@@ -1213,6 +1213,11 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 	}
 
 	for _, snap := range snapListResponse {
+		Logc(ctx).WithFields(log.Fields{
+			"snapshotName": snapConfig.InternalName,
+			"volumeName":   snapConfig.VolumeInternalName,
+		}).Info("Snapshot created.")
+
 		return &storage.Snapshot{
 			Config:    snapConfig,
 			Created:   snap.Created,

@@ -1994,11 +1994,6 @@ func GetSnapshot(
 		}
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"snapshotName": internalSnapName,
-		"volumeName":   internalVolName,
-	}).Warning("Snapshot not found.")
-
 	return nil, nil
 }
 
@@ -2108,6 +2103,11 @@ func CreateSnapshot(
 	if snapListResponse.Result.AttributesListPtr != nil {
 		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
 			if snap.Name() == internalSnapName {
+				Logc(ctx).WithFields(log.Fields{
+					"snapshotName": snapConfig.InternalName,
+					"volumeName":   snapConfig.VolumeInternalName,
+				}).Info("Snapshot created.")
+
 				return &storage.Snapshot{
 					Config:    snapConfig,
 					Created:   time.Unix(int64(snap.AccessTime()), 0).UTC().Format(storage.SnapshotTimestampFormat),

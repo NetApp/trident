@@ -712,6 +712,12 @@ func (b *StorageBackend) GetSnapshot(
 		return nil, err
 	} else if snapshot == nil {
 		// No error and no snapshot means the snapshot doesn't exist.
+
+		Logc(ctx).WithFields(log.Fields{
+			"snapshotName": snapConfig.Name,
+			"volumeName":   snapConfig.VolumeInternalName,
+		}).Debug("Snapshot not found.")
+
 		return nil, fmt.Errorf("snapshot %s on volume %s not found", snapConfig.Name, snapConfig.VolumeName)
 	} else {
 		return snapshot, nil

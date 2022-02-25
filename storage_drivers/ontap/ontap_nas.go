@@ -705,11 +705,6 @@ func getFlexvolSnapshot(
 		}
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"snapshotName": internalSnapName,
-		"volumeName":   internalVolName,
-	}).Warning("Snapshot not found.")
-
 	return nil, nil
 }
 

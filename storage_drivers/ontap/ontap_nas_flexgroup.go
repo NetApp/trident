@@ -959,11 +959,6 @@ func getFlexgroupSnapshot(
 		}
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"snapshotName": snapConfig.InternalName,
-		"volumeName":   snapConfig.VolumeInternalName,
-	}).Warning("Snapshot not found.")
-
 	return nil, nil
 }
 
@@ -1110,6 +1105,11 @@ func createFlexgroupSnapshot(
 
 	for _, snap := range snapshots {
 		if snap.Name == internalSnapName {
+			Logc(ctx).WithFields(log.Fields{
+				"snapshotName": snapConfig.InternalName,
+				"volumeName":   snapConfig.VolumeInternalName,
+			}).Info("Snapshot created.")
+
 			return &storage.Snapshot{
 				Config:    snapConfig,
 				Created:   snap.CreateTime,

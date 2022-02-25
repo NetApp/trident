@@ -1292,12 +1292,6 @@ func (d *SANStorageDriver) GetSnapshot(
 			}, nil
 		}
 	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"snapshotName": internalSnapName,
-		"volumeName":   internalVolName,
-	}).Warning("Snapshot not found.")
-
 	return nil, nil
 }
 
@@ -1395,6 +1389,11 @@ func (d *SANStorageDriver) CreateSnapshot(
 		}
 		return nil, fmt.Errorf("could not create snapshot: %+v", err)
 	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}).Info("Snapshot created.")
 
 	return &storage.Snapshot{
 		Config:    snapConfig,

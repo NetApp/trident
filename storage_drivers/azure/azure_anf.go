@@ -1442,6 +1442,11 @@ func (d *NFSStorageDriver) CreateSnapshot(
 		return nil, err
 	}
 
+	Logc(ctx).WithFields(log.Fields{
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}).Info("Snapshot created.")
+
 	return &storage.Snapshot{
 		Config:    snapConfig,
 		Created:   snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat),

@@ -1249,11 +1249,6 @@ func GetSnapshotAbstraction(
 		}
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"snapshotName": internalSnapName,
-		"volumeName":   internalVolName,
-	}).Warning("Snapshot not found.")
-
 	return nil, nil
 }
 
@@ -1358,6 +1353,11 @@ func CreateSnapshotAbstraction(
 
 	for _, snap := range snapshots {
 		if snap.Name == internalSnapName {
+			Logc(ctx).WithFields(log.Fields{
+				"snapshotName": snapConfig.InternalName,
+				"volumeName":   snapConfig.VolumeInternalName,
+			}).Info("Snapshot created.")
+
 			return &storage.Snapshot{
 				Config:    snapConfig,
 				Created:   snap.CreateTime,
@@ -2111,11 +2111,9 @@ func calculateOptimalSizeForFlexvolAbstraction(
 // getSnapshotReserveFromOntap takes a volume name and retrieves the snapshot policy and snapshot reserve
 func getSnapshotReserveFromOntapAbstraction(
 	ctx context.Context, name string, GetVolumeInfo func(
-		ctx context.Context,
-		volumeName string,
+		ctx context.Context, volumeName string,
 	) (volume *api.Volume, err error),
 ) (int, error) {
-
 	snapshotPolicy := ""
 	snapshotReserveInt := 0
 
@@ -2194,11 +2192,6 @@ func getVolumeSnapshot(
 			}, nil
 		}
 	}
-
-	Logc(ctx).WithFields(log.Fields{
-		"snapshotName": internalSnapName,
-		"volumeName":   internalVolName,
-	}).Warning("Snapshot not found.")
 
 	return nil, nil
 }
@@ -2304,6 +2297,11 @@ func createFlexvolSnapshot(
 
 	for _, snap := range snapshots {
 		if snap.Name == internalSnapName {
+			Logc(ctx).WithFields(log.Fields{
+				"snapshotName": snapConfig.InternalName,
+				"volumeName":   snapConfig.VolumeInternalName,
+			}).Info("Snapshot created.")
+
 			return &storage.Snapshot{
 				Config:    snapConfig,
 				Created:   snap.CreateTime,
