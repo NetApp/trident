@@ -12,6 +12,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-08-01/netapp"
 	"github.com/Azure/azure-sdk-for-go/services/resourcegraph/mgmt/2021-03-01/resourcegraph"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-07-01/features"
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/multierr"
 
@@ -46,11 +47,7 @@ func (c Client) RefreshAzureResources(ctx context.Context) error {
 
 	// (re-)Discover what we have to work with in Azure
 	Logc(ctx).Debugf("Discovering Azure resources.")
-
-	discoveryErr := c.DiscoverAzureResources(ctx)
-	if discoveryErr != nil {
-		Logc(ctx).WithError(discoveryErr).Error("Error discovering resources.")
-	}
+	discoveryErr := multierr.Combine(c.DiscoverAzureResources(ctx))
 
 	// This is noisy, hide it behind api tracing.
 	if c.config.DebugTraceFlags["api"] {
@@ -65,20 +62,11 @@ func (c Client) RefreshAzureResources(ctx context.Context) error {
 	c.checkForNonexistentSubnets(ctx)
 
 	// Return errors for any storage pool that cannot be satisfied by discovered resources
-	discoveryErrors := c.checkForUnsatisfiedPools(ctx)
+	poolErrors := multierr.Combine(c.checkForUnsatisfiedPools(ctx)...)
+	discoveryErr = multierr.Combine(discoveryErr, poolErrors)
 
-	var postDiscoveryErr error
-	if len(discoveryErrors) > 0 {
-		postDiscoveryErr = multierr.Combine(discoveryErrors...)
-	}
-
-	if discoveryErr != nil {
-		if postDiscoveryErr != nil {
-			return fmt.Errorf("%v; Error(s) after resource discovery: %v", discoveryErr, postDiscoveryErr)
-		}
-	} else if postDiscoveryErr != nil {
-		return fmt.Errorf("error(s) after resource discovery: %v", postDiscoveryErr)
-	}
+	Logc(ctx).Debugf("Discovering Azure preview features.")
+	_ = c.EnableAzureFeatures(ctx, FeatureUnixPermissions)
 
 	return discoveryErr
 }
@@ -422,6 +410,96 @@ func (c Client) checkForNonexistentSubnets(ctx context.Context) (anyMismatches b
 	}
 
 	return
+}
+
+// EnableAzureFeatures registers any ANF preview features we care about and updates the cache.
+func (c Client) EnableAzureFeatures(ctx context.Context, featureNames ...string) (returnError error) {
+
+	// Start from scratch each time we are called.  All discovered resources are nested under ResourceGroups.
+	featureMap := make(map[string]bool)
+
+	defer func() {
+		if returnError != nil {
+			Logc(ctx).WithError(returnError).Debug("Discovery error, not retaining any discovered resources.")
+			return
+		}
+
+		// Swap the newly discovered features into the cache only if discovery succeeded.
+		c.sdkClient.AzureResources.Features = featureMap
+
+		Logc(ctx).Debug("Switched to newly discovered features.")
+	}()
+
+	returnError = multierr.Combine()
+
+	for _, f := range featureNames {
+		returnError = multierr.Combine(returnError, c.enableAzureFeature(ctx, "Microsoft.NetApp", f, featureMap))
+	}
+
+	return
+}
+
+// enableAzureFeature checks whether a specific Azure preview feature is Registered and modifies the supplied
+// map with a value indicating the feature's availability.  If the API returns 404 (Not Found), this method assumes
+// that the feature (which must have been a preview feature at one time) has graduated to GA status; the caller must
+// know that the feature was not removed instead!
+func (c Client) enableAzureFeature(
+	ctx context.Context, provider, feature string, featureMap map[string]bool,
+) (returnError error) {
+
+	logFields := log.Fields{"feature": feature}
+
+	result, err := c.sdkClient.FeaturesClient.Get(ctx, provider, feature)
+	if err != nil {
+		if IsANFNotFoundError(err) {
+			Logc(ctx).WithFields(logFields).WithError(err).Debug("Feature not found, assuming it is available.")
+			featureMap[feature] = true
+		} else {
+			Logc(ctx).WithFields(logFields).WithError(err).Warning("Feature check failed, it will not be available.")
+			featureMap[feature] = false
+			returnError = err
+		}
+		return
+	}
+
+	if result.Properties == nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Warning("Invalid response, feature will not be available.")
+		featureMap[feature] = false
+		returnError = fmt.Errorf("invalid response while checking for %s feature", feature)
+		return
+	}
+
+	featureState := features.SubscriptionFeatureRegistrationState(DerefString(result.Properties.State))
+	featureMap[feature] = featureState == features.SubscriptionFeatureRegistrationStateRegistered
+
+	Logc(ctx).WithFields(logFields).Debugf("Feature is %s.", featureState)
+
+	// If feature is known to exist and not be registered, register it now.
+	if featureState == features.SubscriptionFeatureRegistrationStateNotRegistered ||
+		featureState == features.SubscriptionFeatureRegistrationStateUnregistered {
+		if _, returnError = c.sdkClient.FeaturesClient.Register(ctx, provider, feature); returnError != nil {
+			Logc(ctx).WithFields(logFields).WithError(returnError).Warning("Could not register feature.")
+		} else {
+			Logc(ctx).WithFields(logFields).Debug("Registered feature.")
+		}
+	}
+
+	return
+}
+
+// Features returns the map of preview features believed to be available in the current subscription.
+func (c Client) Features() map[string]bool {
+	featureMap := make(map[string]bool)
+	for k, v := range c.sdkClient.Features {
+		featureMap[k] = v
+	}
+	return featureMap
+}
+
+// HasFeature returns true if the named preview feature is believed to be available in the current subscription.
+func (c Client) HasFeature(feature string) bool {
+	value, ok := c.sdkClient.Features[feature]
+	return ok && value
 }
 
 // ///////////////////////////////////////////////////////////////////////////////

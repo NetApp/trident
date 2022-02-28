@@ -151,6 +151,25 @@ func (mr *MockAzureMockRecorder) DiscoverAzureResources(arg0 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoverAzureResources", reflect.TypeOf((*MockAzure)(nil).DiscoverAzureResources), arg0)
 }
 
+// EnableAzureFeatures mocks base method.
+func (m *MockAzure) EnableAzureFeatures(arg0 context.Context, arg1 ...string) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "EnableAzureFeatures", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnableAzureFeatures indicates an expected call of EnableAzureFeatures.
+func (mr *MockAzureMockRecorder) EnableAzureFeatures(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnableAzureFeatures", reflect.TypeOf((*MockAzure)(nil).EnableAzureFeatures), varargs...)
+}
+
 // EnsureVolumeInValidCapacityPool mocks base method.
 func (m *MockAzure) EnsureVolumeInValidCapacityPool(arg0 context.Context, arg1 *api.FileSystem) error {
 	m.ctrl.T.Helper()
@@ -163,6 +182,34 @@ func (m *MockAzure) EnsureVolumeInValidCapacityPool(arg0 context.Context, arg1 *
 func (mr *MockAzureMockRecorder) EnsureVolumeInValidCapacityPool(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVolumeInValidCapacityPool", reflect.TypeOf((*MockAzure)(nil).EnsureVolumeInValidCapacityPool), arg0, arg1)
+}
+
+// Features mocks base method.
+func (m *MockAzure) Features() map[string]bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Features")
+	ret0, _ := ret[0].(map[string]bool)
+	return ret0
+}
+
+// Features indicates an expected call of Features.
+func (mr *MockAzureMockRecorder) Features() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Features", reflect.TypeOf((*MockAzure)(nil).Features))
+}
+
+// HasFeature mocks base method.
+func (m *MockAzure) HasFeature(arg0 string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasFeature", arg0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// HasFeature indicates an expected call of HasFeature.
+func (mr *MockAzureMockRecorder) HasFeature(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasFeature", reflect.TypeOf((*MockAzure)(nil).HasFeature), arg0)
 }
 
 // Init mocks base method.

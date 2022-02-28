@@ -710,6 +710,11 @@ func (d *NFSStorageDriver) Create(
 		unixPermissions = pool.InternalAttributes()[UnixPermissions]
 	}
 
+	// TODO (cknight): remove when preview permissions feature reaches GA
+	if unixPermissions == "" && d.SDK.HasFeature(api.FeatureUnixPermissions) {
+		unixPermissions = "0777"
+	}
+
 	// Determine mount options (volume config wins, followed by backend config)
 	mountOptions := d.Config.NfsMountOptions
 	if volConfig.MountOptions != "" {

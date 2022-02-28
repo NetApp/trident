@@ -24,6 +24,8 @@ const (
 	ServiceLevelStandard = "Standard"
 	ServiceLevelPremium  = "Premium"
 	ServiceLevelUltra    = "Ultra"
+
+	FeatureUnixPermissions = "ANFUnixPermissions"
 )
 
 // AzureResources is the toplevel cache for the set of things we discover about our Azure environment.
@@ -35,6 +37,7 @@ type AzureResources struct {
 	VirtualNetworkMap map[string]*VirtualNetwork
 	SubnetMap         map[string]*Subnet
 	StoragePoolMap    map[string]storage.Pool
+	Features          map[string]bool
 	lastUpdateTime    time.Time
 }
 

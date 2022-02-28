@@ -1101,9 +1101,12 @@ func TestCreate(t *testing.T) {
 	storagePool := driver.pools["anf_pool"]
 
 	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreate(ctx, driver, storagePool)
+	createRequest.UnixPermissions = "0777"
+	filesystem.UnixPermissions = "0777"
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
@@ -1368,6 +1371,7 @@ func TestCreate_ZeroSize(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
@@ -1423,6 +1427,7 @@ func TestCreate_BelowANFMinimumSize(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
@@ -1503,6 +1508,7 @@ func TestCreate_InvalidMountOptions(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -1527,6 +1533,7 @@ func TestCreate_DefaultMountOptions(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
@@ -1560,6 +1567,7 @@ func TestCreate_VolConfigMountOptions(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
@@ -1593,6 +1601,7 @@ func TestCreate_InvalidLabel(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -1616,6 +1625,7 @@ func TestCreate_NoCapacityPool(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -1640,6 +1650,7 @@ func TestCreate_NoSubnet(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(nil).Times(1)
 
@@ -1665,6 +1676,7 @@ func TestCreate_CreateFailed(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)

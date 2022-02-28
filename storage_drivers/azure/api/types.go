@@ -16,6 +16,9 @@ type Azure interface {
 
 	RefreshAzureResources(context.Context) error
 	DiscoverAzureResources(context.Context) error
+	EnableAzureFeatures(context.Context, ...string) error
+	Features() map[string]bool
+	HasFeature(string) bool
 	CapacityPools() *[]*CapacityPool
 	CapacityPoolsForStoragePools(context.Context) []*CapacityPool
 	CapacityPoolsForStoragePool(context.Context, storage.Pool, string) []*CapacityPool

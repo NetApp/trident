@@ -603,6 +603,52 @@ func TestCheckForNonexistentSubnets_Missing(t *testing.T) {
 	assert.True(t, result, "expected error")
 }
 
+func TestFeatures(t *testing.T) {
+
+	sdk := getFakeSDK()
+
+	tests := []struct {
+		features map[string]bool
+		feature  string
+		expected bool
+	}{
+		{
+			features: map[string]bool{"feature1": true, "feature2": false},
+			feature:  "feature1",
+			expected: true,
+		},
+		{
+			features: map[string]bool{"feature1": true, "feature2": false},
+			feature:  "feature2",
+			expected: false,
+		},
+		{
+			features: map[string]bool{"feature1": true, "feature2": false},
+			feature:  "feature3",
+			expected: false,
+		},
+		{
+			features: map[string]bool{},
+			feature:  "feature1",
+			expected: false,
+		},
+	}
+
+	for _, test := range tests {
+
+		sdk.sdkClient.Features = test.features
+
+		featuresResult := sdk.Features()
+		hasFeatureResult := sdk.HasFeature(test.feature)
+
+		// Change original to ensure we made a copy
+		sdk.sdkClient.Features = make(map[string]bool)
+
+		assert.Equal(t, test.features, featuresResult, "features mismatch")
+		assert.Equal(t, test.expected, hasFeatureResult, "feature mismatch")
+	}
+}
+
 func TestCapacityPools(t *testing.T) {
 
 	sdk := getFakeSDK()

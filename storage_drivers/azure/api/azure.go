@@ -13,6 +13,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-08-01/netapp"
 	"github.com/Azure/azure-sdk-for-go/services/resourcegraph/mgmt/2021-03-01/resourcegraph"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-07-01/features"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	azauth "github.com/Azure/go-autorest/autorest/azure/auth"
@@ -59,9 +60,11 @@ type ClientConfig struct {
 // AzureClient holds operational Azure SDK objects.
 type AzureClient struct {
 	AuthConfig      azauth.ClientCredentialsConfig
+	FeaturesClient  features.Client
 	GraphClient     resourcegraph.BaseClient
 	VolumesClient   netapp.VolumesClient
 	SnapshotsClient netapp.SnapshotsClient
+
 	AzureResources
 }
 
@@ -83,6 +86,7 @@ func NewDriver(config ClientConfig) (Azure, error) {
 
 	sdkClient := &AzureClient{
 		AuthConfig:      azauth.NewClientCredentialsConfig(config.ClientID, config.ClientSecret, config.TenantID),
+		FeaturesClient:  features.NewClient(config.SubscriptionID),
 		GraphClient:     resourcegraph.New(),
 		VolumesClient:   netapp.NewVolumesClient(config.SubscriptionID),
 		SnapshotsClient: netapp.NewSnapshotsClient(config.SubscriptionID),
@@ -93,6 +97,9 @@ func NewDriver(config ClientConfig) (Azure, error) {
 	sdkClient.AuthConfig.Resource = azure.PublicCloud.ResourceManagerEndpoint
 
 	// Plumb the authorization through to sub-clients.
+	if sdkClient.FeaturesClient.Authorizer, err = sdkClient.AuthConfig.Authorizer(); err != nil {
+		return nil, err
+	}
 	if sdkClient.GraphClient.Authorizer, err = sdkClient.AuthConfig.Authorizer(); err != nil {
 		return nil, err
 	}
