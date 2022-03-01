@@ -1596,9 +1596,31 @@ func checkAggregateLimitsForFlexvol(
 	return checkAggregateLimits(ctx, aggregate, spaceReserve, requestedSizeInt, config, client)
 }
 
+func hasZapiAggrSpaceInformation(ctx context.Context, aggrSpace azgo.SpaceInformationType) bool {
+	if aggrSpace.AggregatePtr == nil {
+		return false
+	}
+	if aggrSpace.AggregateSizePtr == nil {
+		return false
+	}
+	if aggrSpace.VolumeFootprintsPtr == nil {
+		return false
+	}
+	if aggrSpace.VolumeFootprintsPercentPtr == nil {
+		return false
+	}
+	if aggrSpace.UsedIncludingSnapshotReservePtr == nil {
+		return false
+	}
+	if aggrSpace.UsedIncludingSnapshotReservePercentPtr == nil {
+		return false
+	}
+	return true
+}
+
 func checkAggregateLimits(
 	ctx context.Context, aggregate, spaceReserve string, requestedSizeInt uint64,
-	config drivers.OntapStorageDriverConfig, client *api.Client,
+	config drivers.OntapStorageDriverConfig, client api.ZapiClientInterface,
 ) error {
 
 	requestedSize := float64(requestedSizeInt)
@@ -1627,9 +1649,18 @@ func checkAggregateLimits(
 		return aggrSpaceErr
 	}
 
+	if aggrSpaceResponse == nil {
+		return errors.New("could not determine aggregate space, cannot check aggregate provisioning limits for " + aggregate)
+	}
+
 	// iterate over results
 	if aggrSpaceResponse.Result.AttributesListPtr != nil {
 		for _, aggrSpace := range aggrSpaceResponse.Result.AttributesListPtr.SpaceInformationPtr {
+			if !hasZapiAggrSpaceInformation(ctx, aggrSpace) {
+				Logc(ctx).Debugf("Skipping entry with missing aggregate space information")
+				continue
+			}
+
 			aggrName := aggrSpace.Aggregate()
 			if aggregate != aggrName {
 				Logc(ctx).Debugf("Skipping " + aggrName)

@@ -980,3 +980,159 @@ func TestSanitizeDataLIF(t *testing.T) {
 		})
 	}
 }
+
+func newMockZapiClient(t *testing.T) *mock_ontap.MockZapiClientInterface {
+	mockCtrl := gomock.NewController(t)
+	mockZapiClient := mock_ontap.NewMockZapiClientInterface(mockCtrl)
+	return mockZapiClient
+}
+
+func TestCheckAggregateLimits(t *testing.T) {
+
+	ctx := context.Background()
+
+	// create a config
+	ontapConfig := newOntapStorageDriverConfig()
+	ontapConfig.SVM = "svm"
+	ontapConfig.LimitAggregateUsage = "95%"
+	ontapConfig.Aggregate = "aggr1"
+	aggr := ontapConfig.Aggregate
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  nil result, ensure we do not throw an NPE
+	mockZapiClient := newMockZapiClient(t)
+
+	mockZapiClient.EXPECT().AggrSpaceGetIterRequest(gomock.Any()).DoAndReturn(
+		func(aggregateName string) (*azgo.AggrSpaceGetIterResponse, error) {
+			return nil, nil
+		},
+	).AnyTimes()
+
+	err := checkAggregateLimits(ctx, aggr, "none", 1024, *ontapConfig, mockZapiClient)
+	assert.Equal(t, "could not determine aggregate space, cannot check aggregate provisioning limits for aggr1", err.Error())
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockZapiClient = newMockZapiClient(t)
+
+	mockZapiClient.EXPECT().AggrSpaceGetIterRequest(gomock.Any()).DoAndReturn(
+		func(aggregateName string) (*azgo.AggrSpaceGetIterResponse, error) {
+			result := &azgo.AggrSpaceGetIterResponse{}
+			return result, nil
+		},
+	).AnyTimes()
+
+	err = checkAggregateLimits(ctx, aggr, "none", 1024, *ontapConfig, mockZapiClient)
+	assert.Equal(t, "could not find aggregate, cannot check aggregate provisioning limits for aggr1", err.Error())
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockZapiClient = newMockZapiClient(t)
+
+	mockZapiClient.EXPECT().AggrSpaceGetIterRequest(gomock.Any()).DoAndReturn(
+		func(aggregateName string) (*azgo.AggrSpaceGetIterResponse, error) {
+			result := &azgo.AggrSpaceGetIterResponse{
+				Result: azgo.AggrSpaceGetIterResponseResult{},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	err = checkAggregateLimits(ctx, aggr, "none", 1024, *ontapConfig, mockZapiClient)
+	assert.Equal(t, "could not find aggregate, cannot check aggregate provisioning limits for aggr1", err.Error())
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockZapiClient = newMockZapiClient(t)
+
+	mockZapiClient.EXPECT().AggrSpaceGetIterRequest(gomock.Any()).DoAndReturn(
+		func(aggregateName string) (*azgo.AggrSpaceGetIterResponse, error) {
+			result := &azgo.AggrSpaceGetIterResponse{
+				Result: azgo.AggrSpaceGetIterResponseResult{
+					AttributesListPtr: &azgo.AggrSpaceGetIterResponseResultAttributesList{},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	err = checkAggregateLimits(ctx, aggr, "none", 1024, *ontapConfig, mockZapiClient)
+	assert.Equal(t, "could not find aggregate, cannot check aggregate provisioning limits for aggr1", err.Error())
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockZapiClient = newMockZapiClient(t)
+
+	mockZapiClient.EXPECT().AggrSpaceGetIterRequest(gomock.Any()).DoAndReturn(
+		func(aggregateName string) (*azgo.AggrSpaceGetIterResponse, error) {
+			result := &azgo.AggrSpaceGetIterResponse{
+				Result: azgo.AggrSpaceGetIterResponseResult{
+					AttributesListPtr: &azgo.AggrSpaceGetIterResponseResultAttributesList{
+						SpaceInformationPtr: []azgo.SpaceInformationType{},
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	err = checkAggregateLimits(ctx, aggr, "none", 1024, *ontapConfig, mockZapiClient)
+	assert.Equal(t, "could not find aggregate, cannot check aggregate provisioning limits for aggr1", err.Error())
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// negative case:  empty result
+	mockZapiClient = newMockZapiClient(t)
+
+	mockZapiClient.EXPECT().AggrSpaceGetIterRequest(gomock.Any()).DoAndReturn(
+		func(aggregateName string) (*azgo.AggrSpaceGetIterResponse, error) {
+			result := &azgo.AggrSpaceGetIterResponse{
+				Result: azgo.AggrSpaceGetIterResponseResult{
+					AttributesListPtr: &azgo.AggrSpaceGetIterResponseResultAttributesList{
+						SpaceInformationPtr: []azgo.SpaceInformationType{
+							{},
+						},
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	err = checkAggregateLimits(ctx, aggr, "none", 1024, *ontapConfig, mockZapiClient)
+	assert.Equal(t, "could not find aggregate, cannot check aggregate provisioning limits for aggr1", err.Error())
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// positive case:  should pass, it is within the limits
+	mockZapiClient = newMockZapiClient(t)
+
+	info1 := azgo.SpaceInformationType{}
+	info1.SetAggregate("aggr1")
+	info1.SetAggregateSize(11689104961536)
+	info1.SetVolumeFootprints(8496407527424)
+	info1.SetVolumeFootprintsPercent(73)
+	info1.SetUsedIncludingSnapshotReserve(9090249289728)
+	info1.SetUsedIncludingSnapshotReservePercent(78)
+
+	info2 := azgo.SpaceInformationType{}
+	info2.SetAggregate("aggr1")
+	info2.SetTierName("Object Store: S3Bucket")
+
+	mockZapiClient.EXPECT().AggrSpaceGetIterRequest(gomock.Any()).DoAndReturn(
+		func(aggregateName string) (*azgo.AggrSpaceGetIterResponse, error) {
+			result := &azgo.AggrSpaceGetIterResponse{
+				Result: azgo.AggrSpaceGetIterResponseResult{
+					AttributesListPtr: &azgo.AggrSpaceGetIterResponseResultAttributesList{
+						SpaceInformationPtr: []azgo.SpaceInformationType{
+							info1,
+							info2,
+						},
+					},
+				},
+			}
+			return result, nil
+		},
+	).AnyTimes()
+
+	err = checkAggregateLimits(ctx, aggr, "none", 1024, *ontapConfig, mockZapiClient)
+	assert.Nil(t, err, "Unexpected error")
+}

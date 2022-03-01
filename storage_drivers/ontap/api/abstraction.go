@@ -197,6 +197,14 @@ type SVMAggregateSpace struct {
 	footprint int64
 }
 
+func NewSVMAggregateSpace(size, used, footprint int64) SVMAggregateSpace {
+	return SVMAggregateSpace{
+		size:      size,
+		used:      used,
+		footprint: footprint,
+	}
+}
+
 func (o SVMAggregateSpace) Size() int64 {
 	return o.size
 }

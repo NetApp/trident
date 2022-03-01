@@ -43,7 +43,7 @@ func (d OntapAPIZAPI) ValidateAPIVersion(ctx context.Context) error {
 
 func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
 
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "VolumeCreate",
 			"Type":   "OntapAPIZAPI",
@@ -100,7 +100,7 @@ func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force bool
 
 func (d OntapAPIZAPI) VolumeInfo(ctx context.Context, name string) (*Volume, error) {
 
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "VolumeInfo",
 			"Type":   "OntapAPIZAPI",
@@ -253,7 +253,7 @@ func (d OntapAPIZAPI) NodeListSerialNumbers(ctx context.Context) ([]string, erro
 }
 
 type OntapAPIZAPI struct {
-	api *Client
+	api ZapiClientInterface
 }
 
 func (d OntapAPIZAPI) ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error) {
@@ -284,7 +284,7 @@ func (d OntapAPIZAPI) LunList(ctx context.Context, pattern string) (Luns, error)
 }
 
 func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "LunCreate",
 			"Type":   "OntapAPIZAPI",
@@ -371,7 +371,7 @@ func (d OntapAPIZAPI) LunSetQosPolicyGroup(ctx context.Context, lunPath string, 
 }
 
 func (d OntapAPIZAPI) LunGetByName(ctx context.Context, name string) (*Lun, error) {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":  "LunGetByName",
 			"Type":    "OntapAPIZAPI",
@@ -721,6 +721,14 @@ func NewOntapAPIZAPI(zapiClient *Client) (OntapAPIZAPI, error) {
 	return result, nil
 }
 
+// NewOntapAPIZAPIFromZapiClientInterface added for testing
+func NewOntapAPIZAPIFromZapiClientInterface(zapiClient ZapiClientInterface) (OntapAPIZAPI, error) {
+	result := OntapAPIZAPI{
+		api: zapiClient,
+	}
+	return result, nil
+}
+
 // NewZAPIClient is a factory method for creating a new instance
 func NewZAPIClient(config ClientConfig) *Client {
 	d := &Client{
@@ -850,7 +858,7 @@ func (d OntapAPIZAPI) FlexgroupExists(ctx context.Context, volumeName string) (b
 }
 
 func (d OntapAPIZAPI) FlexgroupCreate(ctx context.Context, volume Volume) error {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "FlexgroupCreate",
 			"Type":   "OntapAPIZAPI",
@@ -906,7 +914,7 @@ func (d OntapAPIZAPI) FlexgroupDisableSnapshotDirectoryAccess(ctx context.Contex
 }
 
 func (d OntapAPIZAPI) FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error) {
-	if d.api.config.DebugTraceFlags["method"] {
+	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "FlexgroupInfo",
 			"Type":   "OntapAPIZAPI",
@@ -1136,11 +1144,37 @@ func (d OntapAPIZAPI) TieringPolicyValue(ctx context.Context) string {
 	return d.api.TieringPolicyValue(ctx)
 }
 
+func hasZapiAggrSpaceInformation(ctx context.Context, aggrSpace azgo.SpaceInformationType) bool {
+	if aggrSpace.AggregatePtr == nil {
+		return false
+	}
+	if aggrSpace.AggregateSizePtr == nil {
+		return false
+	}
+	if aggrSpace.VolumeFootprintsPtr == nil {
+		return false
+	}
+	if aggrSpace.VolumeFootprintsPercentPtr == nil {
+		return false
+	}
+	if aggrSpace.UsedIncludingSnapshotReservePtr == nil {
+		return false
+	}
+	if aggrSpace.UsedIncludingSnapshotReservePercentPtr == nil {
+		return false
+	}
+	return true
+}
+
 func (d OntapAPIZAPI) GetSVMAggregateSpace(ctx context.Context, aggregate string) ([]SVMAggregateSpace, error) {
 	// lookup aggregate
 	aggrSpaceResponse, aggrSpaceErr := d.api.AggrSpaceGetIterRequest(aggregate)
 	if aggrSpaceErr != nil {
 		return nil, aggrSpaceErr
+	}
+
+	if aggrSpaceResponse == nil {
+		return nil, errors.New("could not determine aggregate space, cannot check aggregate provisioning limits for " + aggregate)
 	}
 
 	var svmAggregateSpaceList []SVMAggregateSpace
@@ -1149,6 +1183,12 @@ func (d OntapAPIZAPI) GetSVMAggregateSpace(ctx context.Context, aggregate string
 	if aggrSpaceResponse.Result.AttributesListPtr != nil {
 
 		for _, aggrSpace := range aggrSpaceResponse.Result.AttributesListPtr.SpaceInformationPtr {
+
+			if !hasZapiAggrSpaceInformation(ctx, aggrSpace) {
+				Logc(ctx).Debugf("Skipping entry with missing aggregate space information")
+				continue
+			}
+
 			aggrName := aggrSpace.Aggregate()
 			if aggregate != aggrName {
 				Logc(ctx).Debugf("Skipping " + aggrName)
