@@ -8,6 +8,7 @@
 
 - Improved parsing of iSCSI initiator names. (Issue [#681](https://github.com/NetApp/trident/issues/681))
 - Fixed issue where CSI storage class parameters weren't allowed. (Issue [#598](https://github.com/NetApp/trident/issues/598))
+- Fixed duplicate key declaration in Trident CRD. (Issue [#671](https://github.com/NetApp/trident/issues/671))
 - Fixed inaccurate CSI Snapshot logs. (Issue [#629](https://github.com/NetApp/trident/issues/629))
 
 **Enhancements**

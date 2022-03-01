@@ -1441,7 +1441,6 @@ spec:
                   - established
                   - reestablished
                 volumeMappings:
-                  type: array
                   items:
                     type: object
                     properties:
