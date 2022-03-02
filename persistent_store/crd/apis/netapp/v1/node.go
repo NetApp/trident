@@ -41,6 +41,7 @@ func (in *TridentNode) Apply(persistent *utils.Node) error {
 	in.Name = persistent.Name
 	in.IQN = persistent.IQN
 	in.IPs = persistent.IPs
+	in.Deleted = persistent.Deleted
 
 	nodePrep, err := json.Marshal(persistent.NodePrep)
 	if err != nil {
@@ -65,6 +66,7 @@ func (in *TridentNode) Persistent() (*utils.Node, error) {
 		IPs:      in.IPs,
 		NodePrep: &utils.NodePrep{},
 		HostInfo: &utils.HostSystem{},
+		Deleted:  in.Deleted,
 	}
 
 	if string(in.NodePrep.Raw) != "" {

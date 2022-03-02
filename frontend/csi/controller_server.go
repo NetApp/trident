@@ -480,48 +480,24 @@ func (p *Plugin) ControllerUnpublishVolume(
 		return nil, status.Error(codes.InvalidArgument, "no node ID provided")
 	}
 
-	// Check if volume exists.  If not, return success.
-	volume, err := p.orchestrator.GetVolume(ctx, volumeID)
-	if err != nil {
-		if utils.IsNotFoundError(err) {
-			return &csi.ControllerUnpublishVolumeResponse{}, nil
-		} else {
-			return nil, p.getCSIErrorForOrchestratorError(err)
-		}
-	}
+	logFields := log.Fields{"volume": req.GetVolumeId(), "node": req.GetNodeId()}
 
-	// Get node attributes from the node ID
-	nodeInfo, err := p.orchestrator.GetNode(ctx, nodeID)
-	if err != nil {
-		Logc(ctx).WithField("node", nodeID).Error("Node info not found.")
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
-
-	// Set up volume publish info with what we know about the node
-	volumePublishInfo := &utils.VolumePublishInfo{
-		Localhost: false,
-		HostIQN:   []string{nodeInfo.IQN},
-		HostIP:    nodeInfo.IPs,
-		HostName:  nodeInfo.Name,
-		Unmanaged: volume.Config.ImportNotManaged,
-	}
-
-	// Optionally update NFS export rules, remove node IQN from igroup, etc.
-	if err = p.orchestrator.UnpublishVolume(ctx, volume.Config.Name, volumePublishInfo); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	if err = p.orchestrator.DeleteVolumePublication(ctx, req.GetVolumeId(), req.GetNodeId()); err != nil {
+	// Unpublish the volume by updating NFS export rules, removing node IQN from igroup, etc.
+	if err := p.orchestrator.UnpublishVolume(ctx, volumeID, nodeID); err != nil {
 		if !utils.IsNotFoundError(err) {
-			msg := "error removing volume publication record"
-			Logc(ctx).WithError(err).Error(msg)
-			return nil, status.Error(codes.Internal, msg)
-		} else {
-			Logc(ctx).WithFields(log.Fields{
-				"VolumeID": req.GetVolumeId(),
-				"NodeID":   req.GetNodeId(),
-			}).Warn("Volume publication record not found.")
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Could not unpublish volume.")
+			return nil, status.Error(codes.Internal, err.Error())
 		}
+		Logc(ctx).WithFields(logFields).WithError(err).Warning("Unpublish targets not found, continuing.")
+	}
+
+	// Remove the stateful publish tracking record.
+	if err := p.orchestrator.DeleteVolumePublication(ctx, req.GetVolumeId(), req.GetNodeId()); err != nil {
+		if !utils.IsNotFoundError(err) {
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Could not remove volume publication record.")
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		Logc(ctx).WithFields(logFields).Warning("Volume publication record not found, returning success.")
 	}
 
 	return &csi.ControllerUnpublishVolumeResponse{}, nil

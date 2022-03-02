@@ -72,7 +72,7 @@ type Driver interface {
 }
 
 type Unpublisher interface {
-	Unpublish(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
+	Unpublish(ctx context.Context, volConfig *VolumeConfig, nodes []*utils.Node) error
 }
 
 // Mirrorer provides a common interface for backends that support mirror replication
@@ -519,7 +519,7 @@ func (b *StorageBackend) PublishVolume(
 }
 
 func (b *StorageBackend) UnpublishVolume(
-	ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *VolumeConfig, nodes []*utils.Node,
 ) error {
 
 	Logc(ctx).WithFields(log.Fields{
@@ -538,7 +538,7 @@ func (b *StorageBackend) UnpublishVolume(
 	if unpublisher, ok := b.driver.(Unpublisher); !ok {
 		return nil
 	} else {
-		return unpublisher.Unpublish(ctx, volConfig, publishInfo)
+		return unpublisher.Unpublish(ctx, volConfig, nodes)
 	}
 }
 

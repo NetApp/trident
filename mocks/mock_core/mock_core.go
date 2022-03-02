@@ -914,7 +914,7 @@ func (mr *MockOrchestratorMockRecorder) SetVolumeState(arg0, arg1, arg2 interfac
 }
 
 // UnpublishVolume mocks base method.
-func (m *MockOrchestrator) UnpublishVolume(arg0 context.Context, arg1 string, arg2 *utils.VolumePublishInfo) error {
+func (m *MockOrchestrator) UnpublishVolume(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UnpublishVolume", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

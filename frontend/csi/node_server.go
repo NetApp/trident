@@ -468,6 +468,7 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 		IPs:      ips,
 		NodePrep: p.nodePrep,
 		HostInfo: p.hostInfo,
+		Deleted:  false,
 	}
 	return node
 }

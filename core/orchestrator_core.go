@@ -2174,8 +2174,9 @@ func (o *TridentOrchestrator) GetVolumeExternal(
 }
 
 // GetVolumeByInternalName returns a volume by the given internal name
-func (o *TridentOrchestrator) GetVolumeByInternalName(volumeInternal string, ctx context.Context) (volume string,
-	err error) {
+func (o *TridentOrchestrator) GetVolumeByInternalName(
+	volumeInternal string, _ context.Context,
+) (volume string, err error) {
 
 	defer recordTiming("volume_internal_get", &err)()
 
@@ -3031,9 +3032,7 @@ func (o *TridentOrchestrator) PublishVolume(
 	return nil
 }
 
-func (o *TridentOrchestrator) UnpublishVolume(
-	ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo,
-) (err error) {
+func (o *TridentOrchestrator) UnpublishVolume(ctx context.Context, volumeName, nodeName string) (err error) {
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -3049,19 +3048,56 @@ func (o *TridentOrchestrator) UnpublishVolume(
 		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
-	nodes := make([]*utils.Node, 0)
-	for _, node := range o.nodes {
-		nodes = append(nodes, node)
+	node, ok := o.nodes[nodeName]
+	if !ok {
+		return utils.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
 	}
-	publishInfo.Nodes = nodes
-	publishInfo.BackendUUID = volume.BackendUUID
+
+	// Build list of nodes to which the volume remains published
+	nodeMap := make(map[string]*utils.Node)
+	for _, pub := range o.listVolumePublicationsForVolume(ctx, volumeName) {
+		if pub.NodeName == nodeName {
+			continue
+		}
+		if n, found := o.nodes[pub.NodeName]; !found {
+			Logc(ctx).WithField("node", pub.NodeName).Warning("Node not found during volume unpublish.")
+			continue
+		} else {
+			nodeMap[pub.NodeName] = n
+		}
+	}
+	nodes := make([]*utils.Node, 0, len(nodeMap))
+	for _, n := range nodeMap {
+		nodes = append(nodes, n)
+	}
+
 	backend, ok := o.backends[volume.BackendUUID]
 	if !ok {
 		// Not a not found error because this is not user input
 		return fmt.Errorf("backend %s not found", volume.BackendUUID)
 	}
 
-	return backend.UnpublishVolume(ctx, volume.Config, publishInfo)
+	// Unpublish the volume
+	if err = backend.UnpublishVolume(ctx, volume.Config, nodes); err != nil {
+		return err
+	}
+
+	// Check for publications remaining on the node, not counting the one we just unpublished.
+	nodePubFound := false
+	for _, pub := range o.listVolumePublicationsForNode(ctx, nodeName) {
+		if pub.VolumeName == volumeName {
+			continue
+		}
+		nodePubFound = true
+		break
+	}
+
+	// If the node is known to be gone, and if we just unpublished the last volume on that node, delete the node.
+	if !nodePubFound && node.Deleted {
+		return o.deleteNode(ctx, nodeName)
+	}
+
+	return nil
 }
 
 // AttachVolume mounts a volume to the local host.  This method is currently only used by Docker,
@@ -4263,7 +4299,7 @@ func (o *TridentOrchestrator) ListNodes(context.Context) (nodes []*utils.Node, e
 	return nodes, nil
 }
 
-func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nName string) (err error) {
+func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nodeName string) (err error) {
 	if o.bootstrapError != nil {
 		return o.bootstrapError
 	}
@@ -4274,14 +4310,50 @@ func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nName string) (err
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
-	node, found := o.nodes[nName]
+	node, found := o.nodes[nodeName]
 	if !found {
-		return utils.NotFoundError(fmt.Sprintf("node %s not found", nName))
+		return utils.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
 	}
+
+	publicationCount := len(o.listVolumePublicationsForNode(ctx, nodeName))
+	logFields := log.Fields{
+		"name":         nodeName,
+		"publications": publicationCount,
+	}
+
+	if publicationCount == 0 {
+
+		// No volumes are published to this node, so delete the CR and update backends that support node-level access.
+		Logc(ctx).WithFields(logFields).Debug("No volumes publications remain for node, removing node CR.")
+
+		return o.deleteNode(ctx, nodeName)
+
+	} else {
+
+		// There are still volumes published to this node, so this is a sudden node removal.  Preserve the node CR
+		// with a Deleted flag so we can handle the eventual unpublish calls for the affected volumes.
+		Logc(ctx).WithFields(logFields).Debug("Volume publications remain for node, marking node CR as deleted.")
+
+		node.Deleted = true
+		if err = o.storeClient.AddOrUpdateNode(ctx, node); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *TridentOrchestrator) deleteNode(ctx context.Context, nodeName string) (err error) {
+
+	node, found := o.nodes[nodeName]
+	if !found {
+		return utils.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
+	}
+
 	if err = o.storeClient.DeleteNode(ctx, node); err != nil {
 		return err
 	}
-	delete(o.nodes, nName)
+	delete(o.nodes, nodeName)
 	o.invalidateAllBackendNodeAccess()
 	return o.reconcileNodeAccessOnAllBackends(ctx)
 }
@@ -4365,11 +4437,19 @@ func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
+	publications = o.listVolumePublicationsForVolume(ctx, volumeName)
+	return
+}
+
+func (o *TridentOrchestrator) listVolumePublicationsForVolume(
+	_ context.Context, volumeName string,
+) (publications []*utils.VolumePublication) {
+
 	publications = []*utils.VolumePublication{}
 	for _, pub := range o.volumePublications[volumeName] {
 		publications = append(publications, pub)
 	}
-	return publications, nil
+	return publications
 }
 
 // ListVolumePublicationsForNode returns a list of all volume publications for a given node
@@ -4385,13 +4465,21 @@ func (o *TridentOrchestrator) ListVolumePublicationsForNode(
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
+	publications = o.listVolumePublicationsForNode(ctx, nodeName)
+	return
+}
+
+func (o *TridentOrchestrator) listVolumePublicationsForNode(
+	_ context.Context, nodeName string,
+) (publications []*utils.VolumePublication) {
+
 	publications = []*utils.VolumePublication{}
 	for _, pubs := range o.volumePublications {
 		if pubs[nodeName] != nil {
 			publications = append(publications, pubs[nodeName])
 		}
 	}
-	return publications, nil
+	return
 }
 
 // DeleteVolumePublication deletes the record of the volume publication for a given volume/node pair

@@ -654,7 +654,7 @@ func (mr *MockBackendMockRecorder) Terminate(arg0 interface{}) *gomock.Call {
 }
 
 // UnpublishVolume mocks base method.
-func (m *MockBackend) UnpublishVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *utils.VolumePublishInfo) error {
+func (m *MockBackend) UnpublishVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 []*utils.Node) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UnpublishVolume", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
