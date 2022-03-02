@@ -3260,6 +3260,7 @@ func TestAddNode(t *testing.T) {
 		IQN:            "myIQN",
 		IPs:            []string{"1.1.1.1", "2.2.2.2"},
 		TopologyLabels: map[string]string{"topology.kubernetes.io/region": "Region1"},
+		Deleted:        false,
 	}
 	orchestrator := getOrchestrator(t)
 	if err := orchestrator.AddNode(ctx(), node, nil); err != nil {
@@ -3274,12 +3275,14 @@ func TestGetNode(t *testing.T) {
 		IQN:            "myIQN",
 		IPs:            []string{"1.1.1.1", "2.2.2.2"},
 		TopologyLabels: map[string]string{"topology.kubernetes.io/region": "Region1"},
+		Deleted:        false,
 	}
 	unexpectedNode := &utils.Node{
 		Name:           "testNode2",
 		IQN:            "myOtherIQN",
 		IPs:            []string{"3.3.3.3", "4.4.4.4"},
 		TopologyLabels: map[string]string{"topology.kubernetes.io/region": "Region2"},
+		Deleted:        false,
 	}
 	initialNodes := map[string]*utils.Node{}
 	initialNodes[expectedNode.Name] = expectedNode
@@ -3299,14 +3302,16 @@ func TestGetNode(t *testing.T) {
 func TestListNodes(t *testing.T) {
 	orchestrator := getOrchestrator(t)
 	expectedNode1 := &utils.Node{
-		Name: "testNode",
-		IQN:  "myIQN",
-		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+		Name:    "testNode",
+		IQN:     "myIQN",
+		IPs:     []string{"1.1.1.1", "2.2.2.2"},
+		Deleted: false,
 	}
 	expectedNode2 := &utils.Node{
-		Name: "testNode2",
-		IQN:  "myOtherIQN",
-		IPs:  []string{"3.3.3.3", "4.4.4.4"},
+		Name:    "testNode2",
+		IQN:     "myOtherIQN",
+		IPs:     []string{"3.3.3.3", "4.4.4.4"},
+		Deleted: false,
 	}
 	initialNodes := map[string]*utils.Node{}
 	initialNodes[expectedNode1.Name] = expectedNode1
@@ -3350,9 +3355,10 @@ func unorderedNodeSlicesEqual(x, y []*utils.Node) bool {
 func TestDeleteNode(t *testing.T) {
 	orchestrator := getOrchestrator(t)
 	initialNode := &utils.Node{
-		Name: "testNode",
-		IQN:  "myIQN",
-		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+		Name:    "testNode",
+		IQN:     "myIQN",
+		IPs:     []string{"1.1.1.1", "2.2.2.2"},
+		Deleted: false,
 	}
 	initialNodes := map[string]*utils.Node{}
 	initialNodes[initialNode.Name] = initialNode

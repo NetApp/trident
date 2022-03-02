@@ -95,9 +95,10 @@ func getFakeStorageClassWithName(name string, iops int, snapshots bool, provType
 
 func getFakeNode() *utils.Node {
 	return &utils.Node{
-		Name: "testNode",
-		IQN:  "myIQN",
-		IPs:  []string{"1.1.1.1", "2.2.2.2"},
+		Name:    "testNode",
+		IQN:     "myIQN",
+		IPs:     []string{"1.1.1.1", "2.2.2.2"},
+		Deleted: false,
 	}
 }
 

@@ -311,6 +311,8 @@ type TridentNode struct {
 	NodePrep runtime.RawExtension `json:"nodePrep,omitempty"`
 	// HostInfo contains information about the node's host machine
 	HostInfo runtime.RawExtension `json:"hostInfo,omitempty"`
+	// Deleted indicates that Trident received an event that the node has been removed
+	Deleted bool `json:"deleted"`
 }
 
 // TridentNodeList is a list of TridentNode objects.

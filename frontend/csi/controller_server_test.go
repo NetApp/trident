@@ -58,7 +58,8 @@ func generateFakeUnpublishVolumeRequest() *csi.ControllerUnpublishVolumeRequest 
 
 func generateFakeNode(nodeID string) *utils.Node {
 	fakeNode := &utils.Node{
-		Name: nodeID,
+		Name:    nodeID,
+		Deleted: false,
 	}
 	return fakeNode
 }
@@ -231,11 +232,7 @@ func TestControllerUnpublishVolume(t *testing.T) {
 
 	// Create fake objects for this test
 	req := generateFakeUnpublishVolumeRequest()
-	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
-	fakeNode := generateFakeNode(req.NodeId)
 
-	mockOrchestrator.EXPECT().GetVolume(ctx, req.VolumeId).Return(fakeVolumeExternal, nil)
-	mockOrchestrator.EXPECT().GetNode(ctx, req.NodeId).Return(fakeNode, nil)
 	mockOrchestrator.EXPECT().UnpublishVolume(ctx, req.VolumeId, gomock.Any()).Return(nil)
 	// Verify we remove the volume publication on a successful volume unpublish
 	mockOrchestrator.EXPECT().DeleteVolumePublication(ctx, req.VolumeId, req.NodeId).Return(nil)
@@ -244,7 +241,7 @@ func TestControllerUnpublishVolume(t *testing.T) {
 	assert.Nil(t, err, "unexpected error unpublishing volume")
 }
 
-func TestControllerUnpublishVolumeError(t *testing.T) {
+func TestControllerUnpublishVolume_UnpublishError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	// Create a mocked orchestrator
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
@@ -255,11 +252,7 @@ func TestControllerUnpublishVolumeError(t *testing.T) {
 
 	// Create fake objects for this test
 	req := generateFakeUnpublishVolumeRequest()
-	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
-	fakeNode := generateFakeNode(req.NodeId)
 
-	mockOrchestrator.EXPECT().GetVolume(ctx, req.VolumeId).Return(fakeVolumeExternal, nil)
-	mockOrchestrator.EXPECT().GetNode(ctx, req.NodeId).Return(fakeNode, nil)
 	// Simulate an error during volume unpublishing
 	mockOrchestrator.EXPECT().UnpublishVolume(ctx, req.VolumeId, gomock.Any()).Return(fmt.Errorf("some error"))
 	// Verify we do not remove the volume publication if unpublishing fails
@@ -267,4 +260,46 @@ func TestControllerUnpublishVolumeError(t *testing.T) {
 
 	_, err := controllerServer.ControllerUnpublishVolume(ctx, req)
 	assert.NotNil(t, err, "unexpected success unpublishing volume")
+}
+
+func TestControllerUnpublishVolume_DeleteVolumePublicationError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked orchestrator
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	// Create a mocked helper
+	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
+	// Create an instance of ControllerServer for this test
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Create fake objects for this test
+	req := generateFakeUnpublishVolumeRequest()
+
+	// Simulate an error during volume unpublishing
+	mockOrchestrator.EXPECT().UnpublishVolume(ctx, req.VolumeId, gomock.Any()).Return(nil).Times(1)
+	// Verify we do not remove the volume publication if unpublishing fails
+	mockOrchestrator.EXPECT().DeleteVolumePublication(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed")).Times(1)
+
+	_, err := controllerServer.ControllerUnpublishVolume(ctx, req)
+	assert.NotNil(t, err, "unexpected success unpublishing volume")
+}
+
+func TestControllerUnpublishVolume_NotFoundErrors(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked orchestrator
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	// Create a mocked helper
+	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
+	// Create an instance of ControllerServer for this test
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Create fake objects for this test
+	req := generateFakeUnpublishVolumeRequest()
+
+	// Simulate an error during volume unpublishing
+	mockOrchestrator.EXPECT().UnpublishVolume(ctx, req.VolumeId, gomock.Any()).Return(utils.NotFoundError("not found")).Times(1)
+	// Verify we do not remove the volume publication if unpublishing fails
+	mockOrchestrator.EXPECT().DeleteVolumePublication(ctx, gomock.Any(), gomock.Any()).Return(utils.NotFoundError("not found")).Times(1)
+
+	_, err := controllerServer.ControllerUnpublishVolume(ctx, req)
+	assert.Nil(t, err, "unexpected error unpublishing volume")
 }

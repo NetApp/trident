@@ -882,6 +882,7 @@ func TestKubernetesAddOrUpdateNode(t *testing.T) {
 		IPs: []string{
 			"192.168.0.1",
 		},
+		Deleted: false,
 	}
 
 	// should not exist

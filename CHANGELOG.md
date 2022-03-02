@@ -15,6 +15,7 @@
 - Fixed issue when Astra Trident performance slows down when > 32 snapshots are created on a SolidFire volume.
 - Replaced SHA-1 with SHA-256 in SSL certificate creation.
 - Fixed ANF driver to allow duplicate resource names and limit operations to a single location.
+- Fixed issue with unpublishing volumes on deleted nodes. (Issue [#691](https://github.com/NetApp/trident/issues/691))
 
 **Enhancements:**
 

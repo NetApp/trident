@@ -64,6 +64,7 @@ type Node struct {
 	TopologyLabels map[string]string `json:"topologyLabels,omitempty"`
 	NodePrep       *NodePrep         `json:"nodePrep"`
 	HostInfo       *HostSystem       `json:"hostInfo,omitempty"`
+	Deleted        bool              `json:"deleted"`
 }
 
 type NodePrep struct {

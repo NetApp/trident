@@ -1257,7 +1257,7 @@ func (d *StorageDriver) Publish(
 	publishInfo.FilesystemType = "nfs"
 	publishInfo.MountOptions = mountOptions
 
-	err = d.publishNFSShare(ctx, publishInfo, volume)
+	err = d.publishNFSShare(ctx, volConfig, publishInfo, volume)
 	if err != nil {
 		Logc(ctx).WithField("name", volume.Name).WithError(err).Error("Could not publish volume.")
 	} else {
@@ -1269,7 +1269,7 @@ func (d *StorageDriver) Publish(
 // publishNFSShare ensures that the volume has the correct export policy applied
 // along with the needed access rules.
 func (d *StorageDriver) publishNFSShare(
-	ctx context.Context, publishInfo *utils.VolumePublishInfo, volume *api.Volume,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo, volume *api.Volume,
 ) error {
 
 	name := volume.Name
@@ -1285,7 +1285,7 @@ func (d *StorageDriver) publishNFSShare(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< publishNFSShare")
 	}
 
-	if !d.Config.AutoExportPolicy || publishInfo.Unmanaged {
+	if !d.Config.AutoExportPolicy || volConfig.ImportNotManaged {
 		// Nothing to do if we're not configuring export policies automatically or volume is not managed
 		return nil
 	}
@@ -1351,7 +1351,7 @@ func (d *StorageDriver) grantNodeAccess(
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
 func (d *StorageDriver) Unpublish(
-	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *storage.VolumeConfig, nodes []*utils.Node,
 ) error {
 
 	name := volConfig.InternalName
@@ -1371,7 +1371,7 @@ func (d *StorageDriver) Unpublish(
 		return fmt.Errorf("could not find volume %s; %v", name, err)
 	}
 
-	err = d.unpublishNFSShare(ctx, publishInfo, volume)
+	err = d.unpublishNFSShare(ctx, volConfig, nodes, volume)
 	if err != nil {
 		Logc(ctx).WithField("name", volume.Name).WithError(err).Error("Could not unpublish volume.")
 	} else {
@@ -1380,9 +1380,10 @@ func (d *StorageDriver) Unpublish(
 	return err
 }
 
-// unpublishNFSShare ensures that the volume does not have access to the specified node.
+// unpublishNFSShare ensures that the volume does not have access to a node to which is has been unpublished.
+// The node list represents the set of nodes to which the volume should be published.
 func (d *StorageDriver) unpublishNFSShare(
-	ctx context.Context, publishInfo *utils.VolumePublishInfo, volume *api.Volume,
+	ctx context.Context, volConfig *storage.VolumeConfig, nodes []*utils.Node, volume *api.Volume,
 ) error {
 
 	name := volume.Name
@@ -1398,13 +1399,13 @@ func (d *StorageDriver) unpublishNFSShare(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< unpublishNFSShare")
 	}
 
-	if !d.Config.AutoExportPolicy || publishInfo.Unmanaged {
+	if !d.Config.AutoExportPolicy || volConfig.ImportNotManaged {
 		// Nothing to do if we're not configuring export policies automatically or volume is not managed
 		return nil
 	}
 
 	// Ensure the export policy exists and has the correct rule set
-	if err := d.revokeNodeAccess(ctx, publishInfo, policyName); err != nil {
+	if err := d.setNodeAccess(ctx, nodes, policyName); err != nil {
 		return err
 	}
 
@@ -1428,30 +1429,36 @@ func (d *StorageDriver) unpublishNFSShare(
 	return nil
 }
 
-// revokeNodeAccess checks to see if the export policy exists and if not it will create it.  Then it ensures
-// that the IPs in the publish info are not reflected as rules on the export policy.
-func (d *StorageDriver) revokeNodeAccess(
-	ctx context.Context, publishInfo *utils.VolumePublishInfo, policyName string,
+// setNodeAccess checks to see if the export policy exists and if not it will create it.  Then it ensures
+// that the IPs in the node list exactly match the rules on the export policy.
+func (d *StorageDriver) setNodeAccess(
+	ctx context.Context, nodes []*utils.Node, policyName string,
 ) error {
 
 	exportPolicy, err := d.API.EnsureExportPolicyExists(ctx, policyName)
 	if err != nil {
 		err = fmt.Errorf("unable to ensure export policy exists; %v", err)
-		Logc(ctx).WithField("exportPolicy", policyName).WithError(err).Error("Could not revoke node access.")
+		Logc(ctx).WithField("exportPolicy", policyName).WithError(err).Error("Could not set node access.")
 		return err
 	}
 
-	removedIPs, err := utils.FilterIPs(ctx, publishInfo.HostIP, d.Config.AutoExportCIDRs)
-	if err != nil {
-		err = fmt.Errorf("unable to determine undesired export policy rules; %v", err)
-		Logc(ctx).WithField("exportPolicy", policyName).WithError(err).Error("Could not revoke node access.")
-		return err
+	allIPs := make([]string, 0)
+
+	for _, node := range nodes {
+		nodeIPs, ipErr := utils.FilterIPs(ctx, node.IPs, d.Config.AutoExportCIDRs)
+		if ipErr != nil {
+			err = fmt.Errorf("unable to determine undesired export policy rules; %v", err)
+			Logc(ctx).WithField("exportPolicy", policyName).WithError(err).Error("Could not set node access.")
+			return err
+		}
+
+		allIPs = append(allIPs, nodeIPs...)
 	}
 
-	err = d.reconcileExportPolicyRules(ctx, exportPolicy, nil, removedIPs)
+	err = d.setExportPolicyRules(ctx, exportPolicy, allIPs)
 	if err != nil {
-		err = fmt.Errorf("unable to reconcile export policy rules; %v", err)
-		Logc(ctx).WithField("exportPolicy", policyName).WithError(err).Error("Could not revoke node access.")
+		err = fmt.Errorf("unable to set export policy rules; %v", err)
+		Logc(ctx).WithField("exportPolicy", policyName).WithError(err).Error("Could not set node access.")
 		return err
 	}
 
@@ -1486,6 +1493,38 @@ func (d *StorageDriver) reconcileExportPolicyRules(
 	index := uint64(1)
 
 	for ip := range desiredPolicyRules {
+
+		policy.Rules = append(policy.Rules, api.ExportPolicyRule{
+			Clients:   []string{ip},
+			Protocols: []string{"nfs4"},
+			RuleIndex: index,
+			RoRules:   []string{"any"},
+			RwRules:   []string{"any"},
+			SuperUser: []string{"any"},
+			AnonUser:  65534,
+		})
+
+		index++
+	}
+
+	if err := d.API.SetExportPolicyAttributes(ctx, policy, roaring.BitmapOf(api.UpdateFlagExportRules)); err != nil {
+		Logc(ctx).WithField("name", policy.Name).WithError(err).Error("Could not update export policy rules.")
+		return err
+	}
+
+	Logc(ctx).WithField("name", policy.Name).Info("Updated export policy rules.")
+
+	return nil
+}
+
+// setExportPolicyRules replaces a set of access rules on an export policy to the specified set.
+func (d *StorageDriver) setExportPolicyRules(ctx context.Context, policy *api.ExportPolicy, IPs []string) error {
+
+	// Replace the rules on the export policy
+	policy.Rules = make([]api.ExportPolicyRule, 0)
+	index := uint64(1)
+
+	for _, ip := range IPs {
 
 		policy.Rules = append(policy.Rules, api.ExportPolicyRule{
 			Clients:   []string{ip},
