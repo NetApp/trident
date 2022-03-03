@@ -373,7 +373,7 @@ func TestInitialize_WithInvalidSecrets(t *testing.T) {
 
 	_, driver := newMockANFDriver(t)
 
-	result := driver.Initialize(context.TODO(), tridentconfig.ContextCSI, configJSON, commonConfig, secrets, BackendUUID)
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, secrets, BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "not initialized")
@@ -406,7 +406,7 @@ func TestInitialize_NoLocation(t *testing.T) {
 
 	_, driver := newMockANFDriver(t)
 
-	result := driver.Initialize(context.TODO(), tridentconfig.ContextCSI, configJSON, commonConfig,
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
 		map[string]string{}, BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
@@ -656,7 +656,7 @@ func TestTerminate(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 	driver.initialized = true
 
-	driver.Terminate(context.TODO(), "")
+	driver.Terminate(ctx, "")
 
 	assert.False(t, driver.initialized, "initialized not false")
 }
@@ -673,7 +673,7 @@ func TestPopulateConfigurationDefaults_NoneSet(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 	driver.Config = *config
 
-	driver.populateConfigurationDefaults(context.TODO(), &driver.Config)
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
 
 	assert.Equal(t, "trident-", *driver.Config.StoragePrefix)
 	assert.Equal(t, defaultVolumeSizeStr, driver.Config.Size)
@@ -711,7 +711,7 @@ func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 	driver.Config = *config
 
-	driver.populateConfigurationDefaults(context.TODO(), &driver.Config)
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
 
 	assert.Equal(t, "myPrefix", *driver.Config.StoragePrefix)
 	assert.Equal(t, "1234567890", driver.Config.Size)
@@ -760,7 +760,7 @@ func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 	driver.Config = *config
 
-	driver.initializeStoragePools(context.TODO())
+	driver.initializeStoragePools(ctx)
 
 	pool := storage.NewStoragePool(nil, "myANFBackend_pool")
 	pool.Attributes()[sa.BackendType] = sa.NewStringOffer(driver.Name())
@@ -856,7 +856,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 	driver.Config = *config
 
-	driver.initializeStoragePools(context.TODO())
+	driver.initializeStoragePools(ctx)
 
 	pool0 := storage.NewStoragePool(nil, "myANFBackend_pool_0")
 	pool0.Attributes()[sa.BackendType] = sa.NewStringOffer(driver.Name())
@@ -917,9 +917,9 @@ func TestValidate_InvalidServiceLevel(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 	driver.Config.ServiceLevel = "invalid"
 
-	driver.populateConfigurationDefaults(context.TODO(), &driver.Config)
-	driver.initializeStoragePools(context.TODO())
-	result := driver.validate(context.TODO())
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	result := driver.validate(ctx)
 
 	assert.Error(t, result, "validate did not fail")
 }
@@ -929,9 +929,9 @@ func TestValidate_InvalidExportRule(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 	driver.Config.ExportRule = "1.2.3.4.5"
 
-	driver.populateConfigurationDefaults(context.TODO(), &driver.Config)
-	driver.initializeStoragePools(context.TODO())
-	result := driver.validate(context.TODO())
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	result := driver.validate(ctx)
 
 	assert.Error(t, result, "validate did not fail")
 }
@@ -941,9 +941,9 @@ func TestValidate_InvalidSnapshotDir(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 	driver.Config.SnapshotDir = "yes"
 
-	driver.populateConfigurationDefaults(context.TODO(), &driver.Config)
-	driver.initializeStoragePools(context.TODO())
-	result := driver.validate(context.TODO())
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	result := driver.validate(ctx)
 
 	assert.Error(t, result, "validate did not fail")
 }
@@ -953,9 +953,9 @@ func TestValidate_ValidUnixPermissions(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 	driver.Config.UnixPermissions = "0777"
 
-	driver.populateConfigurationDefaults(context.TODO(), &driver.Config)
-	driver.initializeStoragePools(context.TODO())
-	result := driver.validate(context.TODO())
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	result := driver.validate(ctx)
 
 	assert.NoError(t, result, "validate failed")
 }
@@ -965,9 +965,9 @@ func TestValidate_InvalidUnixPermissions(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 	driver.Config.UnixPermissions = "777"
 
-	driver.populateConfigurationDefaults(context.TODO(), &driver.Config)
-	driver.initializeStoragePools(context.TODO())
-	result := driver.validate(context.TODO())
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	result := driver.validate(ctx)
 
 	assert.Error(t, result, "validate did not fail")
 }
@@ -977,9 +977,9 @@ func TestValidate_InvalidSize(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 	driver.Config.Size = "abcde"
 
-	driver.populateConfigurationDefaults(context.TODO(), &driver.Config)
-	driver.initializeStoragePools(context.TODO())
-	result := driver.validate(context.TODO())
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	result := driver.validate(ctx)
 
 	assert.Error(t, result, "validate did not fail")
 }
@@ -993,9 +993,9 @@ func TestValidate_InvalidLabel(t *testing.T) {
 		"key3": "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
 	}
 
-	driver.populateConfigurationDefaults(context.TODO(), &driver.Config)
-	driver.initializeStoragePools(context.TODO())
-	result := driver.validate(context.TODO())
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	result := driver.validate(ctx)
 
 	assert.Error(t, result, "validate did not fail")
 }

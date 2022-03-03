@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -73,76 +74,77 @@ var (
 )
 
 type Clients struct {
-	RestConfig     *rest.Config
-	KubeClient     *kubernetes.Clientset
-	DynamicClient  dynamic.Interface
-	K8SVersion     *k8sversion.Info
-	Namespace      string
-	Cluster        *Cluster
-	KubeSystemUUID string
+	restConfig     *rest.Config
+	kubeClient     *kubernetes.Clientset
+	dynamicClient  dynamic.Interface
+	k8SVersion     *k8sversion.Info
+	namespace      string
+	cluster        *Cluster
+	kubeSystemUUID string
 }
 
 // NewClient is a factory method for creating a new client instance.
-func NewClient(ctx context.Context, kubeConfig []byte, namespace string) (*Clients, error) {
+func NewClient() *Clients {
+	return &Clients{}
+}
 
-	restConfig, err := clientcmd.RESTConfigFromKubeConfig(kubeConfig)
+func (c *Clients) Init(ctx context.Context, namespace, kubeConfig, cluster string) (*Cluster, string, error) {
+
+	var err error
+
+	c.namespace = namespace
+
+	kubeConfigBytes, err := base64.StdEncoding.DecodeString(kubeConfig)
 	if err != nil {
-		return nil, err
+		return nil, "", fmt.Errorf("kubeconfig is not base64 encoded: %v", err)
 	}
 
-	clients := &Clients{
-		RestConfig: restConfig,
-		Namespace:  namespace,
+	c.restConfig, err = clientcmd.RESTConfigFromKubeConfig(kubeConfigBytes)
+	if err != nil {
+		return nil, "", fmt.Errorf("could not create REST config from kubeconfig; %v", err)
 	}
 
 	// Create the Kubernetes client
-	clients.KubeClient, err = kubernetes.NewForConfig(clients.RestConfig)
-	if err != nil {
-		return nil, err
+	if c.kubeClient, err = kubernetes.NewForConfig(c.restConfig); err != nil {
+		return nil, "", err
 	}
 
 	// Create the dynamic client
-	clients.DynamicClient, err = dynamic.NewForConfig(clients.RestConfig)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize dynamic AstraDS CRD client; %v", err)
+	if c.dynamicClient, err = dynamic.NewForConfig(c.restConfig); err != nil {
+		return nil, "", fmt.Errorf("could not initialize dynamic AstraDS CRD client; %v", err)
 	}
 
 	// Get the Kubernetes server version
-	clients.K8SVersion, err = clients.KubeClient.Discovery().ServerVersion()
-	if err != nil {
-		return nil, fmt.Errorf("could not get Kubernetes version: %v", err)
+	if c.k8SVersion, err = c.kubeClient.Discovery().ServerVersion(); err != nil {
+		return nil, "", fmt.Errorf("could not get Kubernetes version: %v", err)
 	}
 
 	Logc(ctx).WithFields(log.Fields{
-		"namespace": clients.Namespace,
-		"version":   clients.K8SVersion.String(),
+		"namespace": c.namespace,
+		"version":   c.k8SVersion.String(),
 	}).Info("Created Kubernetes clients.")
 
-	return clients, nil
-}
-
-// DiscoverCluster configures a client to use a specific AstraDS cluster.
-func (c *Clients) DiscoverCluster(ctx context.Context, cluster string) (returnError error) {
-
 	// Discover the cluster
-	if c.Cluster, returnError = c.GetCluster(ctx, cluster); returnError != nil {
-		return
+	var adsCluster *Cluster
+	if adsCluster, err = c.getCluster(ctx, cluster); err != nil {
+		return nil, "", err
 	}
+	c.cluster = adsCluster
 
 	// Discover the kube-system namespace UUID
 	var ns *v1.Namespace
-	if ns, returnError = c.KubeClient.CoreV1().Namespaces().Get(ctx, KubeNamespace, getOpts); returnError != nil {
-		return
+	if ns, err = c.kubeClient.CoreV1().Namespaces().Get(ctx, KubeNamespace, getOpts); err != nil {
+		return nil, "", err
 	}
-	c.KubeSystemUUID = string(ns.UID)
+	c.kubeSystemUUID = string(ns.UID)
 
 	log.WithFields(log.Fields{
-		"cluster": c.Cluster.Name,
-		"status":  c.Cluster.Status,
-		"version": c.Cluster.Version,
+		"cluster": c.cluster.Name,
+		"status":  c.cluster.Status,
+		"version": c.cluster.Version,
 	}).Info("Discovered AstraDS cluster.")
 
-	return
+	return c.cluster, c.kubeSystemUUID, nil
 }
 
 // //////////////////////////////////////////////////////////////////////////
@@ -161,10 +163,10 @@ func (c *Clients) getClusterFromAstraDSCluster(ftc *v1alpha1.AstraDSCluster) *Cl
 	}
 }
 
-// GetCluster returns the named AstraDS cluster.
-func (c *Clients) GetCluster(ctx context.Context, name string) (*Cluster, error) {
+// getCluster returns the named AstraDS cluster.
+func (c *Clients) getCluster(ctx context.Context, name string) (*Cluster, error) {
 
-	unstructuredCluster, err := c.DynamicClient.Resource(clustersGVR).Namespace(AstraDSNamespace).Get(ctx, name, getOpts)
+	unstructuredCluster, err := c.dynamicClient.Resource(clustersGVR).Namespace(AstraDSNamespace).Get(ctx, name, getOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -178,10 +180,10 @@ func (c *Clients) GetCluster(ctx context.Context, name string) (*Cluster, error)
 	return c.getClusterFromAstraDSCluster(&astraDSCluster), nil
 }
 
-// GetClusters discovers and returns all AstraDS clusters.
-func (c *Clients) GetClusters(ctx context.Context) ([]*Cluster, error) {
+// getClusters discovers and returns all AstraDS clusters.
+func (c *Clients) getClusters(ctx context.Context) ([]*Cluster, error) {
 
-	unstructuredList, err := c.DynamicClient.Resource(clustersGVR).Namespace(AstraDSNamespace).List(ctx, listOpts)
+	unstructuredList, err := c.dynamicClient.Resource(clustersGVR).Namespace(AstraDSNamespace).List(ctx, listOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -283,7 +285,7 @@ func (c *Clients) getAstraDSVolumeFromVolume(volume *Volume) *v1alpha1.AstraDSVo
 			Finalizers:        volume.Finalizers,
 		},
 		Spec: v1alpha1.AstraDSVolumeSpec{
-			Cluster:                c.Cluster.Name,
+			Cluster:                c.cluster.Name,
 			Size:                   volume.RequestedSize,
 			Type:                   v1alpha1.AstraDSVolumeType(volume.Type),
 			ExportPolicy:           volume.ExportPolicy,
@@ -299,10 +301,10 @@ func (c *Clients) getAstraDSVolumeFromVolume(volume *Volume) *v1alpha1.AstraDSVo
 	}
 }
 
-// GetVolumes returns all AstraDS volumes.
-func (c *Clients) GetVolumes(ctx context.Context) ([]*Volume, error) {
+// Volumes returns all AstraDS volumes.
+func (c *Clients) Volumes(ctx context.Context) ([]*Volume, error) {
 
-	unstructuredList, err := c.DynamicClient.Resource(volumesGVR).Namespace(c.Namespace).List(ctx, listOpts)
+	unstructuredList, err := c.dynamicClient.Resource(volumesGVR).Namespace(c.namespace).List(ctx, listOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -322,10 +324,10 @@ func (c *Clients) GetVolumes(ctx context.Context) ([]*Volume, error) {
 	return volumes, nil
 }
 
-// GetVolume returns the named AstraDS volume.
-func (c *Clients) GetVolume(ctx context.Context, name string) (*Volume, error) {
+// Volume returns the named AstraDS volume.
+func (c *Clients) Volume(ctx context.Context, name string) (*Volume, error) {
 
-	unstructuredVolume, err := c.DynamicClient.Resource(volumesGVR).Namespace(c.Namespace).Get(ctx, name, getOpts)
+	unstructuredVolume, err := c.dynamicClient.Resource(volumesGVR).Namespace(c.namespace).Get(ctx, name, getOpts)
 	if err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return nil, utils.NotFoundError(err.Error())
@@ -345,7 +347,7 @@ func (c *Clients) GetVolume(ctx context.Context, name string) (*Volume, error) {
 // VolumeExists checks whether an AstraDS volume exists, and it returns the volume if so.
 func (c *Clients) VolumeExists(ctx context.Context, name string) (bool, *Volume, error) {
 
-	unstructuredVolume, err := c.DynamicClient.Resource(volumesGVR).Namespace(c.Namespace).Get(ctx, name, getOpts)
+	unstructuredVolume, err := c.dynamicClient.Resource(volumesGVR).Namespace(c.namespace).Get(ctx, name, getOpts)
 	if err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return false, nil, nil
@@ -380,7 +382,7 @@ func (c *Clients) CreateVolume(ctx context.Context, request *Volume) (*Volume, e
 	}
 
 	// Create volume
-	unstructuredVolume, err = c.DynamicClient.Resource(volumesGVR).Namespace(request.Namespace).Create(ctx, unstructuredVolume, createOpts)
+	unstructuredVolume, err = c.dynamicClient.Resource(volumesGVR).Namespace(request.Namespace).Create(ctx, unstructuredVolume, createOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -402,7 +404,7 @@ func (c *Clients) SetVolumeAttributes(ctx context.Context, volume *Volume, updat
 	setAttrs := func() error {
 
 		// Get the volume so we always modify the latest version
-		unstructuredVolume, err := c.DynamicClient.Resource(volumesGVR).Namespace(c.Namespace).Get(ctx, volume.Name, getOpts)
+		unstructuredVolume, err := c.dynamicClient.Resource(volumesGVR).Namespace(c.namespace).Get(ctx, volume.Name, getOpts)
 		if err != nil {
 			if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 				return backoff.Permanent(err)
@@ -447,7 +449,7 @@ func (c *Clients) SetVolumeAttributes(ctx context.Context, volume *Volume, updat
 		}
 
 		// Update volume
-		unstructuredVolume, err = c.DynamicClient.Resource(volumesGVR).Namespace(volume.Namespace).Update(
+		unstructuredVolume, err = c.dynamicClient.Resource(volumesGVR).Namespace(volume.Namespace).Update(
 			ctx, unstructuredVolume, updateOpts)
 		if err != nil {
 			if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
@@ -492,7 +494,7 @@ func (c *Clients) SetVolumeAttributes(ctx context.Context, volume *Volume, updat
 // DeleteVolume deletes an AstraDS volume.
 func (c *Clients) DeleteVolume(ctx context.Context, volume *Volume) error {
 
-	err := c.DynamicClient.Resource(volumesGVR).Namespace(volume.Namespace).Delete(ctx, volume.Name, deleteOpts)
+	err := c.dynamicClient.Resource(volumesGVR).Namespace(volume.Namespace).Delete(ctx, volume.Name, deleteOpts)
 	if err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return nil
@@ -549,7 +551,7 @@ func (c *Clients) WaitForVolumeReady(ctx context.Context, volume *Volume, maxEla
 
 	checkVolumeReady := func() error {
 
-		v, err := c.GetVolume(ctx, volume.Name)
+		v, err := c.Volume(ctx, volume.Name)
 		if err != nil {
 			if utils.IsNotFoundError(err) {
 				return backoff.Permanent(err)
@@ -816,7 +818,7 @@ func (c *Clients) getAstraDSExportPolicyFromExportPolicy(exportPolicy *ExportPol
 		},
 		Spec: v1alpha1.AstraDSExportPolicySpec{
 			Rules:   c.getAstraDSExportPolicyRulesFromExportPolicyRules(exportPolicy),
-			Cluster: c.Cluster.Name,
+			Cluster: c.cluster.Name,
 		},
 	}
 }
@@ -863,10 +865,10 @@ func (c *Clients) getAstraDSExportPolicyRulesFromExportPolicyRules(
 	return rules
 }
 
-// GetExportPolicy returns the named AstraDS export policy.
-func (c *Clients) GetExportPolicy(ctx context.Context, name string) (*ExportPolicy, error) {
+// getExportPolicy returns the named AstraDS export policy.
+func (c *Clients) getExportPolicy(ctx context.Context, name string) (*ExportPolicy, error) {
 
-	unstructuredExportPolicy, err := c.DynamicClient.Resource(exportPoliciesGVR).Namespace(c.Namespace).Get(ctx, name, getOpts)
+	unstructuredExportPolicy, err := c.dynamicClient.Resource(exportPoliciesGVR).Namespace(c.namespace).Get(ctx, name, getOpts)
 	if err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return nil, utils.NotFoundError(err.Error())
@@ -886,7 +888,7 @@ func (c *Clients) GetExportPolicy(ctx context.Context, name string) (*ExportPoli
 // ExportPolicyExists checks whether an AstraDS export policy exists, and it returns the export policy if so.
 func (c *Clients) ExportPolicyExists(ctx context.Context, name string) (bool, *ExportPolicy, error) {
 
-	if exportPolicy, err := c.GetExportPolicy(ctx, name); err == nil {
+	if exportPolicy, err := c.getExportPolicy(ctx, name); err == nil {
 		return true, exportPolicy, nil
 	} else if utils.IsNotFoundError(err) {
 		return false, nil, nil
@@ -910,7 +912,7 @@ func (c *Clients) EnsureExportPolicyExists(ctx context.Context, name string) (*E
 		return nil, err
 	}
 
-	if err = c.WaitForExportPolicyReady(ctx, exportPolicy, exportPolicyCreateTimeout); err != nil {
+	if err = c.waitForExportPolicyReady(ctx, exportPolicy, exportPolicyCreateTimeout); err != nil {
 		// If we failed to create an export policy, clean up the export policy CR
 		if deleteErr := c.DeleteExportPolicy(ctx, name); deleteErr != nil {
 			Logc(ctx).WithField("name", name).WithError(deleteErr).Error("Could not delete failed export policy.")
@@ -926,7 +928,7 @@ func (c *Clients) EnsureExportPolicyExists(ctx context.Context, name string) (*E
 			"Could not add finalizer to export policy.")
 	}
 
-	return c.GetExportPolicy(ctx, name)
+	return c.getExportPolicy(ctx, name)
 }
 
 // createExportPolicy creates an AstraDS export policy.
@@ -940,11 +942,11 @@ func (c *Clients) createExportPolicy(ctx context.Context, name string) (*ExportP
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
-			Namespace: c.Namespace,
+			Namespace: c.namespace,
 		},
 		Spec: v1alpha1.AstraDSExportPolicySpec{
 			Rules:   make(v1alpha1.AstraDSExportPolicyRules, 0),
-			Cluster: c.Cluster.Name,
+			Cluster: c.cluster.Name,
 		},
 	}
 
@@ -960,7 +962,7 @@ func (c *Clients) createExportPolicy(ctx context.Context, name string) (*ExportP
 	}
 
 	// Create export policy
-	unstructuredExportPolicy, err = c.DynamicClient.Resource(exportPoliciesGVR).Namespace(c.Namespace).Create(ctx, unstructuredExportPolicy, createOpts)
+	unstructuredExportPolicy, err = c.dynamicClient.Resource(exportPoliciesGVR).Namespace(c.namespace).Create(ctx, unstructuredExportPolicy, createOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -986,7 +988,7 @@ func (c *Clients) SetExportPolicyAttributes(
 	setAttrs := func() error {
 
 		// Get the export policy so we always modify the latest version
-		unstructuredExportPolicy, err := c.DynamicClient.Resource(exportPoliciesGVR).Namespace(c.Namespace).Get(ctx, exportPolicy.Name, getOpts)
+		unstructuredExportPolicy, err := c.dynamicClient.Resource(exportPoliciesGVR).Namespace(c.namespace).Get(ctx, exportPolicy.Name, getOpts)
 		if err != nil {
 			if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 				return backoff.Permanent(err)
@@ -1025,7 +1027,7 @@ func (c *Clients) SetExportPolicyAttributes(
 		}
 
 		// Update export policy
-		unstructuredExportPolicy, err = c.DynamicClient.Resource(exportPoliciesGVR).Namespace(exportPolicy.Namespace).Update(
+		unstructuredExportPolicy, err = c.dynamicClient.Resource(exportPoliciesGVR).Namespace(exportPolicy.Namespace).Update(
 			ctx, unstructuredExportPolicy, updateOpts)
 		if err != nil {
 			if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
@@ -1071,7 +1073,7 @@ func (c *Clients) SetExportPolicyAttributes(
 // DeleteExportPolicy deletes an AstraDS export policy.
 func (c *Clients) DeleteExportPolicy(ctx context.Context, name string) error {
 
-	err := c.DynamicClient.Resource(exportPoliciesGVR).Namespace(c.Namespace).Delete(ctx, name, deleteOpts)
+	err := c.dynamicClient.Resource(exportPoliciesGVR).Namespace(c.namespace).Delete(ctx, name, deleteOpts)
 	if err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return nil
@@ -1083,8 +1085,8 @@ func (c *Clients) DeleteExportPolicy(ctx context.Context, name string) error {
 	return nil
 }
 
-// WaitForExportPolicyReady uses a backoff retry loop to wait for an ADS export policy to be fully created.
-func (c *Clients) WaitForExportPolicyReady(
+// waitForExportPolicyReady uses a backoff retry loop to wait for an ADS export policy to be fully created.
+func (c *Clients) waitForExportPolicyReady(
 	ctx context.Context, exportPolicy *ExportPolicy, maxElapsedTime time.Duration,
 ) error {
 
@@ -1092,7 +1094,7 @@ func (c *Clients) WaitForExportPolicyReady(
 
 	checkExportPolicyReady := func() error {
 
-		ep, err := c.GetExportPolicy(ctx, exportPolicy.Name)
+		ep, err := c.getExportPolicy(ctx, exportPolicy.Name)
 		if err != nil {
 			if utils.IsNotFoundError(err) {
 				return backoff.Permanent(err)
@@ -1203,20 +1205,20 @@ func (c *Clients) getAstraDSSnapshotFromSnapshot(snapshot *Snapshot) *v1alpha1.A
 		},
 		Spec: v1alpha1.AstraDSVolumeSnapshotSpec{
 			VolumeName: snapshot.VolumeName,
-			Cluster:    c.Cluster.Name,
+			Cluster:    c.cluster.Name,
 		},
 	}
 }
 
-// GetSnapshots returns all AstraDS snapshots for a volume.
-func (c *Clients) GetSnapshots(ctx context.Context, volume *Volume) ([]*Snapshot, error) {
+// Snapshots returns all AstraDS snapshots for a volume.
+func (c *Clients) Snapshots(ctx context.Context, volume *Volume) ([]*Snapshot, error) {
 
 	// Restrict snapshots to the specified volume
 	snapshotListOpts := metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("%s=%s", astraDSVolumeUUIDKey, volume.VolumeUUID),
 	}
 
-	unstructuredList, err := c.DynamicClient.Resource(snapshotsGVR).Namespace(c.Namespace).List(ctx, snapshotListOpts)
+	unstructuredList, err := c.dynamicClient.Resource(snapshotsGVR).Namespace(c.namespace).List(ctx, snapshotListOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -1236,10 +1238,10 @@ func (c *Clients) GetSnapshots(ctx context.Context, volume *Volume) ([]*Snapshot
 	return snapshots, nil
 }
 
-// GetSnapshot returns the named AstraDS snapshot.
-func (c *Clients) GetSnapshot(ctx context.Context, name string) (*Snapshot, error) {
+// Snapshot returns the named AstraDS snapshot.
+func (c *Clients) Snapshot(ctx context.Context, name string) (*Snapshot, error) {
 
-	unstructuredSnapshot, err := c.DynamicClient.Resource(snapshotsGVR).Namespace(c.Namespace).Get(ctx, name, getOpts)
+	unstructuredSnapshot, err := c.dynamicClient.Resource(snapshotsGVR).Namespace(c.namespace).Get(ctx, name, getOpts)
 	if err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return nil, utils.NotFoundError(err.Error())
@@ -1259,7 +1261,7 @@ func (c *Clients) GetSnapshot(ctx context.Context, name string) (*Snapshot, erro
 // SnapshotExists checks whether an AstraDS snapshot exists, and it returns the snapshot if so.
 func (c *Clients) SnapshotExists(ctx context.Context, name string) (bool, *Snapshot, error) {
 
-	unstructuredSnapshot, err := c.DynamicClient.Resource(snapshotsGVR).Namespace(c.Namespace).Get(ctx, name, getOpts)
+	unstructuredSnapshot, err := c.dynamicClient.Resource(snapshotsGVR).Namespace(c.namespace).Get(ctx, name, getOpts)
 	if err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return false, nil, nil
@@ -1294,7 +1296,7 @@ func (c *Clients) CreateSnapshot(ctx context.Context, request *Snapshot) (*Snaps
 	}
 
 	// Create snapshot
-	unstructuredSnapshot, err = c.DynamicClient.Resource(snapshotsGVR).Namespace(request.Namespace).Create(ctx, unstructuredSnapshot, createOpts)
+	unstructuredSnapshot, err = c.dynamicClient.Resource(snapshotsGVR).Namespace(request.Namespace).Create(ctx, unstructuredSnapshot, createOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -1318,7 +1320,7 @@ func (c *Clients) SetSnapshotAttributes(
 	setAttrs := func() error {
 
 		// Get the snapshot so we always modify the latest version
-		unstructuredSnapshot, err := c.DynamicClient.Resource(snapshotsGVR).Namespace(c.Namespace).Get(ctx, snapshot.Name, getOpts)
+		unstructuredSnapshot, err := c.dynamicClient.Resource(snapshotsGVR).Namespace(c.namespace).Get(ctx, snapshot.Name, getOpts)
 		if err != nil {
 			if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 				return backoff.Permanent(err)
@@ -1352,7 +1354,7 @@ func (c *Clients) SetSnapshotAttributes(
 		}
 
 		// Update snapshot
-		unstructuredSnapshot, err = c.DynamicClient.Resource(snapshotsGVR).Namespace(snapshot.Namespace).Update(
+		unstructuredSnapshot, err = c.dynamicClient.Resource(snapshotsGVR).Namespace(snapshot.Namespace).Update(
 			ctx, unstructuredSnapshot, updateOpts)
 		if err != nil {
 			if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
@@ -1398,7 +1400,7 @@ func (c *Clients) SetSnapshotAttributes(
 // DeleteSnapshot deletes an AstraDS snapshot.
 func (c *Clients) DeleteSnapshot(ctx context.Context, snapshot *Snapshot) error {
 
-	err := c.DynamicClient.Resource(snapshotsGVR).Namespace(snapshot.Namespace).Delete(ctx, snapshot.Name, deleteOpts)
+	err := c.dynamicClient.Resource(snapshotsGVR).Namespace(snapshot.Namespace).Delete(ctx, snapshot.Name, deleteOpts)
 	if err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return nil
@@ -1420,7 +1422,7 @@ func (c *Clients) WaitForSnapshotReady(ctx context.Context, snapshot *Snapshot, 
 
 	checkSnapshotReady := func() error {
 
-		s, err := c.GetSnapshot(ctx, snapshot.Name)
+		s, err := c.Snapshot(ctx, snapshot.Name)
 		if err != nil {
 			if utils.IsNotFoundError(err) {
 				return backoff.Permanent(err)
@@ -1542,10 +1544,10 @@ func (c *Clients) getQosPolicyFromAstraDSQosPolicy(adsqp *v1alpha1.AstraDSQosPol
 	}
 }
 
-// GetQosPolicies returns all AstraDS QoS policies.
-func (c *Clients) GetQosPolicies(ctx context.Context) ([]*QosPolicy, error) {
+// QosPolicies returns all AstraDS QoS policies.
+func (c *Clients) QosPolicies(ctx context.Context) ([]*QosPolicy, error) {
 
-	unstructuredList, err := c.DynamicClient.Resource(qosPoliciesGVR).Namespace(AstraDSNamespace).List(ctx, listOpts)
+	unstructuredList, err := c.dynamicClient.Resource(qosPoliciesGVR).Namespace(AstraDSNamespace).List(ctx, listOpts)
 	if err != nil {
 		return nil, err
 	}

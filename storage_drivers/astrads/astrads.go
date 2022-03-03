@@ -4,7 +4,6 @@ package astrads
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -62,15 +61,20 @@ const (
 	maxAnnotationLength   = 256 * 1024
 )
 
+var (
+	storagePrefixRegex = regexp.MustCompile(`^$|^[a-zA-Z][a-zA-Z0-9-]{0,62}$`)
+	nameRegexp         = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`) // RFC 1123
+	csiRegexp          = regexp.MustCompile(`^pvc-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+)
+
 // StorageDriver is for storage provisioning using Cloud Volumes Service in GCP
 type StorageDriver struct {
 	initialized         bool
+	backendUUID         string
 	Config              drivers.AstraDSStorageDriverConfig
-	API                 *api.Clients
-	randomID            string
-	nameRegexp          *regexp.Regexp
-	csiRegexp           *regexp.Regexp
-	apiRegions          []string
+	API                 api.AstraDS
+	cluster             *api.Cluster
+	kubeSystemUUID      string
 	pools               map[string]storage.Pool
 	volumeCreateTimeout time.Duration
 }
@@ -96,7 +100,7 @@ func (d *StorageDriver) poolName(name string) string {
 
 // validateName checks that the name of a new volume matches the requirements of a Kubernetes object name
 func (d *StorageDriver) validateName(name string) error {
-	if !d.nameRegexp.MatchString(name) {
+	if !nameRegexp.MatchString(name) {
 		return fmt.Errorf("volume name %s is not allowed; a DNS-1123 name must consist of lower case alphanumeric "+
 			"characters, '-' or '.', and must start and end with an alphanumeric character", name)
 	}
@@ -127,7 +131,7 @@ func (d *StorageDriver) defaultDeleteTimeout() time.Duration {
 // Initialize initializes this driver from the provided config
 func (d *StorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
-	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 
 	if commonConfig.DebugTraceFlags["method"] {
@@ -137,8 +141,6 @@ func (d *StorageDriver) Initialize(
 	}
 
 	commonConfig.DriverContext = context
-	d.nameRegexp = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`) // RFC 1123
-	d.csiRegexp = regexp.MustCompile(`^pvc-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 
 	// Parse the config
 	config, err := d.initializeAstraDSConfig(ctx, configJSON, commonConfig, backendSecret)
@@ -147,43 +149,35 @@ func (d *StorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	if err = d.populateConfigurationDefaults(ctx, &d.Config); err != nil {
-		return fmt.Errorf("could not populate configuration defaults; %v", err)
-	}
+	d.populateConfigurationDefaults(ctx, &d.Config)
+	d.initializeStoragePools(ctx)
 
 	// Validate config fields needed to create API client
+	if d.Config.Namespace == "" {
+		return errors.New("namespace not specified in backend config")
+	}
 	if d.Config.Kubeconfig == "" {
 		return errors.New("kubeconfig not specified in backend config")
 	}
 	if d.Config.Cluster == "" {
 		return errors.New("cluster not specified in backend config")
 	}
-	if d.Config.Namespace == "" {
-		return errors.New("namespace not specified in backend config")
-	}
 
-	kubeConfigBytes, err := base64.StdEncoding.DecodeString(d.Config.Kubeconfig)
+	if d.API == nil {
+		d.API = api.NewClient()
+	}
+	d.cluster, d.kubeSystemUUID, err = d.API.Init(ctx, d.Config.Namespace, d.Config.Kubeconfig, d.Config.Cluster)
 	if err != nil {
-		return fmt.Errorf("kubeconfig is not base64 encoded: %v", err)
-	}
-
-	if d.API, err = api.NewClient(ctx, kubeConfigBytes, d.Config.Namespace); err != nil {
 		return fmt.Errorf("error initializing %s API client; %v", d.Name(), err)
 	}
-	if err = d.API.DiscoverCluster(ctx, d.Config.Cluster); err != nil {
-		return fmt.Errorf("error discovering %s cluster; %v", d.Config.Cluster, err)
-	}
-	d.Config.ClusterUUID = d.API.Cluster.UUID
-	d.Config.KubeSystemUUID = d.API.KubeSystemUUID
-
-	if err = d.initializeStoragePools(ctx); err != nil {
-		return fmt.Errorf("could not configure storage pools; %v", err)
-	}
+	d.Config.ClusterUUID = d.cluster.UUID
+	d.Config.KubeSystemUUID = d.kubeSystemUUID
 
 	if err = d.validate(ctx); err != nil {
 		return fmt.Errorf("error validating %s driver; %v", d.Name(), err)
 	}
 
+	d.backendUUID = backendUUID
 	d.initialized = true
 	return nil
 }
@@ -208,7 +202,7 @@ func (d *StorageDriver) Terminate(ctx context.Context, _ string) {
 // populateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
 func (d *StorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.AstraDSStorageDriverConfig,
-) error {
+) {
 
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "StorageDriver"}
@@ -262,12 +256,10 @@ func (d *StorageDriver) populateConfigurationDefaults(
 		"NfsMountOptions": config.NfsMountOptions,
 		"LimitVolumeSize": config.LimitVolumeSize,
 	}).Debugf("Configuration defaults")
-
-	return nil
 }
 
 // initializeStoragePools defines the pools reported to Trident, whether physical or virtual.
-func (d *StorageDriver) initializeStoragePools(ctx context.Context) error {
+func (d *StorageDriver) initializeStoragePools(ctx context.Context) {
 
 	d.pools = make(map[string]storage.Pool)
 
@@ -387,8 +379,6 @@ func (d *StorageDriver) initializeStoragePools(ctx context.Context) error {
 			d.pools[pool.Name()] = pool
 		}
 	}
-
-	return nil
 }
 
 // initializeAstraDSConfig parses the AstraDS config, mixing in the specified common config.
@@ -433,10 +423,10 @@ func (d *StorageDriver) validate(ctx context.Context) error {
 	}
 
 	// Validate AstraDS cluster version
-	if clusterVersion, err := utils.ParseSemantic(d.API.Cluster.Version); err != nil {
+	if clusterVersion, err := utils.ParseSemantic(d.cluster.Version); err != nil {
 		Logc(ctx).WithFields(log.Fields{
-			"cluster": d.API.Cluster.Name,
-			"version": d.API.Cluster.Version,
+			"cluster": d.cluster.Name,
+			"version": d.cluster.Version,
 		}).WithError(err).Error("AstraDS cluster version is invalid.")
 	} else {
 		if !clusterVersion.AtLeast(utils.MustParseSemantic(minimumAstraDSVersion)) {
@@ -464,7 +454,7 @@ func (d *StorageDriver) validate(ctx context.Context) error {
 
 	// Build list of extant QoS policies on the cluster
 	qosPolicyNames := make([]string, 0)
-	if qosPolicies, err := d.API.GetQosPolicies(ctx); err != nil {
+	if qosPolicies, err := d.API.QosPolicies(ctx); err != nil {
 		return fmt.Errorf("could not read AstraDS QoS policies; %v", err)
 	} else {
 		for _, qosPolicy := range qosPolicies {
@@ -581,7 +571,7 @@ func (d *StorageDriver) Create(
 	}
 	snapshotReserveInt64, err := strconv.ParseInt(snapshotReserve, 10, 32)
 	if err != nil {
-		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
+		return fmt.Errorf("invalid value for snapshotReserve; %v", err)
 	}
 	snapshotReserveInt32 := int32(snapshotReserveInt64)
 	if snapshotReserveInt32 < minimumSnapshotReserve || snapshotReserveInt32 > maximumSnapshotReserve {
@@ -631,10 +621,10 @@ func (d *StorageDriver) Create(
 		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size])
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
-	if err := drivers.CheckMinVolumeSize(sizeBytes, MinimumVolumeSizeBytes); err != nil {
+	if err = drivers.CheckMinVolumeSize(sizeBytes, MinimumVolumeSizeBytes); err != nil {
 		return err
 	}
-	if _, _, err := drivers.CheckVolumeSizeLimits(ctx, sizeBytes, d.Config.CommonStorageDriverConfig); err != nil {
+	if _, _, err = drivers.CheckVolumeSizeLimits(ctx, sizeBytes, d.Config.CommonStorageDriverConfig); err != nil {
 		return err
 	}
 
@@ -846,16 +836,15 @@ func (d *StorageDriver) CreateClone(
 	}
 
 	// Get the source volume
-	sourceVolume, err := d.API.GetVolume(ctx, sourceVolumeName)
+	sourceVolume, err := d.API.Volume(ctx, sourceVolumeName)
 	if err != nil {
 		return fmt.Errorf("could not find source volume; %v", err)
 	}
 
 	// Get the source snapshot, if specified
 	if sourceSnapshotName != "" {
-		_, err := d.API.GetSnapshot(ctx, sourceSnapshotName)
-		if err != nil {
-			return fmt.Errorf("could not find source snapshot; %v", err)
+		if _, snapErr := d.API.Snapshot(ctx, sourceSnapshotName); snapErr != nil {
+			return fmt.Errorf("could not find source snapshot; %v", snapErr)
 		}
 	}
 
@@ -1040,7 +1029,7 @@ func (d *StorageDriver) Import(ctx context.Context, volConfig *storage.VolumeCon
 
 		// Update volume annotations
 		if err = d.API.SetVolumeAttributes(ctx, volume, roaring.BitmapOf(api.UpdateFlagAnnotations)); err != nil {
-			err = fmt.Errorf("could not set annotations for volume %s: %v", volume.Name, err)
+			err = fmt.Errorf("could not set annotations for volume %s; %v", volume.Name, err)
 			Logc(ctx).WithField("volume", volume.Name).WithError(err).Error("Could not import volume.")
 			return err
 		}
@@ -1091,6 +1080,7 @@ func (d *StorageDriver) getTelemetryLabelsJSON(ctx context.Context) string {
 		Telemetry: tridentconfig.OrchestratorTelemetry,
 		Plugin:    d.Name(),
 	}
+	telemetry.Telemetry.TridentBackendUUID = d.backendUUID
 
 	telemetryMap := map[string]Telemetry{drivers.TridentLabelTag: telemetry}
 
@@ -1218,9 +1208,10 @@ func (d *StorageDriver) destroyExportPolicy(ctx context.Context, name string, de
 	// Delete the export policy
 	if err = d.API.DeleteExportPolicy(ctx, name); err != nil {
 		Logc(ctx).WithField("exportPolicy", name).WithError(err).Error("Could not delete export policy.")
-	} else {
-		Logc(ctx).WithField("exportPolicy", name).Info("Export policy deleted.")
+		return
 	}
+
+	Logc(ctx).WithField("exportPolicy", name).Info("Export policy deleted.")
 }
 
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
@@ -1242,7 +1233,7 @@ func (d *StorageDriver) Publish(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Publish")
 	}
 
-	volume, err := d.API.GetVolume(ctx, name)
+	volume, err := d.API.Volume(ctx, name)
 	if err != nil {
 		return fmt.Errorf("could not find volume %s; %v", name, err)
 	}
@@ -1259,13 +1250,13 @@ func (d *StorageDriver) Publish(
 	publishInfo.FilesystemType = "nfs"
 	publishInfo.MountOptions = mountOptions
 
-	err = d.publishNFSShare(ctx, volConfig, publishInfo, volume)
-	if err != nil {
+	if err = d.publishNFSShare(ctx, volConfig, publishInfo, volume); err != nil {
 		Logc(ctx).WithField("name", volume.Name).WithError(err).Error("Could not publish volume.")
-	} else {
-		Logc(ctx).WithField("name", volume.Name).Info("Published volume.")
+		return err
 	}
-	return err
+
+	Logc(ctx).WithField("name", volume.Name).Info("Published volume.")
+	return nil
 }
 
 // publishNFSShare ensures that the volume has the correct export policy applied
@@ -1307,7 +1298,7 @@ func (d *StorageDriver) publishNFSShare(
 
 	// Update volume to use the correct export policy
 	if err := d.API.SetVolumeAttributes(ctx, volume, roaring.BitmapOf(api.UpdateFlagExportPolicy)); err != nil {
-		err = fmt.Errorf("could not set export policy for volume %s: %v", name, err)
+		err = fmt.Errorf("could not set export policy for volume %s; %v", name, err)
 		Logc(ctx).WithField("volume", volume.Name).WithError(err).Error("Could not set export policy for volume.")
 		return err
 	}
@@ -1339,8 +1330,7 @@ func (d *StorageDriver) grantNodeAccess(
 		return err
 	}
 
-	err = d.reconcileExportPolicyRules(ctx, exportPolicy, addedIPs, nil)
-	if err != nil {
+	if err = d.reconcileExportPolicyRules(ctx, exportPolicy, addedIPs); err != nil {
 		err = fmt.Errorf("unable to reconcile export policy rules; %v", err)
 		Logc(ctx).WithField("exportPolicy", policyName).WithError(err).Error("Could not grant node access.")
 		return err
@@ -1368,18 +1358,18 @@ func (d *StorageDriver) Unpublish(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Unpublish")
 	}
 
-	volume, err := d.API.GetVolume(ctx, name)
+	volume, err := d.API.Volume(ctx, name)
 	if err != nil {
 		return fmt.Errorf("could not find volume %s; %v", name, err)
 	}
 
-	err = d.unpublishNFSShare(ctx, volConfig, nodes, volume)
-	if err != nil {
+	if err = d.unpublishNFSShare(ctx, volConfig, nodes, volume); err != nil {
 		Logc(ctx).WithField("name", volume.Name).WithError(err).Error("Could not unpublish volume.")
-	} else {
-		Logc(ctx).WithField("name", volume.Name).Info("Unpublished volume.")
+		return err
 	}
-	return err
+
+	Logc(ctx).WithField("name", volume.Name).Info("Unpublished volume.")
+	return nil
 }
 
 // unpublishNFSShare ensures that the volume does not have access to a node to which is has been unpublished.
@@ -1421,7 +1411,7 @@ func (d *StorageDriver) unpublishNFSShare(
 
 	// Update volume to use the correct export policy
 	if err := d.API.SetVolumeAttributes(ctx, volume, roaring.BitmapOf(api.UpdateFlagExportPolicy)); err != nil {
-		err = fmt.Errorf("could not set export policy for volume %s: %v", name, err)
+		err = fmt.Errorf("could not set export policy for volume %s; %v", name, err)
 		Logc(ctx).WithField("volume", volume.Name).WithError(err).Error("Could not set export policy for volume.")
 		return err
 	}
@@ -1433,9 +1423,7 @@ func (d *StorageDriver) unpublishNFSShare(
 
 // setNodeAccess checks to see if the export policy exists and if not it will create it.  Then it ensures
 // that the IPs in the node list exactly match the rules on the export policy.
-func (d *StorageDriver) setNodeAccess(
-	ctx context.Context, nodes []*utils.Node, policyName string,
-) error {
+func (d *StorageDriver) setNodeAccess(ctx context.Context, nodes []*utils.Node, policyName string) error {
 
 	exportPolicy, err := d.API.EnsureExportPolicyExists(ctx, policyName)
 	if err != nil {
@@ -1446,10 +1434,11 @@ func (d *StorageDriver) setNodeAccess(
 
 	allIPs := make([]string, 0)
 
+	// Build list of all filtered IPs for all nodes that should be in the export policy rules
 	for _, node := range nodes {
 		nodeIPs, ipErr := utils.FilterIPs(ctx, node.IPs, d.Config.AutoExportCIDRs)
 		if ipErr != nil {
-			err = fmt.Errorf("unable to determine undesired export policy rules; %v", err)
+			err = fmt.Errorf("unable to determine undesired export policy rules; %v", ipErr)
 			Logc(ctx).WithField("exportPolicy", policyName).WithError(err).Error("Could not set node access.")
 			return err
 		}
@@ -1457,6 +1446,7 @@ func (d *StorageDriver) setNodeAccess(
 		allIPs = append(allIPs, nodeIPs...)
 	}
 
+	// Update the export policy
 	err = d.setExportPolicyRules(ctx, exportPolicy, allIPs)
 	if err != nil {
 		err = fmt.Errorf("unable to set export policy rules; %v", err)
@@ -1469,7 +1459,7 @@ func (d *StorageDriver) setNodeAccess(
 
 // reconcileExportPolicyRules updates a set of access rules on an export policy.
 func (d *StorageDriver) reconcileExportPolicyRules(
-	ctx context.Context, policy *api.ExportPolicy, addedIPs []string, removedIPs []string,
+	ctx context.Context, policy *api.ExportPolicy, addedIPs []string,
 ) error {
 
 	// Start with existing rules
@@ -1478,11 +1468,6 @@ func (d *StorageDriver) reconcileExportPolicyRules(
 		for _, client := range rule.Clients {
 			desiredPolicyRules[client] = true
 		}
-	}
-
-	// Purge map of removed IPs
-	for _, ip := range removedIPs {
-		delete(desiredPolicyRules, ip)
 	}
 
 	// Update map with added IPs
@@ -1589,7 +1574,7 @@ func (d *StorageDriver) getSnapshot(
 	internalVolName := snapConfig.VolumeInternalName
 
 	// Get the snapshot
-	snapshot, err := d.API.GetSnapshot(ctx, internalSnapName)
+	snapshot, err := d.API.Snapshot(ctx, internalSnapName)
 	if err != nil {
 		if utils.IsNotFoundError(err) {
 			return nil, nil
@@ -1642,12 +1627,12 @@ func (d *StorageDriver) GetSnapshots(
 	}
 
 	// Get the volume
-	volume, err := d.API.GetVolume(ctx, internalVolName)
+	volume, err := d.API.Volume(ctx, internalVolName)
 	if err != nil {
 		return nil, fmt.Errorf("could not find volume %s; %v", internalVolName, err)
 	}
 
-	snapshots, err := d.API.GetSnapshots(ctx, volume)
+	snapshots, err := d.API.Snapshots(ctx, volume)
 	if err != nil {
 		return nil, fmt.Errorf("could not list snapshots for volume %s; %v", internalVolName, err)
 	}
@@ -1833,7 +1818,7 @@ func (d *StorageDriver) DeleteSnapshot(
 	}
 
 	// Delete the snapshot
-	if err := d.API.DeleteSnapshot(ctx, extantSnapshot); err != nil {
+	if err = d.API.DeleteSnapshot(ctx, extantSnapshot); err != nil {
 		return err
 	}
 
@@ -1856,13 +1841,13 @@ func (d *StorageDriver) List(ctx context.Context) ([]string, error) {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< List")
 	}
 
-	volumes, err := d.API.GetVolumes(ctx)
+	volumes, err := d.API.Volumes(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	prefix := *d.Config.StoragePrefix
-	var volumeNames []string
+	volumeNames := make([]string, 0)
 
 	for _, volume := range volumes {
 
@@ -1891,7 +1876,7 @@ func (d *StorageDriver) Get(ctx context.Context, name string) error {
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Get")
 	}
 
-	_, err := d.API.GetVolume(ctx, name)
+	_, err := d.API.Volume(ctx, name)
 	return err
 }
 
@@ -1911,7 +1896,7 @@ func (d *StorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeCon
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Resize")
 	}
 
-	volume, err := d.API.GetVolume(ctx, name)
+	volume, err := d.API.Volume(ctx, name)
 	if err != nil {
 		return fmt.Errorf("could not find volume %s; %v", name, err)
 	}
@@ -1944,7 +1929,7 @@ func (d *StorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeCon
 
 	// If we aren't growing the volume, there's nothing to do
 	if int64(newSizeBytes) == currentRequestedSizeBytes {
-		volConfig.Size = strconv.FormatUint(newSizeBytes, 10)
+		volConfig.Size = strconv.FormatUint(requestedSizeBytes, 10)
 		return nil
 	}
 
@@ -1999,12 +1984,13 @@ func (d *StorageDriver) GetInternalVolumeName(ctx context.Context, name string) 
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return *d.Config.StoragePrefix + name
-	} else if d.csiRegexp.MatchString(name) {
+	} else if csiRegexp.MatchString(name) {
 		// If the name is from CSI (i.e. contains a UUID), just use it as-is
 		Logc(ctx).WithField("volumeInternal", name).Debug("Using volume name as internal name.")
 		return name
 	} else {
 		internal := drivers.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
+		internal = strings.Replace(internal, "--", "-", -1) // Remove any double hyphens
 		Logc(ctx).WithField("volumeInternal", internal).Debug("Modified volume name for internal name.")
 		return internal
 	}
@@ -2026,13 +2012,13 @@ func (d *StorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.V
 	// Get the volume
 	name := volConfig.InternalName
 
-	volume, err := d.API.GetVolume(ctx, name)
+	volume, err := d.API.Volume(ctx, name)
 	if err != nil {
 		return fmt.Errorf("could not get volume %s; %v", name, err)
 	}
 
 	if !volume.IsReady(ctx) {
-		err = fmt.Errorf("volume %s is not yet ready", name)
+		return fmt.Errorf("volume %s is not yet ready", name)
 	}
 
 	volConfig.AccessInfo.NfsServerIP = volume.ExportAddress
@@ -2079,23 +2065,12 @@ func (d *StorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 // representation of the volume.
 func (d *StorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
 
-	volumeAttrs, err := d.API.GetVolume(ctx, name)
+	volumeAttrs, err := d.API.Volume(ctx, name)
 	if err != nil {
 		return nil, err
 	}
 
 	return d.getVolumeExternal(ctx, volumeAttrs), nil
-}
-
-// String implements the stringer interface for the StorageDriver driver
-func (d StorageDriver) String() string {
-	// Cannot use GetExternalConfig as it contains log statements
-	return utils.ToStringRedacted(&d, []string{"API"}, nil)
-}
-
-// GoString implements the GoStringer interface for the StorageDriver driver
-func (d StorageDriver) GoString() string {
-	return d.String()
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about
@@ -2108,7 +2083,7 @@ func (d *StorageDriver) GetVolumeExternalWrappers(ctx context.Context, channel c
 	defer close(channel)
 
 	// Get all volumes
-	volumes, err := d.API.GetVolumes(ctx)
+	volumes, err := d.API.Volumes(ctx)
 	if err != nil {
 		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
 		return
@@ -2167,6 +2142,17 @@ func (d *StorageDriver) getVolumeExternal(ctx context.Context, volume *api.Volum
 	}
 }
 
+// String implements the stringer interface for the StorageDriver driver
+func (d StorageDriver) String() string {
+	// Cannot use GetExternalConfig as it contains log statements
+	return utils.ToStringRedacted(&d, []string{"API"}, nil)
+}
+
+// GoString implements the GoStringer interface for the StorageDriver driver
+func (d StorageDriver) GoString() string {
+	return d.String()
+}
+
 // GetUpdateType returns a bitmap populated with updates to the driver.
 func (d *StorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driver) *roaring.Bitmap {
 
@@ -2190,17 +2176,12 @@ func (d *StorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driv
 
 // ReconcileNodeAccess updates per-backend export policies to include access to all specified
 // nodes (not supported by AstraDS).
-func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
+func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, _ []*utils.Node, _ string) error {
 
-	nodeNames := make([]string, 0)
-	for _, node := range nodes {
-		nodeNames = append(nodeNames, node.Name)
-	}
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "ReconcileNodeAccess",
 			"Type":   "StorageDriver",
-			"Nodes":  nodeNames,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> ReconcileNodeAccess")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< ReconcileNodeAccess")
@@ -2212,14 +2193,7 @@ func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.
 
 // validateStoragePrefix ensures that the storage prefix is allowable.
 func validateStoragePrefix(storagePrefix string) error {
-	if storagePrefix == "" {
-		return nil
-	}
-
-	matched, err := regexp.MatchString(`^[a-zA-Z][a-zA-Z0-9-]{0,62}$`, storagePrefix)
-	if err != nil {
-		return fmt.Errorf("could not check storage prefix; %v", err)
-	} else if !matched {
+	if !storagePrefixRegex.MatchString(storagePrefix) {
 		return fmt.Errorf("storage prefix may only contain letters/digits/hyphens and must begin with a letter")
 	}
 	return nil
