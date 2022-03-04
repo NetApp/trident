@@ -7,12 +7,16 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
+	"k8s.io/client-go/kubernetes"
 )
 
 //go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_astrads/mock_api.go github.com/netapp/trident/storage_drivers/astrads/api AstraDS
 
 type AstraDS interface {
-	Init(context.Context, string, string, string) (*Cluster, string, error)
+	Init(context.Context, string, string, []byte) (*Cluster, string, error)
+	KubeClient() *kubernetes.Clientset
+	Cluster(context.Context, string) (*Cluster, error)
+	Clusters(context.Context) ([]*Cluster, error)
 
 	Volumes(context.Context) ([]*Volume, error)
 	Volume(context.Context, string) (*Volume, error)

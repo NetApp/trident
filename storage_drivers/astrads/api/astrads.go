@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -88,16 +87,13 @@ func NewClient() *Clients {
 	return &Clients{}
 }
 
-func (c *Clients) Init(ctx context.Context, namespace, kubeConfig, cluster string) (*Cluster, string, error) {
+func (c *Clients) Init(
+	ctx context.Context, namespace, cluster string, kubeConfigBytes []byte,
+) (*Cluster, string, error) {
 
 	var err error
 
 	c.namespace = namespace
-
-	kubeConfigBytes, err := base64.StdEncoding.DecodeString(kubeConfig)
-	if err != nil {
-		return nil, "", fmt.Errorf("kubeconfig is not base64 encoded: %v", err)
-	}
 
 	c.restConfig, err = clientcmd.RESTConfigFromKubeConfig(kubeConfigBytes)
 	if err != nil {
@@ -125,11 +121,17 @@ func (c *Clients) Init(ctx context.Context, namespace, kubeConfig, cluster strin
 	}).Info("Created Kubernetes clients.")
 
 	// Discover the cluster
-	var adsCluster *Cluster
-	if adsCluster, err = c.getCluster(ctx, cluster); err != nil {
-		return nil, "", err
+	if cluster != "" {
+		if c.cluster, err = c.Cluster(ctx, cluster); err != nil {
+			return nil, "", err
+		}
+
+		log.WithFields(log.Fields{
+			"cluster": c.cluster.Name,
+			"status":  c.cluster.Status,
+			"version": c.cluster.Version,
+		}).Info("Discovered AstraDS cluster.")
 	}
-	c.cluster = adsCluster
 
 	// Discover the kube-system namespace UUID
 	var ns *v1.Namespace
@@ -138,13 +140,11 @@ func (c *Clients) Init(ctx context.Context, namespace, kubeConfig, cluster strin
 	}
 	c.kubeSystemUUID = string(ns.UID)
 
-	log.WithFields(log.Fields{
-		"cluster": c.cluster.Name,
-		"status":  c.cluster.Status,
-		"version": c.cluster.Version,
-	}).Info("Discovered AstraDS cluster.")
-
 	return c.cluster, c.kubeSystemUUID, nil
+}
+
+func (c *Clients) KubeClient() *kubernetes.Clientset {
+	return c.kubeClient
 }
 
 // //////////////////////////////////////////////////////////////////////////
@@ -163,8 +163,8 @@ func (c *Clients) getClusterFromAstraDSCluster(ftc *v1alpha1.AstraDSCluster) *Cl
 	}
 }
 
-// getCluster returns the named AstraDS cluster.
-func (c *Clients) getCluster(ctx context.Context, name string) (*Cluster, error) {
+// Cluster returns the named AstraDS cluster.
+func (c *Clients) Cluster(ctx context.Context, name string) (*Cluster, error) {
 
 	unstructuredCluster, err := c.dynamicClient.Resource(clustersGVR).Namespace(AstraDSNamespace).Get(ctx, name, getOpts)
 	if err != nil {
@@ -180,8 +180,8 @@ func (c *Clients) getCluster(ctx context.Context, name string) (*Cluster, error)
 	return c.getClusterFromAstraDSCluster(&astraDSCluster), nil
 }
 
-// getClusters discovers and returns all AstraDS clusters.
-func (c *Clients) getClusters(ctx context.Context) ([]*Cluster, error) {
+// Clusters discovers and returns all AstraDS clusters.
+func (c *Clients) Clusters(ctx context.Context) ([]*Cluster, error) {
 
 	unstructuredList, err := c.dynamicClient.Resource(clustersGVR).Namespace(AstraDSNamespace).List(ctx, listOpts)
 	if err != nil {

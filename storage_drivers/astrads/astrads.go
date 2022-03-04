@@ -4,6 +4,7 @@ package astrads
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -165,10 +166,15 @@ func (d *StorageDriver) Initialize(
 		return errors.New("cluster not specified in backend config")
 	}
 
+	kubeConfigBytes, err := base64.StdEncoding.DecodeString(d.Config.Kubeconfig)
+	if err != nil {
+		return fmt.Errorf("kubeconfig is not base64 encoded: %v", err)
+	}
+
 	if d.API == nil {
 		d.API = api.NewClient()
 	}
-	d.cluster, d.kubeSystemUUID, err = d.API.Init(ctx, d.Config.Namespace, d.Config.Kubeconfig, d.Config.Cluster)
+	d.cluster, d.kubeSystemUUID, err = d.API.Init(ctx, d.Config.Namespace, d.Config.Cluster, kubeConfigBytes)
 	if err != nil {
 		return fmt.Errorf("error initializing %s API client; %v", d.Name(), err)
 	}

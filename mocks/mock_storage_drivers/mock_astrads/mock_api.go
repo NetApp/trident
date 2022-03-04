@@ -12,6 +12,7 @@ import (
 	roaring "github.com/RoaringBitmap/roaring"
 	gomock "github.com/golang/mock/gomock"
 	api "github.com/netapp/trident/storage_drivers/astrads/api"
+	kubernetes "k8s.io/client-go/kubernetes"
 )
 
 // MockAstraDS is a mock of AstraDS interface.
@@ -35,6 +36,36 @@ func NewMockAstraDS(ctrl *gomock.Controller) *MockAstraDS {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAstraDS) EXPECT() *MockAstraDSMockRecorder {
 	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockAstraDS) Cluster(arg0 context.Context, arg1 string) (*api.Cluster, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", arg0, arg1)
+	ret0, _ := ret[0].(*api.Cluster)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockAstraDSMockRecorder) Cluster(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockAstraDS)(nil).Cluster), arg0, arg1)
+}
+
+// Clusters mocks base method.
+func (m *MockAstraDS) Clusters(arg0 context.Context) ([]*api.Cluster, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clusters", arg0)
+	ret0, _ := ret[0].([]*api.Cluster)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Clusters indicates an expected call of Clusters.
+func (mr *MockAstraDSMockRecorder) Clusters(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clusters", reflect.TypeOf((*MockAstraDS)(nil).Clusters), arg0)
 }
 
 // CreateSnapshot mocks base method.
@@ -141,7 +172,7 @@ func (mr *MockAstraDSMockRecorder) ExportPolicyExists(arg0, arg1 interface{}) *g
 }
 
 // Init mocks base method.
-func (m *MockAstraDS) Init(arg0 context.Context, arg1, arg2, arg3 string) (*api.Cluster, string, error) {
+func (m *MockAstraDS) Init(arg0 context.Context, arg1, arg2 string, arg3 []byte) (*api.Cluster, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Init", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*api.Cluster)
@@ -154,6 +185,20 @@ func (m *MockAstraDS) Init(arg0 context.Context, arg1, arg2, arg3 string) (*api.
 func (mr *MockAstraDSMockRecorder) Init(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Init", reflect.TypeOf((*MockAstraDS)(nil).Init), arg0, arg1, arg2, arg3)
+}
+
+// KubeClient mocks base method.
+func (m *MockAstraDS) KubeClient() *kubernetes.Clientset {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KubeClient")
+	ret0, _ := ret[0].(*kubernetes.Clientset)
+	return ret0
+}
+
+// KubeClient indicates an expected call of KubeClient.
+func (mr *MockAstraDSMockRecorder) KubeClient() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KubeClient", reflect.TypeOf((*MockAstraDS)(nil).KubeClient))
 }
 
 // QosPolicies mocks base method.

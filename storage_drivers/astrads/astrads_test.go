@@ -31,7 +31,8 @@ import (
 
 const (
 	BackendName      = "myADSBackend"
-	Kubeconfig       = "ZmFrZS1rdWJlY29uZmln"
+	Kubeconfig       = "fake-kubeconfig"
+	KubeconfigB64    = "ZmFrZS1rdWJlY29uZmln"
 	Cluster          = "fake-cluster"
 	ClusterUUID      = "deadbeef-d086-46cf-b08f-945945386d2a"
 	Namespace        = "fake-namespace"
@@ -118,7 +119,7 @@ func newTestAstraDSDriver(mockAPI api.AstraDS) *StorageDriver {
 
 	config := drivers.AstraDSStorageDriverConfig{
 		CommonStorageDriverConfig: mutableCommonConfig,
-		Kubeconfig:                Kubeconfig,
+		Kubeconfig:                KubeconfigB64,
 		Cluster:                   Cluster,
 		Namespace:                 Namespace,
 		NfsMountOptions:           "vers=4.1",
@@ -308,7 +309,7 @@ func TestInitialize_WithoutSecrets(t *testing.T) {
 		API: mockAPI,
 	}
 
-	mockAPI.EXPECT().Init(ctx, Namespace, Kubeconfig, Cluster).Return(adsCluster, KubeSystemUUID, nil).Times(1)
+	mockAPI.EXPECT().Init(ctx, Namespace, Cluster, []byte(Kubeconfig)).Return(adsCluster, KubeSystemUUID, nil).Times(1)
 	mockAPI.EXPECT().QosPolicies(ctx).Return(qosPolicies, nil).Times(1)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, FakeExportPolicy).Return(true, staticExportPolicy, nil).Times(1)
 
@@ -345,7 +346,7 @@ func TestInitialize_WithSecrets(t *testing.T) {
     }`
 
 	secrets := map[string]string{
-		"kubeconfig": Kubeconfig,
+		"kubeconfig": KubeconfigB64,
 	}
 
 	mockCtrl := gomock.NewController(t)
@@ -355,7 +356,7 @@ func TestInitialize_WithSecrets(t *testing.T) {
 		API: mockAPI,
 	}
 
-	mockAPI.EXPECT().Init(ctx, Namespace, Kubeconfig, Cluster).Return(adsCluster, KubeSystemUUID, nil).Times(1)
+	mockAPI.EXPECT().Init(ctx, Namespace, Cluster, []byte(Kubeconfig)).Return(adsCluster, KubeSystemUUID, nil).Times(1)
 	mockAPI.EXPECT().QosPolicies(ctx).Return(qosPolicies, nil).Times(1)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, FakeExportPolicy).Return(true, staticExportPolicy, nil).Times(1)
 
@@ -364,7 +365,7 @@ func TestInitialize_WithSecrets(t *testing.T) {
 	assert.NoError(t, result, "initialize failed")
 	assert.NotNil(t, driver.Config, "config is nil")
 	assert.Equal(t, adsCluster, driver.cluster)
-	assert.Equal(t, Kubeconfig, driver.Config.Kubeconfig)
+	assert.Equal(t, KubeconfigB64, driver.Config.Kubeconfig)
 	assert.Equal(t, KubeSystemUUID, driver.kubeSystemUUID)
 	assert.Equal(t, ClusterUUID, driver.Config.ClusterUUID)
 	assert.Equal(t, KubeSystemUUID, driver.Config.KubeSystemUUID)
@@ -393,7 +394,7 @@ func TestInitialize_WithInvalidSecrets(t *testing.T) {
     }`
 
 	secrets := map[string]string{
-		"KubeConfig": Kubeconfig, // valid key is "kubeconfig"
+		"KubeConfig": KubeconfigB64, // valid key is "kubeconfig"
 	}
 
 	mockCtrl := gomock.NewController(t)
@@ -555,7 +556,7 @@ func TestInitialize_APIInitError(t *testing.T) {
 		API: mockAPI,
 	}
 
-	mockAPI.EXPECT().Init(ctx, Namespace, Kubeconfig, Cluster).Return(nil, "", errFailed).Times(1)
+	mockAPI.EXPECT().Init(ctx, Namespace, Cluster, []byte(Kubeconfig)).Return(nil, "", errFailed).Times(1)
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
 
@@ -599,7 +600,7 @@ func TestInitialize_InvalidStoragePrefix(t *testing.T) {
 		API: mockAPI,
 	}
 
-	mockAPI.EXPECT().Init(ctx, Namespace, Kubeconfig, Cluster).Return(adsCluster, KubeSystemUUID, nil).Times(1)
+	mockAPI.EXPECT().Init(ctx, Namespace, Cluster, []byte(Kubeconfig)).Return(adsCluster, KubeSystemUUID, nil).Times(1)
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, badCommonConfig, map[string]string{}, BackendUUID)
 
@@ -641,7 +642,7 @@ func TestInitialize_InvalidExportPolicyMode(t *testing.T) {
 		API: mockAPI,
 	}
 
-	mockAPI.EXPECT().Init(ctx, Namespace, Kubeconfig, Cluster).Return(adsCluster, KubeSystemUUID, nil).Times(1)
+	mockAPI.EXPECT().Init(ctx, Namespace, Cluster, []byte(Kubeconfig)).Return(adsCluster, KubeSystemUUID, nil).Times(1)
 
 	result := driver.Initialize(ctx, tridentconfig.ContextDocker, configJSON, badCommonConfig, map[string]string{}, BackendUUID)
 
@@ -692,7 +693,7 @@ func TestPopulateConfigurationDefaults_NoneSet(t *testing.T) {
 
 	config := &drivers.AstraDSStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
-		Kubeconfig:                Kubeconfig,
+		Kubeconfig:                KubeconfigB64,
 		Cluster:                   Cluster,
 		Namespace:                 Namespace,
 		AutoExportPolicy:          false,
@@ -728,7 +729,7 @@ func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
 
 	config := &drivers.AstraDSStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
-		Kubeconfig:                Kubeconfig,
+		Kubeconfig:                KubeconfigB64,
 		Cluster:                   Cluster,
 		Namespace:                 Namespace,
 		NfsMountOptions:           "vers=3",
@@ -776,7 +777,7 @@ func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 			DebugTraceFlags: debugTraceFlags,
 			LimitVolumeSize: "123456789000",
 		},
-		Kubeconfig:       Kubeconfig,
+		Kubeconfig:       KubeconfigB64,
 		Cluster:          Cluster,
 		Namespace:        Namespace,
 		NfsMountOptions:  "nfsvers=4.1",
@@ -846,7 +847,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 			DebugTraceFlags: debugTraceFlags,
 			LimitVolumeSize: "123456789000",
 		},
-		Kubeconfig:       Kubeconfig,
+		Kubeconfig:       KubeconfigB64,
 		Cluster:          Cluster,
 		Namespace:        Namespace,
 		NfsMountOptions:  "nfsvers=4.1",
@@ -2891,7 +2892,7 @@ func TestDestroyExportPolicy_SharedPoolPolicy(t *testing.T) {
 			DebugTraceFlags: debugTraceFlags,
 			LimitVolumeSize: "123456789000",
 		},
-		Kubeconfig:       Kubeconfig,
+		Kubeconfig:       KubeconfigB64,
 		Cluster:          Cluster,
 		Namespace:        Namespace,
 		NfsMountOptions:  "nfsvers=4.1",
@@ -4633,7 +4634,7 @@ func TestStringAndGoString(t *testing.T) {
 		assert.Contains(t, result, "<REDACTED>", "ADS driver does not contain <REDACTED>")
 		assert.Contains(t, result, "API:<REDACTED>", "ADS driver does not redact API information")
 		assert.Contains(t, result, "Kubeconfig:<REDACTED>", "ADS driver does not redact Kubeconfig")
-		assert.NotContains(t, result, Kubeconfig, "ADS driver contains Kubeconfig")
+		assert.NotContains(t, result, KubeconfigB64, "ADS driver contains Kubeconfig")
 	}
 }
 
