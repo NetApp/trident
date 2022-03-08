@@ -2,7 +2,13 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v21.10.0
+## Changes since v22.01.0
+
+**Fixes:**
+- Fixed issue with unpublishing volumes on deleted nodes. (Issue [#691](https://github.com/NetApp/trident/issues/691))
+- Fixed panic when accessing nil fields for aggregate space in ONTAP API responses.
+
+## v22.01.0
 
 - **IMPORTANT**: If you are upgrading from any previous Trident release and use Azure NetApp Files, the ``location`` config parameter is now a mandatory, singleton field.
 
@@ -15,7 +21,6 @@
 - Fixed issue when Astra Trident performance slows down when > 32 snapshots are created on a SolidFire volume.
 - Replaced SHA-1 with SHA-256 in SSL certificate creation.
 - Fixed ANF driver to allow duplicate resource names and limit operations to a single location.
-- Fixed issue with unpublishing volumes on deleted nodes. (Issue [#691](https://github.com/NetApp/trident/issues/691))
 
 **Enhancements:**
 
