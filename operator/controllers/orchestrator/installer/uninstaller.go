@@ -78,7 +78,7 @@ func (i *Installer) UninstallTrident() error {
 		return fmt.Errorf("could not delete Trident service; %v", err)
 	}
 
-	if err := i.client.DeleteTridentSecret(getSecretName(), appLabel, i.namespace); err != nil {
+	if err := i.client.DeleteTridentSecret(getProtocolSecretName(), appLabel, i.namespace); err != nil {
 		return fmt.Errorf("could not delete Trident secret; %v", err)
 	}
 

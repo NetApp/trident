@@ -81,7 +81,7 @@ type ExtendedK8sClient interface {
 
 	GetSecretInformation(secretName, appLabel, namespace string, shouldUpdate bool) (*corev1.Secret,
 		[]corev1.Secret, bool, error)
-	PutSecret(createSecret bool, newSecretYAML string) error
+	PutSecret(createSecret bool, newSecretYAML string, secretName string) error
 	DeleteTridentSecret(secretName, appLabel, namespace string) error
 	RemoveMultipleSecrets(unwantedSecrets []corev1.Secret) error
 

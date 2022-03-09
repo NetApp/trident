@@ -305,37 +305,46 @@ func uninstallTrident() error {
 		}
 	}
 
-	if secret, err := client.GetSecretByLabel(TridentCSILabel, true); err != nil {
+	if secrets, err := client.GetSecretsByLabel(TridentCSILabel, false); err != nil {
 
 		log.WithFields(log.Fields{
 			"label": TridentCSILabel,
 			"error": err,
-		}).Warning("Trident secret not found.")
+		}).Warning("Trident secrets not found.")
 
 	} else {
 
-		// Secret found by label, so ensure there isn't a namespace clash
-		if TridentPodNamespace != secret.Namespace {
-			return fmt.Errorf("a Trident secret was found in namespace '%s', "+
-				"not in specified namespace '%s'", secret.Namespace, TridentPodNamespace)
-		}
+		for _, secret := range secrets {
 
-		log.WithFields(log.Fields{
-			"service":   secret.Name,
-			"namespace": secret.Namespace,
-		}).Debug("Trident secret found by label.")
-
-		// Delete the secret
-		if err = client.DeleteSecretByLabel(TridentCSILabel); err != nil {
 			log.WithFields(log.Fields{
-				"service":   secret.Name,
+				"secret":   secret.Name,
 				"namespace": secret.Namespace,
-				"label":     TridentCSILabel,
-				"error":     err,
-			}).Warning("Could not delete secret.")
-			anyErrors = true
-		} else {
-			log.Info("Deleted Trident secret.")
+			}).Debug("Trident secret found by label.")
+
+			// Check if the secret has our persistent object label and value. If so, don't remove it.
+			if value, ok := secret.GetLabels()[TridentPersistentObjectLabelKey]; ok {
+				if value == TridentPersistentObjectLabelValue {
+					log.WithFields(log.Fields{
+						"secret":   secret.Name,
+						"namespace": secret.Namespace,
+						"label":     TridentPersistentObjectLabel,
+					}).Info("Retaining Trident secret.")
+					continue
+				}
+			}
+
+			// Deleting the secret by name should be safe since namespaced objects have unique names.
+			if err = client.DeleteSecret(secret.Name, TridentPodNamespace); err != nil {
+				log.WithFields(log.Fields{
+					"secret":   secret.Name,
+					"namespace": secret.Namespace,
+					"label":     TridentCSILabel,
+					"error":     err,
+				}).Warning("Could not delete secret.")
+				anyErrors = true
+			} else {
+				log.Info("Deleted Trident secret.")
+			}
 		}
 	}
 

@@ -66,6 +66,10 @@ const (
 	TridentMigratorLabelValue = "trident-migrator.netapp.io"
 	TridentMigratorLabel      = TridentMigratorLabelKey + "=" + TridentMigratorLabelValue
 
+	TridentPersistentObjectLabelKey   = "object"
+	TridentPersistentObjectLabelValue = "persistent.trident.netapp.io"
+	TridentPersistentObjectLabel      = TridentPersistentObjectLabelKey + "=" + TridentPersistentObjectLabelValue
+
 	TridentOperatorLabelKey   = "app"
 	TridentOperatorLabelValue = "operator.trident.netapp.io"
 	TridentOperatorLabel      = TridentOperatorLabelKey + "=" + TridentOperatorLabelValue

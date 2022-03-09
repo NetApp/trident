@@ -1269,6 +1269,18 @@ func (k *K8sClient) GetSecretInformation(secretName, appLabel, namespace string,
 		// 2. If there is a secret named trident-csi in CR namespace and one or many other secret
 		//    exist that matches the label then remove all other secrets.
 		for _, secret := range secrets {
+			// Check if the secret has our persistent object label and value. If so, don't issue it for deletion it.
+			if value, ok := secret.GetLabels()[TridentPersistentObjectLabelKey]; ok {
+				if value == TridentPersistentObjectLabelValue {
+					log.WithFields(log.Fields{
+						"secret":   secret.Name,
+						"namespace": secret.Namespace,
+						"label":     TridentPersistentObjectLabel,
+					}).Info("Retaining Trident secret.")
+					continue
+				}
+			}
+
 			if secret.Namespace == namespace && secret.Name == secretName {
 				// Found a secret named trident-csi in the same namespace
 				log.WithFields(log.Fields{
@@ -1295,12 +1307,12 @@ func (k *K8sClient) GetSecretInformation(secretName, appLabel, namespace string,
 }
 
 // PutSecret creates or updates a Secret associated with Trident.
-func (k *K8sClient) PutSecret(createSecret bool, newSecretYAML string) error {
+func (k *K8sClient) PutSecret(createSecret bool, newSecretYAML string, secretName string) error {
 
 	// Create Secret
 	if createSecret {
 		log.WithFields(log.Fields{
-			"secret":    getSecretName(),
+			"secret":    secretName,
 			"namespace": k.Namespace(),
 		}).Debug("Creating Trident secret.")
 
@@ -1309,14 +1321,6 @@ func (k *K8sClient) PutSecret(createSecret bool, newSecretYAML string) error {
 		}
 
 		log.Debug("Created Trident secret.")
-	} else {
-		// It is very debatable if secrets should be patched
-
-		// log.WithFields(log.Fields{
-		//	"service":   currentSecret.Name,
-		//	"namespace": currentSecret.Namespace,
-		// }).Debug("Patching Trident secret.")
-		// k.PatchTridentSecret(currentSecret, []byte(newSecretYAML, appLabel)
 	}
 
 	return nil
@@ -1369,6 +1373,18 @@ func (k *K8sClient) RemoveMultipleSecrets(unwantedSecrets []corev1.Secret) error
 
 	if len(unwantedSecrets) > 0 {
 		for _, secretToRemove := range unwantedSecrets {
+			// Check if the secret has our persistent object label and value. If so, don't remove it.
+			if value, ok := secretToRemove.GetLabels()[TridentPersistentObjectLabelKey]; ok {
+				if value == TridentPersistentObjectLabelValue {
+					log.WithFields(log.Fields{
+						"secret":   secretToRemove.Name,
+						"namespace": secretToRemove.Namespace,
+						"label":     TridentPersistentObjectLabel,
+					}).Info("Retaining Trident secret.")
+					continue
+				}
+			}
+
 			// Delete the secret
 			if err = k.DeleteSecret(secretToRemove.Name, secretToRemove.Namespace); err != nil {
 				log.WithFields(log.Fields{

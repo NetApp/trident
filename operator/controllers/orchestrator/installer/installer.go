@@ -490,9 +490,16 @@ func (i *Installer) InstallOrPatchTrident(
 	}
 
 	// Create or update the Trident Secret
-	returnError = i.createOrPatchTridentSecret(controllingCRDetails, labels, shouldUpdate)
+	returnError = i.createOrPatchTridentProtocolSecret(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
-		returnError = fmt.Errorf("failed to create the Trident Secret; %v", returnError)
+		returnError = fmt.Errorf("failed to create the Trident Protocol Secret; %v", returnError)
+		return nil, "", returnError
+	}
+
+	// Create or update the Trident Encryption Secret
+	returnError = i.createOrConsumeTridentEncryptionSecret(controllingCRDetails, labels, shouldUpdate)
+	if returnError != nil {
+		returnError = fmt.Errorf("failed to create the Trident Encryption Secret; %v", returnError)
 		return nil, "", returnError
 	}
 
@@ -980,12 +987,12 @@ func (i *Installer) createOrPatchTridentService(
 	return nil
 }
 
-func (i *Installer) createOrPatchTridentSecret(
+func (i *Installer) createOrPatchTridentProtocolSecret(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
 
 	secretMap := make(map[string]string)
-	secretName := getSecretName()
+	secretName := getProtocolSecretName()
 
 	_, unwantedSecrets, createSecret, err := i.client.GetSecretInformation(secretName, appLabel, i.namespace,
 		shouldUpdate)
@@ -1005,11 +1012,6 @@ func (i *Installer) createOrPatchTridentSecret(
 			return fmt.Errorf("failed to create Trident X509 certificates; %v", err)
 		}
 
-		aesKey, err := utils.GenerateAESKey()
-		if err != nil {
-			return fmt.Errorf("failed to generate secure AES key; %v", err)
-		}
-
 		// Create the secret for the HTTP certs & keys
 		secretMap = map[string]string{
 			commonconfig.CAKeyFile:      certInfo.CAKey,
@@ -1018,14 +1020,62 @@ func (i *Installer) createOrPatchTridentSecret(
 			commonconfig.ServerCertFile: certInfo.ServerCert,
 			commonconfig.ClientKeyFile:  certInfo.ClientKey,
 			commonconfig.ClientCertFile: certInfo.ClientCert,
-			commonconfig.AESKeyFile:     aesKey,
 		}
 	}
 
 	newSecretYAML := k8sclient.GetSecretYAML(secretName, i.namespace, labels, controllingCRDetails, secretMap, nil)
 
-	if err = i.client.PutSecret(createSecret, newSecretYAML); err != nil {
+	if err = i.client.PutSecret(createSecret, newSecretYAML, getProtocolSecretName()); err != nil {
 		return fmt.Errorf("failed to create or patch Trident secret; %v", err)
+	}
+
+	return nil
+}
+
+// createOrConsumeTridentEncryptionSecret checks for a Trident Encryption Secret or uses an existing one if it exists;
+// This helper disregards shouldUpdate to avoid destroying the Trident Encryption Secret across upgrades scenarios.
+func (i *Installer) createOrConsumeTridentEncryptionSecret(
+	controllingCRDetails, labels map[string]string, _ bool,
+) error {
+
+	secretName := getEncryptionSecretName()
+
+	// Check if Trident's Encryption Secret already exists.
+	secretExists, err := i.client.CheckSecretExists(secretName)
+	if err != nil {
+		return fmt.Errorf("failed to check for existing Trident encryption secret; %v", err)
+	}
+
+	// Create a new Trident Encryption Secret if it doesn't exist.
+	if !secretExists {
+
+		// Generate a fresh AES Key because the Trident Crypto Secret doesn't exist.
+		aesKey, err := utils.GenerateAESKey()
+		if err != nil {
+			return fmt.Errorf("failed to generate secure AES key; %v", err)
+		}
+
+		// Create the secret map
+		secretMap := make(map[string]string)
+		secretMap = map[string]string{
+			commonconfig.AESKeyFile:     aesKey,
+		}
+
+		// Setup persistent object labels.
+		persistentObjectLabels := make(map[string]string)
+		persistentObjectLabels[TridentPersistentObjectLabelKey] = TridentPersistentObjectLabelValue
+
+		// Add default labels to maintain consistency in Trident related K8s objects.
+		for key, value := range labels {
+			persistentObjectLabels[key] = value
+		}
+
+		newSecretYAML := k8sclient.GetSecretYAML(secretName, i.namespace, persistentObjectLabels, controllingCRDetails,
+			secretMap, nil)
+
+		if err = i.client.PutSecret(true, newSecretYAML, getEncryptionSecretName()); err != nil {
+			return fmt.Errorf("failed to create Trident encryption secret; %v", err)
+		}
 	}
 
 	return nil

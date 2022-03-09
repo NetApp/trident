@@ -535,8 +535,12 @@ spec:
       - name: socket-dir
         emptyDir:
       - name: certs
-        secret:
-          secretName: trident-csi
+        projected:
+          sources:
+          - secret:
+              name: trident-csi
+          - secret:
+              name: trident-encryption-keys
       - name: asup-dir
         emptyDir:
           medium: ""
@@ -692,8 +696,12 @@ spec:
       - name: socket-dir
         emptyDir:
       - name: certs
-        secret:
-          secretName: trident-csi
+        projected:
+          sources:
+          - secret:
+              name: trident-csi
+          - secret:
+              name: trident-encryption-keys
       - name: asup-dir
         emptyDir:
           medium: ""
@@ -909,8 +917,12 @@ spec:
           path: /var/lib/trident/tracking
           type: DirectoryOrCreate
       - name: certs
-        secret:
-          secretName: trident-csi
+        projected:
+          sources:
+          - secret:
+              name: trident-csi
+          - secret:
+              name: trident-encryption-keys
 `
 
 const daemonSet118YAMLTemplate = `---
@@ -1072,8 +1084,12 @@ spec:
           path: /var/lib/trident/tracking
           type: DirectoryOrCreate
       - name: certs
-        secret:
-          secretName: trident-csi
+        projected:
+          sources:
+          - secret:
+              name: trident-csi
+          - secret:
+              name: trident-encryption-keys
 `
 
 func GetTridentVersionPodYAML(

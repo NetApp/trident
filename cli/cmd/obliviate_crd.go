@@ -60,6 +60,11 @@ var obliviateCRDCmd = &cobra.Command{
 			if err := initClients(); err != nil {
 				return err
 			}
+
+			if err := confirmObliviate(crdConfirmation); err != nil {
+				return err
+			}
+
 			return obliviateCRDs()
 		}
 	},

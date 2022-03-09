@@ -58,8 +58,7 @@ const (
 	ServerCertFile = "serverCert"
 	ClientKeyFile  = "clientKey"
 	ClientCertFile = "clientCert"
-
-	AESKeyFile = "aesKey"
+	AESKeyFile     = "aesKey"
 
 	certsPath = "/certs/"
 
@@ -69,8 +68,7 @@ const (
 	ServerCertPath = certsPath + ServerCertFile
 	ClientKeyPath  = certsPath + ClientKeyFile
 	ClientCertPath = certsPath + ClientCertFile
-
-	AESKeyPath = certsPath + AESKeyFile
+	AESKeyPath     = certsPath + AESKeyFile
 
 	/* Protocol constants. This value denotes a volume's backing storage protocol. For example,
 	a Trident volume with  'file' protocol is most likely NFS, while a 'block' protocol volume is probably iSCSI. */

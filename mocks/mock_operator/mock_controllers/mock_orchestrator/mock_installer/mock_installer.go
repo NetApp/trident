@@ -2340,17 +2340,17 @@ func (mr *MockExtendedK8sClientMockRecorder) PutPodSecurityPolicy(arg0, arg1, ar
 }
 
 // PutSecret mocks base method.
-func (m *MockExtendedK8sClient) PutSecret(arg0 bool, arg1 string) error {
+func (m *MockExtendedK8sClient) PutSecret(arg0 bool, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PutSecret", arg0, arg1)
+	ret := m.ctrl.Call(m, "PutSecret", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PutSecret indicates an expected call of PutSecret.
-func (mr *MockExtendedK8sClientMockRecorder) PutSecret(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockExtendedK8sClientMockRecorder) PutSecret(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutSecret", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutSecret), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutSecret", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutSecret), arg0, arg1, arg2)
 }
 
 // PutService mocks base method.

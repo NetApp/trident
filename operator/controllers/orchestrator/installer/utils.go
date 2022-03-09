@@ -32,8 +32,12 @@ func getServiceName() string {
 	return TridentCSI
 }
 
-func getSecretName() string {
+func getProtocolSecretName() string {
 	return TridentCSI
+}
+
+func getEncryptionSecretName() string {
+	return TridentEncryptionKeys
 }
 
 func getDeploymentName(csi bool) string {

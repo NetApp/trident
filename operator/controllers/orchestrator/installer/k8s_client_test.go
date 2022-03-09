@@ -3705,7 +3705,7 @@ func TestGetSecretInformation(t *testing.T) {
 
 func TestPutSecret(t *testing.T) {
 
-	secretName := getSecretName()
+	secretName := getProtocolSecretName()
 	namespace := "trident"
 	newSecretYAML := k8sclient.GetSecretYAML(
 		secretName,
@@ -3789,7 +3789,7 @@ func TestPutSecret(t *testing.T) {
 				extendedK8sClient := &K8sClient{mockKubeClient}
 
 				// make the call
-				err = extendedK8sClient.PutSecret(createSecret, newSecretYAML)
+				err = extendedK8sClient.PutSecret(createSecret, newSecretYAML, secretName)
 
 				assert.Equal(t, expectedErr, err)
 			},
@@ -3803,7 +3803,7 @@ func TestDeleteTridentSecret(t *testing.T) {
 	var undeletedSecrets []string
 
 	getSecretsErr := fmt.Errorf("unable to get list of secrets")
-	secretName := "secretName"
+	secretName := "encryptSecretName"
 	appLabel := "appLabel"
 	namespace := "namespace"
 
@@ -3909,7 +3909,7 @@ func TestRemoveMultipleSecrets(t *testing.T) {
 	var undeletedSecretDataList []string
 
 	deleteSecretsErr := fmt.Errorf("could not delete secret")
-	secretName := "secretName"
+	secretName := "encryptSecretName"
 	secretNamespace := "secretNamespace"
 
 	undeletedSecrets = []corev1.Secret{
@@ -4471,10 +4471,10 @@ func TestGetServiceAccountInformation(t *testing.T) {
 
 	serviceAccountsSecrets = []corev1.ObjectReference{
 		{
-			Name: getSecretName() + "-one",
+			Name: getProtocolSecretName() + "-one",
 		},
 		{
-			Name: getSecretName() + "-one",
+			Name: getProtocolSecretName() + "-one",
 		},
 	}
 

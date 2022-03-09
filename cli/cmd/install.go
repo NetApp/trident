@@ -59,6 +59,8 @@ const (
 	ServiceAccountFilename     = "trident-serviceaccount.yaml"
 	ServiceFilename            = "trident-service.yaml"
 
+	TridentEncryptionKeys = "trident-encryption-keys"
+
 	TridentCSI           = "trident-csi"
 	TridentLegacy        = "trident"
 	TridentMainContainer = "trident-main"
@@ -112,6 +114,9 @@ var (
 	appLabel      string
 	appLabelKey   string
 	appLabelValue string
+
+	persistentObjectLabelKey   string
+	persistentObjectLabelValue string
 
 	dns1123LabelRegex  = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 	dns1123DomainRegex = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`)
@@ -339,6 +344,9 @@ func processInstallationArguments(_ *cobra.Command) {
 	appLabel = TridentCSILabel
 	appLabelKey = TridentCSILabelKey
 	appLabelValue = TridentCSILabelValue
+
+	persistentObjectLabelKey = TridentPersistentObjectLabelKey
+	persistentObjectLabelValue = TridentPersistentObjectLabelValue
 }
 
 func validateInstallationArguments() error {
@@ -744,6 +752,10 @@ func installTrident() (returnError error) {
 	labels := make(map[string]string)
 	labels[appLabelKey] = appLabelValue
 
+	persistentObjectLabels := make(map[string]string)
+	persistentObjectLabels[appLabelKey] = appLabelValue
+	persistentObjectLabels[persistentObjectLabelKey] = persistentObjectLabelValue
+
 	snapshotCRDVersion := client.GetSnapshotterCRDVersion()
 
 	topologyEnabled, err := client.IsTopologyInUse()
@@ -777,17 +789,42 @@ func installTrident() (returnError error) {
 	}
 	log.WithFields(logFields).Info("Created Trident service.")
 
+	// Check if Trident's Encryption Secret already exists in the specified namespace.
+	secretExists, err := client.CheckSecretExists(getEncryptionSecretName())
+	if err != nil {
+		returnError = fmt.Errorf("could not check for existing Trident encryption secret; %v", err)
+		return
+	}
+
+	// If the encryption secret doesn't exist create a new one.
+	if !secretExists {
+		aesKey, err := utils.GenerateAESKey()
+		if err != nil {
+			returnError = fmt.Errorf("could not generate secure AES key; %v", err)
+			return
+		}
+
+		// Create the secret for the HTTP certs & keys
+		secretMap := map[string]string{
+			tridentconfig.AESKeyFile: aesKey,
+		}
+
+		// Pass in the persistentObjectLabels here
+		err = client.CreateObjectByYAML(
+			k8sclient.GetSecretYAML(getEncryptionSecretName(), TridentPodNamespace, persistentObjectLabels, nil,
+				secretMap, nil))
+		if err != nil {
+			returnError = fmt.Errorf("could not create Trident encryption secret; %v", err)
+			return
+		}
+		log.WithFields(logFields).Info("Created Trident encryption secret.")
+	}
+
 	// Create the certificates for the CSI controller's HTTPS REST interface
 	certInfo, err := utils.MakeHTTPCertInfo(
 		tridentconfig.CACertName, tridentconfig.ServerCertName, tridentconfig.ClientCertName)
 	if err != nil {
 		returnError = fmt.Errorf("could not create Trident X509 certificates; %v", err)
-		return
-	}
-
-	aesKey, err := utils.GenerateAESKey()
-	if err != nil {
-		returnError = fmt.Errorf("could not generate secure AES key; %v", err)
 		return
 	}
 
@@ -799,15 +836,14 @@ func installTrident() (returnError error) {
 		tridentconfig.ServerCertFile: certInfo.ServerCert,
 		tridentconfig.ClientKeyFile:  certInfo.ClientKey,
 		tridentconfig.ClientCertFile: certInfo.ClientCert,
-		tridentconfig.AESKeyFile:     aesKey,
 	}
 	err = client.CreateObjectByYAML(
-		k8sclient.GetSecretYAML(getSecretName(), TridentPodNamespace, labels, nil, secretMap, nil))
+		k8sclient.GetSecretYAML(getProtocolSecretName(), TridentPodNamespace, labels, nil, secretMap, nil))
 	if err != nil {
-		returnError = fmt.Errorf("could not create Trident secret; %v", err)
+		returnError = fmt.Errorf("could not create Trident protocol secret; %v", err)
 		return
 	}
-	log.WithFields(logFields).Info("Created Trident secret.")
+	log.WithFields(logFields).Info("Created Trident protocol secret.")
 
 	// Create the deployment
 	if useYAML && fileExists(deploymentPath) {
@@ -1840,8 +1876,12 @@ func getServiceName() string {
 	return TridentCSI
 }
 
-func getSecretName() string {
+func getProtocolSecretName() string {
 	return TridentCSI
+}
+
+func getEncryptionSecretName() string {
+	return TridentEncryptionKeys
 }
 
 func getDeploymentName(csi bool) string {

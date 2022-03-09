@@ -19,6 +19,7 @@ const (
 	forceConfirmation   = "yesireallymeanit"
 	crdConfirmation     = "Are you sure you want to wipe out all of Trident's custom resources and CRDs???"
 	storageConfirmation = "Are you sure you want to wipe out all of Trident's storage resources???"
+	secretConfirmation  = "Are you sure you want to wipe out all of Trident's secrets???"
 )
 
 func init() {
@@ -76,15 +77,20 @@ func initClients() error {
 
 	} else {
 
-		if !forceObliviate {
-			if forceObliviate, err = getUserConfirmation(crdConfirmation, obliviateCmd); err != nil {
-				return err
-			} else if !forceObliviate {
-				return errors.New("obliviation canceled")
-			}
-		}
-
 		log.Debug("Running outside a pod.")
+	}
+
+	return nil
+}
+
+func confirmObliviate(confirmation string) error {
+
+	if !forceObliviate {
+		if forceObliviate, err := getUserConfirmation(confirmation, obliviateCmd); err != nil {
+			return err
+		} else if !forceObliviate {
+			return errors.New("obliviation canceled")
+		}
 	}
 
 	return nil
