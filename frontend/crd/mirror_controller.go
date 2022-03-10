@@ -15,6 +15,7 @@ import (
 
 	. "github.com/netapp/trident/logger"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
 )
 
@@ -570,13 +571,17 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			err = c.orchestrator.EstablishMirror(
 				ctx, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
 			)
-			if err != nil {
+			if err != nil && !api.IsNotReadyError(err) {
 				currentMirrorState = netappv1.MirrorStateFailed
 				statusCondition.Message = "Could not establish mirror"
 				Logx(ctx).WithFields(logFields).WithError(err).Info(statusCondition.Message)
 				c.recorder.Eventf(
 					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message,
 				)
+			} else if api.IsNotReadyError(err) {
+				update, _ := updateTMRConditionLocalFields(statusCondition, "", localPVCName,
+					volumeMapping.RemoteVolumeHandle)
+				return update, utils.ReconcileDeferredError(err)
 			} else {
 				// If we performed an action, get new mirror state
 				currentMirrorState, _ = c.getCurrentMirrorState(
@@ -613,14 +618,19 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 				ctx, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
 				volumeMapping.LatestSnapshotHandle,
 			)
-			if err != nil {
+			if err != nil && !api.IsNotReadyError(err) {
 				currentMirrorState = netappv1.MirrorStateFailed
 				statusCondition.Message = "Could not promote mirror"
 				Logx(ctx).WithFields(logFields).WithError(err).Info(statusCondition.Message)
 				c.recorder.Eventf(
 					relationship, corev1.EventTypeWarning, netappv1.MirrorStateFailed, statusCondition.Message,
 				)
+			} else if api.IsNotReadyError(err) {
+				update, _ := updateTMRConditionLocalFields(statusCondition, "", localPVCName,
+					volumeMapping.RemoteVolumeHandle)
+				return update, utils.ReconcileDeferredError(err)
 			}
+
 			if waitingForSnapshot {
 				statusCondition.Message = fmt.Sprintf("Waiting for snapshot %v", volumeMapping.LatestSnapshotHandle)
 			}

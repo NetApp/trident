@@ -155,22 +155,22 @@ func IsNotFoundError(err error) bool {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// snapmirrorTransferInProgress
+// notReadyError
 /////////////////////////////////////////////////////////////////////////////
-type snapmirrorTransferInProgress struct {
+type notReadyError struct {
 	message string
 }
 
-func (e *snapmirrorTransferInProgress) Error() string { return e.message }
+func (e *notReadyError) Error() string { return e.message }
 
-func SnapmirrorTransferInProgress(message string) error {
-	return &snapmirrorTransferInProgress{message}
+func NotReadyError(message string) error {
+	return &notReadyError{message}
 }
 
-func IsSnapmirrorTransferInProgress(err error) bool {
+func IsNotReadyError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*snapmirrorTransferInProgress)
+	_, ok := err.(*notReadyError)
 	return ok
 }

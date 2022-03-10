@@ -17,8 +17,10 @@ import (
 
 // establishMirror will create a new snapmirror relationship between a RW and a DP volume that have not previously
 // had a relationship
-func establishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
-	replicationSchedule string, d api.OntapAPI) error {
+func establishMirror(
+	ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+	replicationSchedule string, d api.OntapAPI,
+) error {
 	localSVMName, localFlexvolName, err := parseVolumeHandle(localVolumeHandle)
 	if err != nil {
 		return fmt.Errorf("could not parse localVolumeHandle '%v'; %v", localVolumeHandle, err)
@@ -67,6 +69,11 @@ func establishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle,
 			Logc(ctx).WithError(err).Error("Error on snapmirror initialize")
 			return err
 		}
+		// Ensure state is inititialized
+		snapmirror, err = d.SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+		if snapmirror.State.IsUninitialized() {
+			return api.NotReadyError("Snapmirror not yet initialized, snapmirror not ready")
+		}
 	}
 
 	return nil
@@ -76,7 +83,8 @@ func establishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle,
 // if and only if the relationship existed previously
 func reestablishMirror(
 	ctx context.Context, localVolumeHandle string, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
-	d api.OntapAPI) error {
+	d api.OntapAPI,
+) error {
 	localSVMName, localFlexvolName, err := parseVolumeHandle(localVolumeHandle)
 	if err != nil {
 		return fmt.Errorf("could not parse localVolumeHandle '%v'; %v", localVolumeHandle, err)
@@ -141,8 +149,10 @@ func reestablishMirror(
 
 // promoteMirror will break the snapmirror and make the destination volume RW,
 // optionally after a given snapshot has synced
-func promoteMirror(ctx context.Context, localVolumeHandle string, remoteVolumeHandle string, snapshotHandle,
-	replicationPolicy string, d api.OntapAPI) (bool, error) {
+func promoteMirror(
+	ctx context.Context, localVolumeHandle string, remoteVolumeHandle string, snapshotHandle,
+	replicationPolicy string, d api.OntapAPI,
+) (bool, error) {
 	if remoteVolumeHandle == "" {
 		return false, nil
 	}
@@ -173,28 +183,13 @@ func promoteMirror(ctx context.Context, localVolumeHandle string, remoteVolumeHa
 
 		// Check for snapshot
 		if snapshotHandle != "" {
-			snapshotTokens := strings.Split(snapshotHandle, "/")
-			if len(snapshotTokens) != 2 {
-				return false, fmt.Errorf("invalid snapshot handle %v", snapshotHandle)
-			}
-			_, snapshotName, err := storage.ParseSnapshotID(snapshotHandle)
+			foundSnapshot, err := isSnapshotPresent(ctx, snapshotHandle, localFlexvolName, d)
 			if err != nil {
 				return false, err
 			}
-
-			snapshots, err := d.VolumeSnapshotList(ctx, localFlexvolName)
-			if err != nil {
-				return false, err
+			if !foundSnapshot {
+				return true, nil
 			}
-
-			for _, snapshot := range snapshots {
-				if snapshot.Name == snapshotName {
-					return true, nil
-				}
-			}
-
-			Logc(ctx).WithField("snapshot", snapshotHandle).Debug("Snapshot not yet present.")
-			return true, nil
 		}
 	} else {
 		return false, err
@@ -203,23 +198,17 @@ func promoteMirror(ctx context.Context, localVolumeHandle string, remoteVolumeHa
 	if err == nil {
 		err = d.SnapmirrorQuiesce(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 		if err != nil {
+			if api.IsNotReadyError(err) {
+				Logc(ctx).WithError(err).Error("Snapmirror quiesce is not finished")
+			}
 			return false, err
 		}
 
 		errAbort := d.SnapmirrorAbort(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-		if api.IsSnapmirrorTransferInProgress(errAbort) {
+		if api.IsNotReadyError(errAbort) {
 			// Check if we're still aborting - ZAPI returns a generic 13001 error code when an abort is already
 			// in progress
-			snapmirror, err = d.SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-			if err != nil {
-				msg := "error checking if snapmirror is aborting"
-				Logc(ctx).WithError(err).Error(msg)
-				return false, fmt.Errorf(msg)
-			}
-			if snapmirror.RelationshipStatus.IsAborting() {
-				return false, nil
-			}
-			Logc(ctx).WithError(errAbort).Error("Error on snapmirror abort")
+			Logc(ctx).WithError(errAbort).Error("Snapmirror abort is not finished")
 			return false, errAbort
 		}
 
@@ -232,6 +221,9 @@ func promoteMirror(ctx context.Context, localVolumeHandle string, remoteVolumeHa
 		if !snapmirror.State.IsUninitialized() {
 			err := d.SnapmirrorBreak(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
 			if err != nil {
+				if api.IsNotReadyError(err) {
+					Logc(ctx).WithError(err).Error("Snapmirror break is not finished")
+				}
 				return false, err
 			}
 		}
@@ -245,9 +237,39 @@ func promoteMirror(ctx context.Context, localVolumeHandle string, remoteVolumeHa
 	return false, nil
 }
 
+// isSnapshotPresent returns whether the given snapshot is found on the snapmirror snapshot list
+func isSnapshotPresent(ctx context.Context, snapshotHandle, localFlexvolName string, d api.OntapAPI) (bool, error) {
+	found := false
+	snapshotTokens := strings.Split(snapshotHandle, "/")
+
+	if len(snapshotTokens) != 2 {
+		return found, fmt.Errorf("invalid snapshot handle %v", snapshotHandle)
+	}
+	_, snapshotName, err := storage.ParseSnapshotID(snapshotHandle)
+	if err != nil {
+		return found, err
+	}
+	snapshots, err := d.VolumeSnapshotList(ctx, localFlexvolName)
+	if err != nil {
+		return found, err
+	}
+
+	for _, snapshot := range snapshots {
+		if snapshot.Name == snapshotName {
+			found = true
+		}
+	}
+	if !found {
+		Logc(ctx).WithField("snapshot", snapshotHandle).Debug("Snapshot not yet present.")
+		return found, nil
+	}
+	return found, nil
+}
+
 // getMirrorStatus returns the current state of a snapmirror relationship
 func getMirrorStatus(
-	ctx context.Context, localVolumeHandle string, remoteVolumeHandle string, d api.OntapAPI) (string, error) {
+	ctx context.Context, localVolumeHandle string, remoteVolumeHandle string, d api.OntapAPI,
+) (string, error) {
 	// Empty remote means there is no mirror to check for
 	if remoteVolumeHandle == "" {
 		return "", nil
@@ -299,7 +321,8 @@ func getMirrorStatus(
 }
 
 func checkSVMPeeredAbstraction(
-	ctx context.Context, volConfig *storage.VolumeConfig, svm string, d api.OntapAPI) error {
+	ctx context.Context, volConfig *storage.VolumeConfig, svm string, d api.OntapAPI,
+) error {
 	remoteSVM, _, err := parseVolumeHandle(volConfig.PeerVolumeHandle)
 	if err != nil {
 		err = fmt.Errorf("could not determine required peer SVM; %v", err)
@@ -358,7 +381,9 @@ func validateReplicationSchedule(ctx context.Context, replicationSchedule string
 	return nil
 }
 
-func validateReplicationConfig(ctx context.Context, replicationPolicy, replicationSchedule string, d api.OntapAPI) error {
+func validateReplicationConfig(
+	ctx context.Context, replicationPolicy, replicationSchedule string, d api.OntapAPI,
+) error {
 	if err := validateReplicationPolicyAbstraction(ctx, replicationPolicy, d); err != nil {
 		return fmt.Errorf("failed to validate replication policy: %v", replicationPolicy)
 	}

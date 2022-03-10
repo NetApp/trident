@@ -956,7 +956,7 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	}
 
 	if flexvol.JunctionPath == "" {
-		if flexvol.AccessType == "rw" {
+		if flexvol.AccessType == "rw" || flexvol.AccessType == "dp" {
 			// Flexvol is not mounted, we need to mount it
 			volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
 			if err := d.API.VolumeMount(ctx, volConfig.InternalName, volConfig.AccessInfo.NfsPath); err != nil {
