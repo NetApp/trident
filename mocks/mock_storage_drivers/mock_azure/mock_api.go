@@ -507,18 +507,18 @@ func (mr *MockAzureMockRecorder) Subvolumes(arg0, arg1 interface{}) *gomock.Call
 }
 
 // ValidateFilePoolVolumes mocks base method.
-func (m *MockAzure) ValidateFilePoolVolumes(arg0 context.Context, arg1 []string, arg2 string) ([]*api.FileSystem, error) {
+func (m *MockAzure) ValidateFilePoolVolumes(arg0 context.Context, arg1 []string) ([]*api.FileSystem, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateFilePoolVolumes", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ValidateFilePoolVolumes", arg0, arg1)
 	ret0, _ := ret[0].([]*api.FileSystem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ValidateFilePoolVolumes indicates an expected call of ValidateFilePoolVolumes.
-func (mr *MockAzureMockRecorder) ValidateFilePoolVolumes(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAzureMockRecorder) ValidateFilePoolVolumes(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateFilePoolVolumes", reflect.TypeOf((*MockAzure)(nil).ValidateFilePoolVolumes), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateFilePoolVolumes", reflect.TypeOf((*MockAzure)(nil).ValidateFilePoolVolumes), arg0, arg1)
 }
 
 // Volume mocks base method.

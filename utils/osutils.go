@@ -138,7 +138,7 @@ func AttachBlockOnFileVolume(
 	}
 
 	// Attach the NFS-backed loop file to a loop device only if it isn't already attached
-	attached, loopDevice, err := getLoopDeviceAttachedToFile(ctx, loopFile)
+	attached, loopDevice, err := GetLoopDeviceAttachedToFile(ctx, loopFile)
 	if err != nil {
 		return "", err
 	}
@@ -147,7 +147,7 @@ func AttachBlockOnFileVolume(
 			return "", err
 		}
 
-		if attached, loopDevice, err = getLoopDeviceAttachedToFile(ctx, loopFile); err != nil {
+		if attached, loopDevice, err = GetLoopDeviceAttachedToFile(ctx, loopFile); err != nil {
 			return "", err
 		} else if !attached {
 			return "", fmt.Errorf("could not detect new loop device attachment to %s", loopFile)
@@ -168,21 +168,20 @@ func AttachBlockOnFileVolume(
 	return loopDevice.Name, nil
 }
 
-func DetachBlockOnFileVolume(ctx context.Context, nfsMountpoint, loopFile string,
-	publishInfo *VolumePublishInfo) error {
+func DetachBlockOnFileVolume(ctx context.Context, loopDevice, loopFile string) error {
 
 	Logc(ctx).Debug(">>>> osutils.DetachBlockOnFileVolume")
 	defer Logc(ctx).Debug("<<<< osutils.DetachBlockOnFileVolume")
 
-	loopDeviceAttached, err := IsLoopDeviceAttachedToFile(ctx, publishInfo.DevicePath, loopFile)
+	loopDeviceAttached, err := IsLoopDeviceAttachedToFile(ctx, loopDevice, loopFile)
 	if err != nil {
 		return fmt.Errorf("unable to identify if loop device '%s' is attached to file '%s': %v",
-			publishInfo.DevicePath, loopFile, err)
+			loopDevice, loopFile, err)
 	}
 
 	if loopDeviceAttached {
-		if err := detachLoopDevice(ctx, publishInfo.DevicePath); err != nil {
-			return fmt.Errorf("unable to detach loop device '%s': %v", publishInfo.DevicePath, err)
+		if err := detachLoopDevice(ctx, loopDevice); err != nil {
+			return fmt.Errorf("unable to detach loop device '%s': %v", loopDevice, err)
 		}
 	}
 
@@ -1408,6 +1407,8 @@ func RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 	Logc(ctx).Debug(">>>> osutils.RemoveMountPoint")
 	defer Logc(ctx).Debug("<<<< osutils.RemoveMountPoint")
 
+	const umountMaxWait = 15 * time.Second
+
 	// If the directory does not exist, return nil.
 	if _, err := os.Stat(mountPointPath); err != nil {
 		if os.IsNotExist(err) {
@@ -1417,7 +1418,7 @@ func RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 	}
 
 	// Unmount the path.  Umount() returns nil if the path exists but is not a mount.
-	if err := Umount(ctx, mountPointPath); err != nil {
+	if err := WaitForUmount(ctx, mountPointPath, umountMaxWait); err != nil {
 		Logc(ctx).WithField("mountPointPath", mountPointPath).Errorf("Umount failed; %s", err)
 		return err
 	}
@@ -2271,37 +2272,13 @@ func IsNFSShareMounted(ctx context.Context, exportPath, mountpoint string) (bool
 		Logc(ctx).Tracef("Mount: %+v", mount)
 
 		if mount.MountSource == exportPath && mount.MountPoint == mountpoint {
+			Logc(ctx).Debug("NFS Share is mounted.")
 			return true, nil
 		}
 	}
 
+	Logc(ctx).Debug("NFS Share is not mounted.")
 	return false, nil
-}
-
-func GetMountpointsForNFSShare(ctx context.Context, exportPath string) ([]string, error) {
-
-	fields := log.Fields{
-		"exportPath": exportPath,
-	}
-	Logc(ctx).WithFields(fields).Debug(">>>> osutils.GetMountpointsForNFSShare")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.GetMountpointsForNFSShare")
-
-	mounts, err := GetMountInfo(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	mountpoints := make([]string, 0)
-	for _, mount := range mounts {
-
-		Logc(ctx).Tracef("Mount: %+v", mount)
-
-		if mount.MountSource == exportPath {
-			mountpoints = append(mountpoints, mount.MountPoint)
-		}
-	}
-
-	return mountpoints, nil
 }
 
 // IsMounted verifies if the supplied device is attached at the supplied location.
@@ -3139,18 +3116,26 @@ func getLoopDeviceInfo(ctx context.Context) ([]LoopDevice, error) {
 	return loopDevicesResponse.LoopDevices, nil
 }
 
-func getLoopDeviceAttachedToFile(ctx context.Context, loopFile string) (bool, *LoopDevice, error) {
+func GetLoopDeviceAttachedToFile(ctx context.Context, loopFile string) (bool, *LoopDevice, error) {
 
-	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> osutils.getLoopDeviceAttachedToFile")
-	defer Logc(ctx).Debug("<<<< osutils.getLoopDeviceAttachedToFile")
+	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> osutils.GetLoopDeviceAttachedToFile")
+	defer Logc(ctx).Debug("<<<< osutils.GetLoopDeviceAttachedToFile")
 
 	devices, err := getLoopDeviceInfo(ctx)
 	if err != nil {
 		return false, nil, err
 	}
 
+	// Always consider the last part (after last "/") of the back-file filepath returned by losetup
+	_, loopFileBackFileName := filepath.Split(loopFile)
+
 	for _, device := range devices {
-		if device.BackFile == loopFile {
+		_, deviceBackFileName := filepath.Split(device.BackFile)
+		if deviceBackFileName == loopFileBackFileName {
+			Logc(ctx).WithFields(log.Fields{
+				"loopFile":   loopFile,
+				"loopDevice": device.Name,
+			}).Debug("Found loop device.")
 			return true, &device, nil
 		}
 	}
@@ -3158,8 +3143,33 @@ func getLoopDeviceAttachedToFile(ctx context.Context, loopFile string) (bool, *L
 	return false, nil, nil
 }
 
+func GetAllLoopDeviceBackFiles(ctx context.Context) ([]string, error) {
+
+	Logc(ctx).Debug(">>>> osutils.GetAllLoopDeviceBackFiles")
+	defer Logc(ctx).Debug("<<<< osutils.GetAllLoopDeviceBackFiles")
+
+	devices, err := getLoopDeviceInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get a list of all back-files
+	deviceBackFiles := make([]string, len(devices))
+
+	// Always consider the last part (after last "/") of the back-file filepath returned by losetup
+	for _, device := range devices {
+		_, deviceBackFileName := filepath.Split(device.BackFile)
+		deviceBackFiles = append(deviceBackFiles, deviceBackFileName)
+	}
+
+	return deviceBackFiles, nil
+}
+
 func IsLoopDeviceAttachedToFile(ctx context.Context, loopDevice, loopFile string) (bool, error) {
-	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> osutils.IsLoopDeviceAttachedToFile")
+	Logc(ctx).WithFields(log.Fields{
+		"loopFile":   loopFile,
+		"loopDevice": loopDevice,
+	}).Debug(">>>> osutils.IsLoopDeviceAttachedToFile")
 	defer Logc(ctx).Debug("<<<< osutils.IsLoopDeviceAttachedToFile")
 
 	var isAttached bool
@@ -3168,8 +3178,15 @@ func IsLoopDeviceAttachedToFile(ctx context.Context, loopDevice, loopFile string
 		return isAttached, err
 	}
 
+	_, loopBackFileName := filepath.Split(loopFile)
+
 	for _, device := range devices {
-		if device.Name == loopDevice && device.BackFile == loopFile {
+		_, deviceBackFileName := filepath.Split(device.BackFile)
+		if device.Name == loopDevice && deviceBackFileName == loopBackFileName {
+			Logc(ctx).WithFields(log.Fields{
+				"loopFile":   loopFile,
+				"loopDevice": device.Name,
+			}).Debug("Found device attached.")
 			return true, nil
 		}
 	}
@@ -3179,7 +3196,11 @@ func IsLoopDeviceAttachedToFile(ctx context.Context, loopDevice, loopFile string
 
 func ResizeLoopDevice(ctx context.Context, loopDevice, loopFile string, requiredBytes int64) error {
 
-	Logc(ctx).Debug(">>>> osutils.ResizeLoopDevice")
+	Logc(ctx).WithFields(log.Fields{
+		"loopFile":      loopFile,
+		"loopDevice":    loopDevice,
+		"requiredBytes": requiredBytes,
+	}).Debug(">>>> osutils.ResizeLoopDevice")
 	defer Logc(ctx).Debug("<<<< osutils.ResizeLoopDevice")
 
 	var err error = nil
@@ -3264,73 +3285,32 @@ func detachLoopDevice(ctx context.Context, loopDeviceName string) error {
 	return nil
 }
 
-// CountAttachedLoopDevices returns the number of loopback devices backed by the specified NFS mountpoint, as well
-// as whether the specified backing file is one of those attached devices.
-func CountAttachedLoopDevices(
-	ctx context.Context, nfsMountpoint, loopFile string,
-) (deviceAttached bool, attachCount int, err error) {
-
-	Logc(ctx).WithFields(log.Fields{
-		"nfsMountpoint": nfsMountpoint,
-		"loopFile":      loopFile,
-	}).Debug(">>>> osutils.CountLoopDevicesForNFSMountpoint")
-	defer func() {
-		Logc(ctx).WithFields(log.Fields{
-			"nfsMountpoint":  nfsMountpoint,
-			"loopFile":       loopFile,
-			"attachCount":    attachCount,
-			"deviceAttached": deviceAttached,
-		}).Debug("<<<< osutils.CountLoopDevicesForNFSMountpoint")
-	}()
-
-	// Ensure we match the mountpoint exactly
-	mountpoint := strings.TrimSuffix(nfsMountpoint, "/") + "/"
-
-	// Get loopback devices
-	devices, err := getLoopDeviceInfo(ctx)
-	if err != nil {
-		return
-	}
-
-	// Count the loopback devices backed by the specified mountpoint
-	for _, device := range devices {
-		if strings.HasPrefix(device.BackFile, mountpoint) {
-			attachCount++
-		}
-		if device.BackFile == loopFile {
-			deviceAttached = true
-		}
-	}
-
-	return
-}
-
 // WaitForLoopDeviceDetach waits until a loop device is detached from the specified NFS mountpoint, and it returns
 // the remaining number of attached devices.
 func WaitForLoopDeviceDetach(
 	ctx context.Context, nfsMountpoint, loopFile string, maxDuration time.Duration,
-) (int, error) {
+) error {
 
 	logFields := log.Fields{"nfsMountpoint": nfsMountpoint, "loopFile": loopFile}
 	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.WaitForLoopDevicesOnNFSMountpoint")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.WaitForLoopDevicesOnNFSMountpoint")
 
+	var loopDevice *LoopDevice
 	var deviceAttached bool
-	var attachCount int
 
 	checkLoopDevices := func() error {
 
 		var err error
 
-		if deviceAttached, attachCount, err = CountAttachedLoopDevices(ctx, nfsMountpoint, loopFile); err != nil {
+		if deviceAttached, loopDevice, err = GetLoopDeviceAttachedToFile(ctx, loopFile); err != nil {
 			return backoff.Permanent(err)
 		} else if deviceAttached {
-			return fmt.Errorf("loopback device still attached to %s", loopFile)
+			return fmt.Errorf("loopback device '%s' still attached to '%s'", loopDevice.Name, loopFile)
 		}
 		return nil
 	}
 
-	loopDeviceNotifyNotify := func(err error, duration time.Duration) {
+	loopDeviceNotify := func(err error, duration time.Duration) {
 		Logc(ctx).WithFields(log.Fields{
 			"increment":     duration,
 			"nfsMountpoint": nfsMountpoint,
@@ -3345,17 +3325,128 @@ func WaitForLoopDeviceDetach(
 	loopDeviceBackoff.MaxElapsedTime = maxDuration
 
 	// Run the check using an exponential backoff
-	if err := backoff.RetryNotify(checkLoopDevices, loopDeviceBackoff, loopDeviceNotifyNotify); err != nil {
-		return attachCount, fmt.Errorf("loopback device still attached after %3.2f seconds", maxDuration.Seconds())
+	if err := backoff.RetryNotify(checkLoopDevices, loopDeviceBackoff, loopDeviceNotify); err != nil {
+		return fmt.Errorf("loopback device still attached after %3.2f seconds", maxDuration.Seconds())
 	} else {
 		Logc(ctx).WithFields(log.Fields{
 			"nfsMountpoint": nfsMountpoint,
 			"loopFile":      loopFile,
-			"attachCount":   attachCount,
 		}).Debug("Loopback device detached.")
 
-		return attachCount, nil
+		return nil
 	}
+}
+
+// GetMountedLoopDevices returns a list of loop devices that are *mounted* on this host.
+func GetMountedLoopDevices(ctx context.Context) ([]string, error) {
+
+	Logc(ctx).Debug(">>>> osutils.GetMountedLoopDevices")
+	defer Logc(ctx).Debug("<<<< osutils.GetMountedLoopDevices")
+
+	procSelfMountInfo, err := listProcSelfMountinfo(procSelfMountinfoPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get a list of all mounted /dev/loop devices
+	mountedLoopDevices := make([]string, 0)
+	for _, procMount := range procSelfMountInfo {
+
+		hasLoopSourceSourcePrefix := strings.HasPrefix(procMount.MountSource, "/dev/loop")
+
+		if !hasLoopSourceSourcePrefix {
+			continue
+		}
+
+		Logc(ctx).WithFields(log.Fields{
+			"loopDevice": procMount.MountSource,
+			"mountpoint": procMount.MountPoint,
+		}).Debug("Found mounted loop device.")
+
+		mountedLoopDevices = append(mountedLoopDevices, procMount.MountSource)
+	}
+
+	return mountedLoopDevices, nil
+}
+
+// IsLoopDeviceMounted returns true if loop device is mounted
+func IsLoopDeviceMounted(ctx context.Context, deviceName string) (mounted bool, err error) {
+
+	Logc(ctx).WithField("deviceName", deviceName).Debug(">>>> osutils.IsLoopDeviceMounted")
+	defer Logc(ctx).WithFields(log.Fields{
+		"deviceName": deviceName,
+		"mounted":    mounted,
+		"err":        err,
+	}).Debug("<<<< osutils.IsLoopDeviceMounted")
+
+	mountedLoopDevices, err := GetMountedLoopDevices(ctx)
+	if err != nil {
+		return
+	}
+
+	for _, mountedLoopDevice := range mountedLoopDevices {
+		if mountedLoopDevice == deviceName {
+			Logc(ctx).Debug("Loop device is mounted.")
+			mounted = true
+			return
+		}
+	}
+
+	return
+}
+
+// SafeToRemoveNFSMount returns true if NFS mount point has any subvolumes in use by loop, if not returns true
+func SafeToRemoveNFSMount(ctx context.Context, nfsMountPoint string) bool {
+
+	Logc(ctx).WithField("nfsMountPoint", nfsMountPoint).Debug(">>>> osutils.SafeToRemoveNFSMount")
+	defer Logc(ctx).WithField("nfsMountPoint", nfsMountPoint).Debug("<<<< osutils.SafeToRemoveNFSMount")
+
+	// Get names of all the loop backing files
+	allBackFiles, err := GetAllLoopDeviceBackFiles(ctx)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"error": err,
+		}).Warn("Failed to get backing files.")
+
+		return false
+	}
+
+	if len(allBackFiles) == 0 {
+		Logc(ctx).Debug("No backfile found.")
+		return true
+	}
+
+	// Get list of all the files in NFS volumes
+	nfsFiles := make([]string, 0)
+
+	files, err := ioutil.ReadDir(nfsMountPoint)
+	if err != nil {
+		Logc(ctx).WithFields(log.Fields{
+			"error": err,
+		}).Warn("Failed to get list of filename in NFS mountpoint.")
+
+		return false
+	}
+
+	if len(files) == 0 {
+		Logc(ctx).Debug("No subvolume found in NFS mountpoint.")
+		return true
+	}
+
+	for _, file := range files {
+		if !file.IsDir() {
+			nfsFiles = append(nfsFiles, file.Name())
+		}
+	}
+
+	// Find intersection
+	if _, containSome := SliceContainsElements(nfsFiles, allBackFiles); containSome {
+		Logc(ctx).Debug("NFS mountpoint contain subvolumes in use.")
+		return false
+	}
+
+	Logc(ctx).Debug("NFS mountpoint does not contain subvolumes in use.")
+	return true
 }
 
 // loginISCSITarget logs in to an iSCSI target.

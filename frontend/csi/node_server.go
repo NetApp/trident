@@ -174,7 +174,7 @@ func (p *Plugin) NodeUnpublishVolume(
 
 	var notMountPoint bool
 	if isDir {
-		notMountPoint, err = utils.IsLikelyNotMountPoint(targetPath)
+		notMountPoint, err = utils.IsLikelyNotMountPoint(ctx, targetPath)
 	} else {
 		var mounted bool
 		mounted, err = utils.IsMounted(ctx, "", targetPath)
@@ -443,13 +443,13 @@ func nodePrepareBlockOnFileVolumeForExpansion(
 ) error {
 
 	Logc(ctx).WithFields(log.Fields{
-		"backendUUID":   publishInfo.BackendUUID,
+		"nfsUniqueID":   publishInfo.NfsUniqueID,
 		"nfsPath":       publishInfo.NfsPath,
 		"subvolumeName": publishInfo.SubvolumeName,
 		"devicePath":    publishInfo.DevicePath,
 	}).Debug("PublishInfo for device to expand.")
 
-	nfsMountpoint := path.Join(tridentDeviceInfoPath, publishInfo.BackendUUID, publishInfo.NfsPath)
+	nfsMountpoint := path.Join(tridentDeviceInfoPath, publishInfo.NfsUniqueID, publishInfo.NfsPath)
 	loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
 
 	var err error = nil
@@ -886,7 +886,7 @@ func (p *Plugin) nodePublishNFSVolume(
 ) (*csi.NodePublishVolumeResponse, error) {
 
 	targetPath := req.GetTargetPath()
-	notMnt, err := utils.IsLikelyNotMountPoint(targetPath)
+	notMnt, err := utils.IsLikelyNotMountPoint(ctx, targetPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(targetPath, 0750); err != nil {
@@ -1216,12 +1216,18 @@ func (p *Plugin) nodeStageNFSBlockVolume(ctx context.Context, req *csi.NodeStage
 	publishInfo.MountOptions = utils.SanitizeMountOptions(req.PublishContext["mountOptions"], []string{"ro"})
 	publishInfo.NfsServerIP = req.PublishContext["nfsServerIp"]
 	publishInfo.NfsPath = req.PublishContext["nfsPath"]
+	publishInfo.NfsUniqueID = req.PublishContext["nfsUniqueID"]
 	publishInfo.SubvolumeName = req.PublishContext["subvolumeName"]
-	publishInfo.BackendUUID = req.PublishContext["backendUUID"]
 	publishInfo.FilesystemType = req.PublishContext["filesystemType"]
 	publishInfo.SubvolumeMountOptions = utils.SanitizeMountOptions(req.PublishContext["subvolumeMountOptions"], []string{"ro"})
 
-	nfsMountpoint := path.Join(tridentDeviceInfoPath, publishInfo.BackendUUID, publishInfo.NfsPath)
+	// The NFS mount path should be same for all the Subvolumes belonging to the same NFS volumes
+	// thus use NFS volume's Unique ID. This also means the subvolumes from different Virtual Pools,
+	// different backends but from the same NFS volume would be available under the same NFS mount
+	// path on the Node.
+	nfsMountpoint := path.Join(tridentDeviceInfoPath, publishInfo.NfsUniqueID, publishInfo.NfsPath)
+
+	// Subvolume Path is NFS mount path + name of the subvolume
 	loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
 
 	loopDeviceName, err := utils.AttachBlockOnFileVolume(ctx, nfsMountpoint, loopFile, publishInfo)
@@ -1252,34 +1258,52 @@ func (p *Plugin) nodeUnstageNFSBlockVolume(
 		return nil, err
 	}
 
-	nfsMountpoint := path.Join(tridentDeviceInfoPath, publishInfo.BackendUUID, publishInfo.NfsPath)
+	nfsMountpoint := path.Join(tridentDeviceInfoPath, publishInfo.NfsUniqueID, publishInfo.NfsPath)
 	loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
 
-	// Before detaching the loop device, check if it is actually attached and count how many total devices
-	// are using the same mountpoint so we know if we can detach the device and remove the mountpoint.
-	// The node lock prevents this from racing with other stage workflows.
-	deviceAttached, deviceCount, err := utils.CountAttachedLoopDevices(ctx, nfsMountpoint, loopFile)
+	// Get the loop device name and see if it is attached or not
+	isLoopDeviceAttached, loopDevice, err := utils.GetLoopDeviceAttachedToFile(ctx, loopFile)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal,
+			fmt.Sprintf("failed to get loop device for loop file '%s': %s", loopFile, err.Error()))
 	}
 
-	if deviceAttached {
-
-		// Detach the loop device from the NFS mountpoint.
-		if err = utils.DetachBlockOnFileVolume(ctx, nfsMountpoint, loopFile, publishInfo); err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-
-		// Wait for the loop device to disappear (it can take a second or two) and update the device count.
-		deviceCount, err = utils.WaitForLoopDeviceDetach(ctx, nfsMountpoint, loopFile, 10*time.Second)
+	if isLoopDeviceAttached {
+		// Check if it is mounted or not (ideally it should never be mounted)
+		isLoopDeviceMounted, err := utils.IsLoopDeviceMounted(ctx, loopDevice.Name)
 		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
+			return nil, status.Error(codes.Internal, fmt.Sprintf("unable to identify if loop device '%s' is mounted: %s",
+				loopDevice.Name, err.Error()))
+		}
+
+		// If not mounted any more proceed to remove the device and/or remove the NFS mount point
+		if !isLoopDeviceMounted {
+			// Detach the loop device from the NFS mountpoint.
+			if err = utils.DetachBlockOnFileVolume(ctx, loopDevice.Name, loopFile); err != nil {
+				return nil, status.Error(codes.Internal, fmt.Sprintf("failed to detach loop device '%s': %s",
+					loopDevice.Name, err.Error()))
+			}
+
+			// Wait for the loop device to disappear.
+			if err = utils.WaitForLoopDeviceDetach(ctx, nfsMountpoint, loopFile, 10*time.Second); err != nil {
+				return nil, status.Error(codes.Internal, fmt.Sprintf("unable to detach loop device '%s': %s",
+					loopDevice.Name, err.Error()))
+			}
+		} else {
+			// We shall never be in this state, so error out
+			Logc(ctx).WithFields(log.Fields{
+				"loopFile":   loopFile,
+				"loopDevice": loopDevice.Name,
+			}).Error("Loop device is still mounted, skipping detach.")
+			return nil, status.Error(codes.FailedPrecondition,
+				fmt.Sprintf("unable to detach loop device '%s'; it is still mounted", loopDevice.Name))
 		}
 	}
 
-	// If the loop device we just detached was the only one on the mountpoint, remove the mountpoint.
-	if deviceCount == 0 {
+	// Identify if the NFS mount point has any subvolumes in use by loop devices, if not then it is safe to remove it
+	if utils.SafeToRemoveNFSMount(ctx, nfsMountpoint) {
 		if err = utils.RemoveMountPoint(ctx, nfsMountpoint); err != nil {
+			Logc(ctx).Errorf("Failed to remove NFS mountpoint '%s': %s", nfsMountpoint, err.Error())
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}

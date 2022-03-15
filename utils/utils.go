@@ -46,6 +46,10 @@ const (
 	REDACTED = "<REDACTED>"
 )
 
+var NFSVersionMajorRegex = regexp.MustCompile(`^(nfsvers|vers)=(?P<major>\d)$`)
+var NFSVersionMajorMinorRegex = regexp.MustCompile(`^(nfsvers|vers)=(?P<major>\d)\.(?P<minor>\d)$`)
+var NFSVersionMinorRegex = regexp.MustCompile(`^minorversion=(?P<minor>\d)$`)
+
 // ///////////////////////////////////////////////////////////////////////////
 //
 // Binary units
@@ -629,8 +633,9 @@ func SanitizeMountOptions(mountOptions string, removeMountOptions []string) stri
 	sanitized := make([]string, 0)
 
 	for _, mountOption := range strings.Split(mountOptions, ",") {
-		if !SliceContainsString(removeMountOptions, mountOption) {
-			sanitized = append(sanitized, mountOption)
+		trimmedMountOption := strings.TrimSpace(mountOption)
+		if !SliceContainsString(removeMountOptions, trimmedMountOption) {
+			sanitized = append(sanitized, trimmedMountOption)
 		}
 	}
 
@@ -643,10 +648,6 @@ func SanitizeMountOptions(mountOptions string, removeMountOptions []string) stri
 // version isn't in it, this method returns an error; otherwise it returns nil.
 func GetNFSVersionFromMountOptions(mountOptions, defaultVersion string, supportedVersions []string) (string, error) {
 
-	majorRegex := regexp.MustCompile(`^(nfsvers|vers)=(?P<major>\d)$`)
-	majorMinorRegex := regexp.MustCompile(`^(nfsvers|vers)=(?P<major>\d)\.(?P<minor>\d)$`)
-	minorRegex := regexp.MustCompile(`^minorversion=(?P<minor>\d)$`)
-
 	major := ""
 	minor := ""
 
@@ -658,18 +659,18 @@ func GetNFSVersionFromMountOptions(mountOptions, defaultVersion string, supporte
 
 		mountOption = strings.TrimSpace(mountOption)
 
-		if matchGroups := GetRegexSubmatches(majorMinorRegex, mountOption); matchGroups != nil {
+		if matchGroups := GetRegexSubmatches(NFSVersionMajorMinorRegex, mountOption); matchGroups != nil {
 			major = matchGroups["major"]
 			minor = matchGroups["minor"]
 			continue
 		}
 
-		if matchGroups := GetRegexSubmatches(majorRegex, mountOption); matchGroups != nil {
+		if matchGroups := GetRegexSubmatches(NFSVersionMajorRegex, mountOption); matchGroups != nil {
 			major = matchGroups["major"]
 			continue
 		}
 
-		if matchGroups := GetRegexSubmatches(minorRegex, mountOption); matchGroups != nil {
+		if matchGroups := GetRegexSubmatches(NFSVersionMinorRegex, mountOption); matchGroups != nil {
 			minor = matchGroups["minor"]
 			continue
 		}
@@ -696,6 +697,58 @@ func GetNFSVersionFromMountOptions(mountOptions, defaultVersion string, supporte
 	} else {
 		return version, fmt.Errorf("unsupported NFS version: %s", version)
 	}
+}
+
+// GetNFSVersionMountOptions accepts a set of mount options, identifies
+// and returns all of the NFS version mount options.
+func GetNFSVersionMountOptions(mountOptions string) []string {
+
+	// Strip off -o prefix if present
+	NFSMountOptions := make([]string, 0)
+
+	// Strip off -o prefix if present
+	mountOptions = strings.TrimPrefix(mountOptions, "-o ")
+
+	// Check each mount option using the three mutually-exclusive regular expressions.  Last option wins.
+	for _, mountOption := range strings.Split(mountOptions, ",") {
+
+		mountOption = strings.TrimSpace(mountOption)
+
+		if matchGroups := GetRegexSubmatches(NFSVersionMajorMinorRegex, mountOption); matchGroups != nil {
+			NFSMountOptions = append(NFSMountOptions, mountOption)
+			continue
+		}
+
+		if matchGroups := GetRegexSubmatches(NFSVersionMajorRegex, mountOption); matchGroups != nil {
+			NFSMountOptions = append(NFSMountOptions, mountOption)
+			continue
+		}
+
+		if matchGroups := GetRegexSubmatches(NFSVersionMinorRegex, mountOption); matchGroups != nil {
+			NFSMountOptions = append(NFSMountOptions, mountOption)
+			continue
+		}
+	}
+
+	return NFSMountOptions
+}
+
+// SetNFSVersionMountOptions removes any existing NFS version mount option and sets passed NFS version mount options.
+func SetNFSVersionMountOptions(mountOptions, newNFSVersionMountOption string) string {
+
+	// Strip off -o prefix if present or any "," at the end
+	mountOptions = strings.TrimPrefix(mountOptions, "-o ")
+	mountOptions = strings.TrimSuffix(mountOptions, ",")
+
+	NFSMountOptions := GetNFSVersionMountOptions(mountOptions)
+
+	// Remove any of the NFS mount options already set
+	if len(NFSMountOptions) != 0 {
+		mountOptions = SanitizeMountOptions(mountOptions, NFSMountOptions)
+	}
+
+	// Set the new NFS version mount option
+	return AppendToStringList(mountOptions, newNFSVersionMountOption, ",")
 }
 
 // GetRegexSubmatches accepts a regular expression with one or more groups and returns a map

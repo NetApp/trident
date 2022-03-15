@@ -299,13 +299,19 @@ func (s *StorageClass) GetStoragePoolsForProtocol(ctx context.Context, p config.
 		storagePoolProtocol := storagePool.Backend().GetProtocol(ctx)
 
 		if p == config.ProtocolAny || storagePoolProtocol == p {
+			// TODO (arorar): Remove this check after ROX is disabled for iSCSI (non-raw block) volumes.
+			if storagePoolProtocol == config.BlockOnFile && (accessMode == config.
+				ReadOnlyMany || accessMode == config.ReadWriteMany) {
+				continue
+			}
+
 			ret = append(ret, storagePool)
 		}
 
 		// AddRawBlockSupportOnBoF: Add below else-if code block to allow raw block volumes on BlockOnFile
 		// Allow only RWO raw-block on Block-On-File
 
-		// else if p == config.Block && accessMode == config.ReadWriteOnce && storagePoolProtocol == config. BlockOnFile {
+		// else if p == config.Block && accessMode == config.ReadWriteOnce && storagePoolProtocol == config.BlockOnFile {
 		//     ret = append(ret, storagePool)
 		// }
 	}

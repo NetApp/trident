@@ -20,7 +20,6 @@ import (
 	"go.uber.org/multierr"
 
 	"github.com/netapp/trident/config"
-	cfg "github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	. "github.com/netapp/trident/logger"
@@ -3964,51 +3963,51 @@ func (o *TridentOrchestrator) getProtocol(
 
 	var protocolTable = map[accessVariables]protocolResult{
 
-		{cfg.Filesystem, cfg.ModeAny, cfg.ProtocolAny}: {cfg.ProtocolAny, nil},
-		{cfg.Filesystem, cfg.ModeAny, cfg.File}:        {cfg.File, nil},
-		{cfg.Filesystem, cfg.ModeAny, cfg.Block}:       {cfg.Block, nil},
-		{cfg.Filesystem, cfg.ModeAny, cfg.BlockOnFile}: {cfg.BlockOnFile, nil},
+		{config.Filesystem, config.ModeAny, config.ProtocolAny}: {config.ProtocolAny, nil},
+		{config.Filesystem, config.ModeAny, config.File}:        {config.File, nil},
+		{config.Filesystem, config.ModeAny, config.Block}:       {config.Block, nil},
+		{config.Filesystem, config.ModeAny, config.BlockOnFile}: {config.BlockOnFile, nil},
 
-		{cfg.Filesystem, cfg.ReadWriteOnce, cfg.ProtocolAny}: {cfg.ProtocolAny, nil},
-		{cfg.Filesystem, cfg.ReadWriteOnce, cfg.File}:        {cfg.File, nil},
-		{cfg.Filesystem, cfg.ReadWriteOnce, cfg.Block}:       {cfg.Block, nil},
-		{cfg.Filesystem, cfg.ReadWriteOnce, cfg.BlockOnFile}: {cfg.BlockOnFile, nil},
+		{config.Filesystem, config.ReadWriteOnce, config.ProtocolAny}: {config.ProtocolAny, nil},
+		{config.Filesystem, config.ReadWriteOnce, config.File}:        {config.File, nil},
+		{config.Filesystem, config.ReadWriteOnce, config.Block}:       {config.Block, nil},
+		{config.Filesystem, config.ReadWriteOnce, config.BlockOnFile}: {config.BlockOnFile, nil},
 
-		{cfg.Filesystem, cfg.ReadOnlyMany, cfg.ProtocolAny}: {cfg.ProtocolAny, nil},
-		{cfg.Filesystem, cfg.ReadOnlyMany, cfg.File}:        {cfg.File, nil},
-		{cfg.Filesystem, cfg.ReadOnlyMany, cfg.Block}:       {cfg.Block, nil},
-		{cfg.Filesystem, cfg.ReadOnlyMany, cfg.BlockOnFile}: {cfg.ProtocolAny, err},
+		{config.Filesystem, config.ReadOnlyMany, config.ProtocolAny}: {config.ProtocolAny, nil},
+		{config.Filesystem, config.ReadOnlyMany, config.File}:        {config.File, nil},
+		{config.Filesystem, config.ReadOnlyMany, config.Block}:       {config.Block, nil},
+		{config.Filesystem, config.ReadOnlyMany, config.BlockOnFile}: {config.ProtocolAny, err},
 
-		{cfg.Filesystem, cfg.ReadWriteMany, cfg.ProtocolAny}: {cfg.File, nil},
-		{cfg.Filesystem, cfg.ReadWriteMany, cfg.File}:        {cfg.File, nil},
-		{cfg.Filesystem, cfg.ReadWriteMany, cfg.Block}:       {cfg.ProtocolAny, err},
-		{cfg.Filesystem, cfg.ReadWriteMany, cfg.BlockOnFile}: {cfg.ProtocolAny, err},
+		{config.Filesystem, config.ReadWriteMany, config.ProtocolAny}: {config.File, nil},
+		{config.Filesystem, config.ReadWriteMany, config.File}:        {config.File, nil},
+		{config.Filesystem, config.ReadWriteMany, config.Block}:       {config.ProtocolAny, err},
+		{config.Filesystem, config.ReadWriteMany, config.BlockOnFile}: {config.ProtocolAny, err},
 
-		{cfg.RawBlock, cfg.ModeAny, cfg.ProtocolAny}: {cfg.Block, nil},
-		{cfg.RawBlock, cfg.ModeAny, cfg.File}:        {cfg.ProtocolAny, err},
-		{cfg.RawBlock, cfg.ModeAny, cfg.Block}:       {cfg.Block, nil},
-		{cfg.RawBlock, cfg.ModeAny, cfg.BlockOnFile}: {cfg.ProtocolAny, err},
+		{config.RawBlock, config.ModeAny, config.ProtocolAny}: {config.Block, nil},
+		{config.RawBlock, config.ModeAny, config.File}:        {config.ProtocolAny, err},
+		{config.RawBlock, config.ModeAny, config.Block}:       {config.Block, nil},
+		{config.RawBlock, config.ModeAny, config.BlockOnFile}: {config.ProtocolAny, err},
 
-		{cfg.RawBlock, cfg.ReadWriteOnce, cfg.ProtocolAny}: {cfg.Block, nil},
-		{cfg.RawBlock, cfg.ReadWriteOnce, cfg.File}:        {cfg.ProtocolAny, err},
-		{cfg.RawBlock, cfg.ReadWriteOnce, cfg.Block}:       {cfg.Block, nil},
-		{cfg.RawBlock, cfg.ReadWriteOnce, cfg.BlockOnFile}: {cfg.ProtocolAny, err},
+		{config.RawBlock, config.ReadWriteOnce, config.ProtocolAny}: {config.Block, nil},
+		{config.RawBlock, config.ReadWriteOnce, config.File}:        {config.ProtocolAny, err},
+		{config.RawBlock, config.ReadWriteOnce, config.Block}:       {config.Block, nil},
+		{config.RawBlock, config.ReadWriteOnce, config.BlockOnFile}: {config.ProtocolAny, err},
 
-		{cfg.RawBlock, cfg.ReadOnlyMany, cfg.ProtocolAny}: {cfg.Block, nil},
-		{cfg.RawBlock, cfg.ReadOnlyMany, cfg.File}:        {cfg.ProtocolAny, err},
-		{cfg.RawBlock, cfg.ReadOnlyMany, cfg.Block}:       {cfg.Block, nil},
-		{cfg.RawBlock, cfg.ReadOnlyMany, cfg.BlockOnFile}: {cfg.ProtocolAny, err},
+		{config.RawBlock, config.ReadOnlyMany, config.ProtocolAny}: {config.Block, nil},
+		{config.RawBlock, config.ReadOnlyMany, config.File}:        {config.ProtocolAny, err},
+		{config.RawBlock, config.ReadOnlyMany, config.Block}:       {config.Block, nil},
+		{config.RawBlock, config.ReadOnlyMany, config.BlockOnFile}: {config.ProtocolAny, err},
 
-		{cfg.RawBlock, cfg.ReadWriteMany, cfg.ProtocolAny}: {cfg.Block, nil},
-		{cfg.RawBlock, cfg.ReadWriteMany, cfg.File}:        {cfg.ProtocolAny, err},
-		{cfg.RawBlock, cfg.ReadWriteMany, cfg.Block}:       {cfg.Block, nil},
-		{cfg.RawBlock, cfg.ReadWriteMany, cfg.BlockOnFile}: {cfg.ProtocolAny, err},
+		{config.RawBlock, config.ReadWriteMany, config.ProtocolAny}: {config.Block, nil},
+		{config.RawBlock, config.ReadWriteMany, config.File}:        {config.ProtocolAny, err},
+		{config.RawBlock, config.ReadWriteMany, config.Block}:       {config.Block, nil},
+		{config.RawBlock, config.ReadWriteMany, config.BlockOnFile}: {config.ProtocolAny, err},
 	}
 
 	res, isValid := protocolTable[accessVariables{volumeMode, accessMode, protocol}]
 
 	if !isValid {
-		return cfg.ProtocolAny, fmt.Errorf("invalid volume mode (%s), access mode (%s) or protocol (%s)", volumeMode, accessMode, protocol)
+		return config.ProtocolAny, fmt.Errorf("invalid volume mode (%s), access mode (%s) or protocol (%s)", volumeMode, accessMode, protocol)
 	}
 
 	return res.protocol, res.err

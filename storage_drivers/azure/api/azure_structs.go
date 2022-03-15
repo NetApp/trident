@@ -17,8 +17,9 @@ const (
 	StateMoving    = "Moving" // Currently unused by ANF
 	StateError     = "Failed"
 
-	ProtocolTypeNFSv3  = "NFSv3"
-	ProtocolTypeNFSv41 = "NFSv4.1"
+	ProtocolTypeNFSPrefix = "NFSv"
+	ProtocolTypeNFSv3  = ProtocolTypeNFSPrefix + "3"
+	ProtocolTypeNFSv41 = ProtocolTypeNFSPrefix + "4.1"
 	// ProtocolTypeCIFS = "CIFS"
 
 	ServiceLevelStandard = "Standard"

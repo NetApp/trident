@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-10-01/netapp"
@@ -1666,7 +1665,8 @@ func (c Client) SubvolumeExists(
 		return c.SubvolumeExistsByID(ctx, volConfig.InternalID)
 	}
 
-	// Fall back to the creation token
+	// Fall back to the creation token, here expectation is that it is called in the event of Create, Clone or their
+	// failures when the name of the subvolume is deterministic.
 	return c.SubvolumeExistsByCreationToken(ctx, volConfig.InternalName, candidateFileVolumePools)
 }
 
@@ -1675,8 +1675,7 @@ func (c Client) SubvolumeExistsByCreationToken(
 	ctx context.Context, creationToken string, candidateFileVolumePools []string,
 ) (bool, *Subvolume, error) {
 
-	if subvolume, err := c.subvolumeByCreationTokenWithSeparator(ctx, creationToken, SubvolumeNameSeparator,
-		candidateFileVolumePools, false); err != nil {
+	if subvolume, err := c.SubvolumeByCreationToken(ctx, creationToken, candidateFileVolumePools, false); err != nil {
 		if utils.IsNotFoundError(err) {
 			return false, nil, nil
 		} else {
@@ -1688,48 +1687,38 @@ func (c Client) SubvolumeExistsByCreationToken(
 }
 
 // SubvolumeByCreationToken fetches a Subvolume by its creation token.  We can't query the SDK for
-// subvolume by creation token, so our only choice here is to get all subvolumes within a volume
-// and return the one of interest. That is obviously very inefficient, so this method should be used
-// only when absolutely necessary.
+// subvolume by creation token, so our only choice here is to check for subvolume presence in each of the volume.
+// That is obviously very inefficient, so this method should be used only when absolutely necessary.
 func (c Client) SubvolumeByCreationToken(
 	ctx context.Context, creationToken string, candidateFileVolumePools []string, queryMetadata bool,
 ) (*Subvolume, error) {
 
-	Logc(ctx).Tracef("Fetching volume by creation token %s.", creationToken)
-	return c.subvolumeByCreationTokenWithSeparator(ctx, creationToken, "", candidateFileVolumePools, queryMetadata)
-}
-
-// subvolumeByCreationTokenWithSeparator fetches a Subvolume by its creation token. We can't query the SDK for
-// subvolume by creation token, so our only choice here is to get all subvolumes within a volume
-// and return the one of interest. This method uses part before the seperator of the creation token to identify
-// matching subvolume. That is obviously very inefficient, so this method should be used only when absolutely necessary.
-func (c Client) subvolumeByCreationTokenWithSeparator(
-	ctx context.Context, creationToken, seperator string, candidateFileVolumePools []string, queryMetadata bool,
-) (*Subvolume, error) {
-
-	Logc(ctx).Tracef("Fetching volume by creation token %s.", creationToken)
-
-	subvolumes, err := c.Subvolumes(ctx, candidateFileVolumePools)
-	if err != nil {
-		return nil, err
-	}
+	Logc(ctx).Debugf("Fetching subvolume by creation token %s.", creationToken)
 
 	matchingSubvolumes := make([]*Subvolume, 0)
 
-	nameToken := creationToken
-	if seperator != "" {
-		nameToken = strings.Split(creationToken, seperator)[0]
-	}
-
-	for _, subvolume := range *subvolumes {
-		subvolumeNameToken := subvolume.Name
-		if seperator != "" {
-			subvolumeNameToken = strings.Split(subvolume.Name, seperator)[0]
+	for _, filePoolVolume := range candidateFileVolumePools {
+		resourceGroup, netappAccount, cpoolName, volumeName, err := ParseVolumeName(filePoolVolume)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Error getting file pool volume path details from %s.", filePoolVolume)
+			return nil, err
 		}
 
-		if subvolumeNameToken == nameToken {
-			matchingSubvolumes = append(matchingSubvolumes, subvolume)
+		subvolumeID := CreateSubvolumeID(c.config.SubscriptionID, resourceGroup, netappAccount, cpoolName, volumeName,
+			creationToken)
+
+		subvolume, err := c.SubvolumeByID(ctx, subvolumeID, false)
+		if err != nil {
+			if utils.IsNotFoundError(err) {
+				continue
+			}
+
+			Logc(ctx).WithError(err).Errorf("Error checking for subvolume '%s' in pool '%s'.", subvolumeID,
+				filePoolVolume)
+			return nil, err
 		}
+
+		matchingSubvolumes = append(matchingSubvolumes, subvolume)
 	}
 
 	switch len(matchingSubvolumes) {
@@ -2388,7 +2377,7 @@ func (c Client) subvolumesClientDelete(ctx context.Context, subvolume *Subvolume
 				return utils.TooManyRequestsError("unable to receive response due to API throttling")
 			} else if IsANFNotFoundError(err) {
 				Logc(ctx).WithFields(logFields).WithError(err).Info("Subvolume already deleted")
-				return utils.NotFoundError(fmt.Sprintf("subvolume %s not found", subvolume.Name))
+				return backoff.Permanent(utils.NotFoundError(fmt.Sprintf("subvolume %s not found", subvolume.Name)))
 			} else {
 				// Return a permanent error for non HTTP 429 case
 				Logc(ctx).WithFields(logFields).WithError(err).Error("Error deleting subvolume.")
@@ -2439,7 +2428,7 @@ func (c Client) DeleteSubvolume(ctx context.Context, subvolume *Subvolume) error
 
 // ValidateFilePoolVolumes validates a filePoolVolume and its location
 func (c Client) ValidateFilePoolVolumes(
-	ctx context.Context, filePoolVolumeNames []string, protocol string,
+	ctx context.Context, filePoolVolumeNames []string,
 ) ([]*FileSystem, error) {
 
 	// Ensure the length of filePoolVolumeNames is 1
@@ -2471,11 +2460,6 @@ func (c Client) ValidateFilePoolVolumes(
 		if volume.SubvolumesEnabled == false {
 			return nil, fmt.Errorf("filePoolVolumes validation failed; volume '%s' does not support subvolumes",
 				filePoolVolumeName)
-		}
-
-		if volume.ProtocolTypes[0] != protocol {
-			return nil, fmt.Errorf("filePoolVolumes validation failed; default protocol type for the backend is '%v',"+
-				" whereas the protocol for this filePoolVolume is '%v'", protocol, volume.ProtocolTypes[0])
 		}
 
 		volumes = append(volumes, volume)

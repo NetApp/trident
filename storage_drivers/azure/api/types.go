@@ -52,7 +52,7 @@ type Azure interface {
 	CreateSubvolume(context.Context, *SubvolumeCreateRequest) (*Subvolume, error)
 	ResizeSubvolume(context.Context, *Subvolume, int64) error
 	DeleteSubvolume(context.Context, *Subvolume) error
-	ValidateFilePoolVolumes(context.Context, []string, string) ([]*FileSystem, error)
+	ValidateFilePoolVolumes(context.Context, []string) ([]*FileSystem, error)
 
 	SnapshotsForVolume(context.Context, *FileSystem) (*[]*Snapshot, error)
 	SnapshotForVolume(context.Context, *FileSystem, string) (*Snapshot, error)

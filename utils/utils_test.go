@@ -658,6 +658,75 @@ func TestGetNFSVersionFromMountOptions(t *testing.T) {
 	}
 }
 
+func TestGetNFSVersionMountOptions(t *testing.T) {
+	log.Debug("Running TestGetNFSVersionMountOptions...")
+
+	var tests = []struct {
+		mountOptions    string
+		NFSMountOptions []string
+	}{
+		{"", []string{}},
+		{"", []string{}},
+		{"vers=3", []string{"vers=3"}},
+		{"tcp, vers=3", []string{"vers=3"}},
+		{"-o hard,vers=4", []string{"vers=4"}},
+		{"nfsvers=3 , timeo=300", []string{"nfsvers=3"}},
+		{"retry=1, nfsvers=4", []string{"nfsvers=4"}},
+		{"retry=1", []string{}},
+		{"vers=4,minorversion=1", []string{"vers=4", "minorversion=1"}},
+		{"vers=4.0,minorversion=1", []string{"vers=4.0", "minorversion=1"}},
+		{"vers=2,vers=3", []string{"vers=2", "vers=3"}},
+		{"vers=5", []string{"vers=5"}},
+		{"minorversion=2,nfsvers=4.1", []string{"minorversion=2", "nfsvers=4.1"}},
+		{"vers=2", []string{"vers=2"}},
+		{"vers=3,minorversion=1", []string{"vers=3", "minorversion=1"}},
+		{"vers=4,minorversion=2", []string{"vers=4", "minorversion=2"}},
+		{"vers=4.1", []string{"vers=4.1"}},
+	}
+
+	for _, test := range tests {
+
+		nfsMountOptions := GetNFSVersionMountOptions(test.mountOptions)
+		assert.Equal(t, test.NFSMountOptions, nfsMountOptions)
+	}
+}
+
+func TestSetNFSVersionMountOptions(t *testing.T) {
+	log.Debug("Running TestSetNFSVersionMountOptions...")
+
+	var tests = []struct {
+		mountOptions      string
+		newNFSMountOption string
+		newMountOptions   string
+	}{
+		{"", "vers=3", "vers=3"},
+		{"", "vers=4.1", "vers=4.1"},
+		{"vers=4.1", "vers=4.1", "vers=4.1"},
+		{"vers=4.1", "vers=7", "vers=7"},
+		{"vers=3", "vers=4.1", "vers=4.1"},
+		{"tcp,vers=3,", "vers=4.1", "tcp,vers=4.1"},
+		{"-o hard,vers=4", "vers=4.1", "hard,vers=4.1"},
+		{"-o vers=4,hard", "vers=4.1", "hard,vers=4.1"},
+		{"nfsvers=3,timeo=300", "vers=3.0", "timeo=300,vers=3.0"},
+		{"retry=1,nfsvers=4,", "minorversion=2", "retry=1,minorversion=2"},
+		{"retry=1", "nfsvers=3", "retry=1,nfsvers=3"},
+		{"vers=4,minorversion=1", "vers=4.1", "vers=4.1"},
+		{"vers=4.0,minorversion=1", "vers=3", "vers=3"},
+		{"vers=2,vers=3,", "minorversion=2", "minorversion=2"},
+		{"vers=5", "vers=4.1", "vers=4.1"},
+		{"minorversion=2,nfsvers=4.1", "nfsvers=3", "nfsvers=3"},
+		{"vers=2", "minorversion=2,nfsvers=4.1", "minorversion=2,nfsvers=4.1"},
+		{"vers=3,minorversion=1,timeo=300", "minorversion=2,nfsvers=4.1", "timeo=300,minorversion=2,nfsvers=4.1"},
+		{"vers=4.1", "vers=4.0", "vers=4.0"},
+	}
+
+	for _, test := range tests {
+
+		nfsMountOptions := SetNFSVersionMountOptions(test.mountOptions, test.newNFSMountOption)
+		assert.Equal(t, test.newMountOptions, nfsMountOptions)
+	}
+}
+
 const multipathConf = `
 defaults {
     user_friendly_names yes
@@ -1104,8 +1173,12 @@ func TestSanitizeMountOptions(t *testing.T) {
 	}{
 		{"", []string{"ro"}, ""},
 		{"ro", []string{"ro"}, ""},
+		{" ro", []string{"ro"}, ""},
 		{"rw", []string{"ro"}, "rw"},
 		{"ro,nfsvers=3", []string{"ro"}, "nfsvers=3"},
+		{"ro, nfsvers=3", []string{"ro"}, "nfsvers=3"},
+		{" ro, nfsvers=3", []string{"ro"}, "nfsvers=3"},
+		{" ro, nfsvers=3", []string{"bind"}, "ro,nfsvers=3"},
 		{"ro,nfsvers=3", []string{"bind"}, "ro,nfsvers=3"},
 		{"nouuid,ro,loop,nfsvers=4", []string{"ro"}, "nouuid,loop,nfsvers=4"},
 	}

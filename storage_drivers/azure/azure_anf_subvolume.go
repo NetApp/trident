@@ -4,6 +4,7 @@ package azure
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -26,6 +27,7 @@ import (
 
 const (
 	MinimumSubvolumeSizeBytes = uint64(20971520) // 20 MB
+	RequiredHashLength        = 16
 
 	defaultSubvolumeSizeStr = "20971520"
 
@@ -326,10 +328,6 @@ func (d *NASBlockStorageDriver) populateConfigurationDefaults(
 		config.Size = defaultSubvolumeSizeStr
 	}
 
-	if config.NfsMountOptions == "" {
-		config.NfsMountOptions = defaultNfsMountOptions
-	}
-
 	if config.LimitVolumeSize == "" {
 		config.LimitVolumeSize = defaultLimitVolumeSize
 	}
@@ -352,7 +350,7 @@ func (d *NASBlockStorageDriver) initializeStoragePools(ctx context.Context) (map
 
 	// Need to identify the NFS protocol backend supports and make sure all of the filePoolVolumes follow the same
 	// protocol
-	nfsVersion, err := utils.GetNFSVersionFromMountOptions(d.Config.NfsMountOptions, nfsVersion3, supportedNFSVersions)
+	nfsVersion, err := utils.GetNFSVersionFromMountOptions(d.Config.NfsMountOptions, "", supportedNFSVersions)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -366,15 +364,22 @@ func (d *NASBlockStorageDriver) initializeStoragePools(ctx context.Context) (map
 	}
 
 	if len(d.Config.FilePoolVolumes) > 0 {
-		filePoolVolumes, err := d.SDK.ValidateFilePoolVolumes(ctx, d.Config.FilePoolVolumes, protocolTypes)
+		filePoolVolumes, err := d.SDK.ValidateFilePoolVolumes(ctx, d.Config.FilePoolVolumes)
 		if err != nil {
 			return nil, nil, fmt.Errorf("error initializing physical pools: %v", err)
 		}
 
 		for _, filePoolVolume := range filePoolVolumes {
-			poolName := fmt.Sprintf("%s_%s", filePoolVolume.Name, filePoolVolume.FileSystemID)
+			name := fmt.Sprintf("%s_%s", filePoolVolume.Name, d.createFilePoolVolumePathHash(filePoolVolume))
+			poolName := strings.Replace(name, "-", "", -1)
 
-			pool := storage.NewStoragePool(nil, strings.Replace(poolName, "-", "", -1))
+			if protocolTypes != "" && filePoolVolume.ProtocolTypes[0] != protocolTypes {
+				Logc(ctx).Warnf("Protocol for filePoolVolume '%s' in pool '%s' is '%s' which does not match"+
+					" NFSMountOptions's NFS version '%s'; thus NFSMountOptions version will be ignored",
+					filePoolVolume.FullName, poolName, filePoolVolume.ProtocolTypes[0], protocolTypes)
+			}
+
+			pool := storage.NewStoragePool(nil, poolName)
 
 			pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
 			pool.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
@@ -432,9 +437,17 @@ func (d *NASBlockStorageDriver) initializeStoragePools(ctx context.Context) (map
 				configFilePoolVolumes = vpool.FilePoolVolumes
 			}
 
-			filePoolVolumes, err := d.SDK.ValidateFilePoolVolumes(ctx, configFilePoolVolumes, protocolTypes)
+			filePoolVolumes, err := d.SDK.ValidateFilePoolVolumes(ctx, configFilePoolVolumes)
 			if err != nil {
 				return nil, nil, fmt.Errorf("error initializing virtual pool '%s': %v", poolName, err)
+			}
+
+			for _, filePoolVolume := range filePoolVolumes {
+				if protocolTypes != "" && filePoolVolume.ProtocolTypes[0] != protocolTypes {
+					Logc(ctx).Warnf("Protocol for filePoolVolume '%s' in pool '%s' is '%s' which does not match"+
+						" NFSMountOptions's NFS version '%s'; thus NFSMountOptions version will be ignored",
+						filePoolVolume.FullName, poolName, filePoolVolume.ProtocolTypes[0], protocolTypes)
+				}
 			}
 
 			pool := storage.NewStoragePool(nil, poolName)
@@ -460,6 +473,10 @@ func (d *NASBlockStorageDriver) initializeStoragePools(ctx context.Context) (map
 
 			virtualPools[pool.Name()] = pool
 		}
+	}
+
+	if len(physicalPools) == 0 && len(virtualPools) == 0 {
+		return nil, nil, fmt.Errorf("filePoolVolumes is a required field")
 	}
 
 	return physicalPools, virtualPools, nil
@@ -1022,8 +1039,9 @@ func (d *NASBlockStorageDriver) Publish(
 		return fmt.Errorf("volume %s has no mount targets", volume.Name)
 	}
 
-	// Set NFS mount options
-	mountOptions := d.Config.NfsMountOptions
+	// Set the correct NFS mount option based on volume's protocol
+	NFSMountOption := fmt.Sprintf("vers=%s", strings.TrimPrefix(volume.ProtocolTypes[0], api.ProtocolTypeNFSPrefix))
+	mountOptions := utils.SetNFSVersionMountOptions(d.Config.NfsMountOptions, NFSMountOption)
 
 	// Subvolume mount options can only be specified via tha storage class.
 	subvolumeMountOptions := ""
@@ -1045,6 +1063,7 @@ func (d *NASBlockStorageDriver) Publish(
 	// Just use the first mount target found
 	publishInfo.NfsServerIP = (volume.MountTargets)[0].IPAddress
 	publishInfo.NfsPath = "/" + volume.CreationToken
+	publishInfo.NfsUniqueID = d.createFilePoolVolumePathHash(volume)
 	publishInfo.SubvolumeName = volConfig.InternalName
 	publishInfo.MountOptions = strings.TrimPrefix(mountOptions, "-o ")
 	publishInfo.SubvolumeMountOptions = strings.TrimPrefix(subvolumeMountOptions, "-o ")
@@ -1062,7 +1081,7 @@ func (d *NASBlockStorageDriver) CanSnapshot(_ context.Context, _ *storage.Snapsh
 func (d *NASBlockStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig,
 	volConfig *storage.VolumeConfig) (*storage.Snapshot, error) {
 
-	internalSnapName := snapConfig.InternalName
+	snapName := snapConfig.Name
 	internalVolName := snapConfig.VolumeInternalName
 	externalVolName := snapConfig.VolumeName
 
@@ -1070,7 +1089,7 @@ func (d *NASBlockStorageDriver) GetSnapshot(ctx context.Context, snapConfig *sto
 		fields := log.Fields{
 			"Method":       "GetSnapshot",
 			"Type":         "NASBlockStorageDriver",
-			"snapshotName": internalSnapName,
+			"snapshotName": snapName,
 			"volumeName":   internalVolName,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshot")
@@ -1087,7 +1106,7 @@ func (d *NASBlockStorageDriver) GetSnapshot(ctx context.Context, snapConfig *sto
 	}
 
 	// Create the snapshot name/string
-	creationToken := d.helper.GetSnapshotInternalName(externalVolName, internalSnapName)
+	creationToken := d.helper.GetSnapshotInternalName(externalVolName, snapName)
 
 	// Based on volume's internal name, snapshot ID can be identified
 	snapshotInternalID := api.CreateSubvolumeID(d.Config.SubscriptionID, sourceSubvolume.ResourceGroup,
@@ -1095,19 +1114,20 @@ func (d *NASBlockStorageDriver) GetSnapshot(ctx context.Context, snapConfig *sto
 
 	snapshotExists, extantSubvolume, err := d.SDK.SubvolumeExistsByID(ctx, snapshotInternalID)
 	if err != nil {
-		return nil, fmt.Errorf("error checking for existing snapshot %s; %v", creationToken, err)
+		return nil, fmt.Errorf("error checking for existing snapshot %s; %v", snapshotInternalID, err)
 	}
 	if !snapshotExists {
 		return nil, nil
 	}
 
 	if extantSubvolume.ProvisioningState != api.StateAvailable {
-		return nil, fmt.Errorf("snapshot %s state is %s", internalSnapName, extantSubvolume.ProvisioningState)
+		return nil, fmt.Errorf("snapshot %s state is %s", creationToken, extantSubvolume.ProvisioningState)
 	}
 
 	Logc(ctx).WithFields(log.Fields{
-		"snapshotName": internalSnapName,
-		"volumeName":   internalVolName,
+		"snapshotName":         snapName,
+		"snapshotInternalName": creationToken,
+		"volumeName":           internalVolName,
 	}).Debug("Found snapshot.")
 
 	return &storage.Snapshot{
@@ -1173,7 +1193,7 @@ func (d *NASBlockStorageDriver) GetSnapshots(ctx context.Context, volConfig *sto
 			Config: &storage.SnapshotConfig{
 				Version:            tridentconfig.OrchestratorAPIVersion,
 				Name:               snapName,
-				InternalName:       snapName,
+				InternalName:       subvolume.Name,
 				VolumeName:         externalVolName,
 				VolumeInternalName: internalVolName,
 			},
@@ -1193,14 +1213,14 @@ func (d *NASBlockStorageDriver) GetSnapshots(ctx context.Context, volConfig *sto
 func (d *NASBlockStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig,
 	volConfig *storage.VolumeConfig) (*storage.Snapshot, error) {
 
-	internalSnapName := snapConfig.InternalName
+	snapName := snapConfig.Name
 	internalVolName := snapConfig.VolumeInternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "CreateSnapshot",
 			"Type":         "NASBlockStorageDriver",
-			"snapshotName": internalSnapName,
+			"snapshotName": snapName,
 			"volumeName":   internalVolName,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
@@ -1208,12 +1228,12 @@ func (d *NASBlockStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *
 	}
 
 	// Validate snapshot name
-	if err := d.validateSnapshotName(internalSnapName); err != nil {
+	if err := d.validateSnapshotName(snapName); err != nil {
 		return nil, err
 	}
 
 	// Create the snapshot name/string
-	creationToken := d.helper.GetSnapshotInternalName(snapConfig.VolumeName, internalSnapName)
+	creationToken := d.helper.GetSnapshotInternalName(snapConfig.VolumeName, snapName)
 
 	// Make sure we got a valid creation token
 	if err := d.validateCreationToken(creationToken); err != nil {
@@ -1270,6 +1290,14 @@ func (d *NASBlockStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *
 		return nil, err
 	}
 
+	// For this driver the internal name and the name are different so set the internal name
+	snapConfig.InternalName = creationToken
+
+	Logc(ctx).WithFields(log.Fields{
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}).Info("Snapshot created.")
+
 	return &storage.Snapshot{
 		Config:    snapConfig,
 		Created:   createdAt.UTC().Format(storage.SnapshotTimestampFormat),
@@ -1282,14 +1310,14 @@ func (d *NASBlockStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *
 func (d *NASBlockStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig,
 	_ *storage.VolumeConfig) error {
 
-	internalSnapName := snapConfig.InternalName
+	snapName := snapConfig.Name
 	internalVolName := snapConfig.VolumeInternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "RestoreSnapshot",
 			"Type":         "NASBlockStorageDriver",
-			"snapshotName": internalSnapName,
+			"snapshotName": snapName,
 			"volumeName":   internalVolName,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> RestoreSnapshot")
@@ -1303,21 +1331,21 @@ func (d *NASBlockStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig 
 func (d *NASBlockStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig,
 	volConfig *storage.VolumeConfig) error {
 
-	internalSnapName := snapConfig.InternalName
+	snapName := snapConfig.Name
 	internalVolName := snapConfig.VolumeInternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "DeleteSnapshot",
 			"Type":         "NASBlockStorageDriver",
-			"snapshotName": internalSnapName,
+			"snapshotName": snapName,
 			"volumeName":   internalVolName,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
 	}
 
-	creationToken := d.helper.GetSnapshotInternalName(snapConfig.VolumeName, internalSnapName)
+	creationToken := d.helper.GetSnapshotInternalName(snapConfig.VolumeName, snapName)
 
 	subscriptionID, resourceGroup, _, netappAccount, cPoolName, volumeName, _,
 		err := api.ParseSubvolumeID(volConfig.InternalID)
@@ -1473,7 +1501,7 @@ func (d *NASBlockStorageDriver) GetInternalVolumeName(ctx context.Context, name 
 	} else {
 		// With an external store, any transformation of the name is fine
 		internal := drivers.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
-		internal = internal + api.SubvolumeNameSeparator + utils.RandomString(6)
+		internal = internal + api.SubvolumeNameSeparator + "0"
 		Logc(ctx).WithField("volumeInternal", internal).Debug("Modified volume name for internal name.")
 		return internal
 	}
@@ -1509,8 +1537,9 @@ func (d *NASBlockStorageDriver) CreateFollowup(ctx context.Context, volConfig *s
 		return fmt.Errorf("subvolume %s is in %s state", creationToken, subvolume.ProvisioningState)
 	}
 
-	// Set NFS mount options
-	mountOptions := d.Config.NfsMountOptions
+	// Set the correct NFS mount option based on volume's protocol
+	NFSMountOption := fmt.Sprintf("vers=%s", strings.TrimPrefix(volume.ProtocolTypes[0], api.ProtocolTypeNFSPrefix))
+	mountOptions := utils.SetNFSVersionMountOptions(d.Config.NfsMountOptions, NFSMountOption)
 
 	if len(volume.MountTargets) == 0 {
 		return fmt.Errorf("volume %s has no mount targets", volume.Name)
@@ -1519,6 +1548,7 @@ func (d *NASBlockStorageDriver) CreateFollowup(ctx context.Context, volConfig *s
 	// Just use the first mount target found
 	volConfig.AccessInfo.NfsServerIP = (volume.MountTargets)[0].IPAddress
 	volConfig.AccessInfo.NfsPath = "/" + volume.CreationToken
+	volConfig.AccessInfo.NfsUniqueID = d.createFilePoolVolumePathHash(volume)
 	volConfig.AccessInfo.SubvolumeName = volConfig.InternalName
 	volConfig.AccessInfo.MountOptions = strings.TrimPrefix(mountOptions, "-o ")
 
@@ -1735,4 +1765,15 @@ func (d *NASBlockStorageDriver) getAllFilePoolVolumes() []string {
 	}
 
 	return candidateFileVolumePools
+}
+
+func (d *NASBlockStorageDriver) createFilePoolVolumePathHash(filePoolVolume *api.FileSystem) string {
+
+	// volume path for hash: subscriptionID/resourceGroup/netappAccount/capacityPool/volume
+	// This volume path is unique to a filePoolVolume across subscriptions
+	volumePath := fmt.Sprintf("%s/%s/%s/%s/%s", d.Config.SubscriptionID, filePoolVolume.ResourceGroup,
+		filePoolVolume.NetAppAccount, filePoolVolume.CapacityPool, filePoolVolume.Name)
+	sha256Hash := sha256.Sum256([]byte(volumePath))
+
+	return fmt.Sprintf("%032x", sha256Hash[:RequiredHashLength])
 }

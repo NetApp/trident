@@ -37,6 +37,7 @@ type IscsiAccessInfo struct {
 type NfsAccessInfo struct {
 	NfsServerIP string `json:"nfsServerIp,omitempty"`
 	NfsPath     string `json:"nfsPath,omitempty"`
+	NfsUniqueID string `json:"nfsUniqueID,omitempty"`
 }
 
 type NfsBlockAccessInfo struct {

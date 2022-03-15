@@ -436,6 +436,7 @@ func (p *Plugin) ControllerPublishVolume(
 		publishInfo["subvolumeMountOptions"] = volumePublishInfo.SubvolumeMountOptions
 		publishInfo["nfsServerIp"] = volume.Config.AccessInfo.NfsServerIP
 		publishInfo["nfsPath"] = volume.Config.AccessInfo.NfsPath
+		publishInfo["nfsUniqueID"] = volume.Config.AccessInfo.NfsUniqueID
 		publishInfo["subvolumeName"] = volume.Config.AccessInfo.SubvolumeName
 		publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 		publishInfo["backendUUID"] = volumePublishInfo.BackendUUID
