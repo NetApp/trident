@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 
 	drivers "github.com/netapp/trident/storage_drivers"
 
@@ -176,8 +177,9 @@ func (p *StoragePool) GetLabelsJSON(ctx context.Context, key string, labelLimit 
 
 // GetLabels returns a map containing the labels on this pool, suitable for individual
 // metadata key/value pairs set on a storage volume.  Each key may be customized with
-// a common prefix.  For example:
-// {"prefix/cloud":"anf", "prefix/clusterName":"dev-test-cluster-1"}
+// a common prefix, unless it already has a prefix as detected by the presence of a slash.
+// For example:
+// {"prefix/cloud":"anf", "prefix/clusterName":"dev-test-cluster-1", "otherPrefix/tier":"hot"}
 func (p *StoragePool) GetLabels(_ context.Context, prefix string) map[string]string {
 
 	labelMap := make(map[string]string)
@@ -188,7 +190,11 @@ func (p *StoragePool) GetLabels(_ context.Context, prefix string) map[string]str
 	}
 
 	for key, value := range labelOffer.Labels() {
-		labelMap[prefix+key] = value
+		if strings.Contains(key, "/") {
+			labelMap[key] = value
+		} else {
+			labelMap[prefix+key] = value
+		}
 	}
 
 	return labelMap

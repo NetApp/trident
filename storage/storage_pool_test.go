@@ -103,6 +103,7 @@ func TestGetLabels(t *testing.T) {
 	labels := map[string]string{
 		"cloud":       "anf",
 		"clusterName": "dev-test-cluster-1",
+		"abc.io/tier": "warm",
 	}
 
 	pool := StoragePool{}
@@ -110,11 +111,12 @@ func TestGetLabels(t *testing.T) {
 	pool.Attributes()["labels"] = sa.NewLabelOffer(labels)
 
 	expectedLabels := map[string]string{
-		"prefix_cloud":       "anf",
-		"prefix_clusterName": "dev-test-cluster-1",
+		"prefix/cloud":       "anf",
+		"prefix/clusterName": "dev-test-cluster-1",
+		"abc.io/tier":        "warm",
 	}
 
-	assert.True(t, cmp.Equal(expectedLabels, pool.GetLabels(context.TODO(), "prefix_")))
+	assert.True(t, cmp.Equal(expectedLabels, pool.GetLabels(context.TODO(), "prefix/")))
 }
 
 func TestGetLabelsNone(t *testing.T) {

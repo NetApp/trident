@@ -29,8 +29,10 @@ import (
 )
 
 const (
-	MinimumVolumeSizeBytes = uint64(20971520) // 20 MB
-	labelPrefix            = "trident.netapp.io/"
+	MinimumVolumeSizeBytes    = uint64(20971520) // 20 MB
+	labelPrefix               = "trident.netapp.io/"
+	provisioningAnnotationKey = "trident.netapp.io/provisioning"
+	telemetryAnnotationKey    = "trident.netapp.io/telemetry"
 
 	minimumAstraDSVersion  = "2021.10.0"
 	minimumSnapshotReserve = 0
@@ -637,8 +639,8 @@ func (d *StorageDriver) Create(
 		return fmt.Errorf("could not build volume labels; %v", err)
 	}
 	annotations := map[string]string{
-		drivers.TridentLabelTag:      d.getTelemetryLabelsJSON(ctx),
-		storage.ProvisioningLabelTag: poolLabelsJSON,
+		telemetryAnnotationKey:    d.getTelemetryLabelsJSON(ctx),
+		provisioningAnnotationKey: poolLabelsJSON,
 	}
 
 	newVolume := &api.Volume{
@@ -873,8 +875,8 @@ func (d *StorageDriver) CreateClone(
 		return fmt.Errorf("could not build volume labels; %v", err)
 	}
 	annotations := map[string]string{
-		drivers.TridentLabelTag:      d.getTelemetryLabelsJSON(ctx),
-		storage.ProvisioningLabelTag: poolLabelsJSON,
+		telemetryAnnotationKey:    d.getTelemetryLabelsJSON(ctx),
+		provisioningAnnotationKey: poolLabelsJSON,
 	}
 
 	cloneVolume := &api.Volume{
@@ -1024,8 +1026,8 @@ func (d *StorageDriver) Import(ctx context.Context, volConfig *storage.VolumeCon
 		if volume.Annotations == nil {
 			volume.Annotations = make(map[string]string)
 		}
-		volume.Annotations[drivers.TridentLabelTag] = d.getTelemetryLabelsJSON(ctx)
-		delete(volume.Annotations, storage.ProvisioningLabelTag)
+		volume.Annotations[telemetryAnnotationKey] = d.getTelemetryLabelsJSON(ctx)
+		delete(volume.Annotations, provisioningAnnotationKey)
 
 		// Update volume annotations
 		if err = d.API.SetVolumeAttributes(ctx, volume, roaring.BitmapOf(api.UpdateFlagAnnotations)); err != nil {

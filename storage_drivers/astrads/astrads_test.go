@@ -1118,8 +1118,8 @@ func getStructsForCreate(ctx context.Context, driver *StorageDriver, storagePool
 
 	poolLabelsJSON, _ := storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, 256*1024)
 	annotations := map[string]string{
-		drivers.TridentLabelTag:      driver.getTelemetryLabelsJSON(ctx),
-		storage.ProvisioningLabelTag: poolLabelsJSON,
+		telemetryAnnotationKey:    driver.getTelemetryLabelsJSON(ctx),
+		provisioningAnnotationKey: poolLabelsJSON,
 	}
 
 	requestedSize := resource.MustParse(strconv.FormatInt(113025455157, 10))
@@ -1841,8 +1841,8 @@ func getStructsForCreateClone(ctx context.Context, driver *StorageDriver, storag
 
 	poolLabelsJSON, _ := storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, 256*1024)
 	annotations := map[string]string{
-		drivers.TridentLabelTag:      driver.getTelemetryLabelsJSON(ctx),
-		storage.ProvisioningLabelTag: poolLabelsJSON,
+		telemetryAnnotationKey:    driver.getTelemetryLabelsJSON(ctx),
+		provisioningAnnotationKey: poolLabelsJSON,
 	}
 
 	requestedSize := resource.MustParse(strconv.FormatInt(113025455157, 10))
@@ -2457,8 +2457,8 @@ func getStructsForImport(_ context.Context, driver *StorageDriver) (*storage.Vol
 		Namespace:       driver.Config.Namespace,
 		ResourceVersion: "1",
 		Annotations: map[string]string{
-			storage.ProvisioningLabelTag: "fakeProvisioningLabel",
-			"fakeAnnotationKey":          "fakeAnnotationLabel",
+			provisioningAnnotationKey: "fakeProvisioningLabel",
+			"fakeAnnotationKey":       "fakeAnnotationLabel",
 		},
 		Labels:     make(map[string]string),
 		Finalizers: []string{},
@@ -2494,8 +2494,8 @@ func TestImport_Managed(t *testing.T) {
 	originalVolume.Name = originalName
 
 	expectedAnnotations := map[string]string{
-		drivers.TridentLabelTag: driver.getTelemetryLabelsJSON(ctx),
-		"fakeAnnotationKey":     "fakeAnnotationLabel",
+		telemetryAnnotationKey: driver.getTelemetryLabelsJSON(ctx),
+		"fakeAnnotationKey":    "fakeAnnotationLabel",
 	}
 
 	mockAPI.EXPECT().VolumeExists(ctx, originalName).Return(true, originalVolume, nil).Times(1)
@@ -2522,7 +2522,7 @@ func TestImport_ManagedNoAnnotations(t *testing.T) {
 	originalVolume.Annotations = nil
 
 	expectedAnnotations := map[string]string{
-		drivers.TridentLabelTag: driver.getTelemetryLabelsJSON(ctx),
+		telemetryAnnotationKey: driver.getTelemetryLabelsJSON(ctx),
 	}
 
 	mockAPI.EXPECT().VolumeExists(ctx, originalName).Return(true, originalVolume, nil).Times(1)
@@ -2549,8 +2549,8 @@ func TestImport_NotManaged(t *testing.T) {
 	originalVolume.Name = originalName
 
 	expectedAnnotations := map[string]string{
-		storage.ProvisioningLabelTag: "fakeProvisioningLabel",
-		"fakeAnnotationKey":          "fakeAnnotationLabel",
+		provisioningAnnotationKey: "fakeProvisioningLabel",
+		"fakeAnnotationKey":       "fakeAnnotationLabel",
 	}
 
 	mockAPI.EXPECT().VolumeExists(ctx, originalName).Return(true, originalVolume, nil).Times(1)
@@ -2680,8 +2680,8 @@ func getStructsForDestroy(_ context.Context, driver *StorageDriver) (*storage.Vo
 		Namespace:       driver.Config.Namespace,
 		ResourceVersion: "1",
 		Annotations: map[string]string{
-			storage.ProvisioningLabelTag: "fakeProvisioningLabel",
-			"fakeAnnotationKey":          "fakeAnnotationLabel",
+			provisioningAnnotationKey: "fakeProvisioningLabel",
+			"fakeAnnotationKey":       "fakeAnnotationLabel",
 		},
 		Labels:     make(map[string]string),
 		Finalizers: []string{api.TridentVolumeFinalizer},
