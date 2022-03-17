@@ -3,7 +3,7 @@ NetApp Notice Report
 Copyright 2022
 
 About this document
-The following copyright statements and licenses apply to the software components that are distributed with the Trident version 22.01.0 product.  This product does not necessarily use all the software components referred to below.
+The following copyright statements and licenses apply to the software components that are distributed with the Trident version 22.01.1 product.  This product does not necessarily use all the software components referred to below.
 
 Where required, source code is published at the following location.
 https://opensource.netapp.com/
@@ -29,7 +29,7 @@ Components:
 
 Azure/azure-sdk-for-go v61.2.0 : MIT License
 
-base-files 11.1+deb11u1 : (GNU General Public License v2.0 or later OR Artistic License 1.0 (Perl))
+base-files 11.1+deb11u2 : (GNU General Public License v2.0 or later OR Artistic License 1.0 (Perl))
 
 beorn7-perks v1.0.1 : MIT License
 
@@ -37,37 +37,39 @@ bits-and-blooms/bitset 20211105-snapshot : BSD 3-clause "New" or "Revised" Licen
 
 bits-and-blooms/bitset v1.2.0 : BSD 3-clause "New" or "Revised" License
 
-cenkalti/backoff 20211105-snapshot : MIT License
+cenkalti/backoff 20220126-snapshot : MIT License
 
 cespare/xxhash 20211108-snapshot : MIT License
 
-client-go 20211215-snapshot : Apache License 2.0
+client-go 20220107-snapshot : Apache License 2.0
 
 client-go v0.23.1 : Apache License 2.0
 
-client_golang 20210713-snapshot : Apache License 2.0
+client_golang 20220128-snapshot : Apache License 2.0
 
 client_golang v1.11.0 : Apache License 2.0
 
+client_golang v1.11.1 : Apache License 2.0
+
 container-storage-interface/spec 20210922-snapshot : Apache License 2.0
 
-container-storage-interface/spec v1.5.0-rc1 : Apache License 2.0
+container-storage-interface/spec v1.5.0 : Apache License 2.0
 
 dimchansky/utfbom 20211206-snapshot : Apache License 2.0
 
 dimchansky/utfbom v1.1.1 : Apache License 2.0
 
-docker-go-plugins-helpers 20210625-snapshot : Apache License 2.0
-
 docker-go-plugins-helpers 20211224-snapshot-6eecb7be : Apache License 2.0
 
-evanphx/json-patch v4.12.0 : BSD 3-clause "New" or "Revised" License
+evanphx/json-patch 20220127-snapshot : BSD 3-clause "New" or "Revised" License
 
-evanphx/json-patch v5.1.0 : BSD 3-clause "New" or "Revised" License
+evanphx/json-patch v4.12.0 : BSD 3-clause "New" or "Revised" License
 
 evanphx/json-patch v5.6.0 : BSD 3-clause "New" or "Revised" License
 
 fsnotify-fsnotify v1.5.1 : BSD 3-clause "New" or "Revised" License
+
+github.com/golang-jwt/jwt 20220207-snapshot : MIT License
 
 github.com/golang-jwt/jwt v4.2.0 : MIT License
 
@@ -95,7 +97,9 @@ Go Testify 20210225-snapshot : MIT License
 
 Go Testify v1.7.0 : MIT License
 
-go-autorest 20211105-snapshot : Apache License 2.0
+go-autorest 20211123-snapshot : Apache License 2.0
+
+go-autorest 20220206-snapshot : Apache License 2.0
 
 go-autorest v14.2.0 : Apache License 2.0
 
@@ -103,7 +107,7 @@ go-check-check 20200227-snapshot-8fa46927 : BSD 2-clause "Simplified" License
 
 go-inf-inf v0.9.1 : BSD 3-clause "New" or "Revised" License
 
-go-logr/logr 20211115-snapshot : Apache License 2.0
+go-logr/logr 20211229-snapshot : Apache License 2.0
 
 go-logr/logr v1.2.0 : Apache License 2.0
 
@@ -127,7 +131,7 @@ go-openapi/runtime 20211206-snapshot : Apache License 2.0
 
 go-openapi/runtime v0.21.0 : Apache License 2.0
 
-go-openapi/spec 20211115-snapshot : Apache License 2.0
+go-openapi/spec 20220209-snapshot : Apache License 2.0
 
 go-openapi/spec v0.20.4 : Apache License 2.0
 
@@ -159,7 +163,7 @@ gogo-protobuf 20210731-snapshot : BSD 3-clause "New" or "Revised" License
 
 gogo-protobuf v1.3.2 : BSD 3-clause "New" or "Revised" License
 
-golang protobuf 20210922-snapshot : BSD 3-clause "New" or "Revised" License
+golang protobuf 20220113-snapshot : BSD 3-clause "New" or "Revised" License
 
 golang protobuf v1.5.2 : BSD 3-clause "New" or "Revised" License
 
@@ -167,13 +171,13 @@ golang-github-docker-go-connections-dev 0.4.0 : Apache License 2.0
 
 golang-github-docker-go-connections-dev 20201124-snapshot : Apache License 2.0
 
-golang-github-ghodss-yaml-dev 1.0.0 : MIT License
-
 golang-github-ghodss-yaml-dev 20190325-snapshot-25d852ae : Apache License 2.0
 
-golang-github-spf13-pflag-dev 20211006-snapshot : BSD 3-clause "New" or "Revised" License
+golang-github-ghodss-yaml-dev 20220204-snapshot : MIT License
 
-golang-github-spf13-pflag-dev v1.0.5-rc1 : BSD 3-clause "New" or "Revised" License
+golang-github-spf13-pflag-dev 20211231-snapshot : BSD 3-clause "New" or "Revised" License
+
+golang-github-spf13-pflag-dev v1.0.5 : BSD 3-clause "New" or "Revised" License
 
 golang-mock 20210909-snapshot : Apache License 2.0
 
@@ -183,27 +187,23 @@ golang.org/x/crypto 20210310-snapshot : BSD 3-clause "New" or "Revised" License
 
 golang.org/x/crypto 20220112-snapshot-5e0467b6 : BSD 3-clause "New" or "Revised" License
 
-golang.org/x/net 20191107-snapshot : BSD 3-clause "New" or "Revised" License
-
-golang.org/x/net 20211202-snapshot : BSD 3-clause "New" or "Revised" License
-
 golang.org/x/net 20211206-snapshot-491a49ab : BSD 3-clause "New" or "Revised" License
 
-golang.org/x/net 20211216-snapshot : BSD 3-clause "New" or "Revised" License
+golang.org/x/net 20220112-snapshot : BSD 3-clause "New" or "Revised" License
 
 golang.org/x/oauth2 20211104-snapshot-d3ed0bb2 : BSD 3-clause "New" or "Revised" License
 
-golang.org/x/oauth2 20211210-snapshot : BSD 3-clause "New" or "Revised" License
-
-golang.org/x/sys 20211217-snapshot : BSD 3-clause "New" or "Revised" License
+golang.org/x/oauth2 20220206-snapshot : BSD 3-clause "New" or "Revised" License
 
 golang.org/x/sys 20220105-snapshot-5a964db0 : BSD 3-clause "New" or "Revised" License
+
+golang.org/x/sys 20220207-snapshot : BSD 3-clause "New" or "Revised" License
 
 golang.org/x/term 20210615-snapshot-6886f2df : BSD 3-clause "New" or "Revised" License
 
 golang.org/x/term 20211211-snapshot : BSD 3-clause "New" or "Revised" License
 
-golang.org/x/text 20211105-snapshot : BSD 3-clause "New" or "Revised" License
+golang.org/x/text 20211216-snapshot : BSD 3-clause "New" or "Revised" License
 
 golang.org/x/text v0.3.7 : BSD 3-clause "New" or "Revised" License
 
@@ -219,13 +219,13 @@ golang/appengine v1.6.7 : Apache License 2.0
 
 gomega v1.17.0 : MIT License
 
-Google Cloud Client Libraries for Go 20211210-snapshot : Apache License 2.0
+Google Cloud Client Libraries for Go 20220128-snapshot : Apache License 2.0
 
 google-gofuzz 20211007-snapshot : Apache License 2.0
 
 google-gofuzz v1.1.0 : Apache License 2.0
 
-google.golang.org/protobuf 20211220-snapshot : BSD 3-clause "New" or "Revised" License
+google.golang.org/protobuf 20211229-snapshot : BSD 3-clause "New" or "Revised" License
 
 google.golang.org/protobuf v1.27.1 : BSD 3-clause "New" or "Revised" License
 
@@ -237,11 +237,11 @@ google/uuid 20211110-snapshot : BSD 3-clause "New" or "Revised" License
 
 google/uuid v1.3.0 : BSD 3-clause "New" or "Revised" License
 
-googleapis/gnostic 20210811-snapshot : Apache License 2.0
+googleapis/gnostic 20220117-snapshot : Apache License 2.0
 
 googleapis/gnostic v0.5.5 : Apache License 2.0
 
-googleapis/go-genproto 20210727-snapshot : Apache License 2.0
+googleapis/go-genproto 20220204-snapshot : Apache License 2.0
 
 goproxy 20180725-snapshot-947c36da : BSD 3-clause "New" or "Revised" License
 
@@ -255,9 +255,9 @@ govalidator 20211108-snapshot : MIT License
 
 groupcache 20210331-snapshot-41bb18bf : Apache License 2.0
 
-grpc-go 20211215-snapshot : Apache License 2.0
+grpc-go 20220128-snapshot : Apache License 2.0
 
-grpc-go v1.43.0-dev : Apache License 2.0
+grpc-go v1.43.0 : Apache License 2.0
 
 inconshreveable/mousetrap 0.0~git20141017.0.76626ae : Apache License 2.0
 
@@ -265,7 +265,7 @@ inconshreveable/mousetrap 1.0.0 : Apache License 2.0
 
 josharian/intern v1.0.0 : MIT License
 
-jsoniter-go 20211206-snapshot : MIT License
+jsoniter-go 20220203-snapshot : MIT License
 
 jsoniter-go v1.1.12 : MIT License
 
@@ -275,11 +275,11 @@ jsonreference v0.19.6 : Apache License 2.0
 
 k8s.io/code-generator kubernetes-1.18.4-rc.0 : Apache License 2.0
 
-k8s.io/klog 20211206-snapshot : Apache License 2.0
+k8s.io/klog 20211229-snapshot : Apache License 2.0
 
 k8s.io/kube-openapi 20211115-snapshot-e816edb1 : Apache License 2.0
 
-k8s.io/kube-openapi 20211216-snapshot : Apache License 2.0
+k8s.io/kube-openapi 20220210-snapshot : Apache License 2.0
 
 k8s.io/utils 20210930-snapshot-cb0fa318 : Apache License 2.0
 
@@ -287,23 +287,19 @@ k8s.io/utils 20211206-snapshot : Apache License 2.0
 
 kubernetes-csi/external-snapshotter 20210616-snapshot : Apache License 2.0
 
-kubernetes-sigs/structured-merge-diff 20211119-snapshot : Apache License 2.0
+kubernetes-incubator/cri-o 1.23.0 : Apache License 2.0
 
-kubernetes/api 20211206-snapshot : Apache License 2.0
+kubernetes/api 20220121-snapshot : Apache License 2.0
 
-kubernetes/api 20211215-snapshot : Apache License 2.0
+kubernetes/api v0.23.1 : Apache License 2.0
 
-kubernetes/api v0.23.1-rc.0 : Apache License 2.0
+kubernetes/apiextensions-apiserver 20220204-snapshot : Apache License 2.0
 
-kubernetes/apiextensions-apiserver 20210623-snapshot : Apache License 2.0
+kubernetes/apiextensions-apiserver v0.23.1 : Apache License 2.0
 
-kubernetes/apiextensions-apiserver 20211206-snapshot : Apache License 2.0
+kubernetes/apimachinery 20220216-snapshot : Apache License 2.0
 
-kubernetes/apiextensions-apiserver v0.23.1-rc.0 : Apache License 2.0
-
-kubernetes/apimachinery 20211206-snapshot : Apache License 2.0
-
-kubernetes/apimachinery v0.23.1-rc.0 : Apache License 2.0
+kubernetes/apimachinery v0.23.1 : Apache License 2.0
 
 mailru/easyjson v0.7.6 : MIT License
 
@@ -323,19 +319,21 @@ mendersoftware/mendertesting 0.0~git20200227.1396c95 : Apache License 2.0
 
 mergo 0.3.12 : BSD 3-clause "New" or "Revised" License
 
-mergo 20211216-snapshot : BSD 3-clause "New" or "Revised" License
+mergo 20220121-snapshot : BSD 3-clause "New" or "Revised" License
 
 Microsoft-go-winio 20210901-snapshot : MIT License
 
 Microsoft-go-winio v0.5.0 : MIT License
 
-mitchellh-copystructure 20211202-snapshot : MIT License
+mitchellh-copystructure 20220211-snapshot : MIT License
 
 mitchellh-copystructure v1.2.0 : MIT License
 
 mitchellh-go-homedir v1.1.0 : MIT License
 
-mitchellh-reflectwalk 20211202-snapshot : MIT License
+mitchellh-hashstructure 20220214-snapshot : MIT License
+
+mitchellh-reflectwalk 20220203-snapshot : MIT License
 
 mitchellh-reflectwalk v1.0.2 : MIT License
 
@@ -345,7 +343,7 @@ modern-go/reflect2 20211211-snapshot : Apache License 2.0
 
 modern-go/reflect2 v1.0.2 : Apache License 2.0
 
-mongodb/mongo-go-driver 20211210-snapshot : Apache License 2.0
+mongodb/mongo-go-driver 20220107-snapshot : Apache License 2.0
 
 mongodb/mongo-go-driver v1.7.5 : Apache License 2.0
 
@@ -353,9 +351,7 @@ mschoch/smat 20201104-snapshot : Apache License 2.0
 
 mschoch/smat v0.2.0 : Apache License 2.0
 
-NetApp/trident v21.04.0 : Apache License 2.0
-
-NetApp/trident v21.10.1 : Apache License 2.0
+NetApp/trident v22.01.0 : Apache License 2.0
 
 niemeyer/pretty 20200227-snapshot-a10e7cae : MIT License
 
@@ -371,7 +367,7 @@ olekukonko-tablewriter 20210303-snapshot-74c60be0 : MIT License
 
 onsi/ginkgo 1.16.5 : MIT License
 
-opentracing-opentracing-go 20211206-snapshot : Apache License 2.0
+opentracing-opentracing-go 20220211-snapshot : Apache License 2.0
 
 opentracing-opentracing-go v1.2.0 : Apache License 2.0
 
@@ -381,11 +377,11 @@ pmezard-go-difflib 1.0.0 : BSD 3-clause "New" or "Revised" License
 
 prometheus-client_model v0.2.0 : Apache License 2.0
 
-prometheus-common 20211224-snapshot : Apache License 2.0
+prometheus-common 20220202-snapshot : Apache License 2.0
 
 prometheus-common v0.31.1 : Apache License 2.0
 
-prometheus-procfs 20211108-snapshot : Apache License 2.0
+prometheus-procfs 20220121-snapshot : Apache License 2.0
 
 prometheus-procfs v0.6.0 : Apache License 2.0
 
@@ -395,17 +391,21 @@ RoaringBitmap-roaring 20211216-snapshot : Apache License 2.0
 
 RoaringBitmap-roaring v0.9.4 : Apache License 2.0
 
+runc v1.1.0 : Apache License 2.0
+
+secureheader v0.2.0 : MIT License
+
 sigs.k8s.io/controller-runtime 20210727-snapshot : Apache License 2.0
 
-sigs.k8s.io/controller-runtime v0.11.0-beta.0 : Apache License 2.0
+sigs.k8s.io/controller-runtime v0.11.0 : Apache License 2.0
 
-sigs.k8s.io/json 20211206-snapshot : Apache License 2.0
+sigs.k8s.io/json 20220216-snapshot : Apache License 2.0
 
 sigs.k8s.io/yaml 20211119-snapshot : Apache License 2.0
 
 sigs.k8s.io/yaml v1.3.0 : Apache License 2.0
 
-spf13-cobra 20211123-snapshot : Apache License 2.0
+spf13-cobra 20220131-snapshot : Apache License 2.0
 
 spf13-cobra v1.3.0 : Apache License 2.0
 
@@ -451,7 +451,7 @@ Licenses:
 
 Apache License 2.0
 
-(client-go 20211215-snapshot, client-go v0.23.1, client_golang 20210713-snapshot, client_golang v1.11.0, container-storage-interface/spec 20210922-snapshot, container-storage-interface/spec v1.5.0-rc1, dimchansky/utfbom 20211206-snapshot, dimchansky/utfbom v1.1.1, docker-go-plugins-helpers 20210625-snapshot, docker-go-plugins-helpers 20211224-snapshot-6eecb7be, github.com/mattermost/xml-roundtrip-validator 20211025-snapshot, github.com/mattermost/xml-roundtrip-validator v0.1.0, github.com/moby/spdystream 20211203-snapshot, github.com/moby/spdystream v0.2.0, go-autorest 20211105-snapshot, go-autorest v14.2.0, go-logr/logr 20211115-snapshot, go-logr/logr v1.2.0, go-openapi/analysis 20211206-snapshot, go-openapi/analysis v0.20.1, go-openapi/errors 20211115-snapshot, go-openapi/errors v0.20.1, go-openapi/jsonpointer 20211119-snapshot, go-openapi/jsonpointer v0.19.5, go-openapi/loads 20211123-snapshot, go-openapi/loads v0.21.0, go-openapi/runtime 20211206-snapshot, go-openapi/runtime v0.21.0, go-openapi/spec 20211115-snapshot, go-openapi/spec v0.20.4, go-openapi/validate 20211119-snapshot, go-openapi/validate v0.20.3, go-systemd 20190321-snapshot-95778dfb, go-systemd v17, golang-github-docker-go-connections-dev 0.4.0, golang-github-docker-go-connections-dev 20201124-snapshot, golang-github-ghodss-yaml-dev 20190325-snapshot-25d852ae, golang-mock 20210909-snapshot, golang-mock v1.6.0, golang/appengine 20211203-snapshot, golang/appengine v1.6.7, Google Cloud Client Libraries for Go 20211210-snapshot, google-gofuzz 20211007-snapshot, google-gofuzz v1.1.0, googleapis/gnostic 20210811-snapshot, googleapis/gnostic v0.5.5, googleapis/go-genproto 20210727-snapshot, groupcache 20210331-snapshot-41bb18bf, grpc-go 20211215-snapshot, grpc-go v1.43.0-dev, inconshreveable/mousetrap 0.0~git20141017.0.76626ae, inconshreveable/mousetrap 1.0.0, jsonreference 20211112-snapshot, jsonreference v0.19.6, k8s.io/code-generator kubernetes-1.18.4-rc.0, k8s.io/klog 20211206-snapshot, k8s.io/kube-openapi 20211115-snapshot-e816edb1, k8s.io/kube-openapi 20211216-snapshot, k8s.io/utils 20210930-snapshot-cb0fa318, k8s.io/utils 20211206-snapshot, kubernetes-csi/external-snapshotter 20210616-snapshot, kubernetes-sigs/structured-merge-diff 20211119-snapshot, kubernetes/api 20211206-snapshot, kubernetes/api 20211215-snapshot, kubernetes/api v0.23.1-rc.0, kubernetes/apiextensions-apiserver 20210623-snapshot, kubernetes/apiextensions-apiserver 20211206-snapshot, kubernetes/apiextensions-apiserver v0.23.1-rc.0, kubernetes/apimachinery 20211206-snapshot, kubernetes/apimachinery v0.23.1-rc.0, matttproud-golang_protobuf_extensions 20170323-snapshot, matttproud-golang_protobuf_extensions 20190325-snapshot-c182affe, mendersoftware/mendertesting 0.0~git20200227.1396c95, modern-go/concurrent 20180305-snapshot-bacd9c7e, modern-go/reflect2 20211211-snapshot, modern-go/reflect2 v1.0.2, mongodb/mongo-go-driver 20211210-snapshot, mongodb/mongo-go-driver v1.7.5, mschoch/smat 20201104-snapshot, mschoch/smat v0.2.0, NetApp/trident v21.04.0, NetApp/trident v21.10.1, oklog/ulid 20210730-snapshot, oklog/ulid v1.3.1, opentracing-opentracing-go 20211206-snapshot, opentracing-opentracing-go v1.2.0, prometheus-client_model v0.2.0, prometheus-common 20211224-snapshot, prometheus-common v0.31.1, prometheus-procfs 20211108-snapshot, prometheus-procfs v0.6.0, RoaringBitmap-roaring 20211216-snapshot, RoaringBitmap-roaring v0.9.4, sigs.k8s.io/controller-runtime 20210727-snapshot, sigs.k8s.io/controller-runtime v0.11.0-beta.0, sigs.k8s.io/json 20211206-snapshot, sigs.k8s.io/yaml 20211119-snapshot, sigs.k8s.io/yaml v1.3.0, spf13-cobra 20211123-snapshot, spf13-cobra v1.3.0, strfmt 20211130-snapshot, strfmt v0.21.1, swag 20211108-snapshot, swag v0.19.15, vishvananda-netlink 1.1.0, vishvananda-netlink 20211122-snapshot, vishvananda-netns 20190607-snapshot-0a2b9b54, vishvananda-netns 20200604-snapshot, yaml for Go 20210109-snapshot-496545a6, yaml for Go 20211124-snapshot, yaml for Go v2.4.0)
+(client-go 20220107-snapshot, client-go v0.23.1, client_golang 20220128-snapshot, client_golang v1.11.0, client_golang v1.11.1, container-storage-interface/spec 20210922-snapshot, container-storage-interface/spec v1.5.0, dimchansky/utfbom 20211206-snapshot, dimchansky/utfbom v1.1.1, docker-go-plugins-helpers 20211224-snapshot-6eecb7be, github.com/mattermost/xml-roundtrip-validator 20211025-snapshot, github.com/mattermost/xml-roundtrip-validator v0.1.0, github.com/moby/spdystream 20211203-snapshot, github.com/moby/spdystream v0.2.0, go-autorest 20211123-snapshot, go-autorest 20220206-snapshot, go-autorest v14.2.0, go-logr/logr 20211229-snapshot, go-logr/logr v1.2.0, go-openapi/analysis 20211206-snapshot, go-openapi/analysis v0.20.1, go-openapi/errors 20211115-snapshot, go-openapi/errors v0.20.1, go-openapi/jsonpointer 20211119-snapshot, go-openapi/jsonpointer v0.19.5, go-openapi/loads 20211123-snapshot, go-openapi/loads v0.21.0, go-openapi/runtime 20211206-snapshot, go-openapi/runtime v0.21.0, go-openapi/spec 20220209-snapshot, go-openapi/spec v0.20.4, go-openapi/validate 20211119-snapshot, go-openapi/validate v0.20.3, go-systemd 20190321-snapshot-95778dfb, go-systemd v17, golang-github-docker-go-connections-dev 0.4.0, golang-github-docker-go-connections-dev 20201124-snapshot, golang-github-ghodss-yaml-dev 20190325-snapshot-25d852ae, golang-mock 20210909-snapshot, golang-mock v1.6.0, golang/appengine 20211203-snapshot, golang/appengine v1.6.7, Google Cloud Client Libraries for Go 20220128-snapshot, google-gofuzz 20211007-snapshot, google-gofuzz v1.1.0, googleapis/gnostic 20220117-snapshot, googleapis/gnostic v0.5.5, googleapis/go-genproto 20220204-snapshot, groupcache 20210331-snapshot-41bb18bf, grpc-go 20220128-snapshot, grpc-go v1.43.0, inconshreveable/mousetrap 0.0~git20141017.0.76626ae, inconshreveable/mousetrap 1.0.0, jsonreference 20211112-snapshot, jsonreference v0.19.6, k8s.io/code-generator kubernetes-1.18.4-rc.0, k8s.io/klog 20211229-snapshot, k8s.io/kube-openapi 20211115-snapshot-e816edb1, k8s.io/kube-openapi 20220210-snapshot, k8s.io/utils 20210930-snapshot-cb0fa318, k8s.io/utils 20211206-snapshot, kubernetes-csi/external-snapshotter 20210616-snapshot, kubernetes-incubator/cri-o 1.23.0, kubernetes/api 20220121-snapshot, kubernetes/api v0.23.1, kubernetes/apiextensions-apiserver 20220204-snapshot, kubernetes/apiextensions-apiserver v0.23.1, kubernetes/apimachinery 20220216-snapshot, kubernetes/apimachinery v0.23.1, matttproud-golang_protobuf_extensions 20170323-snapshot, matttproud-golang_protobuf_extensions 20190325-snapshot-c182affe, mendersoftware/mendertesting 0.0~git20200227.1396c95, modern-go/concurrent 20180305-snapshot-bacd9c7e, modern-go/reflect2 20211211-snapshot, modern-go/reflect2 v1.0.2, mongodb/mongo-go-driver 20220107-snapshot, mongodb/mongo-go-driver v1.7.5, mschoch/smat 20201104-snapshot, mschoch/smat v0.2.0, NetApp/trident v22.01.0, oklog/ulid 20210730-snapshot, oklog/ulid v1.3.1, opentracing-opentracing-go 20220211-snapshot, opentracing-opentracing-go v1.2.0, prometheus-client_model v0.2.0, prometheus-common 20220202-snapshot, prometheus-common v0.31.1, prometheus-procfs 20220121-snapshot, prometheus-procfs v0.6.0, RoaringBitmap-roaring 20211216-snapshot, RoaringBitmap-roaring v0.9.4, runc v1.1.0, sigs.k8s.io/controller-runtime 20210727-snapshot, sigs.k8s.io/controller-runtime v0.11.0, sigs.k8s.io/json 20220216-snapshot, sigs.k8s.io/yaml 20211119-snapshot, sigs.k8s.io/yaml v1.3.0, spf13-cobra 20220131-snapshot, spf13-cobra v1.3.0, strfmt 20211130-snapshot, strfmt v0.21.1, swag 20211108-snapshot, swag v0.19.15, vishvananda-netlink 1.1.0, vishvananda-netlink 20211122-snapshot, vishvananda-netns 20190607-snapshot-0a2b9b54, vishvananda-netns 20200604-snapshot, yaml for Go 20210109-snapshot-496545a6, yaml for Go 20211124-snapshot, yaml for Go v2.4.0)
 
 Apache License
 
@@ -819,7 +819,7 @@ third-party archives.
 
 Artistic License 1.0 (Perl)
 
-(base-files 11.1+deb11u1)
+(base-files 11.1+deb11u2)
 
 The "Artistic License"
 
@@ -1173,7 +1173,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 BSD 3-clause "New" or "Revised" License
 
-(golang.org/x/crypto 20210310-snapshot, golang.org/x/net 20191107-snapshot, golang.org/x/time 20210913-snapshot)
+(golang.org/x/crypto 20210310-snapshot, golang.org/x/time 20210913-snapshot)
 
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -1293,7 +1293,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 BSD 3-clause "New" or "Revised" License
 
-(golang-github-spf13-pflag-dev v1.0.5-rc1)
+(golang-github-spf13-pflag-dev v1.0.5)
 
 Copyright (c) 2012 Alex Ogier. All rights reserved.
 
@@ -1477,6 +1477,36 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 BSD 3-clause "New" or "Revised" License
 
+(purell v1.1.1)
+
+Copyright (c) 2012, Martin Angers
+
+All rights reserved.
+
+
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+
+
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+
+
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+
+
+* Neither the name of the author nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+
+---
+
+BSD 3-clause "New" or "Revised" License
+
 (gorilla/mux v1.8.0)
 
 Copyright (c) 2012-2018 The Gorilla Authors. All rights reserved.
@@ -1599,55 +1629,59 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 BSD 3-clause "New" or "Revised" License
 
-(evanphx/json-patch v5.1.0)
+(bits-and-blooms/bitset v1.2.0)
 
-Copyright (c) 2014, Evan Phoenix
-
-All rights reserved.
+Copyright (c) 2014 Will Fitzgerald. All rights reserved.
 
 
 
 Redistribution and use in source and binary forms, with or without
 
-modification, are permitted provided that the following conditions are met:
+modification, are permitted provided that the following conditions are
+
+met:
 
 
 
-* Redistributions of source code must retain the above copyright notice, this
+   * Redistributions of source code must retain the above copyright
 
-  list of conditions and the following disclaimer.
+notice, this list of conditions and the following disclaimer.
 
-* Redistributions in binary form must reproduce the above copyright notice
+   * Redistributions in binary form must reproduce the above
 
-  this list of conditions and the following disclaimer in the documentation
+copyright notice, this list of conditions and the following disclaimer
 
-  and/or other materials provided with the distribution.
+in the documentation and/or other materials provided with the
 
-* Neither the name of the Evan Phoenix nor the names of its contributors
+distribution.
 
-  may be used to endorse or promote products derived from this software
+   * Neither the name of Google Inc. nor the names of its
 
-  without specific prior written permission.
+contributors may be used to endorse or promote products derived from
+
+this software without specific prior written permission.
 
 
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
 
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
 
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
 
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
@@ -1655,7 +1689,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 BSD 3-clause "New" or "Revised" License
 
-(bits-and-blooms/bitset 20211105-snapshot, evanphx/json-patch v4.12.0, evanphx/json-patch v5.6.0, fsnotify-fsnotify v1.5.1, golang-github-spf13-pflag-dev 20211006-snapshot, golang.org/x/crypto 20220112-snapshot-5e0467b6, golang.org/x/net 20211202-snapshot, golang.org/x/net 20211206-snapshot-491a49ab, golang.org/x/net 20211216-snapshot, golang.org/x/oauth2 20211104-snapshot-d3ed0bb2, golang.org/x/oauth2 20211210-snapshot, golang.org/x/sys 20211217-snapshot, golang.org/x/sys 20220105-snapshot-5a964db0, golang.org/x/term 20210615-snapshot-6886f2df, golang.org/x/term 20211211-snapshot, golang.org/x/text 20211105-snapshot, golang.org/x/text v0.3.7, golang.org/x/time 20210721-snapshot-1f47c861, golang.org/x/xerrors 20200804-snapshot-5ec99f83, google.golang.org/protobuf 20211220-snapshot, google.golang.org/protobuf v1.27.1, google/go-cmp 20211223-snapshot, google/uuid 20211110-snapshot, google/uuid v1.3.0, goproxy 20180725-snapshot-947c36da, gorilla/mux 20211220-snapshot, mergo 20211216-snapshot)
+(bits-and-blooms/bitset 20211105-snapshot, evanphx/json-patch 20220127-snapshot, evanphx/json-patch v4.12.0, evanphx/json-patch v5.6.0, fsnotify-fsnotify v1.5.1, golang protobuf 20220113-snapshot, golang-github-spf13-pflag-dev 20211231-snapshot, golang.org/x/crypto 20220112-snapshot-5e0467b6, golang.org/x/net 20211206-snapshot-491a49ab, golang.org/x/net 20220112-snapshot, golang.org/x/oauth2 20211104-snapshot-d3ed0bb2, golang.org/x/oauth2 20220206-snapshot, golang.org/x/sys 20220105-snapshot-5a964db0, golang.org/x/sys 20220207-snapshot, golang.org/x/term 20210615-snapshot-6886f2df, golang.org/x/term 20211211-snapshot, golang.org/x/text 20211216-snapshot, golang.org/x/text v0.3.7, golang.org/x/time 20210721-snapshot-1f47c861, golang.org/x/xerrors 20200804-snapshot-5ec99f83, google.golang.org/protobuf 20211229-snapshot, google.golang.org/protobuf v1.27.1, google/go-cmp 20211223-snapshot, google/uuid 20211110-snapshot, google/uuid v1.3.0, goproxy 20180725-snapshot-947c36da, gorilla/mux 20211220-snapshot, mergo 20220121-snapshot)
 
 Copyright (c) <YEAR>, <OWNER>
 
@@ -1717,7 +1751,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 BSD 3-clause "New" or "Revised" License
 
-(golang protobuf 20210922-snapshot, golang protobuf v1.5.2)
+(golang protobuf v1.5.2)
 
 Copyright 2010 The Go Authors.  All rights reserved.
 
@@ -1834,170 +1868,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
-
----
-
-BSD 3-clause "New" or "Revised" License
-
-(purell v1.1.1)
-
-Source: https://github.com/PuerkitoBio/purell
-
-
-
-Files: *
-
-Copyright: 20122016 Martin Angers <martin.n.angers@gmail.com>
-
-License: BSD-3-clause
-
-
-
-Files: debian/*
-
-Copyright: 20152016 Anthony Fok <foka@debian.org>
-
-License: BSD-3-clause
-
-Comment: Debian packaging is licensed under the same terms as upstream
-
-
-
-License: BSD-3-clause
-
-
-
-Redistribution and use in source and binary forms, with or without
-
- modification, are permitted provided that the following conditions are met:
-
- .
-
- * Redistributions of source code must retain the above copyright notice, this
-
-   list of conditions and the following disclaimer.
-
- .
-
- * Redistributions in binary form must reproduce the above copyright notice,
-
-   this list of conditions and the following disclaimer in the documentation
-
-   and/or other materials provided with the distribution.
-
- .
-
- * Neither the name of the author nor the names of its contributors may be used
-
-   to endorse or promote products derived from this software without specific
-
-   prior written permission.
-
- .
-
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-
- DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-
- FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-
- DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-
- SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-
- CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-
- OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-
- OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
-
----
-
-BSD 3-clause "New" or "Revised" License
-
-(bits-and-blooms/bitset v1.2.0)
-
-Source: https://github.com/bits-and-blooms/bitset
-
-
-
-Files: *
-
-Copyright: 2011 Go language BitSet and Bloom filter
-
-           2014 Will Fitzgerald. All rights reserved.
-
-License: BSD-3-clause
-
-
-
-Files: debian/*
-
-Copyright: 2021 Thorsten Alteholz <debian@alteholz.de>
-
-License: BSD-3-clause
-
-Comment: Debian packaging is licensed under the same terms as upstream
-
-
-
-License: BSD-3-clause
-
-
-
-Redistribution and use in source and binary forms, with or without
-
- modification, are permitted provided that the following conditions are
-
- met:
-
- .
-
-   * Redistributions of source code must retain the above copyright
-
-     notice, this list of conditions and the following disclaimer.
-
-   * Redistributions in binary form must reproduce the above
-
-     copyright notice, this list of conditions and the following disclaimer
-
-     in the documentation and/or other materials provided with the
-
-     distribution.
-
-   * Neither the name of Google Inc. nor the names of its
-
-     contributors may be used to endorse or promote products derived from
-
-     this software without specific prior written permission.
-
- .
-
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-
- "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-
- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-
- A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-
- OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-
- SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-
- LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-
- DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-
- THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-
- OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 ---
 
@@ -2165,7 +2035,7 @@ Redistribution and use in source and binary forms, with or without
 
 GNU General Public License v2.0 or later
 
-(base-files 11.1+deb11u1)
+(base-files 11.1+deb11u2)
 
 The GNU General Public License (GPL)
 
@@ -3229,57 +3099,27 @@ MIT License
 
 (GoDoc Text v0.2.0)
 
-Copyright 2012 Keith Rarick
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Upstream-Name: github.com/kr/text
+
+Source: https://github.com/kr/text/
 
 
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
+Files: *
 
-of this software and associated documentation files (the "Software"), to deal
-
-in the Software without restriction, including without limitation the rights
-
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-
-copies of the Software, and to permit persons to whom the Software is
-
-furnished to do so, subject to the following conditions:
-
-
-
-The above copyright notice and this permission notice shall be included in
-
-all copies or substantial portions of the Software.
-
-
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-
-THE SOFTWARE
-
----
-
-MIT License
-
-(golang-github-ghodss-yaml-dev 1.0.0)
-
-Files: debian/*
-
-Copyright: 2015 Tim Potter <tpot@hpe.com>
+Copyright: 2013 Keith Rarick <kr@xph.us>
 
 License: Expat
 
-Comment: Debian packaging is licensed under the same terms as upstream
+
+
+Files: debian/*
+
+Copyright: 2013 Tonnerre Lombard <tonnerre@ancient-solutions.com>
+
+License: Expat
 
 
 
@@ -3301,9 +3141,9 @@ Permission is hereby granted, free of charge, to any person obtaining a copy
 
  .
 
- The above copyright notice and this permission notice shall be included in all
+ The above copyright notice and this permission notice shall be included in
 
- copies or substantial portions of the Software.
+ all copies or substantial portions of the Software.
 
  .
 
@@ -3317,9 +3157,9 @@ Permission is hereby granted, free of charge, to any person obtaining a copy
 
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 
- SOFTWARE
+ THE SOFTWARE
 
 ---
 
@@ -3517,7 +3357,7 @@ SOFTWARE
 
 MIT License
 
-(Azure/azure-sdk-for-go v61.2.0, cenkalti/backoff 20211105-snapshot, cespare/xxhash 20211108-snapshot, github.com/golang-jwt/jwt v4.2.0, go humanize 20210705-snapshot-249ff6c9, Go Logrus 20211025-snapshot, go-stack-stack 20211201-snapshot, go.uber.org/multierr 20211123-snapshot, gomega v1.17.0, govalidator 20200907-snapshot-7a23bdc6, govalidator 20211108-snapshot, jsoniter-go 20211206-snapshot, jsoniter-go v1.1.12, mapstructure 20211211-snapshot, mapstructure v1.4.3, mattn-go-runewidth 20211105-snapshot, Microsoft-go-winio 20210901-snapshot, mitchellh-copystructure 20211202-snapshot, mitchellh-reflectwalk 20211202-snapshot, niemeyer/pretty 20200227-snapshot-a10e7cae, olekukonko-tablewriter 20210303-snapshot-74c60be0, onsi/ginkgo 1.16.5, uber-go/atomic 20211218-snapshot, zcalusic/sysinfo 20210905-snapshot-6fa2f969)
+(Azure/azure-sdk-for-go v61.2.0, cenkalti/backoff 20220126-snapshot, cespare/xxhash 20211108-snapshot, github.com/golang-jwt/jwt 20220207-snapshot, github.com/golang-jwt/jwt v4.2.0, go humanize 20210705-snapshot-249ff6c9, Go Logrus 20211025-snapshot, go-stack-stack 20211201-snapshot, go.uber.org/multierr 20211123-snapshot, golang-github-ghodss-yaml-dev 20220204-snapshot, gomega v1.17.0, govalidator 20200907-snapshot-7a23bdc6, govalidator 20211108-snapshot, jsoniter-go 20220203-snapshot, jsoniter-go v1.1.12, mapstructure 20211211-snapshot, mapstructure v1.4.3, mattn-go-runewidth 20211105-snapshot, Microsoft-go-winio 20210901-snapshot, mitchellh-copystructure 20220211-snapshot, mitchellh-hashstructure 20220214-snapshot, mitchellh-reflectwalk 20220203-snapshot, niemeyer/pretty 20200227-snapshot-a10e7cae, olekukonko-tablewriter 20210303-snapshot-74c60be0, onsi/ginkgo 1.16.5, secureheader v0.2.0, uber-go/atomic 20211218-snapshot, zcalusic/sysinfo 20210905-snapshot-6fa2f969)
 
 The MIT License
 
