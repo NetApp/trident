@@ -2947,9 +2947,15 @@ func (c Client) SnapmirrorPolicyGet(
 
 func (c Client) JobScheduleExists(ctx context.Context, jobName string) (bool, error) {
 
-	result, err := azgo.NewJobScheduleGetIterRequest().ExecuteUsing(c.zr)
+	jobScheduleInfo := azgo.NewJobScheduleInfoType()
+	jobScheduleInfo.SetJobScheduleName(jobName)
+
+	query := &azgo.JobScheduleGetIterRequestQuery{}
+	query.SetJobScheduleInfo(*jobScheduleInfo)
+
+	result, err := azgo.NewJobScheduleGetIterRequest().SetQuery(*query).ExecuteUsing(c.zr)
 	if err = GetError(ctx, result, err); err != nil {
-		return false, fmt.Errorf("error listing snapmirror policies: %v", err)
+		return false, fmt.Errorf("error getting snapmirror policy %s: %v", jobName, err)
 	}
 
 	list := result.Result.AttributesList()
