@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -16,6 +16,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	"github.com/netapp/trident/frontend/csi/helpers"
 	. "github.com/netapp/trident/logger"
 	"github.com/netapp/trident/utils"
@@ -41,7 +42,7 @@ type Plugin struct {
 	hostInfo *utils.HostSystem
 	nodePrep *utils.NodePrep
 
-	restClient *RestClient
+	restClient controllerAPI.TridentController
 	helper     helpers.HybridPlugin
 
 	aesKey []byte
@@ -146,7 +147,7 @@ func NewNodePlugin(
 
 	restURL := "https://" + hostname + ":" + port
 	var err error
-	p.restClient, err = CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
+	p.restClient, err = controllerAPI.CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +224,7 @@ func NewAllInOnePlugin(
 	}
 	restURL := "https://" + tridentconfig.ServerCertName + ":" + port
 	var err error
-	p.restClient, err = CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
+	p.restClient, err = controllerAPI.CreateTLSRestClient(restURL, caCert, clientCert, clientKey)
 	if err != nil {
 		return nil, err
 	}

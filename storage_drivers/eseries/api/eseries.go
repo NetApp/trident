@@ -155,7 +155,7 @@ func (d Client) InvokeAPI(
 	// Log the request
 	if d.config.DebugTraceFlags["api"] {
 		// Suppress the empty POST body since it contains the array password
-		utils.LogHTTPRequest(request, []byte("<suppressed>"))
+		utils.LogHTTPRequest(request, []byte("<suppressed>"), true)
 	}
 
 	// Send the request
@@ -188,17 +188,17 @@ func (d Client) InvokeAPI(
 				if err := json.Indent(&prettyResponseBuffer, responseBody, "", "  "); err != nil {
 					Logc(ctx).Errorf("Could not format API request for logging; %v", err)
 				} else {
-					utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
+					utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes(), false)
 				}
 			} else if d.config.DebugTraceFlags["api"] {
-				utils.LogHTTPResponse(ctx, response, []byte("<suppressed>"))
+				utils.LogHTTPResponse(ctx, response, []byte("<suppressed>"), true)
 			}
 		} else {
 			if d.config.DebugTraceFlags["api"] {
 				if err := json.Indent(&prettyResponseBuffer, responseBody, "", "  "); err != nil {
 					Logc(ctx).Errorf("Could not format API request for logging; %v", err)
 				} else {
-					utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
+					utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes(), false)
 				}
 			}
 		}
@@ -243,7 +243,7 @@ func (d Client) AboutInfo(ctx context.Context) (*AboutResponse, error) {
 
 	// Log the request
 	if d.config.DebugTraceFlags["api"] {
-		utils.LogHTTPRequest(request, []byte("<suppressed>"))
+		utils.LogHTTPRequest(request, []byte("<suppressed>"), true)
 	}
 
 	// Send the request
@@ -280,7 +280,7 @@ func (d Client) AboutInfo(ctx context.Context) (*AboutResponse, error) {
 			if err := json.Indent(&prettyResponseBuffer, responseBody, "", "  "); err != nil {
 				Logc(ctx).Errorf("Could not format API request for logging; %v", err)
 			} else {
-				utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
+				utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes(), false)
 			}
 		}
 	}

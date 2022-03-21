@@ -313,7 +313,7 @@ func StringInSlice(s string, list []string) bool {
 	return false
 }
 
-func LogHTTPRequest(request *http.Request, requestBody []byte) {
+func LogHTTPRequest(request *http.Request, requestBody []byte, redactBody bool) {
 	header := ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	footer := "--------------------------------------------------------------------------------"
 
@@ -333,6 +333,8 @@ func LogHTTPRequest(request *http.Request, requestBody []byte) {
 	var body string
 	if requestBody == nil {
 		body = "<nil>"
+	} else if redactBody {
+		body = REDACTED
 	} else {
 		body = string(requestBody)
 	}
@@ -341,7 +343,7 @@ func LogHTTPRequest(request *http.Request, requestBody []byte) {
 		header, request.Method, requestURL, headers, body, footer)
 }
 
-func LogHTTPResponse(ctx context.Context, response *http.Response, responseBody []byte) {
+func LogHTTPResponse(ctx context.Context, response *http.Response, responseBody []byte, redactBody bool) {
 	header := "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 	footer := "================================================================================"
 
@@ -356,6 +358,8 @@ func LogHTTPResponse(ctx context.Context, response *http.Response, responseBody 
 	var body string
 	if responseBody == nil {
 		body = "<nil>"
+	} else if redactBody {
+		body = REDACTED
 	} else {
 		body = string(responseBody)
 	}

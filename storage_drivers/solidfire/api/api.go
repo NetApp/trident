@@ -103,7 +103,7 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 		if err := json.Indent(&prettyRequestBuffer, requestBody, "", "  "); err != nil {
 			Logc(ctx).Errorf("Could not format API request for logging; %v", err)
 		}
-		utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes())
+		utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes(), false)
 	}
 
 	// Send the request
@@ -143,11 +143,11 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 			if err := json.Indent(&prettyResponseBuffer, responseBody, "", "  "); err != nil {
 				Logc(ctx).Errorf("Could not format API request for logging; %v", err)
 			} else {
-				utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
+				utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes(), false)
 			}
 
 		} else {
-			utils.LogHTTPResponse(ctx, response, []byte("<suppressed>"))
+			utils.LogHTTPResponse(ctx, response, []byte("<suppressed>"), true)
 		}
 	}
 
@@ -156,7 +156,7 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 	if err = json.Unmarshal(responseBody, &apiError); err != nil {
 		Logc(ctx).Errorf("Could not format API request for logging; %v", err)
 	} else {
-		utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes())
+		utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes(), false)
 	}
 	if apiError.Fields.Code != 0 {
 		Logc(ctx).WithFields(log.Fields{

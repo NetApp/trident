@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package eseries
 
@@ -19,6 +19,7 @@ import (
 
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/eseries/api"
+	"github.com/netapp/trident/utils"
 )
 
 const (
@@ -189,7 +190,7 @@ func TestEseriesSANStorageDriverInvokeAPI(t *testing.T) {
 		switch {
 		case api:
 			assert.NotContains(t, output, "RaNd0M", "Logs contain sensitive information")
-			assert.Contains(t, output, "<suppressed>", "Logs do not suppress sensitive information")
+			assert.Contains(t, output, utils.REDACTED, "Logs do not suppress sensitive information")
 
 		case !api:
 			assert.Empty(t, output)

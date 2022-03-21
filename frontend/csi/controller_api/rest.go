@@ -1,6 +1,6 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
 
-package csi
+package controllerAPI
 
 import (
 	"bytes"
@@ -20,12 +20,12 @@ import (
 
 const HTTPClientTimeout = time.Second * 30
 
-type RestClient struct {
+type ControllerRestClient struct {
 	url        string
 	httpClient http.Client
 }
 
-func CreateTLSRestClient(url, caFile, certFile, keyFile string) (*RestClient, error) {
+func CreateTLSRestClient(url, caFile, certFile, keyFile string) (TridentController, error) {
 	tlsConfig := &tls.Config{MinVersion: config.MinClientTLSVersion}
 	if "" != caFile {
 		caCert, err := ioutil.ReadFile(caFile)
@@ -46,7 +46,7 @@ func CreateTLSRestClient(url, caFile, certFile, keyFile string) (*RestClient, er
 		}
 		tlsConfig.Certificates = []tls.Certificate{cert}
 	}
-	return &RestClient{
+	return &ControllerRestClient{
 		url: url,
 		httpClient: http.Client{
 			Transport: &http.Transport{
@@ -60,8 +60,9 @@ func CreateTLSRestClient(url, caFile, certFile, keyFile string) (*RestClient, er
 // InvokeAPI makes a REST call to the CSI Controller REST endpoint. The body must be a marshaled JSON byte array (
 // or nil). The method is the HTTP verb (i.e. GET, POST, ...).  The resource path is appended to the base URL to
 // identify the desired server resource; it should start with '/'.
-func (c *RestClient) InvokeAPI(
-	ctx context.Context, requestBody []byte, method string, resourcePath string,
+func (c *ControllerRestClient) InvokeAPI(
+	ctx context.Context, requestBody []byte, method string, resourcePath string, redactRequestBody,
+	redactResponseBody bool,
 ) (*http.Response, []byte, error) {
 
 	// Build URL
@@ -91,7 +92,8 @@ func (c *RestClient) InvokeAPI(
 			return nil, nil, fmt.Errorf("error formating request body; %v", err)
 		}
 	}
-	utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes())
+
+	utils.LogHTTPRequest(request, prettyRequestBuffer.Bytes(), redactRequestBody)
 
 	response, err := c.httpClient.Do(request)
 	if err != nil {
@@ -110,7 +112,7 @@ func (c *RestClient) InvokeAPI(
 			return nil, nil, fmt.Errorf("error formating response body; %v", err)
 		}
 	}
-	utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes())
+	utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes(), redactResponseBody)
 
 	return response, responseBody, err
 }
@@ -120,12 +122,12 @@ type CreateNodeResponse struct {
 }
 
 // CreateNode registers the node with the CSI controller server
-func (c *RestClient) CreateNode(ctx context.Context, node *utils.Node) (CreateNodeResponse, error) {
+func (c *ControllerRestClient) CreateNode(ctx context.Context, node *utils.Node) (CreateNodeResponse, error) {
 	nodeData, err := json.MarshalIndent(node, "", " ")
 	if err != nil {
 		return CreateNodeResponse{}, fmt.Errorf("error parsing create node request; %v", err)
 	}
-	resp, respBody, err := c.InvokeAPI(ctx, nodeData, "PUT", config.NodeURL+"/"+node.Name)
+	resp, respBody, err := c.InvokeAPI(ctx, nodeData, "PUT", config.NodeURL+"/"+node.Name, false, false)
 	if err != nil {
 		return CreateNodeResponse{}, fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
 	}
@@ -146,8 +148,8 @@ type ListNodesResponse struct {
 }
 
 // GetNodes returns a list of nodes registered with the controller
-func (c *RestClient) GetNodes(ctx context.Context) ([]string, error) {
-	resp, respBody, err := c.InvokeAPI(ctx, nil, "GET", config.NodeURL)
+func (c *ControllerRestClient) GetNodes(ctx context.Context) ([]string, error) {
+	resp, respBody, err := c.InvokeAPI(ctx, nil, "GET", config.NodeURL, false, false)
 	if err != nil {
 		return nil, fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
 	}
@@ -166,8 +168,8 @@ func (c *RestClient) GetNodes(ctx context.Context) ([]string, error) {
 }
 
 // DeleteNode deregisters the node with the CSI controller server
-func (c *RestClient) DeleteNode(ctx context.Context, name string) error {
-	resp, _, err := c.InvokeAPI(ctx, nil, "DELETE", config.NodeURL+"/"+name)
+func (c *ControllerRestClient) DeleteNode(ctx context.Context, name string) error {
+	resp, _, err := c.InvokeAPI(ctx, nil, "DELETE", config.NodeURL+"/"+name, false, false)
 	if err != nil {
 		return fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
 	}
@@ -183,4 +185,28 @@ func (c *RestClient) DeleteNode(ctx context.Context, name string) error {
 		return fmt.Errorf("could not delete the node")
 	}
 	return nil
+}
+
+type GetCHAPResponse struct {
+	CHAP  *utils.IscsiChapInfo `json:"chap"`
+	Error string               `json:"error,omitempty"`
+}
+
+// GetChap requests the current CHAP credentials for a given volume/node pair from the Trident controller
+func (c *ControllerRestClient) GetChap(ctx context.Context, volume, node string) (*utils.IscsiChapInfo, error) {
+	resp, respBody, err := c.InvokeAPI(ctx, nil, "GET", config.ChapURL+"/"+volume+"/"+node, false, true)
+	if err != nil {
+		return &utils.IscsiChapInfo{}, fmt.Errorf("could not communicate with the Trident CSI Controller: %v", err)
+	}
+	createResponse := GetCHAPResponse{}
+	if err := json.Unmarshal(respBody, &createResponse); err != nil {
+		return nil, fmt.Errorf("could not parse CHAP info : %v", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		msg := "could not add get CHAP info"
+		Logc(ctx).WithError(fmt.Errorf(createResponse.Error)).Errorf(msg)
+		return nil, fmt.Errorf(msg)
+	}
+	return createResponse.CHAP, nil
 }

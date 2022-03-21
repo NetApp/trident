@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -100,19 +100,10 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		portalIps = append(portalIps, getHostportIP(p))
 	}
 
-	var targetIQN = publishInfo.IscsiTargetIQN
-	var username = publishInfo.IscsiUsername                  // unidirectional CHAP field
-	var initiatorSecret = publishInfo.IscsiInitiatorSecret    // unidirectional CHAP field
-	var targetUsername = publishInfo.IscsiTargetUsername      // bidirectional CHAP field
-	var targetInitiatorSecret = publishInfo.IscsiTargetSecret // bidirectional CHAP field
-	var iscsiInterface = publishInfo.IscsiInterface
-	var lunSerial = publishInfo.IscsiLunSerial
-	var fstype = publishInfo.FilesystemType
-	var options = publishInfo.MountOptions
 	var advertisedPortalCount = 1 + len(publishInfo.IscsiPortals)
 
-	if iscsiInterface == "" {
-		iscsiInterface = "default"
+	if publishInfo.IscsiInterface == "" {
+		publishInfo.IscsiInterface = "default"
 	}
 
 	Logc(ctx).WithFields(log.Fields{
@@ -120,9 +111,9 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		"mountpoint":     mountpoint,
 		"lunID":          lunID,
 		"targetPortals":  bkportal,
-		"targetIQN":      targetIQN,
-		"iscsiInterface": iscsiInterface,
-		"fstype":         fstype,
+		"targetIQN":      publishInfo.IscsiTargetIQN,
+		"iscsiInterface": publishInfo.IscsiInterface,
+		"fstype":         publishInfo.FilesystemType,
 	}).Debug("Attaching iSCSI volume.")
 
 	if !ISCSISupported(ctx) {
@@ -133,36 +124,23 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 
 	// Ensure we are logged into correct portals
 	if publishInfo.UseCHAP {
-		bkPortalsToLogin, loggedIn, err := portalsToLogin(ctx, targetIQN, bkportal)
+		bkPortalsToLogin, loggedIn, err := portalsToLogin(ctx, publishInfo.IscsiTargetIQN, bkportal)
 		if err != nil {
 			return err
 		}
 
-		for _, portal := range bkPortalsToLogin {
-			err = loginWithChap(ctx, targetIQN, portal, username, initiatorSecret, targetUsername,
-				targetInitiatorSecret, iscsiInterface)
-			if err != nil {
-				Logc(ctx).WithFields(log.Fields{
-					"err":    err,
-					"portal": portal,
-				}).Errorf("Failed to login to portal using CHAP.")
-
-				continue
-			}
-
-			loggedIn = true
-		}
+		loggedIn = logInToPortals(ctx, bkPortalsToLogin, publishInfo, loggedIn)
 
 		if !loggedIn {
-			return fmt.Errorf("iSCSI login failed using CHAP")
+			return AuthError("iSCSI login failed using CHAP")
 		}
 	} else {
-		portalIpsToLogin, loggedIn, err := portalsIpsToLogin(ctx, targetIQN, portalIps)
+		portalIpsToLogin, loggedIn, err := portalsIpsToLogin(ctx, publishInfo.IscsiTargetIQN, portalIps)
 		if err != nil {
 			return err
 		}
 
-		newLogin := EnsureISCSISessions(ctx, targetIQN, iscsiInterface, portalIpsToLogin)
+		newLogin := EnsureISCSISessions(ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiInterface, portalIpsToLogin)
 
 		if !loggedIn && !newLogin {
 			return fmt.Errorf("iSCSI login failed")
@@ -170,22 +148,22 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	}
 
 	// First attempt to fix invalid serials by rescanning them
-	err = handleInvalidSerials(ctx, lunID, targetIQN, lunSerial, rescanOneLun)
+	err = handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, rescanOneLun)
 	if err != nil {
 		return err
 	}
 
 	// Then attempt to fix invalid serials by purging them (to be scanned
 	// again later)
-	err = handleInvalidSerials(ctx, lunID, targetIQN, lunSerial, purgeOneLun)
+	err = handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, purgeOneLun)
 	if err != nil {
 		return err
 	}
 
 	// If LUN isn't present, scan the target and wait for the device(s) to appear
 	// if not attached need to scan
-	shouldScan := !IsAlreadyAttached(ctx, lunID, targetIQN)
-	err = waitForDeviceScanIfNeeded(ctx, lunID, targetIQN, shouldScan)
+	shouldScan := !IsAlreadyAttached(ctx, lunID, publishInfo.IscsiTargetIQN)
+	err = waitForDeviceScanIfNeeded(ctx, lunID, publishInfo.IscsiTargetIQN, shouldScan)
 	if err != nil {
 		Logc(ctx).Errorf("Could not find iSCSI device: %+v", err)
 		return err
@@ -198,20 +176,20 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		Logc(ctx).Error("Detected LUN serial number mismatch, attaching volume would risk data corruption, giving up")
 		return fmt.Errorf("LUN serial number mismatch, kernel has stale cached data")
 	}
-	err = handleInvalidSerials(ctx, lunID, targetIQN, lunSerial, failHandler)
+	err = handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, failHandler)
 	if err != nil {
 		return err
 	}
 
-	err = waitForMultipathDeviceForLUN(ctx, lunID, advertisedPortalCount, targetIQN)
+	err = waitForMultipathDeviceForLUN(ctx, lunID, advertisedPortalCount, publishInfo.IscsiTargetIQN)
 	if err != nil {
 		return err
 	}
 
 	// Lookup all the SCSI device information, and include filesystem type only if not raw block volume
-	needFSType := fstype != fsRaw
+	needFSType := publishInfo.FilesystemType != fsRaw
 
-	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, targetIQN, needFSType, false)
+	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, publishInfo.IscsiTargetIQN, needFSType, false)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %v", err)
 	} else if deviceInfo == nil {
@@ -242,22 +220,22 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	// Return the device in the publish info in case the mount will be done later
 	publishInfo.DevicePath = devicePath
 
-	if fstype == fsRaw {
+	if publishInfo.FilesystemType == fsRaw {
 		return nil
 	}
 
 	existingFstype := deviceInfo.Filesystem
 	if existingFstype == "" {
-		Logc(ctx).WithFields(log.Fields{"volume": name, "fstype": fstype}).Debug("Formatting LUN.")
-		err := formatVolume(ctx, devicePath, fstype)
+		Logc(ctx).WithFields(log.Fields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
+		err := formatVolume(ctx, devicePath, publishInfo.FilesystemType)
 		if err != nil {
 			return fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
 		}
-	} else if existingFstype != unknownFstype && existingFstype != fstype {
+	} else if existingFstype != unknownFstype && existingFstype != publishInfo.FilesystemType {
 		Logc(ctx).WithFields(log.Fields{
 			"volume":          name,
 			"existingFstype":  existingFstype,
-			"requestedFstype": fstype,
+			"requestedFstype": publishInfo.FilesystemType,
 		}).Error("LUN already formatted with a different file system type.")
 		return fmt.Errorf("LUN %s, device %s already formatted with other filesystem: %s",
 			name, deviceToUse, existingFstype)
@@ -270,13 +248,34 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 
 	// Optionally mount the device
 	if mountpoint != "" {
-		if err := MountDevice(ctx, devicePath, mountpoint, options, false); err != nil {
+		if err := MountDevice(ctx, devicePath, mountpoint, publishInfo.MountOptions, false); err != nil {
 			return fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v; %s",
 				name, deviceToUse, mountpoint, err)
 		}
 	}
 
 	return nil
+}
+
+func logInToPortals(
+	ctx context.Context, bkPortalsToLogin []string, publishInfo *VolumePublishInfo, loggedIn bool,
+) bool {
+	for _, portal := range bkPortalsToLogin {
+		err := loginWithChap(ctx, publishInfo.IscsiTargetIQN, portal, publishInfo.IscsiUsername,
+			publishInfo.IscsiInitiatorSecret, publishInfo.IscsiTargetUsername, publishInfo.IscsiTargetSecret,
+			publishInfo.IscsiInterface)
+		if err != nil {
+			Logc(ctx).WithFields(log.Fields{
+				"err":    err,
+				"portal": portal,
+			}).Errorf("Failed to login to portal using CHAP.")
+
+			continue
+		}
+
+		loggedIn = true
+	}
+	return loggedIn
 }
 
 // DFInfo data structure for wrapping the parsed output from the 'df' command
@@ -868,7 +867,8 @@ func waitForMultipathDeviceForDevices(ctx context.Context, advertisedPortalCount
 			Logc(ctx).Errorf("unable to get the find_multipaths value from the multipath.conf: %v", err)
 		} else if findMultipathsValue == "yes" || findMultipathsValue == "smart" {
 			Logc(ctx).Warnf("A multipath device may not exist, the multipathd is running but find_multipaths "+
-				"value is set to '%s' in the multipath configuration. !!!Please correct this issue!!!", findMultipathsValue)
+				"value is set to '%s' in the multipath configuration. !!!Please correct this issue!!!",
+				findMultipathsValue)
 
 			if advertisedPortalCount <= 1 {
 				Logc(ctx).Warnf("Skipping multipath discovery, %d portal(s) specified.", advertisedPortalCount)
@@ -1282,7 +1282,8 @@ func UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) e
 			return fmt.Errorf("failed to remove directory in staging target path %s; %s", tmpDir, err)
 		}
 	} else if !os.IsNotExist(err) {
-		Logc(ctx).WithField("temporaryMountPoint", tmpDir).Errorf("Can't determine if temporary dir path exists; %s", err)
+		Logc(ctx).WithField("temporaryMountPoint", tmpDir).Errorf("Can't determine if temporary dir path exists; %s",
+			err)
 		return fmt.Errorf("can't determine if temporary dir path %s exists; %s", tmpDir, err)
 	}
 
@@ -1351,7 +1352,7 @@ func ExpandISCSIFilesystem(
 	if err != nil {
 		return 0, err
 	}
-	defer removeMountPoint(ctx, tmpMountPoint) //nolint
+	defer removeMountPoint(ctx, tmpMountPoint) // nolint
 	// Don't need to verify the filesystem type as the resize utilities will throw an error if the filesystem
 	// is not the correct type.
 	var size int64
@@ -1836,7 +1837,8 @@ func rescanOneLun(ctx context.Context, path string) error {
 
 // handleInvalidSerials checks the LUN serial number for each path of a given LUN, and
 // if it doesn't match the expected value, runs a handler function.
-func handleInvalidSerials(ctx context.Context, lunID int, targetIqn, expectedSerial string,
+func handleInvalidSerials(
+	ctx context.Context, lunID int, targetIqn, expectedSerial string,
 	handler func(ctx context.Context, path string) error,
 ) error {
 	if "" == expectedSerial {
@@ -1931,7 +1933,8 @@ func GetISCSIHostSessionMapForTarget(ctx context.Context, iSCSINodeName string) 
 					sessionName := deviceDir.Name()
 					if !strings.HasPrefix(sessionName, "session") {
 						continue
-					} else if sessionNumber, err = strconv.Atoi(strings.TrimPrefix(sessionName, "session")); err != nil {
+					} else if sessionNumber, err = strconv.Atoi(strings.TrimPrefix(sessionName,
+						"session")); err != nil {
 						Logc(ctx).WithField("session", sessionName).Error("Could not parse session number")
 						continue
 					}
@@ -2832,7 +2835,9 @@ func updateDiscoveryDb(ctx context.Context, tp, iface, key, value string) error 
 // the case where the target is already known.
 // Note: Adding iSCSI targets using sendtargets rather than static discover
 // ensures that targets are added with the correct target group portal tags.
-func ensureIscsiTarget(ctx context.Context, tp, targetIqn, username, password, targetUsername, targetInitiatorSecret, iface string) error {
+func ensureIscsiTarget(
+	ctx context.Context, tp, targetIqn, username, password, targetUsername, targetInitiatorSecret, iface string,
+) error {
 	Logc(ctx).WithFields(log.Fields{
 		"IQN":       targetIqn,
 		"Portal":    tp,
@@ -2964,15 +2969,16 @@ func loginISCSITarget(ctx context.Context, iqn, portal string) error {
 
 // loginWithChap will login to the iSCSI target with the supplied credentials.
 func loginWithChap(
-	ctx context.Context, tiqn, portal, username, password, targetUsername, targetInitiatorSecret, iface string) error {
+	ctx context.Context, tiqn, portal, username, password, targetUsername, targetInitiatorSecret, iface string,
+) error {
 
 	logFields := log.Fields{
 		"IQN":                   tiqn,
 		"portal":                portal,
-		"username":              username,
-		"password":              "****",
-		"targetUsername":        targetUsername,
-		"targetInitiatorSecret": "****",
+		"username":              REDACTED,
+		"password":              REDACTED,
+		"targetUsername":        REDACTED,
+		"targetInitiatorSecret": REDACTED,
 		"iface":                 iface,
 	}
 	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.loginWithChap")
@@ -2981,7 +2987,8 @@ func loginWithChap(
 	args := []string{"-m", "node", "-T", tiqn, "-p", formatPortal(portal)}
 
 	listAllISCSIDevices(ctx)
-	if err := ensureIscsiTarget(ctx, formatPortal(portal), tiqn, username, password, targetUsername, targetInitiatorSecret, iface); err != nil {
+	if err := ensureIscsiTarget(ctx, formatPortal(portal), tiqn, username, password, targetUsername,
+		targetInitiatorSecret, iface); err != nil {
 		Logc(ctx).Error("Error running iscsiadm node create.")
 		return err
 	}
@@ -2992,26 +2999,30 @@ func loginWithChap(
 		return err
 	}
 
-	authUserArgs := append(args, []string{"--op=update", "--name", "node.session.auth.username", "--value=" + username}...)
+	authUserArgs := append(args,
+		[]string{"--op=update", "--name", "node.session.auth.username", "--value=" + username}...)
 	if _, err := execIscsiadmCommand(ctx, authUserArgs...); err != nil {
 		Logc(ctx).Error("Error running iscsiadm set authuser.")
 		return err
 	}
 
-	authPasswordArgs := append(args, []string{"--op=update", "--name", "node.session.auth.password", "--value=" + password}...)
+	authPasswordArgs := append(args,
+		[]string{"--op=update", "--name", "node.session.auth.password", "--value=" + password}...)
 	if _, err := execIscsiadmCommand(ctx, authPasswordArgs...); err != nil {
 		Logc(ctx).Error("Error running iscsiadm set authpassword.")
 		return err
 	}
 
 	if targetUsername != "" && targetInitiatorSecret != "" {
-		targetAuthUserArgs := append(args, []string{"--op=update", "--name", "node.session.auth.username_in", "--value=" + targetUsername}...)
+		targetAuthUserArgs := append(args,
+			[]string{"--op=update", "--name", "node.session.auth.username_in", "--value=" + targetUsername}...)
 		if _, err := execIscsiadmCommand(ctx, targetAuthUserArgs...); err != nil {
 			Logc(ctx).Error("Error running iscsiadm set authuser_in.")
 			return err
 		}
 
-		targetAuthPasswordArgs := append(args, []string{"--op=update", "--name", "node.session.auth.password_in", "--value=" + targetInitiatorSecret}...)
+		targetAuthPasswordArgs := append(args,
+			[]string{"--op=update", "--name", "node.session.auth.password_in", "--value=" + targetInitiatorSecret}...)
 		if _, err := execIscsiadmCommand(ctx, targetAuthPasswordArgs...); err != nil {
 			Logc(ctx).Error("Error running iscsiadm set authpassword_in.")
 			return err
@@ -3020,8 +3031,9 @@ func loginWithChap(
 
 	loginArgs := append(args, []string{"--login"}...)
 	if _, err := execIscsiadmCommandWithTimeout(ctx, 10, loginArgs...); err != nil {
-		Logc(ctx).Error("Error running iscsiadm login.")
-		return err
+		msg := "Error running iscsiadm login."
+		Logc(ctx).Error(msg)
+		return AuthError(msg)
 	}
 	listAllISCSIDevices(ctx)
 	return nil

@@ -200,7 +200,7 @@ func (d *Client) InvokeAPI(
 	}
 
 	if d.config.DebugTraceFlags["api"] {
-		utils.LogHTTPRequest(request, requestBody)
+		utils.LogHTTPRequest(request, requestBody, false)
 	}
 
 	// Send the request
@@ -226,7 +226,7 @@ func (d *Client) InvokeAPI(
 
 	responseBody, err = ioutil.ReadAll(response.Body)
 	if d.config.DebugTraceFlags["api"] {
-		utils.LogHTTPResponse(ctx, response, responseBody)
+		utils.LogHTTPResponse(ctx, response, responseBody, false)
 	}
 
 	return response, responseBody, err

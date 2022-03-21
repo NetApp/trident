@@ -947,19 +947,36 @@ func (p *Plugin) nodeStageISCSIVolume(
 
 		if p.aesKey != nil && encryptedCHAP {
 			if err = decryptCHAPPublishInfo(ctx, publishInfo, req.PublishContext, p.aesKey); err != nil {
-				return nil, status.Error(codes.Internal, err.Error())
+				Logc(ctx).WithError(err).Warn(
+					"Could not decrypt CHAP credentials; will retrieve from Trident controller.")
+				if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
+					return nil, status.Error(codes.Internal, err.Error())
+				}
 			}
 		} else if encryptedCHAP {
 			// Only error if the key is not set and the publishContext includes encrypted fields
-			msg := "encryption key not set; cannot decrypt CHAP credentials"
-			Logc(ctx).Error(msg)
-			return nil, status.Error(codes.Internal, msg)
+			Logc(ctx).Warn(
+				"Encryption key not set; cannot decrypt CHAP credentials; will retrieve from Trident controller.")
+			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
+				return nil, status.Error(codes.Internal, err.Error())
+			}
 		}
 	}
 
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
 	if err := utils.AttachISCSIVolume(ctx, req.VolumeContext["internalName"], "", publishInfo); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		// Did we fail to log in?
+		if utils.IsAuthError(err) {
+			// Update CHAP info from the controller and try one more time
+			Logc(ctx).Warn("iSCSI login failed; will retrieve CHAP credentials from Trident controller and try again.")
+			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+			if err = utils.AttachISCSIVolume(ctx, req.VolumeContext["internalName"], "", publishInfo); err != nil {
+				// Bail out no matter what as we've now tried with updated credentials
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+		}
 	}
 
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
@@ -973,6 +990,23 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}
 
 	return &csi.NodeStageVolumeResponse{}, nil
+}
+
+func (p *Plugin) updateChapInfoFromController(
+	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *utils.VolumePublishInfo,
+) error {
+	chapInfo, err := p.restClient.GetChap(ctx, req.GetVolumeId(), p.nodeName)
+	if err != nil {
+		msg := "could not retrieve CHAP credentials from Trident controller"
+		Logc(ctx).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+	publishInfo.UseCHAP = chapInfo.UseCHAP
+	publishInfo.IscsiUsername = chapInfo.IscsiUsername
+	publishInfo.IscsiInitiatorSecret = chapInfo.IscsiInitiatorSecret
+	publishInfo.IscsiTargetUsername = chapInfo.IscsiTargetUsername
+	publishInfo.IscsiTargetSecret = chapInfo.IscsiTargetSecret
+	return nil
 }
 
 func (p *Plugin) nodeUnstageISCSIVolume(
