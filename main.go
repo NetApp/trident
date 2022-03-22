@@ -47,7 +47,8 @@ var (
 		"for Kubernetes if running in a pod.")
 
 	// Docker
-	driverName = flag.String("volume_driver", "netapp", "Register as a Docker "+
+	docker_plugin_mode = flag.Bool("docker_plugin_mode", false, "Enable docker plugin mode")
+	driverName         = flag.String("volume_driver", "netapp", "Register as a Docker "+
 		"volume plugin with this driver name")
 	driverPort = flag.String("driver_port", "", "Listen on this port instead of using a "+
 		"Unix domain socket")
@@ -114,7 +115,7 @@ func processCmdLineArgs() {
 
 	// Infer frontend from arguments
 	enableCSI = *csiEndpoint != ""
-	enableDocker = *configPath != "" && !enableCSI
+	enableDocker = (*docker_plugin_mode || *configPath != "") && !enableCSI
 
 	frontendCount := 0
 	if enableDocker {
@@ -237,6 +238,10 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	// Process any docker plugin environment variables (after we flag.Parse() the CLI above)
+	if *docker_plugin_mode {
+		os.Setenv("DOCKER_PLUGIN_MODE", "1")
+		utils.SetChrootPathPrefix("/host")
+	}
 	err = processDockerPluginArgs()
 	if err != nil {
 		log.Fatal(err)

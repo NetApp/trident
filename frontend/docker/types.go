@@ -30,3 +30,16 @@ type Snapshot struct {
 	Name    string `json:"name"`
 	Created string `json:"dateCreated"` // The UTC time that the snapshot was created, in RFC3339 format
 }
+
+const (
+	DaemonConfigFile      = "/etc/docker/daemon.json"
+	DefaultDaemonDataRoot = "/var/lib/docker"
+)
+
+// DaemonConfig holds only our fields of interest from /etc/docker/daemon.json
+type DaemonConfig struct {
+	// See also:
+	//   https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-configuration-file
+	//   https://docs.docker.com/config/daemon/#configure-the-docker-daemon
+	DataRoot string `json:"data-root"`
+}

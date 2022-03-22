@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -66,6 +67,29 @@ func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*
 	}
 
 	if plugin.isDockerPluginMode {
+
+		// determine the docker data-root
+		var daemonConfig DaemonConfig
+		if _, statErr := os.Stat(filepath.Join("/host", DaemonConfigFile)); os.IsNotExist(statErr) {
+			// this is not a problem, they may not have changed their docker setup, so go with the default
+			Logc(ctx).Debugf("custom docker daemon config '%v' not found\n", DaemonConfigFile)
+		} else {
+			// check to see if they have specified a new value for the data-root
+			file, err := ioutil.ReadFile(filepath.Join("/host", DaemonConfigFile))
+			if err != nil {
+				return nil, err
+			}
+
+			err = json.Unmarshal([]byte(file), &daemonConfig)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if daemonConfig.DataRoot == "" {
+			daemonConfig.DataRoot = DefaultDaemonDataRoot
+		}
+		Logc(ctx).Debugf("using data-root: %v\n", daemonConfig.DataRoot)
+
 		mountInfo, err := utils.GetMountInfo(ctx)
 		if err != nil {
 			return nil, err
@@ -75,7 +99,34 @@ func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*
 		for _, procMount := range mountInfo {
 			Logc(ctx).Debugf("root: %v, mountPoint: %v\n", procMount.Root, procMount.MountPoint)
 			if procMount.MountPoint == volume.DefaultDockerRootDirectory+"/netapp" {
+				// procMount.Root contains our unique docker plugin id in the string, and usually looks like this:
+				//   /var/lib/docker/plugins/579614f4362d39dcbcc96be69813d1b2c14fc0d409ac517e5d2ff7a64e685bb4/propagated-mount
+				// or more generally
+				//   /daemonConfig.DataRoot/plugins/579614f4362d39dcbcc96be69813d1b2c14fc0d409ac517e5d2ff7a64e685bb4/propagated-mount
 				plugin.hostVolumePath = filepath.Join(procMount.Root)
+				if strings.HasPrefix(plugin.hostVolumePath, "/plugins") {
+					// the path is missing the expected prefix (defaults to '/var/lib/docker') and we must add it back
+					//
+					// this scenario can happen when /var/lib/docker is a loopback device, or does not live directly on /
+					//
+					// in other words, we need to convert from what we found:
+					//    /plugins/579614f4362d39dcbcc96be69813d1b2c14fc0d409ac517e5d2ff7a64e685bb4/propagated-mount
+					//
+					// into what we need:
+					//   /var/lib/docker/plugins/579614f4362d39dcbcc96be69813d1b2c14fc0d409ac517e5d2ff7a64e685bb4/propagated-mount
+					//  or more generally:
+					//   /daemonConfig.DataRoot/plugins/579614f4362d39dcbcc96be69813d1b2c14fc0d409ac517e5d2ff7a64e685bb4/propagated-mount
+					plugin.hostVolumePath = filepath.Join(daemonConfig.DataRoot, plugin.hostVolumePath)
+				}
+
+				// confirm the computed hostVolumePath exists on the /host filesystem
+				if _, err := os.Stat(filepath.Join("/host", plugin.hostVolumePath)); os.IsNotExist(err) {
+					// NOTE: we must add a "/host" prefix here because the Trident binary itself is not "chrooted"
+					// the mount command that we eventually invoke IS "chrooted" and it will not need the "/host" prefix
+					// so, we store it without the "/host" prefix, but in this path we must prepend it to test
+					return nil, fmt.Errorf("plugin.hostVolumePath %v does not exist on /host path", plugin.hostVolumePath)
+				}
+
 				Logc(ctx).WithFields(log.Fields{
 					"plugin.volumePath":     plugin.volumePath,
 					"plugin.hostVolumePath": plugin.hostVolumePath,

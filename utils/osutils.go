@@ -52,10 +52,15 @@ func IPv6Check(ip string) bool {
 
 func init() {
 	if os.Getenv("DOCKER_PLUGIN_MODE") != "" {
-		chrootPathPrefix = "/host"
+		SetChrootPathPrefix("/host")
 	} else {
-		chrootPathPrefix = ""
+		SetChrootPathPrefix("")
 	}
+}
+
+func SetChrootPathPrefix(prefix string) {
+	Logc(context.Background()).Debugf("SetChrootPathPrefix = '%s'", prefix)
+	chrootPathPrefix = prefix
 }
 
 // Attach the volume to the local host.  This method must be able to accomplish its task using only the data passed in.
