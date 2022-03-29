@@ -2991,6 +2991,13 @@ func loginWithChap(
 
 	args := []string{"-m", "node", "-T", tiqn, "-p", formatPortal(portal)}
 
+	secretsToRedact := map[string]string{
+		"--value="+username: "--value="+REDACTED,
+		"--value="+password: "--value="+REDACTED,
+		"--value="+targetUsername: "--value="+REDACTED,
+		"--value="+targetInitiatorSecret: "--value="+REDACTED,
+	}
+
 	listAllISCSIDevices(ctx)
 	if err := ensureIscsiTarget(ctx, formatPortal(portal), tiqn, username, password, targetUsername,
 		targetInitiatorSecret, iface); err != nil {
@@ -3006,14 +3013,14 @@ func loginWithChap(
 
 	authUserArgs := append(args,
 		[]string{"--op=update", "--name", "node.session.auth.username", "--value=" + username}...)
-	if _, err := execIscsiadmCommand(ctx, authUserArgs...); err != nil {
+	if _, err := execIscsiadmCommandRedacted(ctx, authUserArgs, secretsToRedact); err != nil {
 		Logc(ctx).Error("Error running iscsiadm set authuser.")
 		return err
 	}
 
 	authPasswordArgs := append(args,
 		[]string{"--op=update", "--name", "node.session.auth.password", "--value=" + password}...)
-	if _, err := execIscsiadmCommand(ctx, authPasswordArgs...); err != nil {
+	if _, err := execIscsiadmCommandRedacted(ctx, authPasswordArgs, secretsToRedact); err != nil {
 		Logc(ctx).Error("Error running iscsiadm set authpassword.")
 		return err
 	}
@@ -3021,14 +3028,14 @@ func loginWithChap(
 	if targetUsername != "" && targetInitiatorSecret != "" {
 		targetAuthUserArgs := append(args,
 			[]string{"--op=update", "--name", "node.session.auth.username_in", "--value=" + targetUsername}...)
-		if _, err := execIscsiadmCommand(ctx, targetAuthUserArgs...); err != nil {
+		if _, err := execIscsiadmCommandRedacted(ctx, targetAuthUserArgs, secretsToRedact); err != nil {
 			Logc(ctx).Error("Error running iscsiadm set authuser_in.")
 			return err
 		}
 
 		targetAuthPasswordArgs := append(args,
 			[]string{"--op=update", "--name", "node.session.auth.password_in", "--value=" + targetInitiatorSecret}...)
-		if _, err := execIscsiadmCommand(ctx, targetAuthPasswordArgs...); err != nil {
+		if _, err := execIscsiadmCommandRedacted(ctx, targetAuthPasswordArgs, secretsToRedact); err != nil {
 			Logc(ctx).Error("Error running iscsiadm set authpassword_in.")
 			return err
 		}
@@ -3215,6 +3222,11 @@ func EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP strin
 	return nil
 }
 
+// execIscsiadmCommand uses the 'iscsiadm' command to perform operations without logging specified secrets
+func execIscsiadmCommandRedacted(ctx context.Context, args []string, secretsToRedact map[string]string) ([]byte, error) {
+	return execCommandRedacted(ctx, "iscsiadm", args, secretsToRedact)
+}
+
 // execIscsiadmCommand uses the 'iscsiadm' command to perform operations
 func execIscsiadmCommand(ctx context.Context, args ...string) ([]byte, error) {
 	return execCommand(ctx, "iscsiadm", args...)
@@ -3231,6 +3243,38 @@ func execCommand(ctx context.Context, name string, args ...string) ([]byte, erro
 	Logc(ctx).WithFields(log.Fields{
 		"command": name,
 		"args":    args,
+	}).Debug(">>>> osutils.execCommand.")
+
+	out, err := exec.Command(name, args...).CombinedOutput()
+
+	Logc(ctx).WithFields(log.Fields{
+		"command": name,
+		"output":  sanitizeString(string(out)),
+		"error":   err,
+	}).Debug("<<<< osutils.execCommand.")
+
+	return out, err
+}
+
+// execCommand invokes an external process, and redacts sensitive arguments
+func execCommandRedacted(ctx context.Context, name string, args []string,
+	secretsToRedact map[string]string) ([]byte, error) {
+
+	var sanitizedArgs []string
+	for _, arg := range args {
+		val, ok := secretsToRedact[arg]
+		var sanitizedArg string
+		if ok {
+			sanitizedArg = val
+		} else {
+			sanitizedArg = arg
+		}
+		sanitizedArgs = append(sanitizedArgs, sanitizedArg)
+	}
+
+	Logc(ctx).WithFields(log.Fields{
+		"command": name,
+		"args":    sanitizedArgs,
 	}).Debug(">>>> osutils.execCommand.")
 
 	out, err := exec.Command(name, args...).CombinedOutput()
