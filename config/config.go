@@ -93,7 +93,6 @@ const (
 	OntapNFS          VolumeType = "ONTAP_NFS"
 	OntapISCSI        VolumeType = "ONTAP_iSCSI"
 	SolidFireISCSI    VolumeType = "SolidFire_iSCSI"
-	ESeriesISCSI      VolumeType = "Eseries_iSCSI"
 	UnknownVolumeType VolumeType = ""
 
 	/* Driver-related constants */

@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -155,20 +155,6 @@ func WriteBackends(backends []storage.BackendExternal) {
 	}
 }
 
-func getESeriesStorageDriverConfig(configAsMap map[string]interface{}) (*drivers.ESeriesStorageDriverConfig, error) {
-	jsonBytes, marshalError := json.MarshalIndent(configAsMap, "", "  ")
-	if marshalError != nil {
-		return nil, marshalError
-	}
-
-	var result drivers.ESeriesStorageDriverConfig
-	err := json.Unmarshal(jsonBytes, &result)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
 func getFakeStorageDriverConfig(configAsMap map[string]interface{}) (*drivers.FakeStorageDriverConfig, error) {
 	jsonBytes, marshalError := json.MarshalIndent(configAsMap, "", "  ")
 	if marshalError != nil {
@@ -197,7 +183,8 @@ func getOntapStorageDriverConfig(configAsMap map[string]interface{}) (*drivers.O
 	return &result, nil
 }
 
-func getSolidfireStorageDriverConfig(configAsMap map[string]interface{}) (*drivers.SolidfireStorageDriverConfig, error) {
+func getSolidfireStorageDriverConfig(configAsMap map[string]interface{}) (*drivers.SolidfireStorageDriverConfig,
+	error) {
 	jsonBytes, marshalError := json.MarshalIndent(configAsMap, "", "  ")
 	if marshalError != nil {
 		return nil, marshalError

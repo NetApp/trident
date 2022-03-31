@@ -19,6 +19,10 @@
 - Trident now attempts to enable the Azure NetApp Files unix permissions feature automatically.
 - **Kubernetes** Trident daemonset now runs at system-node-critical priority class. (Issue [#694](https://github.com/NetApp/trident/issues/694))
 
+**Removals**
+
+- ESeries driver (disabled since 20.07) has been removed.
+
 ## v22.01.0
 
 - **IMPORTANT**: If you are upgrading from any previous Trident release and use Azure NetApp Files, the ``location`` config parameter is now a mandatory, singleton field.

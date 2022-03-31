@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -167,8 +167,6 @@ func (c *PassthroughClient) unmarshalConfig(ctx context.Context, fileContents []
 		configType = "ontap_config"
 	case drivers.SolidfireSANStorageDriverName:
 		configType = "solidfire_config"
-	case drivers.EseriesIscsiStorageDriverName:
-		configType = "eseries_config"
 	case drivers.AWSNFSStorageDriverName:
 		configType = "aws_config"
 	case drivers.AzureNFSStorageDriverName:

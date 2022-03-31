@@ -15,7 +15,6 @@ const DefaultTridentIgroupName = "trident"
 
 // Storage driver names specified in the config file, etc.
 const (
-	EseriesIscsiStorageDriverName      = "eseries-iscsi"
 	OntapNASStorageDriverName          = "ontap-nas"
 	OntapNASFlexGroupStorageDriverName = "ontap-nas-flexgroup"
 	OntapNASQtreeStorageDriverName     = "ontap-nas-economy"

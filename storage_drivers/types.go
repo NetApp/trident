@@ -47,8 +47,6 @@ func GetDriverConfigByName(driverName string) (DriverConfig, error) {
 		storageDriverConfig = &OntapStorageDriverConfig{}
 	case SolidfireSANStorageDriverName:
 		storageDriverConfig = &SolidfireStorageDriverConfig{}
-	case EseriesIscsiStorageDriverName:
-		storageDriverConfig = &ESeriesStorageDriverConfig{}
 	case AWSNFSStorageDriverName:
 		storageDriverConfig = &AWSNFSStorageDriverConfig{}
 	case AzureNFSStorageDriverName:
@@ -104,123 +102,6 @@ func (d *CommonStorageDriverConfig) HasCredentials() bool {
 // SetBackendName sets the backend name
 func (d *CommonStorageDriverConfig) SetBackendName(backendName string) {
 	d.BackendName = backendName
-}
-
-// ESeriesStorageDriverConfig holds settings for ESeriesStorageDriver
-type ESeriesStorageDriverConfig struct {
-	*CommonStorageDriverConfig
-
-	// Web Proxy Services Info
-	WebProxyHostname  string `json:"webProxyHostname"`
-	WebProxyPort      string `json:"webProxyPort"`      // optional
-	WebProxyUseHTTP   bool   `json:"webProxyUseHTTP"`   // optional
-	WebProxyVerifyTLS bool   `json:"webProxyVerifyTLS"` // optional
-	Username          string `json:"username"`
-	Password          string `json:"password"`
-
-	// Array Info
-	ControllerA   string `json:"controllerA"`
-	ControllerB   string `json:"controllerB"`
-	PasswordArray string `json:"passwordArray"` // optional
-
-	// Options
-	PoolNameSearchPattern string `json:"poolNameSearchPattern"` // optional
-
-	// Host Networking
-	HostDataIPDeprecated string `json:"hostData_IP,omitempty"` // for backward compatibility only
-	HostDataIP           string `json:"hostDataIP"`            // for iSCSI can be either port if multipathing is setup
-	AccessGroup          string `json:"accessGroupName"`       // name for host group
-	HostType             string `json:"hostType"`              // host type, default is 'linux_dm_mp'
-
-	EseriesStorageDriverPool
-	Storage []EseriesStorageDriverPool `json:"storage"`
-}
-
-type EseriesStorageDriverPool struct {
-	Labels                             map[string]string   `json:"labels"`
-	Region                             string              `json:"region"`
-	Zone                               string              `json:"zone"`
-	SupportedTopologies                []map[string]string `json:"supportedTopologies"`
-	EseriesStorageDriverConfigDefaults `json:"defaults"`
-}
-
-type EseriesStorageDriverConfigDefaults struct {
-	CommonStorageDriverConfigDefaults
-}
-
-// Implement stringer interface for the E-Series driver
-func (d ESeriesStorageDriverConfig) String() string {
-	return utils.ToStringRedacted(&d, []string{"Password", "PasswordArray", "Username"}, nil)
-}
-
-// Implement GoStringer interface for the ESeriesStorageDriverConfig driver
-func (d ESeriesStorageDriverConfig) GoString() string {
-	return d.String()
-}
-
-// InjectSecrets function replaces sensitive fields in the config with the field values in the map
-func (d *ESeriesStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
-
-	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
-
-	var ok bool
-	if d.Username, ok = secretMap[strings.ToLower("Username")]; !ok {
-		return injectionError("Username")
-	}
-	if d.Password, ok = secretMap[strings.ToLower("Password")]; !ok {
-		return injectionError("Password")
-	}
-	if d.PasswordArray, ok = secretMap[strings.ToLower("PasswordArray")]; !ok {
-		return injectionError("PasswordArray")
-	}
-
-	return nil
-}
-
-// ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
-// and returns the the map.
-func (d *ESeriesStorageDriverConfig) ExtractSecrets() map[string]string {
-	secretMap := make(map[string]string)
-
-	secretMap["Username"] = d.Username
-	secretMap["Password"] = d.Password
-	secretMap["PasswordArray"] = d.PasswordArray
-
-	return secretMap
-}
-
-// HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
-// with secretName.
-func (d *ESeriesStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
-	d.Username = secretName
-	d.Password = secretName
-	d.PasswordArray = secretName
-}
-
-// GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
-// replaces those fields with secretName and returns the the map.
-func (d *ESeriesStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
-	secretMap := d.ExtractSecrets()
-	d.HideSensitiveWithSecretName(secretName)
-
-	return secretMap
-}
-
-// CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
-func (d ESeriesStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
-	return checkMapContainsAttributes(d.ExtractSecrets())
-}
-
-func (d ESeriesStorageDriverConfig) SpecOnlyValidation() error {
-	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
-		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
-	}
-
-	if !d.HasCredentials() {
-		return fmt.Errorf("input is missing the credentials field")
-	}
-
-	return nil
 }
 
 // OntapStorageDriverConfig holds settings for OntapStorageDrivers

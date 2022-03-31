@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package factory
 
@@ -17,7 +17,6 @@ import (
 	"github.com/netapp/trident/storage_drivers/astrads"
 	"github.com/netapp/trident/storage_drivers/aws"
 	"github.com/netapp/trident/storage_drivers/azure"
-	"github.com/netapp/trident/storage_drivers/eseries"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/storage_drivers/gcp"
 	"github.com/netapp/trident/storage_drivers/ontap"
@@ -26,8 +25,10 @@ import (
 
 // SpecOnlyValidation applies to values supplied through the CRD controller, this ensures that
 // forbidden attributes are not in the spec, and contains the credentials field.
-func SpecOnlyValidation(ctx context.Context, commonConfig *drivers.CommonStorageDriverConfig,
-	configInJSON string) error {
+func SpecOnlyValidation(
+	ctx context.Context, commonConfig *drivers.CommonStorageDriverConfig,
+	configInJSON string,
+) error {
 
 	storageDriverConfig, err := drivers.GetDriverConfigByName(commonConfig.StorageDriverName)
 	if err != nil {
@@ -63,8 +64,10 @@ func ValidateCommonSettings(ctx context.Context, configJSON string) (commonConfi
 	return commonConfig, configInJSON, nil
 }
 
-func NewStorageBackendForConfig(ctx context.Context, configJSON, configRef, backendUUID string,
-	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string) (sb storage.Backend,
+func NewStorageBackendForConfig(
+	ctx context.Context, configJSON, configRef, backendUUID string,
+	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string,
+) (sb storage.Backend,
 	err error) {
 
 	// Some drivers may panic during initialize if given invalid parameters,
@@ -92,8 +95,6 @@ func NewStorageBackendForConfig(ctx context.Context, configJSON, configRef, back
 		storageDriver = &ontap.SANEconomyStorageDriver{}
 	case drivers.SolidfireSANStorageDriverName:
 		storageDriver = &solidfire.SANStorageDriver{}
-	case drivers.EseriesIscsiStorageDriverName:
-		storageDriver = &eseries.SANStorageDriver{}
 	case drivers.AWSNFSStorageDriverName:
 		storageDriver = &aws.NFSStorageDriver{}
 	case drivers.AzureNFSStorageDriverName:

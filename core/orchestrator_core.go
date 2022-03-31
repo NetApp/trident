@@ -2755,8 +2755,6 @@ func (o *TridentOrchestrator) GetVolumeType(
 		volumeType = config.OntapISCSI
 	case driver == drivers.SolidfireSANStorageDriverName:
 		volumeType = config.SolidFireISCSI
-	case driver == drivers.EseriesIscsiStorageDriverName:
-		volumeType = config.ESeriesISCSI
 	default:
 		volumeType = config.UnknownVolumeType
 	}
