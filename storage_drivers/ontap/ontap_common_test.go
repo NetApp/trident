@@ -1010,7 +1010,8 @@ func TestCheckAggregateLimits(t *testing.T) {
 	).AnyTimes()
 
 	err := checkAggregateLimits(ctx, aggr, "none", 1024, *ontapConfig, mockZapiClient)
-	assert.Equal(t, "could not determine aggregate space, cannot check aggregate provisioning limits for aggr1", err.Error())
+	assert.Equal(t, "could not determine aggregate space, cannot check aggregate provisioning limits for aggr1",
+		err.Error())
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// negative case:  empty result

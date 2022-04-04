@@ -1291,32 +1291,42 @@ func (d OntapAPIREST) IsSVMDRCapable(_ context.Context) (bool, error) {
 	return false, fmt.Errorf("not implemented")
 }
 
-func (d OntapAPIREST) SnapmirrorCreate(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
-	remoteSVMName, replicationPolicy, replicationSchedule string) error {
+func (d OntapAPIREST) SnapmirrorCreate(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName, replicationPolicy, replicationSchedule string,
+) error {
 	// TODO implement
 	return fmt.Errorf("not implemented for REST")
 }
 
-func (d OntapAPIREST) SnapmirrorGet(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
-	remoteSVMName string) (*Snapmirror, error) {
+func (d OntapAPIREST) SnapmirrorGet(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string,
+) (*Snapmirror, error) {
 	// TODO implement
 	return nil, fmt.Errorf("not implemented for REST")
 }
 
-func (d OntapAPIREST) SnapmirrorDelete(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
-	remoteSVMName string) error {
+func (d OntapAPIREST) SnapmirrorDelete(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string,
+) error {
 	// TODO implement
 	return fmt.Errorf("not implemented for REST")
 }
 
-func (d OntapAPIREST) SnapmirrorInitialize(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
-	remoteSVMName string) error {
+func (d OntapAPIREST) SnapmirrorInitialize(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string,
+) error {
 	// TODO implement
 	return fmt.Errorf("not implemented for REST")
 }
 
-func (d OntapAPIREST) SnapmirrorResync(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
-	remoteSVMName string) error {
+func (d OntapAPIREST) SnapmirrorResync(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string,
+) error {
 	// TODO implement
 	return fmt.Errorf("not implemented for REST")
 }
@@ -1326,20 +1336,26 @@ func (d OntapAPIREST) SnapmirrorPolicyGet(ctx context.Context, replicationPolicy
 	return nil, fmt.Errorf("not implemented for REST")
 }
 
-func (d OntapAPIREST) SnapmirrorQuiesce(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
-	remoteSVMName string) error {
+func (d OntapAPIREST) SnapmirrorQuiesce(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string,
+) error {
 	// TODO implement
 	return fmt.Errorf("not implemented for REST")
 }
 
-func (d OntapAPIREST) SnapmirrorAbort(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
-	remoteSVMName string) error {
+func (d OntapAPIREST) SnapmirrorAbort(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName string,
+) error {
 	// TODO implement
 	return fmt.Errorf("not implemented for REST")
 }
 
-func (d OntapAPIREST) SnapmirrorBreak(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
-	remoteSVMName string) error {
+func (d OntapAPIREST) SnapmirrorBreak(
+	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
+	remoteSVMName, snapshotName string,
+) error {
 	return fmt.Errorf("not implemented for REST")
 }
 

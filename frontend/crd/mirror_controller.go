@@ -438,7 +438,7 @@ func (c *TridentCrdController) ensureMirrorReadyForDeletion(
 	relCopy := relationship.DeepCopy()
 	relCopy.Spec.MirrorState = netappv1.MirrorStatePromoted
 	// We do not want to wait for a snapshot to appear if we are deleting
-	volumeMapping.LatestSnapshotHandle = ""
+	volumeMapping.PromotedSnapshotHandle = ""
 	status, err := c.handleIndividualVolumeMapping(ctx, relCopy, volumeMapping, currentCondition)
 	if err != nil {
 		// If the underlying volume does not exist, we are safe to delete the TMR
@@ -616,7 +616,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			)
 			waitingForSnapshot, err := c.orchestrator.PromoteMirror(
 				ctx, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
-				volumeMapping.LatestSnapshotHandle,
+				volumeMapping.PromotedSnapshotHandle,
 			)
 			if err != nil && !api.IsNotReadyError(err) {
 				currentMirrorState = netappv1.MirrorStateFailed
@@ -632,7 +632,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			}
 
 			if waitingForSnapshot {
-				statusCondition.Message = fmt.Sprintf("Waiting for snapshot %v", volumeMapping.LatestSnapshotHandle)
+				statusCondition.Message = fmt.Sprintf("Waiting for snapshot %v", volumeMapping.PromotedSnapshotHandle)
 			}
 		}
 	}

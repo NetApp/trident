@@ -2775,7 +2775,7 @@ func (c Client) SnapmirrorResync(
 }
 
 func (c Client) SnapmirrorBreak(
-	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string,
 ) (*azgo.SnapmirrorBreakResponse, error) {
 
 	query := azgo.NewSnapmirrorBreakRequest()
@@ -2783,6 +2783,10 @@ func (c Client) SnapmirrorBreak(
 	query.SetDestinationVserver(localSVMName)
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
+
+	if snapshotName != "" {
+		query.SetRestoreDestinationToSnapshot(snapshotName)
+	}
 
 	return query.ExecuteUsing(c.zr)
 }

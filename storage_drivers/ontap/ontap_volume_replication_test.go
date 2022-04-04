@@ -42,7 +42,7 @@ func TestPromoteMirror_NoErrors(t *testing.T) {
 	secondCall := mockAPI.EXPECT().SnapmirrorAbort(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
 		remoteSVMName).Times(1).After(firstCall)
 	thirdCall := mockAPI.EXPECT().SnapmirrorBreak(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
-		remoteSVMName).Times(1).After(secondCall)
+		remoteSVMName, snapshotHandle).Times(1).After(secondCall)
 	mockAPI.EXPECT().SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
 		remoteSVMName).Times(1).After(thirdCall)
 
@@ -119,7 +119,7 @@ func TestPromoteMirror_BreakErrorNotReady(t *testing.T) {
 	mockAPI.EXPECT().SnapmirrorAbort(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
 		remoteSVMName).Times(1)
 	mockAPI.EXPECT().SnapmirrorBreak(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
-		remoteSVMName).Times(1).Return(errNotReady)
+		remoteSVMName, snapshotHandle).Times(1).Return(errNotReady)
 
 	wait, err := promoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotHandle, replicationPolicy, mockAPI)
 
@@ -141,7 +141,8 @@ func TestPromoteMirror_ReplicationPolicySync(t *testing.T) {
 	mockAPI.EXPECT().SnapmirrorQuiesce(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
 		remoteSVMName).Times(1)
 	mockAPI.EXPECT().SnapmirrorAbort(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).Times(1)
-	mockAPI.EXPECT().SnapmirrorBreak(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).Times(1)
+	mockAPI.EXPECT().SnapmirrorBreak(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+		snapshotHandle).Times(1)
 	mockAPI.EXPECT().SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).Times(1)
 
 	wait, err := promoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, "snapHandle", NewReplicationPolicy, mockAPI)
@@ -185,7 +186,8 @@ func TestPromoteMirror_FoundSnapshot(t *testing.T) {
 	mockAPI.EXPECT().SnapmirrorQuiesce(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
 		remoteSVMName).Times(1)
 	mockAPI.EXPECT().SnapmirrorAbort(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).Times(1)
-	mockAPI.EXPECT().SnapmirrorBreak(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).Times(1)
+	mockAPI.EXPECT().SnapmirrorBreak(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+		"snapshot-a").Times(1)
 	mockAPI.EXPECT().SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).Times(1)
 
 	wait, err := promoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, "volume-a/snapshot-a", replicationPolicy,

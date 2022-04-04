@@ -139,17 +139,26 @@ type OntapAPI interface {
 	SnapshotRestoreVolume(ctx context.Context, snapshotName, sourceVolume string) error
 	SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, sourceVolume string) error
 
-	SnapmirrorCreate(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
-		replicationPolicy, replicationSchedule string) error
+	SnapmirrorCreate(
+		ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+		replicationPolicy, replicationSchedule string,
+	) error
 	SnapmirrorResync(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
 	SnapmirrorDelete(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
 	SnapmirrorGet(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (
 		*Snapmirror, error)
-	SnapmirrorInitialize(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorInitialize(
+		ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	) error
 	SnapmirrorPolicyGet(ctx context.Context, replicationPolicy string) (*SnapmirrorPolicy, error)
-	SnapmirrorQuiesce(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorQuiesce(
+		ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
+	) error
 	SnapmirrorAbort(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
-	SnapmirrorBreak(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorBreak(
+		ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+		snapshotName string,
+	) error
 	JobScheduleExists(ctx context.Context, replicationSchedule string) error
 	SupportsFeature(ctx context.Context, feature Feature) bool
 	ValidateAPIVersion(ctx context.Context) error

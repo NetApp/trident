@@ -122,9 +122,9 @@ type TridentMirrorRelationshipSpec struct {
 	VolumeMappings        []*TridentMirrorRelationshipVolumeMapping `json:"volumeMappings"`
 }
 type TridentMirrorRelationshipVolumeMapping struct {
-	RemoteVolumeHandle   string `json:"remoteVolumeHandle"`
-	LocalPVCName         string `json:"localPVCName"`
-	LatestSnapshotHandle string `json:"latestSnapshotHandle"`
+	RemoteVolumeHandle     string `json:"remoteVolumeHandle"`
+	LocalPVCName           string `json:"localPVCName"`
+	PromotedSnapshotHandle string `json:"promotedSnapshotHandle"`
 }
 type TridentMirrorRelationshipCondition struct {
 	MirrorState        string `json:"state"`

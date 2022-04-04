@@ -5,7 +5,6 @@ package ontap
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	. "github.com/netapp/trident/logger"
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
@@ -219,7 +218,17 @@ func promoteMirror(
 
 		// Break if snapmirror is initialized, otherwise it will fail saying the volume is not initialized
 		if !snapmirror.State.IsUninitialized() {
-			err := d.SnapmirrorBreak(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+			snapshotName := ""
+			if snapshotHandle != "" {
+				_, snapshotName, err = storage.ParseSnapshotID(snapshotHandle)
+				if err != nil {
+					return false, err
+				}
+				Logc(ctx).Debugf("Restoring volume %s to snapshot %s based on specified latest snapshot handle",
+					remoteFlexvolName, snapshotName)
+			}
+			err := d.SnapmirrorBreak(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+				snapshotName)
 			if err != nil {
 				if api.IsNotReadyError(err) {
 					Logc(ctx).WithError(err).Error("Snapmirror break is not finished")
@@ -240,15 +249,12 @@ func promoteMirror(
 // isSnapshotPresent returns whether the given snapshot is found on the snapmirror snapshot list
 func isSnapshotPresent(ctx context.Context, snapshotHandle, localFlexvolName string, d api.OntapAPI) (bool, error) {
 	found := false
-	snapshotTokens := strings.Split(snapshotHandle, "/")
 
-	if len(snapshotTokens) != 2 {
-		return found, fmt.Errorf("invalid snapshot handle %v", snapshotHandle)
-	}
 	_, snapshotName, err := storage.ParseSnapshotID(snapshotHandle)
 	if err != nil {
 		return found, err
 	}
+
 	snapshots, err := d.VolumeSnapshotList(ctx, localFlexvolName)
 	if err != nil {
 		return found, err

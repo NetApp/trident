@@ -25,7 +25,8 @@ func TestIsValid(t *testing.T) {
 				{
 					RemoteVolumeHandle: "foo",
 					LocalPVCName:       "bar",
-				}},
+				},
+			},
 			MirrorState: MirrorStateEstablished,
 		},
 	}
@@ -40,7 +41,8 @@ func TestIsValid(t *testing.T) {
 				{
 					RemoteVolumeHandle: "foo",
 					LocalPVCName:       "bar",
-				}},
+				},
+			},
 			MirrorState: MirrorStateReestablished,
 		},
 	}
@@ -51,8 +53,12 @@ func TestIsValid(t *testing.T) {
 
 	validMR = &TridentMirrorRelationship{
 		Spec: TridentMirrorRelationshipSpec{
-			VolumeMappings: []*TridentMirrorRelationshipVolumeMapping{{LocalPVCName: "test",
-				LatestSnapshotHandle: "test"}},
+			VolumeMappings: []*TridentMirrorRelationshipVolumeMapping{
+				{
+					LocalPVCName:           "test",
+					PromotedSnapshotHandle: "test",
+				},
+			},
 			MirrorState: MirrorStatePromoted,
 		},
 	}
@@ -105,11 +111,15 @@ func TestIsValid(t *testing.T) {
 		t.Fatalf("TridentMirrorRelationship should be invalid, %v", invalidMR)
 	}
 
-	// Test providing a latestSnapshotName when not promoting a relationship
+	// Test providing a promotedSnapshotHandle when not promoting a relationship
 	invalidMR = &TridentMirrorRelationship{
 		Spec: TridentMirrorRelationshipSpec{
-			VolumeMappings: []*TridentMirrorRelationshipVolumeMapping{{LocalPVCName: "test",
-				LatestSnapshotHandle: "test"}},
+			VolumeMappings: []*TridentMirrorRelationshipVolumeMapping{
+				{
+					LocalPVCName:           "test",
+					PromotedSnapshotHandle: "test",
+				},
+			},
 			MirrorState: MirrorStateEstablished,
 		},
 	}

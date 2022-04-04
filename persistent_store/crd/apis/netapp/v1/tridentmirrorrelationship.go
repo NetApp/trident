@@ -89,10 +89,10 @@ func (in *TridentMirrorRelationship) IsValid() (isValid bool, reason string) {
 		return false, fmt.Sprintf(".spec.state must be one of %v",
 			strings.Join(validMirrorStates, ", "))
 	}
-	// If latestSnapshotHandle is specified, ensure state is set to promoted
-	if in.Spec.VolumeMappings[0].LatestSnapshotHandle != "" && in.Spec.MirrorState != MirrorStatePromoted {
+	// If promotedSnapshotHandle is specified, ensure state is set to promoted
+	if in.Spec.VolumeMappings[0].PromotedSnapshotHandle != "" && in.Spec.MirrorState != MirrorStatePromoted {
 		return false, fmt.Sprintf(".spec.state must be set to '%v' "+
-			"when providing a 'latestSnapshotName'", MirrorStatePromoted)
+			"when providing a 'promotedSnapshotHandle'", MirrorStatePromoted)
 	}
 
 	// If state is established or reestablished ensure a remoteVolumeHandle has been set

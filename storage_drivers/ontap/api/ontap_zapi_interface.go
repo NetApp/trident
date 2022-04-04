@@ -38,9 +38,14 @@ type ZapiClientInterface interface {
 	IgroupGet(initiatorGroupName string) (*azgo.InitiatorGroupInfoType, error)
 	// LunCreate creates a lun with the specified attributes
 	// equivalent to filer::> lun create -vserver iscsi_vs -path /vol/v/lun1 -size 1g -ostype linux -space-reserve disabled -space-allocation enabled
-	LunCreate(lunPath string, sizeInBytes int, osType string, qosPolicyGroup QosPolicyGroup, spaceReserved bool, spaceAllocated bool) (*azgo.LunCreateBySizeResponse, error)
+	LunCreate(
+		lunPath string, sizeInBytes int, osType string, qosPolicyGroup QosPolicyGroup, spaceReserved bool,
+		spaceAllocated bool,
+	) (*azgo.LunCreateBySizeResponse, error)
 	// LunCloneCreate clones a LUN from a snapshot
-	LunCloneCreate(volumeName, sourceLun, destinationLun string, qosPolicyGroup QosPolicyGroup) (*azgo.CloneCreateResponse, error)
+	LunCloneCreate(
+		volumeName, sourceLun, destinationLun string, qosPolicyGroup QosPolicyGroup,
+	) (*azgo.CloneCreateResponse, error)
 	// LunSetQosPolicyGroup sets the qos policy group or adaptive qos policy group on a lun; does not unset policy groups
 	LunSetQosPolicyGroup(lunPath string, qosPolicyGroup QosPolicyGroup) (*azgo.LunSetQosPolicyGroupResponse, error)
 	// LunGetSerialNumber returns the serial# for a lun
@@ -96,7 +101,11 @@ type ZapiClientInterface interface {
 	LunSize(flexvolName string) (int, error)
 	// FlexGroupCreate creates a FlexGroup with the specified options
 	// equivalent to filer::> volume create -vserver svm_name -volume fg_vol_name –auto-provision-as flexgroup -size fg_size  -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
-	FlexGroupCreate(ctx context.Context, name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool, snapshotReserve int) (*azgo.VolumeCreateAsyncResponse, error)
+	FlexGroupCreate(
+		ctx context.Context, name string, size int, aggrs []azgo.AggrNameType,
+		spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
+		qosPolicyGroup QosPolicyGroup, encrypt bool, snapshotReserve int,
+	) (*azgo.VolumeCreateAsyncResponse, error)
 	// FlexGroupDestroy destroys a FlexGroup
 	FlexGroupDestroy(ctx context.Context, name string, force bool) (*azgo.VolumeDestroyAsyncResponse, error)
 	// FlexGroupExists tests for the existence of a FlexGroup
@@ -109,10 +118,15 @@ type ZapiClientInterface interface {
 	FlexGroupSetSize(ctx context.Context, name, newSize string) (*azgo.VolumeSizeAsyncResponse, error)
 	// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
 	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-	FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) (*azgo.VolumeModifyIterAsyncResponse, error)
-	FlexGroupModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) (*azgo.VolumeModifyIterAsyncResponse, error)
+	FlexGroupVolumeDisableSnapshotDirectoryAccess(
+		ctx context.Context, name string,
+	) (*azgo.VolumeModifyIterAsyncResponse, error)
+	FlexGroupModifyUnixPermissions(
+		ctx context.Context, volumeName, unixPermissions string,
+	) (*azgo.VolumeModifyIterAsyncResponse, error)
 	// FlexGroupSetComment sets a flexgroup's comment to the supplied value
-	FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) (*azgo.VolumeModifyIterAsyncResponse, error)
+	FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) (*azgo.VolumeModifyIterAsyncResponse,
+		error)
 	// FlexGroupGet returns all relevant details for a single FlexGroup
 	FlexGroupGet(name string) (*azgo.VolumeAttributesType, error)
 	// FlexGroupGetAll returns all relevant details for all FlexGroups whose names match the supplied prefix
@@ -123,7 +137,11 @@ type ZapiClientInterface interface {
 	JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error)
 	// VolumeCreate creates a volume with the specified options
 	// equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
-	VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool, snapshotReserve int, dpVolume bool) (*azgo.VolumeCreateResponse, error)
+	VolumeCreate(
+		ctx context.Context,
+		name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
+		qosPolicyGroup QosPolicyGroup, encrypt bool, snapshotReserve int, dpVolume bool,
+	) (*azgo.VolumeCreateResponse, error)
 	VolumeModifyExportPolicy(volumeName, exportPolicyName string) (*azgo.VolumeModifyIterResponse, error)
 	VolumeModifyUnixPermissions(volumeName, unixPermissions string) (*azgo.VolumeModifyIterResponse, error)
 	// VolumeCloneCreate clones a volume from a snapshot
@@ -165,7 +183,10 @@ type ZapiClientInterface interface {
 	// VolumeList returns the names of all Flexvols whose names match the supplied prefix
 	VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error)
 	// VolumeListByAttrs returns the names of all Flexvols matching the specified attributes
-	VolumeListByAttrs(prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir, encrypt bool, snapReserve int) (*azgo.VolumeGetIterResponse, error)
+	VolumeListByAttrs(
+		prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir, encrypt bool,
+		snapReserve int,
+	) (*azgo.VolumeGetIterResponse, error)
 	// VolumeListAllBackedBySnapshot returns the names of all FlexVols backed by the specified snapshot
 	VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) ([]string, error)
 	// VolumeRename changes the name of a FlexVol (but not a FlexGroup!)
@@ -175,7 +196,8 @@ type ZapiClientInterface interface {
 	VolumeSetComment(ctx context.Context, volumeName, newVolumeComment string) (*azgo.VolumeModifyIterResponse, error)
 	// QtreeCreate creates a qtree with the specified options
 	// equivalent to filer::> qtree create -vserver ndvp_vs -volume v -qtree q -export-policy default -unix-permissions ---rwxr-xr-x -security-style unix
-	QtreeCreate(name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy string) (*azgo.QtreeCreateResponse, error)
+	QtreeCreate(name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy string) (*azgo.QtreeCreateResponse,
+		error)
 	// QtreeRename renames a qtree
 	// equivalent to filer::> volume qtree rename
 	QtreeRename(path, newPath string) (*azgo.QtreeRenameResponse, error)
@@ -224,7 +246,9 @@ type ZapiClientInterface interface {
 	ExportPolicyDestroy(policy string) (*azgo.ExportPolicyDestroyResponse, error)
 	// ExportRuleCreate creates a rule in an export policy
 	// equivalent to filer::> vserver export-policy rule create
-	ExportRuleCreate(policy, clientMatch string, protocols, roSecFlavors, rwSecFlavors, suSecFlavors []string) (*azgo.ExportRuleCreateResponse, error)
+	ExportRuleCreate(
+		policy, clientMatch string, protocols, roSecFlavors, rwSecFlavors, suSecFlavors []string,
+	) (*azgo.ExportRuleCreateResponse, error)
 	// ExportRuleGetIterRequest returns the export rules in an export policy
 	// equivalent to filer::> vserver export-policy rule show
 	ExportRuleGetIterRequest(policy string) (*azgo.ExportRuleGetIterResponse, error)
@@ -278,20 +302,30 @@ type ZapiClientInterface interface {
 	IsVserverDRDestination(ctx context.Context) (bool, error)
 	// IsVserverDRSource identifies if the Vserver is a source vserver of Snapmirror relationship (SVM-DR) or not
 	IsVserverDRSource(ctx context.Context) (bool, error)
-	SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorGetResponse, error)
-	SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (*azgo.SnapmirrorCreateResponse, error)
-	SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorInitializeResponse, error)
-	SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorResyncResponse, error)
-	SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorBreakResponse, error)
-	SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorQuiesceResponse, error)
-	SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorAbortResponse, error)
+	SnapmirrorGet(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorGetResponse,
+		error)
+	SnapmirrorCreate(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (*azgo.SnapmirrorCreateResponse,
+		error)
+	SnapmirrorInitialize(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorInitializeResponse,
+		error)
+	SnapmirrorResync(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorResyncResponse,
+		error)
+	SnapmirrorBreak(
+		localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+		snapshotName string,
+	) (*azgo.SnapmirrorBreakResponse, error)
+	SnapmirrorQuiesce(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorQuiesceResponse,
+		error)
+	SnapmirrorAbort(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorAbortResponse,
+		error)
 	// SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
 	// Intended to be used on the source vserver
 	SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 	// Intended to be from the destination vserver
 	SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) (*azgo.SnapmirrorDestroyResponse, error)
 	// Intended to be from the destination vserver
-	SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorDestroyResponse, error)
+	SnapmirrorDelete(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorDestroyResponse,
+		error)
 	IsVserverDRCapable(ctx context.Context) (bool, error)
 	SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error)
 	SnapmirrorPolicyGet(ctx context.Context, policyName string) (*azgo.SnapmirrorPolicyInfoType, error)
@@ -308,12 +342,16 @@ type ZapiClientInterface interface {
 	SystemGetOntapiVersion(ctx context.Context) (string, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 	// EmsAutosupportLog generates an auto support message with the supplied parameters
-	EmsAutosupportLog(appVersion string, autoSupport bool, category string, computerName string, eventDescription string, eventID int, eventSource string, logLevel int) (*azgo.EmsAutosupportLogResponse, error)
+	EmsAutosupportLog(
+		appVersion string, autoSupport bool, category string, computerName string, eventDescription string, eventID int,
+		eventSource string, logLevel int,
+	) (*azgo.EmsAutosupportLogResponse, error)
 	TieringPolicyValue(ctx context.Context) string
 	// IscsiInitiatorAddAuth creates and sets the authorization details for a single initiator
 	// equivalent to filer::> vserver iscsi security create -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd \
 	//                          -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
-	IscsiInitiatorAddAuth(initiator, authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorAddAuthResponse, error)
+	IscsiInitiatorAddAuth(initiator, authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorAddAuthResponse,
+		error)
 	// IscsiInitiatorAuthGetIter returns the authorization details for all non-default initiators for the Client's SVM
 	// equivalent to filer::> vserver iscsi security show -vserver SVM
 	IscsiInitiatorAuthGetIter() ([]azgo.IscsiSecurityEntryInfoType, error)
@@ -333,10 +371,11 @@ type ZapiClientInterface interface {
 	// IscsiInitiatorModifyCHAPParams modifies the authorization details for a single initiator
 	// equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name iqn.1993-08.org.debian:01:9031309bbebd \
 	//                          -user-name outboundUserName -outbound-user-name outboundPassphrase
-	IscsiInitiatorModifyCHAPParams(initiator, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorModifyChapParamsResponse, error)
+	IscsiInitiatorModifyCHAPParams(initiator, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorModifyChapParamsResponse,
+		error)
 	// IscsiInitiatorSetDefaultAuth sets the authorization details for the default initiator
 	// equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
 	//                           -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
-	IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorSetDefaultAuthResponse, error)
+	IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorSetDefaultAuthResponse,
+		error)
 }
-

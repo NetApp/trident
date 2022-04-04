@@ -1442,18 +1442,18 @@ func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorAbort(localFlexvolName,
 }
 
 // SnapmirrorBreak mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorBreakResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string) (*azgo.SnapmirrorBreakResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorBreak", localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	ret := m.ctrl.Call(m, "SnapmirrorBreak", localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName)
 	ret0, _ := ret[0].(*azgo.SnapmirrorBreakResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorBreak indicates an expected call of SnapmirrorBreak.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName interface{}) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorBreak", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorBreak), localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorBreak", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorBreak), localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName)
 }
 
 // SnapmirrorCreate mocks base method.

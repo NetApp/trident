@@ -2061,9 +2061,10 @@ func (d OntapAPIZAPI) SnapmirrorAbort(
 
 func (d OntapAPIZAPI) SnapmirrorBreak(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName,
-	remoteSVMName string,
+	remoteSVMName, snapshotName string,
 ) error {
-	snapBreak, err := d.api.SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	snapBreak, err := d.api.SnapmirrorBreak(localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+		snapshotName)
 	if err = GetError(ctx, snapBreak, err); err != nil {
 		zerr, ok := err.(ZapiError)
 		if zerr.Code() == azgo.EAPIERROR {
