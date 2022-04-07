@@ -716,3 +716,21 @@ func ToStringRedacted(structPointer interface{}, redactList []string, configVal 
 	out = output.String()
 	return
 }
+
+func RedactSecretsFromString(stringToSanitize string, replacements map[string]string, useRegex bool) string {
+	compileError := "regex matching the secret could not compile, so the entire string has been redacted"
+
+	for key, value := range replacements {
+		if useRegex {
+			pattern, err := regexp.Compile(key)
+			if err != nil {
+				return compileError
+			}
+			stringToSanitize = pattern.ReplaceAllString(stringToSanitize, value)
+		} else {
+			stringToSanitize = strings.ReplaceAll(stringToSanitize, key, value)
+		}
+	}
+
+	return stringToSanitize
+}

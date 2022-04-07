@@ -20,6 +20,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
+	utils "github.com/netapp/trident/utils"
 )
 
 type ZAPIRequest interface {
@@ -91,6 +92,7 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 	}
 
 	s := ""
+	redactedRequest := ""
 	if o.SVM == "" {
 		s = fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
           <netapp xmlns="http://www.netapp.com/filer/admin" version="1.21">
@@ -103,7 +105,14 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
           </netapp>`, "vfiler=\""+o.SVM+"\"", zapiCommand)
 	}
 	if o.DebugTraceFlags["api"] {
-		log.Debugf("sending to '%s' xml: \n%s", o.ManagementLIF, s)
+		secretFields := []string{ "outbound-passphrase", "outbound-user-name", "passphrase", "user-name" }
+		secrets := make(map[string]string)
+		for _, f := range secretFields {
+			fmtString := "<%s>%s</%s>"
+			secrets[fmt.Sprintf(fmtString, f, ".*", f)] = fmt.Sprintf(fmtString, f, utils.REDACTED, f)
+		}
+		redactedRequest = utils.RedactSecretsFromString(s, secrets, true)
+		log.Debugf("sending to '%s' xml: \n%s", o.ManagementLIF, redactedRequest)
 	}
 
 	url := "http://" + o.ManagementLIF + "/servlets/netapp.servlets.admin.XMLrequest_filer"
@@ -165,6 +174,7 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
 	}
 	response, err := client.Do(req)
+
 	if err != nil {
 		return nil, err
 	} else if response.StatusCode == 401 {
