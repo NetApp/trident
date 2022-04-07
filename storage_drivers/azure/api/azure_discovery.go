@@ -10,7 +10,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-08-01/netapp"
+	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-10-01/netapp"
 	"github.com/Azure/azure-sdk-for-go/services/resourcegraph/mgmt/2021-03-01/resourcegraph"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-07-01/features"
 	log "github.com/sirupsen/logrus"
