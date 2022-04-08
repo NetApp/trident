@@ -951,6 +951,11 @@ func TestEnsureSVMWithRest(t *testing.T) {
 			assert.Equal(t, svmUUID, newUUID) // extra validation that it is set to the new value
 		},
 	).AnyTimes()
+	mockRestClient.EXPECT().SetConfigSVMName(gomock.Any()).DoAndReturn(
+		func(newSvmName string) {
+			assert.Equal(t, svmName, newSvmName) // extra validation that it is set to the new value
+		},
+	).AnyTimes()
 	err = ontap.EnsureSVMWithRest(ctx, ontapConfig, mockRestClient)
 	assert.Nil(t, err)
 }

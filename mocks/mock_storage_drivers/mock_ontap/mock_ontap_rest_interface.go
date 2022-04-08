@@ -1266,6 +1266,18 @@ func (mr *MockRestClientInterfaceMockRecorder) SetSVMUUID(svmUUID interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSVMUUID", reflect.TypeOf((*MockRestClientInterface)(nil).SetSVMUUID), svmUUID)
 }
 
+// SetConfigSVMName mocks base method.
+func (m *MockRestClientInterface) SetConfigSVMName(svmName string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetConfigSVMName", svmName)
+}
+
+// SetConfigSVMName indicates an expected call of SetConfigSVMName.
+func (mr *MockRestClientInterfaceMockRecorder) SetConfigSVMName(svmName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetConfigSVMName", reflect.TypeOf((*MockRestClientInterface)(nil).SetConfigSVMName), svmName)
+}
+
 // SnapshotCreate mocks base method.
 func (m *MockRestClientInterface) SnapshotCreate(ctx context.Context, volumeUUID, snapshotName string) (*storage.SnapshotCreateAccepted, error) {
 	m.ctrl.T.Helper()

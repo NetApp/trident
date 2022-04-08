@@ -92,6 +92,10 @@ func (c *RestClient) SVMUUID() string {
 	return c.svmUUID
 }
 
+func (c *RestClient) SetConfigSVMName(svmName string) {
+	c.config.SVM = svmName
+}
+
 // NewRestClient is a factory method for creating a new instance
 func NewRestClient(ctx context.Context, config ClientConfig) (*RestClient, error) {
 
@@ -208,6 +212,7 @@ func EnsureSVMWithRest(
 		// Use our derived SVM
 		derivedSVM := result.Payload.Records[0]
 		ontapConfig.SVM = derivedSVM.Name
+		restClient.SetConfigSVMName(derivedSVM.Name)
 		svmUUID := derivedSVM.UUID
 		restClient.SetSVMUUID(svmUUID)
 
