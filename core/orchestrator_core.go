@@ -4713,6 +4713,30 @@ func (o *TridentOrchestrator) CanBackendMirror(_ context.Context, backendUUID st
 	return backend.CanMirror(), nil
 }
 
+// ReleaseMirror removes snapmirror relationship infromation and snapshots for a source volume in ONTAP
+func (o *TridentOrchestrator) ReleaseMirror(
+	ctx context.Context, backendUUID, localVolumeHandle string,
+) (err error) {
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+	defer recordTiming("mirror_release", &err)()
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	backend, err := o.getBackendByBackendUUID(backendUUID)
+	if err != nil {
+		return err
+	}
+	mirrorBackend, ok := backend.(storage.Mirrorer)
+	if !ok {
+		return fmt.Errorf("backend does not support mirroring")
+	}
+	return mirrorBackend.ReleaseMirror(ctx, localVolumeHandle)
+}
+
 func (o *TridentOrchestrator) GetCHAP(
 	ctx context.Context, volumeName, nodeName string,
 ) (chapInfo *utils.IscsiChapInfo, err error) {

@@ -1286,6 +1286,11 @@ func (d OntapAPIREST) SnapmirrorDeleteViaDestination(_, _ string) error {
 	return nil
 }
 
+func (d OntapAPIREST) SnapmirrorRelease(_, _ string) error {
+	// TODO implement
+	return fmt.Errorf("not implemented for REST")
+}
+
 func (d OntapAPIREST) IsSVMDRCapable(_ context.Context) (bool, error) {
 	// TODO implement
 	return false, fmt.Errorf("not implemented")

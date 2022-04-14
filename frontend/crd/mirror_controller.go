@@ -339,6 +339,9 @@ func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem)
 			ctx, mirrorRCopy, mirrorRCopy.Spec.VolumeMappings[0], statusCondition,
 		)
 		if err != nil {
+			if api.IsNotReadyError(err) {
+				return utils.ReconcileDeferredError(err)
+			}
 			return err
 		}
 	} else {
@@ -430,17 +433,23 @@ func (c *TridentCrdController) ensureMirrorReadyForDeletion(
 	currentCondition *netappv1.TridentMirrorRelationshipCondition,
 ) (bool, error) {
 
-	// If the mirror is currently broken, we are safe to delete the TMR
-	if currentCondition.MirrorState == "" || currentCondition.MirrorState == netappv1.MirrorStatePromoted {
-		return true, nil
-	}
-
 	relCopy := relationship.DeepCopy()
 	relCopy.Spec.MirrorState = netappv1.MirrorStatePromoted
 	// We do not want to wait for a snapshot to appear if we are deleting
 	volumeMapping.PromotedSnapshotHandle = ""
+
+	// If the mirror is currently broken, we are safe to delete the TMR and release the relationship metadata
+	if currentCondition.MirrorState == "" || currentCondition.MirrorState == netappv1.MirrorStatePromoted {
+		relCopy.Spec.MirrorState = netappv1.MirrorStateReleased
+	}
+
 	status, err := c.handleIndividualVolumeMapping(ctx, relCopy, volumeMapping, currentCondition)
 	if err != nil {
+		// If any of the snapmirror operations fail, retry
+		if api.IsNotReadyError(err) {
+			return false, utils.ReconcileDeferredError(err)
+		}
+
 		// If the underlying volume does not exist, we are safe to delete the TMR
 		if utils.IsReconcileDeferredError(err) {
 			return true, nil
@@ -549,6 +558,15 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 		ctx, desiredMirrorState, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
 	)
 
+	// Release any previous snapmirror relationship
+	if relationship.Spec.MirrorState == netappv1.MirrorStateReleased {
+		statusCondition.Message = "Releasing snapmirror metadata"
+		c.orchestrator.ReleaseMirror(ctx, existingVolume.BackendUUID, localVolumeHandle)
+
+		return updateTMRConditionLocalFields(
+			statusCondition, localVolumeHandle, localPVCName, volumeMapping.RemoteVolumeHandle)
+	}
+
 	// If we are not already at our desired state on the backend
 	if currentMirrorState != desiredMirrorState {
 		// Ensure we finish the current operation before changing what we are doing
@@ -628,7 +646,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			} else if api.IsNotReadyError(err) {
 				update, _ := updateTMRConditionLocalFields(statusCondition, "", localPVCName,
 					volumeMapping.RemoteVolumeHandle)
-				return update, utils.ReconcileDeferredError(err)
+				return update, err
 			}
 
 			if waitingForSnapshot {

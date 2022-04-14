@@ -103,6 +103,7 @@ type Orchestrator interface {
 	) (bool, error)
 	GetMirrorStatus(ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string) (string, error)
 	CanBackendMirror(ctx context.Context, backendUUID string) (bool, error)
+	ReleaseMirror(ctx context.Context, backendUUID, localVolumeHandle string) error
 
 	GetCHAP(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
 }

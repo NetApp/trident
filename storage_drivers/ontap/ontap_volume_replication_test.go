@@ -196,3 +196,111 @@ func TestPromoteMirror_FoundSnapshot(t *testing.T) {
 	assert.False(t, wait, "wait should be false")
 	assert.NoError(t, err, "promote mirror should not return an error")
 }
+
+func TestPromoteMirror_SnapmirrorGetError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+
+	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).Times(1).
+		Return(nil, api.ApiError("snapmirror get error"))
+
+	wait, err := promoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotHandle, replicationPolicy, mockAPI)
+
+	assert.False(t, wait, "wait should be false")
+	assert.Error(t, err, "snapmirror get error")
+}
+
+func TestPromoteMirror_SnapmirrorPolicyGetError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+
+	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).Times(1).
+		Return(&api.Snapmirror{State: api.SnapmirrorStateSnapmirrored}, nil)
+	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Times(1).
+		Return(&api.SnapmirrorPolicy{Type: api.SnapmirrorPolicyTypeAsync},
+			api.ApiError("error on snapmirror policy get"))
+
+	wait, err := promoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, snapshotHandle, replicationPolicy, mockAPI)
+
+	assert.False(t, wait, "wait should be false")
+	assert.Error(t, err, "snapmirror policy get error")
+}
+
+func TestPromoteMirror_SnapshotPresentError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+
+	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).Times(1).
+		Return(&api.Snapmirror{State: api.SnapmirrorStateSnapmirrored}, nil)
+	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Times(1).
+		Return(&api.SnapmirrorPolicy{Type: api.SnapmirrorPolicyTypeAsync}, nil)
+	mockAPI.EXPECT().VolumeSnapshotList(ctx, localFlexvolName).Times(1).Return(nil,
+		api.ApiError("snapshot present error"))
+
+	wait, err := promoteMirror(ctx, localVolumeHandle, remoteVolumeHandle, "volume-a/snapshot-a",
+		replicationPolicy, mockAPI)
+
+	assert.False(t, wait, "wait should be false")
+	assert.Error(t, err, "snapshot present error")
+}
+
+func TestPromoteMirror_InvalidLocalVolumeHandle(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	wrongVolumeHandle := ""
+
+	wait, err := promoteMirror(ctx, wrongVolumeHandle, remoteVolumeHandle, snapshotHandle, replicationPolicy, mockAPI)
+
+	assert.False(t, wait, "wait should be false")
+	assert.Error(t, err, "should return an error if cannot parse volume handle")
+}
+
+func TestPromoteMirror_InvalidRemoteVolumeHandle(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	wrongVolumeHandle := "pvc-a"
+
+	wait, err := promoteMirror(ctx, localVolumeHandle, wrongVolumeHandle, snapshotHandle, replicationPolicy, mockAPI)
+
+	assert.False(t, wait, "wait should be false")
+	assert.Error(t, err, "should return an error if cannot parse volume handle")
+}
+
+func TestReleaseMirror_NoErrors(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+
+	mockAPI.EXPECT().SnapmirrorRelease(localFlexvolName, localSVMName)
+
+	err := releaseMirror(ctx, localVolumeHandle, mockAPI)
+	assert.NoError(t, err, "release mirror should not return an error")
+}
+
+func TestReleaseMirror_InvalidLocalVolumeHandle(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	wrongLocalVolumeHandle := ""
+
+	err := releaseMirror(ctx, wrongLocalVolumeHandle, mockAPI)
+
+	assert.Error(t, err, "should return an error if cannot parse volume handle")
+}
+
+func TestReleaseMirror_ReleaseError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+
+	mockAPI.EXPECT().SnapmirrorRelease(localFlexvolName,
+		localSVMName).Return(api.ApiError("error releasing snapmirror info for volume"))
+	err := releaseMirror(ctx, localVolumeHandle, mockAPI)
+
+	assert.Error(t, err, "should return an error if release fails")
+}

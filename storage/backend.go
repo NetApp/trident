@@ -81,6 +81,7 @@ type Mirrorer interface {
 	ReestablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error
 	PromoteMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotName string) (bool, error)
 	GetMirrorStatus(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) (string, error)
+	ReleaseMirror(ctx context.Context, localVolumeHandle string) error
 }
 
 type StorageBackend struct {
@@ -1205,6 +1206,16 @@ func (b *StorageBackend) GetMirrorStatus(
 func (b *StorageBackend) CanMirror() bool {
 	_, ok := b.driver.(Mirrorer)
 	return ok
+}
+
+func (b *StorageBackend) ReleaseMirror(ctx context.Context, localVolumeHandle string) error {
+	mirrorDriver, ok := b.driver.(Mirrorer)
+	if !ok {
+		return utils.UnsupportedError(
+			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
+	}
+
+	return mirrorDriver.ReleaseMirror(ctx, localVolumeHandle)
 }
 
 func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error) {

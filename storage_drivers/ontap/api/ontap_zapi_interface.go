@@ -1,6 +1,7 @@
 // DO NOT EDIT: Auto generated using 'ifacemaker -f ontap_zapi.go -s Client -i ZapiClientInterface -p api > ontap_zapi_interface.go'
 
 package api
+//go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_ontap/mock_ontap_zapi_interface.go github.com/netapp/trident/storage_drivers/ontap/api ZapiClientInterface
 
 import (
 	"context"

@@ -22,7 +22,8 @@ const (
 	MirrorStateFailed = "failed"
 	// MirrorStateInvalid means we can never reach the desired state with the current spec
 	// Invalid implies the user supplied a non-feasible TMR spec
-	MirrorStateInvalid = "invalid"
+	MirrorStateInvalid  = "invalid"
+	MirrorStateReleased = "released"
 )
 
 func GetValidMirrorSpecStates() []string {

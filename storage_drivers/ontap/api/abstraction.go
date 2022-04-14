@@ -163,6 +163,7 @@ type OntapAPI interface {
 	SupportsFeature(ctx context.Context, feature Feature) bool
 	ValidateAPIVersion(ctx context.Context) error
 	SnapmirrorDeleteViaDestination(localFlexvolName, localSVMName string) error
+	SnapmirrorRelease(localFlexvolName, localSVMName string) error
 	IsSVMDRCapable(ctx context.Context) (bool, error)
 
 	VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error

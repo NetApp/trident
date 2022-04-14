@@ -1195,3 +1195,8 @@ func (d *NASStorageDriver) GetMirrorStatus(
 ) (string, error) {
 	return getMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle, d.API)
 }
+
+// ReleaseMirror will release the snapmirror relationship data of the source volume
+func (d *NASStorageDriver) ReleaseMirror(ctx context.Context, localVolumeHandle string) error {
+	return releaseMirror(ctx, localVolumeHandle, d.API)
+}

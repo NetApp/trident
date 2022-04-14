@@ -857,6 +857,20 @@ func (mr *MockOrchestratorMockRecorder) ReestablishMirror(arg0, arg1, arg2, arg3
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReestablishMirror", reflect.TypeOf((*MockOrchestrator)(nil).ReestablishMirror), arg0, arg1, arg2, arg3)
 }
 
+// ReleaseMirror mocks base method.
+func (m *MockOrchestrator) ReleaseMirror(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReleaseMirror", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReleaseMirror indicates an expected call of ReleaseMirror.
+func (mr *MockOrchestratorMockRecorder) ReleaseMirror(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseMirror", reflect.TypeOf((*MockOrchestrator)(nil).ReleaseMirror), arg0, arg1, arg2)
+}
+
 // ReloadVolumes mocks base method.
 func (m *MockOrchestrator) ReloadVolumes(arg0 context.Context) error {
 	m.ctrl.T.Helper()

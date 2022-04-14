@@ -1847,6 +1847,16 @@ func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(localFlexvolName, localSVMN
 	return nil
 }
 
+func (d OntapAPIZAPI) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error {
+	// Ensure no leftover snapmirror metadata
+	err := d.api.SnapmirrorRelease(sourceFlexvolName, sourceSVMName)
+	if err != nil {
+		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+	}
+
+	return nil
+}
+
 func (d OntapAPIZAPI) IsSVMDRCapable(ctx context.Context) (bool, error) {
 	return d.api.IsVserverDRCapable(ctx)
 }

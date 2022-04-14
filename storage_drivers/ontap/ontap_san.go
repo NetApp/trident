@@ -1329,6 +1329,11 @@ func (d *SANStorageDriver) GetMirrorStatus(
 	return getMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle, d.API)
 }
 
+// ReleaseMirror will release the snapmirror relationship data of the source volume
+func (d *SANStorageDriver) ReleaseMirror(ctx context.Context, localVolumeHandle string) error {
+	return releaseMirror(ctx, localVolumeHandle, d.API)
+}
+
 func (d *SANStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*utils.IscsiChapInfo, error) {
 	return &utils.IscsiChapInfo{
 		UseCHAP:              d.Config.UseCHAP,

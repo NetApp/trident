@@ -40,10 +40,8 @@ func establishMirror(
 	}
 
 	snapmirror, err := d.SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-
 	if err != nil {
 		if api.IsNotFoundError(err) {
-
 			// create and initialize snapmirror if not found
 			if err := d.SnapmirrorCreate(ctx,
 				localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
@@ -401,5 +399,19 @@ func validateReplicationConfig(
 		return fmt.Errorf("failed to validate replication schedule: %v", replicationSchedule)
 	}
 
+	return nil
+}
+
+// releaseMirror will release the snapmirror relationship data of the source volume
+func releaseMirror(ctx context.Context, localVolumeHandle string, d api.OntapAPI) error {
+	// release any previous snapmirror relationship
+	localSVMName, localFlexvolName, err := parseVolumeHandle(localVolumeHandle)
+	if err != nil {
+		return fmt.Errorf("could not parse localVolumeHandle '%v'; %v", localVolumeHandle, err)
+	}
+	err = d.SnapmirrorRelease(localFlexvolName, localSVMName)
+	if err != nil {
+		return err
+	}
 	return nil
 }

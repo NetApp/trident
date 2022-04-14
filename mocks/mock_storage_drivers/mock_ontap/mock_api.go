@@ -1251,6 +1251,20 @@ func (mr *MockOntapAPIMockRecorder) SnapmirrorQuiesce(arg0, arg1, arg2, arg3, ar
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorQuiesce", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorQuiesce), arg0, arg1, arg2, arg3, arg4)
 }
 
+// SnapmirrorRelease mocks base method.
+func (m *MockOntapAPI) SnapmirrorRelease(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SnapmirrorRelease", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SnapmirrorRelease indicates an expected call of SnapmirrorRelease.
+func (mr *MockOntapAPIMockRecorder) SnapmirrorRelease(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorRelease", reflect.TypeOf((*MockOntapAPI)(nil).SnapmirrorRelease), arg0, arg1)
+}
+
 // SnapmirrorResync mocks base method.
 func (m *MockOntapAPI) SnapmirrorResync(arg0 context.Context, arg1, arg2, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
