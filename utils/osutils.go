@@ -356,6 +356,18 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		}).Debug("LUN already formatted.")
 	}
 
+	// Attempt to resolve any filesystem inconsistencies that might be due to dirty node shutdowns, cloning
+	// in-use volumes, or creating volumes from snapshots taken from in-use volumes.  This is only safe to do
+	// if a device is not mounted.  The fsck command returns a non-zero exit code if filesystem errors are found,
+	// even if they are completely and automatically fixed, so we don't return any error here.
+	mounted, err := IsMounted(ctx, devicePath, "")
+	if err != nil {
+		return err
+	}
+	if !mounted {
+		_ = repairVolume(ctx, devicePath, publishInfo.FilesystemType)
+	}
+
 	// Optionally mount the device
 	if mountpoint != "" {
 		if err := MountDevice(ctx, devicePath, mountpoint, publishInfo.MountOptions, false); err != nil {
@@ -2282,62 +2294,68 @@ func IsNFSShareMounted(ctx context.Context, exportPath, mountpoint string) (bool
 }
 
 // IsMounted verifies if the supplied device is attached at the supplied location.
+// IsMounted checks whether the specified device is attached at the given mountpoint.
+// If no source device is specified, any existing mount with the specified mountpoint returns true.
+// If no mountpoint is specified, any existing mount with the specified device returns true.
 func IsMounted(ctx context.Context, sourceDevice, mountpoint string) (bool, error) {
 
-	fields := log.Fields{
-		"source": sourceDevice,
-		"target": mountpoint,
-	}
-	Logc(ctx).WithFields(fields).Debug(">>>> osutils.IsMounted")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils.IsMounted")
+	logFields := log.Fields{"source": sourceDevice, "target": mountpoint}
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.IsMounted")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.IsMounted")
 
+	sourceDevice = strings.TrimPrefix(sourceDevice, "/dev/")
+
+	// Ensure at least one arg was specified
+	if sourceDevice == "" && mountpoint == "" {
+		return false, errors.New("no device or mountpoint specified")
+	}
+
+	// Read the system mounts
 	procSelfMountinfo, err := listProcSelfMountinfo(procSelfMountinfoPath)
-
 	if err != nil {
-		Logc(ctx).WithFields(fields).Errorf("checking mounted failed; %s", err)
-		return false, fmt.Errorf("checking mounted failed; %s", err)
+		Logc(ctx).WithFields(logFields).Errorf("checking mounts failed; %s", err)
+		return false, fmt.Errorf("checking mounts failed; %s", err)
 	}
 
-	var sourceDeviceName string
-	if sourceDevice != "" && strings.HasPrefix(sourceDevice, "/dev/") {
-		sourceDeviceName = strings.TrimPrefix(sourceDevice, "/dev/")
-	}
-
+	// Check each mount for a match of source device and/or mountpoint
 	for _, procMount := range procSelfMountinfo {
 
-		if !strings.Contains(procMount.MountPoint, mountpoint) {
-			continue
-		}
-
-		Logc(ctx).Debugf("Mountpoint found: %v", procMount)
-
-		if sourceDevice == "" {
-			Logc(ctx).Debugf("Source device: none, Target: %s, is mounted: true", mountpoint)
-			return true, nil
-		}
-
-		hasDevMountSourcePrefix := strings.HasPrefix(procMount.MountSource, "/dev/")
-
-		var mountedDevice string
-		// Resolve any symlinks to get the real device
-		if hasDevMountSourcePrefix {
-			device, err := filepath.EvalSymlinks(procMount.MountSource)
-			if err != nil {
-				Logc(ctx).Error(err)
+		// If mountpoint was specified and doesn't match proc mount, move on
+		if mountpoint != "" {
+			if !strings.Contains(procMount.MountPoint, mountpoint) {
 				continue
+			} else {
+				Logc(ctx).Debugf("Mountpoint found: %v", procMount)
 			}
-			mountedDevice = strings.TrimPrefix(device, "/dev/")
-		} else {
-			mountedDevice = strings.TrimPrefix(procMount.Root, "/")
 		}
 
-		if sourceDeviceName == mountedDevice {
-			Logc(ctx).Debugf("Source device: %s, Target: %s, is mounted: true", sourceDeviceName, mountpoint)
-			return true, nil
+		// If sourceDevice was specified and doesn't match proc mount, move on
+		if sourceDevice != "" {
+
+			procSourceDevice := strings.TrimPrefix(procMount.Root, "/")
+
+			// Resolve any symlinks to get the real device
+			if strings.HasPrefix(procMount.MountSource, "/dev/") {
+				procSourceDevice, err = filepath.EvalSymlinks(procMount.MountSource)
+				if err != nil {
+					Logc(ctx).Error(err)
+					continue
+				}
+				procSourceDevice = strings.TrimPrefix(procSourceDevice, "/dev/")
+			}
+
+			if sourceDevice != procSourceDevice {
+				continue
+			} else {
+				Logc(ctx).Debugf("Device found: %v", sourceDevice)
+			}
 		}
+
+		Logc(ctx).WithFields(logFields).Debug("Mount information found.")
+		return true, nil
 	}
 
-	Logc(ctx).Debugf("Source device: %s, Target: %s, is mounted: false", sourceDevice, mountpoint)
+	Logc(ctx).WithFields(logFields).Debug("Mount information not found.")
 	return false, nil
 }
 
@@ -2724,7 +2742,7 @@ func isDeviceUnformatted(ctx context.Context, device string) (bool, error) {
 		return false, nil
 	}
 
-	Logc(ctx).WithFields(log.Fields{"device": device}).Info("Device in unformatted.")
+	Logc(ctx).WithFields(log.Fields{"device": device}).Info("Device is unformatted.")
 
 	return true, nil
 }
@@ -2774,6 +2792,27 @@ func formatVolume(ctx context.Context, device, fstype string) error {
 
 	Logc(ctx).WithFields(logFields).Info("Device formatted.")
 	return nil
+}
+
+// repairVolume runs fsck on a volume.
+func repairVolume(ctx context.Context, device, fstype string) (err error) {
+
+	logFields := log.Fields{"device": device, "fsType": fstype}
+	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.repairVolume")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.repairVolume")
+
+	switch fstype {
+	case "xfs":
+		break // fsck.xfs does nothing
+	case "ext3":
+		_, err = execCommand(ctx, "fsck.ext3", "-p", device)
+	case "ext4":
+		_, err = execCommand(ctx, "fsck.ext4", "-p", device)
+	default:
+		return fmt.Errorf("unsupported file system type: %s", fstype)
+	}
+
+	return
 }
 
 // MountDevice attaches the supplied device at the supplied location.  Use this for iSCSI devices.
