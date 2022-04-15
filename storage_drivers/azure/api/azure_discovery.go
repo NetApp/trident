@@ -13,6 +13,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-10-01/netapp"
 	"github.com/Azure/azure-sdk-for-go/services/resourcegraph/mgmt/2021-03-01/resourcegraph"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-07-01/features"
+	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/multierr"
 
@@ -101,7 +102,7 @@ func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) 
 	}()
 
 	// Discover capacity pools
-	cPools, returnError := c.discoverCapacityPools(ctx)
+	cPools, returnError := c.discoverCapacityPoolsWithRetry(ctx)
 	if returnError != nil {
 		return
 	}
@@ -147,7 +148,7 @@ func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) 
 	}
 
 	// Discover ANF-delegated subnets
-	subnets, returnError := c.discoverSubnets(ctx)
+	subnets, returnError := c.discoverSubnetsWithRetry(ctx)
 	if returnError != nil {
 		return
 	}
@@ -506,6 +507,35 @@ func (c Client) HasFeature(feature string) bool {
 // Internal functions to do discovery via the Azure Resource Graph APIs
 // ///////////////////////////////////////////////////////////////////////////////
 
+// discoverCapacityPoolsWithRetry queries the Azure Resource Graph for all ANF capacity pools in the current location,
+// retrying if the API request is throttled.
+func (c Client) discoverCapacityPoolsWithRetry(ctx context.Context) (pools *[]*CapacityPool, err error) {
+
+	discover := func() error {
+		if pools, err = c.discoverCapacityPools(ctx); err != nil && IsANFTooManyRequestsError(err) {
+			return err
+		}
+		return backoff.Permanent(err)
+	}
+
+	notify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(log.Fields{
+			"increment": duration.Truncate(10 * time.Millisecond),
+		}).Debugf("Retrying capacity pools resource graph query.")
+	}
+
+	expBackoff := backoff.NewExponentialBackOff()
+	expBackoff.MaxElapsedTime = DefaultSDKTimeout
+	expBackoff.MaxInterval = 5 * time.Second
+	expBackoff.RandomizationFactor = 0.1
+	expBackoff.InitialInterval = 5 * time.Second
+	expBackoff.Multiplier = 1
+
+	err = backoff.RetryNotify(discover, expBackoff, notify)
+
+	return
+}
+
 // discoverCapacityPools queries the Azure Resource Graph for all ANF capacity pools in the current location.
 func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, error) {
 
@@ -623,6 +653,35 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 	}
 
 	return &cpools, nil
+}
+
+// discoverSubnetsWithRetry queries the Azure Resource Graph for all ANF-delegated subnets in the current location,
+// retrying if the API request is throttled.
+func (c Client) discoverSubnetsWithRetry(ctx context.Context) (subnets *[]*Subnet, err error) {
+
+	discover := func() error {
+		if subnets, err = c.discoverSubnets(ctx); err != nil && IsANFTooManyRequestsError(err) {
+			return err
+		}
+		return backoff.Permanent(err)
+	}
+
+	notify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(log.Fields{
+			"increment": duration.Truncate(10 * time.Millisecond),
+		}).Debugf("Retrying subnets resource graph query.")
+	}
+
+	expBackoff := backoff.NewExponentialBackOff()
+	expBackoff.MaxElapsedTime = DefaultSDKTimeout
+	expBackoff.MaxInterval = 5 * time.Second
+	expBackoff.RandomizationFactor = 0.1
+	expBackoff.InitialInterval = 5 * time.Second
+	expBackoff.Multiplier = 1
+
+	err = backoff.RetryNotify(discover, expBackoff, notify)
+
+	return
 }
 
 // discoverSubnets queries the Azure Resource Graph for all ANF-delegated subnets in the current location.
