@@ -1954,10 +1954,9 @@ func TestAddVolumeWithTMRNonONTAPNAS(t *testing.T) {
 	// create volume with relationship annotation added
 	// witness failure
 	const (
-		backendName      = "addRecoveryBackend"
-		scName           = "addRecoveryBackendSC"
-		fullVolumeName   = "addRecoveryVolumeFull"
-		txOnlyVolumeName = "addRecoveryVolumeTxOnly"
+		backendName    = "addRecoveryBackend"
+		scName         = "addRecoveryBackendSC"
+		fullVolumeName = "addRecoveryVolumeFull"
 	)
 	orchestrator := getOrchestrator(t)
 	prepRecoveryTest(t, orchestrator, backendName, scName)
@@ -3829,7 +3828,7 @@ func TestPublishVolumeFailedToUpdatePersistentStore(t *testing.T) {
 
 	// Set fake values
 	backendUUID := "1234"
-	expectedError := fmt.Errorf("Failure")
+	expectedError := fmt.Errorf("failure")
 
 	// Create mocked backend that returns the expected object
 	mockBackend := mockstorage.NewMockBackend(mockCtrl)

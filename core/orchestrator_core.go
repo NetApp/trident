@@ -3169,8 +3169,7 @@ func (o *TridentOrchestrator) AttachVolume(
 	} else if strings.Contains(publishInfo.FilesystemType, "nfs/") {
 		// Determine where to mount the NFS share containing publishInfo.SubvolumeName
 		mountpointDir := path.Dir(mountpoint)
-		nfsMountpoint := path.Join(mountpointDir, publishInfo.NfsPath)
-		loopFile := path.Join(nfsMountpoint, publishInfo.SubvolumeName)
+		publishInfo.NFSMountpoint = path.Join(mountpointDir, publishInfo.NfsPath)
 
 		// TODO: Check if Docker can do raw block volumes, if not, then remove this part
 		isRawBlock := publishInfo.FilesystemType == "nfs/"+config.FsRaw
@@ -3178,7 +3177,7 @@ func (o *TridentOrchestrator) AttachVolume(
 			publishInfo.SubvolumeMountOptions = utils.AppendToStringList(publishInfo.SubvolumeMountOptions, "bind", ",")
 		}
 
-		if loopDeviceName, err := utils.AttachBlockOnFileVolume(ctx, nfsMountpoint, loopFile, publishInfo); err != nil {
+		if loopDeviceName, _, err := utils.AttachBlockOnFileVolume(ctx, "", publishInfo); err != nil {
 			return err
 		} else {
 			return utils.MountDevice(ctx, loopDeviceName, mountpoint, publishInfo.SubvolumeMountOptions, isRawBlock)

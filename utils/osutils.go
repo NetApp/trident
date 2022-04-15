@@ -33,6 +33,7 @@ const (
 	iSCSIDeviceDiscoveryTimeoutSecs     = 90
 	multipathDeviceDiscoveryTimeoutSecs = 90
 	temporaryMountDir                   = "/tmp_mnt"
+	volumeMountDir                      = "/vol_mnt"
 	unknownFstype                       = "<unknown>"
 
 	// Filesystem types
@@ -91,18 +92,26 @@ func AttachNFSVolume(ctx context.Context, name, mountpoint string, publishInfo *
 }
 
 func AttachBlockOnFileVolume(
-	ctx context.Context, nfsMountpoint, loopFile string, publishInfo *VolumePublishInfo,
-) (string, error) {
+	ctx context.Context, mountPath string, publishInfo *VolumePublishInfo,
+) (string, string, error) {
 
 	Logc(ctx).Debug(">>>> osutils.AttachBlockOnFileVolume")
 	defer Logc(ctx).Debug("<<<< osutils.AttachBlockOnFileVolume")
 
 	var exportPath = fmt.Sprintf("%s:%s", publishInfo.NfsServerIP, publishInfo.NfsPath)
 	var options = publishInfo.MountOptions
+	var deviceOptions = publishInfo.SubvolumeMountOptions
+	var nfsMountpoint = publishInfo.NFSMountpoint
+	var loopFile = path.Join(nfsMountpoint, publishInfo.SubvolumeName)
+
+	var deviceMountpoint string
+	if mountPath != "" {
+		deviceMountpoint = path.Join(mountPath, volumeMountDir)
+	}
 
 	fsType, err := GetVerifiedBlockFsType(publishInfo.FilesystemType)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	Logc(ctx).WithFields(log.Fields{
@@ -116,7 +125,7 @@ func AttachBlockOnFileVolume(
 	// Determine if the NFS share is already mounted
 	nfsShareMounted, err := IsNFSShareMounted(ctx, exportPath, nfsMountpoint)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	// Mount the NFS share if it isn't already mounted
@@ -133,39 +142,69 @@ func AttachBlockOnFileVolume(
 
 		err := mountNFSPath(ctx, exportPath, nfsMountpoint, options)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 	}
 
 	// Attach the NFS-backed loop file to a loop device only if it isn't already attached
 	attached, loopDevice, err := GetLoopDeviceAttachedToFile(ctx, loopFile)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	if !attached {
 		if _, err := attachLoopDevice(ctx, loopFile); err != nil {
-			return "", err
+			return "", "", err
 		}
 
 		if attached, loopDevice, err = GetLoopDeviceAttachedToFile(ctx, loopFile); err != nil {
-			return "", err
+			return "", "", err
 		} else if !attached {
-			return "", fmt.Errorf("could not detect new loop device attachment to %s", loopFile)
+			return "", "", fmt.Errorf("could not detect new loop device attachment to %s", loopFile)
 		}
 	}
 
 	if fsType != fsRaw {
-		// Format device only if it isn't formatted
-		if unformatted, err := isDeviceUnformatted(ctx, loopDevice.Name); err != nil {
-			return "", err
-		} else if unformatted {
-			if err := formatVolume(ctx, loopDevice.Name, fsType); err != nil {
-				return "", err
+		err = ensureDeviceReadableWithRetry(ctx, loopDevice.Name)
+		if err != nil {
+			return "", "", err
+		}
+
+		existingFstype, err := getFSType(ctx, loopDevice.Name)
+		if err != nil {
+			return "", "", err
+		}
+
+		if existingFstype == "" {
+			Logc(ctx).WithFields(log.Fields{"device": loopDevice.Name, "fsType": fsType}).Debug("Formatting Device.")
+			err := formatVolume(ctx, loopDevice.Name, fsType)
+			if err != nil {
+				return "", "", fmt.Errorf("error formatting device %s: %v", loopDevice.Name, err)
 			}
+		} else if existingFstype != unknownFstype && existingFstype != fsType {
+			Logc(ctx).WithFields(log.Fields{
+				"device":          loopDevice.Name,
+				"existingFstype":  existingFstype,
+				"requestedFstype": fsType,
+			}).Error("Device formatted with a different file system type.")
+			return "", "", fmt.Errorf("device %s already formatted with other filesystem: %s", loopDevice.Name,
+				existingFstype)
+		} else {
+			Logc(ctx).WithFields(log.Fields{
+				"device": loopDevice.Name,
+				"fstype": fsType,
+			}).Debug("Device already formatted.")
 		}
 	}
 
-	return loopDevice.Name, nil
+	if deviceMountpoint != "" {
+		err = MountDevice(ctx, loopDevice.Name, deviceMountpoint, deviceOptions, false)
+		if err != nil {
+			return "", "", fmt.Errorf("error mounting device %v, mountpoint %v; %s",
+				loopDevice.Name, deviceMountpoint, err)
+		}
+	}
+
+	return loopDevice.Name, deviceMountpoint, nil
 }
 
 func DetachBlockOnFileVolume(ctx context.Context, loopDevice, loopFile string) error {
@@ -1391,22 +1430,30 @@ func ISCSILogout(ctx context.Context, targetIQN, targetPortal string) error {
 	return nil
 }
 
-// UmountAndRemoveTemporaryMountPoint unmounts and removes the TemporaryMountDir
+// UmountAndRemoveTemporaryMountPoint unmounts and removes the temporaryMountDir
 func UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) error {
 
 	Logc(ctx).Debug(">>>> osutils.UmountAndRemoveTemporaryMountPoint")
 	defer Logc(ctx).Debug("<<<< osutils.UmountAndRemoveTemporaryMountPoint")
 
-	// Delete the temporary mount point if it exists.
-	tmpDir := path.Join(mountPath, temporaryMountDir)
-	if _, err := os.Stat(tmpDir); err == nil {
-		if err = RemoveMountPoint(ctx, tmpDir); err != nil {
-			return fmt.Errorf("failed to remove directory in staging target path %s; %s", tmpDir, err)
+	return UmountAndRemoveMountPoint(ctx, path.Join(mountPath, temporaryMountDir))
+}
+
+// UmountAndRemoveMountPoint unmounts and removes the mountPoint
+func UmountAndRemoveMountPoint(ctx context.Context, mountPoint string) error {
+
+	Logc(ctx).Debug(">>>> osutils.UmountAndRemoveMountPoint")
+	defer Logc(ctx).Debug("<<<< osutils.UmountAndRemoveMountPoint")
+
+	// Delete the mount point if it exists.
+	if _, err := os.Stat(mountPoint); err == nil {
+		if err = RemoveMountPoint(ctx, mountPoint); err != nil {
+			return fmt.Errorf("failed to remove directory %s; %s", mountPoint, err)
 		}
 	} else if !os.IsNotExist(err) {
-		Logc(ctx).WithField("temporaryMountPoint", tmpDir).Errorf("Can't determine if temporary dir path exists; %s",
+		Logc(ctx).WithField("mountPoint", mountPoint).Errorf("Can't determine if mount point dir path exists; %s",
 			err)
-		return fmt.Errorf("can't determine if temporary dir path %s exists; %s", tmpDir, err)
+		return fmt.Errorf("can't determine if mount point dir path %s exists; %s", mountPoint, err)
 	}
 
 	return nil
@@ -1467,30 +1514,37 @@ func mountFilesystemForResize(
 
 // ExpandFilesystemOnNode will expand the filesystem of an already expanded volume.
 func ExpandFilesystemOnNode(
-	ctx context.Context, devicePath, stagedTargetPath, fsType, mountOptions string) (int64, error) {
+	ctx context.Context, publishInfo *VolumePublishInfo, stagedTargetPath, fsType, mountOptions string) (int64, error) {
+	var err error
+	devicePath := publishInfo.DevicePath
+	expansionMountPoint := publishInfo.StagingMountpoint
 
 	logFields := log.Fields{
-		"devicePath":       devicePath,
-		"stagedTargetPath": stagedTargetPath,
-		"mountOptions":     mountOptions,
-		"filesystemType":   fsType,
+		"devicePath":        devicePath,
+		"stagedTargetPath":  stagedTargetPath,
+		"mountOptions":      mountOptions,
+		"filesystemType":    fsType,
+		"stagingMountpoint": expansionMountPoint,
 	}
 	Logc(ctx).WithFields(logFields).Debug(">>>> osutils.ExpandFilesystemOnNode")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< osutils.ExpandFilesystemOnNode")
 
-	tmpMountPoint, err := mountFilesystemForResize(ctx, devicePath, stagedTargetPath, mountOptions)
-	if err != nil {
-		return 0, err
+	if expansionMountPoint == "" {
+		expansionMountPoint, err = mountFilesystemForResize(ctx, devicePath, stagedTargetPath, mountOptions)
+		if err != nil {
+			return 0, err
+		}
+		defer RemoveMountPoint(ctx, expansionMountPoint)
 	}
-	defer RemoveMountPoint(ctx, tmpMountPoint) // nolint
+
 	// Don't need to verify the filesystem type as the resize utilities will throw an error if the filesystem
 	// is not the correct type.
 	var size int64
 	switch fsType {
 	case "xfs":
-		size, err = expandFilesystem(ctx, "xfs_growfs", tmpMountPoint, tmpMountPoint)
+		size, err = expandFilesystem(ctx, "xfs_growfs", expansionMountPoint, expansionMountPoint)
 	case "ext3", "ext4":
-		size, err = expandFilesystem(ctx, "resize2fs", devicePath, tmpMountPoint)
+		size, err = expandFilesystem(ctx, "resize2fs", devicePath, expansionMountPoint)
 	default:
 		err = fmt.Errorf("unsupported file system type: %s", fsType)
 	}
@@ -2854,6 +2908,30 @@ func MountDevice(ctx context.Context, device, mountpoint, options string, isMoun
 		if _, err = execCommand(ctx, "mount", args...); err != nil {
 			Logc(ctx).WithField("error", err).Error("Mount failed.")
 		}
+	}
+
+	return
+}
+
+// RemountDevice remounts the mountpoint with supplied mount options.
+func RemountDevice(ctx context.Context, mountpoint, options string) (err error) {
+
+	Logc(ctx).WithFields(log.Fields{
+		"mountpoint": mountpoint,
+		"options":    options,
+	}).Debug(">>>> osutils.RemountDevice")
+	defer Logc(ctx).Debug("<<<< osutils.RemountDevice")
+
+	// Build the command
+	var args []string
+	if len(options) > 0 {
+		args = []string{"-o", strings.TrimPrefix(options, "-o "), mountpoint}
+	} else {
+		args = []string{mountpoint}
+	}
+
+	if _, err = execCommand(ctx, "mount", args...); err != nil {
+		Logc(ctx).WithField("error", err).Error("Remounting failed.")
 	}
 
 	return

@@ -43,19 +43,21 @@ type NfsAccessInfo struct {
 type NfsBlockAccessInfo struct {
 	SubvolumeName         string `json:"subvolumeName,omitempty"`
 	SubvolumeMountOptions string `json:"subvolumeMountOptions,omitempty"`
+	NFSMountpoint         string `json:"nfsMountpoint,omitempty"`
 }
 
 type VolumePublishInfo struct {
-	Localhost      bool     `json:"localhost,omitempty"`
-	HostIQN        []string `json:"hostIQN,omitempty"`
-	HostIP         []string `json:"hostIP,omitempty"`
-	BackendUUID    string   `json:"backendUUID,omitempty"`
-	Nodes          []*Node  `json:"nodes,omitempty"`
-	HostName       string   `json:"hostName,omitempty"`
-	FilesystemType string   `json:"fstype,omitempty"`
-	SharedTarget   bool     `json:"sharedTarget,omitempty"`
-	DevicePath     string   `json:"devicePath,omitempty"`
-	Unmanaged      bool     `json:"unmanaged,omitempty"`
+	Localhost         bool     `json:"localhost,omitempty"`
+	HostIQN           []string `json:"hostIQN,omitempty"`
+	HostIP            []string `json:"hostIP,omitempty"`
+	BackendUUID       string   `json:"backendUUID,omitempty"`
+	Nodes             []*Node  `json:"nodes,omitempty"`
+	HostName          string   `json:"hostName,omitempty"`
+	FilesystemType    string   `json:"fstype,omitempty"`
+	SharedTarget      bool     `json:"sharedTarget,omitempty"`
+	DevicePath        string   `json:"devicePath,omitempty"`
+	Unmanaged         bool     `json:"unmanaged,omitempty"`
+	StagingMountpoint string   `json:"stagingMountpoint,omitempty"` // NOTE: Added in 22.04 release
 	VolumeAccessInfo
 }
 
