@@ -283,9 +283,7 @@ func ParseVolumeID(
 }
 
 // ParseVolumeName parses the Azure-style Name for a volume.
-func ParseVolumeName(
-	volumeName string,
-) (resourceGroup, netappAccount, capacityPool, volume string, err error) {
+func ParseVolumeName(volumeName string) (resourceGroup, netappAccount, capacityPool, volume string, err error) {
 
 	match := volumeNameRegex.FindStringSubmatch(volumeName)
 
@@ -434,14 +432,22 @@ func exportPolicyExport(exportPolicy *ExportPolicy) *netapp.VolumePropertiesExpo
 
 	for _, rule := range exportPolicy.Rules {
 
+		ruleIndex := rule.RuleIndex
+		unixReadOnly := rule.UnixReadOnly
+		unixReadWrite := rule.UnixReadWrite
+		cifs := rule.Cifs
+		nfsv3 := rule.Nfsv3
+		nfsv41 := rule.Nfsv41
+		allowedClients := rule.AllowedClients
+
 		anfRule := netapp.ExportPolicyRule{
-			RuleIndex:      &rule.RuleIndex,
-			UnixReadOnly:   &rule.UnixReadOnly,
-			UnixReadWrite:  &rule.UnixReadWrite,
-			Cifs:           &rule.Cifs,
-			Nfsv3:          &rule.Nfsv3,
-			Nfsv41:         &rule.Nfsv41,
-			AllowedClients: &rule.AllowedClients,
+			RuleIndex:      &ruleIndex,
+			UnixReadOnly:   &unixReadOnly,
+			UnixReadWrite:  &unixReadWrite,
+			Cifs:           &cifs,
+			Nfsv3:          &nfsv3,
+			Nfsv41:         &nfsv41,
+			AllowedClients: &allowedClients,
 		}
 
 		anfRules = append(anfRules, anfRule)

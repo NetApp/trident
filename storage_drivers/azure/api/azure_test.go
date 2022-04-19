@@ -305,6 +305,24 @@ func TestParseVolumeIDNegative(t *testing.T) {
 	}
 }
 
+func TestParseVolumeName(t *testing.T) {
+
+	resourceGroup, netappAccount, capacityPool, volume, err := ParseVolumeName("myResourceGroup/myNetappAccount/myCapacityPool/myVolume")
+
+	assert.Nil(t, err)
+	assert.Equal(t, "myResourceGroup", resourceGroup)
+	assert.Equal(t, "myNetappAccount", netappAccount)
+	assert.Equal(t, "myCapacityPool", capacityPool)
+	assert.Equal(t, "myVolume", volume)
+}
+
+func TestParseVolumeNameNegative(t *testing.T) {
+
+	_, _, _, _, err := ParseVolumeName("myVolume")
+
+	assert.NotNil(t, err)
+}
+
 func TestCreateSnapshotID(t *testing.T) {
 
 	actual := CreateSnapshotID("mySubscription", "myResourceGroup", "myNetappAccount", "myCapacityPool", "myVolume", "mySnapshot")
@@ -407,6 +425,150 @@ func TestParseSnapshotIDNegative(t *testing.T) {
 		_, _, _, _, _, _, _, err := ParseSnapshotID(test.input)
 		assert.Error(t, err, test.description)
 	}
+}
+
+func TestCreateSubvolumeID(t *testing.T) {
+
+	actual := CreateSubvolumeID("mySubscription", "myResourceGroup", "myNetappAccount", "myCapacityPool", "myVolume", "mySubvolume")
+
+	expected := "/subscriptions/mySubscription/resourceGroups/myResourceGroup/providers/Microsoft.NetApp/netAppAccounts/myNetappAccount/capacityPools/myCapacityPool/volumes/myVolume/subvolumes/mySubvolume"
+
+	assert.Equal(t, expected, actual, "subvolume IDs not equal")
+}
+
+func TestCreateSubvolumeFullName(t *testing.T) {
+
+	actual := CreateSubvolumeFullName("myResourceGroup", "myNetappAccount", "myCapacityPool", "myVolume", "mySubvolume")
+
+	expected := "myResourceGroup/myNetappAccount/myCapacityPool/myVolume/mySubvolume"
+
+	assert.Equal(t, expected, actual, "subvolume full names not equal")
+}
+
+func TestParseSubvolumeID(t *testing.T) {
+
+	subscriptionID, resourceGroup, provider, netappAccount, capacityPool, volume, subvolume, err := ParseSubvolumeID(
+		"/subscriptions/mySubscription/resourceGroups/myResourceGroup/providers/Microsoft.NetApp/netAppAccounts/myNetappAccount/capacityPools/myCapacityPool/volumes/myVolume/subvolumes/mySubvolume")
+
+	assert.Equal(t, "mySubscription", subscriptionID, "subscriptionID not correct")
+	assert.Equal(t, "myResourceGroup", resourceGroup, "resourceGroup not correct")
+	assert.Equal(t, "Microsoft.NetApp", provider, "provider not correct")
+	assert.Equal(t, "myNetappAccount", netappAccount, "netappAccount not correct")
+	assert.Equal(t, "myCapacityPool", capacityPool, "capacityPool not correct")
+	assert.Equal(t, "myVolume", volume, "volume not correct")
+	assert.Equal(t, "mySubvolume", subvolume, "subvolume not correct")
+	assert.NoError(t, err, "error is not nil")
+}
+
+func TestParseSubvolumeIDNegative(t *testing.T) {
+
+	tests := []struct {
+		description string
+		input       string
+	}{
+		{
+			"no subscriptions key",
+			"/subscription/mySubscription/resourceGroups/myResourceGroup/providers/Microsoft.NetApp/netAppAccounts/myNetappAccount/capacityPools/myCapacityPool/volumes/myVolume/subvolumes/mySubvolume",
+		},
+		{
+			"no subscriptions value",
+			"/subscriptions/resourceGroups/myResourceGroup/providers/Microsoft.NetApp/netAppAccounts/myNetappAccount/capacityPools/myCapacityPool/volumes/myVolume/subvolumes/mySubvolume",
+		},
+		{
+			"no resource groups key",
+			"/subscriptions/mySubscription/resourceGroup/myResourceGroup/providers/Microsoft.NetApp/netAppAccounts/myNetappAccount/capacityPools/myCapacityPool/volumes/myVolume/subvolumes/mySubvolume",
+		},
+		{
+			"no resource groups value",
+			"/subscriptions/mySubscription/resourceGroups/providers/Microsoft.NetApp/netAppAccounts/myNetappAccount/capacityPools/myCapacityPool/volumes/myVolume/subvolumes/mySubvolume",
+		},
+		{
+			"no providers key",
+			"/subscriptions/mySubscription/resourceGroups/myResourceGroup/provider/Microsoft.NetApp/netAppAccounts/myNetappAccount/capacityPools/myCapacityPool/volumes/myVolume/subvolumes/mySubvolume",
+		},
+		{
+			"no providers value",
+			"/subscriptions/mySubscription/resourceGroups/myResourceGroup/providers/netAppAccounts/myNetappAccount/capacityPools/myCapacityPool/volumes/myVolume/subvolumes/mySubvolume",
+		},
+		{
+			"no accounts key",
+			"/subscriptions/mySubscription/resourceGroups/myResourceGroup/providers/Microsoft.NetApp/myNetappAccount/capacityPools/myCapacityPool/volumes/myVolume/subvolumes/mySubvolume",
+		},
+		{
+			"no accounts value",
+			"/subscriptions/mySubscription/resourceGroups/myResourceGroup/providers/Microsoft.NetApp/netAppAccounts/capacityPools/myCapacityPool/volumes/myVolume/subvolumes/mySubvolume",
+		},
+		{
+			"no capacity pools key",
+			"/subscriptions/mySubscription/resourceGroups/myResourceGroup/providers/Microsoft.NetApp/netAppAccounts/myNetappAccount/myCapacityPool/volumes/myVolume/subvolumes/mySubvolume",
+		},
+		{
+			"no capacity pools value",
+			"/subscriptions/mySubscription/resourceGroups/myResourceGroup/providers/Microsoft.NetApp/netAppAccounts/myNetappAccount/capacityPools/volumes/myVolume/subvolumes/mySubvolume",
+		},
+		{
+			"no volumes key",
+			"/subscriptions/mySubscription/resourceGroups/myResourceGroup/providers/Microsoft.NetApp/netAppAccounts/myNetappAccount/capacityPools/myCapacityPool/myVolume/subvolumes/mySubvolume",
+		},
+		{
+			"no volumes value",
+			"/subscriptions/mySubscription/resourceGroups/myResourceGroup/providers/Microsoft.NetApp/netAppAccounts/myNetappAccount/capacityPools/myCapacityPool/volumes/subvolumes/mySubvolume",
+		},
+		{
+			"no subvolumes key",
+			"/subscriptions/mySubscription/resourceGroups/myResourceGroup/providers/Microsoft.NetApp/netAppAccounts/myNetappAccount/capacityPools/myCapacityPool/myVolume/subvolume/mySubvolume",
+		},
+		{
+			"no subvolumes value",
+			"/subscriptions/mySubscription/resourceGroups/myResourceGroup/providers/Microsoft.NetApp/netAppAccounts/myNetappAccount/capacityPools/myCapacityPool/volumes/subvolumes",
+		},
+	}
+
+	for _, test := range tests {
+
+		_, _, _, _, _, _, _, err := ParseSubvolumeID(test.input)
+		assert.Error(t, err, test.description)
+	}
+}
+
+func TestExportPolicyExportImport(t *testing.T) {
+
+	rules := []ExportRule{
+		{
+			AllowedClients: "10.10.10.0/24",
+			Cifs:           false,
+			Nfsv3:          true,
+			Nfsv41:         false,
+			RuleIndex:      1,
+			UnixReadOnly:   false,
+			UnixReadWrite:  true,
+		},
+		{
+			AllowedClients: "10.10.20.0/24",
+			Cifs:           true,
+			Nfsv3:          false,
+			Nfsv41:         false,
+			RuleIndex:      2,
+			UnixReadOnly:   true,
+			UnixReadWrite:  false,
+		},
+	}
+
+	policy := &ExportPolicy{
+		Rules: rules,
+	}
+
+	exportResult := exportPolicyExport(policy)
+
+	assert.Equal(t, 2, len(*exportResult.Rules))
+	assert.Equal(t, int32(1), *(*(*exportResult).Rules)[0].RuleIndex)
+	assert.Equal(t, "10.10.10.0/24", *(*(*exportResult).Rules)[0].AllowedClients)
+	assert.Equal(t, int32(2), *(*(*exportResult).Rules)[1].RuleIndex)
+	assert.Equal(t, "10.10.20.0/24", *(*(*exportResult).Rules)[1].AllowedClients)
+
+	importResult := exportPolicyImport(exportResult)
+
+	assert.Equal(t, policy, importResult)
 }
 
 func TestIsANFNotFoundError_Nil(t *testing.T) {
