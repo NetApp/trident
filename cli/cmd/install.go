@@ -166,7 +166,7 @@ func init() {
 	installCmd.Flags().StringVar(&autosupportProxy, "autosupport-proxy", "",
 		"The address/port of a proxy for sending Autosupport Telemetry")
 	installCmd.Flags().StringVar(&autosupportCustomURL, "autosupport-custom-url", "", "Custom Autosupport endpoint")
-	installCmd.Flags().StringVar(&autosupportImage, "autosupport-image", tridentconfig.DefaultAutosupportImage,
+	installCmd.Flags().StringVar(&autosupportImage, "autosupport-image", "",
 		"The container image for Autosupport Telemetry")
 	installCmd.Flags().StringVar(&autosupportSerialNumber, "autosupport-serial-number", "",
 		"The value to set for the serial number field in Autosupport payloads")
