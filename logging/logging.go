@@ -74,7 +74,7 @@ func InitLoggingForDocker(logName, logFormat string) error {
 func InitLogLevel(debug bool, logLevel string) error {
 	if debug {
 		log.SetLevel(log.DebugLevel)
-		log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
+		log.SetFormatter(&Redactor{&log.TextFormatter{FullTimestamp: true}})
 	} else {
 		level, err := log.ParseLevel(logLevel)
 		if err != nil {
@@ -87,14 +87,20 @@ func InitLogLevel(debug bool, logLevel string) error {
 
 // InitLogFormat configures the log format, allowing a choice of text or JSON.
 func InitLogFormat(logFormat string) error {
+
+	var formatter log.Formatter
+
 	switch logFormat {
 	case TextFormat:
-		log.SetFormatter(&log.TextFormatter{})
+		formatter = &log.TextFormatter{}
 	case JSONFormat:
-		log.SetFormatter(&JSONFormatter{})
+		formatter = &JSONFormatter{}
 	default:
 		return fmt.Errorf("unknown log format: %s", logFormat)
 	}
+
+	log.SetFormatter(&Redactor{formatter})
+
 	return nil
 }
 
@@ -117,7 +123,7 @@ func NewConsoleHook(logFormat string) (*ConsoleHook, error) {
 		return nil, fmt.Errorf("unknown log format: %s", logFormat)
 	}
 
-	return &ConsoleHook{formatter}, nil
+	return &ConsoleHook{&Redactor{formatter}}, nil
 }
 
 func (hook *ConsoleHook) Levels() []log.Level {
@@ -147,8 +153,10 @@ func (hook *ConsoleHook) Fire(entry *log.Entry) error {
 	}
 
 	// Write log entry to output stream
-	if textFormatter, ok := hook.formatter.(*log.TextFormatter); ok {
-		textFormatter.ForceColors = hook.checkIfTerminal(logWriter)
+	if redactorFormatter, ok := hook.formatter.(*Redactor); ok {
+		if textFormatter, ok := redactorFormatter.BaseFormatter.(*log.TextFormatter); ok {
+			textFormatter.ForceColors = hook.checkIfTerminal(logWriter)
+		}
 	}
 
 	lineBytes, err := hook.formatter.Format(entry)
@@ -192,6 +200,8 @@ func NewFileHook(logName, logFormat string) (*FileHook, error) {
 	default:
 		return nil, fmt.Errorf("unknown log format: %s", logFormat)
 	}
+
+	formatter = &Redactor{formatter}
 
 	// If config.LogRoot doesn't exist, make it
 	dir, err := os.Lstat(LogRoot)
