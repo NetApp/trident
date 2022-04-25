@@ -115,7 +115,7 @@ const (
 	SANResizeDelta           = 50000000 // 50mb
 
 	/* REST frontend constants */
-	MaxRESTRequestSize  = 10240
+	MaxRESTRequestSize  = 40960
 	MinServerTLSVersion = tls.VersionTLS13
 	MinClientTLSVersion = tls.VersionTLS12
 
