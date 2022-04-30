@@ -422,6 +422,10 @@ func logInToPortals(
 	ctx context.Context, bkPortalsToLogin []string, publishInfo *VolumePublishInfo, loggedIn bool,
 ) bool {
 	for _, portal := range bkPortalsToLogin {
+		// Set scanning to manual
+		// Swallow this error, someone is running an old version of Debian/Ubuntu
+		_ = configureISCSITarget(ctx, publishInfo.IscsiTargetIQN, portal, "node.session.scan", "manual")
+
 		err := loginWithChap(ctx, publishInfo.IscsiTargetIQN, portal, publishInfo.IscsiUsername,
 			publishInfo.IscsiInitiatorSecret, publishInfo.IscsiTargetUsername, publishInfo.IscsiTargetSecret,
 			publishInfo.IscsiInterface)
