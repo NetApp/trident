@@ -103,7 +103,6 @@ func (in *TridentBackendConfig) Validate() error {
 }
 
 func (s *TridentBackendConfigSpec) SetDefaultsAndValidate(backendName string) error {
-
 	var backendConfigSpec map[string]interface{}
 	err := json.Unmarshal(s.Raw, &backendConfigSpec)
 	if err != nil {
@@ -138,7 +137,6 @@ func (s *TridentBackendConfigSpec) SetDefaultsAndValidate(backendName string) er
 }
 
 func (s *TridentBackendConfigSpec) GetDeletionPolicy() (string, error) {
-
 	var backendConfigSpec map[string]interface{}
 	err := json.Unmarshal(s.Raw, &backendConfigSpec)
 	if err != nil {
@@ -158,7 +156,6 @@ func (s *TridentBackendConfigSpec) GetDeletionPolicy() (string, error) {
 }
 
 func (s *TridentBackendConfigSpec) GetSecretName() (string, error) {
-
 	var backendConfigSpec map[string]interface{}
 	err := json.Unmarshal(s.Raw, &backendConfigSpec)
 	if err != nil {

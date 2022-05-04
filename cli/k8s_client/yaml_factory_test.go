@@ -33,18 +33,17 @@ func TestYAML(t *testing.T) {
 		customResourceDefinitionYAMLv1,
 	}
 	for i, yamlData := range yamls {
-		//jsonData, err := yaml.YAMLToJSON([]byte(yamlData))
+		// jsonData, err := yaml.YAMLToJSON([]byte(yamlData))
 		_, err := yaml.YAMLToJSON([]byte(yamlData))
 		if err != nil {
 			t.Fatalf("expected constant %v to be valid YAML", i)
 		}
-		//fmt.Printf("json: %v", string(jsonData))
+		// fmt.Printf("json: %v", string(jsonData))
 	}
 }
 
 // TestYAMLFactory simple validation of the YAML factory functions
 func TestYAMLFactory(t *testing.T) {
-
 	labels := make(map[string]string)
 	labels["app"] = "trident"
 
@@ -98,7 +97,6 @@ func TestYAMLFactory(t *testing.T) {
 
 // TestAPIVersion validates that we get correct APIVersion value
 func TestAPIVersion(t *testing.T) {
-
 	yamlsOutputs := map[string]string{
 		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, false):                         "rbac.authorization.k8s.io/v1",
 		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, true):                          "rbac.authorization.k8s.io/v1",
@@ -117,7 +115,6 @@ func TestAPIVersion(t *testing.T) {
 
 // Simple validation of the CSI Deployment YAML
 func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
-
 	labels := make(map[string]string)
 	labels["app"] = "trident"
 
@@ -165,7 +162,6 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 
 // Simple validation of the CSI Deployment YAML
 func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
-
 	labels := make(map[string]string)
 	labels["app"] = "trident"
 

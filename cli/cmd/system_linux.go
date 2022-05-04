@@ -14,9 +14,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var (
-	chrootPath string
-)
+var chrootPath string
 
 func init() {
 	RootCmd.AddCommand(systemCmd)
@@ -28,7 +26,6 @@ var systemCmd = &cobra.Command{
 	Short:  "Get information about the current system",
 	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		initLogging()
 
 		// chroot if needed

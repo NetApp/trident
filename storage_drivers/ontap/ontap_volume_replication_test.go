@@ -24,9 +24,7 @@ const (
 	remoteFlexvolName  = "volume-a"
 )
 
-var (
-	errNotReady = api.NotReadyError("operation still in progress, fail")
-)
+var errNotReady = api.NotReadyError("operation still in progress, fail")
 
 func TestPromoteMirror_NoErrors(t *testing.T) {
 	mockCtrl := gomock.NewController(t)

@@ -12,8 +12,7 @@ import (
 )
 
 func TestSupportsFeature(t *testing.T) {
-
-	var supportedTests = []struct {
+	supportedTests := []struct {
 		versionInfo version.Info
 		expected    bool
 	}{

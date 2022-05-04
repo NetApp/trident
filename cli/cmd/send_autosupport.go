@@ -33,7 +33,6 @@ var sendAutosupportCmd = &cobra.Command{
 	Short:   "Send an Autosupport archive to NetApp",
 	Aliases: []string{"a", "asup"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		if !acceptAgreement {
 			confirmed, err := getUserConfirmation(agreementPrompt, cmd)
 			if err != nil {
@@ -66,7 +65,6 @@ var sendAutosupportCmd = &cobra.Command{
 }
 
 func triggerAutosupport(since string) error {
-
 	url := BaseAutosupportURL() + "/collector/trident/trigger"
 
 	if since != "" {

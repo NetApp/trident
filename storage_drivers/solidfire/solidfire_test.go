@@ -31,7 +31,6 @@ func TestMain(m *testing.M) {
 }
 
 func getDriver() *SANStorageDriver {
-
 	commonConfigDefaults := drivers.CommonStorageDriverConfigDefaults{Size: "100GiB"}
 	solidfireConfigDefaults := drivers.SolidfireStorageDriverConfigDefaults{
 		CommonStorageDriverConfigDefaults: commonConfigDefaults,
@@ -131,7 +130,6 @@ func TestNoUpgradeNewerEndpointAPIVersion(t *testing.T) {
 }
 
 func TestGetEndpointCredentials(t *testing.T) {
-
 	// good path, should work
 	driver := getDriver()
 	driver.Config.EndPoint = newerEndpoint

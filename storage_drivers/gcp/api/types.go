@@ -14,7 +14,7 @@ import (
 
 type GCPClient interface {
 	InvokeAPI(
-		ctx context.Context, requestBody []byte, method string, gcpURL string,
+		ctx context.Context, requestBody []byte, method, gcpURL string,
 	) (*http.Response, []byte, error)
 	GetVersion(ctx context.Context) (*utils.Version, *utils.Version, error)
 	GetServiceLevels(ctx context.Context) (map[string]string, error)
@@ -25,7 +25,7 @@ type GCPClient interface {
 	VolumeExistsByCreationToken(ctx context.Context, creationToken string) (bool, *Volume, error)
 	GetVolumeByID(ctx context.Context, volumeId string) (*Volume, error)
 	WaitForVolumeStates(
-		ctx context.Context, volume *Volume, desiredStates []string, abortStates []string,
+		ctx context.Context, volume *Volume, desiredStates, abortStates []string,
 		maxElapsedTime time.Duration,
 	) (string, error)
 	CreateVolume(ctx context.Context, request *VolumeCreateRequest) error
@@ -53,7 +53,7 @@ type GCPClient interface {
 	GetBackupForVolume(ctx context.Context, volume *Volume, backupName string) (*Backup, error)
 	GetBackupByID(ctx context.Context, backupId string) (*Backup, error)
 	WaitForBackupStates(
-		ctx context.Context, backup *Backup, desiredStates []string, abortStates []string,
+		ctx context.Context, backup *Backup, desiredStates, abortStates []string,
 		maxElapsedTime time.Duration,
 	) error
 	CreateBackup(ctx context.Context, request *BackupCreateRequest) error

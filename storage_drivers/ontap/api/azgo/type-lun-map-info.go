@@ -1,3 +1,4 @@
+// Code generated automatically. DO NOT EDIT.
 /*
  * Copyright 2019 NetApp, Inc. All Rights Reserved
  */

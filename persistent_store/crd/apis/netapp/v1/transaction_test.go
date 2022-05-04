@@ -15,7 +15,6 @@ import (
 )
 
 func TestNewTransaction(t *testing.T) {
-
 	// Build volume transaction
 	volConfig := &storage.VolumeConfig{
 		Version:      string(config.OrchestratorAPIVersion),
@@ -57,7 +56,6 @@ func TestNewTransaction(t *testing.T) {
 }
 
 func TestNewSnapshotTransaction(t *testing.T) {
-
 	// Build volume transaction
 	volConfig := &storage.VolumeConfig{
 		Version:      string(config.OrchestratorAPIVersion),
@@ -105,7 +103,6 @@ func TestNewSnapshotTransaction(t *testing.T) {
 }
 
 func TestNewUpgradeTransaction(t *testing.T) {
-
 	// Build volume transaction
 	volConfig := &storage.VolumeConfig{
 		Version:      string(config.OrchestratorAPIVersion),

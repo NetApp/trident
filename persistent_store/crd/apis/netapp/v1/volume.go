@@ -17,7 +17,6 @@ import (
 // NewTridentVolume creates a new storage class CRD object from a internal
 // storage.VolumeExternal object
 func NewTridentVolume(ctx context.Context, persistent *storage.VolumeExternal) (*TridentVolume, error) {
-
 	volume := &TridentVolume{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "trident.netapp.io/v1",
@@ -47,7 +46,6 @@ func NewTridentVolume(ctx context.Context, persistent *storage.VolumeExternal) (
 // Apply applies changes from an internal storage.VolumeExternal
 // object to its Kubernetes CRD equivalent
 func (in *TridentVolume) Apply(ctx context.Context, persistent *storage.VolumeExternal) error {
-
 	Logc(ctx).WithFields(log.Fields{
 		"persistent.BackendUUID": persistent.BackendUUID,
 		"persistent.Orphaned":    persistent.Orphaned,

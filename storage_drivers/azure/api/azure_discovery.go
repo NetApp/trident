@@ -39,7 +39,6 @@ const (
 // RefreshAzureResources refreshes the cache of discovered Azure resources and validates
 // them against our known storage pools.
 func (c Client) RefreshAzureResources(ctx context.Context) error {
-
 	// Check if it is time to update the cache
 	if time.Now().Before(c.sdkClient.AzureResources.lastUpdateTime.Add(c.config.MaxCacheAge)) {
 		Logc(ctx).Debugf("Cached resources not yet %v old, skipping refresh.", c.config.MaxCacheAge)
@@ -74,7 +73,6 @@ func (c Client) RefreshAzureResources(ctx context.Context) error {
 
 // DiscoverAzureResources rediscovers the Azure resources we care about and updates the cache.
 func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) {
-
 	// Start from scratch each time we are called.  All discovered resources are nested under ResourceGroups.
 	newResourceGroups := make([]*ResourceGroup, 0)
 	newResourceGroupMap := make(map[string]*ResourceGroup)
@@ -221,7 +219,6 @@ func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) 
 
 // dumpAzureResources writes a hierarchical representation of discovered resources to the log.
 func (c Client) dumpAzureResources(ctx context.Context) {
-
 	Logc(ctx).Debugf("Discovered Azure Resources:")
 	for _, rg := range c.sdkClient.AzureResources.ResourceGroups {
 		Logc(ctx).Debugf("  Resource Group: %s", rg.Name)
@@ -243,7 +240,6 @@ func (c Client) dumpAzureResources(ctx context.Context) {
 // checkForUnsatisfiedPools returns one or more errors if one or more configured storage pools
 // are satisfied by no capacity pools.
 func (c Client) checkForUnsatisfiedPools(ctx context.Context) (discoveryErrors []error) {
-
 	// Ensure every storage pool matches one or more capacity pools
 	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
 
@@ -274,7 +270,6 @@ func (c Client) checkForUnsatisfiedPools(ctx context.Context) (discoveryErrors [
 // checkForNonexistentResourceGroups logs warnings if any configured resource groups do not
 // match discovered resource groups in the resource cache.
 func (c Client) checkForNonexistentResourceGroups(ctx context.Context) (anyMismatches bool) {
-
 	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
 
 		// Build list of resource group names
@@ -302,7 +297,6 @@ func (c Client) checkForNonexistentResourceGroups(ctx context.Context) (anyMisma
 // checkForNonexistentNetAppAccounts logs warnings if any configured NetApp accounts do not
 // match discovered NetApp accounts in the resource cache.
 func (c Client) checkForNonexistentNetAppAccounts(ctx context.Context) (anyMismatches bool) {
-
 	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
 
 		// Build list of short and long netapp account names
@@ -331,7 +325,6 @@ func (c Client) checkForNonexistentNetAppAccounts(ctx context.Context) (anyMisma
 // checkForNonexistentCapacityPools logs warnings if any configured capacity pools do not
 // match discovered capacity pools in the resource cache.
 func (c Client) checkForNonexistentCapacityPools(ctx context.Context) (anyMismatches bool) {
-
 	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
 
 		// Build list of short and long capacity pool names
@@ -360,7 +353,6 @@ func (c Client) checkForNonexistentCapacityPools(ctx context.Context) (anyMismat
 // checkForNonexistentVirtualNetworks logs warnings if any configured virtual networks do not
 // match discovered virtual networks in the resource cache.
 func (c Client) checkForNonexistentVirtualNetworks(ctx context.Context) (anyMismatches bool) {
-
 	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
 
 		// Build list of short and long capacity virtual network names
@@ -388,7 +380,6 @@ func (c Client) checkForNonexistentVirtualNetworks(ctx context.Context) (anyMism
 // checkForNonexistentSubnets logs warnings if any configured subnets do not
 // match discovered subnets in the resource cache.
 func (c Client) checkForNonexistentSubnets(ctx context.Context) (anyMismatches bool) {
-
 	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
 
 		// Build list of short and long capacity subnet names
@@ -415,7 +406,6 @@ func (c Client) checkForNonexistentSubnets(ctx context.Context) (anyMismatches b
 
 // EnableAzureFeatures registers any ANF preview features we care about and updates the cache.
 func (c Client) EnableAzureFeatures(ctx context.Context, featureNames ...string) (returnError error) {
-
 	// Start from scratch each time we are called.  All discovered resources are nested under ResourceGroups.
 	featureMap := make(map[string]bool)
 
@@ -447,7 +437,6 @@ func (c Client) EnableAzureFeatures(ctx context.Context, featureNames ...string)
 func (c Client) enableAzureFeature(
 	ctx context.Context, provider, feature string, featureMap map[string]bool,
 ) (returnError error) {
-
 	logFields := log.Fields{"feature": feature}
 
 	result, err := c.sdkClient.FeaturesClient.Get(ctx, provider, feature)
@@ -510,7 +499,6 @@ func (c Client) HasFeature(feature string) bool {
 // discoverCapacityPoolsWithRetry queries the Azure Resource Graph for all ANF capacity pools in the current location,
 // retrying if the API request is throttled.
 func (c Client) discoverCapacityPoolsWithRetry(ctx context.Context) (pools *[]*CapacityPool, err error) {
-
 	discover := func() error {
 		if pools, err = c.discoverCapacityPools(ctx); err != nil && IsANFTooManyRequestsError(err) {
 			return err
@@ -538,7 +526,6 @@ func (c Client) discoverCapacityPoolsWithRetry(ctx context.Context) (pools *[]*C
 
 // discoverCapacityPools queries the Azure Resource Graph for all ANF capacity pools in the current location.
 func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, error) {
-
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer cancel()
 
@@ -658,7 +645,6 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 // discoverSubnetsWithRetry queries the Azure Resource Graph for all ANF-delegated subnets in the current location,
 // retrying if the API request is throttled.
 func (c Client) discoverSubnetsWithRetry(ctx context.Context) (subnets *[]*Subnet, err error) {
-
 	discover := func() error {
 		if subnets, err = c.discoverSubnets(ctx); err != nil && IsANFTooManyRequestsError(err) {
 			return err
@@ -686,7 +672,6 @@ func (c Client) discoverSubnetsWithRetry(ctx context.Context) (subnets *[]*Subne
 
 // discoverSubnets queries the Azure Resource Graph for all ANF-delegated subnets in the current location.
 func (c Client) discoverSubnets(ctx context.Context) (*[]*Subnet, error) {
-
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer cancel()
 
@@ -779,7 +764,6 @@ func (c Client) discoverSubnets(ctx context.Context) (*[]*Subnet, error) {
 
 // CapacityPools returns a list of all discovered ANF capacity pools.
 func (c Client) CapacityPools() *[]*CapacityPool {
-
 	var cPools []*CapacityPool
 
 	for _, cPool := range c.sdkClient.AzureResources.CapacityPoolMap {
@@ -797,7 +781,6 @@ func (c Client) capacityPool(cPoolFullName string) *CapacityPool {
 // CapacityPoolsForStoragePools returns all discovered capacity pools matching all known storage pools,
 // regardless of service levels.
 func (c Client) CapacityPoolsForStoragePools(ctx context.Context) []*CapacityPool {
-
 	// This map deduplicates cPools from multiple storage pools
 	cPoolMap := make(map[*CapacityPool]bool)
 
@@ -823,7 +806,6 @@ func (c Client) CapacityPoolsForStoragePools(ctx context.Context) []*CapacityPoo
 func (c Client) CapacityPoolsForStoragePool(
 	ctx context.Context, sPool storage.Pool, serviceLevel string,
 ) []*CapacityPool {
-
 	if c.config.DebugTraceFlags["discovery"] {
 		Logc(ctx).WithField("storagePool", sPool.Name()).Debugf("Determining capacity pools for storage pool.")
 	}
@@ -905,7 +887,6 @@ func (c Client) CapacityPoolsForStoragePool(
 func (c Client) RandomCapacityPoolForStoragePool(
 	ctx context.Context, sPool storage.Pool, serviceLevel string,
 ) *CapacityPool {
-
 	filteredCapacityPools := c.CapacityPoolsForStoragePool(ctx, sPool, serviceLevel)
 
 	if len(filteredCapacityPools) == 0 {
@@ -918,7 +899,6 @@ func (c Client) RandomCapacityPoolForStoragePool(
 // EnsureVolumeInValidCapacityPool checks whether the specified volume exists in any capacity pool that is
 // referenced by the backend config.  It returns nil if so, or if no capacity pools are named in the config.
 func (c Client) EnsureVolumeInValidCapacityPool(ctx context.Context, volume *FileSystem) error {
-
 	// Get a list of all capacity pools referenced in the config
 	allCapacityPools := c.CapacityPoolsForStoragePools(ctx)
 
@@ -951,7 +931,6 @@ func (c Client) subnet(subnetFullName string) *Subnet {
 
 // SubnetsForStoragePool returns all discovered subnets matching the specified storage pool.
 func (c Client) SubnetsForStoragePool(ctx context.Context, sPool storage.Pool) []*Subnet {
-
 	if c.config.DebugTraceFlags["discovery"] {
 		Logc(ctx).WithField("storagePool", sPool.Name()).Debugf("Determining subnets for storage pool.")
 	}
@@ -1019,7 +998,6 @@ func (c Client) SubnetsForStoragePool(ctx context.Context, sPool storage.Pool) [
 // RandomSubnetForStoragePool finds all discovered subnets matching the specified storage pool,
 // and then returns one at random.
 func (c Client) RandomSubnetForStoragePool(ctx context.Context, sPool storage.Pool) *Subnet {
-
 	filteredSubnets := c.SubnetsForStoragePool(ctx, sPool)
 
 	if len(filteredSubnets) == 0 {

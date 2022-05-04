@@ -21,7 +21,6 @@ type APIServerHTTP struct {
 }
 
 func NewHTTPServer(p core.Orchestrator, address, port string, writeTimeout time.Duration) *APIServerHTTP {
-
 	orchestrator = p
 
 	apiServer := &APIServerHTTP{

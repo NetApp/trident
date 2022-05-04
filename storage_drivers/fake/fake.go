@@ -87,9 +87,8 @@ func (d StorageDriver) GoString() string {
 }
 
 func NewFakeStorageBackend(
-	ctx context.Context, configJSON string, backendUUID string,
+	ctx context.Context, configJSON, backendUUID string,
 ) (sb *storage.StorageBackend, err error) {
-
 	// Parse the common config struct from JSON
 	commonConfig, err := drivers.ValidateCommonSettings(ctx, configJSON)
 	if err != nil {
@@ -130,7 +129,6 @@ func NewFakeStorageDriverWithPools(
 	vpool drivers.FakeStorageDriverPool,
 	vpools []drivers.FakeStorageDriverPool,
 ) (*StorageDriver, error) {
-
 	driver := &StorageDriver{
 		initialized: true,
 		Config: drivers.FakeStorageDriverConfig{
@@ -238,7 +236,6 @@ func NewFakeStorageDriverConfigJSONWithVirtualPools(
 func NewFakeStorageDriverConfigJSONWithDebugTraceFlags(
 	name string, protocol tridentconfig.Protocol, debugTraceFlags map[string]bool, storagePrefix string,
 ) (string, error) {
-
 	jsonBytes, err := json.Marshal(
 		&drivers.FakeStorageDriverConfig{
 			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
@@ -282,7 +279,6 @@ func (d *StorageDriver) Initialize(
 	ctx context.Context, _ tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, _ string,
 ) error {
-
 	d.Config.CommonStorageDriverConfig = commonConfig
 	err := json.Unmarshal([]byte(configJSON), &d.Config)
 	if err != nil {
@@ -367,7 +363,6 @@ func (d *StorageDriver) Terminate(context.Context, string) {
 func (d *StorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.FakeStorageDriverConfig,
 ) error {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "StorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> populateConfigurationDefaults")
@@ -397,7 +392,6 @@ func (d *StorageDriver) populateConfigurationDefaults(
 }
 
 func (d *StorageDriver) initializeStoragePools() error {
-
 	d.fakePools = make(map[string]*fake.StoragePool)
 	for fakePoolName, fakePool := range d.Config.Pools {
 		d.fakePools[fakePoolName] = fakePool.ConstructClone()
@@ -533,7 +527,6 @@ func (d *StorageDriver) initializeStoragePools() error {
 
 // validate ensures the driver configuration and execution environment are valid and working
 func (d *StorageDriver) validate(ctx context.Context) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "validate", "Type": "StorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> validate")
@@ -553,7 +546,6 @@ func (d *StorageDriver) validate(ctx context.Context) error {
 	}
 
 	for _, pool := range allPools {
-
 		// Validate default size
 		if _, err := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s: %v", pool.Name(), err)
@@ -566,7 +558,6 @@ func (d *StorageDriver) validate(ctx context.Context) error {
 func (d *StorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
-
 	name := volConfig.InternalName
 	if _, ok := d.Volumes[name]; ok {
 		return drivers.NewVolumeExistsError(name)
@@ -657,7 +648,6 @@ func (d *StorageDriver) Create(
 func (d *StorageDriver) getPoolsForCreate(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) ([]storage.Pool, error) {
-
 	// If a physical pool was requested, just use it
 	if _, ok := d.physicalPools[storagePool.Name()]; ok {
 		return []storage.Pool{storagePool}, nil
@@ -699,7 +689,6 @@ func (d *StorageDriver) getPoolsForCreate(
 }
 
 func (d *StorageDriver) BootstrapVolume(ctx context.Context, volume *storage.Volume) {
-
 	var pool storage.Pool
 
 	// If a physical pool was requested, just use it
@@ -738,7 +727,6 @@ func (d *StorageDriver) BootstrapVolume(ctx context.Context, volume *storage.Vol
 func (d *StorageDriver) CreateClone(
 	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, _ storage.Pool,
 ) error {
-
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
 	snapshot := cloneVolConfig.CloneSourceSnapshot
@@ -796,7 +784,6 @@ func (d *StorageDriver) CreateClone(
 }
 
 func (d *StorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
-
 	Logc(ctx).WithFields(log.Fields{
 		"volumeConfig": volConfig,
 		"originalName": originalName,
@@ -818,7 +805,6 @@ func (d *StorageDriver) Import(ctx context.Context, volConfig *storage.VolumeCon
 }
 
 func (d *StorageDriver) Rename(ctx context.Context, name, newName string) error {
-
 	Logc(ctx).WithFields(log.Fields{
 		"name":    name,
 		"newName": newName,
@@ -836,7 +822,6 @@ func (d *StorageDriver) Rename(ctx context.Context, name, newName string) error 
 }
 
 func (d *StorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
-
 	name := volConfig.InternalName
 
 	d.DestroyedVolumes[name] = true
@@ -881,7 +866,6 @@ func (d *StorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig
 func (d *StorageDriver) GetSnapshot(
 	_ context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -905,7 +889,6 @@ func (d *StorageDriver) GetSnapshot(
 func (d *StorageDriver) GetSnapshots(_ context.Context, volConfig *storage.VolumeConfig) (
 	[]*storage.Snapshot, error,
 ) {
-
 	internalVolName := volConfig.InternalName
 
 	snapshots := make([]*storage.Snapshot, 0)
@@ -927,7 +910,6 @@ func (d *StorageDriver) GetSnapshots(_ context.Context, volConfig *storage.Volum
 func (d *StorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -986,7 +968,6 @@ func (d *StorageDriver) CreateSnapshot(
 func (d *StorageDriver) BootstrapSnapshot(
 	ctx context.Context, snapshot *storage.Snapshot, volConfig *storage.VolumeConfig,
 ) {
-
 	logFields := log.Fields{
 		"backend":      d.Config.InstanceName,
 		"snapshotName": snapshot.Config.InternalName,
@@ -1005,7 +986,6 @@ func (d *StorageDriver) BootstrapSnapshot(
 func (d *StorageDriver) RestoreSnapshot(
 	_ context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1029,7 +1009,6 @@ func (d *StorageDriver) RestoreSnapshot(
 func (d *StorageDriver) DeleteSnapshot(
 	_ context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1046,7 +1025,6 @@ func (d *StorageDriver) DeleteSnapshot(
 }
 
 func (d *StorageDriver) Get(_ context.Context, name string) error {
-
 	_, ok := d.Volumes[name]
 	if !ok {
 		return fmt.Errorf("could not find volume %s", name)
@@ -1057,7 +1035,6 @@ func (d *StorageDriver) Get(_ context.Context, name string) error {
 
 // Resize expands the volume size.
 func (d *StorageDriver) Resize(_ context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
-
 	name := volConfig.InternalName
 	vol := d.Volumes[name]
 
@@ -1077,7 +1054,6 @@ func (d *StorageDriver) Resize(_ context.Context, volConfig *storage.VolumeConfi
 }
 
 func (d *StorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
-
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no backend is specified
 		backend.SetName(d.Config.InstanceName)
@@ -1132,7 +1108,6 @@ func (d *StorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.Vo
 }
 
 func (d *StorageDriver) CreateFollowup(_ context.Context, volConfig *storage.VolumeConfig) error {
-
 	switch d.Config.Protocol {
 	case tridentconfig.File:
 		volConfig.AccessInfo.NfsServerIP = "192.0.2.1" // unrouteable test address, see RFC 5737
@@ -1151,7 +1126,6 @@ func (d *StorageDriver) GetProtocol(context.Context) tridentconfig.Protocol {
 }
 
 func (d *StorageDriver) StoreConfig(_ context.Context, b *storage.PersistentStorageBackendConfig) {
-
 	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
 
 	// Clone the config so we don't alter the original
@@ -1187,7 +1161,6 @@ func (d *StorageDriver) GetExternalConfig(context.Context) interface{} {
 }
 
 func (d *StorageDriver) GetVolumeExternal(_ context.Context, name string) (*storage.VolumeExternal, error) {
-
 	volume, ok := d.Volumes[name]
 	if !ok {
 		return nil, fmt.Errorf("fake volume %s not found", name)
@@ -1197,7 +1170,6 @@ func (d *StorageDriver) GetVolumeExternal(_ context.Context, name string) (*stor
 }
 
 func (d *StorageDriver) GetVolumeExternalWrappers(_ context.Context, channel chan *storage.VolumeExternalWrapper) {
-
 	// Let the caller know we're done by closing the channel
 	defer close(channel)
 
@@ -1208,7 +1180,6 @@ func (d *StorageDriver) GetVolumeExternalWrappers(_ context.Context, channel cha
 }
 
 func (d *StorageDriver) getVolumeExternal(volume fake.Volume) *storage.VolumeExternal {
-
 	internalName := volume.Name
 	name := internalName
 	if strings.HasPrefix(internalName, *d.Config.StoragePrefix) {
@@ -1232,7 +1203,6 @@ func (d *StorageDriver) getVolumeExternal(volume fake.Volume) *storage.VolumeExt
 
 // GetUpdateType returns a bitmap populated with updates to the driver
 func (d *StorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driver) *roaring.Bitmap {
-
 	bitmap := roaring.New()
 	dOrig, ok := driverOrig.(*StorageDriver)
 	if !ok {
@@ -1267,7 +1237,6 @@ func Clone(a, b interface{}) {
 }
 
 func (d *StorageDriver) handleVolumeCreatingTransaction(ctx context.Context, volName string) error {
-
 	// Handle VolumeCreatingTransaction errors
 	if createVolume, ok := d.CreatingVolumes[volName]; ok {
 		if createVolume.FinalIteration == createVolume.Iterations {
@@ -1312,8 +1281,8 @@ func (d StorageDriver) generateCreatingVolumes() map[string]fake.CreatingVolume 
 
 	return creatingVolumes
 }
-func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
 
+func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)

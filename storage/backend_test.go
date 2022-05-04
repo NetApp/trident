@@ -9,7 +9,6 @@ import (
 )
 
 func TestBackendState(t *testing.T) {
-
 	tests := map[string]struct {
 		input     BackendState
 		output    string

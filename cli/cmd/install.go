@@ -196,7 +196,6 @@ var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install Trident",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-
 		initInstallerLogging()
 
 		if err := discoverInstallationEnvironment(); err != nil {
@@ -208,7 +207,6 @@ var installCmd = &cobra.Command{
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-
 		if generateYAML {
 
 			// Ensure the setup directory exists
@@ -223,7 +221,6 @@ var installCmd = &cobra.Command{
 			log.WithField("setupPath", setupPath).Info("Wrote installation YAML files.")
 
 		} else {
-
 			// Run the installer directly using the Kubernetes client
 			if err := installTrident(); err != nil {
 				log.Fatalf("Install failed; %v.  Resolve the issue; use 'tridentctl uninstall' "+
@@ -235,7 +232,6 @@ var installCmd = &cobra.Command{
 
 // initInstallerLogging configures logging for Trident installation. Logs are written to stdout.
 func initInstallerLogging() {
-
 	// Installer logs to stdout only
 	log.SetOutput(os.Stdout)
 	log.SetFormatter(&log.TextFormatter{DisableTimestamp: true})
@@ -256,7 +252,6 @@ func initInstallerLogging() {
 // that everything looks good for Trident installation, but it makes no changes
 // to the environment.
 func discoverInstallationEnvironment() error {
-
 	var err error
 
 	OperatingMode = ModeInstall
@@ -327,7 +322,6 @@ func discoverInstallationEnvironment() error {
 }
 
 func initClient() (k8sclient.KubernetesClient, error) {
-
 	clients, err := k8sclient.CreateK8SClients("", "", "")
 	if err != nil {
 		return nil, err
@@ -339,7 +333,6 @@ func initClient() (k8sclient.KubernetesClient, error) {
 }
 
 func processInstallationArguments(_ *cobra.Command) {
-
 	csi = true
 	appLabel = TridentCSILabel
 	appLabelKey = TridentCSILabelKey
@@ -350,7 +343,6 @@ func processInstallationArguments(_ *cobra.Command) {
 }
 
 func validateInstallationArguments() error {
-
 	labelFormat := "a DNS-1123 label must consist of lower case alphanumeric characters or '-', " +
 		"and must start and end with an alphanumeric character"
 	subdomainFormat := "a DNS-1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', " +
@@ -378,7 +370,6 @@ func validateInstallationArguments() error {
 
 // prepareYAMLFilePaths sets up the absolute file paths to all files
 func prepareYAMLFilePaths() error {
-
 	var err error
 
 	// Get directory of installer
@@ -407,14 +398,12 @@ func prepareYAMLFilePaths() error {
 }
 
 func cleanYAMLFiles() {
-
 	for _, filePath := range setupYAMLPaths {
 		_ = os.Remove(filePath)
 	}
 }
 
 func prepareYAMLFiles() error {
-
 	var err error
 
 	cleanYAMLFiles()
@@ -523,7 +512,7 @@ func fileExists(filePath string) bool {
 }
 
 func writeFile(filePath, data string) error {
-	return ioutil.WriteFile(filePath, []byte(data), 0644)
+	return ioutil.WriteFile(filePath, []byte(data), 0o644)
 }
 
 func ensureSetupDirExists() error {
@@ -537,7 +526,6 @@ func ensureSetupDirExists() error {
 }
 
 func installTrident() (returnError error) {
-
 	var (
 		logFields log.Fields
 		pvcExists bool
@@ -943,8 +931,7 @@ func installTrident() (returnError error) {
 	return nil
 }
 
-func discoverLegacyEtcdData() (pvcExists bool, pvExists bool, returnError error) {
-
+func discoverLegacyEtcdData() (pvcExists, pvExists bool, returnError error) {
 	var (
 		pvc *v1.PersistentVolumeClaim
 		pv  *v1.PersistentVolume
@@ -1042,7 +1029,6 @@ func discoverLegacyEtcdData() (pvcExists bool, pvExists bool, returnError error)
 }
 
 func createNamespace() (returnError error) {
-
 	var logFields log.Fields
 
 	if useYAML && fileExists(namespacePath) {
@@ -1061,7 +1047,6 @@ func createNamespace() (returnError error) {
 }
 
 func createAndEnsureCRDs() (returnError error) {
-
 	var bundleCRDYAML string
 	if useYAML && fileExists(crdsPath) {
 
@@ -1097,7 +1082,6 @@ func createAndEnsureCRDs() (returnError error) {
 
 // getCRDMapFromBundle creates a map of CRD name to CRD definition from the bundle
 func getCRDMapFromBundle(bundle string) map[string]string {
-
 	labelEqualRegex := regexp.MustCompile(`(?m)^\s*name:\s*(?P<crdName>[\w\.]+)$`)
 	yamls := strings.Split(bundle, "---")
 	crdMap := make(map[string]string)
@@ -1117,7 +1101,6 @@ func getCRDMapFromBundle(bundle string) map[string]string {
 
 // validateCRDs validates the list of CRDs
 func validateCRDs(crdMap map[string]string) error {
-
 	crdMatch := make(map[string]bool)
 	var errMessages []string
 	var missingCRDs []string
@@ -1173,7 +1156,6 @@ func createCRDs(crdMap map[string]string) error {
 
 // createCRD creates and establishes the CRD
 func createCRD(crdName, crdYAML string) error {
-
 	// Discover CRD data
 	crdExists, returnError := client.CheckCRDExists(crdName)
 	if returnError != nil {
@@ -1205,7 +1187,6 @@ func createCRD(crdName, crdYAML string) error {
 }
 
 func createCustomResourceDefinition(crdName, crdYAML string) (returnError error) {
-
 	var logFields log.Fields
 
 	returnError = client.CreateObjectByYAML(crdYAML)
@@ -1221,7 +1202,6 @@ func createCustomResourceDefinition(crdName, crdYAML string) (returnError error)
 
 // ensureCRDEstablished waits until a CRD is Established.
 func ensureCRDEstablished(crdName string) error {
-
 	checkCRDEstablished := func() error {
 		crd, err := client.GetCRD(crdName)
 		if err != nil {
@@ -1262,7 +1242,6 @@ func ensureCRDEstablished(crdName string) error {
 }
 
 func deleteCustomResourceDefinition(crdName, crdYAML string) (returnError error) {
-
 	var logFields log.Fields
 
 	returnError = client.DeleteObjectByYAML(crdYAML, true)
@@ -1289,7 +1268,6 @@ func protectCustomResourceDefinitions() error {
 }
 
 func createK8SCSIDriver() error {
-
 	// Delete the object in case it already exists and we need to update it
 	err := client.DeleteObjectByYAML(k8sclient.GetCSIDriverYAML(getCSIDriverName(), client.ServerVersion(),
 		nil, nil), true)
@@ -1307,7 +1285,6 @@ func createK8SCSIDriver() error {
 }
 
 func createRBACObjects() (returnError error) {
-
 	var logFields log.Fields
 
 	// Create service account
@@ -1372,7 +1349,6 @@ func createRBACObjects() (returnError error) {
 }
 
 func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
-
 	logFunc := func(fields log.Fields) func(args ...interface{}) {
 		if logLevel == log.DebugLevel {
 			return log.WithFields(fields).Debug
@@ -1432,7 +1408,6 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 }
 
 func validateTridentDeployment() error {
-
 	deployment, err := readDeploymentFromFile(deploymentPath)
 	if err != nil {
 		return fmt.Errorf("could not load deployment YAML file; %v", err)
@@ -1468,7 +1443,6 @@ func validateTridentDeployment() error {
 }
 
 func validateTridentPodSecurityPolicy() error {
-
 	securityPolicy, err := readPodSecurityPolicyFromFile(podSecurityPolicyPath)
 	if err != nil {
 		return fmt.Errorf("could not load pod security policy YAML file; %v", err)
@@ -1506,7 +1480,6 @@ func validateTridentPodSecurityPolicy() error {
 }
 
 func validateTridentService() error {
-
 	service, err := readServiceFromFile(servicePath)
 	if err != nil {
 		return fmt.Errorf("could not load service YAML file; %v", err)
@@ -1523,7 +1496,6 @@ func validateTridentService() error {
 }
 
 func validateTridentDaemonSet() error {
-
 	daemonset, err := readDaemonSetFromFile(daemonsetPath)
 	if err != nil {
 		return fmt.Errorf("could not load daemonset YAML file; %v", err)
@@ -1557,13 +1529,11 @@ func validateTridentDaemonSet() error {
 }
 
 func waitForTridentPod() (*v1.Pod, error) {
-
 	var deployment *appsv1.Deployment
 	var pod *v1.Pod
 	var err error
 
 	checkPodRunning := func() error {
-
 		deployment, err = client.GetDeploymentByLabel(appLabel, false)
 		if err != nil {
 			return err
@@ -1661,11 +1631,9 @@ func waitForTridentPod() (*v1.Pod, error) {
 }
 
 func waitForRESTInterface() error {
-
 	var version string
 
 	checkRESTInterface := func() error {
-
 		cliCommand := []string{"tridentctl", "version", "-o", "json"}
 		versionJSON, err := client.Exec(TridentPodName, tridentconfig.ContainerTrident, cliCommand)
 		if err != nil {
@@ -1707,7 +1675,6 @@ func waitForRESTInterface() error {
 
 // readDeploymentFromFile parses and returns a deployment object from a file.
 func readDeploymentFromFile(filePath string) (*appsv1.Deployment, error) {
-
 	var deployment appsv1.Deployment
 
 	yamlBytes, err := ioutil.ReadFile(filePath)
@@ -1723,7 +1690,6 @@ func readDeploymentFromFile(filePath string) (*appsv1.Deployment, error) {
 
 // readServiceFromFile parses and returns a service object from a file.
 func readPodSecurityPolicyFromFile(filePath string) (*policy.PodSecurityPolicy, error) {
-
 	var securityPolicy policy.PodSecurityPolicy
 
 	yamlBytes, err := ioutil.ReadFile(filePath)
@@ -1739,7 +1705,6 @@ func readPodSecurityPolicyFromFile(filePath string) (*policy.PodSecurityPolicy, 
 
 // readServiceFromFile parses and returns a service object from a file.
 func readServiceFromFile(filePath string) (*v1.Service, error) {
-
 	var service v1.Service
 
 	yamlBytes, err := ioutil.ReadFile(filePath)
@@ -1755,7 +1720,6 @@ func readServiceFromFile(filePath string) (*v1.Service, error) {
 
 // readDaemonSetFromFile parses and returns a daemonset object from a file.
 func readDaemonSetFromFile(filePath string) (*appsv1.DaemonSet, error) {
-
 	var daemonset appsv1.DaemonSet
 
 	yamlBytes, err := ioutil.ReadFile(filePath)
@@ -1802,7 +1766,6 @@ func DeleteOpenShiftTridentSCC(user string) error {
 
 	err := client.DeleteObjectByYAML(
 		k8sclient.GetOpenShiftSCCYAML("trident", user, TridentPodNamespace, labels, nil), true)
-
 	if err != nil {
 		return fmt.Errorf("%s; %v", "could not delete trident's scc", err)
 	}
@@ -1810,7 +1773,6 @@ func DeleteOpenShiftTridentSCC(user string) error {
 }
 
 func getCRDClient() (*crdclient.Clientset, error) {
-
 	var crdClient *crdclient.Clientset
 
 	createCRDClient := func() error {

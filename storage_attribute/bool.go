@@ -13,7 +13,6 @@ func NewBoolOffer(offer bool) Offer {
 }
 
 func NewBoolOfferFromOffers(offers ...Offer) Offer {
-
 	anyTrueOffer := false
 
 	for _, offer := range offers {

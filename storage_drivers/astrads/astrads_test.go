@@ -107,7 +107,6 @@ func TestMain(m *testing.M) {
 }
 
 func newTestAstraDSDriver(mockAPI api.AstraDS) *StorageDriver {
-
 	mutableCommonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "astrads-nas",
@@ -154,7 +153,6 @@ func newTestAstraDSDriver(mockAPI api.AstraDS) *StorageDriver {
 }
 
 func newMockAstraDSDriver(t *testing.T) (*mockapi.MockAstraDS, *StorageDriver) {
-
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockAstraDS(mockCtrl)
 
@@ -162,7 +160,6 @@ func newMockAstraDSDriver(t *testing.T) (*mockapi.MockAstraDS, *StorageDriver) {
 }
 
 func TestName(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	result := driver.Name()
@@ -171,7 +168,6 @@ func TestName(t *testing.T) {
 }
 
 func TestBackendName_SetInConfig(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 	driver.Config.BackendName = BackendName
 
@@ -181,7 +177,6 @@ func TestBackendName_SetInConfig(t *testing.T) {
 }
 
 func TestBackendName_UseDefault(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 	driver.Config.BackendName = ""
 
@@ -191,7 +186,6 @@ func TestBackendName_UseDefault(t *testing.T) {
 }
 
 func TestPoolName(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 	driver.Config.BackendName = "myADSBackend"
 
@@ -201,7 +195,6 @@ func TestPoolName(t *testing.T) {
 }
 
 func TestValidateName(t *testing.T) {
-
 	tests := []struct {
 		Name  string
 		Valid bool
@@ -224,7 +217,6 @@ func TestValidateName(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-
 			_, driver := newMockAstraDSDriver(t)
 
 			err := driver.validateName(test.Name)
@@ -239,7 +231,6 @@ func TestValidateName(t *testing.T) {
 }
 
 func TestDefaultCreateTimeout(t *testing.T) {
-
 	tests := []struct {
 		Context  tridentconfig.DriverContext
 		Expected time.Duration
@@ -250,7 +241,6 @@ func TestDefaultCreateTimeout(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(string(test.Context), func(t *testing.T) {
-
 			_, driver := newMockAstraDSDriver(t)
 			driver.Config.DriverContext = test.Context
 
@@ -262,7 +252,6 @@ func TestDefaultCreateTimeout(t *testing.T) {
 }
 
 func TestDefaultDeleteTimeout(t *testing.T) {
-
 	tests := []struct {
 		Context  tridentconfig.DriverContext
 		Expected time.Duration
@@ -273,7 +262,6 @@ func TestDefaultDeleteTimeout(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(string(test.Context), func(t *testing.T) {
-
 			_, driver := newMockAstraDSDriver(t)
 			driver.Config.DriverContext = test.Context
 
@@ -285,7 +273,6 @@ func TestDefaultDeleteTimeout(t *testing.T) {
 }
 
 func TestInitialize_WithoutSecrets(t *testing.T) {
-
 	configJSON := `
     {
         "version": 1,
@@ -329,7 +316,6 @@ func TestInitialize_WithoutSecrets(t *testing.T) {
 }
 
 func TestInitialize_WithSecrets(t *testing.T) {
-
 	configJSON := `
     {
         "version": 1,
@@ -377,7 +363,6 @@ func TestInitialize_WithSecrets(t *testing.T) {
 }
 
 func TestInitialize_WithInvalidSecrets(t *testing.T) {
-
 	configJSON := `
     {
         "version": 1,
@@ -411,7 +396,6 @@ func TestInitialize_WithInvalidSecrets(t *testing.T) {
 }
 
 func TestInitialize_InvalidConfigJSON(t *testing.T) {
-
 	configJSON := `
     {
         "version": 1,
@@ -442,7 +426,6 @@ func TestInitialize_InvalidConfigJSON(t *testing.T) {
 }
 
 func TestInitialize_NoNamespace(t *testing.T) {
-
 	configJSON := `
     {
         "version": 1,
@@ -472,7 +455,6 @@ func TestInitialize_NoNamespace(t *testing.T) {
 }
 
 func TestInitialize_NoKubeconfig(t *testing.T) {
-
 	configJSON := `
     {
         "version": 1,
@@ -502,7 +484,6 @@ func TestInitialize_NoKubeconfig(t *testing.T) {
 }
 
 func TestInitialize_NoCluster(t *testing.T) {
-
 	configJSON := `
     {
         "version": 1,
@@ -532,7 +513,6 @@ func TestInitialize_NoCluster(t *testing.T) {
 }
 
 func TestInitialize_APIInitError(t *testing.T) {
-
 	configJSON := `
     {
         "version": 1,
@@ -565,7 +545,6 @@ func TestInitialize_APIInitError(t *testing.T) {
 }
 
 func TestInitialize_InvalidStoragePrefix(t *testing.T) {
-
 	badPrefix := "&trident"
 
 	badCommonConfig := &drivers.CommonStorageDriverConfig{
@@ -609,7 +588,6 @@ func TestInitialize_InvalidStoragePrefix(t *testing.T) {
 }
 
 func TestInitialize_InvalidExportPolicyMode(t *testing.T) {
-
 	badCommonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "astrads-nas",
@@ -651,7 +629,6 @@ func TestInitialize_InvalidExportPolicyMode(t *testing.T) {
 }
 
 func TestInitialized(t *testing.T) {
-
 	tests := []struct {
 		Expected bool
 	}{
@@ -660,7 +637,6 @@ func TestInitialized(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(strconv.FormatBool(test.Expected), func(t *testing.T) {
-
 			_, driver := newMockAstraDSDriver(t)
 			driver.initialized = test.Expected
 
@@ -672,7 +648,6 @@ func TestInitialized(t *testing.T) {
 }
 
 func TestTerminate(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 	driver.initialized = true
 
@@ -682,7 +657,6 @@ func TestTerminate(t *testing.T) {
 }
 
 func TestPopulateConfigurationDefaults_NoneSet(t *testing.T) {
-
 	commonConfig = &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "astrads-nas",
@@ -716,7 +690,6 @@ func TestPopulateConfigurationDefaults_NoneSet(t *testing.T) {
 }
 
 func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
-
 	commonConfig = &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "astrads-nas",
@@ -765,7 +738,6 @@ func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
 }
 
 func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
-
 	supportedTopologies := []map[string]string{
 		{"topology.kubernetes.io/region": "europe-west1", "topology.kubernetes.io/zone": "us-east-1c"},
 	}
@@ -832,7 +804,6 @@ func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 }
 
 func TestInitializeStoragePools_VirtualPools(t *testing.T) {
-
 	supportedTopologies1 := []map[string]string{
 		{"topology.kubernetes.io/region": "us-east", "topology.kubernetes.io/zone": "us-east-1b"},
 	}
@@ -949,7 +920,6 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 }
 
 func TestValidate_InvalidClusterVersion(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.cluster.Version = "2022.1"
 
@@ -965,7 +935,6 @@ func TestValidate_InvalidClusterVersion(t *testing.T) {
 }
 
 func TestValidate_UnsupportedClusterVersion(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 	driver.cluster.Version = "2021.1.0"
 
@@ -978,7 +947,6 @@ func TestValidate_UnsupportedClusterVersion(t *testing.T) {
 }
 
 func TestValidate_InvalidExportPolicyCIDR(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 	driver.Config.AutoExportCIDRs = []string{"1.1.1.1.1"}
 
@@ -991,7 +959,6 @@ func TestValidate_InvalidExportPolicyCIDR(t *testing.T) {
 }
 
 func TestValidate_QosPolicyReadFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1005,7 +972,6 @@ func TestValidate_QosPolicyReadFailed(t *testing.T) {
 }
 
 func TestValidate_InvalidSnapshotDir(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.SnapshotDir = "yes"
 
@@ -1020,7 +986,6 @@ func TestValidate_InvalidSnapshotDir(t *testing.T) {
 }
 
 func TestValidate_InvalidSize(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.Size = "abcde"
 
@@ -1035,7 +1000,6 @@ func TestValidate_InvalidSize(t *testing.T) {
 }
 
 func TestValidate_NonexistentQosPolicy(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.QosPolicy = "platinum"
 
@@ -1050,7 +1014,6 @@ func TestValidate_NonexistentQosPolicy(t *testing.T) {
 }
 
 func TestValidate_ExportPolicyReadFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1065,7 +1028,6 @@ func TestValidate_ExportPolicyReadFailed(t *testing.T) {
 }
 
 func TestValidate_NonexistentExportPolicy(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1080,7 +1042,6 @@ func TestValidate_NonexistentExportPolicy(t *testing.T) {
 }
 
 func TestValidate_InvalidLabel(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.Config.Labels = map[string]string{
@@ -1103,7 +1064,6 @@ func TestValidate_InvalidLabel(t *testing.T) {
 func getStructsForCreate(ctx context.Context, driver *StorageDriver, storagePool storage.Pool) (
 	*storage.VolumeConfig, *api.Volume, *api.Volume,
 ) {
-
 	volConfig := &storage.VolumeConfig{
 		Version:      "1",
 		Name:         "testvol1",
@@ -1169,7 +1129,6 @@ func getStructsForCreate(ctx context.Context, driver *StorageDriver, storagePool
 }
 
 func TestCreate(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1191,7 +1150,6 @@ func TestCreate(t *testing.T) {
 }
 
 func TestCreate_InvalidName(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1208,7 +1166,6 @@ func TestCreate_InvalidName(t *testing.T) {
 }
 
 func TestCreate_NoStoragePool(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1224,7 +1181,6 @@ func TestCreate_NoStoragePool(t *testing.T) {
 }
 
 func TestCreate_NonexistentStoragePool(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1241,7 +1197,6 @@ func TestCreate_NonexistentStoragePool(t *testing.T) {
 }
 
 func TestCreate_VolumeExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1259,7 +1214,6 @@ func TestCreate_VolumeExistsCheckFailed(t *testing.T) {
 }
 
 func TestCreate_VolumeExistsCreateError(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1279,7 +1233,6 @@ func TestCreate_VolumeExistsCreateError(t *testing.T) {
 }
 
 func TestCreate_VolumeExistsCreating(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1299,7 +1252,6 @@ func TestCreate_VolumeExistsCreating(t *testing.T) {
 }
 
 func TestCreate_VolumeExistsSetAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1319,7 +1271,6 @@ func TestCreate_VolumeExistsSetAttributesFailed(t *testing.T) {
 }
 
 func TestCreate_VolumeExists(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1339,7 +1290,6 @@ func TestCreate_VolumeExists(t *testing.T) {
 }
 
 func TestCreate_InvalidSnapshotReserve(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1358,7 +1308,6 @@ func TestCreate_InvalidSnapshotReserve(t *testing.T) {
 }
 
 func TestCreate_SnapshotReserveOutOfRange(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1377,7 +1326,6 @@ func TestCreate_SnapshotReserveOutOfRange(t *testing.T) {
 }
 
 func TestCreate_InvalidSnapshotDir(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1396,7 +1344,6 @@ func TestCreate_InvalidSnapshotDir(t *testing.T) {
 }
 
 func TestCreate_AutoExportPolicy(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.AutoExportPolicy = true
 
@@ -1421,7 +1368,6 @@ func TestCreate_AutoExportPolicy(t *testing.T) {
 }
 
 func TestCreate_InvalidSize(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1440,7 +1386,6 @@ func TestCreate_InvalidSize(t *testing.T) {
 }
 
 func TestCreate_NegativeSize(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1459,7 +1404,6 @@ func TestCreate_NegativeSize(t *testing.T) {
 }
 
 func TestCreate_ZeroSize(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1486,7 +1430,6 @@ func TestCreate_ZeroSize(t *testing.T) {
 }
 
 func TestCreate_BelowAbsoluteMinimumSize(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1505,7 +1448,6 @@ func TestCreate_BelowAbsoluteMinimumSize(t *testing.T) {
 }
 
 func TestCreate_AboveMaximumSize(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.LimitVolumeSize = "100Gi"
 
@@ -1525,7 +1467,6 @@ func TestCreate_AboveMaximumSize(t *testing.T) {
 }
 
 func TestCreate_InvalidLabel(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1548,7 +1489,6 @@ func TestCreate_InvalidLabel(t *testing.T) {
 }
 
 func TestCreate_AutoExportPolicyExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.AutoExportPolicy = true
 
@@ -1570,7 +1510,6 @@ func TestCreate_AutoExportPolicyExistsCheckFailed(t *testing.T) {
 }
 
 func TestCreate_StaticExportPolicyExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1589,7 +1528,6 @@ func TestCreate_StaticExportPolicyExistsCheckFailed(t *testing.T) {
 }
 
 func TestCreate_NonexistentStaticExportPolicy(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1608,7 +1546,6 @@ func TestCreate_NonexistentStaticExportPolicy(t *testing.T) {
 }
 
 func TestCreate_CreateFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1628,7 +1565,6 @@ func TestCreate_CreateFailed(t *testing.T) {
 }
 
 func TestCreate_Creating(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1650,7 +1586,6 @@ func TestCreate_Creating(t *testing.T) {
 }
 
 func TestCreate_CreateError(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1672,7 +1607,6 @@ func TestCreate_CreateError(t *testing.T) {
 }
 
 func TestCreate_CreateError_AutoExportPolicy(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.AutoExportPolicy = true
 
@@ -1706,7 +1640,6 @@ func TestCreate_CreateError_AutoExportPolicy(t *testing.T) {
 }
 
 func TestCreate_SetAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1818,7 +1751,6 @@ func TestUnpadVolumeSizeWithSnapshotReserve(t *testing.T) {
 func getStructsForCreateClone(ctx context.Context, driver *StorageDriver, storagePool storage.Pool) (
 	*storage.VolumeConfig, *storage.VolumeConfig, *api.Volume, *api.Volume, *api.Volume,
 ) {
-
 	sourceVolConfig := &storage.VolumeConfig{
 		Version:      "1",
 		Name:         "testvol1",
@@ -1918,7 +1850,6 @@ func getStructsForCreateClone(ctx context.Context, driver *StorageDriver, storag
 }
 
 func TestCreateClone_NoSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.QosPolicy = "gold"
 
@@ -1942,7 +1873,6 @@ func TestCreateClone_NoSnapshot(t *testing.T) {
 }
 
 func TestCreateClone_Snapshot(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.QosPolicy = "gold"
 
@@ -1972,7 +1902,6 @@ func TestCreateClone_Snapshot(t *testing.T) {
 }
 
 func TestCreateClone_InvalidName(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -1989,7 +1918,6 @@ func TestCreateClone_InvalidName(t *testing.T) {
 }
 
 func TestCreateClone_VolumeExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2007,7 +1935,6 @@ func TestCreateClone_VolumeExistsCheckFailed(t *testing.T) {
 }
 
 func TestCreateClone_VolumeExistsCreateError(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2027,7 +1954,6 @@ func TestCreateClone_VolumeExistsCreateError(t *testing.T) {
 }
 
 func TestCreateClone_VolumeExistsCreating(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2047,7 +1973,6 @@ func TestCreateClone_VolumeExistsCreating(t *testing.T) {
 }
 
 func TestCreateClone_VolumeExistsSetAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2067,7 +1992,6 @@ func TestCreateClone_VolumeExistsSetAttributesFailed(t *testing.T) {
 }
 
 func TestCreateClone_VolumeExists(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2087,7 +2011,6 @@ func TestCreateClone_VolumeExists(t *testing.T) {
 }
 
 func TestCreateClone_NonexistentSourceVolume(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2106,7 +2029,6 @@ func TestCreateClone_NonexistentSourceVolume(t *testing.T) {
 }
 
 func TestCreateClone_NonexistentSourceSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2131,7 +2053,6 @@ func TestCreateClone_NonexistentSourceSnapshot(t *testing.T) {
 }
 
 func TestCreateClone_AutoExportPolicy(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.AutoExportPolicy = true
 
@@ -2157,7 +2078,6 @@ func TestCreateClone_AutoExportPolicy(t *testing.T) {
 }
 
 func TestCreateClone_InvalidLabel(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2183,7 +2103,6 @@ func TestCreateClone_InvalidLabel(t *testing.T) {
 }
 
 func TestCreateClone_AutoExportPolicyExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.AutoExportPolicy = true
 
@@ -2206,7 +2125,6 @@ func TestCreateClone_AutoExportPolicyExistsCheckFailed(t *testing.T) {
 }
 
 func TestCreateClone_StaticExportPolicyExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2228,7 +2146,6 @@ func TestCreateClone_StaticExportPolicyExistsCheckFailed(t *testing.T) {
 }
 
 func TestCreateClone_NonexistentStaticExportPolicy(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2250,7 +2167,6 @@ func TestCreateClone_NonexistentStaticExportPolicy(t *testing.T) {
 }
 
 func TestCreateClone_CreateFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2271,7 +2187,6 @@ func TestCreateClone_CreateFailed(t *testing.T) {
 }
 
 func TestCreateClone_Creating(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2294,7 +2209,6 @@ func TestCreateClone_Creating(t *testing.T) {
 }
 
 func TestCreateClone_CreateError(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2314,11 +2228,9 @@ func TestCreateClone_CreateError(t *testing.T) {
 	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, storagePool)
 
 	assert.Error(t, result, "create did not fail")
-
 }
 
 func TestCreateClone_CreateError_AutoExportPolicy(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.AutoExportPolicy = true
 
@@ -2353,7 +2265,6 @@ func TestCreateClone_CreateError_AutoExportPolicy(t *testing.T) {
 }
 
 func TestCreateClone_SetAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2376,7 +2287,6 @@ func TestCreateClone_SetAttributesFailed(t *testing.T) {
 }
 
 func TestCleanUpFailedVolume_DeleteFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -2392,7 +2302,6 @@ func TestCleanUpFailedVolume_DeleteFailed(t *testing.T) {
 }
 
 func TestCleanUpFailedVolume_AutoExportPolicy(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.AutoExportPolicy = true
 
@@ -2419,7 +2328,6 @@ func TestCleanUpFailedVolume_AutoExportPolicy(t *testing.T) {
 }
 
 func TestCleanUpFailedVolume_AutoExportPolicyUnknownPolicy(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.Config.AutoExportPolicy = true
 
@@ -2446,7 +2354,6 @@ func TestCleanUpFailedVolume_AutoExportPolicyUnknownPolicy(t *testing.T) {
 }
 
 func getStructsForImport(_ context.Context, driver *StorageDriver) (*storage.VolumeConfig, *api.Volume) {
-
 	volConfig := &storage.VolumeConfig{
 		Version:      "1",
 		Name:         "testvol1",
@@ -2484,7 +2391,6 @@ func getStructsForImport(_ context.Context, driver *StorageDriver) (*storage.Vol
 }
 
 func TestImport_Managed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2511,7 +2417,6 @@ func TestImport_Managed(t *testing.T) {
 }
 
 func TestImport_ManagedNoAnnotations(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2538,7 +2443,6 @@ func TestImport_ManagedNoAnnotations(t *testing.T) {
 }
 
 func TestImport_NotManaged(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2617,7 +2521,6 @@ func TestImport_VolumeDeleting(t *testing.T) {
 }
 
 func TestImport_SetAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2636,7 +2539,6 @@ func TestImport_SetAttributesFailed(t *testing.T) {
 }
 
 func TestRename(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	result := driver.Rename(ctx, "oldName", "newName")
@@ -2645,7 +2547,6 @@ func TestRename(t *testing.T) {
 }
 
 func TestValidateLabels(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	labels := map[string]string{
@@ -2665,7 +2566,6 @@ func TestValidateLabels(t *testing.T) {
 }
 
 func getStructsForDestroy(_ context.Context, driver *StorageDriver) (*storage.VolumeConfig, *api.Volume) {
-
 	requestedSize := resource.MustParse(strconv.FormatInt(113025455157, 10))
 	actualSize := resource.MustParse(strconv.FormatInt(113025454080, 10))
 
@@ -2707,7 +2607,6 @@ func getStructsForDestroy(_ context.Context, driver *StorageDriver) (*storage.Vo
 }
 
 func TestDestroy(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2726,7 +2625,6 @@ func TestDestroy(t *testing.T) {
 }
 
 func TestDestroy_VolumeExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2741,7 +2639,6 @@ func TestDestroy_VolumeExistsCheckFailed(t *testing.T) {
 }
 
 func TestDestroy_NotFound(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2757,7 +2654,6 @@ func TestDestroy_NotFound(t *testing.T) {
 }
 
 func TestDestroy_SetAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2773,7 +2669,6 @@ func TestDestroy_SetAttributesFailed(t *testing.T) {
 }
 
 func TestDestroy_AlreadyDeleting(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2790,7 +2685,6 @@ func TestDestroy_AlreadyDeleting(t *testing.T) {
 }
 
 func TestDestroy_DeleteFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2807,7 +2701,6 @@ func TestDestroy_DeleteFailed(t *testing.T) {
 }
 
 func TestDestroy_VolumeWaitFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2825,7 +2718,6 @@ func TestDestroy_VolumeWaitFailed(t *testing.T) {
 }
 
 func TestDestroyExportPolicy(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2846,7 +2738,6 @@ func TestDestroyExportPolicy(t *testing.T) {
 }
 
 func TestDestroyExportPolicy_NonNilError(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2855,7 +2746,6 @@ func TestDestroyExportPolicy_NonNilError(t *testing.T) {
 }
 
 func TestDestroyExportPolicy_NoPolicy(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2866,7 +2756,6 @@ func TestDestroyExportPolicy_NoPolicy(t *testing.T) {
 }
 
 func TestDestroyExportPolicy_SharedPolicy(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2877,7 +2766,6 @@ func TestDestroyExportPolicy_SharedPolicy(t *testing.T) {
 }
 
 func TestDestroyExportPolicy_SharedPoolPolicy(t *testing.T) {
-
 	supportedTopologies1 := []map[string]string{
 		{"topology.kubernetes.io/region": "us-east", "topology.kubernetes.io/zone": "us-east-1b"},
 	}
@@ -2940,7 +2828,6 @@ func TestDestroyExportPolicy_SharedPoolPolicy(t *testing.T) {
 }
 
 func TestDestroyExportPolicy_PolicyExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2953,7 +2840,6 @@ func TestDestroyExportPolicy_PolicyExistsCheckFailed(t *testing.T) {
 }
 
 func TestDestroyExportPolicy_NotFound(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2966,7 +2852,6 @@ func TestDestroyExportPolicy_NotFound(t *testing.T) {
 }
 
 func TestDestroyExportPolicy_SetAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2986,7 +2871,6 @@ func TestDestroyExportPolicy_SetAttributesFailed(t *testing.T) {
 }
 
 func TestDestroyExportPolicy_DeleteFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3009,7 +2893,6 @@ func TestDestroyExportPolicy_DeleteFailed(t *testing.T) {
 func getStructsForPublish(
 	_ context.Context, _ *StorageDriver,
 ) (*storage.VolumeConfig, *api.Volume, *utils.VolumePublishInfo, *api.ExportPolicy) {
-
 	volConfig := &storage.VolumeConfig{
 		Version:      "1",
 		Name:         "testvol1",
@@ -3054,7 +2937,6 @@ func getStructsForPublish(
 }
 
 func TestPublish(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3073,7 +2955,6 @@ func TestPublish(t *testing.T) {
 }
 
 func TestPublish_CustomMountOptions(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3093,7 +2974,6 @@ func TestPublish_CustomMountOptions(t *testing.T) {
 }
 
 func TestPublish_NotFound(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3109,7 +2989,6 @@ func TestPublish_NotFound(t *testing.T) {
 }
 
 func TestPublish_PublishFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3126,7 +3005,6 @@ func TestPublish_PublishFailed(t *testing.T) {
 }
 
 func TestPublishNFSShare_Unmanaged(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3142,7 +3020,6 @@ func TestPublishNFSShare_Unmanaged(t *testing.T) {
 }
 
 func TestPublishNFSShare_ExportPolicyAlreadySet(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3162,7 +3039,6 @@ func TestPublishNFSShare_ExportPolicyAlreadySet(t *testing.T) {
 }
 
 func TestPublishNFSShare_SetExportPolicyAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3182,7 +3058,6 @@ func TestPublishNFSShare_SetExportPolicyAttributesFailed(t *testing.T) {
 }
 
 func TestPublishNFSShare_SetVolumeAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3203,7 +3078,6 @@ func TestPublishNFSShare_SetVolumeAttributesFailed(t *testing.T) {
 }
 
 func TestPublishNFSShare_BadCIDR(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3222,7 +3096,6 @@ func TestPublishNFSShare_BadCIDR(t *testing.T) {
 }
 
 func TestPublishNFSShare_VolumeUpdateNeeded(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3267,7 +3140,6 @@ func TestPublishNFSShare_VolumeUpdateNeeded(t *testing.T) {
 func getStructsForUnpublish(
 	_ context.Context, _ *StorageDriver,
 ) (*storage.VolumeConfig, *api.Volume, []*utils.Node, *api.ExportPolicy, *api.ExportPolicy) {
-
 	volConfig := &storage.VolumeConfig{
 		Version:      "1",
 		Name:         "testvol1",
@@ -3352,7 +3224,6 @@ func getStructsForUnpublish(
 }
 
 func TestUnpublish(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3367,7 +3238,6 @@ func TestUnpublish(t *testing.T) {
 }
 
 func TestUnpublish_NotFound(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3382,7 +3252,6 @@ func TestUnpublish_NotFound(t *testing.T) {
 }
 
 func TestUnpublish_UnpublishFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3399,7 +3268,6 @@ func TestUnpublish_UnpublishFailed(t *testing.T) {
 }
 
 func TestUnpublishNFSShare_Unmanaged(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3414,7 +3282,6 @@ func TestUnpublishNFSShare_Unmanaged(t *testing.T) {
 }
 
 func TestUnpublishNFSShare_ExportPolicyAlreadySet(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3435,7 +3302,6 @@ func TestUnpublishNFSShare_ExportPolicyAlreadySet(t *testing.T) {
 }
 
 func TestUnpublishNFSShare_SetExportPolicyAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3456,7 +3322,6 @@ func TestUnpublishNFSShare_SetExportPolicyAttributesFailed(t *testing.T) {
 }
 
 func TestUnpublishNFSShare_SetVolumeAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3478,7 +3343,6 @@ func TestUnpublishNFSShare_SetVolumeAttributesFailed(t *testing.T) {
 }
 
 func TestUnpublishNFSShare_BadCIDR(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3498,7 +3362,6 @@ func TestUnpublishNFSShare_BadCIDR(t *testing.T) {
 }
 
 func TestUnpublishNFSShare_VolumeUpdateNeeded(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -3523,7 +3386,6 @@ func TestUnpublishNFSShare_VolumeUpdateNeeded(t *testing.T) {
 func getStructsForCreateSnapshot(
 	_ context.Context, _ *StorageDriver, snapTime metav1.Time,
 ) (*storage.VolumeConfig, *api.Volume, *storage.SnapshotConfig, *api.Snapshot, *api.Snapshot) {
-
 	volConfig := &storage.VolumeConfig{
 		Version:      "1",
 		Name:         "testvol1",
@@ -3575,7 +3437,6 @@ func getStructsForCreateSnapshot(
 }
 
 func TestCanSnapshot(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, _, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3586,7 +3447,6 @@ func TestCanSnapshot(t *testing.T) {
 }
 
 func TestGetSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, snapshot, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3603,7 +3463,6 @@ func TestGetSnapshot(t *testing.T) {
 }
 
 func TestGetSnapshot_SnapshotNotReady(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, snapshot, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3621,7 +3480,6 @@ func TestGetSnapshot_SnapshotNotReady(t *testing.T) {
 }
 
 func TestGetSnapshot_NonexistentSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, _, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3635,7 +3493,6 @@ func TestGetSnapshot_NonexistentSnapshot(t *testing.T) {
 }
 
 func TestGetSnapshot_GetSnapshotFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, _, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3649,7 +3506,6 @@ func TestGetSnapshot_GetSnapshotFailed(t *testing.T) {
 }
 
 func TestGetSnapshot_WrongVolume(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, snapshot, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3664,7 +3520,6 @@ func TestGetSnapshot_WrongVolume(t *testing.T) {
 }
 
 func getSnapshotsForList(snapTime metav1.Time) []*api.Snapshot {
-
 	return []*api.Snapshot{
 		{
 			Name:            "snap1",
@@ -3706,7 +3561,6 @@ func getSnapshotsForList(snapTime metav1.Time) []*api.Snapshot {
 }
 
 func TestGetSnapshots(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume, _, _, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3751,7 +3605,6 @@ func TestGetSnapshots(t *testing.T) {
 }
 
 func TestGetSnapshots_NonexistentVolume(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume, _, _, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3765,7 +3618,6 @@ func TestGetSnapshots_NonexistentVolume(t *testing.T) {
 }
 
 func TestGetSnapshots_GetSnapshotsFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume, _, _, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3780,7 +3632,6 @@ func TestGetSnapshots_GetSnapshotsFailed(t *testing.T) {
 }
 
 func TestCreateSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume, snapConfig, snapshot, createRequest := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3806,7 +3657,6 @@ func TestCreateSnapshot(t *testing.T) {
 }
 
 func TestCreateSnapshot_VolumeExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, _, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3820,7 +3670,6 @@ func TestCreateSnapshot_VolumeExistsCheckFailed(t *testing.T) {
 }
 
 func TestCreateSnapshot_NonexistentVolume(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, _, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3834,7 +3683,6 @@ func TestCreateSnapshot_NonexistentVolume(t *testing.T) {
 }
 
 func TestCreateSnapshot_SnapshotExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume, snapConfig, _, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3849,7 +3697,6 @@ func TestCreateSnapshot_SnapshotExistsCheckFailed(t *testing.T) {
 }
 
 func TestCreateSnapshot_SnapshotExists(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume, snapConfig, snapshot, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3864,7 +3711,6 @@ func TestCreateSnapshot_SnapshotExists(t *testing.T) {
 }
 
 func TestCreateSnapshot_SnapshotCreateFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume, snapConfig, _, createRequest := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3880,7 +3726,6 @@ func TestCreateSnapshot_SnapshotCreateFailed(t *testing.T) {
 }
 
 func TestCreateSnapshot_SnapshotWaitFailed_CleanupOK(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume, snapConfig, snapshot, createRequest := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3898,7 +3743,6 @@ func TestCreateSnapshot_SnapshotWaitFailed_CleanupOK(t *testing.T) {
 }
 
 func TestCreateSnapshot_SnapshotWaitFailed_CleanupFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume, snapConfig, snapshot, createRequest := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3916,7 +3760,6 @@ func TestCreateSnapshot_SnapshotWaitFailed_CleanupFailed(t *testing.T) {
 }
 
 func TestCreateSnapshot_SetAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume, snapConfig, snapshot, createRequest := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3942,7 +3785,6 @@ func TestCreateSnapshot_SetAttributesFailed(t *testing.T) {
 }
 
 func TestRestoreSnapshot(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, _, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3954,7 +3796,6 @@ func TestRestoreSnapshot(t *testing.T) {
 }
 
 func TestDeleteSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, snapshot, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3970,7 +3811,6 @@ func TestDeleteSnapshot(t *testing.T) {
 }
 
 func TestDeleteSnapshot_NonexistentSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, _, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3983,7 +3823,6 @@ func TestDeleteSnapshot_NonexistentSnapshot(t *testing.T) {
 }
 
 func TestDeleteSnapshot_GetSnapshotFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, _, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -3996,7 +3835,6 @@ func TestDeleteSnapshot_GetSnapshotFailed(t *testing.T) {
 }
 
 func TestDeleteSnapshot_SetAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, snapshot, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -4010,7 +3848,6 @@ func TestDeleteSnapshot_SetAttributesFailed(t *testing.T) {
 }
 
 func TestDeleteSnapshot_AlreadyDeleting(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, snapshot, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -4025,7 +3862,6 @@ func TestDeleteSnapshot_AlreadyDeleting(t *testing.T) {
 }
 
 func TestDeleteSnapshot_DeleteFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, snapshot, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -4040,7 +3876,6 @@ func TestDeleteSnapshot_DeleteFailed(t *testing.T) {
 }
 
 func TestDeleteSnapshot_SnapshotWaitFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, snapConfig, snapshot, _ := getStructsForCreateSnapshot(ctx, driver, now)
@@ -4056,7 +3891,6 @@ func TestDeleteSnapshot_SnapshotWaitFailed(t *testing.T) {
 }
 
 func getVolumesForList() []*api.Volume {
-
 	return []*api.Volume{
 		{
 			Name:          "myPrefix-testvol1",
@@ -4137,7 +3971,6 @@ func getVolumesForList() []*api.Volume {
 }
 
 func TestList(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -4154,7 +3987,6 @@ func TestList(t *testing.T) {
 }
 
 func TestList_ListFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -4169,7 +4001,6 @@ func TestList_ListFailed(t *testing.T) {
 }
 
 func TestList_ListNone(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	mockAPI.EXPECT().Volumes(ctx).Return([]*api.Volume{}, nil).Times(1)
@@ -4181,7 +4012,6 @@ func TestList_ListNone(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volume := &api.Volume{}
@@ -4194,7 +4024,6 @@ func TestGet(t *testing.T) {
 }
 
 func TestGet_NotFound(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	mockAPI.EXPECT().Volume(ctx, "volume1").Return(nil, utils.NotFoundError("not found")).Times(1)
@@ -4206,7 +4035,6 @@ func TestGet_NotFound(t *testing.T) {
 }
 
 func TestResize(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume := getStructsForDestroy(ctx, driver)
@@ -4224,7 +4052,6 @@ func TestResize(t *testing.T) {
 }
 
 func TestResize_NonexistentVolume(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _ := getStructsForDestroy(ctx, driver)
@@ -4238,7 +4065,6 @@ func TestResize_NonexistentVolume(t *testing.T) {
 }
 
 func TestResize_VolumeNotReady(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume := getStructsForDestroy(ctx, driver)
@@ -4253,7 +4079,6 @@ func TestResize_VolumeNotReady(t *testing.T) {
 }
 
 func TestResize_AboveMaximumSize(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume := getStructsForDestroy(ctx, driver)
@@ -4269,7 +4094,6 @@ func TestResize_AboveMaximumSize(t *testing.T) {
 }
 
 func TestResize_ShrinkingVolume(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume := getStructsForDestroy(ctx, driver)
@@ -4284,7 +4108,6 @@ func TestResize_ShrinkingVolume(t *testing.T) {
 }
 
 func TestResize_NoSizeChange(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume := getStructsForDestroy(ctx, driver)
@@ -4299,7 +4122,6 @@ func TestResize_NoSizeChange(t *testing.T) {
 }
 
 func TestResize_SetAttributesFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume := getStructsForDestroy(ctx, driver)
@@ -4315,7 +4137,6 @@ func TestResize_SetAttributesFailed(t *testing.T) {
 }
 
 func TestResize_VolumeWaitFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume := getStructsForDestroy(ctx, driver)
@@ -4333,7 +4154,6 @@ func TestResize_VolumeWaitFailed(t *testing.T) {
 }
 
 func TestGetStorageBackendSpecs(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -4353,7 +4173,6 @@ func TestGetStorageBackendSpecs(t *testing.T) {
 }
 
 func TestCreatePrepare(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	tridentconfig.UsingPassthroughStore = true
@@ -4368,7 +4187,6 @@ func TestCreatePrepare(t *testing.T) {
 }
 
 func TestGetStorageBackendPhysicalPoolNames(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	result := driver.GetStorageBackendPhysicalPoolNames(ctx)
@@ -4377,7 +4195,6 @@ func TestGetStorageBackendPhysicalPoolNames(t *testing.T) {
 }
 
 func TestGetInternalVolumeName_PassthroughStore(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	tridentconfig.UsingPassthroughStore = true
@@ -4390,7 +4207,6 @@ func TestGetInternalVolumeName_PassthroughStore(t *testing.T) {
 }
 
 func TestGetInternalVolumeName_CSI(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	tridentconfig.UsingPassthroughStore = false
@@ -4403,7 +4219,6 @@ func TestGetInternalVolumeName_CSI(t *testing.T) {
 }
 
 func TestGetInternalVolumeName_NonCSIWithPrefix(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	tridentconfig.UsingPassthroughStore = false
@@ -4416,7 +4231,6 @@ func TestGetInternalVolumeName_NonCSIWithPrefix(t *testing.T) {
 }
 
 func TestGetInternalVolumeName_NonCSIEmptyPrefix(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	tridentconfig.UsingPassthroughStore = false
@@ -4429,7 +4243,6 @@ func TestGetInternalVolumeName_NonCSIEmptyPrefix(t *testing.T) {
 }
 
 func TestGetInternalVolumeName_NonCSINoPrefix(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	tridentconfig.UsingPassthroughStore = false
@@ -4441,7 +4254,6 @@ func TestGetInternalVolumeName_NonCSINoPrefix(t *testing.T) {
 }
 
 func TestCreateFollowup(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume, _, _ := getStructsForPublish(ctx, driver)
@@ -4457,7 +4269,6 @@ func TestCreateFollowup(t *testing.T) {
 }
 
 func TestCreateFollowup_NonexistentVolume(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, _, _, _ := getStructsForPublish(ctx, driver)
@@ -4473,7 +4284,6 @@ func TestCreateFollowup_NonexistentVolume(t *testing.T) {
 }
 
 func TestCreateFollowup_VolumeNotReady(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	volConfig, volume, _, _ := getStructsForPublish(ctx, driver)
@@ -4490,7 +4300,6 @@ func TestCreateFollowup_VolumeNotReady(t *testing.T) {
 }
 
 func TestGetProtocol(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	result := driver.GetProtocol(ctx)
@@ -4499,7 +4308,6 @@ func TestGetProtocol(t *testing.T) {
 }
 
 func TestStoreConfig(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	persistentConfig := &storage.PersistentStorageBackendConfig{}
@@ -4511,7 +4319,6 @@ func TestStoreConfig(t *testing.T) {
 }
 
 func TestGetExternalConfig(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	result := driver.GetExternalConfig(ctx)
@@ -4522,7 +4329,6 @@ func TestGetExternalConfig(t *testing.T) {
 }
 
 func TestGetVolumeExternal(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -4553,7 +4359,6 @@ func TestGetVolumeExternal(t *testing.T) {
 }
 
 func TestGetVolumeExternal_GetFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -4568,7 +4373,6 @@ func TestGetVolumeExternal_GetFailed(t *testing.T) {
 }
 
 func TestGetVolumeExternalWrappers(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -4595,7 +4399,6 @@ func TestGetVolumeExternalWrappers(t *testing.T) {
 }
 
 func TestGetVolumeExternalWrappers_ListFailed(t *testing.T) {
-
 	mockAPI, driver := newMockAstraDSDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -4621,7 +4424,6 @@ func TestGetVolumeExternalWrappers_ListFailed(t *testing.T) {
 }
 
 func TestStringAndGoString(t *testing.T) {
-
 	_, driver := newMockAstraDSDriver(t)
 
 	stringFunc := func(d *StorageDriver) string { return d.String() }
@@ -4639,7 +4441,6 @@ func TestStringAndGoString(t *testing.T) {
 }
 
 func TestGetUpdateType_NoFlaggedChanges(t *testing.T) {
-
 	_, oldDriver := newMockAstraDSDriver(t)
 	oldDriver.volumeCreateTimeout = 1 * time.Second
 
@@ -4654,7 +4455,6 @@ func TestGetUpdateType_NoFlaggedChanges(t *testing.T) {
 }
 
 func TestGetUpdateType_WrongDriverType(t *testing.T) {
-
 	oldDriver := &fake.StorageDriver{
 		Config:             drivers.FakeStorageDriverConfig{},
 		Volumes:            make(map[string]storagefake.Volume),
@@ -4676,7 +4476,6 @@ func TestGetUpdateType_WrongDriverType(t *testing.T) {
 }
 
 func TestGetUpdateType_OtherChanges(t *testing.T) {
-
 	_, oldDriver := newMockAstraDSDriver(t)
 	prefix1 := "prefix1-"
 	commonConfig1 := &drivers.CommonStorageDriverConfig{
@@ -4719,7 +4518,6 @@ func TestGetUpdateType_OtherChanges(t *testing.T) {
 }
 
 func TestReconcileNodeAccess(t *testing.T) {
-
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockAstraDS(mockCtrl)
 
@@ -4823,7 +4621,6 @@ func TestValidateStoragePrefix(t *testing.T) {
 }
 
 func TestGetCommonConfig(t *testing.T) {
-
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockAstraDS(mockCtrl)
 

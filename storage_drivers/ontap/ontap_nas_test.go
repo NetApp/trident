@@ -37,12 +37,11 @@ import (
 // //////////////////////////////////////////////////////////////////////////////////////////
 
 func TestOntapNasStorageDriverConfigString(t *testing.T) {
-
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	var ontapNasDrivers = []NASStorageDriver{
+	ontapNasDrivers := []NASStorageDriver{
 		*newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
 			tridentconfig.DriverContext("CSI"), true),
 		*newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
@@ -118,7 +117,6 @@ func newTestOntapNASDriver(
 }
 
 func TestInitializeStoragePoolsLabels(t *testing.T) {
-
 	ctx := context.Background()
 
 	mockCtrl := gomock.NewController(t)
@@ -169,13 +167,15 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 			"Label is not empty", "Label is not empty",
 		}, // no labels
 		{
-			map[string]string{"base-key": "base-value"}, nil,
+			map[string]string{"base-key": "base-value"},
+			nil,
 			`{"provisioning":{"base-key":"base-value"}}`,
 			`{"provisioning":{"base-key":"base-value"}}`, "nas-backend",
 			"Base label is not set correctly", "Base label is not set correctly",
 		}, // base label only
 		{
-			nil, map[string]string{"virtual-key": "virtual-value"},
+			nil,
+			map[string]string{"virtual-key": "virtual-value"},
 			"",
 			`{"provisioning":{"virtual-key":"virtual-value"}}`, "nas-backend",
 			"Base label is not empty", "Virtual pool label is not set correctly",

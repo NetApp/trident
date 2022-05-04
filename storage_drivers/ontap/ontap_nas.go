@@ -84,7 +84,6 @@ func (d *NASStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
-
 	if commonConfig.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Initialize", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
@@ -131,7 +130,6 @@ func (d *NASStorageDriver) Initialized() bool {
 }
 
 func (d *NASStorageDriver) Terminate(ctx context.Context, backendUUID string) {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Terminate", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
@@ -152,7 +150,6 @@ func (d *NASStorageDriver) Terminate(ctx context.Context, backendUUID string) {
 
 // Validate the driver configuration and execution environment
 func (d *NASStorageDriver) validate(ctx context.Context) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "validate", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> validate")
@@ -185,7 +182,6 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 func (d *NASStorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -397,7 +393,6 @@ func (d *NASStorageDriver) Create(
 func (d *NASStorageDriver) CreateClone(
 	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
-
 	// Ensure the volume exists
 	flexvol, err := d.API.VolumeInfo(ctx, cloneVolConfig.CloneSourceVolumeInternal)
 	if err != nil {
@@ -467,12 +462,10 @@ func (d *NASStorageDriver) CreateClone(
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
 	return cloneFlexvol(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
 		cloneVolConfig.CloneSourceSnapshot, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup)
-
 }
 
 // Destroy the volume
 func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -520,7 +513,6 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 func (d *NASStorageDriver) Import(
 	ctx context.Context, volConfig *storage.VolumeConfig, originalName string,
 ) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "Import",
@@ -601,7 +593,6 @@ func (d *NASStorageDriver) Import(
 
 // Rename changes the name of a volume
 func (d *NASStorageDriver) Rename(ctx context.Context, name, newName string) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":  "Rename",
@@ -622,7 +613,6 @@ func (d *NASStorageDriver) Rename(ctx context.Context, name, newName string) err
 func (d *NASStorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -662,7 +652,6 @@ func getFlexvolSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI,
 ) (*storage.Snapshot, error) {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -713,7 +702,6 @@ func getFlexvolSnapshot(
 func (d *NASStorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "GetSnapshot",
@@ -732,7 +720,6 @@ func (d *NASStorageDriver) GetSnapshot(
 func getFlexvolSnapshotList(
 	ctx context.Context, volConfig *storage.VolumeConfig, config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
 ) ([]*storage.Snapshot, error) {
-
 	internalVolName := volConfig.InternalName
 
 	if config.DebugTraceFlags["method"] {
@@ -787,7 +774,6 @@ func getFlexvolSnapshotList(
 func (d *NASStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) (
 	[]*storage.Snapshot, error,
 ) {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":     "GetSnapshots",
@@ -805,7 +791,6 @@ func (d *NASStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.
 func (d *NASStorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -827,7 +812,6 @@ func (d *NASStorageDriver) CreateSnapshot(
 func (d *NASStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "RestoreSnapshot",
@@ -846,7 +830,6 @@ func (d *NASStorageDriver) RestoreSnapshot(
 func (d *NASStorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "DeleteSnapshot",
@@ -873,7 +856,6 @@ func (d *NASStorageDriver) DeleteSnapshot(
 
 // Get tests for the existence of a volume
 func (d *NASStorageDriver) Get(ctx context.Context, name string) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Get", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Get")
@@ -905,7 +887,6 @@ func (d *NASStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) [
 }
 
 func (d *NASStorageDriver) getStoragePoolAttributesAbstraction(ctx context.Context) map[string]sa.Offer {
-
 	client := d.GetAPI()
 	mirroring, _ := client.IsSVMDRCapable(ctx)
 	return map[string]sa.Offer{
@@ -960,7 +941,6 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 			// Flexvol is not mounted, we need to mount it
 			volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
 			if err := d.API.VolumeMount(ctx, volConfig.InternalName, volConfig.AccessInfo.NfsPath); err != nil {
-
 				// An API error is returned if we attempt to mount a DP volume that has not yet been snapmirrored,
 				// we expect this to be the case.
 
@@ -996,7 +976,6 @@ func (d *NASStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 func (d *NASStorageDriver) GetVolumeExternal(
 	ctx context.Context, name string,
 ) (*storage.VolumeExternal, error) {
-
 	volume, err := d.API.VolumeInfo(ctx, name)
 	if err != nil {
 		return nil, err
@@ -1012,7 +991,6 @@ func (d *NASStorageDriver) GetVolumeExternal(
 func (d *NASStorageDriver) GetVolumeExternalWrappers(
 	ctx context.Context, channel chan *storage.VolumeExternalWrapper,
 ) {
-
 	// Let the caller know we're done by closing the channel
 	defer close(channel)
 
@@ -1034,7 +1012,6 @@ func (d *NASStorageDriver) GetVolumeExternalWrappers(
 
 // GetUpdateType returns a bitmap populated with updates to the driver
 func (d *NASStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage.Driver) *roaring.Bitmap {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "GetUpdateType",
@@ -1078,7 +1055,6 @@ func (d *NASStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage
 func (d *NASStorageDriver) Resize(
 	ctx context.Context, volConfig *storage.VolumeConfig, requestedSizeBytes uint64,
 ) error {
-
 	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -1131,7 +1107,6 @@ func (d *NASStorageDriver) Resize(
 func (d *NASStorageDriver) ReconcileNodeAccess(
 	ctx context.Context, nodes []*utils.Node, backendUUID string,
 ) error {
-
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)

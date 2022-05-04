@@ -25,7 +25,6 @@ import (
 )
 
 func (d OntapAPIZAPI) ValidateAPIVersion(ctx context.Context) error {
-
 	// Make sure we're using a valid ONTAP version
 	ontapVersion, err := d.APIVersion(ctx)
 	if err != nil {
@@ -42,7 +41,6 @@ func (d OntapAPIZAPI) ValidateAPIVersion(ctx context.Context) error {
 }
 
 func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
-
 	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "VolumeCreate",
@@ -79,14 +77,12 @@ func (d OntapAPIZAPI) VolumeCreate(ctx context.Context, volume Volume) error {
 }
 
 func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force bool) error {
-
 	volDestroyResponse, err := d.api.VolumeDestroy(name, force)
 	if err != nil {
 		return fmt.Errorf("error destroying volume %v: %v", name, err)
 	}
 
 	if zerr := NewZapiError(volDestroyResponse); !zerr.IsPassed() {
-
 		// It's not an error if the volume no longer exists
 		if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
 			Logc(ctx).WithField("volume", name).Warn("Volume already deleted.")
@@ -99,7 +95,6 @@ func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force bool
 }
 
 func (d OntapAPIZAPI) VolumeInfo(ctx context.Context, name string) (*Volume, error) {
-
 	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "VolumeInfo",
@@ -299,7 +294,6 @@ func (d OntapAPIZAPI) LunCreate(ctx context.Context, lun Lun) error {
 
 	lunCreateResponse, err := d.api.LunCreate(lun.Name, int(sizeBytes), lun.OsType, lun.Qos, *lun.SpaceReserved,
 		*lun.SpaceAllocated)
-
 	if err != nil {
 		return fmt.Errorf("error creating LUN: %v", err)
 	}
@@ -752,7 +746,6 @@ func NewZAPIClient(config ClientConfig) *Client {
 func NewZAPIClientFromOntapConfig(
 	ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig, numRecords int,
 ) (OntapAPI, error) {
-
 	client := NewZAPIClient(ClientConfig{
 		ManagementLIF:           ontapConfig.ManagementLIF,
 		SVM:                     ontapConfig.SVM,
@@ -834,7 +827,6 @@ func (d OntapAPIZAPI) EmsAutosupportLog(
 	eventSource string,
 	logLevel int,
 ) {
-
 	emsResponse, err := d.api.EmsAutosupportLog(
 		appVersion, autoSupport, category, computerName, eventDescription, eventID, eventSource, logLevel,
 	)
@@ -1026,7 +1018,6 @@ func (d OntapAPIZAPI) FlexgroupDestroy(ctx context.Context, volumeName string, f
 	}
 
 	if zerr := NewZapiError(volDestroyResponse); !zerr.IsPassed() {
-
 		// It's not an error if the volume no longer exists
 		if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
 			Logc(ctx).WithField("volume", volumeName).Warn("Volume already deleted.")
@@ -1039,7 +1030,6 @@ func (d OntapAPIZAPI) FlexgroupDestroy(ctx context.Context, volumeName string, f
 }
 
 func (d OntapAPIZAPI) FlexgroupListByPrefix(ctx context.Context, prefix string) (Volumes, error) {
-
 	// Get all volumes matching the storage prefix
 	volumesResponse, err := d.api.FlexGroupGetAll(prefix)
 	if err = GetError(ctx, volumesResponse, err); err != nil {
@@ -1181,7 +1171,6 @@ func (d OntapAPIZAPI) GetSVMAggregateSpace(ctx context.Context, aggregate string
 
 	// iterate over results
 	if aggrSpaceResponse.Result.AttributesListPtr != nil {
-
 		for _, aggrSpace := range aggrSpaceResponse.Result.AttributesListPtr.SpaceInformationPtr {
 
 			if !hasZapiAggrSpaceInformation(ctx, aggrSpace) {
@@ -1227,7 +1216,6 @@ func (d OntapAPIZAPI) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, 
 }
 
 func (d OntapAPIZAPI) VolumeMount(ctx context.Context, name, junctionPath string) error {
-
 	mountResponse, err := d.api.VolumeMount(name, junctionPath)
 	if err = GetError(ctx, mountResponse, err); err != nil {
 		if err.(ZapiError).Code() == azgo.EAPIERROR {
@@ -1340,6 +1328,7 @@ func (d OntapAPIZAPI) VolumeListByPrefix(ctx context.Context, prefix string) (Vo
 
 	return volumes, nil
 }
+
 func (d OntapAPIZAPI) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) (Volumes, error) {
 	aggrs := strings.Join(volumeAttrs.Aggregates, "|")
 	response, err := d.api.VolumeListByAttrs(volumeAttrs.Name, aggrs, volumeAttrs.SpaceReserve,
@@ -1433,7 +1422,6 @@ func (d OntapAPIZAPI) ExportPolicyExists(ctx context.Context, policyName string)
 }
 
 func (d OntapAPIZAPI) ExportRuleList(ctx context.Context, policyName string) (map[string]int, error) {
-
 	ruleListResponse, err := d.api.ExportRuleGetIterRequest(policyName)
 	if err = GetError(ctx, ruleListResponse, err); err != nil {
 		return nil, fmt.Errorf("error listing export policy rules: %v", err)
@@ -1657,7 +1645,6 @@ func (d OntapAPIZAPI) VolumeSnapshotCreate(ctx context.Context, snapshotName, so
 
 // probeForVolume polls for the ONTAP volume to appear, with backoff retry logic
 func (d OntapAPIZAPI) probeForVolume(ctx context.Context, name string) error {
-
 	checkVolumeExists := func() error {
 		volExists, err := d.VolumeExists(ctx, name)
 		if err != nil {
@@ -1689,7 +1676,6 @@ func (d OntapAPIZAPI) probeForVolume(ctx context.Context, name string) error {
 }
 
 func (d OntapAPIZAPI) VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error {
-
 	if async {
 		cloneResponse, err := d.api.VolumeCloneCreateAsync(cloneName, sourceName, snapshot)
 		if err != nil {
@@ -1707,7 +1693,6 @@ func (d OntapAPIZAPI) VolumeCloneCreate(ctx context.Context, cloneName, sourceNa
 			return fmt.Errorf("error creating clone: %v", err)
 		}
 		if zerr := NewZapiError(cloneResponse); !zerr.IsPassed() {
-
 			if zerr.Code() == azgo.EOBJECTNOTFOUND {
 				return fmt.Errorf("snapshot %s does not exist in volume %s", snapshot, sourceName)
 			} else if zerr.IsFailedToLoadJobError() {
@@ -1771,7 +1756,6 @@ func (d OntapAPIZAPI) VolumeCloneSplitStart(ctx context.Context, cloneName strin
 func (d OntapAPIZAPI) SnapshotRestoreVolume(
 	ctx context.Context, snapshotName, sourceVolume string,
 ) error {
-
 	snapResponse, err := d.api.SnapshotRestoreVolume(snapshotName, sourceVolume)
 
 	if err = GetError(ctx, snapResponse, err); err != nil {
@@ -1786,7 +1770,6 @@ func (d OntapAPIZAPI) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName
 
 func (d OntapAPIZAPI) VolumeSnapshotDelete(_ context.Context, snapshotName, sourceVolume string) error {
 	snapResponse, err := d.api.SnapshotDelete(snapshotName, sourceVolume)
-
 	if err != nil {
 		return fmt.Errorf("error deleting snapshot: %v", err)
 	}

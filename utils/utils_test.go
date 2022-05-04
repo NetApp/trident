@@ -121,7 +121,7 @@ func TestVolumeSizeWithinTolerance(t *testing.T) {
 
 	delta := int64(50000000) // 50mb
 
-	var volSizeTests = []struct {
+	volSizeTests := []struct {
 		requestedSize int64
 		currentSize   int64
 		delta         int64
@@ -138,20 +138,18 @@ func TestVolumeSizeWithinTolerance(t *testing.T) {
 	for _, vst := range volSizeTests {
 
 		isSameSize, err := VolumeSizeWithinTolerance(vst.requestedSize, vst.currentSize, vst.delta)
-
 		if err != nil {
 			t.Errorf("Encountered '%v' running TestVolumeSizeWithinTolerance", err)
 		}
 
 		assert.Equal(t, vst.expected, isSameSize)
 	}
-
 }
 
 func TestSliceContainsString(t *testing.T) {
 	log.Debug("Running TestSliceContainsString...")
 
-	var testCases = []struct {
+	testCases := []struct {
 		Text           string
 		ExpectedResult bool
 	}{
@@ -176,7 +174,7 @@ func TestSliceContainsString(t *testing.T) {
 func TestSliceContains(t *testing.T) {
 	log.Debug("Running TestSliceContains...")
 
-	var testCases = []struct {
+	testCases := []struct {
 		SliceName  interface{}
 		SliceValue interface{}
 		Contains   bool
@@ -218,7 +216,7 @@ func TestSliceContains(t *testing.T) {
 func TestSliceContainElements(t *testing.T) {
 	log.Debug("Running TestSliceContainElements...")
 
-	var testCases = []struct {
+	testCases := []struct {
 		SliceName    interface{}
 		SliceValues  interface{}
 		ContainsAll  bool
@@ -405,7 +403,7 @@ func TestRemoveStringFromSliceConditionally(t *testing.T) {
 func TestSliceContainsStringCaseInsensitive(t *testing.T) {
 	log.Debug("Running TestSliceContainsStringCaseInsensitive...")
 
-	var testCases = []struct {
+	testCases := []struct {
 		Text           string
 		ExpectedResult bool
 	}{
@@ -430,7 +428,7 @@ func TestSliceContainsStringCaseInsensitive(t *testing.T) {
 func TestSliceContainsStringConditionally(t *testing.T) {
 	log.Debug("Running TestSliceContainsStringConditionally...")
 
-	var testCases = []struct {
+	testCases := []struct {
 		Text           string
 		MatchFunc      func(string, string) bool
 		ExpectedResult bool
@@ -620,7 +618,7 @@ func TestGetNFSVersionFromMountOptions(t *testing.T) {
 	defaultVersion := "3"
 	supportedVersions := []string{"3", "4", "4.1"}
 
-	var tests = []struct {
+	tests := []struct {
 		mountOptions      string
 		defaultVersion    string
 		supportedVersions []string
@@ -661,7 +659,7 @@ func TestGetNFSVersionFromMountOptions(t *testing.T) {
 func TestGetNFSVersionMountOptions(t *testing.T) {
 	log.Debug("Running TestGetNFSVersionMountOptions...")
 
-	var tests = []struct {
+	tests := []struct {
 		mountOptions    string
 		NFSMountOptions []string
 	}{
@@ -694,7 +692,7 @@ func TestGetNFSVersionMountOptions(t *testing.T) {
 func TestSetNFSVersionMountOptions(t *testing.T) {
 	log.Debug("Running TestSetNFSVersionMountOptions...")
 
-	var tests = []struct {
+	tests := []struct {
 		mountOptions      string
 		newNFSMountOption string
 		newMountOptions   string
@@ -940,8 +938,7 @@ func TestValidateCIDRSet(t *testing.T) {
 }
 
 func TestValidateOctalUnixPermissions(t *testing.T) {
-
-	var tests = []struct {
+	tests := []struct {
 		perms     string
 		errNotNil bool
 	}{
@@ -995,7 +992,7 @@ func TestRedactSecretsFromString(t *testing.T) {
 </iscsi-initiator-set-default-auth>\n          </netapp>`
 	sampleZapiRequest := fmt.Sprintf(sampleZapiRequestFormatString, outboundPassphrase, outboundUsername, passphrase,
 		username)
-	secretFields := []string{ "outbound-passphrase", "outbound-user-name", "passphrase", "user-name" }
+	secretFields := []string{"outbound-passphrase", "outbound-user-name", "passphrase", "user-name"}
 	requestReplacements := make(map[string]string)
 	for _, f := range secretFields {
 		fmtString := "<%s>%s</%s>"
@@ -1007,7 +1004,7 @@ func TestRedactSecretsFromString(t *testing.T) {
 	xmlPassphraseString := "<outbound-user-name></outbound-user-name></outbound-user-name>"
 
 	xmlExpected := fmt.Sprintf("<outbound-user-name>%s</outbound-user-name>", REDACTED)
-	xmlReplacements := map[string]string{ "<outbound-user-name>.*</outbound-user-name>": xmlExpected }
+	xmlReplacements := map[string]string{"<outbound-user-name>.*</outbound-user-name>": xmlExpected}
 
 	xmlTagFormatString := "<%s>%s</%s>"
 	outboundPassphraseTag := fmt.Sprintf(xmlTagFormatString, "outbound-passphrase", "%s", "outbound-passphrase")
@@ -1015,7 +1012,7 @@ func TestRedactSecretsFromString(t *testing.T) {
 	noRegexPassphrase := "fdsxchj4d@"
 	noRegexPassphraseXml := fmt.Sprintf(outboundPassphraseTag, noRegexPassphrase)
 	noRegexExpectedXml := fmt.Sprintf(outboundPassphraseTag, REDACTED)
-	noRegexReplacements := map[string]string {
+	noRegexReplacements := map[string]string{
 		noRegexPassphraseXml: noRegexExpectedXml,
 	}
 
@@ -1023,7 +1020,7 @@ func TestRedactSecretsFromString(t *testing.T) {
 	uncompilableRegexExpectedString := "regex matching the secret could not compile, so the entire string has been" +
 		" redacted"
 	uncompilableRegexPassphraseTag := fmt.Sprintf(outboundPassphraseTag, uncompilableRegexPassphrase)
-	uncompilableRegexReplacements := map[string]string {
+	uncompilableRegexReplacements := map[string]string{
 		uncompilableRegexPassphraseTag: "won't be used",
 	}
 
@@ -1035,18 +1032,26 @@ func TestRedactSecretsFromString(t *testing.T) {
 		useRegex      bool
 		assertMessage string
 	}{
-		{"ZAPI request in bug report", sampleZapiRequest, expectedRedactedZapiRequest,
+		{
+			"ZAPI request in bug report", sampleZapiRequest, expectedRedactedZapiRequest,
 			requestReplacements, true, "expected that the sample usernames" +
-			" and passwords from the bug report are redacted in the output string"},
-		{"Passphrase is equal to the closing XML tag", xmlPassphraseString, xmlExpected,
+				" and passwords from the bug report are redacted in the output string",
+		},
+		{
+			"Passphrase is equal to the closing XML tag", xmlPassphraseString, xmlExpected,
 			xmlReplacements, true, "expected that only the passphrase portion of the" +
-			" xml string to be redacted when the passphrase is equal to the ending tag"},
-		{"Replacement works properly when a regular expression is not used", noRegexPassphraseXml,
+				" xml string to be redacted when the passphrase is equal to the ending tag",
+		},
+		{
+			"Replacement works properly when a regular expression is not used", noRegexPassphraseXml,
 			noRegexExpectedXml, noRegexReplacements, false, "expect only the" +
-			" passphrase to be redacted when regex matching is not used"},
-		{"Safe string is returned when regex is invalid", uncompilableRegexPassphrase,
+				" passphrase to be redacted when regex matching is not used",
+		},
+		{
+			"Safe string is returned when regex is invalid", uncompilableRegexPassphrase,
 			uncompilableRegexExpectedString, uncompilableRegexReplacements, true,
-			"expect the invalid regex error string when the provided regex cannot be compiled"},
+			"expect the invalid regex error string when the provided regex cannot be compiled",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1060,7 +1065,7 @@ func TestRedactSecretsFromString(t *testing.T) {
 func TestGetVerifiedBlockFsType(t *testing.T) {
 	log.Debug("Running TestGetVerifiedBlockFsType...")
 
-	var tests = []struct {
+	tests := []struct {
 		blockFsType string
 		fsType      string
 		errNotNil   bool
@@ -1090,7 +1095,7 @@ func TestGetVerifiedBlockFsType(t *testing.T) {
 func TestVerifyFilesystemSupport(t *testing.T) {
 	log.Debug("Running TestVerifyFilesystemSupport...")
 
-	var tests = []struct {
+	tests := []struct {
 		fsType       string
 		outputFsType string
 		errNotNil    bool
@@ -1124,7 +1129,7 @@ func TestVerifyFilesystemSupport(t *testing.T) {
 func TestAppendToStringList(t *testing.T) {
 	log.Debug("Running TestAppendToStringList...")
 
-	var tests = []struct {
+	tests := []struct {
 		stringList    string
 		newItem       string
 		sep           string
@@ -1166,7 +1171,7 @@ func TestAppendToStringList(t *testing.T) {
 func TestSanitizeMountOptions(t *testing.T) {
 	log.Debug("Running TestSanitizeMountOptions...")
 
-	var tests = []struct {
+	tests := []struct {
 		mountOptions          string
 		removeMountOptions    []string
 		SanitizedMountOptions string
@@ -1184,7 +1189,6 @@ func TestSanitizeMountOptions(t *testing.T) {
 	}
 
 	for _, test := range tests {
-
 		assert.Equal(t, test.SanitizedMountOptions, SanitizeMountOptions(test.mountOptions, test.removeMountOptions))
 	}
 }
@@ -1192,7 +1196,7 @@ func TestSanitizeMountOptions(t *testing.T) {
 func TestAreMountOptionsInList(t *testing.T) {
 	log.Debug("Running TestAreMountOptionsInList...")
 
-	var tests = []struct {
+	tests := []struct {
 		mountOptions string
 		optionList   []string
 		found        bool

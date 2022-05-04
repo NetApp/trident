@@ -28,7 +28,6 @@ func NewHTTPSServer(
 	p core.Orchestrator, address, port, caCertFile, serverCertFile, serverKeyFile string, enableMutualTLS bool,
 	handler http.Handler, writeTimeout time.Duration,
 ) (*APIServerHTTPS, error) {
-
 	orchestrator = p
 
 	apiServer := &APIServerHTTPS{
@@ -101,7 +100,6 @@ type tlsAuthHandler struct {
 }
 
 func (h *tlsAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	// Service requests from Trident nodes with a valid client certificate
 	if len(r.TLS.PeerCertificates) > 0 && r.TLS.PeerCertificates[0].Subject.CommonName == config.ClientCertName {
 		log.WithField("peerCert", config.ClientCertName).Debug("Authenticated by HTTPS REST frontend.")

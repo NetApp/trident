@@ -39,7 +39,6 @@ var getNodeCmd = &cobra.Command{
 }
 
 func nodeList(nodeNames []string) error {
-
 	var err error
 
 	// If no nodes were specified, we'll get all of them
@@ -73,7 +72,6 @@ func nodeList(nodeNames []string) error {
 }
 
 func GetNodes() ([]string, error) {
-
 	url := BaseURL() + "/node"
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
@@ -94,7 +92,6 @@ func GetNodes() ([]string, error) {
 }
 
 func GetNode(nodeName string) (*utils.Node, error) {
-
 	url := BaseURL() + "/node/" + nodeName
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
@@ -136,7 +133,6 @@ func WriteNodes(nodes []utils.Node) {
 }
 
 func writeNodeTable(nodes []utils.Node) {
-
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Name"})
 
@@ -150,7 +146,6 @@ func writeNodeTable(nodes []utils.Node) {
 }
 
 func writeWideNodeTable(nodes []utils.Node) {
-
 	table := tablewriter.NewWriter(os.Stdout)
 
 	header := []string{
@@ -186,7 +181,6 @@ func writeWideNodeTable(nodes []utils.Node) {
 }
 
 func writeNodeNames(nodes []utils.Node) {
-
 	for _, n := range nodes {
 		fmt.Println(n.Name)
 	}

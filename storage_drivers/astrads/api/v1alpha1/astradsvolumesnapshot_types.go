@@ -21,7 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-//NetAppVolumeConditionType indicates the type of condition occurred on a AstraDSVolumeSnapshot
+// NetAppVolumeConditionType indicates the type of condition occurred on a AstraDSVolumeSnapshot
 type AstraDSVolumeSnapshotConditionType string
 
 const (

@@ -244,9 +244,8 @@ type ListVolumesAccessGroupsResult struct {
 
 // EmptyResponse
 type EmptyResponse struct {
-	ID     int `json:"id"`
-	Result struct {
-	} `json:"result"`
+	ID     int      `json:"id"`
+	Result struct{} `json:"result"`
 }
 
 // VolumeAccessGroup
@@ -329,8 +328,7 @@ type ClusterCapacity struct {
 	ZeroBlocks                   int64  `json:"zeroBlocks"`
 }
 
-type GetClusterCapacityRequest struct {
-}
+type GetClusterCapacityRequest struct{}
 
 type GetClusterCapacityResult struct {
 	ID     int `json:"id"`
@@ -346,8 +344,7 @@ type GetClusterHardwareInfoResult struct {
 	} `json:"result"`
 }
 
-type DefaultQoSRequest struct {
-}
+type DefaultQoSRequest struct{}
 
 type DefaultQoSResult struct {
 	ID     int `json:"id"`

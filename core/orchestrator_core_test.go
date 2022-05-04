@@ -95,7 +95,6 @@ func cleanup(t *testing.T, o *TridentOrchestrator) {
 }
 
 func diffConfig(expected, got interface{}, fieldToSkip string) []string {
-
 	diffs := make([]string, 0)
 	expectedStruct := reflect.Indirect(reflect.ValueOf(expected))
 	gotStruct := reflect.Indirect(reflect.ValueOf(got))
@@ -122,7 +121,6 @@ func diffConfig(expected, got interface{}, fieldToSkip string) []string {
 
 // To be called after reflect.DeepEqual has failed.
 func diffExternalBackends(t *testing.T, expected, got *storage.BackendExternal) {
-
 	diffs := make([]string, 0)
 
 	if expected.Name != got.Name {
@@ -1472,7 +1470,6 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 }
 
 func backendPasswordsInLogsHelper(t *testing.T, debugTraceFlags map[string]bool) {
-
 	backendName := "passwordBackend"
 	backendProtocol := config.File
 
@@ -2215,7 +2212,6 @@ func TestFirstVolumeRecovery(t *testing.T) {
 }
 
 func TestOrchestratorNotReady(t *testing.T) {
-
 	var (
 		err            error
 		backend        *storage.BackendExternal
@@ -2354,7 +2350,7 @@ func TestOrchestratorNotReady(t *testing.T) {
 }
 
 func importVolumeSetup(
-	t *testing.T, backendName string, scName string, volumeName string, importOriginalName string,
+	t *testing.T, backendName, scName, volumeName, importOriginalName string,
 	backendProtocol config.Protocol,
 ) (*TridentOrchestrator, *storage.VolumeConfig) {
 	// Object setup
@@ -3588,7 +3584,7 @@ func TestGetProtocol(t *testing.T) {
 		expected   config.Protocol
 	}
 
-	var accessModesPositiveTests = []accessVariables{
+	accessModesPositiveTests := []accessVariables{
 		{config.Filesystem, config.ModeAny, config.ProtocolAny, config.ProtocolAny},
 		{config.Filesystem, config.ModeAny, config.File, config.File},
 		{config.Filesystem, config.ModeAny, config.Block, config.Block},
@@ -3618,7 +3614,7 @@ func TestGetProtocol(t *testing.T) {
 		{config.RawBlock, config.ReadWriteMany, config.Block, config.Block},
 	}
 
-	var accessModesNegativeTests = []accessVariables{
+	accessModesNegativeTests := []accessVariables{
 		{config.Filesystem, config.ReadOnlyMany, config.BlockOnFile, config.ProtocolAny},
 		{config.Filesystem, config.ReadWriteMany, config.Block, config.ProtocolAny},
 		{config.Filesystem, config.ReadWriteMany, config.BlockOnFile, config.ProtocolAny},

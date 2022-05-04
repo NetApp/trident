@@ -13,7 +13,7 @@ import (
 
 type TridentController interface {
 	InvokeAPI(
-		ctx context.Context, requestBody []byte, method string, resourcePath string, redactRequestBody,
+		ctx context.Context, requestBody []byte, method, resourcePath string, redactRequestBody,
 		redactResponseBody bool,
 	) (*http.Response, []byte, error)
 	CreateNode(ctx context.Context, node *utils.Node) (CreateNodeResponse, error)

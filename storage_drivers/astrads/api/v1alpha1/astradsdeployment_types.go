@@ -51,7 +51,7 @@ func (v ValidatedVersions) String() string {
 }
 
 // EqualOrUpgrade checks if the versions passed in are equal and which version fields are being upgraded
-func (v ValidatedVersions) EqualOrUpgrade(versions Versions) (equal bool, adsUpgrade bool, firetapUpgrade bool) {
+func (v ValidatedVersions) EqualOrUpgrade(versions Versions) (equal, adsUpgrade, firetapUpgrade bool) {
 	adsUpgrade = v.ADS != versions.ADS
 	firetapUpgrade = v.Firetap != versions.Firetap
 	equal = !adsUpgrade && !firetapUpgrade

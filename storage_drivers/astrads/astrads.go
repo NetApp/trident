@@ -136,7 +136,6 @@ func (d *StorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
-
 	if commonConfig.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Initialize", "Type": "StorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
@@ -197,7 +196,6 @@ func (d *StorageDriver) Initialized() bool {
 
 // Terminate stops the driver prior to its being unloaded
 func (d *StorageDriver) Terminate(ctx context.Context, _ string) {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Terminate", "Type": "StorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
@@ -211,7 +209,6 @@ func (d *StorageDriver) Terminate(ctx context.Context, _ string) {
 func (d *StorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.AstraDSStorageDriverConfig,
 ) {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "StorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> populateConfigurationDefaults")
@@ -268,7 +265,6 @@ func (d *StorageDriver) populateConfigurationDefaults(
 
 // initializeStoragePools defines the pools reported to Trident, whether physical or virtual.
 func (d *StorageDriver) initializeStoragePools(ctx context.Context) {
-
 	d.pools = make(map[string]storage.Pool)
 
 	if len(d.Config.Storage) == 0 {
@@ -394,7 +390,6 @@ func (d *StorageDriver) initializeAstraDSConfig(
 	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 	backendSecret map[string]string,
 ) (*drivers.AstraDSStorageDriverConfig, error) {
-
 	if commonConfig.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "initializeAstraDSConfig", "Type": "StorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> initializeAstraDSConfig")
@@ -423,7 +418,6 @@ func (d *StorageDriver) initializeAstraDSConfig(
 
 // validate ensures the driver configuration and execution environment are valid and working
 func (d *StorageDriver) validate(ctx context.Context) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "validate", "Type": "StorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> validate")
@@ -515,7 +509,6 @@ func (d *StorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
 	volAttributes map[string]sa.Request,
 ) error {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -727,7 +720,6 @@ func (d *StorageDriver) Create(
 func (d *StorageDriver) padVolumeSizeWithSnapshotReserve(
 	ctx context.Context, volumeName string, requestedSize uint64, snapshotReserve int32,
 ) uint64 {
-
 	if snapshotReserve < 0 || snapshotReserve > 90 {
 
 		Logc(ctx).WithFields(log.Fields{
@@ -756,7 +748,6 @@ func (d *StorageDriver) padVolumeSizeWithSnapshotReserve(
 func (d *StorageDriver) unpadVolumeSizeWithSnapshotReserve(
 	ctx context.Context, volumeName string, actualSize uint64, snapshotReserve int32,
 ) uint64 {
-
 	if snapshotReserve < 0 || snapshotReserve > 90 {
 
 		Logc(ctx).WithFields(log.Fields{
@@ -785,7 +776,6 @@ func (d *StorageDriver) unpadVolumeSizeWithSnapshotReserve(
 func (d *StorageDriver) CreateClone(
 	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, pool storage.Pool,
 ) error {
-
 	name := cloneVolConfig.InternalName
 	sourceVolumeName := cloneVolConfig.CloneSourceVolumeInternal
 	sourceSnapshotName := cloneVolConfig.CloneSourceSnapshot
@@ -971,7 +961,6 @@ func (d *StorageDriver) CreateClone(
 // export policy CR so that nothing is left behind.  In such cases we are already returning the volume creation
 // error from the workflow, so these cleanup operations merely log any errors they encounter.
 func (d *StorageDriver) cleanUpFailedVolume(ctx context.Context, volume *api.Volume) {
-
 	// If we failed to create a volume, clean up the volume CR
 	if deleteErr := d.API.DeleteVolume(ctx, volume); deleteErr != nil {
 		Logc(ctx).WithField("volume", volume.Name).WithError(deleteErr).Error("Could not delete failed volume.")
@@ -998,7 +987,6 @@ func (d *StorageDriver) cleanUpFailedVolume(ctx context.Context, volume *api.Vol
 
 // Import brings an existing AstraDS volume under Trident management.
 func (d *StorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "Import",
@@ -1058,7 +1046,6 @@ func (d *StorageDriver) Import(ctx context.Context, volConfig *storage.VolumeCon
 
 // Rename changes the name of a volume (not supported by AstraDS).
 func (d *StorageDriver) Rename(ctx context.Context, name, newName string) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":  "Rename",
@@ -1083,7 +1070,6 @@ type Telemetry struct {
 
 // getTelemetryLabelsJSON builds the labels that are set on each volume.
 func (d *StorageDriver) getTelemetryLabelsJSON(ctx context.Context) string {
-
 	telemetry := Telemetry{
 		Telemetry: tridentconfig.OrchestratorTelemetry,
 		Plugin:    d.Name(),
@@ -1102,7 +1088,6 @@ func (d *StorageDriver) getTelemetryLabelsJSON(ctx context.Context) string {
 
 // validateLabels accepts a map of labels and returns the same map with all invalid labels removed.
 func (d *StorageDriver) validateLabels(ctx context.Context, labels map[string]string) map[string]string {
-
 	validLabels := make(map[string]string)
 
 	for k, v := range labels {
@@ -1118,7 +1103,6 @@ func (d *StorageDriver) validateLabels(ctx context.Context, labels map[string]st
 
 // Destroy deletes a volume.
 func (d *StorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) (err error) {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1172,7 +1156,6 @@ func (d *StorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeCo
 // destroyExportPolicy is a deferred function called from Destroy() that cleans up any export policy whose
 // lifecycle was tied to that of a volume.
 func (d *StorageDriver) destroyExportPolicy(ctx context.Context, name string, destroyErr *error) {
-
 	// If the volume delete failed, it will be retried, so don't delete the export policy yet either.
 	if *destroyErr != nil {
 		return
@@ -1228,7 +1211,6 @@ func (d *StorageDriver) destroyExportPolicy(ctx context.Context, name string, de
 func (d *StorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1272,7 +1254,6 @@ func (d *StorageDriver) Publish(
 func (d *StorageDriver) publishNFSShare(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo, volume *api.Volume,
 ) error {
-
 	name := volume.Name
 	policyName := volume.Name
 
@@ -1321,7 +1302,6 @@ func (d *StorageDriver) publishNFSShare(
 func (d *StorageDriver) grantNodeAccess(
 	ctx context.Context, publishInfo *utils.VolumePublishInfo, policyName string,
 ) error {
-
 	exportPolicy, err := d.API.EnsureExportPolicyExists(ctx, policyName)
 	if err != nil {
 		err = fmt.Errorf("unable to ensure export policy exists; %v", err)
@@ -1353,7 +1333,6 @@ func (d *StorageDriver) grantNodeAccess(
 func (d *StorageDriver) Unpublish(
 	ctx context.Context, volConfig *storage.VolumeConfig, nodes []*utils.Node,
 ) error {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1385,7 +1364,6 @@ func (d *StorageDriver) Unpublish(
 func (d *StorageDriver) unpublishNFSShare(
 	ctx context.Context, volConfig *storage.VolumeConfig, nodes []*utils.Node, volume *api.Volume,
 ) error {
-
 	name := volume.Name
 	policyName := volume.Name
 
@@ -1432,7 +1410,6 @@ func (d *StorageDriver) unpublishNFSShare(
 // setNodeAccess checks to see if the export policy exists and if not it will create it.  Then it ensures
 // that the IPs in the node list exactly match the rules on the export policy.
 func (d *StorageDriver) setNodeAccess(ctx context.Context, nodes []*utils.Node, policyName string) error {
-
 	exportPolicy, err := d.API.EnsureExportPolicyExists(ctx, policyName)
 	if err != nil {
 		err = fmt.Errorf("unable to ensure export policy exists; %v", err)
@@ -1469,7 +1446,6 @@ func (d *StorageDriver) setNodeAccess(ctx context.Context, nodes []*utils.Node, 
 func (d *StorageDriver) reconcileExportPolicyRules(
 	ctx context.Context, policy *api.ExportPolicy, addedIPs []string,
 ) error {
-
 	// Start with existing rules
 	desiredPolicyRules := make(map[string]bool)
 	for _, rule := range policy.Rules {
@@ -1514,7 +1490,6 @@ func (d *StorageDriver) reconcileExportPolicyRules(
 
 // setExportPolicyRules replaces a set of access rules on an export policy to the specified set.
 func (d *StorageDriver) setExportPolicyRules(ctx context.Context, policy *api.ExportPolicy, IPs []string) error {
-
 	// Replace the rules on the export policy
 	policy.Rules = make([]api.ExportPolicyRule, 0)
 	index := uint64(1)
@@ -1554,7 +1529,6 @@ func (d *StorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig
 func (d *StorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1577,7 +1551,6 @@ func (d *StorageDriver) GetSnapshot(
 func (d *StorageDriver) getSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig,
 ) (*storage.Snapshot, error) {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1621,7 +1594,6 @@ func (d *StorageDriver) getSnapshot(
 func (d *StorageDriver) GetSnapshots(
 	ctx context.Context, volConfig *storage.VolumeConfig,
 ) ([]*storage.Snapshot, error) {
-
 	internalVolName := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1675,7 +1647,6 @@ func (d *StorageDriver) GetSnapshots(
 func (d *StorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1748,7 +1719,6 @@ func (d *StorageDriver) CreateSnapshot(
 // is left behind.  In such cases we are already returning the snapshot creation error from the workflow, so
 // these cleanup operations merely log any errors they encounter.
 func (d *StorageDriver) cleanUpFailedSnapshot(ctx context.Context, snapshot *api.Snapshot) {
-
 	// If we failed to create a snapshot, clean up the snapshot CR
 	if deleteErr := d.API.DeleteSnapshot(ctx, snapshot); deleteErr != nil {
 		Logc(ctx).WithField("snapshot", snapshot.Name).WithError(deleteErr).Error("Could not delete failed snapshot.")
@@ -1761,7 +1731,6 @@ func (d *StorageDriver) cleanUpFailedSnapshot(ctx context.Context, snapshot *api
 func (d *StorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1783,7 +1752,6 @@ func (d *StorageDriver) RestoreSnapshot(
 func (d *StorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1842,7 +1810,6 @@ func (d *StorageDriver) DeleteSnapshot(
 
 // List returns the list of volumes.
 func (d *StorageDriver) List(ctx context.Context) ([]string, error) {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "List", "Type": "StorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> List")
@@ -1877,7 +1844,6 @@ func (d *StorageDriver) List(ctx context.Context) ([]string, error) {
 
 // Get tests for the existence of a volume.
 func (d *StorageDriver) Get(ctx context.Context, name string) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Get", "Type": "StorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Get")
@@ -1890,7 +1856,6 @@ func (d *StorageDriver) Get(ctx context.Context, name string) error {
 
 // Resize increases a volume's size.
 func (d *StorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, requestedSizeBytes uint64) error {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1964,7 +1929,6 @@ func (d *StorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeCon
 
 // GetStorageBackendSpecs retrieves storage capabilities and registers pools with the specified backend.
 func (d *StorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
-
 	backend.SetName(d.BackendName())
 
 	for _, pool := range d.pools {
@@ -1988,7 +1952,6 @@ func (d *StorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []st
 // GetInternalVolumeName returns the name for a volume on the storage.  Note that this method's signature does not
 // allow it to check for legality of the volume name, so that check is done during volume creation.
 func (d *StorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
-
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return *d.Config.StoragePrefix + name
@@ -2006,7 +1969,6 @@ func (d *StorageDriver) GetInternalVolumeName(ctx context.Context, name string) 
 
 // CreateFollowup updates the volume config with volume access details.
 func (d *StorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "CreateFollowup",
@@ -2049,7 +2011,6 @@ func (d *StorageDriver) StoreConfig(_ context.Context, b *storage.PersistentStor
 
 // GetExternalConfig returns a sanitized copy of this backends config suitable for external transmission.
 func (d *StorageDriver) GetExternalConfig(ctx context.Context) interface{} {
-
 	// Clone the config so we don't risk altering the original
 
 	clone, err := copystructure.Copy(d.Config)
@@ -2072,7 +2033,6 @@ func (d *StorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 // a single container volume managed by this driver and returns a VolumeExternal
 // representation of the volume.
 func (d *StorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
-
 	volumeAttrs, err := d.API.Volume(ctx, name)
 	if err != nil {
 		return nil, err
@@ -2086,7 +2046,6 @@ func (d *StorageDriver) GetVolumeExternal(ctx context.Context, name string) (*st
 // representation of each volume to the supplied channel, closing the channel
 // when finished.
 func (d *StorageDriver) GetVolumeExternalWrappers(ctx context.Context, channel chan *storage.VolumeExternalWrapper) {
-
 	// Let the caller know we're done by closing the channel
 	defer close(channel)
 
@@ -2119,7 +2078,6 @@ func (d *StorageDriver) GetVolumeExternalWrappers(ctx context.Context, channel c
 // getExternalVolume is a private method that accepts info about a volume as returned by the
 // storage backend and formats it as a VolumeExternal object.
 func (d *StorageDriver) getVolumeExternal(ctx context.Context, volume *api.Volume) *storage.VolumeExternal {
-
 	internalName := volume.Name
 	name := internalName
 	if strings.HasPrefix(internalName, *d.Config.StoragePrefix) {
@@ -2163,7 +2121,6 @@ func (d StorageDriver) GoString() string {
 
 // GetUpdateType returns a bitmap populated with updates to the driver.
 func (d *StorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driver) *roaring.Bitmap {
-
 	bitmap := roaring.New()
 	dOrig, ok := driverOrig.(*StorageDriver)
 	if !ok {
@@ -2185,7 +2142,6 @@ func (d *StorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driv
 // ReconcileNodeAccess updates per-backend export policies to include access to all specified
 // nodes (not supported by AstraDS).
 func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, _ []*utils.Node, _ string) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "ReconcileNodeAccess",

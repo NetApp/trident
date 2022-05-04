@@ -13,9 +13,7 @@ import (
 )
 
 func (c *Client) CreateSnapshot(ctx context.Context, req *CreateSnapshotRequest) (snapshot Snapshot, err error) {
-
 	response, err := c.Request(ctx, "CreateSnapshot", req, NewReqID())
-
 	if err != nil {
 		if strings.Contains(err.Error(), "xMaxSnapshotsPerVolumeExceeded") {
 			return Snapshot{}, utils.MaxLimitReachedError(err.Error())
@@ -32,7 +30,6 @@ func (c *Client) CreateSnapshot(ctx context.Context, req *CreateSnapshotRequest)
 }
 
 func (c *Client) GetSnapshot(ctx context.Context, snapID, volID int64, sfName string) (s Snapshot, err error) {
-
 	var listReq ListSnapshotsRequest
 	listReq.VolumeID = volID
 	snapshots, err := c.ListSnapshots(ctx, &listReq)
@@ -53,7 +50,6 @@ func (c *Client) GetSnapshot(ctx context.Context, snapID, volID int64, sfName st
 }
 
 func (c *Client) ListSnapshots(ctx context.Context, req *ListSnapshotsRequest) (snapshots []Snapshot, err error) {
-
 	response, err := c.Request(ctx, "ListSnapshots", req, NewReqID())
 	if err != nil {
 		Logc(ctx).Errorf("Error in ListSnapshots: %+v", err)
@@ -66,11 +62,9 @@ func (c *Client) ListSnapshots(ctx context.Context, req *ListSnapshotsRequest) (
 	}
 	snapshots = result.Result.Snapshots
 	return
-
 }
 
 func (c *Client) RollbackToSnapshot(ctx context.Context, req *RollbackToSnapshotRequest) (newSnapID int64, err error) {
-
 	response, err := c.Request(ctx, "RollbackToSnapshot", req, NewReqID())
 	if err != nil {
 		Logc(ctx).Errorf("Error in RollbackToSnapshot: %+v", err)
@@ -84,11 +78,9 @@ func (c *Client) RollbackToSnapshot(ctx context.Context, req *RollbackToSnapshot
 	newSnapID = result.Result.SnapshotID
 	err = nil
 	return
-
 }
 
 func (c *Client) DeleteSnapshot(ctx context.Context, snapshotID int64) (err error) {
-
 	// TODO(jdg): Add options like purge=True|False, range, ALL etc
 	var req DeleteSnapshotRequest
 	req.SnapshotID = snapshotID

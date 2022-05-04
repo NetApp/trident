@@ -39,8 +39,10 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-type EventType string
-type ObjectType string
+type (
+	EventType  string
+	ObjectType string
+)
 
 const (
 	EventAdd         EventType = "add"
@@ -164,7 +166,6 @@ type TridentCrdController struct {
 func NewTridentCrdController(
 	orchestrator core.Orchestrator, masterURL, kubeConfigPath string,
 ) (*TridentCrdController, error) {
-
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
 	Logx(ctx).Debug("Creating CRDv1 controller.")
@@ -184,7 +185,6 @@ func newTridentCrdControllerImpl(
 	kubeClientset kubernetes.Interface, snapshotClientset k8ssnapshots.Interface,
 	crdClientset tridentv1clientset.Interface,
 ) (*TridentCrdController, error) {
-
 	log.WithFields(log.Fields{
 		"namespace": tridentNamespace,
 	}).Info("Initializing Trident CRD controller frontend.")
@@ -465,7 +465,6 @@ func (c *TridentCrdController) updateTridentBackendConfigEvent(old, new interfac
 	}
 
 	c.workqueue.Add(keyItem)
-
 }
 
 // deleteTridentBackendConfigEvent takes a TridentBackendConfig resource and converts it into a namespace/name
@@ -594,7 +593,6 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 
 	// We wrap this block in a func so we can defer c.workqueue.Done.
 	err := func(obj interface{}) error {
-
 		// We call Done here so the workqueue knows we have finished processing
 		// this item. We also must remember to call Forget if we do not want
 		// this work item being re-queued. For example, we do not call Forget if
@@ -668,7 +666,6 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 
 		return nil
 	}(obj)
-
 	if err != nil {
 		Logx(ctx).Error(err)
 		return true
@@ -678,7 +675,6 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 }
 
 func (c *TridentCrdController) reconcileBackend(keyItem *KeyItem) {
-
 	key := keyItem.key
 	ctx := keyItem.ctx
 	eventType := keyItem.event
@@ -748,7 +744,6 @@ func (c *TridentCrdController) reconcileBackend(keyItem *KeyItem) {
 }
 
 func (c *TridentCrdController) reconcileSecret(keyItem *KeyItem) {
-
 	key := keyItem.key
 	ctx := keyItem.ctx
 	eventType := keyItem.event
@@ -844,7 +839,6 @@ func (c *TridentCrdController) reconcileBackendConfig(keyItem *KeyItem) error {
 // handleTridentBackendConfig compares the actual state with the desired, and attempts to converge the two.
 // It then updates the Status block of the TridentBackendConfig resource with the current status of the resource.
 func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) error {
-
 	if keyItem == nil {
 		return fmt.Errorf("keyItem item is nil")
 	}
@@ -996,7 +990,6 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 func (c *TridentCrdController) addBackendConfig(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, deletionPolicy string,
 ) error {
-
 	Logx(ctx).WithFields(log.Fields{
 		"backendConfig.Name": backendConfig.Name,
 	}).Debug("TridentCrdController#addBackendConfig")
@@ -1043,7 +1036,6 @@ func (c *TridentCrdController) addBackendConfig(
 func (c *TridentCrdController) updateBackendConfig(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, deletionPolicy string,
 ) error {
-
 	logFields := log.Fields{
 		"backendConfig.Name": backendConfig.Name,
 		"backendConfig.UID":  backendConfig.UID,
@@ -1125,7 +1117,6 @@ func (c *TridentCrdController) updateBackendConfig(
 func (c *TridentCrdController) deleteBackendConfig(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, deletionPolicy string,
 ) error {
-
 	logFields := log.Fields{
 		"backendConfig.Name": backendConfig.Name,
 		"backendName":        backendConfig.Status.BackendInfo.BackendName,
@@ -1141,7 +1132,6 @@ func (c *TridentCrdController) deleteBackendConfig(
 		// Originally we were doing the same for the phase=lost but it does not remove configRef
 		// from the in-memory object, thus making it hard to remove it using tridentctl
 		Logx(ctx).Debugf("Deleting the CR with the status '%v'", backendConfig.Status.Phase)
-
 	} else {
 		Logx(ctx).WithFields(logFields).Debug("Attempting to delete backend.")
 
@@ -1200,7 +1190,6 @@ func (c *TridentCrdController) deleteBackendConfig(
 func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, logFields map[string]interface{},
 ) (string, tridentv1.TridentBackendConfigPhase, error) {
-
 	var phase tridentv1.TridentBackendConfigPhase
 	var backend *tridentv1.TridentBackend
 	var message string
@@ -1300,7 +1289,6 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 func (c *TridentCrdController) deleteBackendConfigUsingPolicyRetain(
 	ctx context.Context, backendConfig *tridentv1.TridentBackendConfig, logFields map[string]interface{},
 ) (string, tridentv1.TridentBackendConfigPhase, error) {
-
 	var phase tridentv1.TridentBackendConfigPhase
 	var backend *tridentv1.TridentBackend
 	var message string
@@ -1358,7 +1346,6 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyRetain(
 func (c *TridentCrdController) getTridentBackend(
 	ctx context.Context, namespace, backendUUID string,
 ) (*tridentv1.TridentBackend, error) {
-
 	// Get list of all the backends
 	backendList, err := c.crdClientset.TridentV1().TridentBackends(namespace).List(ctx, listOpts)
 	if err != nil {
@@ -1407,7 +1394,6 @@ func (c *TridentCrdController) getBackendConfigWithBackendUUID(
 func (c *TridentCrdController) getBackendConfigsWithSecret(
 	ctx context.Context, namespace, secret string,
 ) ([]*tridentv1.TridentBackendConfig, error) {
-
 	var backendConfigs []*tridentv1.TridentBackendConfig
 
 	// Get list of all the backend configs
@@ -1420,7 +1406,6 @@ func (c *TridentCrdController) getBackendConfigsWithSecret(
 	}
 
 	for _, backendConfig := range backendConfigList.Items {
-
 		if secretName, err := backendConfig.Spec.GetSecretName(); err == nil && secretName != "" {
 			if secretName == secret {
 				backendConfigs = append(backendConfigs, backendConfig)
@@ -1450,7 +1435,6 @@ func (c *TridentCrdController) updateTbcEventAndStatus(
 	ctx context.Context, tbcCR *tridentv1.TridentBackendConfig,
 	newStatus tridentv1.TridentBackendConfigStatus, debugMessage, eventType string,
 ) (tbcCRNew *tridentv1.TridentBackendConfig, err error) {
-
 	var logEvent bool
 
 	if tbcCRNew, logEvent, err = c.updateTridentBackendConfigCRStatus(ctx, tbcCR, newStatus, debugMessage); err != nil {
@@ -1470,7 +1454,6 @@ func (c *TridentCrdController) updateTridentBackendConfigCRStatus(
 	ctx context.Context,
 	tbcCR *tridentv1.TridentBackendConfig, newStatusDetails tridentv1.TridentBackendConfigStatus, debugMessage string,
 ) (*tridentv1.TridentBackendConfig, bool, error) {
-
 	logFields := log.Fields{"TridentBackendConfigCR": tbcCR.Name}
 
 	// Update phase of the tbcCR
@@ -1506,7 +1489,6 @@ func (c *TridentCrdController) checkAndHandleNewlyBoundCRDeletion(
 	ctx context.Context,
 	tbcCR *tridentv1.TridentBackendConfig, newStatusDetails tridentv1.TridentBackendConfigStatus,
 ) *tridentv1.TridentBackendConfig {
-
 	logFields := log.Fields{"TridentBackendConfigCR": tbcCR.Name}
 	var newTbcCR *tridentv1.TridentBackendConfig
 
@@ -1555,7 +1537,6 @@ func (c *TridentCrdController) checkAndHandleNewlyBoundCRDeletion(
 func (c *TridentCrdController) updateTridentBackendConfigCR(
 	ctx context.Context, tbcCR *tridentv1.TridentBackendConfig,
 ) (*tridentv1.TridentBackendConfig, error) {
-
 	logFields := log.Fields{"TridentBackendConfigCR": tbcCR.Name}
 
 	// Update phase of the tbcCR
@@ -1634,7 +1615,6 @@ func (c *TridentCrdController) removeFinalizers(ctx context.Context, obj interfa
 func (c *TridentCrdController) removeBackendFinalizers(
 	ctx context.Context, backend *tridentv1.TridentBackend,
 ) (err error) {
-
 	Logx(ctx).WithFields(log.Fields{
 		"backend.ResourceVersion":              backend.ResourceVersion,
 		"backend.ObjectMeta.DeletionTimestamp": backend.ObjectMeta.DeletionTimestamp,
@@ -1660,7 +1640,6 @@ func (c *TridentCrdController) removeBackendFinalizers(
 func (c *TridentCrdController) removeBackendConfigFinalizers(
 	ctx context.Context, tbc *tridentv1.TridentBackendConfig,
 ) (err error) {
-
 	Logx(ctx).WithFields(log.Fields{
 		"tbc.ResourceVersion":              tbc.ResourceVersion,
 		"tbc.ObjectMeta.DeletionTimestamp": tbc.ObjectMeta.DeletionTimestamp,
@@ -1685,7 +1664,6 @@ func (c *TridentCrdController) removeBackendConfigFinalizers(
 
 // removeNodeFinalizers removes Trident's finalizers from TridentNode CRs
 func (c *TridentCrdController) removeNodeFinalizers(ctx context.Context, node *tridentv1.TridentNode) (err error) {
-
 	Logx(ctx).WithFields(log.Fields{
 		"node.ResourceVersion":              node.ResourceVersion,
 		"node.ObjectMeta.DeletionTimestamp": node.ObjectMeta.DeletionTimestamp,
@@ -1711,7 +1689,6 @@ func (c *TridentCrdController) removeNodeFinalizers(ctx context.Context, node *t
 func (c *TridentCrdController) removeStorageClassFinalizers(
 	ctx context.Context, sc *tridentv1.TridentStorageClass,
 ) (err error) {
-
 	Logx(ctx).WithFields(log.Fields{
 		"sc.ResourceVersion":              sc.ResourceVersion,
 		"sc.ObjectMeta.DeletionTimestamp": sc.ObjectMeta.DeletionTimestamp,
@@ -1737,7 +1714,6 @@ func (c *TridentCrdController) removeStorageClassFinalizers(
 func (c *TridentCrdController) removeTransactionFinalizers(
 	ctx context.Context, tx *tridentv1.TridentTransaction,
 ) (err error) {
-
 	Logx(ctx).WithFields(log.Fields{
 		"tx.ResourceVersion":              tx.ResourceVersion,
 		"tx.ObjectMeta.DeletionTimestamp": tx.ObjectMeta.DeletionTimestamp,
@@ -1761,7 +1737,6 @@ func (c *TridentCrdController) removeTransactionFinalizers(
 
 // removeVersionFinalizers removes Trident's finalizers from TridentVersion CRs
 func (c *TridentCrdController) removeVersionFinalizers(ctx context.Context, v *tridentv1.TridentVersion) (err error) {
-
 	Logx(ctx).WithFields(log.Fields{
 		"v.ResourceVersion":              v.ResourceVersion,
 		"v.ObjectMeta.DeletionTimestamp": v.ObjectMeta.DeletionTimestamp,
@@ -1785,7 +1760,6 @@ func (c *TridentCrdController) removeVersionFinalizers(ctx context.Context, v *t
 
 // removeVolumeFinalizers removes Trident's finalizers from TridentVolume CRs
 func (c *TridentCrdController) removeVolumeFinalizers(ctx context.Context, vol *tridentv1.TridentVolume) (err error) {
-
 	Logx(ctx).WithFields(log.Fields{
 		"vol.ResourceVersion":              vol.ResourceVersion,
 		"vol.ObjectMeta.DeletionTimestamp": vol.ObjectMeta.DeletionTimestamp,
@@ -1811,7 +1785,6 @@ func (c *TridentCrdController) removeVolumeFinalizers(ctx context.Context, vol *
 func (c *TridentCrdController) removeVolumePublicationFinalizers(
 	ctx context.Context, volPub *tridentv1.TridentVolumePublication,
 ) (err error) {
-
 	Logx(ctx).WithFields(log.Fields{
 		"volPub.ResourceVersion":              volPub.ResourceVersion,
 		"volPub.ObjectMeta.DeletionTimestamp": volPub.ObjectMeta.DeletionTimestamp,
@@ -1837,7 +1810,6 @@ func (c *TridentCrdController) removeVolumePublicationFinalizers(
 func (c *TridentCrdController) removeSnapshotFinalizers(
 	ctx context.Context, snap *tridentv1.TridentSnapshot,
 ) (err error) {
-
 	Logx(ctx).WithFields(log.Fields{
 		"snap.ResourceVersion":              snap.ResourceVersion,
 		"snap.ObjectMeta.DeletionTimestamp": snap.ObjectMeta.DeletionTimestamp,
@@ -1863,7 +1835,6 @@ func (c *TridentCrdController) removeSnapshotFinalizers(
 func (c *TridentCrdController) removeTMRFinalizers(
 	ctx context.Context, tmr *tridentv1.TridentMirrorRelationship,
 ) (err error) {
-
 	Logx(ctx).WithFields(log.Fields{
 		"tmr.ResourceVersion":              tmr.ResourceVersion,
 		"tmr.ObjectMeta.DeletionTimestamp": tmr.ObjectMeta.DeletionTimestamp,
@@ -1889,7 +1860,6 @@ func (c *TridentCrdController) removeTMRFinalizers(
 func (c *TridentCrdController) removeTSIFinalizers(
 	ctx context.Context, tsi *tridentv1.TridentSnapshotInfo,
 ) (err error) {
-
 	Logx(ctx).WithFields(log.Fields{
 		"tsi.ResourceVersion":              tsi.ResourceVersion,
 		"tsi.ObjectMeta.DeletionTimestamp": tsi.ObjectMeta.DeletionTimestamp,

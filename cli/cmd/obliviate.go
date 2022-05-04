@@ -39,7 +39,6 @@ var obliviateCmd = &cobra.Command{
 
 // initLogging configures logging. Logs are written to stdout.
 func initLogging() {
-
 	// Log to stdout only
 	log.SetOutput(os.Stdout)
 	log.SetFormatter(&log.TextFormatter{DisableTimestamp: true})
@@ -57,7 +56,6 @@ func initLogging() {
 }
 
 func initClients() error {
-
 	clients, err := k8sclient.CreateK8SClients("", configPath, TridentPodNamespace)
 	if err != nil {
 		return err
@@ -76,7 +74,6 @@ func initClients() error {
 		log.Debug("Running in a pod.")
 
 	} else {
-
 		log.Debug("Running outside a pod.")
 	}
 
@@ -84,7 +81,6 @@ func initClients() error {
 }
 
 func confirmObliviate(confirmation string) error {
-
 	if !forceObliviate {
 		if forceObliviate, err := getUserConfirmation(confirmation, obliviateCmd); err != nil {
 			return err

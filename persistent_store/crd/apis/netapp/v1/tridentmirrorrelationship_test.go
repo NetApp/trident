@@ -7,7 +7,6 @@ import (
 )
 
 func TestIsValid(t *testing.T) {
-
 	// Test valid cases
 	validMR := &TridentMirrorRelationship{
 		Spec: TridentMirrorRelationshipSpec{

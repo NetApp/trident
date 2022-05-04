@@ -1,6 +1,7 @@
 // DO NOT EDIT: Auto generated using 'ifacemaker -f ontap_zapi.go -s Client -i ZapiClientInterface -p api > ontap_zapi_interface.go'
 
 package api
+
 //go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_ontap/mock_ontap_zapi_interface.go github.com/netapp/trident/storage_drivers/ontap/api ZapiClientInterface
 
 import (
@@ -344,7 +345,7 @@ type ZapiClientInterface interface {
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 	// EmsAutosupportLog generates an auto support message with the supplied parameters
 	EmsAutosupportLog(
-		appVersion string, autoSupport bool, category string, computerName string, eventDescription string, eventID int,
+		appVersion string, autoSupport bool, category, computerName, eventDescription string, eventID int,
 		eventSource string, logLevel int,
 	) (*azgo.EmsAutosupportLogResponse, error)
 	TieringPolicyValue(ctx context.Context) string

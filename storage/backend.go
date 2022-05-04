@@ -236,7 +236,6 @@ func NewStorageBackend(ctx context.Context, driver Driver) (*StorageBackend, err
 }
 
 func NewFailedStorageBackend(ctx context.Context, driver Driver) Backend {
-
 	backend := StorageBackend{
 		name:    driver.BackendName(),
 		driver:  driver,
@@ -282,7 +281,6 @@ func (b *StorageBackend) IsCredentialsFieldSet(ctx context.Context) bool {
 func (b *StorageBackend) AddVolume(
 	ctx context.Context, volConfig *VolumeConfig, storagePool Pool, volAttributes map[string]sa.Request, retry bool,
 ) (*Volume, error) {
-
 	var err error
 
 	Logc(ctx).WithFields(log.Fields{
@@ -308,7 +306,6 @@ func (b *StorageBackend) AddVolume(
 	// Add volume to the backend
 	volumeExists := false
 	if err = b.driver.Create(ctx, volConfig, storagePool, volAttributes); err != nil {
-
 		if drivers.IsVolumeExistsError(err) {
 
 			// Implement idempotency by ignoring the error if the volume exists already
@@ -363,7 +360,6 @@ func (b *StorageBackend) AddVolume(
 }
 
 func (b *StorageBackend) GetDebugTraceFlags(ctx context.Context) map[string]bool {
-
 	var emptyMap map[string]bool
 	if b == nil {
 		return emptyMap
@@ -391,7 +387,6 @@ func (b *StorageBackend) GetDebugTraceFlags(ctx context.Context) map[string]bool
 func (b *StorageBackend) CloneVolume(
 	ctx context.Context, sourceVolConfig, cloneVolConfig *VolumeConfig, storagePool Pool, retry bool,
 ) (*Volume, error) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend":                cloneVolConfig.Name,
 		"backendUUID":            b.backendUUID,
@@ -424,7 +419,6 @@ func (b *StorageBackend) CloneVolume(
 	// Clone volume on the backend
 	volumeExists := false
 	if err := b.driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, storagePool); err != nil {
-
 		if drivers.IsVolumeExistsError(err) {
 
 			// Implement idempotency by ignoring the error if the volume exists already
@@ -497,7 +491,6 @@ func (b *StorageBackend) CloneVolume(
 func (b *StorageBackend) PublishVolume(
 	ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.name,
 		"backendUUID":    b.backendUUID,
@@ -522,7 +515,6 @@ func (b *StorageBackend) PublishVolume(
 func (b *StorageBackend) UnpublishVolume(
 	ctx context.Context, volConfig *VolumeConfig, nodes []*utils.Node,
 ) error {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.name,
 		"backendUUID":    b.backendUUID,
@@ -544,7 +536,6 @@ func (b *StorageBackend) UnpublishVolume(
 }
 
 func (b *StorageBackend) GetVolumeExternal(ctx context.Context, volumeName string) (*VolumeExternal, error) {
-
 	// Ensure backend is ready
 	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
@@ -564,7 +555,6 @@ func (b *StorageBackend) GetVolumeExternal(ctx context.Context, volumeName strin
 }
 
 func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConfig) (*Volume, error) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend":    b.name,
 		"volume":     volConfig.ImportOriginalName,
@@ -600,7 +590,6 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 }
 
 func (b *StorageBackend) ResizeVolume(ctx context.Context, volConfig *VolumeConfig, newSize string) error {
-
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
 		return &NotManagedError{volConfig.InternalName}
@@ -630,7 +619,6 @@ func (b *StorageBackend) ResizeVolume(ctx context.Context, volConfig *VolumeConf
 }
 
 func (b *StorageBackend) RenameVolume(ctx context.Context, volConfig *VolumeConfig, newName string) error {
-
 	oldName := volConfig.InternalName
 
 	// Ensure volume is managed
@@ -656,7 +644,6 @@ func (b *StorageBackend) RenameVolume(ctx context.Context, volConfig *VolumeConf
 }
 
 func (b *StorageBackend) RemoveVolume(ctx context.Context, volConfig *VolumeConfig) error {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.name,
 		"volume":         volConfig.Name,
@@ -695,7 +682,6 @@ func (b *StorageBackend) CanSnapshot(ctx context.Context, snapConfig *SnapshotCo
 func (b *StorageBackend) GetSnapshot(
 	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
 ) (*Snapshot, error) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.name,
 		"volume":         snapConfig.Name,
@@ -726,7 +712,6 @@ func (b *StorageBackend) GetSnapshot(
 }
 
 func (b *StorageBackend) GetSnapshots(ctx context.Context, volConfig *VolumeConfig) ([]*Snapshot, error) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.name,
 		"volume":         volConfig.Name,
@@ -744,7 +729,6 @@ func (b *StorageBackend) GetSnapshots(ctx context.Context, volConfig *VolumeConf
 func (b *StorageBackend) CreateSnapshot(
 	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
 ) (*Snapshot, error) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.name,
 		"volume":         snapConfig.Name,
@@ -768,10 +752,8 @@ func (b *StorageBackend) CreateSnapshot(
 
 	// Implement idempotency by checking for the snapshot first
 	if existingSnapshot, err := b.driver.GetSnapshot(ctx, snapConfig, volConfig); err != nil {
-
 		// An error here means we couldn't check for the snapshot.  It does not mean the snapshot doesn't exist.
 		return nil, err
-
 	} else if existingSnapshot != nil {
 
 		Logc(ctx).WithFields(log.Fields{
@@ -791,7 +773,6 @@ func (b *StorageBackend) CreateSnapshot(
 func (b *StorageBackend) RestoreSnapshot(
 	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
 ) error {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.name,
 		"volume":         snapConfig.Name,
@@ -816,7 +797,6 @@ func (b *StorageBackend) RestoreSnapshot(
 func (b *StorageBackend) DeleteSnapshot(
 	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
 ) error {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.name,
 		"volume":         snapConfig.Name,
@@ -836,10 +816,8 @@ func (b *StorageBackend) DeleteSnapshot(
 
 	// Implement idempotency by checking for the snapshot first
 	if existingSnapshot, err := b.driver.GetSnapshot(ctx, snapConfig, volConfig); err != nil {
-
 		// An error here means we couldn't check for the snapshot.  It does not mean the snapshot doesn't exist.
 		return err
-
 	} else if existingSnapshot == nil {
 
 		Logc(ctx).WithFields(log.Fields{
@@ -884,7 +862,6 @@ func (b *StorageBackend) HasVolumes() bool {
 // and will not be called again.  This may be a signal to the storage
 // driver to clean up and stop any ongoing operations.
 func (b *StorageBackend) Terminate(ctx context.Context) {
-
 	logFields := log.Fields{
 		"backend":     b.name,
 		"backendUUID": b.backendUUID,
@@ -926,7 +903,6 @@ func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*utils
 }
 
 func (b *StorageBackend) ensureOnline(ctx context.Context) error {
-
 	if b.state != Online {
 		Logc(ctx).WithFields(log.Fields{
 			"state":         b.state,
@@ -938,7 +914,6 @@ func (b *StorageBackend) ensureOnline(ctx context.Context) error {
 }
 
 func (b *StorageBackend) ensureOnlineOrDeleting(ctx context.Context) error {
-
 	if b.state != Online && b.state != Deleting {
 		Logc(ctx).WithFields(log.Fields{
 			"state":         b.state,
@@ -997,7 +972,6 @@ type PersistentStorageBackendConfig struct {
 }
 
 func (psbc *PersistentStorageBackendConfig) GetDriverConfig() (drivers.DriverConfig, error) {
-
 	var driverConfig drivers.DriverConfig
 
 	switch {
@@ -1082,7 +1056,6 @@ func (p *BackendPersistent) MarshalConfig() (string, error) {
 
 // GetBackendCredentials identifies the storage driver and returns the credentials field name and type (if set)
 func (p *BackendPersistent) GetBackendCredentials() (string, string, error) {
-
 	driverConfig, err := p.Config.GetDriverConfig()
 	if err != nil {
 		return "", "", fmt.Errorf("cannot get credentials: %v", err)
@@ -1100,7 +1073,6 @@ func (p *BackendPersistent) GetBackendCredentials() (string, string, error) {
 func (p *BackendPersistent) ExtractBackendSecrets(
 	secretName string,
 ) (*BackendPersistent, map[string]string, bool, error) {
-
 	var secretType string
 	var credentialsFieldSet, usingTridentSecretName bool
 
@@ -1149,7 +1121,6 @@ func (p *BackendPersistent) ExtractBackendSecrets(
 }
 
 func (p *BackendPersistent) InjectBackendSecrets(secretMap map[string]string) error {
-
 	driverConfig, err := p.Config.GetDriverConfig()
 	if err != nil {
 		return fmt.Errorf("cannot inject secrets: %v", err)
@@ -1171,7 +1142,6 @@ func (b *StorageBackend) EstablishMirror(ctx context.Context, localVolumeHandle,
 func (b *StorageBackend) PromoteMirror(
 	ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotHandle string,
 ) (bool, error) {
-
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
 		return false, utils.UnsupportedError(
@@ -1200,7 +1170,6 @@ func (b *StorageBackend) GetMirrorStatus(
 			"mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 	return mirrorDriver.GetMirrorStatus(ctx, localVolumeHandle, remoteVolumeHandle)
-
 }
 
 func (b *StorageBackend) CanMirror() bool {

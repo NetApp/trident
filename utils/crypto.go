@@ -37,7 +37,6 @@ type CertInfo struct {
 // hardcoded, the validity period is hardcoded to 1970-2070, and the algorithm
 // and key size are hardcoded to 521-bit elliptic curve.
 func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertInfo, error) {
-
 	certInfo := &CertInfo{}
 
 	notBefore := time.Unix(0, 0)                      // The Epoch (1970 Jan 1)
@@ -208,7 +207,6 @@ func GenerateAESKey() (string, error) {
 // EncryptStringWithAES takes a string and a key and returns the encrypted,
 // base64-encoded form of the string
 func EncryptStringWithAES(plainText string, key []byte) (string, error) {
-
 	// Create the cipher
 	block, err2 := aes.NewCipher(key)
 	if err2 != nil {
@@ -236,7 +234,6 @@ func EncryptStringWithAES(plainText string, key []byte) (string, error) {
 // DecryptStringWithAES takes an encrypted,
 // base64-encoded string and a key and returns the plaintext form of the string
 func DecryptStringWithAES(encryptedText string, key []byte) (string, error) {
-
 	// Decode the string into byte array
 	encryptedBytes, err2 := base64.StdEncoding.DecodeString(encryptedText)
 	if err2 != nil {

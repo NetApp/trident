@@ -172,9 +172,9 @@ type RestClientInterface interface {
 	NodeList(ctx context.Context, pattern string) (*cluster.NodesGetOK, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 	CliPassthroughVolumePatch(ctx context.Context, volumeName, jsonString string) (*CliPassthroughResult, error)
-	CliPassthroughEventGeneratePost(ctx context.Context, appVersion string, autoSupport bool, category string, computerName string, eventDescription string, eventID int, eventSource string, logLevel int) (*CliPassthroughResult, error)
+	CliPassthroughEventGeneratePost(ctx context.Context, appVersion string, autoSupport bool, category, computerName, eventDescription string, eventID int, eventSource string, logLevel int) (*CliPassthroughResult, error)
 	// EmsAutosupportLog generates an auto support message with the supplied parameters
-	EmsAutosupportLog(ctx context.Context, appVersion string, autoSupport bool, category string, computerName string, eventDescription string, eventID int, eventSource string, logLevel int) error
+	EmsAutosupportLog(ctx context.Context, appVersion string, autoSupport bool, category, computerName, eventDescription string, eventID int, eventSource string, logLevel int) error
 	CliPassthroughVolumeGet(ctx context.Context, volume *Volume) (*CliPassthroughResult, error)
 	TieringPolicyValue(ctx context.Context) string
 	// ExportPolicyCreate creates an export policy

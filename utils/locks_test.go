@@ -11,7 +11,6 @@ import (
 var ctx = context.Background
 
 func TestLockCreated(t *testing.T) {
-
 	Lock(ctx(), "testContext", "myLock")
 	defer Unlock(ctx(), "testContext", "myLock")
 
@@ -25,7 +24,6 @@ func TestLockCreated(t *testing.T) {
 }
 
 func TestLockReused(t *testing.T) {
-
 	Lock(ctx(), "testContext", "reuseLock")
 	Unlock(ctx(), "testContext", "reuseLock")
 

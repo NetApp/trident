@@ -44,7 +44,6 @@ type Plugin struct {
 }
 
 func NewPlugin(driverName, driverPort string, orchestrator core.Orchestrator) (*Plugin, error) {
-
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
 	Logc(ctx).Debug(">>>> docker.NewPlugin")
@@ -163,7 +162,7 @@ func registerDockerVolumePlugin(ctx context.Context, root string) error {
 	// If root (volumeDir) doesn't exist, make it.
 	dir, err := os.Lstat(root)
 	if os.IsNotExist(err) {
-		if err := os.MkdirAll(root, 0755); err != nil {
+		if err := os.MkdirAll(root, 0o755); err != nil {
 			return err
 		}
 	}
@@ -254,7 +253,6 @@ func (p *Plugin) GetName() string {
 }
 
 func (p *Plugin) Version() string {
-
 	if p.version == nil {
 		return "unknown"
 	}
@@ -263,7 +261,6 @@ func (p *Plugin) Version() string {
 }
 
 func (p *Plugin) Create(request *volume.CreateRequest) error {
-
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
 	Logc(ctx).WithFields(log.Fields{
@@ -302,7 +299,6 @@ func (p *Plugin) Create(request *volume.CreateRequest) error {
 }
 
 func (p *Plugin) List() (*volume.ListResponse, error) {
-
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
 	Logc(ctx).WithFields(log.Fields{
@@ -330,7 +326,6 @@ func (p *Plugin) List() (*volume.ListResponse, error) {
 }
 
 func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
-
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
 	Logc(ctx).WithFields(log.Fields{
@@ -380,7 +375,6 @@ func (p *Plugin) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 }
 
 func (p *Plugin) Remove(request *volume.RemoveRequest) error {
-
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
 	Logc(ctx).WithFields(log.Fields{
@@ -399,7 +393,6 @@ func (p *Plugin) Remove(request *volume.RemoveRequest) error {
 }
 
 func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error) {
-
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
 	Logc(ctx).WithFields(log.Fields{
@@ -421,7 +414,6 @@ func (p *Plugin) Path(request *volume.PathRequest) (*volume.PathResponse, error)
 }
 
 func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, error) {
-
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
 	Logc(ctx).WithFields(log.Fields{
@@ -459,7 +451,6 @@ func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, err
 }
 
 func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
-
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
 	Logc(ctx).WithFields(log.Fields{
@@ -489,7 +480,6 @@ func (p *Plugin) Unmount(request *volume.UnmountRequest) error {
 }
 
 func (p *Plugin) Capabilities() *volume.CapabilitiesResponse {
-
 	ctx := GenerateRequestContext(nil, "", ContextSourceDocker)
 
 	Logc(ctx).WithFields(log.Fields{
@@ -501,7 +491,6 @@ func (p *Plugin) Capabilities() *volume.CapabilitiesResponse {
 
 // getPath returns the mount point if the path exists.
 func (p *Plugin) getPath(ctx context.Context, vol *storage.VolumeExternal) (string, error) {
-
 	mountpoint := p.mountpoint(vol.Config.InternalName)
 
 	Logc(ctx).WithFields(log.Fields{
@@ -535,7 +524,6 @@ func (p *Plugin) hostMountpoint(name string) string {
 }
 
 func (p *Plugin) dockerError(ctx context.Context, err error) error {
-
 	if err != nil {
 		Logc(ctx).Errorf("Docker frontend method returning error: %v", err)
 	}
@@ -552,9 +540,7 @@ func (p *Plugin) dockerError(ctx context.Context, err error) error {
 // the Docker timeout of 60 seconds.  Otherwise, it returns immediately with any
 // other error or nil if the operation succeeded.
 func (p *Plugin) reloadVolumes(ctx context.Context) error {
-
 	reloadVolumesFunc := func() error {
-
 		err := p.orchestrator.ReloadVolumes(ctx)
 		if err == nil {
 			return nil

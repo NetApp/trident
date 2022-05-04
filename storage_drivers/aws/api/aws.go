@@ -27,15 +27,16 @@ import (
 // Sample curl command to invoke the REST interface:
 // curl -H "Api-Key:<apiKey>" -H "Secret-Key:<secretKey>" https://cds-aws-bundles.netapp.com:8080/v1/Snapshots
 
-const httpTimeoutSeconds = 30
-const retryTimeoutSeconds = 30
-const VolumeCreateTimeout = 10 * time.Second
-const DefaultTimeout = 120 * time.Second
-const MaxLabelLength = 255
+const (
+	httpTimeoutSeconds  = 30
+	retryTimeoutSeconds = 30
+	VolumeCreateTimeout = 10 * time.Second
+	DefaultTimeout      = 120 * time.Second
+	MaxLabelLength      = 255
+)
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
-
 	// AWS CVS API authentication parameters
 	APIURL    string
 	APIKey    string
@@ -53,7 +54,6 @@ type Client struct {
 
 // NewDriver is a factory method for creating a new instance.
 func NewDriver(config ClientConfig) *Client {
-
 	d := &Client{
 		config: &config,
 		m:      &sync.Mutex{},
@@ -68,9 +68,9 @@ func (d *Client) makeURL(resourcePath string) string {
 
 // InvokeAPI makes a REST call to the cloud volumes REST service. The body must be a marshaled JSON byte array (or nil).
 // The method is the HTTP verb (i.e. GET, POST, ...).
-func (d *Client) InvokeAPI(ctx context.Context, requestBody []byte, method string, awsURL string) (*http.Response,
-	[]byte, error) {
-
+func (d *Client) InvokeAPI(ctx context.Context, requestBody []byte, method, awsURL string) (*http.Response,
+	[]byte, error,
+) {
 	var request *http.Request
 	var response *http.Response
 	var err error
@@ -107,7 +107,6 @@ func (d *Client) InvokeAPI(ctx context.Context, requestBody []byte, method strin
 		// Skip certificate validation
 		tr.TLSClientConfig.InsecureSkipVerify = true
 	} else {
-
 		// Require certificate validation if not using a proxy
 		tr.TLSClientConfig.InsecureSkipVerify = false
 	}
@@ -151,12 +150,10 @@ func (d *Client) invokeAPINoRetry(client *http.Client, request *http.Request) (*
 }
 
 func (d *Client) invokeAPIWithRetry(client *http.Client, request *http.Request) (*http.Response, error) {
-
 	var response *http.Response
 	var err error
 
 	invoke := func() error {
-
 		response, err = d.invokeAPINoRetry(client, request)
 
 		// Return a permanent error to stop retrying if we couldn't invoke the API at all
@@ -192,7 +189,6 @@ func (d *Client) invokeAPIWithRetry(client *http.Client, request *http.Request) 
 }
 
 func (d *Client) GetVersion(ctx context.Context) (*utils.Version, *utils.Version, error) {
-
 	versionURL, err := url.Parse(d.config.APIURL)
 	if err != nil {
 		return nil, nil, err
@@ -234,7 +230,6 @@ func (d *Client) GetVersion(ctx context.Context) (*utils.Version, *utils.Version
 }
 
 func (d *Client) GetRegions(ctx context.Context) (*[]Region, error) {
-
 	resourcePath := "/Storage/Regions"
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -259,7 +254,6 @@ func (d *Client) GetRegions(ctx context.Context) (*[]Region, error) {
 }
 
 func (d *Client) GetVolumes(ctx context.Context) (*[]FileSystem, error) {
-
 	resourcePath := "/FileSystems"
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -284,7 +278,6 @@ func (d *Client) GetVolumes(ctx context.Context) (*[]FileSystem, error) {
 }
 
 func (d *Client) GetVolumeByName(ctx context.Context, name string) (*FileSystem, error) {
-
 	filesystems, err := d.GetVolumes(ctx)
 	if err != nil {
 		return nil, err
@@ -308,7 +301,6 @@ func (d *Client) GetVolumeByName(ctx context.Context, name string) (*FileSystem,
 }
 
 func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken string) (*FileSystem, error) {
-
 	resourcePath := fmt.Sprintf("/FileSystems?creationToken=%s", creationToken)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -337,7 +329,6 @@ func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken str
 }
 
 func (d *Client) VolumeExistsByCreationToken(ctx context.Context, creationToken string) (bool, *FileSystem, error) {
-
 	resourcePath := fmt.Sprintf("/FileSystems?creationToken=%s", creationToken)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -366,7 +357,6 @@ func (d *Client) VolumeExistsByCreationToken(ctx context.Context, creationToken 
 }
 
 func (d *Client) GetVolumeByID(ctx context.Context, fileSystemId string) (*FileSystem, error) {
-
 	resourcePath := fmt.Sprintf("/FileSystems/%s", fileSystemId)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -392,11 +382,9 @@ func (d *Client) WaitForVolumeState(
 	ctx context.Context, filesystem *FileSystem, desiredState string, abortStates []string,
 	maxElapsedTime time.Duration,
 ) (string, error) {
-
 	volumeState := ""
 
 	checkVolumeState := func() error {
-
 		f, err := d.GetVolumeByID(ctx, filesystem.FileSystemID)
 		if err != nil {
 			volumeState = ""
@@ -455,7 +443,6 @@ func (d *Client) WaitForVolumeState(
 }
 
 func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequest) (*FileSystem, error) {
-
 	resourcePath := "/FileSystems"
 
 	jsonRequest, err := json.Marshal(request)
@@ -489,7 +476,6 @@ func (d *Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequ
 }
 
 func (d *Client) RenameVolume(ctx context.Context, filesystem *FileSystem, newName string) (*FileSystem, error) {
-
 	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
 
 	request := &FilesystemRenameRequest{
@@ -529,7 +515,6 @@ func (d *Client) RenameVolume(ctx context.Context, filesystem *FileSystem, newNa
 }
 
 func (d *Client) RelabelVolume(ctx context.Context, filesystem *FileSystem, labels []string) (*FileSystem, error) {
-
 	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
 
 	request := &FilesystemRenameRelabelRequest{
@@ -571,7 +556,6 @@ func (d *Client) RelabelVolume(ctx context.Context, filesystem *FileSystem, labe
 func (d *Client) RenameRelabelVolume(
 	ctx context.Context, filesystem *FileSystem, newName string, labels []string,
 ) (*FileSystem, error) {
-
 	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
 
 	request := &FilesystemRenameRelabelRequest{
@@ -612,7 +596,6 @@ func (d *Client) RenameRelabelVolume(
 }
 
 func (d *Client) ResizeVolume(ctx context.Context, filesystem *FileSystem, newSizeBytes int64) (*FileSystem, error) {
-
 	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
 
 	request := &FilesystemResizeRequest{
@@ -652,7 +635,6 @@ func (d *Client) ResizeVolume(ctx context.Context, filesystem *FileSystem, newSi
 }
 
 func (d *Client) DeleteVolume(ctx context.Context, filesystem *FileSystem) error {
-
 	resourcePath := fmt.Sprintf("/FileSystems/%s", filesystem.FileSystemID)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "DELETE", d.makeURL(resourcePath))
@@ -673,7 +655,6 @@ func (d *Client) DeleteVolume(ctx context.Context, filesystem *FileSystem) error
 }
 
 func (d *Client) GetMountTargetsForVolume(ctx context.Context, filesystem *FileSystem) (*[]MountTarget, error) {
-
 	resourcePath := fmt.Sprintf("/FileSystems/%s/MountTargets", filesystem.FileSystemID)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -698,7 +679,6 @@ func (d *Client) GetMountTargetsForVolume(ctx context.Context, filesystem *FileS
 }
 
 func (d *Client) GetSnapshotsForVolume(ctx context.Context, filesystem *FileSystem) (*[]Snapshot, error) {
-
 	resourcePath := fmt.Sprintf("/FileSystems/%s/Snapshots", filesystem.FileSystemID)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -725,7 +705,6 @@ func (d *Client) GetSnapshotsForVolume(ctx context.Context, filesystem *FileSyst
 func (d *Client) GetSnapshotForVolume(
 	ctx context.Context, filesystem *FileSystem, snapshotName string,
 ) (*Snapshot, error) {
-
 	snapshots, err := d.GetSnapshotsForVolume(ctx, filesystem)
 	if err != nil {
 		return nil, err
@@ -752,7 +731,6 @@ func (d *Client) GetSnapshotForVolume(
 }
 
 func (d *Client) GetSnapshotByID(ctx context.Context, snapshotId string) (*Snapshot, error) {
-
 	resourcePath := fmt.Sprintf("/Snapshots/%s", snapshotId)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -777,9 +755,7 @@ func (d *Client) GetSnapshotByID(ctx context.Context, snapshotId string) (*Snaps
 func (d *Client) WaitForSnapshotState(
 	ctx context.Context, snapshot *Snapshot, desiredState string, abortStates []string, maxElapsedTime time.Duration,
 ) error {
-
 	checkSnapshotState := func() error {
-
 		s, err := d.GetSnapshotByID(ctx, snapshot.SnapshotID)
 		if err != nil {
 			return fmt.Errorf("could not get snapshot status; %v", err)
@@ -836,7 +812,6 @@ func (d *Client) WaitForSnapshotState(
 }
 
 func (d *Client) CreateSnapshot(ctx context.Context, request *SnapshotCreateRequest) (*Snapshot, error) {
-
 	resourcePath := fmt.Sprintf("/FileSystems/%s/Snapshots", request.FileSystemID)
 
 	jsonRequest, err := json.Marshal(request)
@@ -869,7 +844,6 @@ func (d *Client) CreateSnapshot(ctx context.Context, request *SnapshotCreateRequ
 }
 
 func (d *Client) RestoreSnapshot(ctx context.Context, filesystem *FileSystem, snapshot *Snapshot) error {
-
 	resourcePath := fmt.Sprintf("/FileSystems/%s/Revert", filesystem.FileSystemID)
 
 	snapshotRevertRequest := &SnapshotRevertRequest{
@@ -901,7 +875,6 @@ func (d *Client) RestoreSnapshot(ctx context.Context, filesystem *FileSystem, sn
 }
 
 func (d *Client) DeleteSnapshot(ctx context.Context, filesystem *FileSystem, snapshot *Snapshot) error {
-
 	resourcePath := fmt.Sprintf("/FileSystems/%s/Snapshots/%s", filesystem.FileSystemID, snapshot.SnapshotID)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "DELETE", d.makeURL(resourcePath))
@@ -923,7 +896,6 @@ func (d *Client) DeleteSnapshot(ctx context.Context, filesystem *FileSystem, sna
 }
 
 func (d *Client) getErrorFromAPIResponse(response *http.Response, responseBody []byte) error {
-
 	if response.StatusCode >= 300 {
 		// Parse JSON error data
 		var responseData CallResponseError

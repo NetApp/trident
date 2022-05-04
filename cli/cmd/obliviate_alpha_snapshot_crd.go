@@ -20,7 +20,6 @@ var obliviateAlphaSnapshotCRDCmd = &cobra.Command{
 	Short:            "Delete kubernetes snapshot CRDs that are v1alpha1",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {},
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		var err error
 		initLogging()
 
@@ -39,7 +38,6 @@ var obliviateAlphaSnapshotCRDCmd = &cobra.Command{
 }
 
 func deleteAlphaSnapshotCRDs() error {
-
 	crdNames := []string{
 		"volumesnapshotclasses.snapshot.storage.k8s.io",
 		"volumesnapshotcontents.snapshot.storage.k8s.io",

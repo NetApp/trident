@@ -34,8 +34,10 @@ const (
 // Default Filesystem value
 const DefaultFileSystemType = config.FsExt4
 
-const UnsetPool = ""
-const DefaultVolumeSize = "1G"
+const (
+	UnsetPool         = ""
+	DefaultVolumeSize = "1G"
+)
 
 // Volume label names
 const TridentLabelTag = "trident"

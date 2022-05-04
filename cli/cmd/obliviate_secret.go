@@ -22,7 +22,6 @@ var obliviateSecretCmd = &cobra.Command{
 	Short:            "Reset Trident's Secret state (deletes all Trident Secrets present in a cluster)",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {},
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		var err error
 		initLogging()
 
@@ -53,7 +52,6 @@ var obliviateSecretCmd = &cobra.Command{
 }
 
 func obliviateSecrets() error {
-
 	// Relying on the trident-csi label is safe because both ephemeral and persistent Secrets will have it.
 	secrets, err := k8sClient.GetSecretsByLabel(TridentCSILabel, true)
 	if err != nil {
@@ -74,11 +72,10 @@ func obliviateSecrets() error {
 }
 
 func deleteSecrets(secrets []v1.Secret) error {
-
 	for _, secret := range secrets {
 
 		logFields := log.Fields{
-			"secret": secret.Name,
+			"secret":    secret.Name,
 			"namespace": secret.Namespace,
 		}
 
@@ -113,11 +110,9 @@ func deleteSecrets(secrets []v1.Secret) error {
 }
 
 func waitForSecretDeletion(name string, timeout time.Duration) error {
-
 	retries := 0
 
 	checkDeleted := func() error {
-
 		exists, err := k8sClient.CheckCRDExists(name)
 		if !exists || isNotFoundError(err) {
 			return nil
@@ -129,7 +124,7 @@ func waitForSecretDeletion(name string, timeout time.Duration) error {
 	checkDeletedNotify := func(err error, duration time.Duration) {
 		log.WithFields(log.Fields{
 			"secret": name,
-			"err": err,
+			"err":    err,
 		}).Debug("Secret not yet deleted, waiting.")
 
 		retries++

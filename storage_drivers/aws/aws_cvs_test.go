@@ -76,8 +76,7 @@ func callGoString(s NFSStorageDriver) string {
 }
 
 func TestAWSStorageDriverConfigString(t *testing.T) {
-
-	var AWSDrivers = []NFSStorageDriver{
+	AWSDrivers := []NFSStorageDriver{
 		*newTestAWSDriver(),
 	}
 

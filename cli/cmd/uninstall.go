@@ -30,7 +30,6 @@ var uninstallCmd = &cobra.Command{
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-
 		// Run the uninstaller directly using the Kubernetes client
 		if err := uninstallTrident(); err != nil {
 			log.Fatalf("Uninstall failed; %v", err)
@@ -42,7 +41,6 @@ var uninstallCmd = &cobra.Command{
 // that everything looks good for Trident uninstallation, but it makes no changes
 // to the environment.
 func discoverUninstallationEnvironment() error {
-
 	var err error
 
 	OperatingMode = ModeInstall
@@ -86,7 +84,6 @@ func isCSITridentInstalled() (installed bool, namespace string, err error) {
 }
 
 func discoverTrident() (legacy, csi, csiPreview bool, err error) {
-
 	// Check if legacy Trident is installed
 	if legacy, _, err = isTridentInstalled(); err != nil {
 		err = fmt.Errorf("could not check if legacy Trident is installed; %v", err)
@@ -109,7 +106,6 @@ func discoverTrident() (legacy, csi, csiPreview bool, err error) {
 }
 
 func validateUninstallationArguments() error {
-
 	if !dns1123LabelRegex.MatchString(TridentPodNamespace) {
 		return fmt.Errorf("%s is not a valid namespace name; a DNS-1123 label must consist "+
 			"of lower case alphanumeric characters or '-', and must start and end with an alphanumeric "+
@@ -120,7 +116,6 @@ func validateUninstallationArguments() error {
 }
 
 func uninstallTrident() error {
-
 	// 1. preview CSI Trident --> uninstall preview CSI Trident
 	// 2. preview CSI Trident & legacy Trident --> uninstall preview CSI Trident
 	// 3. CSI Trident --> uninstall CSI Trident
@@ -130,7 +125,7 @@ func uninstallTrident() error {
 	// else if csi, uninstall csi
 	// else if legacy, uninstall legacy
 
-	var anyErrors = false
+	anyErrors := false
 
 	legacyTridentInstalled, csiTridentInstalled, csiPreviewTridentInstalled, err := discoverTrident()
 	if err != nil {
@@ -159,15 +154,12 @@ func uninstallTrident() error {
 	// First handle the deployment (legacy, CSI) / statefulset (preview CSI)
 
 	if csiPreviewTridentInstalled {
-
 		// Delete Trident statefulset
 		if statefulset, err := client.GetStatefulSetByLabel(appLabel, true); err != nil {
-
 			log.WithFields(log.Fields{
 				"label": appLabel,
 				"error": err,
 			}).Warn("Trident statefulset not found.")
-
 		} else {
 
 			// Statefulset found by label, so ensure there isn't a namespace clash
@@ -194,17 +186,13 @@ func uninstallTrident() error {
 				log.Info("Deleted Trident statefulset.")
 			}
 		}
-
 	} else {
-
 		// Delete Trident deployment
 		if deployment, err := client.GetDeploymentByLabel(appLabel, true); err != nil {
-
 			log.WithFields(log.Fields{
 				"label": appLabel,
 				"error": err,
 			}).Warn("Trident deployment not found.")
-
 		} else {
 
 			// Deployment found by label, so ensure there isn't a namespace clash
@@ -238,12 +226,10 @@ func uninstallTrident() error {
 	// warnings only.
 
 	if daemonset, err := client.GetDaemonSetByLabel(TridentNodeLabel, true); err != nil {
-
 		log.WithFields(log.Fields{
 			"label": TridentNodeLabel,
 			"error": err,
 		}).Warning("Trident daemonset not found.")
-
 	} else {
 
 		// Daemonset found by label, so ensure there isn't a namespace clash
@@ -272,12 +258,10 @@ func uninstallTrident() error {
 	}
 
 	if service, err := client.GetServiceByLabel(TridentCSILabel, true); err != nil {
-
 		log.WithFields(log.Fields{
 			"label": TridentCSILabel,
 			"error": err,
 		}).Warning("Trident service not found.")
-
 	} else {
 
 		// Service found by label, so ensure there isn't a namespace clash
@@ -306,18 +290,15 @@ func uninstallTrident() error {
 	}
 
 	if secrets, err := client.GetSecretsByLabel(TridentCSILabel, false); err != nil {
-
 		log.WithFields(log.Fields{
 			"label": TridentCSILabel,
 			"error": err,
 		}).Warning("Trident secrets not found.")
-
 	} else {
-
 		for _, secret := range secrets {
 
 			log.WithFields(log.Fields{
-				"secret":   secret.Name,
+				"secret":    secret.Name,
 				"namespace": secret.Namespace,
 			}).Debug("Trident secret found by label.")
 
@@ -325,7 +306,7 @@ func uninstallTrident() error {
 			if value, ok := secret.GetLabels()[TridentPersistentObjectLabelKey]; ok {
 				if value == TridentPersistentObjectLabelValue {
 					log.WithFields(log.Fields{
-						"secret":   secret.Name,
+						"secret":    secret.Name,
 						"namespace": secret.Namespace,
 						"label":     TridentPersistentObjectLabel,
 					}).Info("Retaining Trident secret.")
@@ -336,7 +317,7 @@ func uninstallTrident() error {
 			// Deleting the secret by name should be safe since namespaced objects have unique names.
 			if err = client.DeleteSecret(secret.Name, TridentPodNamespace); err != nil {
 				log.WithFields(log.Fields{
-					"secret":   secret.Name,
+					"secret":    secret.Name,
 					"namespace": secret.Namespace,
 					"label":     TridentCSILabel,
 					"error":     err,

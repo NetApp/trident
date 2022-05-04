@@ -8,8 +8,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-const GroupName = "trident.netapp.io"
-const GroupVersion = "v1"
+const (
+	GroupName    = "trident.netapp.io"
+	GroupVersion = "v1"
+)
 
 // SchemeGroupVersion is group version used to register these objects
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: GroupVersion}

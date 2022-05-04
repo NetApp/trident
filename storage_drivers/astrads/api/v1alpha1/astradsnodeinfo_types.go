@@ -21,8 +21,7 @@ import (
 )
 
 // AstraDSNodeInfoSpec defines the desired state of AstraDSNodeInfo
-type AstraDSNodeInfoSpec struct {
-}
+type AstraDSNodeInfoSpec struct{}
 
 // AstraDSNodeInfoStatus defines the observed state of AstraDSNodeInfo
 type AstraDSNodeInfoStatus struct {

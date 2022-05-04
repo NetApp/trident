@@ -45,7 +45,6 @@ func (s *nonBlockingGRPCServer) Stop() {
 }
 
 func (s *nonBlockingGRPCServer) serve(endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer) {
-
 	proto, addr, err := ParseEndpoint(endpoint)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -69,7 +68,7 @@ func (s *nonBlockingGRPCServer) serve(endpoint string, ids csi.IdentityServer, c
 	}).Info("Listening for GRPC connections.")
 
 	if listener.Addr().Network() == "unix" {
-		if err := os.Chmod(listener.Addr().String(), 0777); err != nil {
+		if err := os.Chmod(listener.Addr().String(), 0o777); err != nil {
 			log.Fatal(err)
 		}
 	}

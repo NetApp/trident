@@ -23,7 +23,6 @@ type Plugin struct {
 
 // NewPlugin instantiates this plugin.
 func NewPlugin(orchestrator core.Orchestrator) *Plugin {
-
 	log.Info("Initializing plain CSI helper frontend.")
 
 	return &Plugin{
@@ -66,7 +65,6 @@ func (p *Plugin) GetVolumeConfig(
 	protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
 	requisiteTopology, preferredTopology, accessibleTopology []map[string]string,
 ) (*storage.VolumeConfig, error) {
-
 	accessMode := frontendcommon.CombineAccessModes(accessModes)
 
 	if parameters == nil {
@@ -105,7 +103,6 @@ func (p *Plugin) GetNodeTopologyLabels(ctx context.Context, nodeName string) (ma
 // RecordVolumeEvent accepts the name of a CSI volume and writes the specified
 // event message to the debug log.
 func (p *Plugin) RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"name":      name,
 		"eventType": eventType,
@@ -117,7 +114,6 @@ func (p *Plugin) RecordVolumeEvent(ctx context.Context, name, eventType, reason,
 // RecordNodeEvent accepts the name of a CSI node and writes the specified
 // event message to the debug log.
 func (p *Plugin) RecordNodeEvent(ctx context.Context, name, eventType, reason, message string) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"name":      name,
 		"eventType": eventType,
@@ -129,7 +125,6 @@ func (p *Plugin) RecordNodeEvent(ctx context.Context, name, eventType, reason, m
 // SupportsFeature accepts a CSI feature and returns true if the
 // feature exists and is supported.
 func (p *Plugin) SupportsFeature(_ context.Context, feature helpers.Feature) bool {
-
 	if supported, ok := features[feature]; ok {
 		return supported
 	} else {

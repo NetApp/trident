@@ -14,7 +14,6 @@ const PersistentStateVersionName = "trident"
 // NewTridentVersion creates a new persistent state version CRD object from an internal
 // persistent_store.PersistentStateVersion object.
 func NewTridentVersion(persistent *config.PersistentStateVersion) (*TridentVersion, error) {
-
 	version := &TridentVersion{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "trident.netapp.io/v1",

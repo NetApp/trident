@@ -48,7 +48,6 @@ var getSnapshotCmd = &cobra.Command{
 }
 
 func snapshotList(snapshotIDs []string) error {
-
 	var err error
 
 	// If no snapshots were specified, we'll get all of them
@@ -82,7 +81,6 @@ func snapshotList(snapshotIDs []string) error {
 }
 
 func GetSnapshots(volume string) ([]string, error) {
-
 	var url string
 	if volume == "" {
 		url = BaseURL() + "/snapshot"
@@ -107,7 +105,6 @@ func GetSnapshots(volume string) ([]string, error) {
 }
 
 func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
-
 	if !strings.ContainsRune(snapshotID, '/') {
 		return storage.SnapshotExternal{}, utils.InvalidInputError(fmt.Sprintf("invalid snapshot ID: %s; "+
 			"Please use the format <volume name>/<snapshot name>", snapshotID))
@@ -157,12 +154,10 @@ func WriteSnapshots(snapshots []storage.SnapshotExternal) {
 }
 
 func writeSnapshotTable(snapshots []storage.SnapshotExternal) {
-
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Name", "Volume"})
 
 	for _, snapshot := range snapshots {
-
 		table.Append([]string{
 			snapshot.Config.Name,
 			snapshot.Config.VolumeName,
@@ -173,7 +168,6 @@ func writeSnapshotTable(snapshots []storage.SnapshotExternal) {
 }
 
 func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
-
 	table := tablewriter.NewWriter(os.Stdout)
 	header := []string{
 		"Name",
@@ -185,7 +179,6 @@ func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
 	table.SetHeader(header)
 
 	for _, snapshot := range snapshots {
-
 		table.Append([]string{
 			snapshot.Config.Name,
 			snapshot.Config.VolumeName,

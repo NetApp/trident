@@ -70,7 +70,6 @@ func httpStatusCodeForDelete(err error) int {
 }
 
 func writeHTTPResponse(ctx context.Context, w http.ResponseWriter, response interface{}, httpStatusCode int) {
-
 	if _, err := json.Marshal(response); err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"response": response,
@@ -308,7 +307,6 @@ func (r *AddBackendResponse) isError() bool {
 }
 
 func (r *AddBackendResponse) logSuccess(ctx context.Context) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend": r.BackendID,
 		"handler": "AddBackend",
@@ -316,7 +314,6 @@ func (r *AddBackendResponse) logSuccess(ctx context.Context) {
 }
 
 func (r *AddBackendResponse) logFailure(ctx context.Context) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend": r.BackendID,
 		"handler": "AddBackend",
@@ -374,7 +371,6 @@ func (r *UpdateBackendResponse) isError() bool {
 }
 
 func (r *UpdateBackendResponse) logSuccess(ctx context.Context) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend": r.BackendID,
 		"handler": "UpdateBackend",
@@ -382,7 +378,6 @@ func (r *UpdateBackendResponse) logSuccess(ctx context.Context) {
 }
 
 func (r *UpdateBackendResponse) logFailure(ctx context.Context) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend": r.BackendID,
 		"handler": "UpdateBackend",
@@ -437,7 +432,6 @@ func (l *ListBackendsResponse) setList(payload []string) {
 }
 
 func ListBackends(w http.ResponseWriter, r *http.Request) {
-
 	response := &ListBackendsResponse{}
 	ListGeneric(w, r, response,
 		func() int {
@@ -527,14 +521,13 @@ func (a *AddVolumeResponse) isError() bool {
 }
 
 func (a *AddVolumeResponse) logSuccess(ctx context.Context) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"handler": "AddVolume",
 		"backend": a.BackendID,
 	}).Info("Added a new volume.")
 }
-func (a *AddVolumeResponse) logFailure(ctx context.Context) {
 
+func (a *AddVolumeResponse) logFailure(ctx context.Context) {
 	Logc(ctx).WithFields(log.Fields{
 		"handler": "AddVolume",
 	}).Error(a.Error)
@@ -633,7 +626,6 @@ func (i *ImportVolumeResponse) isError() bool {
 }
 
 func (i *ImportVolumeResponse) logSuccess(ctx context.Context) {
-
 	if i.Volume != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"handler":     "ImportVolume",
@@ -646,8 +638,8 @@ func (i *ImportVolumeResponse) logSuccess(ctx context.Context) {
 		}).Info("Imported an existing volume.")
 	}
 }
-func (i *ImportVolumeResponse) logFailure(ctx context.Context) {
 
+func (i *ImportVolumeResponse) logFailure(ctx context.Context) {
 	Logc(ctx).WithFields(log.Fields{
 		"handler": "ImportVolume",
 	}).Error(i.Error)
@@ -704,14 +696,13 @@ func (i *UpgradeVolumeResponse) isError() bool {
 }
 
 func (i *UpgradeVolumeResponse) logSuccess(ctx context.Context) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"handler": "UpgradeVolume",
 		"volume":  i.Volume.Config.Name,
 	}).Info("Upgraded an existing volume.")
 }
-func (i *UpgradeVolumeResponse) logFailure(ctx context.Context) {
 
+func (i *UpgradeVolumeResponse) logFailure(ctx context.Context) {
 	Logc(ctx).WithFields(log.Fields{
 		"handler": "UpgradeVolume",
 	}).Error(i.Error)
@@ -769,14 +760,13 @@ func (a *AddStorageClassResponse) isError() bool {
 }
 
 func (a *AddStorageClassResponse) logSuccess(ctx context.Context) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"handler":      "AddStorageClass",
 		"storageClass": a.StorageClassID,
 	}).Info("Added a new storage class.")
 }
-func (a *AddStorageClassResponse) logFailure(ctx context.Context) {
 
+func (a *AddStorageClassResponse) logFailure(ctx context.Context) {
 	Logc(ctx).WithFields(log.Fields{
 		"handler":      "AddStorageClass",
 		"storageClass": a.StorageClassID,
@@ -874,12 +864,12 @@ func (a *AddNodeResponse) setError(err error) {
 func (a *AddNodeResponse) isError() bool {
 	return a.Error != ""
 }
+
 func (a *AddNodeResponse) setTopologyLabels(payload map[string]string) {
 	a.TopologyLabels = payload
 }
 
 func (a *AddNodeResponse) logSuccess(ctx context.Context) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"handler": "AddOrUpdateNode",
 		"node":    a.Name,
@@ -887,7 +877,6 @@ func (a *AddNodeResponse) logSuccess(ctx context.Context) {
 }
 
 func (a *AddNodeResponse) logFailure(ctx context.Context) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"handler": "AddOrUpdateNode",
 		"node":    a.Name,
@@ -1086,7 +1075,6 @@ func (r *AddSnapshotResponse) isError() bool {
 }
 
 func (r *AddSnapshotResponse) logSuccess(ctx context.Context) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"snapshot": r.SnapshotID,
 		"handler":  "AddSnapshot",
@@ -1094,7 +1082,6 @@ func (r *AddSnapshotResponse) logSuccess(ctx context.Context) {
 }
 
 func (r *AddSnapshotResponse) logFailure(ctx context.Context) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"snapshot": r.SnapshotID,
 		"handler":  "AddSnapshot",

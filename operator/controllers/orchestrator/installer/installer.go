@@ -110,7 +110,6 @@ type Installer struct {
 }
 
 func NewInstaller(kubeConfig *rest.Config, namespace string, timeout int) (TridentInstaller, error) {
-
 	if timeout <= 0 {
 		timeout = DefaultTimeout
 	}
@@ -153,7 +152,6 @@ func (i *Installer) logFormatPrechecks() (returnError error) {
 // imagePrechecks is important, it identifies the Trident version of the image that is provided as an input by spinning
 // up a transient pod based of the image. This ensures we fail fast and not wait until the Trident installation.
 func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]string) (string, error) {
-
 	var performImageVersionCheck bool
 	var identifiedImageVersion string
 
@@ -258,7 +256,6 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 func (i *Installer) setInstallationParams(
 	cr netappv1.TridentOrchestrator, currentInstallationVersion string,
 ) (map[string]string, map[string]string, bool, error) {
-
 	var identifiedImageVersion string
 	var defaultImageOverride bool
 	var tridentUpdateNeeded bool
@@ -416,7 +413,6 @@ func (i *Installer) setInstallationParams(
 func (i *Installer) InstallOrPatchTrident(
 	cr netappv1.TridentOrchestrator, currentInstallationVersion string, k8sUpdateNeeded bool,
 ) (*netappv1.TridentOrchestratorSpecValues, string, error) {
-
 	var returnError error
 	var newServiceAccount bool
 
@@ -603,7 +599,6 @@ func (i *Installer) createCRDs() error {
 
 // CreateCRD creates and establishes the CRD
 func (i *Installer) CreateCRD(crdName, crdYAML string) error {
-
 	// Discover CRD data
 	crdExist, returnError := i.client.CheckCRDExists(crdName)
 	if returnError != nil {
@@ -643,7 +638,6 @@ func (i *Installer) CreateCRD(crdName, crdYAML string) error {
 
 // ensureCRDEstablished waits until a CRD is Established.
 func (i *Installer) ensureCRDEstablished(crdName string) error {
-
 	checkCRDEstablished := func() error {
 		crd, err := i.client.GetCRD(crdName)
 		if err != nil {
@@ -686,7 +680,6 @@ func (i *Installer) ensureCRDEstablished(crdName string) error {
 func (i *Installer) createOrPatchK8sBetaCSIDriver(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-
 	// TODO (cknight): remove when 1.18 is our minimum version
 
 	CSIDriverName := getCSIDriverName()
@@ -712,7 +705,6 @@ func (i *Installer) createOrPatchK8sBetaCSIDriver(
 }
 
 func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[string]string, shouldUpdate bool) error {
-
 	CSIDriverName := getCSIDriverName()
 
 	currentCSIDriver, unwantedCSIDrivers, createCSIDriver, err := i.client.GetCSIDriverInformation(CSIDriverName,
@@ -739,7 +731,6 @@ func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[s
 func (i *Installer) createRBACObjects(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) (newServiceAccount bool, returnError error) {
-
 	// Create service account
 	newServiceAccount, returnError = i.createOrPatchTridentServiceAccount(controllingCRDetails, labels, false)
 	if returnError != nil {
@@ -833,7 +824,6 @@ func (i *Installer) createOrPatchTridentServiceAccount(
 func (i *Installer) createOrPatchTridentClusterRole(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-
 	clusterRoleName := getClusterRoleName(true)
 
 	currentClusterRole, unwantedClusterRoles, createClusterRole, err := i.client.GetClusterRoleInformation(
@@ -861,7 +851,6 @@ func (i *Installer) createOrPatchTridentClusterRole(
 func (i *Installer) createOrPatchTridentClusterRoleBinding(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-
 	clusterRoleBindingName := getClusterRoleBindingName(true)
 
 	currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding,
@@ -929,7 +918,6 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(
 }
 
 func (i *Installer) createAndEnsureCRDs() (returnError error) {
-
 	returnError = i.createCRDs()
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident CRDs; %v", returnError)
@@ -940,7 +928,6 @@ func (i *Installer) createAndEnsureCRDs() (returnError error) {
 func (i *Installer) createOrPatchTridentPodSecurityPolicy(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-
 	pspName := getPSPName()
 
 	currentPSP, unwantedPSPs, createPSP, err := i.client.GetPodSecurityPolicyInformation(pspName, appLabel,
@@ -965,7 +952,6 @@ func (i *Installer) createOrPatchTridentPodSecurityPolicy(
 func (i *Installer) createOrPatchTridentService(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-
 	serviceName := getServiceName()
 
 	currentService, unwantedServices, createService, err := i.client.GetServiceInformation(serviceName, appLabel,
@@ -990,7 +976,6 @@ func (i *Installer) createOrPatchTridentService(
 func (i *Installer) createOrPatchTridentProtocolSecret(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-
 	secretMap := make(map[string]string)
 	secretName := getProtocolSecretName()
 
@@ -1037,7 +1022,6 @@ func (i *Installer) createOrPatchTridentProtocolSecret(
 func (i *Installer) createOrConsumeTridentEncryptionSecret(
 	controllingCRDetails, labels map[string]string, _ bool,
 ) error {
-
 	secretName := getEncryptionSecretName()
 
 	// Check if Trident's Encryption Secret already exists.
@@ -1058,7 +1042,7 @@ func (i *Installer) createOrConsumeTridentEncryptionSecret(
 		// Create the secret map
 		secretMap := make(map[string]string)
 		secretMap = map[string]string{
-			commonconfig.AESKeyFile:     aesKey,
+			commonconfig.AESKeyFile: aesKey,
 		}
 
 		// Setup persistent object labels.
@@ -1084,7 +1068,6 @@ func (i *Installer) createOrConsumeTridentEncryptionSecret(
 func (i *Installer) createOrPatchTridentDeployment(
 	controllingCRDetails, labels map[string]string, shouldUpdate, newServiceAccount bool,
 ) error {
-
 	topologyEnabled, err := i.client.IsTopologyInUse()
 	if err != nil {
 		return fmt.Errorf("failed to determine if node topology settings; %v", err)
@@ -1159,14 +1142,12 @@ func (i *Installer) createOrPatchTridentDeployment(
 func (i *Installer) TridentDeploymentInformation(
 	deploymentLabel string,
 ) (*appsv1.Deployment, []appsv1.Deployment, bool, error) {
-
 	return i.client.GetDeploymentInformation(getDeploymentName(true), deploymentLabel, i.namespace)
 }
 
 func (i *Installer) createOrPatchTridentDaemonSet(
 	controllingCRDetails, labels map[string]string, shouldUpdate, newServiceAccount bool,
 ) error {
-
 	daemonSetName := getDaemonSetName()
 	nodeLabel := TridentNodeLabel
 
@@ -1228,15 +1209,14 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 // this method can be used for multiple purposes at different point during the Reconcile so it makes sense to
 // keep it separate from the createOrPatchTridentDaemonSet
 func (i *Installer) TridentDaemonSetInformation() (*appsv1.DaemonSet,
-	[]appsv1.DaemonSet, bool, error) {
-
+	[]appsv1.DaemonSet, bool, error,
+) {
 	daemonSetName := getDaemonSetName()
 	nodeLabel := TridentNodeLabel
 	return i.client.GetDaemonSetInformation(daemonSetName, nodeLabel, i.namespace)
 }
 
 func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
-
 	var pod *v1.Pod
 
 	// Add sleep to make sure we get the pod name, esp. in case where we kill one deployment and the
@@ -1347,11 +1327,9 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 }
 
 func (i *Installer) waitForRESTInterface(tridentPodName string) error {
-
 	var version, versionWithMetadata string
 
 	checkRESTInterface := func() error {
-
 		cliCommand := []string{"tridentctl", "-s", ControllerServer, "version", "-o", "json"}
 		versionJSON, err := i.client.Exec(tridentPodName, TridentContainer, cliCommand)
 		if err != nil {
@@ -1417,8 +1395,8 @@ func (i *Installer) waitForRESTInterface(tridentPodName string) error {
 // getTridentClientVersionInfo takes trident image name and identifies the Trident client version
 func (i *Installer) getTridentClientVersionInfo(imageName string, controllingCRDetails map[string]string) (*api.
 	ClientVersionResponse,
-	error) {
-
+	error,
+) {
 	clientVersionYAML, err := i.getTridentVersionYAML(imageName, controllingCRDetails)
 	if err != nil {
 		return nil, err
@@ -1437,14 +1415,12 @@ func (i *Installer) getTridentClientVersionInfo(imageName string, controllingCRD
 	log.WithField("version", clientVersion).Debugf("Successfully found Trident image version information.")
 
 	return &clientVersion, nil
-
 }
 
 // getTridentVersionYAML takes trident image name and identifies the Trident client version YAML, this workflow
 // resembles the `kubectl run --rm -it --restart=Never transient-trident-version-pod --image=<image_name> --
 // /bin/tridentctl version --client -o yaml` command
 func (i *Installer) getTridentVersionYAML(imageName string, controllingCRDetails map[string]string) ([]byte, error) {
-
 	podName := "transient-trident-version-pod"
 	podLabels := make(map[string]string)
 

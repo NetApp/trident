@@ -14,7 +14,6 @@ import (
 )
 
 func TestNewSnapshot(t *testing.T) {
-
 	// Build snapshot
 	testSnapshot := getFakeSnapshot()
 
@@ -34,7 +33,6 @@ func TestNewSnapshot(t *testing.T) {
 }
 
 func TestSnapshot_Persistent(t *testing.T) {
-
 	// Build snapshot
 	testSnapshot := getFakeSnapshot()
 
@@ -57,7 +55,6 @@ func TestSnapshot_Persistent(t *testing.T) {
 }
 
 func getFakeSnapshot() *storage.Snapshot {
-
 	testSnapshotConfig := &storage.SnapshotConfig{
 		Version:            "1",
 		Name:               "testsnap1",
@@ -74,7 +71,6 @@ func getFakeSnapshot() *storage.Snapshot {
 }
 
 func getFakeSnapshotCRD(snapshot *storage.Snapshot) *TridentSnapshot {
-
 	crd := &TridentSnapshot{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "trident.netapp.io/v1",

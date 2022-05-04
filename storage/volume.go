@@ -83,7 +83,6 @@ func (c *VolumeConfig) Validate() error {
 }
 
 func (c *VolumeConfig) ConstructClone() *VolumeConfig {
-
 	clone, err := copystructure.Copy(*c)
 	if err != nil {
 		return &VolumeConfig{}
@@ -148,7 +147,7 @@ func (s VolumeState) IsMissingBackend() bool {
 	return s == VolumeStateMissingBackend
 }
 
-func NewVolume(conf *VolumeConfig, backendUUID string, pool string, orphaned bool) *Volume {
+func NewVolume(conf *VolumeConfig, backendUUID, pool string, orphaned bool) *Volume {
 	return &Volume{
 		Config:      conf,
 		BackendUUID: backendUUID,

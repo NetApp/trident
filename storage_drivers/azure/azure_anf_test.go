@@ -56,7 +56,6 @@ func TestMain(m *testing.M) {
 }
 
 func newTestANFDriver(mockAPI api.Azure) *NFSStorageDriver {
-
 	prefix := "test-"
 
 	config := drivers.AzureNFSStorageDriverConfig{
@@ -82,7 +81,6 @@ func newTestANFDriver(mockAPI api.Azure) *NFSStorageDriver {
 }
 
 func newMockANFDriver(t *testing.T) (*mockapi.MockAzure, *NFSStorageDriver) {
-
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockAzure(mockCtrl)
 
@@ -90,7 +88,6 @@ func newMockANFDriver(t *testing.T) (*mockapi.MockAzure, *NFSStorageDriver) {
 }
 
 func TestName(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 
 	result := driver.Name()
@@ -99,7 +96,6 @@ func TestName(t *testing.T) {
 }
 
 func TestBackendName_SetInConfig(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "myANFBackend"
 
@@ -109,7 +105,6 @@ func TestBackendName_SetInConfig(t *testing.T) {
 }
 
 func TestBackendName_UseDefault(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.Config.BackendName = ""
 
@@ -119,7 +114,6 @@ func TestBackendName_UseDefault(t *testing.T) {
 }
 
 func TestPoolName(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "myANFBackend"
 
@@ -129,7 +123,6 @@ func TestPoolName(t *testing.T) {
 }
 
 func TestValidateVolumeName(t *testing.T) {
-
 	tests := []struct {
 		Name  string
 		Valid bool
@@ -151,7 +144,6 @@ func TestValidateVolumeName(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-
 			_, driver := newMockANFDriver(t)
 
 			err := driver.validateVolumeName(test.Name)
@@ -166,7 +158,6 @@ func TestValidateVolumeName(t *testing.T) {
 }
 
 func TestValidateCreationToken(t *testing.T) {
-
 	tests := []struct {
 		Token string
 		Valid bool
@@ -187,7 +178,6 @@ func TestValidateCreationToken(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.Token, func(t *testing.T) {
-
 			_, driver := newMockANFDriver(t)
 
 			err := driver.validateCreationToken(test.Token)
@@ -202,7 +192,6 @@ func TestValidateCreationToken(t *testing.T) {
 }
 
 func TestDefaultCreateTimeout(t *testing.T) {
-
 	tests := []struct {
 		Context  tridentconfig.DriverContext
 		Expected time.Duration
@@ -213,7 +202,6 @@ func TestDefaultCreateTimeout(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(string(test.Context), func(t *testing.T) {
-
 			_, driver := newMockANFDriver(t)
 			driver.Config.DriverContext = test.Context
 
@@ -225,7 +213,6 @@ func TestDefaultCreateTimeout(t *testing.T) {
 }
 
 func TestDefaultTimeout(t *testing.T) {
-
 	tests := []struct {
 		Context  tridentconfig.DriverContext
 		Expected time.Duration
@@ -236,7 +223,6 @@ func TestDefaultTimeout(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(string(test.Context), func(t *testing.T) {
-
 			_, driver := newMockANFDriver(t)
 			driver.Config.DriverContext = test.Context
 
@@ -248,7 +234,6 @@ func TestDefaultTimeout(t *testing.T) {
 }
 
 func TestInitialize(t *testing.T) {
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
@@ -295,7 +280,6 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestInitialize_WithSecrets(t *testing.T) {
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
@@ -342,7 +326,6 @@ func TestInitialize_WithSecrets(t *testing.T) {
 }
 
 func TestInitialize_WithInvalidSecrets(t *testing.T) {
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
@@ -380,7 +363,6 @@ func TestInitialize_WithInvalidSecrets(t *testing.T) {
 }
 
 func TestInitialize_NoLocation(t *testing.T) {
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
@@ -414,7 +396,6 @@ func TestInitialize_NoLocation(t *testing.T) {
 }
 
 func TestInitialize_SDKInitError(t *testing.T) {
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
@@ -450,7 +431,6 @@ func TestInitialize_SDKInitError(t *testing.T) {
 }
 
 func TestInitialize_InvalidConfigJSON(t *testing.T) {
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
@@ -484,7 +464,6 @@ func TestInitialize_InvalidConfigJSON(t *testing.T) {
 }
 
 func TestInitialize_InvalidStoragePrefix(t *testing.T) {
-
 	prefix := "&trident"
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -524,7 +503,6 @@ func TestInitialize_InvalidStoragePrefix(t *testing.T) {
 }
 
 func TestInitialize_InvalidVolumeCreateTimeout(t *testing.T) {
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
@@ -561,7 +539,6 @@ func TestInitialize_InvalidVolumeCreateTimeout(t *testing.T) {
 }
 
 func TestInitialize_InvalidSDKTimeout(t *testing.T) {
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
@@ -596,7 +573,6 @@ func TestInitialize_InvalidSDKTimeout(t *testing.T) {
 }
 
 func TestInitialize_InvalidMaxCacheAge(t *testing.T) {
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
@@ -631,7 +607,6 @@ func TestInitialize_InvalidMaxCacheAge(t *testing.T) {
 }
 
 func TestInitialized(t *testing.T) {
-
 	tests := []struct {
 		Expected bool
 	}{
@@ -640,7 +615,6 @@ func TestInitialized(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(strconv.FormatBool(test.Expected), func(t *testing.T) {
-
 			_, driver := newMockANFDriver(t)
 			driver.initialized = test.Expected
 
@@ -652,7 +626,6 @@ func TestInitialized(t *testing.T) {
 }
 
 func TestTerminate(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.initialized = true
 
@@ -662,7 +635,6 @@ func TestTerminate(t *testing.T) {
 }
 
 func TestPopulateConfigurationDefaults_NoneSet(t *testing.T) {
-
 	config := &drivers.AzureNFSStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DriverContext:   tridentconfig.ContextCSI,
@@ -685,7 +657,6 @@ func TestPopulateConfigurationDefaults_NoneSet(t *testing.T) {
 }
 
 func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
-
 	prefix := "myPrefix"
 
 	config := &drivers.AzureNFSStorageDriverConfig{
@@ -723,7 +694,6 @@ func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
 }
 
 func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
-
 	supportedTopologies := []map[string]string{
 		{"topology.kubernetes.io/region": "europe-west1", "topology.kubernetes.io/zone": "us-east-1c"},
 	}
@@ -791,7 +761,6 @@ func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 }
 
 func TestInitializeStoragePools_VirtualPools(t *testing.T) {
-
 	supportedTopologies := []map[string]string{
 		{"topology.kubernetes.io/region": "europe-west1", "topology.kubernetes.io/zone": "us-east-1c"},
 	}
@@ -913,7 +882,6 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 }
 
 func TestValidate_InvalidServiceLevel(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.Config.ServiceLevel = "invalid"
 
@@ -925,7 +893,6 @@ func TestValidate_InvalidServiceLevel(t *testing.T) {
 }
 
 func TestValidate_InvalidExportRule(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.Config.ExportRule = "1.2.3.4.5"
 
@@ -937,7 +904,6 @@ func TestValidate_InvalidExportRule(t *testing.T) {
 }
 
 func TestValidate_InvalidSnapshotDir(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.Config.SnapshotDir = "yes"
 
@@ -949,7 +915,6 @@ func TestValidate_InvalidSnapshotDir(t *testing.T) {
 }
 
 func TestValidate_ValidUnixPermissions(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.Config.UnixPermissions = "0777"
 
@@ -961,7 +926,6 @@ func TestValidate_ValidUnixPermissions(t *testing.T) {
 }
 
 func TestValidate_InvalidUnixPermissions(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.Config.UnixPermissions = "777"
 
@@ -973,7 +937,6 @@ func TestValidate_InvalidUnixPermissions(t *testing.T) {
 }
 
 func TestValidate_InvalidSize(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.Config.Size = "abcde"
 
@@ -985,7 +948,6 @@ func TestValidate_InvalidSize(t *testing.T) {
 }
 
 func TestValidate_InvalidLabel(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.Config.Labels = map[string]string{
 		"key1": "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
@@ -1003,7 +965,6 @@ func TestValidate_InvalidLabel(t *testing.T) {
 func getStructsForCreate(ctx context.Context, driver *NFSStorageDriver, storagePool storage.Pool) (
 	*storage.VolumeConfig, *api.CapacityPool, *api.Subnet, *api.FilesystemCreateRequest, *api.FileSystem,
 ) {
-
 	volConfig := &storage.VolumeConfig{
 		Version:      "1",
 		Name:         "testvol1",
@@ -1089,7 +1050,6 @@ func getStructsForCreate(ctx context.Context, driver *NFSStorageDriver, storageP
 }
 
 func TestCreate(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1121,7 +1081,6 @@ func TestCreate(t *testing.T) {
 }
 
 func TestCreate_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1143,7 +1102,6 @@ func TestCreate_DiscoveryFailed(t *testing.T) {
 }
 
 func TestCreate_InvalidVolumeName(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1166,7 +1124,6 @@ func TestCreate_InvalidVolumeName(t *testing.T) {
 }
 
 func TestCreate_InvalidCreationToken(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1189,7 +1146,6 @@ func TestCreate_InvalidCreationToken(t *testing.T) {
 }
 
 func TestCreate_NoStoragePool(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1211,7 +1167,6 @@ func TestCreate_NoStoragePool(t *testing.T) {
 }
 
 func TestCreate_NonexistentStoragePool(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1234,7 +1189,6 @@ func TestCreate_NonexistentStoragePool(t *testing.T) {
 }
 
 func TestCreate_VolumeExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1257,7 +1211,6 @@ func TestCreate_VolumeExistsCheckFailed(t *testing.T) {
 }
 
 func TestCreate_VolumeExistsCreating(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1282,7 +1235,6 @@ func TestCreate_VolumeExistsCreating(t *testing.T) {
 }
 
 func TestCreate_VolumeExists(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1307,7 +1259,6 @@ func TestCreate_VolumeExists(t *testing.T) {
 }
 
 func TestCreate_InvalidSize(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1331,7 +1282,6 @@ func TestCreate_InvalidSize(t *testing.T) {
 }
 
 func TestCreate_NegativeSize(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1355,7 +1305,6 @@ func TestCreate_NegativeSize(t *testing.T) {
 }
 
 func TestCreate_ZeroSize(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1387,7 +1336,6 @@ func TestCreate_ZeroSize(t *testing.T) {
 }
 
 func TestCreate_BelowAbsoluteMinimumSize(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1411,7 +1359,6 @@ func TestCreate_BelowAbsoluteMinimumSize(t *testing.T) {
 }
 
 func TestCreate_BelowANFMinimumSize(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1443,7 +1390,6 @@ func TestCreate_BelowANFMinimumSize(t *testing.T) {
 }
 
 func TestCreate_AboveMaximumSize(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1468,7 +1414,6 @@ func TestCreate_AboveMaximumSize(t *testing.T) {
 }
 
 func TestCreate_InvalidSnapshotDir(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1492,7 +1437,6 @@ func TestCreate_InvalidSnapshotDir(t *testing.T) {
 }
 
 func TestCreate_InvalidMountOptions(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1517,7 +1461,6 @@ func TestCreate_InvalidMountOptions(t *testing.T) {
 }
 
 func TestCreate_DefaultMountOptions(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1548,7 +1491,6 @@ func TestCreate_DefaultMountOptions(t *testing.T) {
 }
 
 func TestCreate_VolConfigMountOptions(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1581,7 +1523,6 @@ func TestCreate_VolConfigMountOptions(t *testing.T) {
 }
 
 func TestCreate_InvalidLabel(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1610,7 +1551,6 @@ func TestCreate_InvalidLabel(t *testing.T) {
 }
 
 func TestCreate_NoCapacityPool(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1635,7 +1575,6 @@ func TestCreate_NoCapacityPool(t *testing.T) {
 }
 
 func TestCreate_NoSubnet(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1661,7 +1600,6 @@ func TestCreate_NoSubnet(t *testing.T) {
 }
 
 func TestCreate_CreateFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1691,7 +1629,6 @@ func getStructsForCreateClone(ctx context.Context, driver *NFSStorageDriver, sto
 	*storage.VolumeConfig, *storage.VolumeConfig, *api.FilesystemCreateRequest, *api.FileSystem, *api.FileSystem,
 	*api.Snapshot,
 ) {
-
 	sourceVolumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testvol1")
 	cloneVolumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testvol2")
 	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
@@ -1804,7 +1741,6 @@ func getStructsForCreateClone(ctx context.Context, driver *NFSStorageDriver, sto
 }
 
 func TestCreateClone_NoSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1835,7 +1771,6 @@ func TestCreateClone_NoSnapshot(t *testing.T) {
 }
 
 func TestCreateClone_Snapshot(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1864,7 +1799,6 @@ func TestCreateClone_Snapshot(t *testing.T) {
 }
 
 func TestCreateClone_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1886,7 +1820,6 @@ func TestCreateClone_DiscoveryFailed(t *testing.T) {
 }
 
 func TestCreateClone_InvalidVolumeName(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1909,7 +1842,6 @@ func TestCreateClone_InvalidVolumeName(t *testing.T) {
 }
 
 func TestCreateClone_InvalidCreationToken(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1932,7 +1864,6 @@ func TestCreateClone_InvalidCreationToken(t *testing.T) {
 }
 
 func TestCreateClone_NonexistentSourceVolume(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1955,7 +1886,6 @@ func TestCreateClone_NonexistentSourceVolume(t *testing.T) {
 }
 
 func TestCreateClone_VolumeExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -1979,7 +1909,6 @@ func TestCreateClone_VolumeExistsCheckFailed(t *testing.T) {
 }
 
 func TestCreateClone_VolumeExistsCreating(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2005,7 +1934,6 @@ func TestCreateClone_VolumeExistsCreating(t *testing.T) {
 }
 
 func TestCreateClone_VolumeExists(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2031,7 +1959,6 @@ func TestCreateClone_VolumeExists(t *testing.T) {
 }
 
 func TestCreateClone_SnapshotNotFound(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2057,7 +1984,6 @@ func TestCreateClone_SnapshotNotFound(t *testing.T) {
 }
 
 func TestCreateClone_SnapshotNotAvailable(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2084,7 +2010,6 @@ func TestCreateClone_SnapshotNotAvailable(t *testing.T) {
 }
 
 func TestCreateClone_SnapshotCreateFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2109,7 +2034,6 @@ func TestCreateClone_SnapshotCreateFailed(t *testing.T) {
 }
 
 func TestCreateClone_SnapshotWaitFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2136,7 +2060,6 @@ func TestCreateClone_SnapshotWaitFailed(t *testing.T) {
 }
 
 func TestCreateClone_SnapshotRefetchFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2164,7 +2087,6 @@ func TestCreateClone_SnapshotRefetchFailed(t *testing.T) {
 }
 
 func TestCreateClone_InvalidLabel(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2197,7 +2119,6 @@ func TestCreateClone_InvalidLabel(t *testing.T) {
 }
 
 func TestCreateClone_CreateFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2226,7 +2147,6 @@ func TestCreateClone_CreateFailed(t *testing.T) {
 }
 
 func getStructsForImport(ctx context.Context, driver *NFSStorageDriver) (*storage.VolumeConfig, *api.FileSystem) {
-
 	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
 
 	volConfig := &storage.VolumeConfig{
@@ -2264,7 +2184,6 @@ func getStructsForImport(ctx context.Context, driver *NFSStorageDriver) (*storag
 }
 
 func TestImport_Managed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2298,7 +2217,6 @@ func TestImport_Managed(t *testing.T) {
 }
 
 func TestImport_ManagedWithLabels(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2337,7 +2255,6 @@ func TestImport_ManagedWithLabels(t *testing.T) {
 }
 
 func TestImport_NotManaged(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2364,7 +2281,6 @@ func TestImport_NotManaged(t *testing.T) {
 }
 
 func TestImport_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2388,7 +2304,6 @@ func TestImport_DiscoveryFailed(t *testing.T) {
 }
 
 func TestImport_NotFound(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2413,7 +2328,6 @@ func TestImport_NotFound(t *testing.T) {
 }
 
 func TestImport_InvalidCapacityPool(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2439,7 +2353,6 @@ func TestImport_InvalidCapacityPool(t *testing.T) {
 }
 
 func TestImport_InvalidUnixPermissions(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2465,7 +2378,6 @@ func TestImport_InvalidUnixPermissions(t *testing.T) {
 }
 
 func TestImport_ModifyVolumeFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2497,7 +2409,6 @@ func TestImport_ModifyVolumeFailed(t *testing.T) {
 }
 
 func TestImport_VolumeWaitFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2531,7 +2442,6 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 }
 
 func TestRename(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 
 	result := driver.Rename(ctx, "oldName", "newName")
@@ -2540,7 +2450,6 @@ func TestRename(t *testing.T) {
 }
 
 func TestGetTelemetryLabels(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2550,7 +2459,6 @@ func TestGetTelemetryLabels(t *testing.T) {
 }
 
 func TestUpdateTelemetryLabels(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2561,7 +2469,6 @@ func TestUpdateTelemetryLabels(t *testing.T) {
 }
 
 func TestWaitForVolumeCreate_Available(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	filesystem := &api.FileSystem{
@@ -2579,7 +2486,6 @@ func TestWaitForVolumeCreate_Available(t *testing.T) {
 }
 
 func TestWaitForVolumeCreate_Creating(t *testing.T) {
-
 	for _, state := range []string{api.StateAccepted, api.StateCreating} {
 
 		mockAPI, driver := newMockANFDriver(t)
@@ -2601,7 +2507,6 @@ func TestWaitForVolumeCreate_Creating(t *testing.T) {
 }
 
 func TestWaitForVolumeCreate_DeletingDeleteFinished(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	filesystem := &api.FileSystem{
@@ -2621,7 +2526,6 @@ func TestWaitForVolumeCreate_DeletingDeleteFinished(t *testing.T) {
 }
 
 func TestWaitForVolumeCreate_DeletingDeleteNotFinished(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	filesystem := &api.FileSystem{
@@ -2641,7 +2545,6 @@ func TestWaitForVolumeCreate_DeletingDeleteNotFinished(t *testing.T) {
 }
 
 func TestWaitForVolumeCreate_ErrorDelete(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	filesystem := &api.FileSystem{
@@ -2660,7 +2563,6 @@ func TestWaitForVolumeCreate_ErrorDelete(t *testing.T) {
 }
 
 func TestWaitForVolumeCreate_ErrorDeleteFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	filesystem := &api.FileSystem{
@@ -2679,7 +2581,6 @@ func TestWaitForVolumeCreate_ErrorDeleteFailed(t *testing.T) {
 }
 
 func TestWaitForVolumeCreate_OtherStates(t *testing.T) {
-
 	for _, state := range []string{api.StateMoving, "unknown"} {
 
 		mockAPI, driver := newMockANFDriver(t)
@@ -2700,7 +2601,6 @@ func TestWaitForVolumeCreate_OtherStates(t *testing.T) {
 }
 
 func getStructsForDestroy(ctx context.Context, driver *NFSStorageDriver) (*storage.VolumeConfig, *api.FileSystem) {
-
 	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
 	volumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "importMe")
 
@@ -2739,7 +2639,6 @@ func getStructsForDestroy(ctx context.Context, driver *NFSStorageDriver) (*stora
 }
 
 func TestDestroy(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2757,7 +2656,6 @@ func TestDestroy(t *testing.T) {
 }
 
 func TestDestroy_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2771,7 +2669,6 @@ func TestDestroy_DiscoveryFailed(t *testing.T) {
 }
 
 func TestDestroy_VolumeExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2786,7 +2683,6 @@ func TestDestroy_VolumeExistsCheckFailed(t *testing.T) {
 }
 
 func TestDestroy_AlreadyDeleted(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2801,7 +2697,6 @@ func TestDestroy_AlreadyDeleted(t *testing.T) {
 }
 
 func TestDestroy_StillDeletingDeleted(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2819,7 +2714,6 @@ func TestDestroy_StillDeletingDeleted(t *testing.T) {
 }
 
 func TestDestroy_StillDeleting(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2837,7 +2731,6 @@ func TestDestroy_StillDeleting(t *testing.T) {
 }
 
 func TestDestroy_DeleteFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2853,7 +2746,6 @@ func TestDestroy_DeleteFailed(t *testing.T) {
 }
 
 func TestDestroy_VolumeWaitFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2873,7 +2765,6 @@ func TestDestroy_VolumeWaitFailed(t *testing.T) {
 func getStructsForPublish(
 	ctx context.Context, driver *NFSStorageDriver,
 ) (*storage.VolumeConfig, *api.FileSystem, *utils.VolumePublishInfo) {
-
 	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
 	volumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "importMe")
 
@@ -2924,7 +2815,6 @@ func getStructsForPublish(
 }
 
 func TestPublish(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2944,7 +2834,6 @@ func TestPublish(t *testing.T) {
 }
 
 func TestPublish_MountOptions(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2966,7 +2855,6 @@ func TestPublish_MountOptions(t *testing.T) {
 }
 
 func TestPublish_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -2984,7 +2872,6 @@ func TestPublish_DiscoveryFailed(t *testing.T) {
 }
 
 func TestPublish_NonexistentVolume(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3003,7 +2890,6 @@ func TestPublish_NonexistentVolume(t *testing.T) {
 }
 
 func TestPublish_NoMountTargets(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3025,7 +2911,6 @@ func TestPublish_NoMountTargets(t *testing.T) {
 func getStructsForCreateSnapshot(ctx context.Context, driver *NFSStorageDriver, snapTime time.Time) (
 	*storage.VolumeConfig, *api.FileSystem, *storage.SnapshotConfig, *api.Snapshot,
 ) {
-
 	volumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testvol1")
 	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
 
@@ -3083,7 +2968,6 @@ func getStructsForCreateSnapshot(ctx context.Context, driver *NFSStorageDriver, 
 }
 
 func TestCanSnapshot(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3096,7 +2980,6 @@ func TestCanSnapshot(t *testing.T) {
 }
 
 func TestGetSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3116,7 +2999,6 @@ func TestGetSnapshot(t *testing.T) {
 }
 
 func TestGetSnapshot_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3132,7 +3014,6 @@ func TestGetSnapshot_DiscoveryFailed(t *testing.T) {
 }
 
 func TestGetSnapshot_VolumeExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3149,7 +3030,6 @@ func TestGetSnapshot_VolumeExistsCheckFailed(t *testing.T) {
 }
 
 func TestGetSnapshot_NonexistentVolume(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3166,7 +3046,6 @@ func TestGetSnapshot_NonexistentVolume(t *testing.T) {
 }
 
 func TestGetSnapshot_NonexistentSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3184,7 +3063,6 @@ func TestGetSnapshot_NonexistentSnapshot(t *testing.T) {
 }
 
 func TestGetSnapshot_GetSnapshotFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3202,7 +3080,6 @@ func TestGetSnapshot_GetSnapshotFailed(t *testing.T) {
 }
 
 func TestGetSnapshot_SnapshotNotAvailable(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3221,7 +3098,6 @@ func TestGetSnapshot_SnapshotNotAvailable(t *testing.T) {
 }
 
 func getSnapshotsForList(snapTime time.Time) *[]*api.Snapshot {
-
 	return &[]*api.Snapshot{
 		{
 			ResourceGroup:     "RG1",
@@ -3263,7 +3139,6 @@ func getSnapshotsForList(snapTime time.Time) *[]*api.Snapshot {
 }
 
 func TestGetSnapshots(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3311,7 +3186,6 @@ func TestGetSnapshots(t *testing.T) {
 }
 
 func TestGetSnapshots_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3327,7 +3201,6 @@ func TestGetSnapshots_DiscoveryFailed(t *testing.T) {
 }
 
 func TestGetSnapshots_NonexistentVolume(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3344,7 +3217,6 @@ func TestGetSnapshots_NonexistentVolume(t *testing.T) {
 }
 
 func TestGetSnapshots_GetSnapshotsFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3362,7 +3234,6 @@ func TestGetSnapshots_GetSnapshotsFailed(t *testing.T) {
 }
 
 func TestCreateSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3389,7 +3260,6 @@ func TestCreateSnapshot(t *testing.T) {
 }
 
 func TestCreateSnapshot_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3405,7 +3275,6 @@ func TestCreateSnapshot_DiscoveryFailed(t *testing.T) {
 }
 
 func TestCreateSnapshot_VolumeExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3422,7 +3291,6 @@ func TestCreateSnapshot_VolumeExistsCheckFailed(t *testing.T) {
 }
 
 func TestCreateSnapshot_NonexistentVolume(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3439,7 +3307,6 @@ func TestCreateSnapshot_NonexistentVolume(t *testing.T) {
 }
 
 func TestCreateSnapshot_SnapshotCreateFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3457,7 +3324,6 @@ func TestCreateSnapshot_SnapshotCreateFailed(t *testing.T) {
 }
 
 func TestCreateSnapshot_SnapshotWaitFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3477,7 +3343,6 @@ func TestCreateSnapshot_SnapshotWaitFailed(t *testing.T) {
 }
 
 func TestRestoreSnapshot(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3491,7 +3356,6 @@ func TestRestoreSnapshot(t *testing.T) {
 }
 
 func TestDeleteSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3511,7 +3375,6 @@ func TestDeleteSnapshot(t *testing.T) {
 }
 
 func TestDeleteSnapshot_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3526,7 +3389,6 @@ func TestDeleteSnapshot_DiscoveryFailed(t *testing.T) {
 }
 
 func TestDeleteSnapshot_VolumeExistsCheckFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3542,7 +3404,6 @@ func TestDeleteSnapshot_VolumeExistsCheckFailed(t *testing.T) {
 }
 
 func TestDeleteSnapshot_NonexistentVolume(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3558,7 +3419,6 @@ func TestDeleteSnapshot_NonexistentVolume(t *testing.T) {
 }
 
 func TestDeleteSnapshot_NonexistentSnapshot(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3575,7 +3435,6 @@ func TestDeleteSnapshot_NonexistentSnapshot(t *testing.T) {
 }
 
 func TestDeleteSnapshot_GetSnapshotFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3592,7 +3451,6 @@ func TestDeleteSnapshot_GetSnapshotFailed(t *testing.T) {
 }
 
 func TestDeleteSnapshot_SnapshotDeleteFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3610,7 +3468,6 @@ func TestDeleteSnapshot_SnapshotDeleteFailed(t *testing.T) {
 }
 
 func TestDeleteSnapshot_SnapshotWaitFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3630,7 +3487,6 @@ func TestDeleteSnapshot_SnapshotWaitFailed(t *testing.T) {
 }
 
 func getVolumesForList() *[]*api.FileSystem {
-
 	return &[]*api.FileSystem{
 		{
 			ProvisioningState: api.StateAvailable,
@@ -3660,7 +3516,6 @@ func getVolumesForList() *[]*api.FileSystem {
 }
 
 func TestList(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -3678,7 +3533,6 @@ func TestList(t *testing.T) {
 }
 
 func TestList_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(errFailed).Times(1)
@@ -3691,7 +3545,6 @@ func TestList_DiscoveryFailed(t *testing.T) {
 }
 
 func TestList_ListFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -3704,7 +3557,6 @@ func TestList_ListFailed(t *testing.T) {
 }
 
 func TestList_ListNone(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -3717,7 +3569,6 @@ func TestList_ListNone(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	filesystem := &api.FileSystem{}
@@ -3731,7 +3582,6 @@ func TestGet(t *testing.T) {
 }
 
 func TestGet_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(errFailed).Times(1)
@@ -3743,7 +3593,6 @@ func TestGet_DiscoveryFailed(t *testing.T) {
 }
 
 func TestGet_NotFound(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -3755,7 +3604,6 @@ func TestGet_NotFound(t *testing.T) {
 }
 
 func TestResize(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3777,7 +3625,6 @@ func TestResize(t *testing.T) {
 }
 
 func TestResize_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3794,7 +3641,6 @@ func TestResize_DiscoveryFailed(t *testing.T) {
 }
 
 func TestResize_NonexistentVolume(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3812,7 +3658,6 @@ func TestResize_NonexistentVolume(t *testing.T) {
 }
 
 func TestResize_VolumeNotAvailable(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3831,7 +3676,6 @@ func TestResize_VolumeNotAvailable(t *testing.T) {
 }
 
 func TestResize_NoSizeChange(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3849,7 +3693,6 @@ func TestResize_NoSizeChange(t *testing.T) {
 }
 
 func TestResize_ShrinkingVolume(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3867,7 +3710,6 @@ func TestResize_ShrinkingVolume(t *testing.T) {
 }
 
 func TestResize_AboveMaximumSize(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3886,7 +3728,6 @@ func TestResize_AboveMaximumSize(t *testing.T) {
 }
 
 func TestResize_VolumeResizeFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3905,7 +3746,6 @@ func TestResize_VolumeResizeFailed(t *testing.T) {
 }
 
 func TestResize_VolumeWaitFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -3926,7 +3766,6 @@ func TestResize_VolumeWaitFailed(t *testing.T) {
 }
 
 func TestGetStorageBackendSpecs(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
@@ -3947,7 +3786,6 @@ func TestGetStorageBackendSpecs(t *testing.T) {
 }
 
 func TestCreatePrepare(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 
 	tridentconfig.UsingPassthroughStore = true
@@ -3962,7 +3800,6 @@ func TestCreatePrepare(t *testing.T) {
 }
 
 func TestGetStorageBackendPhysicalPoolNames(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 
 	result := driver.GetStorageBackendPhysicalPoolNames(ctx)
@@ -3971,7 +3808,6 @@ func TestGetStorageBackendPhysicalPoolNames(t *testing.T) {
 }
 
 func TestGetInternalVolumeName_PassthroughStore(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 
 	tridentconfig.UsingPassthroughStore = true
@@ -3984,7 +3820,6 @@ func TestGetInternalVolumeName_PassthroughStore(t *testing.T) {
 }
 
 func TestGetInternalVolumeName_CSI(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 
 	tridentconfig.UsingPassthroughStore = false
@@ -3997,7 +3832,6 @@ func TestGetInternalVolumeName_CSI(t *testing.T) {
 }
 
 func TestGetInternalVolumeName_NonCSI(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 
 	tridentconfig.UsingPassthroughStore = false
@@ -4011,7 +3845,6 @@ func TestGetInternalVolumeName_NonCSI(t *testing.T) {
 }
 
 func TestCreateFollowup(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -4029,7 +3862,6 @@ func TestCreateFollowup(t *testing.T) {
 }
 
 func TestCreateFollowup_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -4046,7 +3878,6 @@ func TestCreateFollowup_DiscoveryFailed(t *testing.T) {
 }
 
 func TestCreateFollowup_NonexistentVolume(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -4064,7 +3895,6 @@ func TestCreateFollowup_NonexistentVolume(t *testing.T) {
 }
 
 func TestCreateFollowup_VolumeNotAvailable(t *testing.T) {
-
 	nonAvailableStates := []string{
 		api.StateAccepted, api.StateCreating, api.StateDeleting, api.StateDeleted, api.StateMoving, api.StateError,
 	}
@@ -4090,7 +3920,6 @@ func TestCreateFollowup_VolumeNotAvailable(t *testing.T) {
 }
 
 func TestCreateFollowup_NoMountTargets(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -4109,7 +3938,6 @@ func TestCreateFollowup_NoMountTargets(t *testing.T) {
 }
 
 func TestGetProtocol(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 
 	result := driver.GetProtocol(ctx)
@@ -4118,7 +3946,6 @@ func TestGetProtocol(t *testing.T) {
 }
 
 func TestStoreConfig(t *testing.T) {
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
@@ -4139,7 +3966,6 @@ func TestStoreConfig(t *testing.T) {
 }
 
 func TestGetVolumeExternal(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -4164,7 +3990,6 @@ func TestGetVolumeExternal(t *testing.T) {
 }
 
 func TestGetVolumeExternal_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -4179,7 +4004,6 @@ func TestGetVolumeExternal_DiscoveryFailed(t *testing.T) {
 }
 
 func TestGetVolumeExternal_GetFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -4195,7 +4019,6 @@ func TestGetVolumeExternal_GetFailed(t *testing.T) {
 }
 
 func TestGetVolumeExternalWrappers(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -4223,7 +4046,6 @@ func TestGetVolumeExternalWrappers(t *testing.T) {
 }
 
 func TestGetVolumeExternalWrappers_DiscoveryFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -4249,7 +4071,6 @@ func TestGetVolumeExternalWrappers_DiscoveryFailed(t *testing.T) {
 }
 
 func TestGetVolumeExternalWrappers_ListFailed(t *testing.T) {
-
 	mockAPI, driver := newMockANFDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -4276,7 +4097,6 @@ func TestGetVolumeExternalWrappers_ListFailed(t *testing.T) {
 }
 
 func TestStringAndGoString(t *testing.T) {
-
 	_, driver := newMockANFDriver(t)
 
 	stringFunc := func(d *NFSStorageDriver) string { return d.String() }
@@ -4308,7 +4128,6 @@ func TestStringAndGoString(t *testing.T) {
 }
 
 func TestGetUpdateType_NoFlaggedChanges(t *testing.T) {
-
 	_, oldDriver := newMockANFDriver(t)
 	oldDriver.volumeCreateTimeout = 1 * time.Second
 
@@ -4323,7 +4142,6 @@ func TestGetUpdateType_NoFlaggedChanges(t *testing.T) {
 }
 
 func TestGetUpdateType_WrongDriverType(t *testing.T) {
-
 	oldDriver := &fake.StorageDriver{
 		Config:             drivers.FakeStorageDriverConfig{},
 		Volumes:            make(map[string]storagefake.Volume),
@@ -4345,7 +4163,6 @@ func TestGetUpdateType_WrongDriverType(t *testing.T) {
 }
 
 func TestGetUpdateType_OtherChanges(t *testing.T) {
-
 	_, oldDriver := newMockANFDriver(t)
 	prefix1 := "prefix1-"
 	oldDriver.Config.StoragePrefix = &prefix1
@@ -4372,7 +4189,6 @@ func TestGetUpdateType_OtherChanges(t *testing.T) {
 }
 
 func TestReconcileNodeAccess(t *testing.T) {
-
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockAzure(mockCtrl)
 
@@ -4475,7 +4291,6 @@ func TestValidateStoragePrefix(t *testing.T) {
 }
 
 func TestGetCommonConfig(t *testing.T) {
-
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockAzure(mockCtrl)
 

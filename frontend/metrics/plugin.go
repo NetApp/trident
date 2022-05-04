@@ -19,7 +19,6 @@ type Server struct {
 
 // NewMetricsServer see also: https://godoc.org/github.com/prometheus/client_golang/prometheus/promauto
 func NewMetricsServer(address, port string) *Server {
-
 	metricsServer := &Server{
 		server: &http.Server{
 			Addr:         fmt.Sprintf("%s:%s", address, port),

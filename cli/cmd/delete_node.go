@@ -38,7 +38,6 @@ var deleteNodeCmd = &cobra.Command{
 }
 
 func nodeDelete(nodeNames []string) error {
-
 	var err error
 
 	if allNodes {

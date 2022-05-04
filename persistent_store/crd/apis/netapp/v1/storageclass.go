@@ -13,7 +13,6 @@ import (
 // NewTridentStorageClass creates a new storage class CRD object from a internal
 // storageclass.Persistent object
 func NewTridentStorageClass(persistent *storageclass.Persistent) (*TridentStorageClass, error) {
-
 	tsc := &TridentStorageClass{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "trident.netapp.io/v1",

@@ -11,7 +11,6 @@ import (
 )
 
 func TestInitFunctions(t *testing.T) {
-
 	// the "github.com/netapp/trident/storage_drivers/ontap/api/rest/models" uses a lot of init()
 	// the way they are generated within go-swagger, they can fail and cause our other unit tests
 	// to fail as a side effect. this test exists as a quick sanity test to make sure those init

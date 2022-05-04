@@ -90,12 +90,10 @@ func (o *TestingCache) updateBackend(updatedBackend *v1.TridentBackend) {
 }
 
 func addCrdTestReactors(crdFakeClient *fake.Clientset, testingCache *TestingCache) {
-
 	crdFakeClient.Fake.PrependReactor(
 		"*" /* all operations */, "*", /* all object types */
 		// "create" /* create operations only */, "tridentbackends", /* tridentbackends object types only */
 		func(actionCopy k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-
 			log.Tracef("actionCopy: %T\n", actionCopy) // use this to find any other types to add
 			switch action := actionCopy.(type) {
 

@@ -22,10 +22,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-//AstraDSVolumeType indicates the type of Volume(RW, DP)
+// AstraDSVolumeType indicates the type of Volume(RW, DP)
 type AstraDSVolumeType string
 
-//AstraDSVolumeConditionType indicates the type of condition occurred on a volume
+// AstraDSVolumeConditionType indicates the type of condition occurred on a volume
 type AstraDSVolumeConditionType string
 
 const (
@@ -45,7 +45,6 @@ const (
 
 // AstraDSVolumeSpec defines the desired state of AstraDSVolume
 type AstraDSVolumeSpec struct {
-
 	// +kubebuilder:validation:Type=string
 	// +kubebuilder:validation:Pattern=`^(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE])?$`
 	Size resource.Quantity `json:"size"`

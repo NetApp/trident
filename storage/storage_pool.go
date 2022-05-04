@@ -133,7 +133,6 @@ func (p *StoragePool) ConstructExternal() *PoolExternal {
 // for a label set on a storage volume.  The outer key may be customized.  For example:
 // {"provisioning":{"cloud":"anf","clusterName":"dev-test-cluster-1"}}
 func (p *StoragePool) GetLabelsJSON(ctx context.Context, key string, labelLimit int) (string, error) {
-
 	labelOffer, ok := p.attributes[sa.Labels].(sa.LabelOffer)
 	if !ok {
 		return "", nil
@@ -181,7 +180,6 @@ func (p *StoragePool) GetLabelsJSON(ctx context.Context, key string, labelLimit 
 // For example:
 // {"prefix/cloud":"anf", "prefix/clusterName":"dev-test-cluster-1", "otherPrefix/tier":"hot"}
 func (p *StoragePool) GetLabels(_ context.Context, prefix string) map[string]string {
-
 	labelMap := make(map[string]string)
 
 	labelOffer, ok := p.attributes[sa.Labels].(sa.LabelOffer)
@@ -203,7 +201,6 @@ func (p *StoragePool) GetLabels(_ context.Context, prefix string) map[string]str
 // AllowLabelOverwrite returns true if it has a key we could have set. For example:
 // {"provisioning":{"cloud":"anf","clusterName":"dev-test-cluster-1"}}
 func AllowPoolLabelOverwrite(key, originalLabel string) bool {
-
 	if originalLabel == "" {
 		return false
 	}
@@ -226,14 +223,12 @@ func AllowPoolLabelOverwrite(key, originalLabel string) bool {
 // updateProvisioningLabels returns the volume labels with an updated provisioning label provided
 // Note:- Currently not used. Will be used for update storagevolume labels
 func UpdateProvisioningLabels(provisioningLabel string, volumeLabels []string) []string {
-
 	newLabels := DeleteProvisioningLabels(volumeLabels)
 	return append(newLabels, provisioningLabel)
 }
 
 // deleteProvisioningLabels returns the volume labels with the provisioning label deleted
 func DeleteProvisioningLabels(volumeLabels []string) []string {
-
 	newLabels := make([]string, 0)
 
 	for _, label := range volumeLabels {

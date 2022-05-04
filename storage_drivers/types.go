@@ -31,7 +31,6 @@ type DriverConfig interface {
 }
 
 func GetDriverConfigByName(driverName string) (DriverConfig, error) {
-
 	var storageDriverConfig DriverConfig
 
 	switch driverName {
@@ -153,7 +152,6 @@ func (d OntapStorageDriverConfig) GoString() string {
 
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
 func (d *OntapStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
-
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
 
 	var ok bool
@@ -213,7 +211,6 @@ func (d *OntapStorageDriverConfig) ExtractSecrets() map[string]string {
 // HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
 // with secretName.
 func (d *OntapStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
-
 	d.ClientPrivateKey = secretName
 	d.Username = secretName
 	d.Password = secretName
@@ -322,7 +319,6 @@ func (d SolidfireStorageDriverConfig) GoString() string {
 
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
 func (d *SolidfireStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
-
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
 
 	var ok bool
@@ -416,7 +412,6 @@ func (d AWSNFSStorageDriverConfig) GoString() string {
 
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
 func (d *AWSNFSStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
-
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
 
 	var ok bool
@@ -525,7 +520,6 @@ func (d AzureNFSStorageDriverConfig) GoString() string {
 
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
 func (d *AzureNFSStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
-
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
 
 	var ok bool
@@ -642,7 +636,6 @@ func (d GCPNFSStorageDriverConfig) GoString() string {
 
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
 func (d *GCPNFSStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
-
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
 
 	var ok bool
@@ -745,7 +738,6 @@ func (d AstraDSStorageDriverConfig) GoString() string {
 
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
 func (d *AstraDSStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
-
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
 
 	var ok bool
@@ -944,7 +936,6 @@ func injectionError(fieldName string) error {
 
 // getCredentialNameAndType return secret name and type (if set) otherwise empty strings
 func getCredentialNameAndType(credentials map[string]string) (string, string, error) {
-
 	if len(credentials) == 0 {
 		return "", "", nil
 	}
@@ -953,7 +944,7 @@ func getCredentialNameAndType(credentials map[string]string) (string, string, er
 	// we can expand this list in future without any risk
 	credentialKeys := make([]string, 0, len(credentials))
 
-	for k, _ := range credentials {
+	for k := range credentials {
 		credentialKeys = append(credentialKeys, k)
 	}
 

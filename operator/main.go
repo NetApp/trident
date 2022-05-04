@@ -39,7 +39,6 @@ func printFlag(f *flag.Flag) {
 }
 
 func main() {
-
 	var err error
 
 	runtime.GOMAXPROCS(runtime.NumCPU())

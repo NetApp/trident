@@ -40,7 +40,6 @@ var getBackendCmd = &cobra.Command{
 }
 
 func backendList(backendNames []string) error {
-
 	var err error
 
 	// If no backends were specified, we'll get all of them
@@ -74,7 +73,6 @@ func backendList(backendNames []string) error {
 }
 
 func GetBackends() ([]string, error) {
-
 	url := BaseURL() + "/backend"
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
@@ -95,7 +93,6 @@ func GetBackends() ([]string, error) {
 }
 
 func GetBackend(backendName string) (storage.BackendExternal, error) {
-
 	url := BaseURL() + "/backend/" + backendName
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
@@ -122,7 +119,6 @@ func GetBackend(backendName string) (storage.BackendExternal, error) {
 }
 
 func GetBackendByBackendUUID(backendUUID string) (storage.BackendExternal, error) {
-
 	url := BaseURL() + "/backend/" + backendUUID
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
@@ -184,7 +180,8 @@ func getOntapStorageDriverConfig(configAsMap map[string]interface{}) (*drivers.O
 }
 
 func getSolidfireStorageDriverConfig(configAsMap map[string]interface{}) (*drivers.SolidfireStorageDriverConfig,
-	error) {
+	error,
+) {
 	jsonBytes, marshalError := json.MarshalIndent(configAsMap, "", "  ")
 	if marshalError != nil {
 		return nil, marshalError
@@ -199,7 +196,6 @@ func getSolidfireStorageDriverConfig(configAsMap map[string]interface{}) (*drive
 }
 
 func writeBackendTable(backends []storage.BackendExternal) {
-
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Name", "Storage Driver", "UUID", "State", "Volumes"})
 
@@ -224,7 +220,6 @@ func writeBackendTable(backends []storage.BackendExternal) {
 }
 
 func writeBackendNames(backends []storage.BackendExternal) {
-
 	for _, b := range backends {
 		fmt.Println(b.Name)
 	}

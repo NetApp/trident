@@ -210,8 +210,7 @@ func Test_randomChapString16(t *testing.T) {
 }
 
 func TestValidateStoragePrefix(t *testing.T) {
-
-	var storagePrefixTests = []struct {
+	storagePrefixTests := []struct {
 		storagePrefix   string
 		expected        bool
 		expectedEconomy bool
@@ -720,11 +719,9 @@ func TestOntapSanGetDefaultIgroupName(t *testing.T) {
 		assert.Equal(t, c.expectedIgroupName, actualIgroupName, "Unexpected igroupName")
 
 	}
-
 }
 
 func TestGetExternalConfigRedactSecrets(t *testing.T) {
-
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Credentials:      map[string]string{"name": "secretname", "type": "secret"},
 		StoragePrefixRaw: json.RawMessage("\"\""),
@@ -742,7 +739,7 @@ func TestGetExternalConfigRedactSecrets(t *testing.T) {
 		StoragePrefix:    nil,
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		Name           string
 		originalConfig drivers.OntapStorageDriverConfig
 		externalConfig drivers.OntapStorageDriverConfig
@@ -801,11 +798,9 @@ func TestGetExternalConfigRedactSecrets(t *testing.T) {
 	for _, c := range cases {
 		c := c // capture range variable
 		t.Run(c.Name, func(t *testing.T) {
-
 			externalConfig := getExternalConfig(context.TODO(), c.originalConfig)
 
 			assert.Equal(t, c.externalConfig, externalConfig, c.errorMessage)
-
 		})
 	}
 }
@@ -961,7 +956,7 @@ func TestEnsureSVMWithRest(t *testing.T) {
 }
 
 func TestSanitizeDataLIF(t *testing.T) {
-	var cases = []struct {
+	cases := []struct {
 		Input  string
 		Output string
 	}{
@@ -994,7 +989,6 @@ func newMockZapiClient(t *testing.T) *mock_ontap.MockZapiClientInterface {
 }
 
 func TestCheckAggregateLimits(t *testing.T) {
-
 	ctx := context.Background()
 
 	// create a config

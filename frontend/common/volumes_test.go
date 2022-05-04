@@ -10,7 +10,7 @@ import (
 )
 
 func TestCombineAccessModes(t *testing.T) {
-	var accessModesTests = []struct {
+	accessModesTests := []struct {
 		accessModes []config.AccessMode
 		expected    config.AccessMode
 	}{

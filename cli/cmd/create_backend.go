@@ -38,7 +38,6 @@ var createBackendCmd = &cobra.Command{
 	Short:   "Add a backend to Trident",
 	Aliases: []string{"b"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		jsonData, err := getBackendData(createFilename, createBase64Data)
 		if err != nil {
 			return err
@@ -55,7 +54,6 @@ var createBackendCmd = &cobra.Command{
 }
 
 func getBackendData(filename, b64Data string) ([]byte, error) {
-
 	var err error
 	var rawData []byte
 
@@ -85,7 +83,6 @@ func getBackendData(filename, b64Data string) ([]byte, error) {
 }
 
 func backendCreate(postData []byte) error {
-
 	// Send the file to Trident
 	url := BaseURL() + "/backend"
 

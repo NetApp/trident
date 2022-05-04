@@ -18,7 +18,6 @@ const (
 )
 
 func newMockPlugin(t *testing.T) (*mockcore.MockOrchestrator, *Plugin) {
-
 	mockCtrl := gomock.NewController(t)
 	mockCore := mockcore.NewMockOrchestrator(mockCtrl)
 
@@ -30,7 +29,6 @@ func newMockPlugin(t *testing.T) (*mockcore.MockOrchestrator, *Plugin) {
 }
 
 func TestAddStorageClass_WrongProvisioner(t *testing.T) {
-
 	mockCore, plugin := newMockPlugin(t)
 
 	sc := &k8sstoragev1.StorageClass{
@@ -49,7 +47,6 @@ func TestAddStorageClass_WrongProvisioner(t *testing.T) {
 }
 
 func TestAddStorageClass(t *testing.T) {
-
 	mockCore, plugin := newMockPlugin(t)
 
 	sc := &k8sstoragev1.StorageClass{

@@ -21,9 +21,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	backendsByUUID map[string]*storage.BackendExternal
-)
+var backendsByUUID map[string]*storage.BackendExternal
 
 func init() {
 	getCmd.AddCommand(getVolumeCmd)
@@ -46,7 +44,6 @@ var getVolumeCmd = &cobra.Command{
 }
 
 func volumeList(volumeNames []string) error {
-
 	var err error
 
 	// If no volumes were specified, we'll get all of them
@@ -92,7 +89,6 @@ func volumeList(volumeNames []string) error {
 }
 
 func GetVolumes() ([]string, error) {
-
 	url := BaseURL() + "/volume"
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
@@ -113,7 +109,6 @@ func GetVolumes() ([]string, error) {
 }
 
 func GetVolume(volumeName string) (storage.VolumeExternal, error) {
-
 	url := BaseURL() + "/volume/" + volumeName
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil, Debug)
@@ -158,7 +153,6 @@ func WriteVolumes(volumes []storage.VolumeExternal) {
 }
 
 func writeVolumeTable(volumes []storage.VolumeExternal) {
-
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Name", "Size", "Storage Class", "Protocol", "Backend UUID", "State", "Managed"})
 
@@ -181,7 +175,6 @@ func writeVolumeTable(volumes []storage.VolumeExternal) {
 }
 
 func writeWideVolumeTable(volumes []storage.VolumeExternal) {
-
 	table := tablewriter.NewWriter(os.Stdout)
 	header := []string{
 		"Name",
@@ -224,7 +217,6 @@ func writeWideVolumeTable(volumes []storage.VolumeExternal) {
 }
 
 func writeVolumeNames(volumes []storage.VolumeExternal) {
-
 	for _, sc := range volumes {
 		fmt.Println(sc.Config.Name)
 	}

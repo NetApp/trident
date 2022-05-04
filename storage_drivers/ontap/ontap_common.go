@@ -90,7 +90,6 @@ func CreateCloneNAS(
 	ctx context.Context, d NASDriver, volConfig *storage.VolumeConfig, storagePool storage.Pool, sourceLabel string,
 	labelLimit int, useAsync bool,
 ) error {
-
 	// if cloning a FlexGroup, useAsync will be true
 	if useAsync && !d.GetAPI().SupportsFeature(ctx, api.NetAppFlexGroupsClone) {
 		return errors.New("the ONTAPI version does not support FlexGroup cloning")
@@ -170,7 +169,6 @@ func InitializeOntapConfig(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string,
 ) (*drivers.OntapStorageDriverConfig, error) {
-
 	if commonConfig.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "InitializeOntapConfig", "Type": "ontap_common"}
 		Logc(ctx).WithFields(fields).Debug(">>>> InitializeOntapConfig")
@@ -206,7 +204,6 @@ func InitializeOntapConfig(
 }
 
 func NewOntapTelemetry(ctx context.Context, d StorageDriver) *Telemetry {
-
 	t := &Telemetry{
 		Plugin:        d.Name(),
 		SVM:           d.GetConfig().SVM,
@@ -237,7 +234,6 @@ func NewOntapTelemetry(ctx context.Context, d StorageDriver) *Telemetry {
 // Start starts the flow of ASUP messages for the driver
 // These messages can be viewed via filer::> event log show -severity NOTICE.
 func (t *Telemetry) Start(ctx context.Context) {
-
 	go func() {
 		time.Sleep(HousekeepingStartupDelaySecs * time.Second)
 		EMSHeartbeat(ctx, t.Driver)
@@ -307,7 +303,6 @@ func deleteExportPolicy(ctx context.Context, policy string, clientAPI *api.Clien
 }
 
 func createExportRule(ctx context.Context, desiredPolicyRule, policyName string, clientAPI *api.Client) error {
-
 	ruleResponse, err := clientAPI.ExportRuleCreate(policyName, desiredPolicyRule,
 		[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
 	if err = api.GetError(ctx, ruleResponse, err); err != nil {
@@ -321,7 +316,6 @@ func createExportRule(ctx context.Context, desiredPolicyRule, policyName string,
 }
 
 func deleteExportRule(ctx context.Context, ruleIndex int, policyName string, clientAPI *api.Client) error {
-
 	ruleDestroyResponse, err := clientAPI.ExportRuleDestroy(policyName, ruleIndex)
 	if err = api.GetError(ctx, ruleDestroyResponse, err); err != nil {
 		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v", policyName, ruleIndex, err)
@@ -334,7 +328,6 @@ func deleteExportRule(ctx context.Context, ruleIndex int, policyName string, cli
 }
 
 func isExportPolicyExists(ctx context.Context, policyName string, clientAPI *api.Client) (bool, error) {
-
 	policyGetResponse, err := clientAPI.ExportPolicyGet(policyName)
 	if err != nil {
 		err = fmt.Errorf("error getting export policy; %v", err)
@@ -355,7 +348,6 @@ func isExportPolicyExists(ctx context.Context, policyName string, clientAPI *api
 }
 
 func ensureExportPolicyExists(ctx context.Context, policyName string, clientAPI *api.Client) error {
-
 	policyCreateResponse, err := clientAPI.ExportPolicyCreate(policyName)
 	if err != nil {
 		err = fmt.Errorf("error creating export policy %s: %v", policyName, err)
@@ -375,7 +367,6 @@ func publishFlexVolShare(
 	ctx context.Context, clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
 	publishInfo *utils.VolumePublishInfo, volumeName string,
 ) error {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "publishFlexVolShare",
@@ -417,7 +408,6 @@ func ensureNodeAccess(
 	ctx context.Context, publishInfo *utils.VolumePublishInfo, clientAPI *api.Client,
 	config *drivers.OntapStorageDriverConfig,
 ) error {
-
 	policyName := getExportPolicyName(publishInfo.BackendUUID)
 	if exists, err := isExportPolicyExists(ctx, policyName, clientAPI); err != nil {
 		return err
@@ -433,7 +423,6 @@ func reconcileNASNodeAccess(
 	ctx context.Context, nodes []*utils.Node, config *drivers.OntapStorageDriverConfig, clientAPI *api.Client,
 	policyName string,
 ) error {
-
 	if !config.AutoExportPolicy {
 		return nil
 	}
@@ -459,7 +448,6 @@ func reconcileNASNodeAccess(
 func getDesiredExportPolicyRules(
 	ctx context.Context, nodes []*utils.Node, config *drivers.OntapStorageDriverConfig,
 ) ([]string, error) {
-
 	rules := make([]string, 0)
 	for _, node := range nodes {
 		// Filter the IPs based on the CIDRs provided by user
@@ -477,7 +465,6 @@ func getDesiredExportPolicyRules(
 func reconcileExportPolicyRules(
 	ctx context.Context, policyName string, desiredPolicyRules []string, clientAPI *api.Client,
 ) error {
-
 	ruleListResponse, err := clientAPI.ExportRuleGetIterRequest(policyName)
 	if err = api.GetError(ctx, ruleListResponse, err); err != nil {
 		return fmt.Errorf("error listing export policy rules: %v", err)
@@ -513,7 +500,6 @@ func reconcileExportPolicyRules(
 }
 
 func reconcileSANNodeAccess(ctx context.Context, clientAPI *api.Client, igroupName string, nodeIQNs []string) error {
-
 	err := ensureIGroupExists(clientAPI, igroupName)
 	if err != nil {
 		return err
@@ -576,7 +562,6 @@ func reconcileSANNodeAccess(ctx context.Context, clientAPI *api.Client, igroupNa
 }
 
 func cleanIgroups(ctx context.Context, client *api.Client, igroupName string) {
-
 	response, err := client.IgroupDestroy(igroupName)
 	err = api.GetError(ctx, response, err)
 	zerr, zerrOK := err.(api.ZapiError)
@@ -596,7 +581,6 @@ func cleanIgroups(ctx context.Context, client *api.Client, igroupName string) {
 func GetISCSITargetInfo(
 	clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
 ) (iSCSINodeName string, iSCSIInterfaces []string, returnError error) {
-
 	// Get the SVM iSCSI IQN
 	nodeNameResponse, err := clientAPI.IscsiNodeGetNameRequest()
 	if err != nil {
@@ -641,10 +625,7 @@ func PopulateOntapLunMapping(
 	ctx context.Context, clientAPI *api.Client, config *drivers.OntapStorageDriverConfig,
 	ips []string, volConfig *storage.VolumeConfig, lunID int, lunPath, igroupName string,
 ) error {
-
-	var (
-		targetIQN string
-	)
+	var targetIQN string
 	response, err := clientAPI.IscsiServiceGetIterRequest()
 	if err != nil || response.Result.ResultStatusAttr != "passed" {
 		if err == nil {
@@ -709,9 +690,8 @@ func PopulateOntapLunMapping(
 // and publish
 func PublishLUN(
 	ctx context.Context, clientAPI *api.Client, config *drivers.OntapStorageDriverConfig, ips []string,
-	publishInfo *utils.VolumePublishInfo, lunPath, igroupName string, iSCSINodeName string,
+	publishInfo *utils.VolumePublishInfo, lunPath, igroupName, iSCSINodeName string,
 ) error {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":  "PublishLUN",
@@ -849,9 +829,8 @@ func PublishLUN(
 
 // getISCSIDataLIFsForReportingNodes finds the data LIFs for the reporting nodes for the LUN.
 func getISCSIDataLIFsForReportingNodes(
-	ctx context.Context, clientAPI *api.Client, ips []string, lunPath string, igroupName string,
+	ctx context.Context, clientAPI *api.Client, ips []string, lunPath, igroupName string,
 ) ([]string, error) {
-
 	lunMapGetResponse, err := clientAPI.LunMapGet(igroupName, lunPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not get iSCSI reported nodes: %v", err)
@@ -920,7 +899,6 @@ func randomChapString16() (string, error) {
 func ValidateBidrectionalChapCredentials(
 	getDefaultAuthResponse *azgo.IscsiInitiatorGetDefaultAuthResponse, config *drivers.OntapStorageDriverConfig,
 ) (*ChapCredentials, error) {
-
 	isDefaultAuthTypeNone, err := IsDefaultAuthTypeNone(getDefaultAuthResponse)
 	if err != nil {
 		return nil, fmt.Errorf("error checking default initiator's auth type: %v", err)
@@ -1021,7 +999,6 @@ func InitializeSANDriver(
 	ctx context.Context, driverContext tridentconfig.DriverContext, clientAPI *api.Client,
 	config *drivers.OntapStorageDriverConfig, validate func(context.Context) error, backendUUID string,
 ) error {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "InitializeSANDriver", "Type": "ontap_common"}
 		Logc(ctx).WithFields(fields).Debug(">>>> InitializeSANDriver")
@@ -1101,7 +1078,6 @@ func InitializeSANDriver(
 		config.ChapTargetInitiatorSecret = chapCredentials.ChapTargetInitiatorSecret
 
 	} else {
-
 		if !isDefaultAuthTypeNone {
 			return fmt.Errorf("default initiator's auth type is not 'none'")
 		}
@@ -1111,7 +1087,6 @@ func InitializeSANDriver(
 }
 
 func getDefaultIgroupName(driverContext tridentconfig.DriverContext, backendUUID string) string {
-
 	if driverContext == tridentconfig.ContextCSI {
 		return drivers.GetDefaultIgroupName(driverContext) + "-" + backendUUID
 	} else {
@@ -1136,7 +1111,6 @@ func ensureIGroupExists(clientAPI *api.Client, igroupName string) error {
 // InitializeOntapDriver sets up the API client and performs all other initialization tasks
 // that are common to all the ONTAP drivers.
 func InitializeOntapDriver(ctx context.Context, config *drivers.OntapStorageDriverConfig) (*api.Client, error) {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "InitializeOntapDriver", "Type": "ontap_common"}
 		Logc(ctx).WithFields(fields).Debug(">>>> InitializeOntapDriver")
@@ -1197,7 +1171,6 @@ func InitializeOntapDriver(ctx context.Context, config *drivers.OntapStorageDriv
 // InitializeOntapAPI returns an ontap.Client ZAPI client.  If the SVM isn't specified in the config
 // file, this method attempts to derive the one to use.
 func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverConfig) (*api.Client, error) {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "InitializeOntapAPI", "Type": "ontap_common"}
 		Logc(ctx).WithFields(fields).Debug(">>>> InitializeOntapAPI")
@@ -1263,7 +1236,6 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 func ValidateSANDriver(
 	ctx context.Context, config *drivers.OntapStorageDriverConfig, ips []string,
 ) error {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "ValidateSANDriver", "Type": "ontap_common"}
 		Logc(ctx).WithFields(fields).Debug(">>>> ValidateSANDriver")
@@ -1310,7 +1282,6 @@ func ValidateSANDriver(
 
 // ValidateNASDriver contains the validation logic shared between ontap-nas and ontap-nas-economy.
 func ValidateNASDriver(ctx context.Context, api *api.Client, config *drivers.OntapStorageDriverConfig) error {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "ValidateNASDriver", "Type": "ontap_common"}
 		Logc(ctx).WithFields(fields).Debug(">>>> ValidateNASDriver")
@@ -1352,7 +1323,6 @@ func ValidateNASDriver(ctx context.Context, api *api.Client, config *drivers.Ont
 }
 
 func ValidateStoragePrefix(storagePrefix string) error {
-
 	// Ensure storage prefix is compatible with ONTAP
 	matched, err := regexp.MatchString(`^$|^[a-zA-Z_.-][a-zA-Z0-9_.-]*$`, storagePrefix)
 	if err != nil {
@@ -1366,7 +1336,6 @@ func ValidateStoragePrefix(storagePrefix string) error {
 }
 
 func ValidateStoragePrefixEconomy(storagePrefix string) error {
-
 	// Ensure storage prefix is compatible with ONTAP
 	matched, err := regexp.MatchString(`^$|^[a-zA-Z0-9_.-]*$`, storagePrefix)
 	if err != nil {
@@ -1379,7 +1348,6 @@ func ValidateStoragePrefixEconomy(storagePrefix string) error {
 }
 
 func ValidateDataLIF(ctx context.Context, dataLIF string, dataLIFs []string) ([]string, error) {
-
 	addressesFromHostname, err := net.LookupHost(dataLIF)
 	if err != nil {
 		Logc(ctx).Error("Host lookup failed. ", err)
@@ -1417,25 +1385,27 @@ func ValidateDataLIF(ctx context.Context, dataLIF string, dataLIFs []string) ([]
 // when they're seen as full.
 // see: https://github.com/NetApp/trident/issues/135
 const DefaultSpaceAllocation = "true"
-const DefaultSpaceReserve = "none"
-const DefaultSnapshotPolicy = "none"
-const DefaultSnapshotReserve = "5"
-const DefaultUnixPermissions = "---rwxrwxrwx"
-const DefaultSnapshotDir = "false"
-const DefaultExportPolicy = "default"
-const DefaultSecurityStyle = "unix"
-const DefaultNfsMountOptionsDocker = "-o nfsvers=3"
-const DefaultNfsMountOptionsKubernetes = ""
-const DefaultSplitOnClone = "false"
-const DefaultEncryption = "false"
-const DefaultMirroring = "false"
-const DefaultLimitAggregateUsage = ""
-const DefaultLimitVolumeSize = ""
-const DefaultTieringPolicy = ""
+
+const (
+	DefaultSpaceReserve              = "none"
+	DefaultSnapshotPolicy            = "none"
+	DefaultSnapshotReserve           = "5"
+	DefaultUnixPermissions           = "---rwxrwxrwx"
+	DefaultSnapshotDir               = "false"
+	DefaultExportPolicy              = "default"
+	DefaultSecurityStyle             = "unix"
+	DefaultNfsMountOptionsDocker     = "-o nfsvers=3"
+	DefaultNfsMountOptionsKubernetes = ""
+	DefaultSplitOnClone              = "false"
+	DefaultEncryption                = "false"
+	DefaultMirroring                 = "false"
+	DefaultLimitAggregateUsage       = ""
+	DefaultLimitVolumeSize           = ""
+	DefaultTieringPolicy             = ""
+)
 
 // PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
 func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapStorageDriverConfig) error {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "PopulateConfigurationDefaults", "Type": "ontap_common"}
 		Logc(ctx).WithFields(fields).Debug(">>>> PopulateConfigurationDefaults")
@@ -1575,7 +1545,6 @@ func checkAggregateLimitsForFlexvol(
 	ctx context.Context, flexvol string, requestedSizeInt uint64, config drivers.OntapStorageDriverConfig,
 	client *api.Client,
 ) error {
-
 	var aggregate, spaceReserve string
 
 	volInfo, err := client.VolumeGet(flexvol)
@@ -1622,7 +1591,6 @@ func checkAggregateLimits(
 	ctx context.Context, aggregate, spaceReserve string, requestedSizeInt uint64,
 	config drivers.OntapStorageDriverConfig, client api.ZapiClientInterface,
 ) error {
-
 	requestedSize := float64(requestedSizeInt)
 
 	limitAggregateUsage := config.LimitAggregateUsage
@@ -1730,7 +1698,6 @@ func checkAggregateLimits(
 }
 
 func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) (uint64, error) {
-
 	if sizeBytes == 0 {
 		defaultSize, _ := utils.ConvertSizeToBytes(poolDefaultSizeBytes)
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
@@ -1744,7 +1711,6 @@ func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) (uint64, error
 }
 
 func GetSnapshotReserve(snapshotPolicy, snapshotReserve string) (int, error) {
-
 	if snapshotReserve != "" {
 		// snapshotReserve defaults to "", so if it is explicitly set
 		// (either in config or create options), honor the value.
@@ -1771,7 +1737,6 @@ func GetSnapshotReserve(snapshotPolicy, snapshotReserve string) (int, error) {
 // EMSHeartbeat logs an ASUP message on a timer
 // view them via filer::> event log show -severity NOTICE
 func EMSHeartbeat(ctx context.Context, driver StorageDriver) {
-
 	// log an informational message on a timer
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -1799,7 +1764,6 @@ const MSecPerHour = 1000 * 60 * 60 // millis * seconds * minutes
 
 // probeForVolume polls for the ONTAP volume to appear, with backoff retry logic
 func probeForVolume(ctx context.Context, name string, client *api.Client) error {
-
 	checkVolumeExists := func() error {
 		volExists, err := client.VolumeExists(ctx, name)
 		if err != nil {
@@ -1835,7 +1799,6 @@ func CreateOntapClone(
 	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
 	client *api.Client, useAsync bool, qosPolicyGroup api.QosPolicyGroup,
 ) error {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":   "CreateOntapClone",
@@ -1923,7 +1886,6 @@ func CreateOntapClone(
 func handleCreateOntapCloneErr(
 	ctx context.Context, zerr api.ZapiError, client *api.Client, snapshot, source, name string,
 ) error {
-
 	if zerr.Code() == azgo.EOBJECTNOTFOUND {
 		return fmt.Errorf("snapshot %s does not exist in volume %s", snapshot, source)
 	} else if zerr.IsFailedToLoadJobError() {
@@ -1949,7 +1911,6 @@ func GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client *api.Client, sizeGetter func(string) (int, error),
 ) (*storage.Snapshot, error) {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -2002,7 +1963,6 @@ func GetSnapshots(
 	ctx context.Context, volConfig *storage.VolumeConfig, config *drivers.OntapStorageDriverConfig, client *api.Client,
 	sizeGetter func(string) (int, error),
 ) ([]*storage.Snapshot, error) {
-
 	internalVolName := volConfig.InternalName
 
 	if config.DebugTraceFlags["method"] {
@@ -2061,7 +2021,6 @@ func CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client *api.Client, sizeGetter func(string) (int, error),
 ) (*storage.Snapshot, error) {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -2125,7 +2084,6 @@ func RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client *api.Client,
 ) error {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -2159,7 +2117,6 @@ func DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client *api.Client,
 ) error {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -2175,7 +2132,6 @@ func DeleteSnapshot(
 	}
 
 	snapResponse, err := client.SnapshotDelete(internalSnapName, internalVolName)
-
 	if err != nil {
 		return fmt.Errorf("error deleting snapshot: %v", err)
 	}
@@ -2197,7 +2153,6 @@ func SplitVolumeFromBusySnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client *api.Client,
 ) error {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -2251,7 +2206,6 @@ func SplitVolumeFromBusySnapshot(
 // GetVolume checks for the existence of a volume.  It returns nil if the volume
 // exists and an error if it does not (or the API call fails).
 func GetVolume(ctx context.Context, name string, client *api.Client, config *drivers.OntapStorageDriverConfig) error {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "GetVolume", "Type": "ontap_common"}
 		Logc(ctx).WithFields(fields).Debug(">>>> GetVolume")
@@ -2284,7 +2238,6 @@ var ontapPerformanceClasses = map[ontapPerformanceClass]map[string]sa.Offer{
 
 // discoverBackendAggrNamesCommon discovers names of the aggregates assigned to the configured SVM
 func discoverBackendAggrNamesCommon(ctx context.Context, d StorageDriver) ([]string, error) {
-
 	client := d.GetAPI()
 	config := d.GetConfig()
 	driverName := d.Name()
@@ -2344,7 +2297,6 @@ func discoverBackendAggrNamesCommon(ctx context.Context, d StorageDriver) ([]str
 func getVserverAggrAttributes(
 	ctx context.Context, d StorageDriver, poolsAttributeMap *map[string]map[string]sa.Offer,
 ) (err error) {
-
 	// Handle panics from the API layer
 	defer func() {
 		if r := recover(); r != nil {
@@ -2408,7 +2360,6 @@ func poolName(name, backendName string) string {
 func InitializeStoragePoolsCommon(
 	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
 ) (map[string]storage.Pool, map[string]storage.Pool, error) {
-
 	config := d.GetConfig()
 	physicalPools := make(map[string]storage.Pool)
 	virtualPools := make(map[string]storage.Pool)
@@ -2657,7 +2608,6 @@ func InitializeStoragePoolsCommon(
 func ValidateStoragePools(
 	ctx context.Context, physicalPools, virtualPools map[string]storage.Pool, d StorageDriver, labelLimit int,
 ) error {
-
 	// Validate pool-level attributes
 	allPools := make([]storage.Pool, 0, len(physicalPools)+len(virtualPools))
 
@@ -2821,7 +2771,6 @@ func ValidateStoragePools(
 func getStorageBackendSpecsCommon(
 	backend storage.Backend, physicalPools, virtualPools map[string]storage.Pool, backendName string,
 ) (err error) {
-
 	backend.SetName(backendName)
 
 	virtual := len(virtualPools) > 0
@@ -2854,7 +2803,6 @@ func getStorageBackendPhysicalPoolNamesCommon(physicalPools map[string]storage.P
 func getVolumeOptsCommon(
 	ctx context.Context, volConfig *storage.VolumeConfig, requests map[string]sa.Request,
 ) map[string]string {
-
 	opts := make(map[string]string)
 	if provisioningTypeReq, ok := requests[sa.ProvisioningType]; ok {
 		if p, ok := provisioningTypeReq.Value().(string); ok {
@@ -2934,9 +2882,8 @@ func getVolumeOptsCommon(
 // getPoolsForCreate returns candidate storage pools for creating volumes
 func getPoolsForCreate(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
-	volAttributes map[string]sa.Request, physicalPools map[string]storage.Pool, virtualPools map[string]storage.Pool,
+	volAttributes map[string]sa.Request, physicalPools, virtualPools map[string]storage.Pool,
 ) ([]storage.Pool, error) {
-
 	// If a physical pool was requested, just use it
 	if _, ok := physicalPools[storagePool.Name()]; ok {
 		return []storage.Pool{storagePool}, nil
@@ -2978,7 +2925,6 @@ func getPoolsForCreate(
 }
 
 func getInternalVolumeNameCommon(commonConfig *drivers.CommonStorageDriverConfig, name string) string {
-
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return *commonConfig.StoragePrefix + name
@@ -2997,7 +2943,6 @@ func createPrepareCommon(ctx context.Context, d storage.Driver, volConfig *stora
 }
 
 func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverConfig) interface{} {
-
 	// Clone the config so we don't risk altering the original
 	var cloneConfig drivers.OntapStorageDriverConfig
 	drivers.Clone(ctx, config, &cloneConfig)
@@ -3023,7 +2968,6 @@ func resizeValidation(
 	ctx context.Context, name string, sizeBytes uint64, volumeExists func(context.Context, string) (bool, error),
 	volumeSize func(string) (int, error),
 ) (uint64, error) {
-
 	// Check that volume exists
 	volExists, err := volumeExists(ctx, name)
 	if err != nil {
@@ -3053,7 +2997,6 @@ func resizeValidation(
 // UnmountAndOfflineVolumeAbstraction unmounts a volume and then take it offline.
 // This may need to be done before deleting certain types of volumes.
 func UnmountAndOfflineVolumeAbstraction(ctx context.Context, API *api.Client, name string) (bool, error) {
-
 	// This call is sync and idempotent
 	umountResp, err := API.VolumeUnmount(name, true)
 	if err != nil {
@@ -3174,7 +3117,7 @@ func getSnapshotReserveFromOntap(
 	return snapshotReserveInt, nil
 }
 
-func parseVolumeHandle(volumeHandle string) (svm string, flexvol string, err error) {
+func parseVolumeHandle(volumeHandle string) (svm, flexvol string, err error) {
 	tokens := strings.SplitN(volumeHandle, ":", 2)
 	if len(tokens) != 2 {
 		return "", "", fmt.Errorf("invalid volume handle")

@@ -20,8 +20,8 @@ const (
 
 // StartTransactionMonitor starts the thread that reaps abandoned long-running transactions.
 func (o *TridentOrchestrator) StartTransactionMonitor(
-	ctx context.Context, txnPeriod time.Duration, txnMaxAge time.Duration) {
-
+	ctx context.Context, txnPeriod, txnMaxAge time.Duration,
+) {
 	go func() {
 		o.txnMonitorTicker = time.NewTicker(txnPeriod)
 		o.txnMonitorChannel = make(chan struct{})
@@ -57,7 +57,6 @@ func (o *TridentOrchestrator) StopTransactionMonitor() {
 // checkLongRunningTransactions is called periodically by the transaction monitor to
 // see if any long-running transactions exist that have expired and must be reaped.
 func (o *TridentOrchestrator) checkLongRunningTransactions(ctx context.Context, txnMaxAge time.Duration) {
-
 	if o.bootstrapError != nil {
 		Logc(ctx).WithField("error", o.bootstrapError).Errorf("Transaction monitor blocked by bootstrap error.")
 		return
@@ -105,7 +104,6 @@ func (o *TridentOrchestrator) checkLongRunningTransactions(ctx context.Context, 
 // reapLongRunningTransaction cleans up any transactions that have expired so that any
 // storage resources associated with them are not orphaned indefinitely.
 func (o *TridentOrchestrator) reapLongRunningTransaction(ctx context.Context, txn *storage.VolumeTransaction) {
-
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 

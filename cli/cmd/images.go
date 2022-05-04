@@ -19,9 +19,11 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-var K8sVersion string
-var versionNotSupported = "The provided Kubernetes version is not supported: "
-var versionNotSemantic = "The provided Kubernetes version was not given in semantic versioning: "
+var (
+	K8sVersion          string
+	versionNotSupported = "The provided Kubernetes version is not supported: "
+	versionNotSemantic  = "The provided Kubernetes version was not given in semantic versioning: "
+)
 
 type ImageSet struct {
 	Images     []string `json:"images"`
@@ -111,7 +113,6 @@ func listImages() error {
 }
 
 func getInstallYaml(semVersion *utils.Version) (string, error) {
-
 	minorVersion := semVersion.ToMajorMinorVersion().MinorVersion()
 	isSupportedVersion := minorVersion <= utils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMax).MinorVersion() &&
 		minorVersion >= utils.MustParseMajorMinorVersion(tridentconfig.KubernetesVersionMin).MinorVersion()
@@ -170,7 +171,6 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 }
 
 func getImageNames(yaml string) []string {
-
 	var images []string
 
 	lines := strings.Split(yaml, "\n")
@@ -199,7 +199,6 @@ func getImageNames(yaml string) []string {
 }
 
 func writeImages(k8sVersions []string, imageMap map[string][]string) {
-
 	var imageSets []ImageSet
 	for _, k8sVersion := range k8sVersions {
 		var images []string

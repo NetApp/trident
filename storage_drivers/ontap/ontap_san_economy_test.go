@@ -210,12 +210,11 @@ func newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrNam
 }
 
 func TestOntapSanEcoStorageDriverConfigString(t *testing.T) {
-
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
-	var sanEcoDrivers = []SANEconomyStorageDriver{
+	sanEcoDrivers := []SANEconomyStorageDriver{
 		*newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName),
 	}
 
@@ -431,6 +430,7 @@ func TestOntapSanEconomyReconcileNodeAccess(t *testing.T) {
 		}
 	}
 }
+
 func TestOntapSanEconomyTerminate(t *testing.T) {
 	ctx := context.Background()
 

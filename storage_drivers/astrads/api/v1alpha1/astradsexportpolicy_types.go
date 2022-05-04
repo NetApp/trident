@@ -71,7 +71,7 @@ type AstraDSExportPolicyStatus struct {
 	Conditions []NetAppExportPolicyCondition `json:"conditions,omitempty"`
 }
 
-//NetAppExportPolicyConditionType indicates the type of condition occurred on a export policy
+// NetAppExportPolicyConditionType indicates the type of condition occurred on a export policy
 type NetAppExportPolicyConditionType string
 
 const (

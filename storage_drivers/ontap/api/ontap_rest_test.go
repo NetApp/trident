@@ -13,12 +13,9 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-var (
-	ctx = context.Background()
-)
+var ctx = context.Background()
 
 func TestPayload(t *testing.T) {
-
 	////////////////////
 	// negative tests //
 	////////////////////
@@ -64,7 +61,6 @@ func TestPayload(t *testing.T) {
 }
 
 func TestMinimumONTAPVersionIs9Point9(t *testing.T) {
-
-	var expectedMinimumONTAPVersion = utils.MustParseSemantic("9.9.0")
+	expectedMinimumONTAPVersion := utils.MustParseSemantic("9.9.0")
 	assert.Equal(t, MinimumONTAPVersion, expectedMinimumONTAPVersion, "Unexpected minimum ONTAP version")
 }

@@ -33,7 +33,6 @@ const (
 // InitLoggingForDocker configures logging for nDVP.  Logs are written both to a log file as well as stdout/stderr.
 // Since logrus doesn't support multiple writers, each log stream is implemented as a hook.
 func InitLoggingForDocker(logName, logFormat string) error {
-
 	// No output except for the hooks
 	log.SetOutput(ioutil.Discard)
 
@@ -87,7 +86,6 @@ func InitLogLevel(debug bool, logLevel string) error {
 
 // InitLogFormat configures the log format, allowing a choice of text or JSON.
 func InitLogFormat(logFormat string) error {
-
 	var formatter log.Formatter
 
 	switch logFormat {
@@ -111,7 +109,6 @@ type ConsoleHook struct {
 
 // NewConsoleHook creates a new log hook for writing to stdout/stderr.
 func NewConsoleHook(logFormat string) (*ConsoleHook, error) {
-
 	var formatter log.Formatter
 
 	switch logFormat {
@@ -140,7 +137,6 @@ func (hook *ConsoleHook) checkIfTerminal(w io.Writer) bool {
 }
 
 func (hook *ConsoleHook) Fire(entry *log.Entry) error {
-
 	// Determine output stream
 	var logWriter io.Writer
 	switch entry.Level {
@@ -189,7 +185,6 @@ type FileHook struct {
 
 // NewFileHook creates a new log hook for writing to a file.
 func NewFileHook(logName, logFormat string) (*FileHook, error) {
-
 	var formatter log.Formatter
 
 	switch logFormat {
@@ -206,7 +201,7 @@ func NewFileHook(logName, logFormat string) (*FileHook, error) {
 	// If config.LogRoot doesn't exist, make it
 	dir, err := os.Lstat(LogRoot)
 	if os.IsNotExist(err) {
-		if err := os.MkdirAll(LogRoot, 0755); err != nil {
+		if err := os.MkdirAll(LogRoot, 0o755); err != nil {
 			return nil, fmt.Errorf("could not create log directory %v. %v", LogRoot, err)
 		}
 	}
@@ -234,7 +229,6 @@ func (hook *FileHook) Levels() []log.Level {
 }
 
 func (hook *FileHook) Fire(entry *log.Entry) error {
-
 	// Get formatted entry
 	lineBytes, err := hook.formatter.Format(entry)
 	if err != nil {
@@ -265,8 +259,7 @@ func (hook *FileHook) GetLocation() string {
 }
 
 func (hook *FileHook) openFile() (*os.File, error) {
-
-	logFile, err := os.OpenFile(hook.logFileLocation, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
+	logFile, err := os.OpenFile(hook.logFileLocation, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not open log file %v. %v", hook.logFileLocation, err)
 		return nil, err
@@ -327,7 +320,6 @@ func (hook *FileHook) doLogfileRotation() error {
 
 // PlainTextFormatter is a formatter than does no coloring *and* does not insist on writing logs as key/value pairs.
 type PlainTextFormatter struct {
-
 	// TimestampFormat to use for display when a full timestamp is printed
 	TimestampFormat string
 
@@ -338,9 +330,8 @@ type PlainTextFormatter struct {
 }
 
 func (f *PlainTextFormatter) Format(entry *log.Entry) ([]byte, error) {
-
 	var b *bytes.Buffer
-	var keys = make([]string, 0, len(entry.Data))
+	keys := make([]string, 0, len(entry.Data))
 	for k := range entry.Data {
 		keys = append(keys, k)
 	}
@@ -381,7 +372,6 @@ func (f *PlainTextFormatter) prefixFieldClashes(data log.Fields) {
 }
 
 func (f *PlainTextFormatter) printUncolored(b *bytes.Buffer, entry *log.Entry, keys []string, timestampFormat string) {
-
 	levelText := strings.ToUpper(entry.Level.String())[0:4]
 
 	fmt.Fprintf(b, "%s[%s] %-44s ", levelText, entry.Time.Format(timestampFormat), entry.Message)
@@ -434,7 +424,6 @@ type JSONFormatter struct {
 }
 
 func (f *JSONFormatter) Format(entry *log.Entry) ([]byte, error) {
-
 	data := make(map[string]string, len(entry.Data)+4)
 	for k, v := range entry.Data {
 		switch v := v.(type) {

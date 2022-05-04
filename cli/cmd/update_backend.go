@@ -36,7 +36,6 @@ var updateBackendCmd = &cobra.Command{
 	Short:   "Update a backend in Trident",
 	Aliases: []string{"b"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		jsonData, err := getBackendData(updateFilename, updateBase64Data)
 		if err != nil {
 			return err
@@ -56,7 +55,6 @@ var updateBackendCmd = &cobra.Command{
 }
 
 func backendUpdate(backendNames []string, postData []byte) error {
-
 	switch len(backendNames) {
 	case 0:
 		return errors.New("backend name not specified")

@@ -21,7 +21,6 @@ import (
 )
 
 func TestOntapSanStorageDriverConfigString(t *testing.T) {
-
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
@@ -29,8 +28,7 @@ func TestOntapSanStorageDriverConfigString(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	var ontapSanDrivers = []SANStorageDriver{
-
+	ontapSanDrivers := []SANStorageDriver{
 		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, true, mockAPI),
 		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, mockAPI),
 	}
@@ -293,6 +291,7 @@ func TestOntapSanReconcileNodeAccess(t *testing.T) {
 		}
 	}
 }
+
 func TestOntapSanTerminate(t *testing.T) {
 	ctx := context.Background()
 
@@ -366,7 +365,6 @@ func TestOntapSanTerminate(t *testing.T) {
 }
 
 func expectLunAndVolumeCreateSequence(ctx context.Context, mockAPI *mockapi.MockOntapAPI) {
-
 	// expected call sequenece is:
 	//   check the volume exists (should return false)
 	//   create the volume
@@ -399,7 +397,6 @@ func expectLunAndVolumeCreateSequence(ctx context.Context, mockAPI *mockapi.Mock
 }
 
 func TestOntapSanVolumeCreate(t *testing.T) {
-
 	ctx := context.Background()
 
 	mockCtrl := gomock.NewController(t)

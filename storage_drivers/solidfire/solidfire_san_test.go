@@ -91,8 +91,7 @@ func callGoString(s SANStorageDriver) string {
 }
 
 func TestSolidfireSANStorageDriverConfigString(t *testing.T) {
-
-	var solidfireSANDrivers = []SANStorageDriver{
+	solidfireSANDrivers := []SANStorageDriver{
 		*newTestSolidfireSANDriver(),
 	}
 

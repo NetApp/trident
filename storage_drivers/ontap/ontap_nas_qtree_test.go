@@ -44,7 +44,7 @@ func TestOntapNasQtreeStorageDriverConfigString(t *testing.T) {
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	var qtreeDrivers = []NASQtreeStorageDriver{
+	qtreeDrivers := []NASQtreeStorageDriver{
 		*newNASQtreeStorageDriver(mockAPI),
 	}
 

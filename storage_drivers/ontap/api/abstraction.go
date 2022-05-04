@@ -44,8 +44,8 @@ type OntapAPI interface {
 	APIVersion(context.Context) (string, error)
 
 	EmsAutosupportLog(
-		ctx context.Context, driverName string, appVersion string, autoSupport bool, category string,
-		computerName string, eventDescription string, eventID int, eventSource string, logLevel int,
+		ctx context.Context, driverName, appVersion string, autoSupport bool, category string,
+		computerName, eventDescription string, eventID int, eventSource string, logLevel int,
 	)
 
 	ExportPolicyCreate(ctx context.Context, policy string) error

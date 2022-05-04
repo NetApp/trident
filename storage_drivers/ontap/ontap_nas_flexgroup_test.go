@@ -58,8 +58,7 @@ func newTestOntapNASFGDriver() *NASFlexGroupStorageDriver {
 }
 
 func TestOntapNasFgStorageDriverConfigString(t *testing.T) {
-
-	var ontapNasFgDriver = *newTestOntapNASFGDriver()
+	ontapNasFgDriver := *newTestOntapNASFGDriver()
 
 	excludeList := map[string]string{
 		"username":                             ontapNasFgDriver.Config.Username,
@@ -89,5 +88,4 @@ func TestOntapNasFgStorageDriverConfigString(t *testing.T) {
 		assert.NotContains(t, ontapNasFgDriver.GoString(), val,
 			"ontap-nas-fg driver contains %v", key)
 	}
-
 }

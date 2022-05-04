@@ -11,6 +11,4 @@ const (
 	RandomLogcheckEnvVar = "LOGROTATE_FREQUENCY"
 )
 
-var (
-	randomLogcheckInterval = 20
-)
+var randomLogcheckInterval = 20

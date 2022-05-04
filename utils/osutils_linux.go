@@ -34,12 +34,11 @@ type statFSResult struct {
 func GetFilesystemStats(
 	ctx context.Context, path string,
 ) (available, capacity, usage, inodes, inodesFree, inodesUsed int64, err error) {
-
 	Logc(ctx).Debug(">>>> osutils_linux.GetFilesystemStats")
 	defer Logc(ctx).Debug("<<<< osutils_linux.GetFilesystemStats")
 
 	timedOut := false
-	var timeout = 30 * time.Second
+	timeout := 30 * time.Second
 	done := make(chan statFSResult, 1)
 	var result statFSResult
 
@@ -89,7 +88,6 @@ func GetFilesystemStats(
 // getFilesystemSize returns the size of the filesystem for the given path.
 // The caller of the func is responsible for verifying the mountPoint existence and readiness.
 func getFilesystemSize(ctx context.Context, path string) (int64, error) {
-
 	Logc(ctx).Debug(">>>> osutils_linux.getFilesystemSize")
 	defer Logc(ctx).Debug("<<<< osutils_linux.getFilesystemSize")
 
@@ -103,7 +101,6 @@ func getFilesystemSize(ctx context.Context, path string) (int64, error) {
 
 // getISCSIDiskSize queries the current block size in bytes
 func getISCSIDiskSize(ctx context.Context, devicePath string) (int64, error) {
-
 	fields := log.Fields{"devicePath": devicePath}
 	Logc(ctx).WithFields(fields).Debug(">>>> osutils_linux.getISCSIDiskSize")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils_linux.getISCSIDiskSize")
@@ -150,7 +147,6 @@ func flushOneDevice(ctx context.Context, devicePath string) error {
 }
 
 func determineNFSPackages(ctx context.Context, host HostSystem) ([]string, error) {
-
 	var packages []string
 
 	switch host.OS.Distro {
@@ -173,7 +169,6 @@ func determineNFSPackages(ctx context.Context, host HostSystem) ([]string, error
 }
 
 func determineISCSIPackages(ctx context.Context, host HostSystem, iscsiPreconfigured bool) ([]string, error) {
-
 	packages := make([]string, 0)
 
 	switch host.OS.Distro {
@@ -199,7 +194,6 @@ func determineISCSIPackages(ctx context.Context, host HostSystem, iscsiPreconfig
 }
 
 func PrepareNFSPackagesOnHost(ctx context.Context, host HostSystem) error {
-
 	Logc(ctx).Debug(">>>> osutils_linux.PrepareNFSPackagesOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_linux.PrepareNFSPackagesOnHost")
 
@@ -215,7 +209,6 @@ func PrepareNFSPackagesOnHost(ctx context.Context, host HostSystem) error {
 
 // PrepareISCSIPackagesOnHost installs the system packages required by Trident for iSCSI mounts
 func PrepareISCSIPackagesOnHost(ctx context.Context, host HostSystem, iscsiPreconfigured bool) error {
-
 	Logc(ctx).Debug(">>>> osutils_linux.PrepareISCSIPackagesOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_linux.PrepareISCSIPackagesOnHost")
 
@@ -231,7 +224,6 @@ func PrepareISCSIPackagesOnHost(ctx context.Context, host HostSystem, iscsiPreco
 
 // installMissingPackagesOnHost checks if the given packages are already installed, and if not installs them
 func installMissingPackagesOnHost(ctx context.Context, packages []string, host HostSystem) error {
-
 	notInstalled, err := checkPackagesOnHost(ctx, packages, host)
 	if err != nil {
 		err = fmt.Errorf("error checking for installed packages; %+v", err)
@@ -250,7 +242,6 @@ func installMissingPackagesOnHost(ctx context.Context, packages []string, host H
 }
 
 func checkPackagesOnHost(ctx context.Context, packages []string, host HostSystem) (notInstalled []string, err error) {
-
 	for _, pkg := range packages {
 		found, err2 := packageInstalledOnHost(ctx, pkg, host)
 		if err2 != nil {
@@ -266,7 +257,6 @@ func checkPackagesOnHost(ctx context.Context, packages []string, host HostSystem
 }
 
 func packageInstalledOnHost(ctx context.Context, pkg string, host HostSystem) (bool, error) {
-
 	// Determine command to use
 	cmd, err := getPackageManagerForHost(ctx, host)
 	if err != nil {
@@ -356,7 +346,6 @@ func getPackageManagerForHost(ctx context.Context, host HostSystem) (string, err
 }
 
 func installPackagesOnHost(ctx context.Context, packages []string, host HostSystem) error {
-
 	if len(packages) == 0 {
 		Logc(ctx).Debug("No packages to install.")
 		return nil
@@ -417,11 +406,10 @@ func installPackagesOnHost(ctx context.Context, packages []string, host HostSyst
 }
 
 func PrepareNFSServicesOnHost(ctx context.Context) error {
-
 	Logc(ctx).Debug(">>>> osutils_linux.PrepareNFSServicesOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_linux.PrepareNFSServicesOnHost")
 
-	var services = []string{"rpc-statd"}
+	services := []string{"rpc-statd"}
 
 	for _, service := range services {
 		fields := log.Fields{"service": service}
@@ -444,7 +432,6 @@ func PrepareNFSServicesOnHost(ctx context.Context) error {
 }
 
 func determineISCSIServices(host HostSystem) ([]string, error) {
-
 	services := make([]string, 0)
 
 	switch host.OS.Distro {
@@ -462,7 +449,6 @@ func determineISCSIServices(host HostSystem) ([]string, error) {
 
 // PrepareISCSIServicesOnHost configures, enables, and starts the system services required by Trident for iSCSI mounts
 func PrepareISCSIServicesOnHost(ctx context.Context, host HostSystem) error {
-
 	Logc(ctx).Debug(">>>> osutils_linux.PrepareISCSIServicesOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_linux.PrepareISCSIServicesOnHost")
 
@@ -493,7 +479,6 @@ func PrepareISCSIServicesOnHost(ctx context.Context, host HostSystem) error {
 }
 
 func configureMultipathServiceOnHost(ctx context.Context, host HostSystem) error {
-
 	var err error
 	var output []byte
 
@@ -518,7 +503,6 @@ func configureMultipathServiceOnHost(ctx context.Context, host HostSystem) error
 
 // ISCSIActiveOnHost will return if the iscsi daemon is active on the given host
 func ISCSIActiveOnHost(ctx context.Context, host HostSystem) (bool, error) {
-
 	Logc(ctx).Debug(">>>> osutils_linux.ISCSIActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_linux.ISCSIActiveOnHost")
 
@@ -539,7 +523,6 @@ func ISCSIActiveOnHost(ctx context.Context, host HostSystem) (bool, error) {
 }
 
 func enableAndStartServiceOnHost(ctx context.Context, service string) error {
-
 	var (
 		active, enabled bool
 		err             error
@@ -579,7 +562,6 @@ func enableAndStartServiceOnHost(ctx context.Context, service string) error {
 
 // ServiceActiveOnHost checks if the service is currently running
 func ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
-
 	Logc(ctx).Debug(">>>> osutils_linux.ServiceActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_linux.ServiceActiveOnHost")
 
@@ -600,7 +582,6 @@ func ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
 
 // ServiceEnabledOnHost checks if the service is automatically enabled on boot
 func ServiceEnabledOnHost(ctx context.Context, service string) (bool, error) {
-
 	Logc(ctx).Debug(">>>> osutils_linux.ServiceEnabledOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_linux.ServiceEnabledOnHost")
 
@@ -623,7 +604,6 @@ func ServiceEnabledOnHost(ctx context.Context, service string) (bool, error) {
 
 // GetHostSystemInfo returns information about the host system
 func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
-
 	Logc(ctx).Debug(">>>> osutils_linux.GetHostSystemInfo")
 	defer Logc(ctx).Debug("<<<< osutils_linux.GetHostSystemInfo")
 
@@ -667,7 +647,6 @@ func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 
 // getIPAddresses uses the Linux-specific netlink library to get a host's external IP addresses.
 func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
-
 	Logc(ctx).Debug(">>>> osutils_linux.getIPAddresses")
 	defer Logc(ctx).Debug("<<<< osutils_linux.getIPAddresses")
 
@@ -701,7 +680,6 @@ func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 
 // getIPAddressesExceptingDummyInterfaces returns all global unicast addresses from non-dummy interfaces.
 func getIPAddressesExceptingDummyInterfaces(ctx context.Context) ([]net.Addr, error) {
-
 	Logc(ctx).Debug(">>>> osutils_linux.getAddressesExceptingDummyInterfaces")
 	defer Logc(ctx).Debug("<<<< osutils_linux.getAddressesExceptingDummyInterfaces")
 
@@ -730,7 +708,6 @@ func getIPAddressesExceptingDummyInterfaces(ctx context.Context) ([]net.Addr, er
 
 // getIPAddressesExceptingNondefaultRoutes returns all global unicast addresses from interfaces on default routes.
 func getIPAddressesExceptingNondefaultRoutes(ctx context.Context) ([]net.Addr, error) {
-
 	Logc(ctx).Debug(">>>> osutils_linux.getAddressesExceptingNondefaultRoutes")
 	defer Logc(ctx).Debug("<<<< osutils_linux.getAddressesExceptingNondefaultRoutes")
 
@@ -762,7 +739,6 @@ func getIPAddressesExceptingNondefaultRoutes(ctx context.Context) ([]net.Addr, e
 
 // getUsableAddressesFromLinks returns all global unicast addresses on the specified interfaces.
 func getUsableAddressesFromLinks(ctx context.Context, links []netlink.Link) []net.Addr {
-
 	addrs := make([]net.Addr, 0)
 
 	for _, link := range links {

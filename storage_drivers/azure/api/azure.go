@@ -47,7 +47,6 @@ var (
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
-
 	// Azure API authentication parameters
 	SubscriptionID string
 	TenantID       string
@@ -80,7 +79,6 @@ type Client struct {
 
 // NewDriver is a factory method for creating a new SDK interface.
 func NewDriver(config ClientConfig) (Azure, error) {
-
 	var err error
 
 	// Ensure we got a location
@@ -126,7 +124,6 @@ func NewDriver(config ClientConfig) (Azure, error) {
 
 // Init runs startup logic after allocating the driver resources.
 func (c Client) Init(ctx context.Context, pools map[string]storage.Pool) error {
-
 	// Map vpools to backend
 	c.registerStoragePools(pools)
 
@@ -136,7 +133,6 @@ func (c Client) Init(ctx context.Context, pools map[string]storage.Pool) error {
 
 // RegisterStoragePool makes a note of pools defined by the driver for later mapping.
 func (c Client) registerStoragePools(sPools map[string]storage.Pool) {
-
 	c.sdkClient.AzureResources.StoragePoolMap = make(map[string]storage.Pool)
 
 	for _, sPool := range sPools {
@@ -174,7 +170,6 @@ func CreateSubnetFullName(resourceGroup, virtualNetwork, subnet string) string {
 func ParseSubnetID(
 	subnetID string,
 ) (subscriptionID, resourceGroup, provider, virtualNetwork, subnet string, err error) {
-
 	match := subnetIDRegex.FindStringSubmatch(subnetID)
 
 	if match == nil {
@@ -213,7 +208,6 @@ func CreateNetappAccountFullName(resourceGroup, netappAccount string) string {
 func ParseCapacityPoolID(
 	capacityPoolID string,
 ) (subscriptionID, resourceGroup, provider, netappAccount, capacityPool string, err error) {
-
 	match := capacityPoolIDRegex.FindStringSubmatch(capacityPoolID)
 
 	if match == nil {
@@ -243,7 +237,7 @@ func CreateCapacityPoolFullName(resourceGroup, netappAccount, capacityPool strin
 }
 
 // CreateVolumeID creates the Azure-style ID for a volume.
-func CreateVolumeID(subscriptionID, resourceGroup, netappAccount string, capacityPool string, volume string) string {
+func CreateVolumeID(subscriptionID, resourceGroup, netappAccount, capacityPool, volume string) string {
 	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.NetApp/netAppAccounts/%s/capacityPools/%s/volumes/%s",
 		subscriptionID, resourceGroup, netappAccount, capacityPool, volume)
 }
@@ -257,7 +251,6 @@ func CreateVolumeFullName(resourceGroup, netappAccount, capacityPool, volume str
 func ParseVolumeID(
 	volumeID string,
 ) (subscriptionID, resourceGroup, provider, netappAccount, capacityPool, volume string, err error) {
-
 	match := volumeIDRegex.FindStringSubmatch(volumeID)
 
 	if match == nil {
@@ -284,7 +277,6 @@ func ParseVolumeID(
 
 // ParseVolumeName parses the Azure-style Name for a volume.
 func ParseVolumeName(volumeName string) (resourceGroup, netappAccount, capacityPool, volume string, err error) {
-
 	match := volumeNameRegex.FindStringSubmatch(volumeName)
 
 	paramsMap := make(map[string]string)
@@ -318,7 +310,7 @@ func ParseVolumeName(volumeName string) (resourceGroup, netappAccount, capacityP
 
 // CreateSnapshotID creates the Azure-style ID for a snapshot.
 func CreateSnapshotID(
-	subscriptionID, resourceGroup, netappAccount string, capacityPool string, volume, snapshot string,
+	subscriptionID, resourceGroup, netappAccount, capacityPool, volume, snapshot string,
 ) string {
 	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.NetApp/netAppAccounts/%s/capacityPools/%s/volumes/%s/snapshots/%s",
 		subscriptionID, resourceGroup, netappAccount, capacityPool, volume, snapshot)
@@ -333,7 +325,6 @@ func CreateSnapshotFullName(resourceGroup, netappAccount, capacityPool, volume, 
 func ParseSnapshotID(
 	snapshotID string,
 ) (subscriptionID, resourceGroup, provider, netappAccount, capacityPool, volume, snapshot string, err error) {
-
 	match := snapshotIDRegex.FindStringSubmatch(snapshotID)
 
 	if match == nil {
@@ -361,7 +352,7 @@ func ParseSnapshotID(
 
 // CreateSubvolumeID creates the Azure-style ID for a subvolume.
 func CreateSubvolumeID(
-	subscriptionID, resourceGroup, netappAccount string, capacityPool string, volume, subvolume string,
+	subscriptionID, resourceGroup, netappAccount, capacityPool, volume, subvolume string,
 ) string {
 	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft."+
 		"NetApp/netAppAccounts/%s/capacityPools/%s/volumes/%s/subvolumes/%s",
@@ -377,7 +368,6 @@ func CreateSubvolumeFullName(resourceGroup, netappAccount, capacityPool, volume,
 func ParseSubvolumeID(
 	subvolumeID string,
 ) (subscriptionID, resourceGroup, provider, netappAccount, capacityPool, volume, subvolume string, err error) {
-
 	match := subvolumeIDRegex.FindStringSubmatch(subvolumeID)
 
 	paramsMap := make(map[string]string)
@@ -427,8 +417,7 @@ func ParseSubvolumeID(
 
 // exportPolicyExport turns an internal ExportPolicy into something consumable by the SDK.
 func exportPolicyExport(exportPolicy *ExportPolicy) *netapp.VolumePropertiesExportPolicy {
-
-	var anfRules = make([]netapp.ExportPolicyRule, 0)
+	anfRules := make([]netapp.ExportPolicyRule, 0)
 
 	for _, rule := range exportPolicy.Rules {
 
@@ -460,8 +449,7 @@ func exportPolicyExport(exportPolicy *ExportPolicy) *netapp.VolumePropertiesExpo
 
 // exportPolicyImport turns an SDK ExportPolicy into an internal one.
 func exportPolicyImport(anfExportPolicy *netapp.VolumePropertiesExportPolicy) *ExportPolicy {
-
-	var rules = make([]ExportRule, 0)
+	rules := make([]ExportRule, 0)
 
 	if anfExportPolicy == nil || *anfExportPolicy.Rules == nil {
 		return &ExportPolicy{Rules: rules}
@@ -487,7 +475,6 @@ func exportPolicyImport(anfExportPolicy *netapp.VolumePropertiesExportPolicy) *E
 
 // newFileSystemFromVolume creates a new internal FileSystem struct from an SDK volume.
 func (c Client) newFileSystemFromVolume(ctx context.Context, vol *netapp.Volume) (*FileSystem, error) {
-
 	if vol.ID == nil {
 		return nil, errors.New("volume ID may not be nil")
 	}
@@ -538,7 +525,6 @@ func (c Client) newFileSystemFromVolume(ctx context.Context, vol *netapp.Volume)
 
 // getSubvolumesEnabledFromVolume extracts the SubvolumesEnabled from an SDK volume.
 func (c Client) getSubvolumesEnabledFromVolume(value netapp.EnableSubvolumes) bool {
-
 	if value != netapp.EnableSubvolumesEnabled {
 		return false
 	}
@@ -547,7 +533,6 @@ func (c Client) getSubvolumesEnabledFromVolume(value netapp.EnableSubvolumes) bo
 
 // getMountTargetsFromVolume extracts the mount targets from an SDK volume.
 func (c Client) getMountTargetsFromVolume(ctx context.Context, vol *netapp.Volume) []MountTarget {
-
 	mounts := make([]MountTarget, 0)
 
 	if vol.MountTargets == nil {
@@ -557,7 +542,7 @@ func (c Client) getMountTargetsFromVolume(ctx context.Context, vol *netapp.Volum
 
 	for _, mtp := range *vol.MountTargets {
 
-		var mt = MountTarget{
+		mt := MountTarget{
 			MountTargetID: DerefString(mtp.MountTargetID),
 			FileSystemID:  DerefString(mtp.FileSystemID),
 			IPAddress:     DerefString(mtp.IPAddress),
@@ -572,7 +557,6 @@ func (c Client) getMountTargetsFromVolume(ctx context.Context, vol *netapp.Volum
 
 // getLabelsFromVolume extracts the tags from an SDK volume.
 func (c Client) getLabelsFromVolume(vol *netapp.Volume) map[string]string {
-
 	labels := make(map[string]string)
 
 	for k, v := range vol.Tags {
@@ -589,7 +573,6 @@ func (c Client) getLabelsFromVolume(vol *netapp.Volume) map[string]string {
 // getVolumesFromPool gets a set of volumes belonging to a single capacity pool.  As pools can come and go
 // in between cache updates, we ignore any 404 errors here.
 func (c Client) getVolumesFromPool(ctx context.Context, cPool *CapacityPool) (*[]*FileSystem, error) {
-
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer cancel()
 
@@ -643,7 +626,6 @@ func (c Client) getVolumesFromPool(ctx context.Context, cPool *CapacityPool) (*[
 
 // Volumes returns a list of all volumes.
 func (c Client) Volumes(ctx context.Context) (*[]*FileSystem, error) {
-
 	var filesystems []*FileSystem
 
 	cPools := c.CapacityPools()
@@ -663,7 +645,6 @@ func (c Client) Volumes(ctx context.Context) (*[]*FileSystem, error) {
 
 // Volume uses a volume config record to fetch a volume by the most efficient means.
 func (c Client) Volume(ctx context.Context, volConfig *storage.VolumeConfig) (*FileSystem, error) {
-
 	// When we know the internal ID, use that as it is vastly more efficient
 	if volConfig.InternalID != "" {
 		return c.VolumeByID(ctx, volConfig.InternalID)
@@ -675,7 +656,6 @@ func (c Client) Volume(ctx context.Context, volConfig *storage.VolumeConfig) (*F
 
 // VolumeExists uses a volume config record to look for a Filesystem by the most efficient means.
 func (c Client) VolumeExists(ctx context.Context, volConfig *storage.VolumeConfig) (bool, *FileSystem, error) {
-
 	// When we know the internal ID, use that as it is vastly more efficient
 	if volConfig.InternalID != "" {
 		return c.VolumeExistsByID(ctx, volConfig.InternalID)
@@ -689,7 +669,6 @@ func (c Client) VolumeExists(ctx context.Context, volConfig *storage.VolumeConfi
 // volumes by creation token, so our only choice here is to get all volumes and return the one of interest.
 // That is obviously very inefficient, so this method should be used only when absolutely necessary.
 func (c Client) VolumeByCreationToken(ctx context.Context, creationToken string) (*FileSystem, error) {
-
 	Logc(ctx).Tracef("Fetching volume by creation token %s.", creationToken)
 
 	// SDK does not support searching by creation token. Or anything besides pool+name,
@@ -719,7 +698,6 @@ func (c Client) VolumeByCreationToken(ctx context.Context, creationToken string)
 
 // VolumeExistsByCreationToken checks whether a volume exists using its creation token as a key.
 func (c Client) VolumeExistsByCreationToken(ctx context.Context, creationToken string) (bool, *FileSystem, error) {
-
 	if filesystem, err := c.VolumeByCreationToken(ctx, creationToken); err != nil {
 		if utils.IsNotFoundError(err) {
 			return false, nil, nil
@@ -733,7 +711,6 @@ func (c Client) VolumeExistsByCreationToken(ctx context.Context, creationToken s
 
 // VolumeByID returns a Filesystem based on its Azure-style ID.
 func (c Client) VolumeByID(ctx context.Context, id string) (*FileSystem, error) {
-
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer cancel()
 
@@ -773,7 +750,6 @@ func (c Client) VolumeByID(ctx context.Context, id string) (*FileSystem, error) 
 
 // VolumeExistsByID checks whether a volume exists using its creation token as a key.
 func (c Client) VolumeExistsByID(ctx context.Context, id string) (bool, *FileSystem, error) {
-
 	if filesystem, err := c.VolumeByID(ctx, id); err != nil {
 		if utils.IsNotFoundError(err) {
 			return false, nil, nil
@@ -794,11 +770,9 @@ func (c Client) WaitForVolumeState(
 	ctx context.Context, filesystem *FileSystem, desiredState string, abortStates []string,
 	maxElapsedTime time.Duration,
 ) (string, error) {
-
 	volumeState := ""
 
 	checkVolumeState := func() error {
-
 		f, err := c.VolumeByID(ctx, filesystem.ID)
 		if err != nil {
 
@@ -863,7 +837,6 @@ func (c Client) WaitForVolumeState(
 
 // CreateVolume creates a new volume.
 func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateRequest) (*FileSystem, error) {
-
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer cancel()
 
@@ -957,7 +930,6 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 func (c Client) ModifyVolume(
 	ctx context.Context, filesystem *FileSystem, labels map[string]string, unixPermissions *string,
 ) error {
-
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer cancel()
 
@@ -1042,7 +1014,6 @@ func (c Client) ModifyVolume(
 
 // ResizeVolume sends a VolumePatch to update a volume's quota.
 func (c Client) ResizeVolume(ctx context.Context, filesystem *FileSystem, newSizeBytes int64) error {
-
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer cancel()
 
@@ -1079,7 +1050,6 @@ func (c Client) ResizeVolume(ctx context.Context, filesystem *FileSystem, newSiz
 
 // DeleteVolume deletes a volume.
 func (c Client) DeleteVolume(ctx context.Context, filesystem *FileSystem) error {
-
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer cancel()
 
@@ -1117,7 +1087,6 @@ func (c Client) DeleteVolume(ctx context.Context, filesystem *FileSystem) error 
 
 // newSnapshotFromANFSnapshot creates a new internal Snapshot struct from a netapp.Snapshot.
 func (c Client) newSnapshotFromANFSnapshot(_ context.Context, anfSnapshot *netapp.Snapshot) (*Snapshot, error) {
-
 	if anfSnapshot.ID == nil {
 		return nil, errors.New("snapshot ID may not be nil")
 	}
@@ -1158,7 +1127,6 @@ func (c Client) newSnapshotFromANFSnapshot(_ context.Context, anfSnapshot *netap
 
 // SnapshotsForVolume returns a list of snapshots on a volume.
 func (c Client) SnapshotsForVolume(ctx context.Context, filesystem *FileSystem) (*[]*Snapshot, error) {
-
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer cancel()
 
@@ -1201,7 +1169,6 @@ func (c Client) SnapshotsForVolume(ctx context.Context, filesystem *FileSystem) 
 func (c Client) SnapshotForVolume(
 	ctx context.Context, filesystem *FileSystem, snapshotName string,
 ) (*Snapshot, error) {
-
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer cancel()
 
@@ -1240,9 +1207,7 @@ func (c Client) WaitForSnapshotState(
 	ctx context.Context, snapshot *Snapshot, filesystem *FileSystem, desiredState string, abortStates []string,
 	maxElapsedTime time.Duration,
 ) error {
-
 	checkSnapshotState := func() error {
-
 		s, err := c.SnapshotForVolume(ctx, filesystem, snapshot.Name)
 		if err != nil {
 
@@ -1303,11 +1268,10 @@ func (c Client) WaitForSnapshotState(
 
 // CreateSnapshot creates a new snapshot.
 func (c Client) CreateSnapshot(ctx context.Context, filesystem *FileSystem, name string) (*Snapshot, error) {
-
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer cancel()
 
-	var anfSnapshot = netapp.Snapshot{
+	anfSnapshot := netapp.Snapshot{
 		Location: &filesystem.Location,
 		Name:     &name,
 	}
@@ -1346,7 +1310,6 @@ func (c Client) CreateSnapshot(ctx context.Context, filesystem *FileSystem, name
 
 // DeleteSnapshot deletes a snapshot.
 func (c Client) DeleteSnapshot(ctx context.Context, filesystem *FileSystem, snapshot *Snapshot) error {
-
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer cancel()
 
@@ -1382,7 +1345,6 @@ func (c Client) DeleteSnapshot(ctx context.Context, filesystem *FileSystem, snap
 
 // newSubvolumeFromSubvolumeInfo creates a new internal Subvolume struct from an SDK SubvolumeInfo
 func (c Client) newSubvolumeFromSubvolumeInfo(_ context.Context, subVol *netapp.SubvolumeInfo) (*Subvolume, error) {
-
 	if subVol.ID == nil {
 		return nil, errors.New("subvolume ID may not be nil")
 	}
@@ -1422,7 +1384,6 @@ func (c Client) newSubvolumeFromSubvolumeInfo(_ context.Context, subVol *netapp.
 func (c Client) updateSubvolumeFromSubvolumeModel(
 	_ context.Context, original *Subvolume, subVolModel *netapp.SubvolumeModel,
 ) (*Subvolume, error) {
-
 	if subVolModel.ID == nil {
 		return nil, errors.New("subvolume ID may not be nil")
 	}
@@ -1442,8 +1403,8 @@ func (c Client) updateSubvolumeFromSubvolumeModel(
 }
 
 func (c Client) subvolumesClientListByVolume(ctx context.Context, resourceGroup, netappAccount,
-	capacityPool, volumeName string) (*netapp.SubvolumesListPage, error) {
-
+	capacityPool, volumeName string,
+) (*netapp.SubvolumesListPage, error) {
 	var subvolumesInfoList netapp.SubvolumesListPage
 	var err error
 
@@ -1505,7 +1466,6 @@ func (c Client) subvolumesClientListByVolume(ctx context.Context, resourceGroup,
 
 // SubvolumesForVolume returns a list of subvolume on a volume.
 func (c Client) SubvolumesForVolume(ctx context.Context, filesystem *FileSystem) (*[]*Subvolume, error) {
-
 	subvolumeInfoList, err := c.subvolumesClientListByVolume(ctx, filesystem.ResourceGroup,
 		filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name)
 	if err != nil {
@@ -1539,8 +1499,8 @@ func (c Client) SubvolumesForVolume(ctx context.Context, filesystem *FileSystem)
 
 // subvolumesClientNextWithContext advances to the next page of the subvolumes list page
 func (c Client) subvolumesClientNextWithContext(ctx context.Context, subvolumeInfoList *netapp.SubvolumesListPage) (
-	*netapp.SubvolumesListPage, error) {
-
+	*netapp.SubvolumesListPage, error,
+) {
 	var err error
 
 	api := "SubvolumesListPage.NextWithContext"
@@ -1596,7 +1556,6 @@ func (c Client) subvolumesClientNextWithContext(ctx context.Context, subvolumeIn
 
 // Subvolumes returns a list of all subvolumes.
 func (c Client) Subvolumes(ctx context.Context, fileVolumePools []string) (*[]*Subvolume, error) {
-
 	var subvolumes []*Subvolume
 
 	for _, fileVolume := range fileVolumePools {
@@ -1629,7 +1588,6 @@ func (c Client) Subvolumes(ctx context.Context, fileVolumePools []string) (*[]*S
 func (c Client) Subvolume(
 	ctx context.Context, volConfig *storage.VolumeConfig, queryMetadata bool,
 ) (*Subvolume, error) {
-
 	// Subvolume ID must be present
 	if volConfig.InternalID != "" {
 		return c.SubvolumeByID(ctx, volConfig.InternalID, queryMetadata)
@@ -1640,7 +1598,6 @@ func (c Client) Subvolume(
 
 // SubvolumeParentVolume uses a volume config record to fetch a subvolume's parent volume.
 func (c Client) SubvolumeParentVolume(ctx context.Context, volConfig *storage.VolumeConfig) (*FileSystem, error) {
-
 	// When we know the internal ID, use that as it is vastly more efficient
 	if volConfig.InternalID != "" {
 		subscriptionID, resourceGroup, _, netappAccount, cPoolName, volumeName, _,
@@ -1665,7 +1622,6 @@ func (c Client) SubvolumeParentVolume(ctx context.Context, volConfig *storage.Vo
 func (c Client) SubvolumeExists(
 	ctx context.Context, volConfig *storage.VolumeConfig, candidateFileVolumePools []string,
 ) (bool, *Subvolume, error) {
-
 	// When we know the internal ID, use that as it is vastly more efficient
 	if volConfig.InternalID != "" {
 		return c.SubvolumeExistsByID(ctx, volConfig.InternalID)
@@ -1680,7 +1636,6 @@ func (c Client) SubvolumeExists(
 func (c Client) SubvolumeExistsByCreationToken(
 	ctx context.Context, creationToken string, candidateFileVolumePools []string,
 ) (bool, *Subvolume, error) {
-
 	if subvolume, err := c.SubvolumeByCreationToken(ctx, creationToken, candidateFileVolumePools, false); err != nil {
 		if utils.IsNotFoundError(err) {
 			return false, nil, nil
@@ -1698,7 +1653,6 @@ func (c Client) SubvolumeExistsByCreationToken(
 func (c Client) SubvolumeByCreationToken(
 	ctx context.Context, creationToken string, candidateFileVolumePools []string, queryMetadata bool,
 ) (*Subvolume, error) {
-
 	Logc(ctx).Debugf("Fetching subvolume by creation token %s.", creationToken)
 
 	matchingSubvolumes := make([]*Subvolume, 0)
@@ -1747,7 +1701,6 @@ func (c Client) SubvolumeByCreationToken(
 }
 
 func (c Client) subvolumesClientGet(ctx context.Context, subvolumeID string) (*netapp.SubvolumeInfo, error) {
-
 	var subvolumeInfo netapp.SubvolumeInfo
 	var err error
 
@@ -1819,7 +1772,6 @@ func (c Client) subvolumesClientGet(ctx context.Context, subvolumeID string) (*n
 
 // SubvolumeByID returns a Subvolume based on its Azure-style ID.
 func (c Client) SubvolumeByID(ctx context.Context, subvolumeID string, queryMetadata bool) (*Subvolume, error) {
-
 	Logc(ctx).Tracef("Fetching subvolume by ID %s.", subvolumeID)
 
 	subvolumeInfo, err := c.subvolumesClientGet(ctx, subvolumeID)
@@ -1843,8 +1795,8 @@ func (c Client) SubvolumeByID(ctx context.Context, subvolumeID string, queryMeta
 }
 
 func (c Client) subvolumesClientGetMetadata(ctx context.Context,
-	subvolume *Subvolume) (*netapp.SubvolumesGetMetadataFuture, error) {
-
+	subvolume *Subvolume,
+) (*netapp.SubvolumesGetMetadataFuture, error) {
 	var future netapp.SubvolumesGetMetadataFuture
 	var err error
 
@@ -1907,8 +1859,8 @@ func (c Client) subvolumesClientGetMetadata(ctx context.Context,
 }
 
 func (c Client) subvolumesClientWaitForMetadata(ctx context.Context,
-	subvolumeID string, future *netapp.SubvolumesGetMetadataFuture) error {
-
+	subvolumeID string, future *netapp.SubvolumesGetMetadataFuture,
+) error {
 	var err error
 
 	api := "SubvolumesGetMetadataFuture.WaitForCompletionRef"
@@ -1964,7 +1916,6 @@ func (c Client) subvolumesClientWaitForMetadata(ctx context.Context,
 
 // SubvolumeMetadata returns a Subvolume metadata
 func (c Client) SubvolumeMetadata(ctx context.Context, subvolume *Subvolume) (*Subvolume, error) {
-
 	Logc(ctx).Tracef("Fetching subvolume metadata %s.", subvolume.FullName)
 
 	logFields := log.Fields{
@@ -1992,8 +1943,8 @@ func (c Client) SubvolumeMetadata(ctx context.Context, subvolume *Subvolume) (*S
 
 // subvolumesClientGetMetadataFutureResult returns the result of the subvolumeMetadataFuture call
 func (c Client) subvolumesClientGetMetadataFutureResult(ctx context.Context, subvolume *Subvolume,
-	subvolumesGetMetadataFuture *netapp.SubvolumesGetMetadataFuture) (netapp.SubvolumeModel, error) {
-
+	subvolumesGetMetadataFuture *netapp.SubvolumesGetMetadataFuture,
+) (netapp.SubvolumeModel, error) {
 	var subvolumeModel netapp.SubvolumeModel
 	var err error
 	api := "SubvolumesGetMetadataFuture.Result"
@@ -2055,7 +2006,6 @@ func (c Client) subvolumesClientGetMetadataFutureResult(ctx context.Context, sub
 
 // SubvolumeExistsByID checks whether a subvolume exists using its creation token as a key.
 func (c Client) SubvolumeExistsByID(ctx context.Context, id string) (bool, *Subvolume, error) {
-
 	if subvolume, err := c.SubvolumeByID(ctx, id, false); err != nil {
 		if utils.IsNotFoundError(err) {
 			return false, nil, nil
@@ -2072,7 +2022,6 @@ func (c Client) WaitForSubvolumeState(
 	ctx context.Context, subvolume *Subvolume, desiredState string, abortStates []string,
 	maxElapsedTime time.Duration,
 ) (string, error) {
-
 	subvolumeState := ""
 
 	logFields := log.Fields{
@@ -2084,7 +2033,6 @@ func (c Client) WaitForSubvolumeState(
 		var err error
 
 		subvol, err := c.SubvolumeByID(ctx, subvolume.ID, false)
-
 		if err != nil {
 			subvolumeState = ""
 			// This is a bit of a hack, but there is no 'Deleted' state in Azure -- the
@@ -2153,7 +2101,6 @@ func (c Client) WaitForSubvolumeState(
 func (c Client) subvolumesClientCreate(ctx context.Context, newSubvol netapp.SubvolumeInfo,
 	resourceGroup, netappAccount, capacityPool, volumeName, subvolumeName string,
 ) error {
-
 	var future netapp.SubvolumesCreateFuture
 	var err error
 
@@ -2277,7 +2224,6 @@ func (c Client) CreateSubvolume(ctx context.Context, request *SubvolumeCreateReq
 func (c Client) subvolumesClientUpdate(
 	ctx context.Context, patch *netapp.SubvolumePatchRequest, subvolume *Subvolume,
 ) error {
-
 	var future netapp.SubvolumesUpdateFuture
 	var err error
 
@@ -2339,7 +2285,6 @@ func (c Client) subvolumesClientUpdate(
 
 // ResizeSubvolume sends a SubvolumePatchRequest to update a subvolume's size.
 func (c Client) ResizeSubvolume(ctx context.Context, subvolume *Subvolume, newSizeBytes int64) error {
-
 	path := "/" + subvolume.Name
 	patch := &netapp.SubvolumePatchRequest{
 		SubvolumePatchParams: &netapp.SubvolumePatchParams{
@@ -2357,7 +2302,6 @@ func (c Client) ResizeSubvolume(ctx context.Context, subvolume *Subvolume, newSi
 }
 
 func (c Client) subvolumesClientDelete(ctx context.Context, subvolume *Subvolume) error {
-
 	var future netapp.SubvolumesDeleteFuture
 	var err error
 
@@ -2424,7 +2368,6 @@ func (c Client) subvolumesClientDelete(ctx context.Context, subvolume *Subvolume
 
 // DeleteSubvolume deletes a subvolume.
 func (c Client) DeleteSubvolume(ctx context.Context, subvolume *Subvolume) error {
-
 	if err := c.subvolumesClientDelete(ctx, subvolume); err != nil {
 		return err
 	}
@@ -2436,7 +2379,6 @@ func (c Client) DeleteSubvolume(ctx context.Context, subvolume *Subvolume) error
 func (c Client) ValidateFilePoolVolumes(
 	ctx context.Context, filePoolVolumeNames []string,
 ) ([]*FileSystem, error) {
-
 	// Ensure the length of filePoolVolumeNames is 1
 	if len(filePoolVolumeNames) != 1 {
 		return nil, fmt.Errorf("the config should contain exactly one entry in filePoolVolumes, "+
@@ -2480,7 +2422,6 @@ func (c Client) ValidateFilePoolVolumes(
 
 // IsANFNotFoundError checks whether an error returned from the ANF SDK contains a 404 (Not Found) error.
 func IsANFNotFoundError(err error) bool {
-
 	if err == nil {
 		return false
 	}
@@ -2496,7 +2437,6 @@ func IsANFNotFoundError(err error) bool {
 
 // IsANFTooManyRequestsError checks whether an error returned from the ANF SDK contains a 429 (Too Many Requests) error.
 func IsANFTooManyRequestsError(err error) bool {
-
 	if err == nil {
 		return false
 	}
@@ -2513,7 +2453,6 @@ func IsANFTooManyRequestsError(err error) bool {
 // GetCorrelationIDFromError accepts an error returned from the ANF SDK and extracts the correlation
 // header, if present.
 func GetCorrelationIDFromError(err error) (id string) {
-
 	if err == nil {
 		return
 	}
@@ -2528,7 +2467,6 @@ func GetCorrelationIDFromError(err error) (id string) {
 // GetCorrelationID accepts an HTTP response returned from the ANF SDK and extracts the correlation
 // header, if present.
 func GetCorrelationID(response *http.Response) (id string) {
-
 	if response == nil || response.Header == nil {
 		return
 	}

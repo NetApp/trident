@@ -25,11 +25,11 @@ import (
 
 // AstraDSLicenseInfo information describing the state of the license
 type AstraDSLicenseInfo struct {
-	//User readable name for this license tier. Taken from "product" field of license file
+	// User readable name for this license tier. Taken from "product" field of license file
 	Product string `json:"product"`
-	//Internal name for this license tier. Taken from licenses->licenseProtocol field in license file
+	// Internal name for this license tier. Taken from licenses->licenseProtocol field in license file
 	Protocol string `json:"protocol"`
-	//License Evaluation status
+	// License Evaluation status
 	Evaluation bool `json:"evaluation"`
 	// Date at which currently applied license expires
 	EndDate string `json:"endDate"`
@@ -56,7 +56,7 @@ type AstraDSLicenselicensedFeatures struct {
 	SpbmBasedVvolsForVms                 bool `json:"spbmBasedVvolsForVms"`                 // NLF - "dm-spbm-based-vvols-for-vms"
 	DataAtRestEncryption                 bool `json:"dataAtRestEncryption"`                 // NLF - "dm-data-at-rest-encryption"
 	OnDemandLocalSnapshots               bool `json:"onDemandLocalSnapshots"`               // NLF - "dm-on-demand-local-snapshots"
-	OnDemandClones                       bool `json:"onDemandclones"`                       //NLF - "dm-on-demand-clones"
+	OnDemandClones                       bool `json:"onDemandclones"`                       // NLF - "dm-on-demand-clones"
 	OnDemandRemoteSnapshotsToObjectStore bool `json:"onDemandRemoteSnapshotsToObjectStore"` // NLF - "dm-on-demand-remote-snapshots-to-s3-object-store"
 	ScheduledSnapshotsRemote             bool `json:"scheduledSnapshotsRemote"`             // NLF - "dm-snapshot-schedules-remote"
 	ScheduledSnapshotsLocal              bool `json:"scheduledSnapshotsLocal"`              // NLF - "dm-snapshot-schedules-local"

@@ -77,7 +77,6 @@ func parseQOS(qosOpt string) (qos api.QoS, err error) {
 }
 
 func parseType(ctx context.Context, vTypes []api.VolType, typeName string) (qos api.QoS, err error) {
-
 	foundType := false
 	for _, t := range vTypes {
 		if strings.EqualFold(t.Type, typeName) {
@@ -115,7 +114,6 @@ func (d *SANStorageDriver) BackendName() string {
 
 // poolName constructs the name of the pool reported by this driver instance
 func (d *SANStorageDriver) poolName(name string) string {
-
 	return fmt.Sprintf("%s_%s", d.BackendName(), strings.Replace(name, "-", "", -1))
 }
 
@@ -124,7 +122,6 @@ func (d *SANStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
-
 	if commonConfig.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Initialize", "Type": "SANStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
@@ -302,7 +299,6 @@ func (d *SANStorageDriver) Initialized() bool {
 }
 
 func (d *SANStorageDriver) Terminate(ctx context.Context, _ string) {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Terminate", "Type": "SANStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
@@ -318,8 +314,7 @@ func (d *SANStorageDriver) Terminate(ctx context.Context, _ string) {
 func (d *SANStorageDriver) getEndpoint(
 	ctx context.Context, config *drivers.SolidfireStorageDriverConfig,
 ) (string, error) {
-
-	var endpointRegex = regexp.MustCompile(`(?P<endpoint>.+/json-rpc/)(?P<version>[\d.]+)$`)
+	endpointRegex := regexp.MustCompile(`(?P<endpoint>.+/json-rpc/)(?P<version>[\d.]+)$`)
 	endpointMatch := endpointRegex.FindStringSubmatch(config.EndPoint)
 	paramsMap := make(map[string]string)
 	for i, name := range endpointRegex.SubexpNames() {
@@ -351,7 +346,6 @@ func (d *SANStorageDriver) getEndpoint(
 func (d *SANStorageDriver) getEndpointCredentials(
 	ctx context.Context, config drivers.SolidfireStorageDriverConfig,
 ) (string, string, error) {
-
 	requestURL, parseErr := url.Parse(config.EndPoint)
 	if parseErr == nil {
 		username := requestURL.User.Username()
@@ -363,7 +357,6 @@ func (d *SANStorageDriver) getEndpointCredentials(
 }
 
 func (d *SANStorageDriver) getNodeSerialNumbers(ctx context.Context, c *drivers.CommonStorageDriverConfig) {
-
 	c.SerialNumbers = make([]string, 0)
 	hwInfo, err := d.Client.GetClusterHardwareInfo(ctx)
 	if err != nil {
@@ -387,7 +380,6 @@ func (d *SANStorageDriver) getNodeSerialNumbers(ctx context.Context, c *drivers.
 func (d *SANStorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.SolidfireStorageDriverConfig,
 ) error {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "SANStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> populateConfigurationDefaults")
@@ -432,7 +424,6 @@ func (d *SANStorageDriver) populateConfigurationDefaults(
 }
 
 func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
-
 	// Virtual Pools initialization guide for Solidfire:
 	//
 	//	Types Defined?	Virtual Pools Defined? 			Storage Pool
@@ -593,7 +584,6 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) error {
 
 // Validate the driver configuration and execution environment
 func (d *SANStorageDriver) validate(ctx context.Context) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "validate", "Type": "SANStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> validate")
@@ -769,7 +759,6 @@ func (d *SANStorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
 	volAttributes map[string]sa.Request,
 ) error {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -787,7 +776,7 @@ func (d *SANStorageDriver) Create(
 	var qos api.QoS
 	var fstype string
 	telemetry, _ := json.Marshal(d.getTelemetry())
-	var meta = map[string]string{
+	meta := map[string]string{
 		drivers.TridentLabelTag: string(telemetry),
 		"docker-name":           name,
 	}
@@ -919,7 +908,6 @@ func (d *SANStorageDriver) Create(
 func (d *SANStorageDriver) CreateClone(
 	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
-
 	name := cloneVolConfig.InternalName
 	sourceName := cloneVolConfig.CloneSourceVolumeInternal
 	snapshotName := cloneVolConfig.CloneSourceSnapshot
@@ -985,7 +973,7 @@ func (d *SANStorageDriver) CreateClone(
 	if err != nil {
 		return fmt.Errorf("could not read telemetry data; %v", err)
 	}
-	var meta = map[string]string{
+	meta := map[string]string{
 		drivers.TridentLabelTag: string(telemetry),
 		"docker-name":           name,
 	}
@@ -1068,7 +1056,6 @@ func (d *SANStorageDriver) CreateClone(
 }
 
 func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "Import",
@@ -1129,7 +1116,6 @@ func (d *SANStorageDriver) Rename(context.Context, string, string) error {
 
 // Destroy the requested docker volume
 func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1179,7 +1165,6 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 func (d *SANStorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1243,7 +1228,6 @@ func (d *SANStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotCon
 func (d *SANStorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1299,7 +1283,6 @@ func (d *SANStorageDriver) GetSnapshot(
 func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) (
 	[]*storage.Snapshot, error,
 ) {
-
 	internalVolName := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1356,7 +1339,6 @@ func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.
 func (d *SANStorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1407,7 +1389,6 @@ func (d *SANStorageDriver) CreateSnapshot(
 func (d *SANStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1453,7 +1434,6 @@ func (d *SANStorageDriver) RestoreSnapshot(
 func (d *SANStorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 
@@ -1488,7 +1468,6 @@ func (d *SANStorageDriver) DeleteSnapshot(
 
 // Get tests for the existence of a volume
 func (d *SANStorageDriver) Get(ctx context.Context, name string) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Get", "Type": "SANStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Get")
@@ -1507,7 +1486,6 @@ func (d *SANStorageDriver) Get(ctx context.Context, name string) error {
 // getVolumes returns all volumes for the configured tenant.  The
 // keys are the volume names as reported to Docker.
 func (d *SANStorageDriver) getVolumes(ctx context.Context) (map[string]api.Volume, error) {
-
 	var req api.ListVolumesForAccountRequest
 	req.AccountID = d.AccountID
 	volumes, err := d.Client.ListVolumesForAccount(ctx, &req)
@@ -1530,7 +1508,6 @@ func (d *SANStorageDriver) getVolumes(ctx context.Context) (map[string]api.Volum
 }
 
 func (d *SANStorageDriver) getVolumesWithName(ctx context.Context, name string) ([]api.Volume, error) {
-
 	var vols []api.Volume
 	var req api.ListVolumesForAccountRequest
 
@@ -1596,7 +1573,6 @@ func (d *SANStorageDriver) VolumeExists(ctx context.Context, name string) (bool,
 
 // GetStorageBackendSpecs retrieves storage backend capabilities
 func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
-
 	backend.SetName(d.BackendName())
 
 	virtual := len(d.virtualPools) > 0
@@ -1617,7 +1593,6 @@ func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) [
 }
 
 func (d *SANStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
-
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return strings.Replace(name, "_", "-", -1)
@@ -1650,7 +1625,6 @@ func (d *SANStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 }
 
 func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "CreateFollowup",
@@ -1671,7 +1645,6 @@ func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 }
 
 func (d *SANStorageDriver) mapSolidfireLun(ctx context.Context, volConfig *storage.VolumeConfig) error {
-
 	// Add the newly created volume to the default VAG
 	name := volConfig.InternalName
 	v, err := d.GetVolume(ctx, name)
@@ -1732,7 +1705,6 @@ func (d *SANStorageDriver) mapSolidfireLun(ctx context.Context, volConfig *stora
 func (d *SANStorageDriver) GetVolumeOpts(
 	volConfig *storage.VolumeConfig, pool storage.Pool, _ map[string]sa.Request,
 ) (map[string]string, error) {
-
 	opts := make(map[string]string)
 
 	if volConfig.FileSystem != "" {
@@ -1837,7 +1809,6 @@ func (d *SANStorageDriver) AddMissingVolumesToVag(ctx context.Context, vagID int
 // a single container volume managed by this driver and returns a VolumeExternal
 // representation of the volume.
 func (d *SANStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
-
 	volume, err := d.GetVolume(ctx, name)
 	if err != nil {
 		return nil, err
@@ -1861,7 +1832,6 @@ func (d SANStorageDriver) GoString() string {
 // representation of each volume to the supplied channel, closing the channel
 // when finished.
 func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channel chan *storage.VolumeExternalWrapper) {
-
 	// Let the caller know we're done by closing the channel
 	defer close(channel)
 
@@ -1882,7 +1852,6 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
 func (d *SANStorageDriver) getVolumeExternal(externalName string, volumeAttrs *api.Volume) *storage.VolumeExternal {
-
 	volumeConfig := &storage.VolumeConfig{
 		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            externalName,
@@ -1943,7 +1912,6 @@ func (d *SANStorageDriver) GetUpdateType(ctx context.Context, driverOrig storage
 
 // Resize expands the volume size.
 func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
-
 	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -2022,7 +1990,6 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 }
 
 func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
-
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)

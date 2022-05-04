@@ -13,8 +13,7 @@ import (
 
 const HTTPClientTimeout = time.Second * 300
 
-func InvokeRESTAPI(method string, url string, requestBody []byte, debug bool) (*http.Response, []byte, error) {
-
+func InvokeRESTAPI(method, url string, requestBody []byte, debug bool) (*http.Response, []byte, error) {
 	var request *http.Request
 	var err error
 
@@ -35,7 +34,6 @@ func InvokeRESTAPI(method string, url string, requestBody []byte, debug bool) (*
 
 	client := &http.Client{Timeout: HTTPClientTimeout}
 	response, err := client.Do(request)
-
 	if err != nil {
 		err = fmt.Errorf("error communicating with Trident REST API; %v", err)
 		return nil, nil, err

@@ -50,7 +50,7 @@ type MountInfo struct {
 	Root         string
 	MountPoint   string
 	MountOptions []string
-	//OptionalFields []string
+	// OptionalFields []string
 	FsType       string
 	MountSource  string
 	SuperOptions []string
@@ -75,7 +75,6 @@ func IsLikelyDir(mountpoint string) (bool, error) {
 // A return value of true means it's not a mount this function knows how to find,
 // but it could still be a mount point.
 func IsLikelyNotMountPoint(ctx context.Context, mountpoint string) (bool, error) {
-
 	fields := log.Fields{"mountpoint": mountpoint}
 	Logc(ctx).WithFields(fields).Debug(">>>> k8s_utils.IsLikelyNotMountPoint")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< k8s_utils.IsLikelyNotMountPoint")
@@ -99,7 +98,6 @@ func IsLikelyNotMountPoint(ctx context.Context, mountpoint string) (bool, error)
 }
 
 func GetDeviceNameFromMount(ctx context.Context, mountpath string) (string, int, error) {
-
 	fields := log.Fields{"mountpath": mountpath}
 	Logc(ctx).WithFields(fields).Debug(">>>> k8s_utils.GetDeviceNameFromMount")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< k8s_utils.GetDeviceNameFromMount")

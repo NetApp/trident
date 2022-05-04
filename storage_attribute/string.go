@@ -14,7 +14,6 @@ func NewStringOffer(offers ...string) Offer {
 }
 
 func NewStringOfferFromOffers(offers ...Offer) Offer {
-
 	// Use a map as a set to deduplicate the string offers
 	offerMap := make(map[string]struct{})
 

@@ -1,3 +1,4 @@
+// Code generated automatically. DO NOT EDIT.
 package azgo
 
 import (

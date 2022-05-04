@@ -30,7 +30,6 @@ metadata:
 func GetServiceAccountYAML(
 	serviceAccountName string, secrets []string, labels, controllingCRDetails map[string]string,
 ) string {
-
 	var saYAML string
 
 	if len(secrets) > 0 {
@@ -69,7 +68,6 @@ metadata:
 func GetClusterRoleYAML(
 	flavor OrchestratorFlavor, clusterRoleName string, labels, controllingCRDetails map[string]string, csi bool,
 ) string {
-
 	var clusterRoleYAML string
 
 	if csi {
@@ -206,7 +204,6 @@ rules:
 func GetClusterRoleBindingYAML(
 	namespace string, flavor OrchestratorFlavor, name string, labels, controllingCRDetails map[string]string, csi bool,
 ) string {
-
 	var crbYAML string
 
 	// authorization.openshift.io/v1 is applicable to OCP 3.x only
@@ -256,7 +253,6 @@ roleRef:
 `
 
 func GetCSIServiceYAML(serviceName string, labels, controllingCRDetails map[string]string) string {
-
 	serviceYAML := strings.ReplaceAll(serviceYAMLTemplate, "{LABEL_APP}", labels[TridentAppLabelKey])
 	serviceYAML = strings.ReplaceAll(serviceYAML, "{SERVICE_NAME}", serviceName)
 	serviceYAML = replaceMultilineYAMLTag(serviceYAML, "LABELS", constructLabels(labels))
@@ -286,7 +282,6 @@ spec:
 `
 
 func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
-
 	var debugLine, logLevel, ipLocalhost string
 
 	if args.Debug {
@@ -710,7 +705,6 @@ spec:
 `
 
 func GetCSIDaemonSetYAML(args *DaemonsetYAMLArguments) string {
-
 	var debugLine, logLevel string
 
 	if args.Debug {
@@ -1100,7 +1094,6 @@ func GetTridentVersionPodYAML(
 	name, tridentImage, serviceAccountName string, imagePullSecrets []string, labels,
 	controllingCRDetails map[string]string,
 ) string {
-
 	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", name)
 	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{TRIDENT_IMAGE}", tridentImage)
 	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{SERVICE_ACCOUNT}", serviceAccountName)
@@ -1245,7 +1238,6 @@ metadata:
 func GetSecretYAML(
 	secretName, namespace string, labels, controllingCRDetails, data, stringData map[string]string,
 ) string {
-
 	secretYAML := strings.ReplaceAll(secretYAMLTemplate, "{SECRET_NAME}", secretName)
 	secretYAML = strings.ReplaceAll(secretYAML, "{NAMESPACE}", namespace)
 	secretYAML = replaceMultilineYAMLTag(secretYAML, "LABELS", constructLabels(labels))
@@ -1920,7 +1912,6 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentSnapshotCRDYAMLv1 + "\n"
 
 func GetCSIDriverYAML(name string, version *utils.Version, labels, controllingCRDetails map[string]string) string {
-
 	// CSIDriver became GA in K8S 1.18
 	minimumV1Version := utils.MustParseSemantic("1.18.0")
 	useV1 := version.AtLeast(minimumV1Version)
@@ -1960,7 +1951,6 @@ spec:
 `
 
 func GetPrivilegedPodSecurityPolicyYAML(pspName string, labels, controllingCRDetails map[string]string) string {
-
 	pspYAML := strings.ReplaceAll(PrivilegedPodSecurityPolicyYAML, "{PSP_NAME}", pspName)
 	pspYAML = replaceMultilineYAMLTag(pspYAML, "LABELS", constructLabels(labels))
 	pspYAML = replaceMultilineYAMLTag(pspYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
@@ -1995,7 +1985,6 @@ spec:
 `
 
 func GetUnprivilegedPodSecurityPolicyYAML(pspName string, labels, controllingCRDetails map[string]string) string {
-
 	pspYAML := strings.ReplaceAll(UnprivilegedPodSecurityPolicyYAML, "{PSP_NAME}", pspName)
 	pspYAML = replaceMultilineYAMLTag(pspYAML, "LABELS", constructLabels(labels))
 	pspYAML = replaceMultilineYAMLTag(pspYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
@@ -2052,7 +2041,6 @@ func replaceMultilineYAMLTag(originalYAML, tag, tagText string) string {
 }
 
 func constructNodeSelector(nodeLabels map[string]string) string {
-
 	var nodeSelector string
 
 	if nodeLabels != nil {
@@ -2065,7 +2053,6 @@ func constructNodeSelector(nodeLabels map[string]string) string {
 }
 
 func constructTolerations(tolerations []map[string]string) string {
-
 	var tolerationsString string
 
 	if tolerations != nil && len(tolerations) > 0 {
@@ -2100,7 +2087,6 @@ func constructTolerations(tolerations []map[string]string) string {
 }
 
 func constructLabels(labels map[string]string) string {
-
 	var labelData string
 
 	if labels != nil {
@@ -2114,7 +2100,6 @@ func constructLabels(labels map[string]string) string {
 }
 
 func constructOwnerRef(ownerRef map[string]string) string {
-
 	var ownerRefData string
 	if ownerRef != nil {
 		isFirst := true
@@ -2133,7 +2118,6 @@ func constructOwnerRef(ownerRef map[string]string) string {
 }
 
 func constructImagePullSecrets(imagePullSecrets []string) string {
-
 	var imagePullSecretsData string
 	if len(imagePullSecrets) > 0 {
 		imagePullSecretsData += "imagePullSecrets:\n"
@@ -2146,7 +2130,6 @@ func constructImagePullSecrets(imagePullSecrets []string) string {
 }
 
 func constructServiceAccountSecrets(serviceAccountSecrets []string) string {
-
 	var serviceAccountSecretsData string
 	if len(serviceAccountSecrets) > 0 {
 		serviceAccountSecretsData += "secrets:\n"

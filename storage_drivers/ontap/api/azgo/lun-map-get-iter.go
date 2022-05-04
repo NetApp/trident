@@ -1,3 +1,4 @@
+// Code generated automatically. DO NOT EDIT.
 // Copyright 2017 NetApp, Inc. All Rights Reserved.
 
 package azgo

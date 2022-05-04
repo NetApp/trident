@@ -41,7 +41,6 @@ var obliviateCRDCmd = &cobra.Command{
 	Short:            "Reset Trident's CRD state (deletes all custom resources and CRDs)",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {},
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		var err error
 		initLogging()
 
@@ -81,7 +80,6 @@ func ObliviateCRDs(
 }
 
 func obliviateCRDs() error {
-
 	// Delete all instances of custom resources
 	if err := deleteCRs(); err != nil {
 		return err
@@ -98,7 +96,6 @@ func obliviateCRDs() error {
 }
 
 func deleteCRs() error {
-
 	if err := deleteVersions(); err != nil {
 		return err
 	}
@@ -149,7 +146,6 @@ func deleteCRs() error {
 }
 
 func deleteVersions() error {
-
 	crd := "tridentversions.trident.netapp.io"
 	logFields := log.Fields{"CRD": crd}
 
@@ -206,7 +202,6 @@ func deleteVersions() error {
 }
 
 func deleteBackends() error {
-
 	crd := "tridentbackends.trident.netapp.io"
 	logFields := log.Fields{"CRD": crd}
 
@@ -263,7 +258,6 @@ func deleteBackends() error {
 }
 
 func deleteTridentMirrorRelationships() error {
-
 	crd := "tridentmirrorrelationships.trident.netapp.io"
 	logFields := log.Fields{"CRD": crd}
 
@@ -322,7 +316,6 @@ func deleteTridentMirrorRelationships() error {
 }
 
 func deleteTridentSnapshotInfos() error {
-
 	crd := "tridentsnapshotinfos.trident.netapp.io"
 	logFields := log.Fields{"CRD": crd}
 
@@ -381,7 +374,6 @@ func deleteTridentSnapshotInfos() error {
 }
 
 func deleteBackendConfigs() error {
-
 	crd := "tridentbackendconfigs.trident.netapp.io"
 	logFields := log.Fields{"CRD": crd}
 
@@ -440,7 +432,6 @@ func deleteBackendConfigs() error {
 }
 
 func deleteStorageClasses() error {
-
 	crd := "tridentstorageclasses.trident.netapp.io"
 	logFields := log.Fields{"CRD": crd}
 
@@ -497,7 +488,6 @@ func deleteStorageClasses() error {
 }
 
 func deleteVolumes() error {
-
 	crd := "tridentvolumes.trident.netapp.io"
 	logFields := log.Fields{"CRD": crd}
 
@@ -554,7 +544,6 @@ func deleteVolumes() error {
 }
 
 func deleteNodes() error {
-
 	crd := "tridentnodes.trident.netapp.io"
 	logFields := log.Fields{"CRD": crd}
 
@@ -611,7 +600,6 @@ func deleteNodes() error {
 }
 
 func deleteVolumePublications() error {
-
 	crd := "tridentvolumepublications.trident.netapp.io"
 	logFields := log.Fields{"CRD": crd}
 
@@ -670,7 +658,6 @@ func deleteVolumePublications() error {
 }
 
 func deleteTransactions() error {
-
 	crd := "tridenttransactions.trident.netapp.io"
 	logFields := log.Fields{"CRD": crd}
 
@@ -727,7 +714,6 @@ func deleteTransactions() error {
 }
 
 func deleteSnapshots() error {
-
 	crd := "tridentsnapshots.trident.netapp.io"
 	logFields := log.Fields{"CRD": crd}
 
@@ -784,7 +770,6 @@ func deleteSnapshots() error {
 }
 
 func deleteCRDs() error {
-
 	crdNames := []string{
 		"tridentversions.trident.netapp.io",
 		"tridentbackendconfigs.trident.netapp.io",
@@ -872,7 +857,6 @@ func isNotFoundError(err error) bool {
 type crDeleter func(context.Context, string, metav1.DeleteOptions) error
 
 func deleteWithRetry(deleteFunc crDeleter, c context.Context, name string, deleteOptions *metav1.DeleteOptions) error {
-
 	if deleteOptions == nil {
 		deleteOptions = &deleteOpts
 	}
@@ -881,7 +865,6 @@ func deleteWithRetry(deleteFunc crDeleter, c context.Context, name string, delet
 	retries := 0
 
 	doDelete := func() error {
-
 		err := deleteFunc(c, name, *deleteOptions)
 		if err == nil || isNotFoundError(err) {
 			return nil
@@ -922,11 +905,9 @@ func deleteWithRetry(deleteFunc crDeleter, c context.Context, name string, delet
 }
 
 func waitForCRDDeletion(name string, timeout time.Duration) error {
-
 	retries := 0
 
 	checkDeleted := func() error {
-
 		exists, err := k8sClient.CheckCRDExists(name)
 		if !exists || isNotFoundError(err) {
 			return nil

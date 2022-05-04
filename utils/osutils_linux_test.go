@@ -139,8 +139,8 @@ func TestGetPackageManagerForHost(t *testing.T) {
 		assert.Equal(t, test.expectedPM, pm, "Incorrect package manager returned")
 	}
 }
-func TestGetIPAddresses(t *testing.T) {
 
+func TestGetIPAddresses(t *testing.T) {
 	addrs, err := getIPAddresses(context.TODO())
 	if err != nil {
 		t.Error(err)
@@ -157,7 +157,6 @@ func TestGetIPAddresses(t *testing.T) {
 }
 
 func TestGetIPAddressesExceptingDummyInterfaces(t *testing.T) {
-
 	addrs, err := getIPAddressesExceptingDummyInterfaces(context.TODO())
 	if err != nil {
 		t.Error(err)
@@ -174,7 +173,6 @@ func TestGetIPAddressesExceptingDummyInterfaces(t *testing.T) {
 }
 
 func TestGetIPAddressesExceptingNondefaultRoutes(t *testing.T) {
-
 	addrs, err := getIPAddressesExceptingNondefaultRoutes(context.TODO())
 	if err != nil {
 		t.Error(err)

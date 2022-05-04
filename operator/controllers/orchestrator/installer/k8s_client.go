@@ -33,7 +33,8 @@ type K8sClient struct {
 
 // NewExtendedK8sClient returns a concrete ExtendedK8sClient object
 func NewExtendedK8sClient(kubeConfig *rest.Config, namespace string, k8sTimeout time.Duration) (ExtendedK8sClient,
-	error) {
+	error,
+) {
 	kubeClient, err := k8sclient.NewKubeClient(kubeConfig, namespace, k8sTimeout)
 	return &K8sClient{kubeClient}, err
 }
@@ -58,7 +59,6 @@ func (k *K8sClient) DeleteCustomResourceDefinition(crdName, crdYAML string) erro
 
 // WaitForCRDEstablished waits until a CRD is Established.
 func (k *K8sClient) WaitForCRDEstablished(crdName string, timeout time.Duration) error {
-
 	checkCRDEstablished := func() error {
 		crd, err := k.GetCRD(crdName)
 		if err != nil {
@@ -100,8 +100,8 @@ func (k *K8sClient) WaitForCRDEstablished(crdName string, timeout time.Duration)
 
 // GetBetaCSIDriverInformation gets the info on a CSI driver associated with Trident.
 func (k *K8sClient) GetBetaCSIDriverInformation(csiDriverName, appLabel string, shouldUpdate bool) (*storagev1beta1.CSIDriver,
-	[]storagev1beta1.CSIDriver, bool, error) {
-
+	[]storagev1beta1.CSIDriver, bool, error,
+) {
 	createCSIDriver := true
 	var currentBetaCSIDriver *storagev1beta1.CSIDriver
 	var unwantedCSIDrivers []storagev1beta1.CSIDriver
@@ -154,7 +154,6 @@ func (k *K8sClient) GetBetaCSIDriverInformation(csiDriverName, appLabel string, 
 
 // PutBetaCSIDriver creates or updates a CSI Driver associated with Trident.
 func (k *K8sClient) PutBetaCSIDriver(currentCSIDriver *storagev1beta1.CSIDriver, createCSIDriver bool, newCSIDriverYAML, appLabel string) error {
-
 	// TODO (cknight): remove when 1.18 is our minimum version
 	csiK8sDriverName := getCSIDriverName()
 	logFields := log.Fields{
@@ -193,7 +192,6 @@ func (k *K8sClient) PutBetaCSIDriver(currentCSIDriver *storagev1beta1.CSIDriver,
 
 // DeleteBetaCSIDriverCR deletes a CSI Driver associated with Trident.
 func (k *K8sClient) DeleteBetaCSIDriverCR(csiDriverName, appLabel string) error {
-
 	// TODO (cknight): remove when 1.18 is our minimum version
 
 	if csiDrivers, err := k.GetBetaCSIDriversByLabel(appLabel); err != nil {
@@ -234,7 +232,6 @@ func (k *K8sClient) DeleteBetaCSIDriverCR(csiDriverName, appLabel string) error 
 
 // RemoveMultipleBetaCSIDriverCRs removes a list of unwanted CSI drivers in a cluster.
 func (k *K8sClient) RemoveMultipleBetaCSIDriverCRs(unwantedCSIDriverCRs []storagev1beta1.CSIDriver) error {
-
 	// TODO (cknight): remove when 1.18 is our minimum version
 
 	var err error
@@ -267,8 +264,8 @@ func (k *K8sClient) RemoveMultipleBetaCSIDriverCRs(unwantedCSIDriverCRs []storag
 
 // GetCSIDriverInformation gets the CSI drivers info in a cluster associated with Trident.
 func (k *K8sClient) GetCSIDriverInformation(csiDriverName, appLabel string, shouldUpdate bool) (*storagev1.CSIDriver,
-	[]storagev1.CSIDriver, bool, error) {
-
+	[]storagev1.CSIDriver, bool, error,
+) {
 	createCSIDriver := true
 	var currentCSIDriver *storagev1.CSIDriver
 	var unwantedCSIDrivers []storagev1.CSIDriver
@@ -321,7 +318,6 @@ func (k *K8sClient) GetCSIDriverInformation(csiDriverName, appLabel string, shou
 
 // PutCSIDriver creates or updates a CSI Driver associated with Trident.
 func (k *K8sClient) PutCSIDriver(currentCSIDriver *storagev1.CSIDriver, createCSIDriver bool, newCSIDriverYAML, appLabel string) error {
-
 	CSIDriverName := getCSIDriverName()
 	logFields := log.Fields{
 		"CSIDriver": CSIDriverName,
@@ -359,7 +355,6 @@ func (k *K8sClient) PutCSIDriver(currentCSIDriver *storagev1.CSIDriver, createCS
 
 // DeleteCSIDriverCR deletes a CSI Driver.
 func (k *K8sClient) DeleteCSIDriverCR(csiDriverName, appLabel string) error {
-
 	if csiDrivers, err := k.GetCSIDriversByLabel(appLabel); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of CSI driver CRs by label.")
 		return fmt.Errorf("unable to get list of CSI driver CRs by label")
@@ -429,8 +424,8 @@ func (k *K8sClient) RemoveMultipleCSIDriverCRs(unwantedCSIDriverCRs []storagev1.
 
 // GetClusterRoleInformation gets the Cluster Role info.
 func (k *K8sClient) GetClusterRoleInformation(clusterRoleName, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRole,
-	[]rbacv1.ClusterRole, bool, error) {
-
+	[]rbacv1.ClusterRole, bool, error,
+) {
 	createClusterRole := true
 	var currentClusterRole *rbacv1.ClusterRole
 	var unwantedClusterRoles []rbacv1.ClusterRole
@@ -478,12 +473,10 @@ func (k *K8sClient) GetClusterRoleInformation(clusterRoleName, appLabel string, 
 	}
 
 	return currentClusterRole, unwantedClusterRoles, createClusterRole, nil
-
 }
 
 // PutClusterRole creates or updates a Cluster Role associated with Trident.
 func (k *K8sClient) PutClusterRole(currentClusterRole *rbacv1.ClusterRole, createClusterRole bool, newClusterRoleYAML, appLabel string) error {
-
 	clusterRoleName := getClusterRoleName(true)
 	logFields := log.Fields{
 		"clusterRole": clusterRoleName,
@@ -521,7 +514,6 @@ func (k *K8sClient) PutClusterRole(currentClusterRole *rbacv1.ClusterRole, creat
 
 // DeleteTridentClusterRole deletes a Cluster Role associated with Trident.
 func (k *K8sClient) DeleteTridentClusterRole(clusterRoleName, appLabel string) error {
-
 	// Delete cluster role
 	if clusterRoles, err := k.GetClusterRolesByLabel(appLabel); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of cluster roles by label.")
@@ -592,8 +584,8 @@ func (k *K8sClient) RemoveMultipleClusterRoles(unwantedClusterRoles []rbacv1.Clu
 
 // GetClusterRoleBindingInformation gets the info on a Cluster Role Binding associated with Trident.
 func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRoleBinding,
-	[]rbacv1.ClusterRoleBinding, bool, error) {
-
+	[]rbacv1.ClusterRoleBinding, bool, error,
+) {
 	createClusterRoleBinding := true
 	var currentClusterRoleBinding *rbacv1.ClusterRoleBinding
 	var unwantedClusterRoleBindings []rbacv1.ClusterRoleBinding
@@ -647,7 +639,6 @@ func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName, app
 
 // PutClusterRoleBinding creates or updates a Cluster Role Binding associated with Trident.
 func (k *K8sClient) PutClusterRoleBinding(currentClusterRoleBinding *rbacv1.ClusterRoleBinding, createClusterRoleBinding bool, newClusterRoleBindingYAML, appLabel string) error {
-
 	clusterRoleBindingName := getClusterRoleBindingName(true)
 	logFields := log.Fields{
 		"clusterRoleBinding": clusterRoleBindingName,
@@ -685,7 +676,6 @@ func (k *K8sClient) PutClusterRoleBinding(currentClusterRoleBinding *rbacv1.Clus
 
 // DeleteTridentClusterRoleBinding deletes a Cluster Role Binding associated with Trident.
 func (k *K8sClient) DeleteTridentClusterRoleBinding(clusterRoleBindingName, appLabel string) error {
-
 	// Delete cluster role binding
 	if clusterRoleBindings, err := k.GetClusterRoleBindingsByLabel(appLabel); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of cluster role bindings by label.")
@@ -759,8 +749,8 @@ func (k *K8sClient) RemoveMultipleClusterRoleBindings(unwantedClusterRoleBinding
 
 // GetDaemonSetInformation identifies the Operator-based Trident daemonset information and any unwanted daemonsets
 func (k *K8sClient) GetDaemonSetInformation(daemonSetName, nodeLabel, namespace string) (*appsv1.DaemonSet,
-	[]appsv1.DaemonSet, bool, error) {
-
+	[]appsv1.DaemonSet, bool, error,
+) {
 	createDaemonSet := true
 	var currentDaemonSet *appsv1.DaemonSet
 	var unwantedDaemonSets []appsv1.DaemonSet
@@ -809,7 +799,6 @@ func (k *K8sClient) GetDaemonSetInformation(daemonSetName, nodeLabel, namespace 
 
 // PutDaemonSet creates or updates a Trident DaemonSet.
 func (k *K8sClient) PutDaemonSet(currentDaemonSet *appsv1.DaemonSet, createDaemonSet bool, newDaemonSetYAML, nodeLabel string) error {
-
 	daemonSetName := getDaemonSetName()
 	logFields := log.Fields{
 		"daemonset": daemonSetName,
@@ -848,7 +837,6 @@ func (k *K8sClient) PutDaemonSet(currentDaemonSet *appsv1.DaemonSet, createDaemo
 
 // DeleteTridentDaemonSet deletes a Trident DaemonSet.
 func (k *K8sClient) DeleteTridentDaemonSet(nodeLabel string) error {
-
 	// Delete Trident daemonSets
 	if daemonSets, err := k.GetDaemonSetsByLabel(nodeLabel, true); err != nil {
 
@@ -860,7 +848,6 @@ func (k *K8sClient) DeleteTridentDaemonSet(nodeLabel string) error {
 			"label": nodeLabel,
 			"error": err,
 		}).Warning("Trident daemonset not found.")
-
 	} else {
 		if len(daemonSets) == 1 {
 			log.WithFields(log.Fields{
@@ -917,8 +904,8 @@ func (k *K8sClient) RemoveMultipleDaemonSets(unwantedDaemonSets []appsv1.DaemonS
 // GetDeploymentInformation identifies the Operator-based Trident deployment information and any unwanted
 // deployments
 func (k *K8sClient) GetDeploymentInformation(deploymentName, appLabel, namespace string) (*appsv1.Deployment,
-	[]appsv1.Deployment, bool, error) {
-
+	[]appsv1.Deployment, bool, error,
+) {
 	createDeployment := true
 	var currentDeployment *appsv1.Deployment
 	var unwantedDeployments []appsv1.Deployment
@@ -967,7 +954,6 @@ func (k *K8sClient) GetDeploymentInformation(deploymentName, appLabel, namespace
 
 // PutDeployment creates or updates a Trident Deployment.
 func (k *K8sClient) PutDeployment(currentDeployment *appsv1.Deployment, createDeployment bool, newDeploymentYAML, appLabel string) error {
-
 	deploymentName := getDeploymentName(true)
 	logFields := log.Fields{
 		"deployment": deploymentName,
@@ -1007,7 +993,6 @@ func (k *K8sClient) PutDeployment(currentDeployment *appsv1.Deployment, createDe
 
 // DeleteTridentDeployment deletes a Trident Deployment.
 func (k *K8sClient) DeleteTridentDeployment(appLabel string) error {
-
 	// Delete Trident deployments
 	if deployments, err := k.GetDeploymentsByLabel(appLabel, true); err != nil {
 
@@ -1077,8 +1062,8 @@ func (k *K8sClient) RemoveMultipleDeployments(unwantedDeployments []appsv1.Deplo
 // GetPodSecurityPolicyInformation identifies the Operator-based Trident PSP information and any unwanted
 // PSPs.
 func (k *K8sClient) GetPodSecurityPolicyInformation(pspName, appLabel string, shouldUpdate bool) (*policyv1beta1.PodSecurityPolicy,
-	[]policyv1beta1.PodSecurityPolicy, bool, error) {
-
+	[]policyv1beta1.PodSecurityPolicy, bool, error,
+) {
 	createPSP := true
 	var currentPSP *policyv1beta1.PodSecurityPolicy
 	var unwantedPSPs []policyv1beta1.PodSecurityPolicy
@@ -1130,7 +1115,6 @@ func (k *K8sClient) GetPodSecurityPolicyInformation(pspName, appLabel string, sh
 
 // PutPodSecurityPolicy creates or updates a PSP.
 func (k *K8sClient) PutPodSecurityPolicy(currentPSP *policyv1beta1.PodSecurityPolicy, createPSP bool, newPSPYAML, appLabel string) error {
-
 	pspName := getPSPName()
 	logFields := log.Fields{
 		"podSecurityPolicy": pspName,
@@ -1169,7 +1153,6 @@ func (k *K8sClient) PutPodSecurityPolicy(currentPSP *policyv1beta1.PodSecurityPo
 
 // DeleteTridentPodSecurityPolicy deletes a PSP.
 func (k *K8sClient) DeleteTridentPodSecurityPolicy(pspName, appLabel string) error {
-
 	if podSecurityPolicies, err := k.GetPodSecurityPoliciesByLabel(appLabel); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of Pod security policies by label.")
 		return fmt.Errorf("unable to get list of Pod security policies")
@@ -1240,8 +1223,8 @@ func (k *K8sClient) RemoveMultiplePodSecurityPolicies(unwantedPSPs []policyv1bet
 
 // GetSecretInformation identifies the Operator-based Trident Secret information.
 func (k *K8sClient) GetSecretInformation(secretName, appLabel, namespace string, shouldUpdate bool) (*corev1.Secret,
-	[]corev1.Secret, bool, error) {
-
+	[]corev1.Secret, bool, error,
+) {
 	createSecret := true
 	// var currentSecret *v1.Secret
 	var unwantedSecrets []corev1.Secret
@@ -1273,7 +1256,7 @@ func (k *K8sClient) GetSecretInformation(secretName, appLabel, namespace string,
 			if value, ok := secret.GetLabels()[TridentPersistentObjectLabelKey]; ok {
 				if value == TridentPersistentObjectLabelValue {
 					log.WithFields(log.Fields{
-						"secret":   secret.Name,
+						"secret":    secret.Name,
 						"namespace": secret.Namespace,
 						"label":     TridentPersistentObjectLabel,
 					}).Info("Retaining Trident secret.")
@@ -1307,8 +1290,7 @@ func (k *K8sClient) GetSecretInformation(secretName, appLabel, namespace string,
 }
 
 // PutSecret creates or updates a Secret associated with Trident.
-func (k *K8sClient) PutSecret(createSecret bool, newSecretYAML string, secretName string) error {
-
+func (k *K8sClient) PutSecret(createSecret bool, newSecretYAML, secretName string) error {
 	// Create Secret
 	if createSecret {
 		log.WithFields(log.Fields{
@@ -1328,7 +1310,6 @@ func (k *K8sClient) PutSecret(createSecret bool, newSecretYAML string, secretNam
 
 // DeleteTridentSecret deletes a Secret associated with Trident.
 func (k *K8sClient) DeleteTridentSecret(secretName, appLabel, namespace string) error {
-
 	if secrets, err := k.GetSecretsByLabel(appLabel, false); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of Secrets by label.")
 		return fmt.Errorf("unable to get list of secrets")
@@ -1377,7 +1358,7 @@ func (k *K8sClient) RemoveMultipleSecrets(unwantedSecrets []corev1.Secret) error
 			if value, ok := secretToRemove.GetLabels()[TridentPersistentObjectLabelKey]; ok {
 				if value == TridentPersistentObjectLabelValue {
 					log.WithFields(log.Fields{
-						"secret":   secretToRemove.Name,
+						"secret":    secretToRemove.Name,
 						"namespace": secretToRemove.Namespace,
 						"label":     TridentPersistentObjectLabel,
 					}).Info("Retaining Trident secret.")
@@ -1414,7 +1395,8 @@ func (k *K8sClient) RemoveMultipleSecrets(unwantedSecrets []corev1.Secret) error
 
 // GetServiceInformation identifies the Operator-based Trident Service information.
 func (k *K8sClient) GetServiceInformation(serviceName, appLabel, namespace string, shouldUpdate bool) (*corev1.Service,
-	[]corev1.Service, bool, error) {
+	[]corev1.Service, bool, error,
+) {
 	createService := true
 	var currentService *corev1.Service
 	var unwantedServices []corev1.Service
@@ -1472,7 +1454,6 @@ func (k *K8sClient) GetServiceInformation(serviceName, appLabel, namespace strin
 
 // PutService creates or updates a Service associated with Trident.
 func (k *K8sClient) PutService(currentService *corev1.Service, createService bool, newServiceYAML, appLabel string) error {
-
 	serviceName := getServiceName()
 	logFields := log.Fields{
 		"service":   serviceName,
@@ -1511,7 +1492,6 @@ func (k *K8sClient) PutService(currentService *corev1.Service, createService boo
 
 // DeleteTridentService deletes an Operator-based Service associated with Trident.
 func (k *K8sClient) DeleteTridentService(serviceName, appLabel, namespace string) error {
-
 	// Delete Trident services
 	if services, err := k.GetServicesByLabel(appLabel, true); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of services by label.")
@@ -1586,8 +1566,8 @@ func (k *K8sClient) RemoveMultipleServices(unwantedServices []corev1.Service) er
 // GetServiceAccountInformation identifies the Operator-based Trident Service Account info and any unwanted
 // Service Accounts.
 func (k *K8sClient) GetServiceAccountInformation(serviceAccountName, appLabel, namespace string, shouldUpdate bool) (*corev1.ServiceAccount,
-	[]corev1.ServiceAccount, []string, bool, error) {
-
+	[]corev1.ServiceAccount, []string, bool, error,
+) {
 	createServiceAccount := true
 	var currentServiceAccount *corev1.ServiceAccount
 	var unwantedServiceAccounts []corev1.ServiceAccount
@@ -1648,8 +1628,8 @@ func (k *K8sClient) GetServiceAccountInformation(serviceAccountName, appLabel, n
 
 // PutServiceAccount creates or updates a Service Account associated with Trident.
 func (k *K8sClient) PutServiceAccount(currentServiceAccount *corev1.ServiceAccount, createServiceAccount bool, newServiceAccountYAML, appLabel string) (bool,
-	error) {
-
+	error,
+) {
 	newServiceAccount := false
 	serviceAccountName := getServiceAccountName(true)
 	logFields := log.Fields{
@@ -1691,7 +1671,6 @@ func (k *K8sClient) PutServiceAccount(currentServiceAccount *corev1.ServiceAccou
 
 // DeleteTridentServiceAccount deletes an Operator-based Service Account associated with Trident.
 func (k *K8sClient) DeleteTridentServiceAccount(serviceAccountName, appLabel, namespace string) error {
-
 	// Delete service account
 	if serviceAccounts, err := k.GetServiceAccountsByLabel(appLabel, false); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of Service accounts by label.")
@@ -1771,8 +1750,8 @@ func (k *K8sClient) RemoveMultipleServiceAccounts(unwantedServiceAccounts []core
 // GetTridentOpenShiftSCCInformation gets OpenShiftSCC info with a supplied name,
 // username and determines if new OpenShiftSCC should be created
 func (k *K8sClient) GetTridentOpenShiftSCCInformation(openShiftSCCName, openShiftSCCUserName string, shouldUpdate bool) ([]byte,
-	bool, bool, error) {
-
+	bool, bool, error,
+) {
 	createOpenShiftSCC := true
 	removeExistingSCC := false
 	var currentOpenShiftSCCJSON []byte
@@ -1803,8 +1782,8 @@ func (k *K8sClient) GetTridentOpenShiftSCCInformation(openShiftSCCName, openShif
 
 // PutOpenShiftSCC creates or updates OpenShiftSCCs associated with Trident.
 func (k *K8sClient) PutOpenShiftSCC(currentOpenShiftSCCJSON []byte,
-	createOpenShiftSCC bool, newOpenShiftSCCYAML string) error {
-
+	createOpenShiftSCC bool, newOpenShiftSCCYAML string,
+) error {
 	openShiftSCCOldUserName := "trident-csi"
 	openShiftSCCOldName := "privileged"
 
@@ -1849,8 +1828,8 @@ func (k *K8sClient) PutOpenShiftSCC(currentOpenShiftSCCJSON []byte,
 
 // DeleteOpenShiftSCC deletes an Operator-based OpenShiftSCC associated with Trident.
 func (k *K8sClient) DeleteOpenShiftSCC(openShiftSCCUserName, openShiftSCCName,
-	appLabelValue string) error {
-
+	appLabelValue string,
+) error {
 	var removeExistingSCC bool
 	var logFields log.Fields
 	var err error
@@ -1897,7 +1876,6 @@ func (k *K8sClient) DeleteOpenShiftSCC(openShiftSCCUserName, openShiftSCCName,
 
 // DeleteTridentStatefulSet deletes an Operator-based StatefulSet associated with Trident.
 func (k *K8sClient) DeleteTridentStatefulSet(appLabel string) error {
-
 	// Delete Trident statefulSet
 	if statefulSets, err := k.GetStatefulSetsByLabel(appLabel, true); err != nil {
 		log.WithField("label", appLabel).Errorf("Unable to get list of statefulsets by label.")
@@ -2070,7 +2048,6 @@ func (k *K8sClient) ExecPodForVersionInformation(podName string, cmd []string, t
 // Else if failed, then CSI Snapshotter CRD Version will be empty
 // then get existing CSI Snapshotter Version as v1.
 func (k *K8sClient) GetCSISnapshotterVersion(currentDeployment *appsv1.Deployment) string {
-
 	var snapshotCRDVersion string
 
 	if snapshotCRDVersion = k.GetSnapshotterCRDVersion(); snapshotCRDVersion == "" && currentDeployment != nil {
@@ -2091,7 +2068,6 @@ func (k *K8sClient) GetCSISnapshotterVersion(currentDeployment *appsv1.Deploymen
 
 // genericPatch takes current object, corresponding YAML to identify the changes and the patch that should be created
 func genericPatch(original interface{}, modifiedYAML []byte) ([]byte, error) {
-
 	// Get existing object in JSON format
 	originalJSON, err := json.Marshal(original)
 	if err != nil {

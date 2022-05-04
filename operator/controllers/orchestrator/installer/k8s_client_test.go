@@ -65,7 +65,6 @@ func (m *JSONMatcher) String() string {
 }
 
 func TestCreateCustomResourceDefinition(t *testing.T) {
-
 	crdName := "crd-name"
 	crdYAML := "crd-yaml"
 	k8sClientErr := fmt.Errorf("k8s client err")
@@ -124,7 +123,6 @@ func TestCreateCustomResourceDefinition(t *testing.T) {
 }
 
 func TestDeleteCustomResourceDefinition(t *testing.T) {
-
 	crdName := "crd-name"
 	crdYAML := "crd-yaml"
 	k8sClientErr := fmt.Errorf("k8s client err")
@@ -183,7 +181,6 @@ func TestDeleteCustomResourceDefinition(t *testing.T) {
 }
 
 func TestWaitForCRDEstablished(t *testing.T) {
-
 	var validCRD, invalidCRD *v1.CustomResourceDefinition
 
 	// setup mock CRD objects to test with
@@ -529,7 +526,6 @@ func TestGetBetaCSIDriverInformation(t *testing.T) {
 }
 
 func TestPutBetaCSIDriver(t *testing.T) {
-
 	driverName := getCSIDriverName()
 	appLabel := TridentCSILabel
 	version, _ := utils.ParseSemantic("1.21.3")
@@ -987,7 +983,6 @@ func TestGetCSIDriverInformation(t *testing.T) {
 }
 
 func TestPutCSIDriver(t *testing.T) {
-
 	var validCSIDriver *storagev1.CSIDriver
 
 	driverName := getCSIDriverName()
@@ -1446,7 +1441,6 @@ func TestGetClusterRoleInformation(t *testing.T) {
 }
 
 func TestPutClusterRole(t *testing.T) {
-
 	var validClusterRole *rbacv1.ClusterRole
 
 	clusterRoleName := getClusterRoleName(true)
@@ -1905,7 +1899,6 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 }
 
 func TestPutClusterRoleBinding(t *testing.T) {
-
 	var validClusterRoleBinding *rbacv1.ClusterRoleBinding
 
 	clusterRoleBindingName := getClusterRoleBindingName(true)
@@ -2360,7 +2353,6 @@ func TestGetDaemonSetInformation(t *testing.T) {
 }
 
 func TestPutDaemonSet(t *testing.T) {
-
 	daemonSetName := TridentCSILabel
 	nodeLabel := "app=node.csi.trident.netapp.io"
 	daemonSet := &appsv1.DaemonSet{
@@ -2799,7 +2791,6 @@ func TestGetDeploymentInformation(t *testing.T) {
 }
 
 func TestPutDeployment(t *testing.T) {
-
 	deploymentName := getDeploymentName(true)
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -3246,7 +3237,6 @@ func TestGetPodSecurityPolicyInformation(t *testing.T) {
 }
 
 func TestPutPodSecurityPolicy(t *testing.T) {
-
 	pspName := getPSPName()
 	podSecurityPolicy := &policyv1beta1.PodSecurityPolicy{
 		ObjectMeta: metav1.ObjectMeta{
@@ -3704,7 +3694,6 @@ func TestGetSecretInformation(t *testing.T) {
 }
 
 func TestPutSecret(t *testing.T) {
-
 	secretName := getProtocolSecretName()
 	namespace := "trident"
 	newSecretYAML := k8sclient.GetSecretYAML(
@@ -4133,7 +4122,6 @@ func TestGetServiceInformation(t *testing.T) {
 }
 
 func TestPutService(t *testing.T) {
-
 	serviceName := getServiceName()
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -4623,7 +4611,6 @@ func TestGetServiceAccountInformation(t *testing.T) {
 }
 
 func TestPutServiceAccount(t *testing.T) {
-
 	serviceAccountName := getServiceAccountName(true)
 	serviceAccount := &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
@@ -4779,7 +4766,6 @@ func TestPutServiceAccount(t *testing.T) {
 
 				assert.Equal(t, expectedServiceAccount, newServiceAccount)
 				assert.Equal(t, expectedErr, err)
-
 			},
 		)
 	}
@@ -5125,7 +5111,6 @@ func TestGetTridentOpenShiftSCCInformation(t *testing.T) {
 }
 
 func TestExecPodForVersionInformation(t *testing.T) {
-
 	podName := "trident-transient-pod"
 	cmd := []string{"/bin/tridentctl", "version", "--client", "-o", "yaml"}
 	timeout := 5 * time.Millisecond
@@ -5219,7 +5204,6 @@ func TestExecPodForVersionInformation(t *testing.T) {
 }
 
 func TestGetCSISnapshotterVersion(t *testing.T) {
-
 	var emptyDeployment, validDeployment, invalidDeployment *appsv1.Deployment
 
 	validDeployment = &appsv1.Deployment{
@@ -5613,7 +5597,6 @@ func TestDeleteOpenShiftSCC(t *testing.T) {
 			},
 			output: deleteObjectByYAMLErr,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
-
 				mockK8sClient.EXPECT().GetOpenShiftSCCByName(openShiftSCCUserName, openShiftSCCName).Return(true,
 					false, []byte{}, nil)
 
@@ -5629,7 +5612,6 @@ func TestDeleteOpenShiftSCC(t *testing.T) {
 			},
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
-
 				mockK8sClient.EXPECT().GetOpenShiftSCCByName(openShiftSCCUserName, openShiftSCCName).Return(true,
 					false, []byte{}, nil)
 

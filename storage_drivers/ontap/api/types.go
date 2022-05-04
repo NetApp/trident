@@ -39,8 +39,10 @@ type CLIVolume struct {
 	TieringPolicy       string `json:"tiering_policy"`
 }
 
-type Volumes []*Volume
-type VolumeNameList []string
+type (
+	Volumes        []*Volume
+	VolumeNameList []string
+)
 
 type Snapshot struct {
 	CreateTime string
@@ -92,8 +94,10 @@ type Qtree struct {
 	Vserver         string
 }
 
-type Qtrees []*Qtree
-type QtreeNameList []string
+type (
+	Qtrees        []*Qtree
+	QtreeNameList []string
+)
 
 type QuotaEntry struct {
 	Target         string

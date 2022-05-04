@@ -34,7 +34,7 @@ const (
 	snapshotNameSeparator = "_snapshot_"
 )
 
-func GetLUNPathEconomy(bucketName string, volNameInternal string) string {
+func GetLUNPathEconomy(bucketName, volNameInternal string) string {
 	return fmt.Sprintf("/vol/%s/%s", bucketName, volNameInternal)
 }
 
@@ -45,7 +45,6 @@ type LUNHelper struct {
 }
 
 func NewLUNHelper(config drivers.OntapStorageDriverConfig, context tridentconfig.DriverContext) *LUNHelper {
-
 	helper := LUNHelper{}
 	helper.Config = config
 	helper.Context = context
@@ -243,7 +242,6 @@ func (d *SANEconomyStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
-
 	if commonConfig.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Initialize", "Type": "SANEconomyStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
@@ -345,7 +343,6 @@ func (d *SANEconomyStorageDriver) Initialized() bool {
 }
 
 func (d *SANEconomyStorageDriver) Terminate(ctx context.Context, _ string) {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Terminate", "Type": "SANEconomyStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
@@ -366,7 +363,6 @@ func (d *SANEconomyStorageDriver) Terminate(ctx context.Context, _ string) {
 
 // Validate the driver configuration and execution environment
 func (d *SANEconomyStorageDriver) validate(ctx context.Context) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "validate", "Type": "SANEconomyStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> validate")
@@ -392,7 +388,6 @@ func (d *SANEconomyStorageDriver) validate(ctx context.Context) error {
 func (d *SANEconomyStorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
-
 	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -675,7 +670,6 @@ func (d *SANEconomyStorageDriver) Create(
 func (d *SANEconomyStorageDriver) CreateClone(
 	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, _ storage.Pool,
 ) error {
-
 	source := cloneVolConfig.CloneSourceVolumeInternal
 	name := cloneVolConfig.InternalName
 	snapshot := cloneVolConfig.CloneSourceSnapshot
@@ -712,7 +706,6 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 	ctx context.Context, lunName, source, snapshot string, config *drivers.OntapStorageDriverConfig,
 	client *api.Client, prefix string, isLunCreateFromSnapshot bool, qosPolicyGroup api.QosPolicyGroup,
 ) error {
-
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":   "createLUNClone",
@@ -781,7 +774,6 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 func (d *SANEconomyStorageDriver) Import(
 	ctx context.Context, volConfig *storage.VolumeConfig, originalName string,
 ) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "Import",
@@ -798,7 +790,6 @@ func (d *SANEconomyStorageDriver) Import(
 }
 
 func (d *SANEconomyStorageDriver) Rename(ctx context.Context, name, newName string) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":  "Rename",
@@ -815,7 +806,6 @@ func (d *SANEconomyStorageDriver) Rename(ctx context.Context, name, newName stri
 
 // Destroy the LUN
 func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -917,7 +907,6 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 // DeleteBucketIfEmpty will check if the given bucket volume is empty, if the bucket is empty it will be deleted.
 // Otherwise, it will be resized.
 func (d *SANEconomyStorageDriver) DeleteBucketIfEmpty(ctx context.Context, bucketVol string) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Destroy",
@@ -961,7 +950,6 @@ func (d *SANEconomyStorageDriver) DeleteBucketIfEmpty(ctx context.Context, bucke
 func (d *SANEconomyStorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
-
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
@@ -1013,7 +1001,6 @@ func (d *SANEconomyStorageDriver) CanSnapshot(
 func (d *SANEconomyStorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "GetSnapshot",
@@ -1031,7 +1018,6 @@ func (d *SANEconomyStorageDriver) GetSnapshot(
 func (d *SANEconomyStorageDriver) getSnapshotEconomy(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 ) (*storage.Snapshot, error) {
-
 	internalSnapName := snapConfig.InternalName
 	internalVolumeName := snapConfig.VolumeInternalName
 
@@ -1068,13 +1054,11 @@ func (d *SANEconomyStorageDriver) getSnapshotEconomy(
 		SizeBytes: int64(lunInfo.Size()),
 		State:     storage.SnapshotStateOnline,
 	}, nil
-
 }
 
 func (d *SANEconomyStorageDriver) GetSnapshots(
 	ctx context.Context, volConfig *storage.VolumeConfig,
 ) ([]*storage.Snapshot, error) {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":             "GetSnapshots",
@@ -1099,9 +1083,8 @@ func (d *SANEconomyStorageDriver) GetSnapshots(
 }
 
 func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
-	ctx context.Context, internalVolumeName string, externalVolumeName string,
+	ctx context.Context, internalVolumeName, externalVolumeName string,
 ) ([]*storage.Snapshot, error) {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":          "getSnapshotsEconomy",
@@ -1155,7 +1138,6 @@ func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
 func (d *SANEconomyStorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "CreateSnapshot",
@@ -1232,7 +1214,6 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 func (d *SANEconomyStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "RestoreSnapshot",
@@ -1251,7 +1232,6 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(
 func (d *SANEconomyStorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":                "DeleteSnapshot",
@@ -1305,7 +1285,6 @@ func (d *SANEconomyStorageDriver) DeleteSnapshot(
 
 // Get tests for the existence of a volume
 func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "Get", "Type": "SANEconomyStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Get")
@@ -1338,7 +1317,6 @@ func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 	encrypt bool, sizeBytes uint64, opts map[string]string, config drivers.OntapStorageDriverConfig,
 	storagePool storage.Pool, ignoredVols map[string]struct{},
 ) (string, bool, error) {
-
 	shouldLimitVolumeSize, flexvolSizeLimit, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
 		ctx, sizeBytes, config.CommonStorageDriverConfig,
 	)
@@ -1351,7 +1329,6 @@ func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 		ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir, encrypt, sizeBytes,
 		shouldLimitVolumeSize, flexvolSizeLimit, ignoredVols,
 	)
-
 	if err != nil {
 		return "", false, fmt.Errorf("error finding Flexvol for LUN: %v", err)
 	}
@@ -1379,7 +1356,6 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir, encrypt bool,
 	opts map[string]string, storagePool storage.Pool,
 ) (string, error) {
-
 	var (
 		flexvol         = d.FlexvolNamePrefix() + utils.RandomString(10)
 		size            = "1g"
@@ -1440,7 +1416,6 @@ func (d *SANEconomyStorageDriver) getFlexvolForLUN(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir, encrypt bool,
 	sizeBytes uint64, shouldLimitFlexvolSize bool, flexvolSizeLimit uint64, ignoredVols map[string]struct{},
 ) (string, error) {
-
 	// Get all volumes matching the specified attributes
 	volListResponse, err := d.API.VolumeListByAttrs(d.FlexvolNamePrefix(), aggregate, spaceReserve, snapshotPolicy,
 		tieringPolicy, enableSnapshotDir, encrypt, -1)
@@ -1510,7 +1485,6 @@ func (d *SANEconomyStorageDriver) getFlexvolForLUN(
 func (d *SANEconomyStorageDriver) getOptimalSizeForFlexvol(
 	ctx context.Context, flexvol string, newLunSizeBytes uint64,
 ) (uint64, error) {
-
 	// Get more info about the Flexvol
 	volAttrs, err := d.API.VolumeGet(flexvol)
 	if err != nil {
@@ -1527,8 +1501,7 @@ func (d *SANEconomyStorageDriver) getOptimalSizeForFlexvol(
 }
 
 // getLUNSize returns the size of the LUN
-func (d *SANEconomyStorageDriver) getLUNSize(name string, flexvol string) (uint64, error) {
-
+func (d *SANEconomyStorageDriver) getLUNSize(name, flexvol string) (uint64, error) {
 	lunTarget := GetLUNPathEconomy(flexvol, name)
 	lun, err := d.API.LunGet(lunTarget)
 	if err != nil {
@@ -1544,7 +1517,6 @@ func (d *SANEconomyStorageDriver) getLUNSize(name string, flexvol string) (uint6
 
 // getTotalLUNSize returns the sum of all LUN sizes on a Flexvol
 func (d *SANEconomyStorageDriver) getTotalLUNSize(flexvol string) (uint64, error) {
-
 	listResponse, err := d.API.LunGetAllForVolume(flexvol)
 	if err != nil {
 		return 0, err
@@ -1572,7 +1544,6 @@ func (d *SANEconomyStorageDriver) GetStorageBackendPhysicalPoolNames(context.Con
 }
 
 func (d *SANEconomyStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
-
 	return map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
 		sa.Snapshots:        sa.NewBoolOffer(true),
@@ -1598,7 +1569,6 @@ func (d *SANEconomyStorageDriver) CreatePrepare(ctx context.Context, volConfig *
 }
 
 func (d *SANEconomyStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
-
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "CreateFollowup",
@@ -1619,7 +1589,6 @@ func (d *SANEconomyStorageDriver) CreateFollowup(ctx context.Context, volConfig 
 }
 
 func (d *SANEconomyStorageDriver) mapOntapSANLUN(ctx context.Context, volConfig *storage.VolumeConfig) error {
-
 	// Determine which flexvol contains the LUN
 	exists, flexvol, err := d.LUNExists(ctx, volConfig.InternalName, d.FlexvolNamePrefix())
 	if err != nil {
@@ -1660,7 +1629,6 @@ func (d *SANEconomyStorageDriver) GetExternalConfig(ctx context.Context) interfa
 // a single container volume managed by this driver and returns a VolumeExternal
 // representation of the volume.
 func (d *SANEconomyStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
-
 	_, flexvol, err := d.LUNExists(ctx, name, d.FlexvolNamePrefix())
 	if err != nil {
 		return nil, err
@@ -1687,7 +1655,6 @@ func (d *SANEconomyStorageDriver) GetVolumeExternal(ctx context.Context, name st
 func (d *SANEconomyStorageDriver) GetVolumeExternalWrappers(
 	ctx context.Context, channel chan *storage.VolumeExternalWrapper,
 ) {
-
 	// Let the caller know we're done by closing the channel
 	defer close(channel)
 
@@ -1749,7 +1716,6 @@ func (d *SANEconomyStorageDriver) GetVolumeExternalWrappers(
 func (d *SANEconomyStorageDriver) getVolumeExternal(
 	lunAttrs *azgo.LunInfoType, volumeAttrs *azgo.VolumeAttributesType,
 ) *storage.VolumeExternal {
-
 	volumeIDAttrs := volumeAttrs.VolumeIdAttributesPtr
 	volumeSnapshotAttrs := volumeAttrs.VolumeSnapshotAttributesPtr
 	externalVolumeName := d.helper.GetExternalVolumeNameFromPath(lunAttrs.Path())
@@ -1813,7 +1779,6 @@ func (d *SANEconomyStorageDriver) GetUpdateType(_ context.Context, driverOrig st
 // LUNExists returns true if the named LUN exists across all buckets.  This should be called with the
 // actual LUN name, i.e. the internal volume name or snap-LUN name.
 func (d *SANEconomyStorageDriver) LUNExists(ctx context.Context, name, bucketPrefix string) (bool, string, error) {
-
 	Logc(ctx).WithFields(
 		log.Fields{
 			"name":         name,
@@ -1845,7 +1810,6 @@ func (d *SANEconomyStorageDriver) LUNExists(ctx context.Context, name, bucketPre
 
 // Resize a LUN with the specified options and find (or create) a bucket volume for the LUN
 func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
-
 	name := volConfig.InternalName
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -2006,7 +1970,6 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 // resizeFlexvol grows or shrinks the Flexvol to an optimal size if possible. Otherwise
 // the Flexvol is expanded by the value of sizeBytes
 func (d *SANEconomyStorageDriver) resizeFlexvol(ctx context.Context, flexvol string, sizeBytes uint64) error {
-
 	flexvolSizeBytes, err := d.getOptimalSizeForFlexvol(ctx, flexvol, sizeBytes)
 	if err != nil {
 		Logc(ctx).Warnf("Could not calculate optimal Flexvol size. %v", err)
@@ -2030,7 +1993,6 @@ func (d *SANEconomyStorageDriver) resizeFlexvol(ctx context.Context, flexvol str
 func (d *SANEconomyStorageDriver) ReconcileNodeAccess(
 	ctx context.Context, nodes []*utils.Node, _ string,
 ) error {
-
 	// Discover known nodes
 	nodeNames := make([]string, 0)
 	nodeIQNs := make([]string, 0)

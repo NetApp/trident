@@ -48,7 +48,6 @@ func NewFromPersistent(persistent *Persistent) *StorageClass {
 }
 
 func NewFromAttributes(attributes map[string]storageattribute.Request) *StorageClass {
-
 	cfg := &Config{
 		Version:         "1",
 		Attributes:      attributes,
@@ -65,7 +64,6 @@ func NewFromAttributes(attributes map[string]storageattribute.Request) *StorageC
 func (s *StorageClass) regexMatcherImpl(
 	ctx context.Context, storagePool storage.Pool, storagePoolBackendName string, storagePoolList []string,
 ) bool {
-
 	if storagePool == nil {
 		return false
 	}
@@ -143,7 +141,6 @@ func (s *StorageClass) regexMatcher(ctx context.Context, storagePool storage.Poo
 }
 
 func (s *StorageClass) Matches(ctx context.Context, storagePool storage.Pool) bool {
-
 	Logc(ctx).WithFields(log.Fields{
 		"storageClass": s.GetName(),
 		"config":       s.config,
@@ -226,7 +223,6 @@ func (s *StorageClass) Matches(ctx context.Context, storagePool storage.Pool) bo
 // for a given backend.  If the pool satisfies the storage class, it
 // adds that pool.  Returns the number of storage pools added.
 func (s *StorageClass) CheckAndAddBackend(ctx context.Context, b storage.Backend) int {
-
 	Logc(ctx).WithFields(log.Fields{
 		"backend":      b.Name(),
 		"storageClass": s.GetName(),
@@ -253,7 +249,6 @@ func (s *StorageClass) CheckAndAddBackend(ctx context.Context, b storage.Backend
 }
 
 func (s *StorageClass) IsAddedToBackend(backend storage.Backend, storageClassName string) bool {
-
 	for _, storagePool := range backend.Storage() {
 		for _, storageClass := range storagePool.StorageClasses() {
 			if storageClass == storageClassName {
@@ -411,8 +406,8 @@ func SortPoolsByPreferredTopologies(
 // each pool matches the supplied protocol.
 func (s *StorageClass) GetStoragePoolsForProtocolByBackend(
 	ctx context.Context, p config.Protocol, requisiteTopologies, preferredTopologies []map[string]string,
-	accessMode config.AccessMode) []storage.Pool {
-
+	accessMode config.AccessMode,
+) []storage.Pool {
 	// Get all matching pools
 	var pools []storage.Pool
 
@@ -434,7 +429,6 @@ func (s *StorageClass) Pools() []storage.Pool {
 }
 
 func (s *StorageClass) ConstructExternal(ctx context.Context) *External {
-
 	ret := &External{
 		Config:       s.config,
 		StoragePools: make(map[string][]string),

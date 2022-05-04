@@ -25,7 +25,6 @@ type LabelOffer interface {
 }
 
 func NewLabelOffer(labelMaps ...map[string]string) Offer {
-
 	// Combine multiple maps into a single map
 	offers := make(map[string]string)
 
@@ -43,7 +42,6 @@ func NewLabelOffer(labelMaps ...map[string]string) Offer {
 }
 
 func (o *labelOffer) Matches(r Request) bool {
-
 	log.WithFields(log.Fields{
 		"request": r,
 		"offers":  o.Offers,
@@ -82,7 +80,6 @@ func (o *labelOffer) Labels() map[string]string {
 }
 
 func NewLabelRequest(request string) (Request, error) {
-
 	log.WithField("request", request).Debug("NewLabelRequest")
 
 	if len(request) == 0 {
@@ -119,7 +116,6 @@ func NewLabelRequest(request string) (Request, error) {
 }
 
 func NewLabelRequestMustCompile(request string) Request {
-
 	r, err := NewLabelRequest(request)
 	if err != nil {
 		panic(err)
@@ -154,7 +150,6 @@ type labelEqualRequest struct {
 }
 
 func newLabelEqualRequest(request string) labelSelector {
-
 	match := labelEqualRegex.FindStringSubmatch(request)
 	paramsMap := make(map[string]string)
 	for i, name := range labelEqualRegex.SubexpNames() {
@@ -188,7 +183,6 @@ type labelNotEqualRequest struct {
 }
 
 func newLabelNotEqualRequest(request string) labelSelector {
-
 	match := labelNotEqualRegex.FindStringSubmatch(request)
 	paramsMap := make(map[string]string)
 	for i, name := range labelNotEqualRegex.SubexpNames() {
@@ -222,7 +216,6 @@ type labelInSetRequest struct {
 }
 
 func newLabelInSetRequest(request string) labelSelector {
-
 	match := labelInSetRegex.FindStringSubmatch(request)
 	paramsMap := make(map[string]string)
 	for i, name := range labelInSetRegex.SubexpNames() {
@@ -270,7 +263,6 @@ type labelNotInSetRequest struct {
 }
 
 func newLabelNotInSetRequest(request string) labelSelector {
-
 	match := labelNotInSetRegex.FindStringSubmatch(request)
 	paramsMap := make(map[string]string)
 	for i, name := range labelNotInSetRegex.SubexpNames() {
@@ -320,7 +312,6 @@ type labelExistsRequest struct {
 }
 
 func newLabelExistsRequest(request string) labelSelector {
-
 	match := labelExistsRegex.FindStringSubmatch(request)
 	paramsMap := make(map[string]string)
 	for i, name := range labelExistsRegex.SubexpNames() {
@@ -354,7 +345,6 @@ type labelNotExistsRequest struct {
 }
 
 func newLabelNotExistsRequest(request string) labelSelector {
-
 	match := labelNotExistsRegex.FindStringSubmatch(request)
 	paramsMap := make(map[string]string)
 	for i, name := range labelNotExistsRegex.SubexpNames() {

@@ -38,7 +38,6 @@ func (p *Plugin) GetVolumeConfig(
 	protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
 	requisiteTopology, preferredTopology, accessibleTopology []map[string]string,
 ) (*storage.VolumeConfig, error) {
-
 	// Kubernetes CSI passes us the name of what will become a new PV
 	pvName := name
 
@@ -176,7 +175,6 @@ func (p *Plugin) getPVCMirrorPeer(pvc *v1.PersistentVolumeClaim, mirrorRelations
 // is necessary because CSI only provides us with the PVC's UID, and the Kubernetes API does
 // not support querying objects by UID.
 func (p *Plugin) getPVCForCSIVolume(ctx context.Context, name string) (*v1.PersistentVolumeClaim, error) {
-
 	// Get the PVC UID from the volume name.  The CSI provisioner sidecar creates
 	// volume names of the form "pvc-<PVC_UID>".
 	pvcUID, err := getPVCUIDFromCSIVolumeName(name)
@@ -227,7 +225,6 @@ func getPVCUIDFromCSIVolumeName(volumeName string) (string, error) {
 // as read from the Kubernetes API server.  The method waits for the object to appear in cache,
 // resyncs the cache if not found after an initial wait, and waits again after the resync.
 func (p *Plugin) getStorageClass(ctx context.Context, name string) (*k8sstoragev1.StorageClass, error) {
-
 	sc, err := p.waitForCachedStorageClassByName(ctx, name, PreSyncCacheWaitPeriod)
 	if err != nil {
 		Logc(ctx).WithField("name", name).Warningf("Storage class not found in local cache: %v", err)
@@ -253,7 +250,6 @@ func (p *Plugin) getStorageClass(ctx context.Context, name string) (*k8sstoragev
 // snapshot name (also potentially unknown to CSI).  Note that these legacy clone annotations
 // will be overridden if the VolumeContentSource is set in the CSI CreateVolume request.
 func (p *Plugin) getCloneSourceInfo(ctx context.Context, clonePVC *v1.PersistentVolumeClaim) (string, error) {
-
 	// Check if this is a clone operation
 	annotations := processPVCAnnotations(clonePVC, "")
 	sourcePVCName := getAnnotation(annotations, AnnCloneFromPVC)
@@ -312,7 +308,6 @@ func (p *Plugin) GetSnapshotConfig(volumeName, snapshotName string) (*storage.Sn
 // RecordVolumeEvent accepts the name of a CSI volume (i.e. a PV name), finds the associated
 // PVC, and posts and event message on the PVC object with the K8S API server.
 func (p *Plugin) RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"name":      name,
 		"eventType": eventType,
@@ -330,7 +325,6 @@ func (p *Plugin) RecordVolumeEvent(ctx context.Context, name, eventType, reason,
 // RecordNodeEvent accepts the name of a CSI volume (i.e. a PV name), finds the associated
 // PVC, and posts and event message on the PVC object with the K8S API server.
 func (p *Plugin) RecordNodeEvent(ctx context.Context, name, eventType, reason, message string) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"name":      name,
 		"eventType": eventType,
@@ -366,7 +360,6 @@ func getVolumeConfig(
 	name string, size resource.Quantity, annotations map[string]string, storageClass *k8sstoragev1.StorageClass,
 	requisiteTopology, preferredTopology []map[string]string,
 ) *storage.VolumeConfig {
-
 	var accessModes []config.AccessMode
 
 	for _, pvcAccessMode := range pvcAccessModes {
@@ -428,7 +421,6 @@ func getAnnotation(annotations map[string]string, key string) string {
 // if empty). It also mixes in a Trident-standard fsType annotation using the value supplied
 // *if* one isn't already set in the PVC annotation map.
 func processPVCAnnotations(pvc *v1.PersistentVolumeClaim, fsType string) map[string]string {
-
 	annotations := pvc.Annotations
 	if annotations == nil {
 		annotations = make(map[string]string)

@@ -12,7 +12,6 @@ import (
 
 // Get cluster capacity stats
 func (c *Client) GetClusterCapacity(ctx context.Context) (capacity *ClusterCapacity, err error) {
-
 	var (
 		clusterCapReq    GetClusterCapacityRequest
 		clusterCapResult GetClusterCapacityResult

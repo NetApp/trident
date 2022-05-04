@@ -92,13 +92,11 @@ func callGoString(s NFSStorageDriver) string {
 }
 
 func TestGCPStorageDriverConfigString(t *testing.T) {
-
-	var GCPDrivers = []NFSStorageDriver{
+	GCPDrivers := []NFSStorageDriver{
 		*newTestGCPDriver(),
 	}
 
 	for _, toString := range []func(NFSStorageDriver) string{callString, callGoString} {
-
 		for _, GCPDriver := range GCPDrivers {
 			assert.Contains(t, toString(GCPDriver), "<REDACTED>",
 				"GCP driver does not contain <REDACTED>")
@@ -125,7 +123,6 @@ func TestGCPStorageDriverConfigString(t *testing.T) {
 }
 
 func TestMakeNetworkPath(t *testing.T) {
-
 	driver := newTestGCPDriver()
 
 	// Without shared VPC host project
@@ -304,7 +301,6 @@ func TestValidateStoragePrefix(t *testing.T) {
 }
 
 func TestInitializeStoragePoolsLabels(t *testing.T) {
-
 	ctx := context.Background()
 	d := newTestGCPDriver()
 
@@ -325,14 +321,16 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 		},
 		{
 			"base label only",
-			map[string]string{"base-key": "base-value"}, nil,
+			map[string]string{"base-key": "base-value"},
+			nil,
 			`{"provisioning":{"base-key":"base-value"}}`,
 			`{"provisioning":{"base-key":"base-value"}}`, "gcp-cvs",
 			"Base label is not set correctly", "Base label is not set correctly",
 		},
 		{
 			"virtual label only",
-			nil, map[string]string{"virtual-key": "virtual-value"},
+			nil,
+			map[string]string{"virtual-key": "virtual-value"},
 			"",
 			`{"provisioning":{"virtual-key":"virtual-value"}}`, "gcp-cvs",
 			"Base label is not empty", "Virtual pool label is not set correctly",
@@ -386,7 +384,6 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 }
 
 func TestInitializeStoragePoolsUnixPermissions(t *testing.T) {
-
 	// 1. Test with one vpool defined
 	ctx := context.Background()
 	d := newTestGCPDriver()
@@ -458,7 +455,6 @@ func TestInitializeStoragePoolsUnixPermissions(t *testing.T) {
 }
 
 func TestEnsureTopologyRegionAndZone(t *testing.T) {
-
 	tests := []struct {
 		Name            string
 		ConfigRegion    string
@@ -537,5 +533,4 @@ func TestEnsureTopologyRegionAndZone(t *testing.T) {
 			assert.Equal(t, test.ExpectedZone, zone, "Unexpected zone")
 		})
 	}
-
 }

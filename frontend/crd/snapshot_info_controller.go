@@ -138,7 +138,6 @@ func (c *TridentCrdController) updateTSIStatus(
 // updateTSICR updates the TridentSnapshotInfo CR
 func (c *TridentCrdController) updateTSICR(ctx context.Context, tsi *netappv1.TridentSnapshotInfo,
 ) (*netappv1.TridentSnapshotInfo, error) {
-
 	logFields := log.Fields{"TridentSnapshotInfo": tsi.Name}
 
 	// Update phase of the tsiCR
@@ -200,7 +199,6 @@ func (c *TridentCrdController) handleTridentSnapshotInfo(keyItem *KeyItem) error
 	snapshotInfoCopy := snapshotInfo.DeepCopy()
 	// Ensure TSI is not deleting, then ensure it has a finalizer
 	if snapshotInfoCopy.ObjectMeta.DeletionTimestamp.IsZero() {
-
 		if !snapshotInfoCopy.HasTridentFinalizers() {
 			Logx(ctx).WithField("TSI.Name", snapshotInfoCopy.Name).Debugf("Adding finalizer.")
 			snapshotInfoCopy.AddTridentFinalizers()
@@ -256,7 +254,6 @@ func (c *TridentCrdController) handleTridentSnapshotInfo(keyItem *KeyItem) error
 func (c *TridentCrdController) getSnapshotHandle(
 	ctx context.Context, snapshotInfo *netappv1.TridentSnapshotInfo,
 ) (string, error) {
-
 	// Check if k8s snapshot exists
 	k8sSnapshot, err := c.snapshotClientSet.SnapshotV1().VolumeSnapshots(snapshotInfo.Namespace).Get(
 		ctx,

@@ -99,7 +99,6 @@ func TestGetLabelsJSONExceedsCharacterLimitFail(t *testing.T) {
 }
 
 func TestGetLabels(t *testing.T) {
-
 	labels := map[string]string{
 		"cloud":       "anf",
 		"clusterName": "dev-test-cluster-1",
@@ -120,7 +119,6 @@ func TestGetLabels(t *testing.T) {
 }
 
 func TestGetLabelsNone(t *testing.T) {
-
 	pool := StoragePool{}
 	pool.SetAttributes(make(map[string]sa.Offer))
 

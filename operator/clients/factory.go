@@ -33,7 +33,6 @@ type Clients struct {
 const k8sTimeout = 30 * time.Second
 
 func CreateK8SClients(apiServerIP, kubeConfigPath string) (*Clients, error) {
-
 	var clients *Clients
 	var err error
 
@@ -82,7 +81,6 @@ func CreateK8SClients(apiServerIP, kubeConfigPath string) (*Clients, error) {
 }
 
 func createK8SClientsExCluster(apiServerIP, kubeConfigPath string) (*Clients, error) {
-
 	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{
 			ExplicitPath: kubeConfigPath,
@@ -95,7 +93,6 @@ func createK8SClientsExCluster(apiServerIP, kubeConfigPath string) (*Clients, er
 	)
 
 	kubeConfig, err := clientConfig.ClientConfig()
-
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +116,6 @@ func createK8SClientsExCluster(apiServerIP, kubeConfigPath string) (*Clients, er
 }
 
 func createK8SClientsInCluster() (*Clients, error) {
-
 	kubeConfig, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err

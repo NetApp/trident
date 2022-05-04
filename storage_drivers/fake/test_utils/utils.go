@@ -35,7 +35,6 @@ func (p *PoolMatch) String() string {
 }
 
 func getFakeVirtualPool(size, region, zone string, labels map[string]string) drivers.FakeStorageDriverPool {
-
 	commonConfigDefaults := drivers.CommonStorageDriverConfigDefaults{Size: size}
 	fakeConfigDefaults := drivers.FakeStorageDriverConfigDefaults{
 		CommonStorageDriverConfigDefaults: commonConfigDefaults,
@@ -50,7 +49,6 @@ func getFakeVirtualPool(size, region, zone string, labels map[string]string) dri
 }
 
 func GetFakeVirtualPools() (drivers.FakeStorageDriverPool, []drivers.FakeStorageDriverPool) {
-
 	pool := getFakeVirtualPool("10G", "us-east", "", map[string]string{"cloud": "aws"})
 
 	return pool, []drivers.FakeStorageDriverPool{

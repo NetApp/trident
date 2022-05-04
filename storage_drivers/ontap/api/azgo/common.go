@@ -68,7 +68,6 @@ func GetZAPIName(zr ZAPIRequest) (string, error) {
 
 // SendZapi sends the provided ZAPIRequest to the Ontap system
 func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
-
 	startTime := time.Now()
 
 	if o.DebugTraceFlags["method"] {
@@ -105,7 +104,7 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
           </netapp>`, "vfiler=\""+o.SVM+"\"", zapiCommand)
 	}
 	if o.DebugTraceFlags["api"] {
-		secretFields := []string{ "outbound-passphrase", "outbound-user-name", "passphrase", "user-name" }
+		secretFields := []string{"outbound-passphrase", "outbound-user-name", "passphrase", "user-name"}
 		secrets := make(map[string]string)
 		for _, f := range secretFields {
 			fmtString := "<%s>%s</%s>"
@@ -196,7 +195,6 @@ func (o *ZapiRunner) ExecuteUsing(z ZAPIRequest, requestType string, v interface
 
 // ExecuteWithoutIteration does not attempt to perform any nextTag style iteration
 func (o *ZapiRunner) ExecuteWithoutIteration(z ZAPIRequest, requestType string, v interface{}) (interface{}, error) {
-
 	if o.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "ExecuteUsing", "Type": requestType}
 		log.WithFields(fields).Debug(">>>> ExecuteUsing")
@@ -271,7 +269,6 @@ func ToString(val reflect.Value) string {
 
 func ValidateZAPIResponse(response *http.Response) (*http.Response, error) {
 	resp, err := ioutil.ReadAll(response.Body)
-
 	if err != nil {
 		return nil, err
 	}

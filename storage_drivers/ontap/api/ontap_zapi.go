@@ -69,7 +69,6 @@ type Client struct {
 
 // NewClient is a factory method for creating a new instance
 func NewClient(config ClientConfig) *Client {
-
 	// When running in Docker context we want to request MAX number of records from ZAPI for Volume, LUNs and Qtrees
 	config.ContextBasedZapiRecords = DefaultZapiRecords
 	if config.DriverContext == tridentconfig.ContextDocker {
@@ -157,7 +156,6 @@ func NewZapiError(zapiResult interface{}) (err ZapiError) {
 // NewZapiAsyncResult accepts the Response value from any AZGO Async Request, extracts the status, jobId, and
 // errorCode values and returns a ZapiAsyncResult.
 func NewZapiAsyncResult(ctx context.Context, zapiResult interface{}) (result ZapiAsyncResult, err error) {
-
 	defer func() {
 		if r := recover(); r != nil {
 			err = ZapiError{}
@@ -249,27 +247,34 @@ type ZapiError struct {
 func (e ZapiError) IsPassed() bool {
 	return e.status == "passed"
 }
+
 func (e ZapiError) Error() string {
 	if e.IsPassed() {
 		return "API status: passed"
 	}
 	return fmt.Sprintf("API status: %s, Reason: %s, Code: %s", e.status, e.reason, e.code)
 }
+
 func (e ZapiError) IsPrivilegeError() bool {
 	return e.code == azgo.EAPIPRIVILEGE
 }
+
 func (e ZapiError) IsScopeError() bool {
 	return e.code == azgo.EAPIPRIVILEGE || e.code == azgo.EAPINOTFOUND
 }
+
 func (e ZapiError) IsFailedToLoadJobError() bool {
 	return e.code == azgo.EINTERNALERROR && strings.Contains(e.reason, "Failed to load job")
 }
+
 func (e ZapiError) Status() string {
 	return e.status
 }
+
 func (e ZapiError) Reason() string {
 	return e.reason
 }
+
 func (e ZapiError) Code() string {
 	return e.code
 }
@@ -281,7 +286,6 @@ func (e ZapiError) Code() string {
 // passed in may either be a Response object, or the always-embedded Result object
 // where the error info exists.
 func GetError(ctx context.Context, zapiResult interface{}, errorIn error) (errorOut error) {
-
 	defer func() {
 		if r := recover(); r != nil {
 			Logc(ctx).Errorf("Panic in ontap#GetError. %v\nStack Trace: %v", zapiResult, string(debug.Stack()))
@@ -397,7 +401,6 @@ var featuresByVersion = map[Feature]*utils.Version{
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
 func (c Client) SupportsFeature(ctx context.Context, feature Feature) bool {
-
 	ontapiVersion, err := c.SystemGetOntapiVersion(ctx)
 	if err != nil {
 		return false
@@ -506,7 +509,6 @@ func (c Client) LunCreate(
 	lunPath string, sizeInBytes int, osType string, qosPolicyGroup QosPolicyGroup, spaceReserved bool,
 	spaceAllocated bool,
 ) (*azgo.LunCreateBySizeResponse, error) {
-
 	if strings.Contains(lunPath, failureLUNCreate) {
 		return nil, errors.New("injected error")
 	}
@@ -578,7 +580,6 @@ func (c Client) LunGetSerialNumber(lunPath string) (*azgo.LunGetSerialNumberResp
 // LunMapGet returns a list of LUN map details
 // equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
 func (c Client) LunMapGet(initiatorGroupName, lunPath string) (*azgo.LunMapGetIterResponse, error) {
-
 	lunMapInfo := *azgo.NewLunMapInfoType().
 		SetInitiatorGroup(initiatorGroupName).
 		SetPath(lunPath)
@@ -613,7 +614,6 @@ func (c Client) LunMapAutoID(initiatorGroupName, lunPath string) (*azgo.LunMapRe
 func (c Client) LunMapIfNotMapped(
 	ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool,
 ) (int, error) {
-
 	// Read LUN maps to see if the LUN is already mapped to the igroup
 	lunMapListResponse, err := c.LunMapListInfo(lunPath)
 	if err != nil {
@@ -708,7 +708,6 @@ func (c Client) LunDestroy(lunPath string) (*azgo.LunDestroyResponse, error) {
 
 // LunSetAttribute sets a named attribute for a given LUN.
 func (c Client) LunSetAttribute(lunPath, name, value string) (*azgo.LunSetAttributeResponse, error) {
-
 	if strings.Contains(lunPath, failureLUNSetAttr) {
 		return nil, errors.New("injected error")
 	}
@@ -733,7 +732,6 @@ func (c Client) LunGetAttribute(lunPath, name string) (*azgo.LunGetAttributeResp
 // LunGet returns all relevant details for a single LUN
 // equivalent to filer::> lun show
 func (c Client) LunGet(path string) (*azgo.LunInfoType, error) {
-
 	// Limit the LUNs to the one matching the path
 	query := &azgo.LunGetIterRequestQuery{}
 	lunInfo := azgo.NewLunInfoType().
@@ -827,7 +825,6 @@ func (c Client) LunResize(path string, sizeBytes int) (uint64, error) {
 // LunGetAll returns all relevant details for all LUNs whose paths match the supplied pattern
 // equivalent to filer::> lun show -path /vol/trident_*/*
 func (c Client) LunGetAll(pathPattern string) (*azgo.LunGetIterResponse, error) {
-
 	// Limit LUNs to those matching the pathPattern; ex, "/vol/trident_*/*"
 	query := &azgo.LunGetIterRequestQuery{}
 	lunInfo := azgo.NewLunInfoType().
@@ -840,7 +837,6 @@ func (c Client) LunGetAll(pathPattern string) (*azgo.LunGetIterResponse, error) 
 // LunGetAllForVolume returns all relevant details for all LUNs in the supplied Volume
 // equivalent to filer::> lun show -volume trident_CEwDWXQRPz
 func (c Client) LunGetAllForVolume(volumeName string) (*azgo.LunGetIterResponse, error) {
-
 	// Limit LUNs to those owned by the volumeName; ex, "trident_trident"
 	query := &azgo.LunGetIterRequestQuery{}
 	lunInfo := azgo.NewLunInfoType().
@@ -853,7 +849,6 @@ func (c Client) LunGetAllForVolume(volumeName string) (*azgo.LunGetIterResponse,
 // LunGetAllForVserver returns all relevant details for all LUNs in the supplied SVM
 // equivalent to filer::> lun show -vserver trident_CEwDWXQRPz
 func (c Client) LunGetAllForVserver(vserverName string) (*azgo.LunGetIterResponse, error) {
-
 	// Limit LUNs to those owned by the SVM with the supplied vserverName
 	query := &azgo.LunGetIterRequestQuery{}
 	lunInfo := azgo.NewLunInfoType().
@@ -865,7 +860,6 @@ func (c Client) LunGetAllForVserver(vserverName string) (*azgo.LunGetIterRespons
 
 // LunCount returns the number of LUNs that exist in a given volume
 func (c Client) LunCount(ctx context.Context, volume string) (int, error) {
-
 	// Limit the LUNs to those in the specified Flexvol
 	query := &azgo.LunGetIterRequestQuery{}
 	lunInfo := azgo.NewLunInfoType().SetVolume(volume)
@@ -931,7 +925,6 @@ func (c Client) FlexGroupCreate(
 	unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup,
 	encrypt bool, snapshotReserve int,
 ) (*azgo.VolumeCreateAsyncResponse, error) {
-
 	junctionPath := fmt.Sprintf("/%s", name)
 
 	aggrList := azgo.VolumeCreateAsyncRequestAggrList{}
@@ -998,7 +991,6 @@ func (c Client) FlexGroupCreate(
 func (c Client) FlexGroupDestroy(
 	ctx context.Context, name string, force bool,
 ) (*azgo.VolumeDestroyAsyncResponse, error) {
-
 	response, err := azgo.NewVolumeDestroyAsyncRequest().
 		SetVolumeName(name).
 		ExecuteUsing(c.zr)
@@ -1103,7 +1095,6 @@ func (c Client) FlexGroupSetSize(ctx context.Context, name, newSize string) (*az
 func (c Client) FlexGroupVolumeDisableSnapshotDirectoryAccess(
 	ctx context.Context, name string,
 ) (*azgo.VolumeModifyIterAsyncResponse, error) {
-
 	volattr := &azgo.VolumeModifyIterAsyncRequestAttributes{}
 	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(false)
 	volSnapshotAttrs := azgo.NewVolumeAttributesType().SetVolumeSnapshotAttributes(*ssattr)
@@ -1134,7 +1125,6 @@ func (c Client) FlexGroupVolumeDisableSnapshotDirectoryAccess(
 func (c Client) FlexGroupModifyUnixPermissions(
 	ctx context.Context, volumeName, unixPermissions string,
 ) (*azgo.VolumeModifyIterAsyncResponse, error) {
-
 	volAttr := &azgo.VolumeModifyIterAsyncRequestAttributes{}
 	volSecurityUnixAttrs := azgo.NewVolumeSecurityUnixAttributesType().SetPermissions(unixPermissions)
 	volSecurityAttrs := azgo.NewVolumeSecurityAttributesType().SetVolumeSecurityUnixAttributes(*volSecurityUnixAttrs)
@@ -1167,7 +1157,6 @@ func (c Client) FlexGroupModifyUnixPermissions(
 func (c Client) FlexGroupSetComment(
 	ctx context.Context, volumeName, newVolumeComment string,
 ) (*azgo.VolumeModifyIterAsyncResponse, error) {
-
 	volattr := &azgo.VolumeModifyIterAsyncRequestAttributes{}
 	idattr := azgo.NewVolumeIdAttributesType().SetComment(newVolumeComment)
 	volidattr := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*idattr)
@@ -1214,7 +1203,6 @@ func (c Client) FlexGroupGetAll(prefix string) (*azgo.VolumeGetIterResponse, err
 
 // WaitForAsyncResponse handles waiting for an AsyncResponse to return successfully or return an error.
 func (c Client) WaitForAsyncResponse(ctx context.Context, zapiResult interface{}, maxWaitTime time.Duration) error {
-
 	asyncResult, err := NewZapiAsyncResult(ctx, zapiResult)
 	if err != nil {
 		return err
@@ -1236,7 +1224,6 @@ func (c Client) WaitForAsyncResponse(ctx context.Context, zapiResult interface{}
 
 // checkForJobCompletion polls for the ONTAP job status success with backoff retry logic
 func (c *Client) checkForJobCompletion(ctx context.Context, jobId int, maxWaitTime time.Duration) error {
-
 	checkJobFinished := func() error {
 		jobResponse, err := c.JobGetIterStatus(jobId)
 		if err != nil {
@@ -1499,7 +1486,6 @@ func (c Client) VolumeExists(ctx context.Context, name string) (bool, error) {
 	response, err := azgo.NewVolumeSizeRequest().
 		SetVolume(name).
 		ExecuteUsing(c.zr)
-
 	if err != nil {
 		return false, err
 	}
@@ -1518,7 +1504,6 @@ func (c Client) VolumeExists(ctx context.Context, name string) (bool, error) {
 
 // VolumeUsedSize retrieves the used bytes of the specified volume
 func (c Client) VolumeUsedSize(name string) (int, error) {
-
 	volAttrs, err := c.VolumeGet(name)
 	if err != nil {
 		return 0, err
@@ -1530,7 +1515,6 @@ func (c Client) VolumeUsedSize(name string) (int, error) {
 
 // VolumeSize retrieves the size of the specified volume
 func (c Client) VolumeSize(name string) (int, error) {
-
 	volAttrs, err := c.VolumeGet(name)
 	if err != nil {
 		return 0, err
@@ -1587,7 +1571,6 @@ func (c Client) VolumeDestroy(name string, force bool) (*azgo.VolumeDestroyRespo
 // VolumeGet returns all relevant details for a single Flexvol
 // equivalent to filer::> volume show
 func (c Client) VolumeGet(name string) (*azgo.VolumeAttributesType, error) {
-
 	// Limit the Flexvols to the one matching the name
 	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
 		SetName(azgo.VolumeNameType(name)).
@@ -1597,7 +1580,6 @@ func (c Client) VolumeGet(name string) (*azgo.VolumeAttributesType, error) {
 
 // VolumeGetType returns the volume type such as RW or DP
 func (c Client) VolumeGetType(name string) (string, error) {
-
 	// Limit the Flexvols to the one matching the name
 	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
 		SetName(azgo.VolumeNameType(name)).
@@ -1614,7 +1596,6 @@ func (c Client) VolumeGetType(name string) (string, error) {
 func (c Client) volumeGetIterCommon(
 	name string, queryVolIDAttrs *azgo.VolumeIdAttributesType,
 ) (*azgo.VolumeAttributesType, error) {
-
 	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().SetState("online")
 
 	query := &azgo.VolumeGetIterRequestQuery{}
@@ -1645,7 +1626,6 @@ func (c Client) volumeGetIterCommon(
 // VolumeGetAll returns all relevant details for all FlexVols whose names match the supplied prefix
 // equivalent to filer::> volume show
 func (c Client) VolumeGetAll(prefix string) (response *azgo.VolumeGetIterResponse, err error) {
-
 	// Limit the Flexvols to those matching the name prefix
 	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
 		SetName(azgo.VolumeNameType(prefix + "*")).
@@ -1658,7 +1638,6 @@ func (c Client) VolumeGetAll(prefix string) (response *azgo.VolumeGetIterRespons
 func (c Client) volumeGetIterAll(
 	prefix string, queryVolIDAttrs *azgo.VolumeIdAttributesType, queryVolStateAttrs *azgo.VolumeStateAttributesType,
 ) (*azgo.VolumeGetIterResponse, error) {
-
 	query := &azgo.VolumeGetIterRequestQuery{}
 	volumeAttributes := azgo.NewVolumeAttributesType().
 		SetVolumeIdAttributes(*queryVolIDAttrs).
@@ -1702,7 +1681,6 @@ func (c Client) volumeGetIterAll(
 
 // VolumeList returns the names of all Flexvols whose names match the supplied prefix
 func (c Client) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
-
 	// Limit the Flexvols to those matching the name prefix
 	query := &azgo.VolumeGetIterRequestQuery{}
 	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
@@ -1732,7 +1710,6 @@ func (c Client) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
 func (c Client) VolumeListByAttrs(
 	prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir, encrypt bool, snapReserve int,
 ) (*azgo.VolumeGetIterResponse, error) {
-
 	// Limit the Flexvols to those matching the specified attributes
 	query := &azgo.VolumeGetIterRequestQuery{}
 	queryVolIDAttrs := azgo.NewVolumeIdAttributesType().
@@ -1777,7 +1754,6 @@ func (c Client) VolumeListByAttrs(
 
 // VolumeListAllBackedBySnapshot returns the names of all FlexVols backed by the specified snapshot
 func (c Client) VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) ([]string, error) {
-
 	// Limit the Flexvols to those matching the specified attributes
 	query := &azgo.VolumeGetIterRequestQuery{}
 	queryVolCloneParentAttrs := azgo.NewVolumeCloneParentAttributesType().
@@ -1831,7 +1807,6 @@ func (c Client) VolumeRename(volumeName, newVolumeName string) (*azgo.VolumeRena
 func (c Client) VolumeSetComment(ctx context.Context, volumeName, newVolumeComment string) (
 	*azgo.VolumeModifyIterResponse, error,
 ) {
-
 	volattr := &azgo.VolumeModifyIterRequestAttributes{}
 	idattr := azgo.NewVolumeIdAttributesType().SetComment(newVolumeComment)
 	volidattr := azgo.NewVolumeAttributesType().SetVolumeIdAttributes(*idattr)
@@ -1898,7 +1873,6 @@ func (c Client) QtreeDestroyAsync(path string, force bool) (*azgo.QtreeDeleteAsy
 // QtreeList returns the names of all Qtrees whose names match the supplied prefix
 // equivalent to filer::> volume qtree show
 func (c Client) QtreeList(prefix, volumePrefix string) (*azgo.QtreeListIterResponse, error) {
-
 	// Limit the qtrees to those matching the Flexvol and Qtree name prefixes
 	query := &azgo.QtreeListIterRequestQuery{}
 	queryInfo := azgo.NewQtreeInfoType().SetVolume(volumePrefix + "*").SetQtree(prefix + "*")
@@ -1919,7 +1893,6 @@ func (c Client) QtreeList(prefix, volumePrefix string) (*azgo.QtreeListIterRespo
 
 // QtreeCount returns the number of Qtrees in the specified Flexvol, not including the Flexvol itself
 func (c Client) QtreeCount(ctx context.Context, volume string) (int, error) {
-
 	// Limit the qtrees to those in the specified Flexvol
 	query := &azgo.QtreeListIterRequestQuery{}
 	queryInfo := azgo.NewQtreeInfoType().SetVolume(volume)
@@ -1952,7 +1925,6 @@ func (c Client) QtreeCount(ctx context.Context, volume string) (int, error) {
 
 // QtreeExists returns true if the named Qtree exists (and is unique in the matching Flexvols)
 func (c Client) QtreeExists(ctx context.Context, name, volumePrefix string) (bool, string, error) {
-
 	// Limit the qtrees to those matching the Flexvol and Qtree name prefixes
 	query := &azgo.QtreeListIterRequestQuery{}
 	queryInfo := azgo.NewQtreeInfoType().SetVolume(volumePrefix + "*").SetQtree(name)
@@ -1992,7 +1964,6 @@ func (c Client) QtreeExists(ctx context.Context, name, volumePrefix string) (boo
 // QtreeGet returns all relevant details for a single qtree
 // equivalent to filer::> volume qtree show
 func (c Client) QtreeGet(name, volumePrefix string) (*azgo.QtreeInfoType, error) {
-
 	// Limit the qtrees to those matching the Flexvol and Qtree name prefixes
 	query := &azgo.QtreeListIterRequestQuery{}
 	info := azgo.NewQtreeInfoType().SetVolume(volumePrefix + "*").SetQtree(name)
@@ -2020,7 +1991,6 @@ func (c Client) QtreeGet(name, volumePrefix string) (*azgo.QtreeInfoType, error)
 // QtreeGetAll returns all relevant details for all qtrees whose Flexvol names match the supplied prefix
 // equivalent to filer::> volume qtree show
 func (c Client) QtreeGetAll(volumePrefix string) (*azgo.QtreeListIterResponse, error) {
-
 	// Limit the qtrees to those matching the Flexvol name prefix
 	query := &azgo.QtreeListIterRequestQuery{}
 	info := azgo.NewQtreeInfoType().SetVolume(volumePrefix + "*")
@@ -2045,7 +2015,6 @@ func (c Client) QtreeGetAll(volumePrefix string) (*azgo.QtreeListIterResponse, e
 }
 
 func (c Client) QtreeModifyExportPolicy(name, volumeName, exportPolicy string) (*azgo.QtreeModifyResponse, error) {
-
 	return azgo.NewQtreeModifyRequest().
 		SetQtree(name).
 		SetVolume(volumeName).
@@ -2094,7 +2063,6 @@ func (c Client) QuotaStatus(volume string) (*azgo.QuotaStatusResponse, error) {
 func (c Client) QuotaSetEntry(
 	qtreeName, volumeName, quotaTarget, quotaType, diskLimit string,
 ) (*azgo.QuotaSetEntryResponse, error) {
-
 	request := azgo.NewQuotaSetEntryRequest().
 		SetQtree(qtreeName).
 		SetVolume(volumeName).
@@ -2113,7 +2081,6 @@ func (c Client) QuotaSetEntry(
 // QuotaEntryGet returns the disk limit for a single qtree
 // equivalent to filer::> volume quota policy rule show
 func (c Client) QuotaGetEntry(target, quotaType string) (*azgo.QuotaEntryType, error) {
-
 	query := &azgo.QuotaListEntriesIterRequestQuery{}
 	quotaEntry := azgo.NewQuotaEntryType().SetQuotaType(quotaType).SetQuotaTarget(target)
 	query.SetQuotaEntry(*quotaEntry)
@@ -2196,7 +2163,6 @@ func (c Client) ExportRuleCreate(
 	policy, clientMatch string,
 	protocols, roSecFlavors, rwSecFlavors, suSecFlavors []string,
 ) (*azgo.ExportRuleCreateResponse, error) {
-
 	protocolTypes := &azgo.ExportRuleCreateRequestProtocol{}
 	var protocolTypesToUse []azgo.AccessProtocolType
 	for _, p := range protocols {
@@ -2239,7 +2205,6 @@ func (c Client) ExportRuleCreate(
 // ExportRuleGetIterRequest returns the export rules in an export policy
 // equivalent to filer::> vserver export-policy rule show
 func (c Client) ExportRuleGetIterRequest(policy string) (*azgo.ExportRuleGetIterResponse, error) {
-
 	// Limit the qtrees to those matching the Flexvol and Qtree name prefixes
 	query := &azgo.ExportRuleGetIterRequestQuery{}
 	exportRuleInfo := azgo.NewExportRuleInfoType().SetPolicyName(azgo.ExportPolicyNameType(policy))
@@ -2384,7 +2349,6 @@ func (c Client) VserverGetRequest() (*azgo.VserverGetResponse, error) {
 // The vserver-get-iter API works with either cluster or vserver scope, so the ZAPI runner may or may not
 // be configured for tunneling; using the query parameter ensures we address only the configured vserver.
 func (c Client) SVMGetAggregateNames() ([]string, error) {
-
 	// Get just the SVM of interest
 	query := &azgo.VserverGetIterRequestQuery{}
 	info := azgo.NewVserverInfoType().SetVserverName(c.config.SVM)
@@ -2394,7 +2358,6 @@ func (c Client) SVMGetAggregateNames() ([]string, error) {
 		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(*query).
 		ExecuteUsing(c.zr)
-
 	if err != nil {
 		return nil, err
 	}
@@ -2420,7 +2383,6 @@ func (c Client) SVMGetAggregateNames() ([]string, error) {
 // VserverShowAggrGetIterRequest returns the aggregates on the vserver.  Requires ONTAP 9 or later.
 // equivalent to filer::> vserver show-aggregates
 func (c Client) VserverShowAggrGetIterRequest() (*azgo.VserverShowAggrGetIterResponse, error) {
-
 	response, err := azgo.NewVserverShowAggrGetIterRequest().
 		SetMaxRecords(DefaultZapiRecords).
 		ExecuteUsing(c.zr)
@@ -2496,7 +2458,6 @@ func (o AggregateCommitment) String() string {
 // AggregateCommitmentPercentage returns the allocated capacity percentage for an aggregate
 // See also;  https://practical-admin.com/blog/netapp-powershell-toolkit-aggregate-overcommitment-report/
 func (c Client) AggregateCommitment(ctx context.Context, aggregate string) (*AggregateCommitment, error) {
-
 	zr := c.GetNontunneledZapiRunner()
 
 	// first, get the aggregate's size
@@ -2519,7 +2480,6 @@ func (c Client) AggregateCommitment(ctx context.Context, aggregate string) (*Agg
 		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(*query).
 		ExecuteUsing(zr)
-
 	if err != nil {
 		return nil, err
 	}
@@ -2609,7 +2569,6 @@ func (c Client) SnapmirrorGetIterRequest(relGroupType string) (*azgo.SnapmirrorG
 func (c Client) SnapmirrorGetDestinationIterRequest(
 	relGroupType string,
 ) (*azgo.SnapmirrorGetDestinationIterResponse, error) {
-
 	// Limit list-destination to relationship-group-type matching passed relGroupType
 	query := &azgo.SnapmirrorGetDestinationIterRequestQuery{}
 	relationshipGroupType := azgo.NewSnapmirrorDestinationInfoType().
@@ -2646,7 +2605,6 @@ func (c Client) GetPeeredVservers(ctx context.Context) ([]string, error) {
 
 // IsVserverDRDestination identifies if the Vserver is a destination vserver of Snapmirror relationship (SVM-DR) or not
 func (c Client) IsVserverDRDestination(ctx context.Context) (bool, error) {
-
 	// first, get the snapmirror destination info using relationship-group-type=vserver in a snapmirror relationship
 	relationshipGroupType := "vserver"
 	response, err := c.SnapmirrorGetIterRequest(relationshipGroupType)
@@ -2675,7 +2633,6 @@ func (c Client) IsVserverDRDestination(ctx context.Context) (bool, error) {
 
 // IsVserverDRSource identifies if the Vserver is a source vserver of Snapmirror relationship (SVM-DR) or not
 func (c Client) IsVserverDRSource(ctx context.Context) (bool, error) {
-
 	// first, get the snapmirror destination info using relationship-group-type=vserver in a snapmirror relationship
 	relationshipGroupType := "vserver"
 	response, err := c.SnapmirrorGetDestinationIterRequest(relationshipGroupType)
@@ -2713,7 +2670,6 @@ func (c Client) isVserverInSVMDR(ctx context.Context) bool {
 func (c Client) SnapmirrorGet(
 	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorGetResponse, error) {
-
 	query := azgo.NewSnapmirrorGetRequest()
 	query.SetDestinationVolume(localFlexvolName)
 	query.SetDestinationVserver(localSVMName)
@@ -2726,7 +2682,6 @@ func (c Client) SnapmirrorGet(
 func (c Client) SnapmirrorCreate(
 	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string,
 ) (*azgo.SnapmirrorCreateResponse, error) {
-
 	query := azgo.NewSnapmirrorCreateRequest()
 	query.SetDestinationVolume(localFlexvolName)
 	query.SetDestinationVserver(localSVMName)
@@ -2746,7 +2701,6 @@ func (c Client) SnapmirrorCreate(
 func (c Client) SnapmirrorInitialize(
 	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorInitializeResponse, error) {
-
 	query := azgo.NewSnapmirrorInitializeRequest()
 	query.SetDestinationVolume(localFlexvolName)
 	query.SetDestinationVserver(localSVMName)
@@ -2759,7 +2713,6 @@ func (c Client) SnapmirrorInitialize(
 func (c Client) SnapmirrorResync(
 	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorResyncResponse, error) {
-
 	query := azgo.NewSnapmirrorResyncRequest()
 	query.SetDestinationVolume(localFlexvolName)
 	query.SetDestinationVserver(localSVMName)
@@ -2777,7 +2730,6 @@ func (c Client) SnapmirrorResync(
 func (c Client) SnapmirrorBreak(
 	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string,
 ) (*azgo.SnapmirrorBreakResponse, error) {
-
 	query := azgo.NewSnapmirrorBreakRequest()
 	query.SetDestinationVolume(localFlexvolName)
 	query.SetDestinationVserver(localSVMName)
@@ -2794,7 +2746,6 @@ func (c Client) SnapmirrorBreak(
 func (c Client) SnapmirrorQuiesce(
 	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorQuiesceResponse, error) {
-
 	query := azgo.NewSnapmirrorQuiesceRequest()
 	query.SetDestinationVolume(localFlexvolName)
 	query.SetDestinationVserver(localSVMName)
@@ -2807,7 +2758,6 @@ func (c Client) SnapmirrorQuiesce(
 func (c Client) SnapmirrorAbort(
 	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorAbortResponse, error) {
-
 	query := azgo.NewSnapmirrorAbortRequest()
 	query.SetDestinationVolume(localFlexvolName)
 	query.SetDestinationVserver(localSVMName)
@@ -2852,7 +2802,6 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 func (c Client) SnapmirrorDeleteViaDestination(
 	localFlexvolName, localSVMName string,
 ) (*azgo.SnapmirrorDestroyResponse, error) {
-
 	query := azgo.NewSnapmirrorDestroyRequest()
 	query.SetDestinationVolume(localFlexvolName)
 	query.SetDestinationVserver(localSVMName)
@@ -2864,7 +2813,6 @@ func (c Client) SnapmirrorDeleteViaDestination(
 func (c Client) SnapmirrorDelete(
 	localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) (*azgo.SnapmirrorDestroyResponse, error) {
-
 	query := azgo.NewSnapmirrorDestroyRequest()
 	query.SetDestinationVolume(localFlexvolName)
 	query.SetDestinationVserver(localSVMName)
@@ -2875,13 +2823,11 @@ func (c Client) SnapmirrorDelete(
 }
 
 func (c Client) IsVserverDRCapable(ctx context.Context) (bool, error) {
-
 	query := &azgo.VserverPeerGetIterRequestQuery{}
 
 	response, err := azgo.NewVserverPeerGetIterRequest().
 		SetQuery(*query).
 		ExecuteUsing(c.zr)
-
 	if err != nil {
 		return false, err
 	}
@@ -2903,7 +2849,6 @@ func (c Client) IsVserverDRCapable(ctx context.Context) (bool, error) {
 }
 
 func (c Client) SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error) {
-
 	result, err := azgo.NewSnapmirrorPolicyGetIterRequest().ExecuteUsing(c.zr)
 	if err = GetError(ctx, result, err); err != nil {
 		return false, fmt.Errorf("error listing snapmirror policies: %v", err)
@@ -2924,7 +2869,6 @@ func (c Client) SnapmirrorPolicyExists(ctx context.Context, policyName string) (
 func (c Client) SnapmirrorPolicyGet(
 	ctx context.Context, policyName string,
 ) (*azgo.SnapmirrorPolicyInfoType, error) {
-
 	desiredPolicy := azgo.NewSnapmirrorPolicyInfoType()
 	desiredPolicy.SetPolicyName(policyName)
 
@@ -2950,7 +2894,6 @@ func (c Client) SnapmirrorPolicyGet(
 }
 
 func (c Client) JobScheduleExists(ctx context.Context, jobName string) (bool, error) {
-
 	jobScheduleInfo := azgo.NewJobScheduleInfoType()
 	jobScheduleInfo.SetJobScheduleName(jobName)
 
@@ -2983,7 +2926,6 @@ func (c Client) JobScheduleExists(ctx context.Context, jobName string) (bool, er
 // NetInterfaceGet returns the list of network interfaces with associated metadata
 // equivalent to filer::> net interface list, but only those LIFs that are operational
 func (c Client) NetInterfaceGet() (*azgo.NetInterfaceGetIterResponse, error) {
-
 	response, err := azgo.NewNetInterfaceGetIterRequest().
 		SetMaxRecords(DefaultZapiRecords).
 		SetQuery(azgo.NetInterfaceGetIterRequestQuery{
@@ -3020,7 +2962,6 @@ func (c Client) NetInterfaceGetDataLIFsNode(ctx context.Context, ip string) (str
 }
 
 func (c Client) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
-
 	lifResponse, err := c.NetInterfaceGet()
 	if err = GetError(ctx, lifResponse, err); err != nil {
 		return nil, fmt.Errorf("error checking network interfaces: %v", err)
@@ -3054,7 +2995,6 @@ func (c Client) SystemGetVersion() (*azgo.SystemGetVersionResponse, error) {
 
 // SystemGetOntapiVersion gets the ONTAPI version using the credentials, and caches & returns the result.
 func (c Client) SystemGetOntapiVersion(ctx context.Context) (string, error) {
-
 	if c.zr.OntapiVersion == "" {
 		result, err := azgo.NewSystemGetOntapiVersionRequest().ExecuteUsing(c.zr)
 		if err = GetError(ctx, result, err); err != nil {
@@ -3070,7 +3010,6 @@ func (c Client) SystemGetOntapiVersion(ctx context.Context) (string, error) {
 }
 
 func (c Client) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
-
 	serialNumbers := make([]string, 0)
 	zr := c.GetNontunneledZapiRunner()
 
@@ -3134,7 +3073,6 @@ func (c Client) EmsAutosupportLog(
 	eventSource string,
 	logLevel int,
 ) (*azgo.EmsAutosupportLogResponse, error) {
-
 	response, err := azgo.NewEmsAutosupportLogRequest().
 		SetAutoSupport(autoSupport).
 		SetAppVersion(appVersion).

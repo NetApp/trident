@@ -29,7 +29,6 @@ import (
 func (p *Plugin) ImportVolume(
 	ctx context.Context, request *storage.ImportVolumeRequest,
 ) (*storage.VolumeExternal, error) {
-
 	Logc(ctx).WithField("request", request).Debug("ImportVolume")
 
 	// Get PVC from ImportVolumeRequest
@@ -126,7 +125,6 @@ func (p *Plugin) ImportVolume(
 func (p *Plugin) createImportPVC(
 	ctx context.Context, claim *v1.PersistentVolumeClaim,
 ) (*v1.PersistentVolumeClaim, error) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"claim":     claim,
 		"namespace": claim.Namespace,

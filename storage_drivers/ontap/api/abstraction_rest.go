@@ -106,7 +106,6 @@ func NewOntapAPIRESTFromRestClientInterface(restClient RestClientInterface) (Ont
 }
 
 func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
-
 	// Make sure we're using a valid ONTAP version
 	ontapVersion, err := d.APIVersion(ctx)
 	if err != nil {
@@ -125,7 +124,6 @@ func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 }
 
 func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
-
 	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "VolumeCreate",
@@ -147,7 +145,6 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
 }
 
 func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, force bool) error {
-
 	deletionErr := d.api.VolumeDestroy(ctx, name)
 	if deletionErr != nil {
 		return fmt.Errorf("error destroying volume %v: %v", name, deletionErr)
@@ -156,7 +153,6 @@ func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, force bool
 }
 
 func (d OntapAPIREST) VolumeInfo(ctx context.Context, name string) (*Volume, error) {
-
 	volumeGetResponse, err := d.api.VolumeGetByName(ctx, name)
 	if err != nil {
 		Logc(ctx).Errorf("Could not find volume with name: %v, error: %v", name, err.Error())
@@ -352,7 +348,6 @@ func (d OntapAPIREST) EmsAutosupportLog(
 	eventSource string,
 	logLevel int,
 ) {
-
 	d.api.EmsAutosupportLog(ctx, appVersion, autoSupport, category, computerName, eventDescription, eventID,
 		eventSource, logLevel)
 }
@@ -392,7 +387,6 @@ func (d OntapAPIREST) FlexgroupCloneSplitStart(ctx context.Context, cloneName st
 }
 
 func (d OntapAPIREST) FlexgroupDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error {
-
 	if err := d.api.FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx, volumeName); err != nil {
 		return fmt.Errorf("error disabling snapshot directory access: %v", err)
 	}
@@ -401,7 +395,6 @@ func (d OntapAPIREST) FlexgroupDisableSnapshotDirectoryAccess(ctx context.Contex
 }
 
 func (d OntapAPIREST) FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error) {
-
 	volumeGetResponse, err := d.api.FlexGroupGetByName(ctx, volumeName)
 	if err != nil {
 		Logc(ctx).Errorf("Could not find volume with name: %v, error: %v", volumeName, err.Error())
@@ -455,7 +448,6 @@ func (d OntapAPIREST) FlexgroupSnapshotCreate(ctx context.Context, snapshotName,
 }
 
 func (d OntapAPIREST) FlexgroupSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {
-
 	volume, err := d.FlexgroupInfo(ctx, sourceVolume)
 	if err != nil {
 		return nil, fmt.Errorf("error looking up source volume: %v", err)
@@ -526,7 +518,6 @@ func (d OntapAPIREST) FlexgroupDestroy(ctx context.Context, volumeName string, f
 }
 
 func (d OntapAPIREST) FlexgroupListByPrefix(ctx context.Context, prefix string) (Volumes, error) {
-
 	// TODO handle this higher? or just leave this here? i think here is OK
 	if !strings.HasSuffix(prefix, "*") {
 		// append the "*" to our prefix if it's missing
@@ -551,7 +542,6 @@ func (d OntapAPIREST) FlexgroupListByPrefix(ctx context.Context, prefix string) 
 	}
 
 	return volumes, nil
-
 }
 
 func (d OntapAPIREST) FlexgroupSetSize(ctx context.Context, name, newSize string) error {
@@ -592,7 +582,6 @@ func (d OntapAPIREST) FlexgroupUnmount(ctx context.Context, name string, _ bool)
 }
 
 func (d OntapAPIREST) GetSVMAggregateAttributes(ctx context.Context) (aggrList map[string]string, err error) {
-
 	// Handle panics from the API layer
 	defer func() {
 		if r := recover(); r != nil {
@@ -645,7 +634,6 @@ func hasRestAggrSpaceInformation(ctx context.Context, aggrSpace *models.Aggregat
 }
 
 func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string) ([]SVMAggregateSpace, error) {
-
 	response, aggrSpaceErr := d.api.AggregateList(ctx, aggregate)
 	if aggrSpaceErr != nil {
 		return nil, aggrSpaceErr
@@ -698,7 +686,6 @@ func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string
 }
 
 func (d OntapAPIREST) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error {
-
 	if err := d.api.VolumeDisableSnapshotDirectoryAccess(ctx, name); err != nil {
 		return fmt.Errorf("error disabling snapshot directory access: %v", err)
 	}
@@ -730,7 +717,6 @@ func (d OntapAPIREST) VolumeSetComment(
 }
 
 func (d OntapAPIREST) ExportPolicyCreate(ctx context.Context, policy string) error {
-
 	// TODO use isExportPolicyExistsRest ?
 	exportPolicy, err := d.api.ExportPolicyGetByName(ctx, policy)
 	if err != nil {
@@ -784,7 +770,6 @@ func (d OntapAPIREST) VolumeModifyUnixPermissions(
 }
 
 func (d OntapAPIREST) VolumeListByPrefix(ctx context.Context, prefix string) (Volumes, error) {
-
 	// TODO handle this higher? or just leave this here? i think here is OK
 	if !strings.HasSuffix(prefix, "*") {
 		// append the "*" to our prefix if it's missing
@@ -1068,7 +1053,6 @@ func (d OntapAPIREST) convertQuota(quota *models.QuotaRule) *QuotaEntry {
 }
 
 func (d OntapAPIREST) VolumeSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error {
-
 	volume, err := d.VolumeInfo(ctx, sourceVolume)
 	if err != nil {
 		return fmt.Errorf("error looking up source volume %v: %v", sourceVolume, err)
@@ -1085,7 +1069,6 @@ func (d OntapAPIREST) VolumeSnapshotCreate(ctx context.Context, snapshotName, so
 
 // pollVolumeExistence polls for the volume, with backoff retry logic
 func (c OntapAPIREST) pollVolumeExistence(ctx context.Context, volumeName string) error {
-
 	checkVolumeStatus := func() error {
 		volume, err := c.VolumeInfo(ctx, volumeName)
 		if err != nil {
@@ -1125,7 +1108,6 @@ func (d OntapAPIREST) VolumeCloneCreate(ctx context.Context, cloneName, sourceNa
 }
 
 func (d OntapAPIREST) VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {
-
 	volume, err := d.VolumeInfo(ctx, sourceVolume)
 	if err != nil {
 		return nil, fmt.Errorf("error looking up source volume: %v", err)
@@ -1156,7 +1138,6 @@ func (d OntapAPIREST) VolumeSnapshotList(ctx context.Context, sourceVolume strin
 }
 
 func (d OntapAPIREST) VolumeSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) error {
-
 	if err := d.api.VolumeSetQosPolicyGroupName(ctx, name, qos); err != nil {
 		return fmt.Errorf("error setting quality of service policy: %v", err)
 	}
@@ -1261,7 +1242,6 @@ func (d OntapAPIREST) VolumeSnapshotDelete(ctx context.Context, snapshotName, so
 func (d OntapAPIREST) VolumeListBySnapshotParent(
 	ctx context.Context, snapshotName, sourceVolume string,
 ) (VolumeNameList, error) {
-
 	childVolumes, err := d.api.VolumeListAllBackedBySnapshot(ctx, sourceVolume, snapshotName)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
@@ -1368,6 +1348,7 @@ func (d OntapAPIREST) JobScheduleExists(ctx context.Context, replicationSchedule
 	// TODO implement
 	return fmt.Errorf("not implemented for REST")
 }
+
 func (d OntapAPIREST) GetSVMPeers(ctx context.Context) ([]string, error) {
 	// TODO implement
 	return nil, fmt.Errorf("not implemented for REST")
@@ -1395,7 +1376,6 @@ func (d OntapAPIREST) LunList(ctx context.Context, pattern string) (Luns, error)
 }
 
 func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
-
 	if d.api.ClientConfig().DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "LunCreate",
@@ -1457,7 +1437,6 @@ func (d OntapAPIREST) LunGetComment(ctx context.Context, lunPath string) (string
 
 // TODO: Change this for LUN Attributes when available
 func (d OntapAPIREST) LunSetComments(ctx context.Context, lunPath, fstype, context string) error {
-
 	setComment, err := d.GetCommentJSON(ctx, fstype, context, 254)
 	if err != nil {
 		return err
@@ -1470,8 +1449,8 @@ func (d OntapAPIREST) LunSetComments(ctx context.Context, lunPath, fstype, conte
 // This is a temporary solution until we are able to implement LUN attributes in REST
 // For example: {"lunAttributes":{"fstype":"xfs","driverContext":"csi"}}
 func (d OntapAPIREST) GetCommentJSON(ctx context.Context, fstype, context string, commentLimit int) (string,
-	error) {
-
+	error,
+) {
 	lunCommentMap := make(map[string]map[string]string)
 	newcommentMap := make(map[string]string)
 	newcommentMap["fstype"] = fstype
@@ -1762,7 +1741,6 @@ func (d OntapAPIREST) IscsiInitiatorSetDefaultAuth(
 }
 
 func (d OntapAPIREST) IscsiInterfaceGet(ctx context.Context, svm string) ([]string, error) {
-
 	var iSCSINodeNames []string
 	interfaceResponse, err := d.api.IscsiInterfaceGet(ctx, svm)
 	if err != nil {
@@ -1905,7 +1883,8 @@ func (d OntapAPIREST) IgroupRemove(ctx context.Context, initiatorGroupName, init
 }
 
 func (d OntapAPIREST) IgroupGetByName(ctx context.Context, initiatorGroupName string) (map[string]bool,
-	error) {
+	error,
+) {
 	// Discover mapped initiators
 	iGroupResponse, err := d.api.IgroupGetByName(ctx, initiatorGroupName)
 	if err != nil {

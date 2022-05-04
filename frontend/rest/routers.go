@@ -14,7 +14,6 @@ import (
 
 // NewRouter is used to set up HTTP and HTTPS endpoints for the controller
 func NewRouter(https bool) *mux.Router {
-
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range controllerRoutes {
 		var handler http.Handler
@@ -37,7 +36,6 @@ func NewRouter(https bool) *mux.Router {
 
 // NewNodeRouter is used to set up HTTPS liveness and readiness endpoints for the node
 func NewNodeRouter(plugin *csi.Plugin) *mux.Router {
-
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range nodeRoutes(plugin) {
 		var handler http.Handler

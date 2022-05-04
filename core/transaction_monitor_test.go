@@ -36,7 +36,6 @@ func waitForTransactionMontitorToStart(o *TridentOrchestrator) {
 }
 
 func TestStartStop(t *testing.T) {
-
 	storeClient := persistentstore.NewInMemoryClient()
 	o := NewTridentOrchestrator(storeClient)
 	if err := o.Bootstrap(); err != nil {
@@ -190,7 +189,6 @@ func TestErrorVolumeCreatingTransaction(t *testing.T) {
 	}
 
 	assert.Equal(t, 0, len(volTxns), "did not expect to find any volume transactions")
-
 }
 
 // TestVolumeCreatingTwoTransaction tests that two volumeCreatingTransactions work as expected
@@ -222,7 +220,7 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 	}
 	assert.Equal(t, cloneName, volTxns[0].VolumeCreatingConfig.InternalName, "failed to find matching transaction")
 
-	//With existing volumeCreatingTransaction for a clone operation in place verify the same for create volume.
+	// With existing volumeCreatingTransaction for a clone operation in place verify the same for create volume.
 	volName02 := fakeDriver.PVC_creating_01
 	volumeConfig02 := tu.GenerateVolumeConfig(volName02, 1, "slow", config.File)
 
@@ -299,7 +297,6 @@ func setupOrchestratorAndBackend(t *testing.T) (*TridentOrchestrator, *persisten
 }
 
 func restartTransactionMonitor(o *TridentOrchestrator) {
-
 	// Bootstrap starts the transaction monitor.
 	// Need to stop and reinitialize transaction monitor with testable limits.
 	o.StopTransactionMonitor()

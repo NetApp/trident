@@ -47,7 +47,6 @@ Volume path').`,
 	Aliases: []string{"v"},
 	Args:    cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		pvcDataJSON, err := getPVCData(importFilename, importBase64Data)
 		if err != nil {
 			return err
@@ -67,7 +66,6 @@ Volume path').`,
 }
 
 func getPVCData(filename, b64Data string) ([]byte, error) {
-
 	var err error
 	var rawData []byte
 
@@ -97,7 +95,6 @@ func getPVCData(filename, b64Data string) ([]byte, error) {
 }
 
 func volumeImport(backendName, internalVolumeName string, noManage bool, pvcDataJSON []byte) error {
-
 	request := &storage.ImportVolumeRequest{
 		Backend:      backendName,
 		InternalName: internalVolumeName,

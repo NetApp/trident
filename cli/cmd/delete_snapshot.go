@@ -47,7 +47,6 @@ var deleteSnapshotCmd = &cobra.Command{
 }
 
 func snapshotDelete(snapshotIDs []string) error {
-
 	var err error
 
 	if allSnapshotsInVolume != "" {

@@ -13,7 +13,6 @@ import (
 
 // NewTridentSnapshot creates a new snapshot CRD object from an internal SnapshotPersistent object
 func NewTridentSnapshot(persistent *storage.SnapshotPersistent) (*TridentSnapshot, error) {
-
 	tsc := &TridentSnapshot{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "trident.netapp.io/v1",
@@ -56,7 +55,6 @@ func (in *TridentSnapshot) Apply(persistent *storage.SnapshotPersistent) error {
 
 // Persistent converts a Kubernetes CRD object into its internal SnapshotPersistent equivalent
 func (in *TridentSnapshot) Persistent() (*storage.SnapshotPersistent, error) {
-
 	persistent := &storage.SnapshotPersistent{}
 
 	persistent.Config = &storage.SnapshotConfig{}

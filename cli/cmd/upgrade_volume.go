@@ -41,7 +41,6 @@ var upgradeVolumeCmd = &cobra.Command{
 }
 
 func volumeUpgrade(volumeNames []string) error {
-
 	var err error
 
 	if upgradeAllVolumes {

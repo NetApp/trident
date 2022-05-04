@@ -17,7 +17,6 @@ import (
 
 // NewTridentBackend creates a new backend CRD object from an internal storage.BackendPersistent object
 func NewTridentBackend(ctx context.Context, persistent *storage.BackendPersistent) (*TridentBackend, error) {
-
 	backend := &TridentBackend{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "trident.netapp.io/v1",
@@ -54,7 +53,6 @@ func NewTridentBackend(ctx context.Context, persistent *storage.BackendPersisten
 // Apply applies changes from an internal storage.BackendPersistent
 // object to its Kubernetes CRD equivalent
 func (in *TridentBackend) Apply(ctx context.Context, persistent *storage.BackendPersistent) error {
-
 	Logc(ctx).WithFields(log.Fields{
 		"persistent.Name":   persistent.Name,
 		"persistent.Online": persistent.Online,

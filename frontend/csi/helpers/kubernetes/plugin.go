@@ -99,7 +99,6 @@ type Plugin struct {
 
 // NewPlugin instantiates this plugin when running outside a pod.
 func NewPlugin(orchestrator core.Orchestrator, masterURL, kubeConfigPath string) (*Plugin, error) {
-
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
 
 	Logc(ctx).Info("Initializing K8S helper frontend.")
@@ -379,7 +378,6 @@ func (p *Plugin) Version() string {
 
 // listClusterNodes returns the list of worker node names as a map for kubernetes cluster
 func (p *Plugin) listClusterNodes(ctx context.Context) (map[string]bool, error) {
-
 	nodeNames := make(map[string]bool)
 	nodes, err := p.kubeClient.CoreV1().Nodes().List(ctx, listOpts)
 	if err != nil {
@@ -395,7 +393,6 @@ func (p *Plugin) listClusterNodes(ctx context.Context) (map[string]bool, error) 
 
 // reconcileNodes will make sure that Trident's list of nodes does not include any unnecessary node
 func (p *Plugin) reconcileNodes(ctx context.Context) {
-
 	Logc(ctx).Debug("Performing node reconciliation.")
 	clusterNodes, err := p.listClusterNodes(ctx)
 	if err != nil {
@@ -463,7 +460,6 @@ func (p *Plugin) deletePVC(obj interface{}) {
 
 // processPVC logs the add/update/delete PVC events.
 func (p *Plugin) processPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim, eventType string) {
-
 	// Validate the PVC
 	size, ok := pvc.Spec.Resources.Requests[v1.ResourceStorage]
 	if !ok {
@@ -494,7 +490,6 @@ func (p *Plugin) processPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim, 
 // getCachedPVCByName returns a PVC (identified by namespace/name) from the client's cache,
 // or an error if not found.  In most cases it may be better to call waitForCachedPVCByName().
 func (p *Plugin) getCachedPVCByName(ctx context.Context, name, namespace string) (*v1.PersistentVolumeClaim, error) {
-
 	logFields := log.Fields{"name": name, "namespace": namespace}
 
 	item, exists, err := p.pvcIndexer.GetByKey(namespace + "/" + name)
@@ -518,7 +513,6 @@ func (p *Plugin) getCachedPVCByName(ctx context.Context, name, namespace string)
 func (p *Plugin) waitForCachedPVCByName(
 	ctx context.Context, name, namespace string, maxElapsedTime time.Duration,
 ) (*v1.PersistentVolumeClaim, error) {
-
 	var pvc *v1.PersistentVolumeClaim
 
 	checkForCachedPVC := func() error {
@@ -551,7 +545,6 @@ func (p *Plugin) waitForCachedPVCByName(
 // getCachedPVCByUID returns a PVC (identified by UID) from the client's cache,
 // or an error if not found.  In most cases it may be better to call waitForCachedPVCByUID().
 func (p *Plugin) getCachedPVCByUID(ctx context.Context, uid string) (*v1.PersistentVolumeClaim, error) {
-
 	items, err := p.pvcIndexer.ByIndex(uidIndex, uid)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Could not search cache for PVC by UID.")
@@ -580,7 +573,6 @@ func (p *Plugin) getCachedPVCByUID(ctx context.Context, uid string) (*v1.Persist
 func (p *Plugin) waitForCachedPVCByUID(
 	ctx context.Context, uid string, maxElapsedTime time.Duration,
 ) (*v1.PersistentVolumeClaim, error) {
-
 	var pvc *v1.PersistentVolumeClaim
 
 	checkForCachedPVC := func() error {
@@ -609,7 +601,6 @@ func (p *Plugin) waitForCachedPVCByUID(
 }
 
 func (p *Plugin) getCachedPVByName(ctx context.Context, name string) (*v1.PersistentVolume, error) {
-
 	logFields := log.Fields{"name": name}
 
 	item, exists, err := p.pvIndexer.GetByKey(name)
@@ -629,7 +620,6 @@ func (p *Plugin) getCachedPVByName(ctx context.Context, name string) (*v1.Persis
 }
 
 func (p *Plugin) isPVInCache(ctx context.Context, name string) (bool, error) {
-
 	logFields := log.Fields{"name": name}
 
 	item, exists, err := p.pvIndexer.GetByKey(name)
@@ -651,7 +641,6 @@ func (p *Plugin) isPVInCache(ctx context.Context, name string) (bool, error) {
 func (p *Plugin) waitForCachedPVByName(
 	ctx context.Context, name string, maxElapsedTime time.Duration,
 ) (*v1.PersistentVolume, error) {
-
 	var pv *v1.PersistentVolume
 
 	checkForCachedPV := func() error {
@@ -723,7 +712,6 @@ func (p *Plugin) deleteStorageClass(obj interface{}) {
 
 // processStorageClass logs and handles add/update/delete events for CSI Trident storage classes.
 func (p *Plugin) processStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass, eventType string) {
-
 	// Validate the storage class
 	if sc.Provisioner != csi.Provisioner {
 		return
@@ -755,7 +743,6 @@ func (p *Plugin) processStorageClass(ctx context.Context, sc *k8sstoragev1.Stora
 
 // processAddedStorageClass informs the orchestrator of a new storage class.
 func (p *Plugin) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass) {
-
 	scConfig := new(storageclass.Config)
 	scConfig.Name = sc.Name
 	scConfig.Attributes = make(map[string]storageattribute.Request)
@@ -844,7 +831,6 @@ func (p *Plugin) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 
 // processDeletedStorageClass informs the orchestrator of a deleted storage class.
 func (p *Plugin) processDeletedStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass) {
-
 	logFields := log.Fields{"name": sc.Name}
 
 	// Delete the storage class from Trident
@@ -859,7 +845,6 @@ func (p *Plugin) processDeletedStorageClass(ctx context.Context, sc *k8sstoragev
 // getCachedStorageClassByName returns a storage class (identified by name) from the client's cache,
 // or an error if not found.  In most cases it may be better to call waitForCachedStorageClassByName().
 func (p *Plugin) getCachedStorageClassByName(ctx context.Context, name string) (*k8sstoragev1.StorageClass, error) {
-
 	logFields := log.Fields{"name": name}
 
 	item, exists, err := p.scIndexer.GetByKey(name)
@@ -883,7 +868,6 @@ func (p *Plugin) getCachedStorageClassByName(ctx context.Context, name string) (
 func (p *Plugin) waitForCachedStorageClassByName(
 	ctx context.Context, name string, maxElapsedTime time.Duration,
 ) (*k8sstoragev1.StorageClass, error) {
-
 	var sc *k8sstoragev1.StorageClass
 
 	checkForCachedSC := func() error {
@@ -950,7 +934,6 @@ func (p *Plugin) deleteNode(obj interface{}) {
 
 // processNode logs and handles the add/update/delete node events.
 func (p *Plugin) processNode(ctx context.Context, node *v1.Node, eventType string) {
-
 	logFields := log.Fields{
 		"name": node.Name,
 	}
@@ -972,7 +955,6 @@ func (p *Plugin) processNode(ctx context.Context, node *v1.Node, eventType strin
 }
 
 func (p *Plugin) GetNodeTopologyLabels(ctx context.Context, nodeName string) (map[string]string, error) {
-
 	Logc(ctx).WithField("nodeName", nodeName).Debug("GetNode")
 
 	node, err := p.kubeClient.CoreV1().Nodes().Get(ctx, nodeName, getOpts)
@@ -991,7 +973,6 @@ func (p *Plugin) GetNodeTopologyLabels(ctx context.Context, nodeName string) (ma
 // SupportsFeature accepts a CSI feature and returns true if the
 // feature exists and is supported.
 func (p *Plugin) SupportsFeature(ctx context.Context, feature helpers.Feature) bool {
-
 	kubeSemVersion, err := utils.ParseSemantic(p.kubeVersion.GitVersion)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{

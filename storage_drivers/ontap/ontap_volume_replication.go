@@ -79,7 +79,7 @@ func establishMirror(
 // reestablishMirror will attempt to resync a snapmirror relationship,
 // if and only if the relationship existed previously
 func reestablishMirror(
-	ctx context.Context, localVolumeHandle string, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+	ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
 	d api.OntapAPI,
 ) error {
 	localSVMName, localFlexvolName, err := parseVolumeHandle(localVolumeHandle)
@@ -147,8 +147,9 @@ func reestablishMirror(
 // promoteMirror will break the snapmirror and make the destination volume RW,
 // optionally after a given snapshot has synced
 func promoteMirror(
-	ctx context.Context, localVolumeHandle string, remoteVolumeHandle string, snapshotHandle,
-	replicationPolicy string, d api.OntapAPI,
+	ctx context.Context, localVolumeHandle, remoteVolumeHandle, snapshotHandle,
+	replicationPolicy string,
+	d api.OntapAPI,
 ) (bool, error) {
 	if remoteVolumeHandle == "" {
 		return false, nil
@@ -272,7 +273,7 @@ func isSnapshotPresent(ctx context.Context, snapshotHandle, localFlexvolName str
 
 // getMirrorStatus returns the current state of a snapmirror relationship
 func getMirrorStatus(
-	ctx context.Context, localVolumeHandle string, remoteVolumeHandle string, d api.OntapAPI,
+	ctx context.Context, localVolumeHandle, remoteVolumeHandle string, d api.OntapAPI,
 ) (string, error) {
 	// Empty remote means there is no mirror to check for
 	if remoteVolumeHandle == "" {

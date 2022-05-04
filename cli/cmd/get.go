@@ -24,13 +24,11 @@ var getCmd = &cobra.Command{
 }
 
 func WriteJSON(out interface{}) {
-
 	jsonBytes, _ := json.MarshalIndent(out, "", "  ")
 	fmt.Println(string(jsonBytes))
 }
 
 func WriteYAML(out interface{}) {
-
 	jsonBytes, _ := json.Marshal(out)
 	yamlBytes, _ := yaml.JSONToYAML(jsonBytes)
 	fmt.Println(string(yamlBytes))

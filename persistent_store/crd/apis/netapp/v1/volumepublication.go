@@ -11,7 +11,6 @@ import (
 // NewTridentVolumePublication creates a new volume publication CRD object from an internal
 // utils.VolumePublication object.
 func NewTridentVolumePublication(persistent *utils.VolumePublication) (*TridentVolumePublication, error) {
-
 	publication := &TridentVolumePublication{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "trident.netapp.io/v1",

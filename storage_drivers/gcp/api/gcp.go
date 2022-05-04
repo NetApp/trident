@@ -32,13 +32,15 @@ import (
 // export Bearer="<token>"
 // curl https://cloudvolumesgcp-api.netapp.com/version --insecure -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $Bearer"
 
-const httpTimeoutSeconds = 30
-const retryTimeoutSeconds = 30
-const VolumeCreateTimeout = 10 * time.Second
-const DefaultTimeout = 120 * time.Second
-const defaultAPIURL = "https://cloudvolumesgcp-api.netapp.com"
-const defaultAPIAudienceURL = defaultAPIURL
-const MaxLabelLength = 255
+const (
+	httpTimeoutSeconds    = 30
+	retryTimeoutSeconds   = 30
+	VolumeCreateTimeout   = 10 * time.Second
+	DefaultTimeout        = 120 * time.Second
+	defaultAPIURL         = "https://cloudvolumesgcp-api.netapp.com"
+	defaultAPIAudienceURL = defaultAPIURL
+	MaxLabelLength        = 255
+)
 
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
@@ -95,7 +97,6 @@ func (d *Client) makeURL(resourcePath string) string {
 }
 
 func (d *Client) initTokenSource(ctx context.Context) error {
-
 	keyBytes, err := json.Marshal(d.config.APIKey)
 	if err != nil {
 		return err
@@ -113,7 +114,6 @@ func (d *Client) initTokenSource(ctx context.Context) error {
 }
 
 func (d *Client) refreshToken(ctx context.Context) error {
-
 	var err error
 
 	// Get token source (once per API client instance)
@@ -151,9 +151,8 @@ func (d *Client) refreshToken(ctx context.Context) error {
 // InvokeAPI makes a REST call to the cloud volumes REST service. The body must be a marshaled JSON byte array (or nil).
 // The method is the HTTP verb (i.e. GET, POST, ...).
 func (d *Client) InvokeAPI(
-	ctx context.Context, requestBody []byte, method string, gcpURL string,
+	ctx context.Context, requestBody []byte, method, gcpURL string,
 ) (*http.Response, []byte, error) {
-
 	var request *http.Request
 	var response *http.Response
 	var err error
@@ -194,7 +193,6 @@ func (d *Client) InvokeAPI(
 		// Skip certificate validation
 		tr.TLSClientConfig.InsecureSkipVerify = true
 	} else {
-
 		// Require certificate validation if not using a proxy
 		tr.TLSClientConfig.InsecureSkipVerify = false
 	}
@@ -237,12 +235,10 @@ func (d *Client) invokeAPINoRetry(client *http.Client, request *http.Request) (*
 }
 
 func (d *Client) invokeAPIWithRetry(client *http.Client, request *http.Request) (*http.Response, error) {
-
 	var response *http.Response
 	var err error
 
 	invoke := func() error {
-
 		response, err = d.invokeAPINoRetry(client, request)
 
 		// Return a permanent error to stop retrying if we couldn't invoke the API at all
@@ -278,7 +274,6 @@ func (d *Client) invokeAPIWithRetry(client *http.Client, request *http.Request) 
 }
 
 func (d *Client) GetVersion(ctx context.Context) (*utils.Version, *utils.Version, error) {
-
 	resourcePath := "/version"
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -316,7 +311,6 @@ func (d *Client) GetVersion(ctx context.Context) (*utils.Version, *utils.Version
 }
 
 func (d *Client) GetServiceLevels(ctx context.Context) (map[string]string, error) {
-
 	resourcePath := "/Storage/ServiceLevels"
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -349,7 +343,6 @@ func (d *Client) GetServiceLevels(ctx context.Context) (map[string]string, error
 }
 
 func (d *Client) GetVolumes(ctx context.Context) (*[]Volume, error) {
-
 	resourcePath := "/Volumes"
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -374,7 +367,6 @@ func (d *Client) GetVolumes(ctx context.Context) (*[]Volume, error) {
 }
 
 func (d *Client) GetVolumeByName(ctx context.Context, name string) (*Volume, error) {
-
 	volumes, err := d.GetVolumes(ctx)
 	if err != nil {
 		return nil, err
@@ -398,7 +390,6 @@ func (d *Client) GetVolumeByName(ctx context.Context, name string) (*Volume, err
 }
 
 func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken string) (*Volume, error) {
-
 	resourcePath := fmt.Sprintf("/Volumes?creationToken=%s", creationToken)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -427,7 +418,6 @@ func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken str
 }
 
 func (d *Client) VolumeExistsByCreationToken(ctx context.Context, creationToken string) (bool, *Volume, error) {
-
 	resourcePath := fmt.Sprintf("/Volumes?creationToken=%s", creationToken)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -456,7 +446,6 @@ func (d *Client) VolumeExistsByCreationToken(ctx context.Context, creationToken 
 }
 
 func (d *Client) GetVolumeByID(ctx context.Context, volumeId string) (*Volume, error) {
-
 	resourcePath := fmt.Sprintf("/Volumes/%s", volumeId)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -479,13 +468,11 @@ func (d *Client) GetVolumeByID(ctx context.Context, volumeId string) (*Volume, e
 }
 
 func (d *Client) WaitForVolumeStates(
-	ctx context.Context, volume *Volume, desiredStates []string, abortStates []string, maxElapsedTime time.Duration,
+	ctx context.Context, volume *Volume, desiredStates, abortStates []string, maxElapsedTime time.Duration,
 ) (string, error) {
-
 	volumeState := ""
 
 	checkVolumeState := func() error {
-
 		f, err := d.GetVolumeByID(ctx, volume.VolumeID)
 		if err != nil {
 			volumeState = ""
@@ -545,7 +532,6 @@ func (d *Client) WaitForVolumeStates(
 }
 
 func (d *Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) error {
-
 	resourcePath := "/Volumes"
 
 	jsonRequest, err := json.Marshal(request)
@@ -579,7 +565,6 @@ func (d *Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest)
 }
 
 func (d *Client) RenameVolume(ctx context.Context, volume *Volume, newName string) (*Volume, error) {
-
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
 	request := &VolumeRenameRequest{
@@ -620,12 +605,11 @@ func (d *Client) RenameVolume(ctx context.Context, volume *Volume, newName strin
 }
 
 func (d *Client) ChangeVolumeUnixPermissions(ctx context.Context, volume *Volume, newUnixPermissions string) (*Volume,
-	error) {
-
+	error,
+) {
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
 	request := &VolumeChangeUnixPermissionsRequest{
-
 		Region:          volume.Region,
 		CreationToken:   volume.CreationToken,
 		UnixPermissions: newUnixPermissions,
@@ -663,7 +647,6 @@ func (d *Client) ChangeVolumeUnixPermissions(ctx context.Context, volume *Volume
 }
 
 func (d *Client) RelabelVolume(ctx context.Context, volume *Volume, labels []string) (*Volume, error) {
-
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
 	request := &VolumeRenameRelabelRequest{
@@ -706,7 +689,6 @@ func (d *Client) RelabelVolume(ctx context.Context, volume *Volume, labels []str
 func (d *Client) RenameRelabelVolume(
 	ctx context.Context, volume *Volume, newName string, labels []string,
 ) (*Volume, error) {
-
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
 	request := &VolumeRenameRelabelRequest{
@@ -748,7 +730,6 @@ func (d *Client) RenameRelabelVolume(
 }
 
 func (d *Client) ResizeVolume(ctx context.Context, volume *Volume, newSizeBytes int64) (*Volume, error) {
-
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
 	request := &VolumeResizeRequest{
@@ -789,7 +770,6 @@ func (d *Client) ResizeVolume(ctx context.Context, volume *Volume, newSizeBytes 
 }
 
 func (d *Client) DeleteVolume(ctx context.Context, volume *Volume) error {
-
 	resourcePath := fmt.Sprintf("/Volumes/%s", volume.VolumeID)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "DELETE", d.makeURL(resourcePath))
@@ -810,7 +790,6 @@ func (d *Client) DeleteVolume(ctx context.Context, volume *Volume) error {
 }
 
 func (d *Client) GetSnapshotsForVolume(ctx context.Context, volume *Volume) (*[]Snapshot, error) {
-
 	resourcePath := fmt.Sprintf("/Volumes/%s/Snapshots", volume.VolumeID)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -835,7 +814,6 @@ func (d *Client) GetSnapshotsForVolume(ctx context.Context, volume *Volume) (*[]
 }
 
 func (d *Client) GetSnapshotForVolume(ctx context.Context, volume *Volume, snapshotName string) (*Snapshot, error) {
-
 	snapshots, err := d.GetSnapshotsForVolume(ctx, volume)
 	if err != nil {
 		return nil, err
@@ -862,7 +840,6 @@ func (d *Client) GetSnapshotForVolume(ctx context.Context, volume *Volume, snaps
 }
 
 func (d *Client) GetSnapshotByID(ctx context.Context, snapshotId string) (*Snapshot, error) {
-
 	resourcePath := fmt.Sprintf("/Snapshots/%s", snapshotId)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -887,9 +864,7 @@ func (d *Client) GetSnapshotByID(ctx context.Context, snapshotId string) (*Snaps
 func (d *Client) WaitForSnapshotState(
 	ctx context.Context, snapshot *Snapshot, desiredState string, abortStates []string, maxElapsedTime time.Duration,
 ) error {
-
 	checkSnapshotState := func() error {
-
 		s, err := d.GetSnapshotByID(ctx, snapshot.SnapshotID)
 		if err != nil {
 			return fmt.Errorf("could not get snapshot status; %v", err)
@@ -946,7 +921,6 @@ func (d *Client) WaitForSnapshotState(
 }
 
 func (d *Client) CreateSnapshot(ctx context.Context, request *SnapshotCreateRequest) error {
-
 	resourcePath := "/Snapshots"
 
 	jsonRequest, err := json.Marshal(request)
@@ -973,7 +947,6 @@ func (d *Client) CreateSnapshot(ctx context.Context, request *SnapshotCreateRequ
 }
 
 func (d *Client) RestoreSnapshot(ctx context.Context, volume *Volume, snapshot *Snapshot) error {
-
 	resourcePath := fmt.Sprintf("/Volumes/%s/Revert", volume.VolumeID)
 
 	snapshotRevertRequest := &SnapshotRevertRequest{
@@ -1004,7 +977,6 @@ func (d *Client) RestoreSnapshot(ctx context.Context, volume *Volume, snapshot *
 }
 
 func (d *Client) DeleteSnapshot(ctx context.Context, volume *Volume, snapshot *Snapshot) error {
-
 	resourcePath := fmt.Sprintf("/Volumes/%s/Snapshots/%s", volume.VolumeID, snapshot.SnapshotID)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "DELETE", d.makeURL(resourcePath))
@@ -1026,7 +998,6 @@ func (d *Client) DeleteSnapshot(ctx context.Context, volume *Volume, snapshot *S
 }
 
 func (d *Client) GetBackupsForVolume(ctx context.Context, volume *Volume) (*[]Backup, error) {
-
 	resourcePath := fmt.Sprintf("/Volumes/%s/Backups", volume.VolumeID)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -1051,7 +1022,6 @@ func (d *Client) GetBackupsForVolume(ctx context.Context, volume *Volume) (*[]Ba
 }
 
 func (d *Client) GetBackupForVolume(ctx context.Context, volume *Volume, backupName string) (*Backup, error) {
-
 	backups, err := d.GetBackupsForVolume(ctx, volume)
 	if err != nil {
 		return nil, err
@@ -1078,7 +1048,6 @@ func (d *Client) GetBackupForVolume(ctx context.Context, volume *Volume, backupN
 }
 
 func (d *Client) GetBackupByID(ctx context.Context, backupId string) (*Backup, error) {
-
 	resourcePath := fmt.Sprintf("/Backups/%s", backupId)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "GET", d.makeURL(resourcePath))
@@ -1101,14 +1070,12 @@ func (d *Client) GetBackupByID(ctx context.Context, backupId string) (*Backup, e
 }
 
 func (d *Client) WaitForBackupStates(
-	ctx context.Context, backup *Backup, desiredStates []string, abortStates []string, maxElapsedTime time.Duration,
+	ctx context.Context, backup *Backup, desiredStates, abortStates []string, maxElapsedTime time.Duration,
 ) error {
-
 	var b *Backup
 	var err error
 
 	checkBackupState := func() error {
-
 		b, err = d.GetBackupByID(ctx, backup.BackupID)
 		if err != nil {
 			return fmt.Errorf("could not get backup status; %v", err)
@@ -1168,7 +1135,6 @@ func (d *Client) WaitForBackupStates(
 }
 
 func (d *Client) CreateBackup(ctx context.Context, request *BackupCreateRequest) error {
-
 	resourcePath := "/Backups"
 
 	jsonRequest, err := json.Marshal(request)
@@ -1195,7 +1161,6 @@ func (d *Client) CreateBackup(ctx context.Context, request *BackupCreateRequest)
 }
 
 func (d *Client) DeleteBackup(ctx context.Context, volume *Volume, backup *Backup) error {
-
 	resourcePath := fmt.Sprintf("/Volumes/%s/Backups/%s", volume.VolumeID, backup.BackupID)
 
 	response, responseBody, err := d.InvokeAPI(ctx, nil, "DELETE", d.makeURL(resourcePath))
@@ -1217,7 +1182,6 @@ func (d *Client) DeleteBackup(ctx context.Context, volume *Volume, backup *Backu
 }
 
 func (d *Client) getErrorFromAPIResponse(response *http.Response, responseBody []byte) error {
-
 	if response.StatusCode >= 300 {
 		// Parse JSON error data
 		var responseData CallResponseError

@@ -11,7 +11,6 @@ import (
 )
 
 func Logc(ctx context.Context) *log.Entry {
-
 	entry := log.WithFields(log.Fields{
 		"requestID":     ctx.Value(ContextKeyRequestID),
 		"requestSource": ctx.Value(ContextKeyRequestSource),

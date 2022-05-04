@@ -57,7 +57,7 @@ type VolType struct {
 }
 
 // NewFromParameters is a factory method to create a new sfapi.Client object using the supplied parameters
-func NewFromParameters(pendpoint string, psvip string, pcfg Config) (c *Client, err error) {
+func NewFromParameters(pendpoint, psvip string, pcfg Config) (c *Client, err error) {
 	SFClient := &Client{
 		Endpoint:         pendpoint,
 		SVIP:             psvip,
@@ -72,7 +72,6 @@ func NewFromParameters(pendpoint string, psvip string, pcfg Config) (c *Client, 
 
 // Request performs a json-rpc POST to the configured endpoint
 func (c *Client) Request(ctx context.Context, method string, params interface{}, id int) ([]byte, error) {
-
 	var err error
 	var request *http.Request
 	var response *http.Response
@@ -145,7 +144,6 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 			} else {
 				utils.LogHTTPResponse(ctx, response, prettyResponseBuffer.Bytes(), false)
 			}
-
 		} else {
 			utils.LogHTTPResponse(ctx, response, []byte("<suppressed>"), true)
 		}
@@ -174,7 +172,6 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 // shouldLogResponseBody prevents logging the REST response body for APIs that are
 // extremely lengthy for no good reason or that return sensitive data like iSCSI secrets.
 func (c *Client) shouldLogResponseBody(method string) bool {
-
 	switch method {
 	case "GetAccountByName", "GetAccountByID", "ListAccounts":
 		return false

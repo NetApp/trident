@@ -38,7 +38,6 @@ func TestConvertUnixPermissions(t *testing.T) {
 }
 
 func TestHasNextLink(t *testing.T) {
-
 	////////////////////////////////////////////
 	// negative tests
 	assert.False(t,
@@ -51,7 +50,8 @@ func TestHasNextLink(t *testing.T) {
 
 	assert.False(t,
 		HasNextLink(&models.VolumeResponse{
-			Links: &models.VolumeResponseLinks{}}),
+			Links: &models.VolumeResponseLinks{},
+		}),
 		"Should NOT have a next link")
 
 	////////////////////////////////////////////
@@ -62,7 +62,9 @@ func TestHasNextLink(t *testing.T) {
 				Links: &models.VolumeResponseLinks{
 					Next: &models.Href{
 						Href: "/api/storage/volumes?start.uuid=00c881eb-f36c-11e8-996b-00a0986e75a0&fields=%2A%2A&max_records=1&name=%2A&return_records=true&svm.name=SVM",
-					}}}),
+					},
+				},
+			}),
 		"SHOULD have a next link")
 
 	assert.True(t,
@@ -71,7 +73,9 @@ func TestHasNextLink(t *testing.T) {
 				Links: &models.SnapshotResponseLinks{
 					Next: &models.Href{
 						Href: "/api/storage/snapshot?start.uuid=00c881eb-f36c-11e8-996b-00a0986e75a0&fields=%2A%2A&max_records=1&name=%2A&return_records=true&svm.name=SVM",
-					}}}),
+					},
+				},
+			}),
 		"SHOULD have a next link")
 }
 

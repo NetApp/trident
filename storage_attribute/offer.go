@@ -16,9 +16,7 @@ func UnmarshalOfferMap(mapJSON json.RawMessage) (map[string]Offer, error) {
 		return nil, fmt.Errorf("unable to unmarshal map: %v", err)
 	}
 	for name, rawAttr := range tmp {
-		var (
-			final Offer
-		)
+		var final Offer
 
 		baseType, ok := attrTypes[name]
 		if !ok {

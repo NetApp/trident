@@ -30,7 +30,7 @@ const (
 	AstraDSFailedDriveStateDone     = AstraDSFailedDriveState("Replaced")
 )
 
-//AstraDSFailedDriveConditionType indicates the type of condition occurred on a volume
+// AstraDSFailedDriveConditionType indicates the type of condition occurred on a volume
 type AstraDSFailedDriveConditionType string
 
 const (

@@ -12,8 +12,8 @@ import (
 
 // CreateVolumeAccessGroup tbd
 func (c *Client) CreateVolumeAccessGroup(ctx context.Context, r *CreateVolumeAccessGroupRequest) (vagID int64,
-	err error) {
-
+	err error,
+) {
 	var result CreateVolumeAccessGroupResult
 	response, err := c.Request(ctx, "CreateVolumeAccessGroup", r, NewReqID())
 	if err := json.Unmarshal(response, &result); err != nil {
@@ -22,14 +22,12 @@ func (c *Client) CreateVolumeAccessGroup(ctx context.Context, r *CreateVolumeAcc
 	}
 	vagID = result.Result.VagID
 	return
-
 }
 
 // ListVolumeAccessGroups tbd
 func (c *Client) ListVolumeAccessGroups(
 	ctx context.Context, r *ListVolumeAccessGroupsRequest,
 ) (vags []VolumeAccessGroup, err error) {
-
 	response, err := c.Request(ctx, "ListVolumeAccessGroups", r, NewReqID())
 	if err != nil {
 		Logc(ctx).Errorf("Error in ListVolumeAccessGroupResult API response: %+v", err)
@@ -48,7 +46,6 @@ func (c *Client) ListVolumeAccessGroups(
 func (c *Client) AddInitiatorsToVolumeAccessGroup(
 	ctx context.Context, r *AddInitiatorsToVolumeAccessGroupRequest,
 ) error {
-
 	_, err := c.Request(ctx, "AddInitiatorsToVolumeAccessGroup", r, NewReqID())
 	if err != nil {
 		Logc(ctx).Errorf("Error in AddInitiator to VAG API response: %+v", err)

@@ -22,7 +22,6 @@ import (
 
 // validateKubeVersion logs a warning if the detected Kubernetes version is outside the supported range.
 func (p *Plugin) validateKubeVersion() error {
-
 	// Parse Kubernetes version into a SemVer object for simple comparisons
 	if version, err := utils.ParseSemantic(p.kubeVersion.GitVersion); err != nil {
 		return err
@@ -43,7 +42,6 @@ func (p *Plugin) validateKubeVersion() error {
 func (p *Plugin) updatePVPhaseWithEvent(
 	ctx context.Context, pv *v1.PersistentVolume, phase v1.PersistentVolumePhase, eventType, reason, message string,
 ) (*v1.PersistentVolume, error) {
-
 	if pv.Status.Phase == phase {
 		// Nothing to do.
 		return pv, nil
@@ -63,7 +61,6 @@ func (p *Plugin) updatePVPhaseWithEvent(
 func (p *Plugin) updatePVPhase(
 	ctx context.Context, pv *v1.PersistentVolume, phase v1.PersistentVolumePhase, message string,
 ) (*v1.PersistentVolume, error) {
-
 	if pv.Status.Phase == phase {
 		// Nothing to do.
 		return pv, nil
@@ -79,8 +76,8 @@ func (p *Plugin) updatePVPhase(
 
 // patchPV patches a PV after an update.
 func (p *Plugin) patchPV(
-	ctx context.Context, oldPV *v1.PersistentVolume, newPV *v1.PersistentVolume) (*v1.PersistentVolume, error) {
-
+	ctx context.Context, oldPV, newPV *v1.PersistentVolume,
+) (*v1.PersistentVolume, error) {
 	oldPVData, err := json.Marshal(oldPV)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling the PV %q: %v", oldPV.Name, err)
@@ -102,9 +99,8 @@ func (p *Plugin) patchPV(
 
 // patchPVC patches a PVC after an update.
 func (p *Plugin) patchPVC(
-	ctx context.Context, oldPVC *v1.PersistentVolumeClaim, newPVC *v1.PersistentVolumeClaim,
+	ctx context.Context, oldPVC, newPVC *v1.PersistentVolumeClaim,
 ) (*v1.PersistentVolumeClaim, error) {
-
 	oldPVCData, err := json.Marshal(oldPVC)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling the PVC %q: %v", oldPVC.Name, err)
@@ -126,9 +122,8 @@ func (p *Plugin) patchPVC(
 
 // patchPVCStatus patches a PVC status after an update.
 func (p *Plugin) patchPVCStatus(
-	ctx context.Context, oldPVC *v1.PersistentVolumeClaim, newPVC *v1.PersistentVolumeClaim,
+	ctx context.Context, oldPVC, newPVC *v1.PersistentVolumeClaim,
 ) (*v1.PersistentVolumeClaim, error) {
-
 	oldPVCData, err := json.Marshal(oldPVC)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling the PVC %q: %v", oldPVC.Name, err)
@@ -172,8 +167,7 @@ func isPVNotManaged(ctx context.Context, pv *v1.PersistentVolume) bool {
 
 // isNotManaged returns true if the notManaged annotation is present in the supplied map and
 // has a value of anything that doesn't resolve to 'false'.
-func isNotManaged(ctx context.Context, annotations map[string]string, name string, kind string) bool {
-
+func isNotManaged(ctx context.Context, annotations map[string]string, name, kind string) bool {
 	if value, ok := annotations[AnnNotManaged]; ok {
 		if notManaged, err := strconv.ParseBool(value); err != nil {
 			Logc(ctx).WithField(kind, name).Errorf("%s annotation set with invalid value: %v", AnnNotManaged, err)
@@ -218,7 +212,6 @@ func getPVCProvisioner(pvc *v1.PersistentVolumeClaim) string {
 }
 
 func (p *Plugin) checkValidStorageClassReceived(ctx context.Context, claim *v1.PersistentVolumeClaim) error {
-
 	// Filter unrelated claims
 	if claim.Spec.StorageClassName == nil || *claim.Spec.StorageClassName == "" {
 		Logc(ctx).WithFields(log.Fields{

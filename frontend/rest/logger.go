@@ -53,7 +53,6 @@ func Logger(inner http.Handler, routeName string, logLevel log.Level) http.Handl
 }
 
 func logRestCallInfo(msg string, r *http.Request, start time.Time, name, statusCode string, logLevel log.Level) {
-
 	logFields := log.Fields{
 		"method":   r.Method,
 		"uri":      r.RequestURI,

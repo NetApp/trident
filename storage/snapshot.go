@@ -7,8 +7,10 @@ import (
 	"regexp"
 )
 
-const SnapshotTimestampFormat = "2006-01-02T15:04:05Z"
-const SnapshotNameFormat = "20060102T150405Z"
+const (
+	SnapshotTimestampFormat = "2006-01-02T15:04:05Z"
+	SnapshotNameFormat      = "20060102T150405Z"
+)
 
 var snapshotIDRegex = regexp.MustCompile(`^(?P<volume>[^\s/]+)/(?P<snapshot>[^\s/]+)$`)
 
@@ -128,7 +130,6 @@ func MakeSnapshotID(volumeName, snapshotName string) string {
 }
 
 func ParseSnapshotID(snapshotID string) (string, string, error) {
-
 	match := snapshotIDRegex.FindStringSubmatch(snapshotID)
 
 	paramsMap := make(map[string]string)

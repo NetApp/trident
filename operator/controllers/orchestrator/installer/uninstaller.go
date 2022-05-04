@@ -12,7 +12,6 @@ import (
 )
 
 func (i *Installer) UninstallTrident() error {
-
 	// 1. preview CSI Trident --> uninstall preview CSI Trident
 	// 2. preview CSI Trident & legacy Trident --> uninstall preview CSI Trident
 	// 3. CSI Trident --> uninstall CSI Trident
@@ -131,7 +130,6 @@ func (i *Installer) UninstallLegacyTrident() error {
 // removeRBACObjects removes any ClusterRoleBindings, ClusterRoles,
 // ServicesAccounts and OpenShiftSCCs associated with legacy Trident or Trident-CSI.
 func (i *Installer) removeRBACObjects(csi bool) error {
-
 	// Delete cluster role binding
 	if err := i.client.DeleteTridentClusterRoleBinding(getClusterRoleBindingName(csi), appLabel); err != nil {
 		return err

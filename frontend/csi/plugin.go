@@ -61,7 +61,6 @@ type Plugin struct {
 func NewControllerPlugin(
 	nodeName, endpoint, aesKeyFile string, orchestrator core.Orchestrator, helper *helpers.HybridPlugin,
 ) (*Plugin, error) {
-
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
 	p := &Plugin{
@@ -109,7 +108,6 @@ func NewNodePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
 	unsafeDetach, nodePrep bool,
 ) (*Plugin, error) {
-
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
 	p := &Plugin{
@@ -178,7 +176,6 @@ func NewAllInOnePlugin(
 	orchestrator core.Orchestrator, helper *helpers.HybridPlugin,
 	unsafeDetach, nodePrep bool,
 ) (*Plugin, error) {
-
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
 	p := &Plugin{
@@ -277,7 +274,6 @@ func (p *Plugin) Version() string {
 }
 
 func (p *Plugin) addControllerServiceCapabilities(cl []csi.ControllerServiceCapability_RPC_Type) {
-
 	var csCap []*csi.ControllerServiceCapability
 
 	for _, c := range cl {
@@ -289,7 +285,6 @@ func (p *Plugin) addControllerServiceCapabilities(cl []csi.ControllerServiceCapa
 }
 
 func (p *Plugin) addNodeServiceCapabilities(cl []csi.NodeServiceCapability_RPC_Type) {
-
 	var nsCap []*csi.NodeServiceCapability
 
 	for _, c := range cl {
@@ -301,7 +296,6 @@ func (p *Plugin) addNodeServiceCapabilities(cl []csi.NodeServiceCapability_RPC_T
 }
 
 func (p *Plugin) addVolumeCapabilityAccessModes(vc []csi.VolumeCapability_AccessMode_Mode) {
-
 	var vCap []*csi.VolumeCapability_AccessMode
 
 	for _, c := range vc {

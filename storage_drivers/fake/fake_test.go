@@ -36,8 +36,7 @@ func TestNewConfig(t *testing.T) {
 }
 
 func TestStorageDriverString(t *testing.T) {
-
-	var fakeStorageDrivers = []StorageDriver{
+	fakeStorageDrivers := []StorageDriver{
 		*NewFakeStorageDriverWithDebugTraceFlags(map[string]bool{"method": true}),
 		*NewFakeStorageDriverWithDebugTraceFlags(nil),
 	}
@@ -73,7 +72,6 @@ func TestStorageDriverString(t *testing.T) {
 }
 
 func TestInitializeStoragePoolsLabels(t *testing.T) {
-
 	ctx := context.Background()
 	cases := []struct {
 		physicalPoolLabels   map[string]string
@@ -89,13 +87,15 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 			"Label is not empty", "Label is not empty",
 		}, // no labels
 		{
-			map[string]string{"base-key": "base-value"}, nil,
+			map[string]string{"base-key": "base-value"},
+			nil,
 			`{"provisioning":{"base-key":"base-value"}}`,
 			`{"provisioning":{"base-key":"base-value"}}`, "fake",
 			"Base label is not set correctly", "Base label is not set correctly",
 		}, // base label only
 		{
-			nil, map[string]string{"virtual-key": "virtual-value"},
+			nil,
+			map[string]string{"virtual-key": "virtual-value"},
 			"",
 			`{"provisioning":{"virtual-key":"virtual-value"}}`, "fake",
 			"Base label is not empty", "Virtual pool label is not set correctly",

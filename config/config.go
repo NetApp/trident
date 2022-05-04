@@ -13,12 +13,14 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-type Protocol string
-type AccessMode string
-type VolumeMode string
-type VolumeType string
-type DriverContext string
-type Platform string
+type (
+	Protocol      string
+	AccessMode    string
+	VolumeMode    string
+	VolumeType    string
+	DriverContext string
+	Platform      string
+)
 
 type Telemetry struct {
 	TridentVersion     string `json:"version"`
@@ -206,7 +208,7 @@ func GetValidProtocolNames() []string {
 	return ret
 }
 
-func PlatformAtLeast(platformName string, version string) bool {
+func PlatformAtLeast(platformName, version string) bool {
 	if OrchestratorTelemetry.Platform == platformName {
 		platformVersion := utils.MustParseSemantic(OrchestratorTelemetry.PlatformVersion)
 		requiredVersion, err := utils.ParseSemantic(version)
@@ -225,7 +227,6 @@ func PlatformAtLeast(platformName string, version string) bool {
 }
 
 func version() string {
-
 	var version string
 
 	if BuildType != "stable" {
@@ -242,7 +243,6 @@ func version() string {
 }
 
 func ValidateKubernetesVersion(k8sMinVersion string, k8sVersion *utils.Version) error {
-
 	k8sMMVersion := k8sVersion.ToMajorMinorVersion()
 	minSupportedMMVersion := utils.MustParseMajorMinorVersion(k8sMinVersion)
 	maxSupportedMMVersion := utils.MustParseMajorMinorVersion(KubernetesVersionMax)
@@ -257,12 +257,10 @@ func ValidateKubernetesVersion(k8sMinVersion string, k8sVersion *utils.Version) 
 }
 
 func ValidateKubernetesVersionFromInfo(k8sMinVersion string, versionInfo *k8sversion.Info) error {
-
 	k8sVersion, err := utils.ParseSemantic(versionInfo.GitVersion)
 	if err != nil {
 		return err
 	}
 
 	return ValidateKubernetesVersion(k8sMinVersion, k8sVersion)
-
 }

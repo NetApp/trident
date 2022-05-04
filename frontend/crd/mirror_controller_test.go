@@ -139,7 +139,6 @@ func TestUpdateTMRConditionLocalFields(t *testing.T) {
 	statusCondition := &netappv1.TridentMirrorRelationshipCondition{}
 	newStatusCondition, err := updateTMRConditionLocalFields(
 		statusCondition, localVolumeHandle, localPVCName, remoteVolumeHandle)
-
 	if err != nil {
 		t.Errorf("Got error updating TMR condition")
 	}

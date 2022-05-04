@@ -21,7 +21,6 @@ func NewDataMigrator(SourceClient, DestClient Client, dryRun bool) *DataMigrator
 }
 
 func (m *DataMigrator) Run() error {
-
 	// Determine if this is a supported data migration.
 	log.Debug("DataMigrator does not currently support any migrations.")
 

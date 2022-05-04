@@ -43,7 +43,6 @@ type PassthroughClient struct {
 // use case, which doesn't easily support a separate persistence layer
 // and has no support for storage classes.
 func NewPassthroughClient(configPath string) (*PassthroughClient, error) {
-
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal)
 	client := &PassthroughClient{
 		liveBackends: make(map[string]storage.Backend),
@@ -64,7 +63,6 @@ func NewPassthroughClient(configPath string) (*PassthroughClient, error) {
 
 // initialize loads one or more driver config files from the specified config path
 func (c *PassthroughClient) initialize(ctx context.Context, configPath string) error {
-
 	if configPath == "" {
 		return errors.New("passthrough store initialization failed, config path must be specified")
 	}
@@ -102,10 +100,8 @@ func (c *PassthroughClient) initialize(ctx context.Context, configPath string) e
 		return nil
 
 	} else if configPathInfo.Mode().IsRegular() {
-
 		// If config path is a single file, just load it.
 		return c.loadBackend(ctx, configPath)
-
 	} else {
 		return errors.New("passthrough store initialization failed, invalid config path")
 	}
@@ -113,7 +109,6 @@ func (c *PassthroughClient) initialize(ctx context.Context, configPath string) e
 
 // loadBackend loads a single driver config file from the specified path
 func (c *PassthroughClient) loadBackend(ctx context.Context, configPath string) error {
-
 	Logc(ctx).WithField("configPath", configPath).Debug("Passthrough store loading config file.")
 
 	// Read config file
@@ -144,7 +139,6 @@ func (c *PassthroughClient) loadBackend(ctx context.Context, configPath string) 
 // unmarshalConfig accepts a driver JSON/YAML config and converts it to a persistent backend
 // JSON config as needed by the bootstrapping process.
 func (c *PassthroughClient) unmarshalConfig(ctx context.Context, fileContents []byte) (string, error) {
-
 	// Convert config (JSON or YAML) to JSON
 	configJSONBytes, err := yaml.YAMLToJSON(fileContents)
 	if err != nil {
@@ -170,7 +164,7 @@ func (c *PassthroughClient) unmarshalConfig(ctx context.Context, fileContents []
 	case drivers.AWSNFSStorageDriverName:
 		configType = "aws_config"
 	case drivers.AzureNFSStorageDriverName,
-	    drivers.AzureNASBlockStorageDriverName:
+		drivers.AzureNASBlockStorageDriverName:
 		configType = "azure_config"
 	case drivers.GCPNFSStorageDriverName:
 		configType = "gcp_config"
@@ -218,7 +212,6 @@ func (c *PassthroughClient) SetVersion(context.Context, *config.PersistentStateV
 }
 
 func (c *PassthroughClient) AddBackend(ctx context.Context, backend storage.Backend) error {
-
 	// The passthrough store persists backends for the purpose of contacting
 	// the storage controllers.  If the store ever needs to write backends
 	// back to a file system for subsequent bootstrapping, that logic will live
@@ -234,7 +227,6 @@ func (c *PassthroughClient) AddBackendPersistent(context.Context, *storage.Backe
 }
 
 func (c *PassthroughClient) GetBackend(ctx context.Context, backendName string) (*storage.BackendPersistent, error) {
-
 	existingBackend, ok := c.liveBackends[backendName]
 	if !ok {
 		return nil, NewPersistentStoreError(KeyNotFoundErr, backendName)
@@ -244,12 +236,10 @@ func (c *PassthroughClient) GetBackend(ctx context.Context, backendName string) 
 }
 
 func (c *PassthroughClient) GetBackendSecret(_ context.Context, _ string) (map[string]string, error) {
-
 	return nil, nil
 }
 
 func (c *PassthroughClient) UpdateBackend(ctx context.Context, backend storage.Backend) error {
-
 	if _, ok := c.liveBackends[backend.Name()]; !ok {
 		return NewPersistentStoreError(KeyNotFoundErr, backend.Name())
 	}
@@ -265,7 +255,6 @@ func (c *PassthroughClient) UpdateBackendPersistent(context.Context, *storage.Ba
 }
 
 func (c *PassthroughClient) DeleteBackend(_ context.Context, backend storage.Backend) error {
-
 	if _, ok := c.liveBackends[backend.Name()]; !ok {
 		return NewPersistentStoreError(KeyNotFoundErr, backend.Name())
 	}
@@ -291,7 +280,6 @@ func (c *PassthroughClient) ReplaceBackendAndUpdateVolumes(
 // passthrough store returns the persistent backend objects it read from config
 // files.
 func (c *PassthroughClient) GetBackends(context.Context) ([]*storage.BackendPersistent, error) {
-
 	backendList := make([]*storage.BackendPersistent, 0)
 
 	backendList = append(backendList, c.bootBackends...)
@@ -342,7 +330,6 @@ func (c *PassthroughClient) DeleteVolumeIgnoreNotFound(context.Context, *storage
 // as responsive as possible even if a backend is unavailable or returns an error
 // during volume discovery.
 func (c *PassthroughClient) GetVolumes(ctx context.Context) ([]*storage.VolumeExternal, error) {
-
 	volumeChannel := make(chan *storage.VolumeExternalWrapper)
 
 	var waitGroup sync.WaitGroup

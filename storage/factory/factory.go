@@ -29,7 +29,6 @@ func SpecOnlyValidation(
 	ctx context.Context, commonConfig *drivers.CommonStorageDriverConfig,
 	configInJSON string,
 ) error {
-
 	storageDriverConfig, err := drivers.GetDriverConfigByName(commonConfig.StorageDriverName)
 	if err != nil {
 		return err
@@ -44,8 +43,8 @@ func SpecOnlyValidation(
 }
 
 func ValidateCommonSettings(ctx context.Context, configJSON string) (commonConfig *drivers.CommonStorageDriverConfig,
-	configInJSON string, err error) {
-
+	configInJSON string, err error,
+) {
 	// Convert config (JSON or YAML) to JSON
 	configJSONBytes, err := yaml.YAMLToJSON([]byte(configJSON))
 	if err != nil {
@@ -68,8 +67,8 @@ func NewStorageBackendForConfig(
 	ctx context.Context, configJSON, configRef, backendUUID string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string,
 ) (sb storage.Backend,
-	err error) {
-
+	err error,
+) {
 	// Some drivers may panic during initialize if given invalid parameters,
 	// so catch any panics that might occur and return an error.
 	defer func() {

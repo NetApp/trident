@@ -9,7 +9,6 @@ import (
 )
 
 func TestVolumeState(t *testing.T) {
-
 	tests := map[string]struct {
 		input     VolumeState
 		output    string

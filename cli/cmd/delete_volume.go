@@ -37,7 +37,6 @@ var deleteVolumeCmd = &cobra.Command{
 }
 
 func volumeDelete(volumeNames []string) error {
-
 	var err error
 
 	if allVolumes {

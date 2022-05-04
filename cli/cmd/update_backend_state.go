@@ -29,7 +29,6 @@ var updateBackendStateCmd = &cobra.Command{
 	Aliases: []string{"s"},
 	Hidden:  true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		newBackendState, err := getBackendState()
 		if err != nil {
 			return err
@@ -48,7 +47,6 @@ var updateBackendStateCmd = &cobra.Command{
 }
 
 func getBackendState() (string, error) {
-
 	if backendState == "" {
 		return "", errors.New("no state was specified")
 	}
@@ -58,7 +56,6 @@ func getBackendState() (string, error) {
 }
 
 func backendUpdateState(backendNames []string, backendState string) error {
-
 	switch len(backendNames) {
 	case 0:
 		return errors.New("backend name not specified")

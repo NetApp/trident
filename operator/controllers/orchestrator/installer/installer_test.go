@@ -26,7 +26,6 @@ func newMockKubeClient(t *testing.T) *mockExtendedK8sClient.MockExtendedK8sClien
 }
 
 func newTestInstaller(client *mockExtendedK8sClient.MockExtendedK8sClient) *Installer {
-
 	return &Installer{
 		client:           client,
 		tridentCRDClient: nil,
@@ -35,7 +34,6 @@ func newTestInstaller(client *mockExtendedK8sClient.MockExtendedK8sClient) *Inst
 }
 
 func createTestControllingCRDetails() map[string]string {
-
 	controllingCRDetails := make(map[string]string)
 	controllingCRDetails[CRAPIVersionKey] = "v01.01.01"
 	controllingCRDetails[CRController] = "trident-orchestrator"
@@ -47,7 +45,6 @@ func createTestControllingCRDetails() map[string]string {
 }
 
 func createTestLabels() map[string]string {
-
 	labels := make(map[string]string)
 	labels[appLabelKey] = appLabelValue
 	labels[K8sVersionLabelKey] = "v1.21.8"
@@ -57,7 +54,6 @@ func createTestLabels() map[string]string {
 }
 
 func TestInstaller_createOrConsumeTridentEncryptionSecret(t *testing.T) {
-
 	mockK8sClient := newMockKubeClient(t)
 	installer := newTestInstaller(mockK8sClient)
 	controllingCRDetails := createTestControllingCRDetails()

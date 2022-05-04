@@ -45,7 +45,7 @@ var (
 	extraMatchRE = regexp.MustCompile(`^(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?\s*$`)
 )
 
-func parse(str string, semver bool, datever bool) (*Version, error) {
+func parse(str string, semver, datever bool) (*Version, error) {
 	parts := versionMatchRE.FindStringSubmatch(str)
 	if parts == nil {
 		return nil, fmt.Errorf("could not parse %q as version", str)

@@ -25,7 +25,6 @@ type Feature string
 // the CSI controller.  The helpers supply CO-specific details at certain
 // points of CSI workflows.
 type HybridPlugin interface {
-
 	// GetVolumeConfig accepts the attributes of a volume being requested by the CSI
 	// provisioner, adds in any CO-specific details about the new volume, and returns
 	// a VolumeConfig structure as needed by Trident to create a new volume.

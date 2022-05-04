@@ -20,7 +20,6 @@ import (
 func (c *Client) ListVolumesForAccount(
 	ctx context.Context, listReq *ListVolumesForAccountRequest,
 ) (volumes []Volume, err error) {
-
 	response, err := c.Request(ctx, "ListVolumesForAccount", listReq, NewReqID())
 	if err != nil {
 		Logc(ctx).Errorf("Error detected in ListVolumesForAccount API response: %+v", err)
@@ -37,7 +36,6 @@ func (c *Client) ListVolumesForAccount(
 
 // GetVolumeByID returns the volume with the specified ID.
 func (c *Client) GetVolumeByID(ctx context.Context, volID int64) (Volume, error) {
-
 	var limit int64 = 1
 
 	listRequest := &ListVolumesRequest{
@@ -61,7 +59,6 @@ func (c *Client) GetVolumeByID(ctx context.Context, volID int64) (Volume, error)
 
 // WaitForVolumeByID polls for the volume with specified ID to appear, with backoff retry logic.
 func (c *Client) WaitForVolumeByID(ctx context.Context, volID int64) (Volume, error) {
-
 	volume := Volume{}
 
 	checkVolumeExists := func() error {
@@ -94,7 +91,6 @@ func (c *Client) WaitForVolumeByID(ctx context.Context, volID int64) (Volume, er
 
 // ListVolumes returns all volumes using the specified request object.
 func (c *Client) ListVolumes(ctx context.Context, listVolReq *ListVolumesRequest) (volumes []Volume, err error) {
-
 	response, err := c.Request(ctx, "ListVolumes", listVolReq, NewReqID())
 	if err != nil {
 		Logc(ctx).Errorf("Error response from ListVolumes request: %v ", err)
@@ -113,7 +109,6 @@ func (c *Client) ListVolumes(ctx context.Context, listVolReq *ListVolumesRequest
 // (which itself may be new in a test scenario) to be ready to be cloned, and it waits for
 // the clone to exist.
 func (c *Client) CloneVolume(ctx context.Context, req *CloneVolumeRequest) (Volume, error) {
-
 	var (
 		cloneError error
 		response   []byte
@@ -167,7 +162,6 @@ func (c *Client) CloneVolume(ctx context.Context, req *CloneVolumeRequest) (Volu
 
 // CreateVolume tbd
 func (c *Client) CreateVolume(ctx context.Context, createReq *CreateVolumeRequest) (Volume, error) {
-
 	response, err := c.Request(ctx, "CreateVolume", createReq, NewReqID())
 	if err != nil {
 		Logc(ctx).Errorf("Error response from CreateVolume request: %v ", err)
@@ -184,7 +178,6 @@ func (c *Client) CreateVolume(ctx context.Context, createReq *CreateVolumeReques
 
 // AddVolumesToAccessGroup tbd
 func (c *Client) AddVolumesToAccessGroup(ctx context.Context, req *AddVolumesToVolumeAccessGroupRequest) (err error) {
-
 	_, err = c.Request(ctx, "AddVolumesToVolumeAccessGroup", req, NewReqID())
 	if err != nil {
 		if apiErr, ok := err.(Error); ok && apiErr.Fields.Name == "xAlreadyInVolumeAccessGroup" {
@@ -198,7 +191,6 @@ func (c *Client) AddVolumesToAccessGroup(ctx context.Context, req *AddVolumesToV
 
 // DeleteVolume tbd
 func (c *Client) DeleteVolume(ctx context.Context, volumeID int64) (err error) {
-
 	// TODO(jdg): Add options like purge=True|False, range, ALL etc
 	var req DeleteVolumeRequest
 	req.VolumeID = volumeID
@@ -214,7 +206,6 @@ func (c *Client) DeleteVolume(ctx context.Context, volumeID int64) (err error) {
 
 // DetachVolume tbd
 func (c *Client) DetachVolume(ctx context.Context, v Volume) error {
-
 	if c.SVIP == "" {
 		Logc(ctx).Errorf("Cannot detach volume, SVIP is not set.")
 		return errors.New("detach volume error")
@@ -223,7 +214,6 @@ func (c *Client) DetachVolume(ctx context.Context, v Volume) error {
 }
 
 func (c *Client) ModifyVolume(ctx context.Context, req *ModifyVolumeRequest) (err error) {
-
 	_, err = c.Request(ctx, "ModifyVolume", req, NewReqID())
 	if err != nil {
 		Logc(ctx).Errorf("Error response from ModifyVolume request: %+v ", err)

@@ -37,7 +37,6 @@ var deleteStorageClassCmd = &cobra.Command{
 }
 
 func storageClassDelete(storageClassNames []string) error {
-
 	var err error
 
 	if allStorageClasses {

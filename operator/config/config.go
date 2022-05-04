@@ -47,7 +47,7 @@ var (
 	OperatorTelemetry = Telemetry{Version: OperatorVersion.String()}
 )
 
-func PlatformAtLeast(platformName string, version string) bool {
+func PlatformAtLeast(platformName, version string) bool {
 	if OperatorTelemetry.Platform == platformName {
 		platformVersion := tridentutils.MustParseSemantic(OperatorTelemetry.PlatformVersion)
 		requiredVersion, err := tridentutils.ParseSemantic(version)
@@ -66,7 +66,6 @@ func PlatformAtLeast(platformName string, version string) bool {
 }
 
 func Version() string {
-
 	var version string
 
 	if BuildType != "stable" {

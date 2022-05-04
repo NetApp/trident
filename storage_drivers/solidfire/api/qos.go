@@ -12,7 +12,6 @@ import (
 
 // Get default QoS information
 func (c *Client) GetDefaultQoS(ctx context.Context) (*QoS, error) {
-
 	var (
 		defaultQoSReq    DefaultQoSRequest
 		defaultQoSResult DefaultQoSResult

@@ -28,7 +28,6 @@ var (
 )
 
 func TestApiGetError(t *testing.T) {
-
 	ctx := context.Background()
 
 	var snapListResponseErr error
@@ -50,7 +49,6 @@ func TestApiGetError(t *testing.T) {
 }
 
 func TestZapiGetSVMAggregateSpace(t *testing.T) {
-
 	ctx := context.Background()
 
 	aggr := "aggr1"
@@ -216,7 +214,6 @@ func TestZapiGetSVMAggregateSpace(t *testing.T) {
 }
 
 func TestRestGetSVMAggregateSpace(t *testing.T) {
-
 	ctx := context.Background()
 
 	aggr := "aggr1"
@@ -477,7 +474,6 @@ func newMockOntapAPI(t *testing.T) *mock_api.MockOntapAPI {
 }
 
 func TestCheckAggregateLimitsAbstraction(t *testing.T) {
-
 	ctx := context.Background()
 
 	aggr := "aggr1"

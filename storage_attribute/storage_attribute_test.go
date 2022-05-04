@@ -144,9 +144,7 @@ func TestMatches(t *testing.T) {
 }
 
 func TestUnmarshalOffer(t *testing.T) {
-	var (
-		targetOfferMap map[string]Offer
-	)
+	var targetOfferMap map[string]Offer
 	offerMap := map[string]Offer{
 		IOPS: &intOffer{
 			Min: 5,
@@ -183,7 +181,6 @@ func TestUnmarshalOffer(t *testing.T) {
 }
 
 func TestUnmarshalRequest(t *testing.T) {
-
 	labelRequest, _ := NewLabelRequest("performance=gold")
 
 	requestMap := map[string]Request{

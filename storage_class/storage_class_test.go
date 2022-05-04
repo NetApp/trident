@@ -191,7 +191,6 @@ func TestFilterPoolsOnTopology(t *testing.T) {
 	if len(filteredPools) == 0 {
 		t.Error("all pools should be returned")
 	}
-
 }
 
 func TestSortPoolsByPreferredTopologies(t *testing.T) {

@@ -45,7 +45,7 @@ type Orchestrator interface {
 	GetVolume(ctx context.Context, volume string) (*storage.VolumeExternal, error)
 	GetVolumeByInternalName(volumeInternal string, ctx context.Context) (volume string,
 		err error)
-	GetVolumeExternal(ctx context.Context, volumeName string, backendName string) (*storage.VolumeExternal, error)
+	GetVolumeExternal(ctx context.Context, volumeName, backendName string) (*storage.VolumeExternal, error)
 	GetVolumeType(ctx context.Context, vol *storage.VolumeExternal) (config.VolumeType, error)
 	LegacyImportVolume(
 		ctx context.Context, volumeConfig *storage.VolumeConfig, backendName string, notManaged bool,
@@ -108,5 +108,7 @@ type Orchestrator interface {
 	GetCHAP(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
 }
 
-type VolumeCallback func(*storage.VolumeExternal, string) error
-type NodeEventCallback func(eventType, reason, message string)
+type (
+	VolumeCallback    func(*storage.VolumeExternal, string) error
+	NodeEventCallback func(eventType, reason, message string)
+)

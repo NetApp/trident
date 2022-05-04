@@ -61,10 +61,9 @@ func CreateTLSRestClient(url, caFile, certFile, keyFile string) (TridentControll
 // or nil). The method is the HTTP verb (i.e. GET, POST, ...).  The resource path is appended to the base URL to
 // identify the desired server resource; it should start with '/'.
 func (c *ControllerRestClient) InvokeAPI(
-	ctx context.Context, requestBody []byte, method string, resourcePath string, redactRequestBody,
+	ctx context.Context, requestBody []byte, method, resourcePath string, redactRequestBody,
 	redactResponseBody bool,
 ) (*http.Response, []byte, error) {
-
 	// Build URL
 	url := c.url + resourcePath
 

@@ -64,7 +64,6 @@ func (p *Plugin) deleteLegacyStorageClass(obj interface{}) {
 // Add & Delete events cause the storage class to be replaced with an identical one that references the
 // CSI Trident provisioner name.
 func (p *Plugin) processLegacyStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass, eventType string) {
-
 	// Validate the storage class
 	if sc.Provisioner != csi.LegacyProvisioner {
 		return
@@ -91,7 +90,6 @@ func (p *Plugin) processLegacyStorageClass(ctx context.Context, sc *k8sstoragev1
 // replaceLegacyStorageClass replaces a storage class with the legacy Trident provisioner name (netapp.io/trident)
 // with an identical storage class with the CSI Trident provisioner name (csi.trident.netapp.io).
 func (p *Plugin) replaceLegacyStorageClass(ctx context.Context, oldSC *k8sstoragev1.StorageClass) {
-
 	// Clone the storage class
 	newSC := oldSC.DeepCopy()
 	newSC.Provisioner = csi.Provisioner
@@ -117,7 +115,6 @@ func (p *Plugin) replaceLegacyStorageClass(ctx context.Context, oldSC *k8sstorag
 
 		// Failed to create the new storage class, so try to restore the old one
 		if _, err := p.kubeClient.StorageV1().StorageClasses().Create(ctx, oldSC, createOpts); err != nil {
-
 			Logc(ctx).WithFields(log.Fields{
 				"name":  oldSC.Name,
 				"error": err,

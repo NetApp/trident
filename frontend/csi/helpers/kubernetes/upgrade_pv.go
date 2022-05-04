@@ -28,7 +28,6 @@ import (
 func (p *Plugin) UpgradeVolume(
 	ctx context.Context, request *storage.UpgradeVolumeRequest,
 ) (*storage.VolumeExternal, error) {
-
 	Logc(ctx).WithFields(log.Fields{
 		"volume": request.Volume,
 		"type":   request.Type,
@@ -285,7 +284,6 @@ func (p *Plugin) UpgradeVolume(
 
 	// Delete all owned pods that were using the PV
 	for _, podName := range ownedPodsForPVC {
-
 		// Delete pod
 		if err = p.kubeClient.CoreV1().Pods(namespace).Delete(ctx, podName, deleteOpts); err != nil {
 			message := "PV upgrade: could not delete a pod using the PV"
@@ -307,7 +305,6 @@ func (p *Plugin) UpgradeVolume(
 
 	// Wait for all deleted pods to disappear (or reappear in a non-Running state)
 	for _, podName := range ownedPodsForPVC {
-
 		// Wait for pod to disappear or become pending
 		if _, err = p.waitForDeletedOrNonRunningPod(ctx, podName, namespace, PodDeleteWaitPeriod); err != nil {
 			message := "PV upgrade: unexpected pod status"
@@ -398,7 +395,6 @@ func (p *Plugin) UpgradeVolume(
 }
 
 func (p *Plugin) rollBackPVUpgrade(ctx context.Context, volTxn *storage.VolumeTransaction) error {
-
 	// Check volume exists in Trident
 	volume, err := p.orchestrator.GetVolume(ctx, volTxn.Config.Name)
 	if err != nil {
@@ -509,7 +505,6 @@ func (p *Plugin) rollBackPVUpgrade(ctx context.Context, volTxn *storage.VolumeTr
 
 	// Try to delete all owned pods that were using the PV
 	for _, podName := range volTxn.PVUpgradeConfig.OwnedPodsForPVC {
-
 		// Delete pod
 		if err = p.kubeClient.CoreV1().Pods(namespace).Delete(ctx, podName, deleteOpts); err != nil {
 			message := "PV rollback: could not delete a pod using the PV"
@@ -530,7 +525,6 @@ func (p *Plugin) rollBackPVUpgrade(ctx context.Context, volTxn *storage.VolumeTr
 
 	// Wait for all deleted pods to disappear (or reappear in a non-Running state)
 	for _, podName := range volTxn.PVUpgradeConfig.OwnedPodsForPVC {
-
 		// Wait for pod to disappear or become pending
 		if _, err = p.waitForDeletedOrNonRunningPod(ctx, podName, namespace, PodDeleteWaitPeriod); err != nil {
 			message := "PV rollback: unexpected pod status"
@@ -611,7 +605,6 @@ func (p *Plugin) rollBackPVUpgrade(ctx context.Context, volTxn *storage.VolumeTr
 }
 
 func (p *Plugin) deletePVForUpgrade(ctx context.Context, pv *v1.PersistentVolume) error {
-
 	// Check if PV has finalizers
 	hasFinalizers := pv.Finalizers != nil && len(pv.Finalizers) > 0
 
@@ -632,7 +625,6 @@ func (p *Plugin) deletePVForUpgrade(ctx context.Context, pv *v1.PersistentVolume
 			}
 		}
 	} else {
-
 		// PV was deleted previously, so just remove any finalizer so it can be fully deleted
 		if hasFinalizers {
 			if _, err := p.removePVFinalizers(ctx, pv); err != nil {
@@ -656,8 +648,8 @@ func (p *Plugin) deletePVForUpgrade(ctx context.Context, pv *v1.PersistentVolume
 //    (PV, error)  --> the PV was not deleted before the retry loop timed out
 //
 func (p *Plugin) waitForDeletedPV(
-	ctx context.Context, name string, maxElapsedTime time.Duration) (*v1.PersistentVolume, error) {
-
+	ctx context.Context, name string, maxElapsedTime time.Duration,
+) (*v1.PersistentVolume, error) {
 	var pv *v1.PersistentVolume
 	var ok bool
 
@@ -696,7 +688,6 @@ func (p *Plugin) waitForDeletedPV(
 
 // waitForPVDisappearance waits for a PV to be fully deleted and gone from the cache.
 func (p *Plugin) waitForPVDisappearance(ctx context.Context, name string, maxElapsedTime time.Duration) error {
-
 	checkForDeletedPV := func() error {
 		if item, exists, err := p.pvIndexer.GetByKey(name); err != nil {
 			return err
@@ -733,7 +724,6 @@ func (p *Plugin) waitForPVCPhase(
 	ctx context.Context, pvc *v1.PersistentVolumeClaim, phases []v1.PersistentVolumeClaimPhase,
 	maxElapsedTime time.Duration,
 ) (*v1.PersistentVolumeClaim, error) {
-
 	var latestPVC *v1.PersistentVolumeClaim
 	var err error
 
@@ -775,7 +765,6 @@ func (p *Plugin) waitForPVCPhase(
 
 // removePVFinalizers patches a PV by removing all finalizers.
 func (p *Plugin) removePVFinalizers(ctx context.Context, pv *v1.PersistentVolume) (*v1.PersistentVolume, error) {
-
 	pvClone := pv.DeepCopy()
 	pvClone.Finalizers = make([]string, 0)
 	if patchedPV, err := p.patchPV(ctx, pv, pvClone); err != nil {
@@ -797,7 +786,6 @@ func (p *Plugin) removePVFinalizers(ctx context.Context, pv *v1.PersistentVolume
 func (p *Plugin) removePVCBindCompletedAnnotation(
 	ctx context.Context, pvc *v1.PersistentVolumeClaim,
 ) (*v1.PersistentVolumeClaim, error) {
-
 	pvcClone := pvc.DeepCopy()
 	pvcClone.Annotations = make(map[string]string)
 
@@ -822,7 +810,6 @@ func (p *Plugin) removePVCBindCompletedAnnotation(
 func (p *Plugin) createCSIPVFromPV(
 	ctx context.Context, pv *v1.PersistentVolume, volume *storage.VolumeExternal,
 ) (*v1.PersistentVolume, error) {
-
 	fsType := ""
 	readOnly := false
 	if pv.Spec.NFS != nil {
@@ -865,7 +852,6 @@ func (p *Plugin) createCSIPVFromPV(
 }
 
 func (p *Plugin) getPodsForPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim) ([]string, []string, error) {
-
 	nakedPodsForPVC := make([]string, 0)
 	ownedPodsForPVC := make([]string, 0)
 
@@ -895,7 +881,6 @@ func (p *Plugin) getPodsForPVC(ctx context.Context, pvc *v1.PersistentVolumeClai
 func (p *Plugin) waitForDeletedOrNonRunningPod(
 	ctx context.Context, name, namespace string, maxElapsedTime time.Duration,
 ) (*v1.Pod, error) {
-
 	var pod *v1.Pod
 	var err error
 

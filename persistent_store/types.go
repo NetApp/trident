@@ -44,7 +44,7 @@ type Client interface {
 	GetBackends(ctx context.Context) ([]*storage.BackendPersistent, error)
 	DeleteBackends(ctx context.Context) error
 	ReplaceBackendAndUpdateVolumes(
-		ctx context.Context, origBackend storage.Backend, newBackend storage.Backend,
+		ctx context.Context, origBackend, newBackend storage.Backend,
 	) error
 	GetBackendSecret(ctx context.Context, secretName string) (map[string]string, error)
 

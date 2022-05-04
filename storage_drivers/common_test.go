@@ -12,7 +12,6 @@ import (
 )
 
 func TestAreSameCredentials(t *testing.T) {
-
 	type Credentials struct {
 		Credential1 map[string]string
 		Credential2 map[string]string
@@ -93,7 +92,6 @@ func TestEnsureJoinedStringContainsElem(t *testing.T) {
 }
 
 func TestCheckMinVolumeSize(t *testing.T) {
-
 	tests := []struct {
 		requestedSizeBytes  uint64
 		minimumVolSizeBytes uint64

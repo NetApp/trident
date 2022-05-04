@@ -12,7 +12,6 @@ import (
 
 // AddAccount tbd
 func (c *Client) AddAccount(ctx context.Context, req *AddAccountRequest) (accountID int64, err error) {
-
 	var result AddAccountResult
 	response, err := c.Request(ctx, "AddAccount", req, NewReqID())
 	if err != nil {
@@ -29,7 +28,6 @@ func (c *Client) AddAccount(ctx context.Context, req *AddAccountRequest) (accoun
 
 // GetAccountByName tbd
 func (c *Client) GetAccountByName(ctx context.Context, req *GetAccountByNameRequest) (account Account, err error) {
-
 	response, err := c.Request(ctx, "GetAccountByName", req, NewReqID())
 	if err != nil {
 		return
@@ -46,7 +44,6 @@ func (c *Client) GetAccountByName(ctx context.Context, req *GetAccountByNameRequ
 
 // GetAccountByID tbd
 func (c *Client) GetAccountByID(ctx context.Context, req *GetAccountByIDRequest) (account Account, err error) {
-
 	var result GetAccountResult
 	response, err := c.Request(ctx, "GetAccountByID", req, NewReqID())
 	if err := json.Unmarshal(response, &result); err != nil {

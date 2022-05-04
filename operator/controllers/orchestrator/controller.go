@@ -36,8 +36,10 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-type AppStatus string
-type ResourceType string //If Operator starts to List and Watch other CR types, this can be used to differentiate.
+type (
+	AppStatus    string
+	ResourceType string // If Operator starts to List and Watch other CR types, this can be used to differentiate.
+)
 
 const (
 	ControllerName    = "Trident Orchestrator"
@@ -108,7 +110,6 @@ type Controller struct {
 }
 
 func NewController(clients *clients.Clients) (*Controller, error) {
-
 	log.WithField("Controller", ControllerName).Info("Initializing controller.")
 
 	c := &Controller{
@@ -331,7 +332,6 @@ func (c *Controller) processNextWorkItem() bool {
 
 		return nil
 	}(obj)
-
 	if err != nil {
 		log.Error(err)
 		return true
@@ -372,7 +372,6 @@ func (c *Controller) addOrchestrator(obj interface{}) {
 
 // updateOrchestrator is the update handler for the TridentOrchestrator watcher.
 func (c *Controller) updateOrchestrator(oldObj, newObj interface{}) {
-
 	_, ok := oldObj.(*netappv1.TridentOrchestrator)
 	if !ok {
 		log.Errorf("'%s' controller expected '%s' CR; got '%v'", ControllerName, CRDName, oldObj)
@@ -475,7 +474,7 @@ func (c *Controller) deploymentAddedOrDeleted(obj interface{}) {
 }
 
 // deploymentUpdated is the handler for the trident-csi deployment watcher.
-func (c *Controller) deploymentUpdated(oldObj interface{}, newObj interface{}) {
+func (c *Controller) deploymentUpdated(oldObj, newObj interface{}) {
 	var key string
 	var err error
 
@@ -560,7 +559,7 @@ func (c *Controller) daemonsetAddedOrDeleted(obj interface{}) {
 }
 
 // daemonsetUpdated is the handler for the trident-csi daemonset watcher.
-func (c *Controller) daemonsetUpdated(_ interface{}, newObj interface{}) {
+func (c *Controller) daemonsetUpdated(_, newObj interface{}) {
 	var key string
 	var err error
 
@@ -598,8 +597,8 @@ func (c *Controller) daemonsetUpdated(_ interface{}, newObj interface{}) {
 // 2. However, if legacy, CSI Preview or tridentctl based Trident are installed after installing the
 //    operator, these will be removed eventually.
 func (c *Controller) unsupportedInstallationsPrechecks(controllingCRBasedOnStatusExists,
-	operatorCSIDeploymentFound bool) error {
-
+	operatorCSIDeploymentFound bool,
+) error {
 	// CSI Preview Trident should not be present
 	if csiPreviewTridentInstalled, CSIPreviewNamespace, err := c.isPreviewCSITridentInstalled(); err != nil {
 		return utils.ReconcileFailedError(err)
@@ -691,7 +690,6 @@ func (c *Controller) alphaSnapshotCRDsExist() (bool, []string, error) {
 // alphaSnapshotCRDsPreinstallationCheck identifies if the alpha snapshot CRDs are present before any Trident
 // installation by the operator
 func (c *Controller) alphaSnapshotCRDsPreinstallationCheck() error {
-
 	alphaSnapshotCRDsExist, alphaSnapshotCRDsList, err := c.alphaSnapshotCRDsExist()
 	if err != nil {
 		return err
@@ -716,8 +714,8 @@ func (c *Controller) alphaSnapshotCRDsPreinstallationCheck() error {
 // installation by the operator, this should only be called once controllingCR has been identified and before
 // installing, patching, updating the Trident
 func (c *Controller) alphaSnapshotCRDsPostinstallationCheck(tridentCR *netappv1.TridentOrchestrator,
-	currentInstalledTridentVersion string) error {
-
+	currentInstalledTridentVersion string,
+) error {
 	alphaSnapshotCRDsExist, alphaSnapshotCRDsList, err := c.alphaSnapshotCRDsExist()
 	if err != nil {
 		return err
@@ -748,7 +746,6 @@ func (c *Controller) alphaSnapshotCRDsPostinstallationCheck(tridentCR *netappv1.
 
 // k8sVersionPreinstallationCheck identifies if K8s version is valid or not
 func (c *Controller) k8sVersionPreinstallationCheck() error {
-
 	isCurrentK8sVersionValid, warningMessage := c.validateCurrentK8sVersion()
 
 	if !isCurrentK8sVersionValid {
@@ -766,7 +763,6 @@ func (c *Controller) k8sVersionPreinstallationCheck() error {
 // handleMigrationScenario identifies if there is a valid Tprov CR with `Installed` status and
 // if true then operator copies its config to a new Torc CR.
 func (c *Controller) handleMigrationScenario() error {
-
 	log.Debug("Verify migration from TridentProvisioner to TridentOrchestrator required.")
 
 	// Add this sleep to ensure if both thee operator bundle and the Tprov CR were updated simultaneously,
@@ -856,7 +852,6 @@ func (c *Controller) handleMigrationScenario() error {
 // reconcile runs the reconcile logic and ensures we move to the desired state and the desired state is
 // maintained
 func (c *Controller) reconcile(key KeyItem) error {
-
 	// Check if there already exists a controllingCR - if deployment is deleted it is possible that we may run
 	// into a situation where there is no deployment but there is a controlling CR
 	controllingCRBasedOnStatusExists, controllingCRBasedOnStatus, err := c.identifyControllingCRBasedOnStatus()
@@ -924,7 +919,6 @@ func (c *Controller) reconcile(key KeyItem) error {
 }
 
 func (c *Controller) reconcileTridentNotPresent() error {
-
 	log.Info("Reconciler found no operator-based Trident installation.")
 
 	// Get all TridentOrchestrator CRs
@@ -1009,8 +1003,8 @@ func (c *Controller) reconcileTridentNotPresent() error {
 
 func (c *Controller) reconcileTridentPresent(key KeyItem, operatorCSIDeployments []appsv1.Deployment,
 	deploymentNamespace string, isCSI bool,
-	controllingCRBasedOnStatus *netappv1.TridentOrchestrator) error {
-
+	controllingCRBasedOnStatus *netappv1.TridentOrchestrator,
+) error {
 	var controllingCRBasedOnStatusName string
 	if controllingCRBasedOnStatus != nil {
 		controllingCRBasedOnStatusName = controllingCRBasedOnStatus.Name
@@ -1126,7 +1120,8 @@ func (c *Controller) reconcileTridentPresent(key KeyItem, operatorCSIDeployments
 // we know the ControllingCR, therefore we know the Specs of the ControllingCR, use that spec to
 // ensure we are maintaining the desired state.
 func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.TridentOrchestrator,
-	deploymentExist bool) error {
+	deploymentExist bool,
+) error {
 	// Check to see if controllingCR status is uninstalled, if this is the case installation/patch should not be run
 	if controllingCR.Status.Status == string(AppStatusUninstalled) {
 
@@ -1283,8 +1278,8 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 // installTridentAndUpdateStatus installs Trident and updates status of the ControllingCR accordingly
 // based on success or failure
 func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrchestrator,
-	currentInstalledTridentVersion, warningMessage string, shouldUpdate bool) error {
-
+	currentInstalledTridentVersion, warningMessage string, shouldUpdate bool,
+) error {
 	var identifiedTridentVersion string
 	var identifiedSpecValues *netappv1.TridentOrchestratorSpecValues
 
@@ -1307,7 +1302,6 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 		if _, crErr := c.updateTorcEventAndStatus(&tridentCR, debugMessage, statusMessage,
 			string(AppStatusFailed), "", tridentCR.Spec.Namespace, corev1.EventTypeWarning,
 			identifiedSpecValues); crErr != nil {
-
 			log.Error(crErr)
 		}
 
@@ -1335,8 +1329,8 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 // based on success or failure
 func (c *Controller) uninstallTridentAndUpdateStatus(tridentCR netappv1.TridentOrchestrator,
 	currentInstalledTridentVersion string) (*netappv1.
-	TridentOrchestrator, error) {
-
+	TridentOrchestrator, error,
+) {
 	// Update status of the tridentCR  to `Uninstalling`
 	debugMessage := "Updating TridentOrchestrator CR before uninstallation"
 	statusMessage := "Uninstalling Trident"
@@ -1400,7 +1394,6 @@ func (c *Controller) uninstallTridentAll(namespace string) error {
 
 // wipeout removes Trident object specifies in the wipeout list
 func (c *Controller) wipeout(tridentCR netappv1.TridentOrchestrator) (bool, error) {
-
 	var deletedCRDs bool
 	if len(tridentCR.Spec.Wipeout) > 0 {
 		log.Infof("Wipeout list contains elements to be removed.")
@@ -1449,7 +1442,6 @@ func (c *Controller) obliviateCRDs(tridentCR netappv1.TridentOrchestrator) error
  ************************************************/
 // ensureTridentOrchestratorCRDExist ensures TridentOrchestrator CRD exist
 func (c *Controller) ensureTridentOrchestratorCRDExist() error {
-
 	i, err := installer.NewInstaller(c.KubeConfig, metav1.NamespaceDefault, 0)
 	if err != nil {
 		return err
@@ -1479,7 +1471,6 @@ func (c *Controller) getTridentOrchestratorCRsAll() ([]netappv1.TridentOrchestra
 // identifyControllingCRBasedOnStatus identified the controllingCR purely on status and independent of any deployment
 // logic involved
 func (c *Controller) identifyControllingCRBasedOnStatus() (bool, *netappv1.TridentOrchestrator, error) {
-
 	// Get all TridentOrchestrator CRs
 	tridentCRs, err := c.getTridentOrchestratorCRsAll()
 	if err != nil {
@@ -1505,8 +1496,8 @@ func (c *Controller) identifyControllingCRBasedOnStatus() (bool, *netappv1.Tride
 // operatorCSIDeployments is more than 1
 func (c *Controller) identifyControllingCRForTridentDeployments(operatorCSIDeployments []appsv1.Deployment) (*netappv1.
 	TridentOrchestrator,
-	error) {
-
+	error,
+) {
 	// If multiple Trident deployments are found, we will let self-heal logic fix it
 	if len(operatorCSIDeployments) > 1 {
 		log.Debugf("Found multiple Trident deployments.")
@@ -1548,7 +1539,6 @@ func (c *Controller) identifyControllingCRForTridentDeployments(operatorCSIDeplo
 
 // updateAllCRs get called only when no ControllingCR exist to report a configuration error
 func (c *Controller) updateAllCRs(message string) error {
-
 	allCRs, err := c.getTridentOrchestratorCRsAll()
 	if err != nil {
 		return utils.ReconcileFailedError(fmt.Errorf(
@@ -1568,7 +1558,6 @@ func (c *Controller) updateAllCRs(message string) error {
 
 // updateOtherCRs get called only when a ControllingCR exist to set error state on the non-ControllingCRs
 func (c *Controller) updateOtherCRs(controllingCRName string) error {
-
 	allCRs, err := c.getTridentOrchestratorCRsAll()
 	if err != nil {
 		return utils.ReconcileFailedError(fmt.Errorf(
@@ -1594,8 +1583,8 @@ func (c *Controller) updateOtherCRs(controllingCRName string) error {
 // updateLogAndStatus updates the event logs and status of a TridentOrchestrator CR (if required)
 func (c *Controller) updateTorcEventAndStatus(
 	tridentCR *netappv1.TridentOrchestrator, debugMessage, message, status, version, namespace, eventType string,
-	specValues *netappv1.TridentOrchestratorSpecValues) (torcCR *netappv1.TridentOrchestrator, err error) {
-
+	specValues *netappv1.TridentOrchestratorSpecValues,
+) (torcCR *netappv1.TridentOrchestrator, err error) {
 	var logEvent bool
 
 	if torcCR, logEvent, err = c.updateTridentOrchestratorCRStatus(tridentCR, debugMessage, message, status,
@@ -1614,8 +1603,8 @@ func (c *Controller) updateTorcEventAndStatus(
 // updateTridentOrchestratorCRStatus updates the status of a CR if required
 func (c *Controller) updateTridentOrchestratorCRStatus(
 	tridentCR *netappv1.TridentOrchestrator, debugMessage, message, status, version, namespace string,
-	specValues *netappv1.TridentOrchestratorSpecValues) (*netappv1.TridentOrchestrator, bool, error) {
-
+	specValues *netappv1.TridentOrchestratorSpecValues,
+) (*netappv1.TridentOrchestrator, bool, error) {
 	logFields := log.Fields{"tridentOrchestratorCR": tridentCR.Name}
 
 	// Update status of the tridentCR
@@ -1670,7 +1659,6 @@ func (c *Controller) getTridentTprovCRsAll() ([]tprovv1.TridentProvisioner, erro
 
 // identifyTprovCRWithInstalledStatus identified the controllingCR with installed status
 func (c *Controller) identifyTprovCRWithInstalledStatus() (*tprovv1.TridentProvisioner, error) {
-
 	// Get all TridentOrchestrator CRs
 	tridentTprovCRs, err := c.getTridentTprovCRsAll()
 	if err != nil {
@@ -1837,8 +1825,8 @@ func (c *Controller) getCRDBasedCSIDeployments(crdName string) ([]appsv1.Deploym
 
 // matchDeploymentControllingCR identified the controllingCR for an operator based deployment from the list of CRs
 func (c *Controller) matchDeploymentControllingCR(tridentCRs []netappv1.TridentOrchestrator,
-	operatorCSIDeployment appsv1.Deployment) (*netappv1.TridentOrchestrator, error) {
-
+	operatorCSIDeployment appsv1.Deployment,
+) (*netappv1.TridentOrchestrator, error) {
 	// Identify Trident CR that controls the deployment
 	var controllingCR *netappv1.TridentOrchestrator
 	for _, cr := range tridentCRs {
@@ -1909,7 +1897,6 @@ func (c *Controller) uninstallLegacyTrident(namespace string) error {
 // removeNonTorcBasedCSIInstallation identifies if the Tprov-based or tridentctl-based CSI Trident is installed,
 // if it is installed it will be uninstalled.
 func (c *Controller) removeNonTorcBasedCSIInstallation(tridentCR *netappv1.TridentOrchestrator) error {
-
 	var uninstallRequired bool
 	// Check for the CSI based Trident installation
 	csiDeploymentFound, csiTridentNamespace, err := c.isCSITridentInstalled()
@@ -1994,7 +1981,6 @@ func (c *Controller) getCurrentTridentAndK8sVersion(tridentCR *netappv1.TridentO
 // validateCurrentK8sVersion identifies any changes in the K8s version, if it is valid, and if not valid should
 // user be warned about it
 func (c *Controller) validateCurrentK8sVersion() (bool, string) {
-
 	var isValid bool
 	var warning string
 
@@ -2027,7 +2013,6 @@ func (c *Controller) validateCurrentK8sVersion() (bool, string) {
 // tridentUpgradeNeeded compares the K8's version as per which Trident is installed with the current K8s version,
 // if it has changed we need to update Trident as well
 func (c *Controller) tridentUpgradeNeeded(tridentK8sConfigVersion string) bool {
-
 	var shouldUpdate bool
 
 	if tridentK8sConfigVersion == "" {
@@ -2055,7 +2040,6 @@ func (c *Controller) tridentUpgradeNeeded(tridentK8sConfigVersion string) bool {
  ************************/
 // doesCRDExist checks if the given CRD exist
 func (c *Controller) doesCRDExist(crdName string) (bool, error) {
-
 	// Discover CRD data
 	crdExist, returnError := c.K8SClient.CheckCRDExists(crdName)
 	if returnError != nil {

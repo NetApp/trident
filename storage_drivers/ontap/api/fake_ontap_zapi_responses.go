@@ -25,9 +25,7 @@ const (
 `
 )
 
-var (
-	FakeIgroups map[string]map[string]struct{}
-)
+var FakeIgroups map[string]map[string]struct{}
 
 type FakeZAPIResponseResult struct {
 	XMLName          xml.Name `xml:"results"`
@@ -44,7 +42,6 @@ type FakeZAPIResponse struct {
 }
 
 func newFakeGetDefaultZAPIResponse(vserverAdminHost, vserverAdminPort string) *FakeZAPIResponse {
-
 	vserverAdminUrl := "https://" + vserverAdminHost + ":" + vserverAdminPort + "/filer/admin"
 
 	xmlString := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
@@ -64,7 +61,6 @@ func newFakeGetDefaultZAPIResponse(vserverAdminHost, vserverAdminPort string) *F
 }
 
 func newFakeGetErrorZAPIResponse(vserverAdminHost, vserverAdminPort, reason, errorNum string) *FakeZAPIResponse {
-
 	vserverAdminUrl := "https://" + vserverAdminHost + ":" + vserverAdminPort + "/filer/admin"
 
 	xmlString := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
@@ -85,7 +81,6 @@ func newFakeGetErrorZAPIResponse(vserverAdminHost, vserverAdminPort, reason, err
 
 func newFakeVserverGetResponse(vserverAdminHost, vserverAdminPort, vserverAggrName string) *azgo.
 	VserverGetResponse {
-
 	vserverAdminUrl := "https://" + vserverAdminHost + ":" + vserverAdminPort + "/filer/admin"
 
 	xmlString := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
@@ -157,7 +152,6 @@ func newFakeVserverGetResponse(vserverAdminHost, vserverAdminPort, vserverAggrNa
 
 func newFakeVserverGetIterResponse(vserverAdminHost, vserverAdminPort, vserverAggrName string) *azgo.
 	VserverGetIterResponse {
-
 	vserverAdminUrl := "https://" + vserverAdminHost + ":" + vserverAdminPort + "/filer/admin"
 
 	xmlString := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
@@ -230,7 +224,6 @@ func newFakeVserverGetIterResponse(vserverAdminHost, vserverAdminPort, vserverAg
 
 func newFakeVserverShowAggrGetIterResponse(vserverAdminHost, vserverAdminPort, vserverName string) *azgo.
 	VserverShowAggrGetIterResponse {
-
 	vserverAdminUrl := "https://" + vserverAdminHost + ":" + vserverAdminPort + "/filer/admin"
 
 	xmlString := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
@@ -267,7 +260,6 @@ func getIQNRowXML(iqn string) string {
 }
 
 func newFakeIgroupGetIterResponse(vserverAdminHost, vserverAdminPort, igroupName string) *azgo.IgroupGetIterResponse {
-
 	vserverAdminUrl := "https://" + vserverAdminHost + ":" + vserverAdminPort + "/filer/admin"
 	rows := ""
 	for iqn := range FakeIgroups[igroupName] {
@@ -316,7 +308,6 @@ func newFakeIgroupGetIterResponse(vserverAdminHost, vserverAdminPort, igroupName
 }
 
 func newFakeSystemNodeGetIterResponse(vserverAdminHost, vserverAdminPort string) *azgo.SystemNodeGetIterResponse {
-
 	vserverAdminUrl := "https://" + vserverAdminHost + ":" + vserverAdminPort + "/filer/admin"
 
 	xmlString := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
@@ -347,7 +338,6 @@ func newFakeSystemNodeGetIterResponse(vserverAdminHost, vserverAdminPort string)
 }
 
 func fakeGetIgroupNameFromInfo(zapiRequest string) (string, error) {
-
 	var igroupGetIterRequest azgo.IgroupGetIterRequest
 	if err := xml.Unmarshal([]byte(zapiRequest), &igroupGetIterRequest); err != nil {
 		fmt.Printf("error: %v", err.Error())
@@ -368,7 +358,6 @@ func fakeGetIgroupNameFromInfo(zapiRequest string) (string, error) {
 }
 
 func fakeGetIgroupNameFromCreate(zapiRequest string) (string, error) {
-
 	var igroupCreateRequest azgo.IgroupCreateRequest
 	if err := xml.Unmarshal([]byte(zapiRequest), &igroupCreateRequest); err != nil {
 		fmt.Printf("error: %v", err.Error())
@@ -382,7 +371,6 @@ func fakeGetIgroupNameFromCreate(zapiRequest string) (string, error) {
 }
 
 func fakeGetIgroupNameFromDestroy(zapiRequest string) (string, error) {
-
 	var igroupDestroyRequest azgo.IgroupDestroyRequest
 	if err := xml.Unmarshal([]byte(zapiRequest), &igroupDestroyRequest); err != nil {
 		fmt.Printf("error: %v", err.Error())
@@ -396,7 +384,6 @@ func fakeGetIgroupNameFromDestroy(zapiRequest string) (string, error) {
 }
 
 func fakeGetAddInitiator(zapiRequest string) (string, string, error) {
-
 	var igroupAddRequest azgo.IgroupAddRequest
 	if err := xml.Unmarshal([]byte(zapiRequest), &igroupAddRequest); err != nil {
 		fmt.Printf("error: %v", err.Error())
@@ -410,7 +397,6 @@ func fakeGetAddInitiator(zapiRequest string) (string, string, error) {
 }
 
 func fakeGetRemoveInitiator(zapiRequest string) (string, string, error) {
-
 	var igroupRemoveRequest azgo.IgroupRemoveRequest
 	if err := xml.Unmarshal([]byte(zapiRequest), &igroupRemoveRequest); err != nil {
 		fmt.Printf("error: %v", err.Error())
@@ -424,7 +410,6 @@ func fakeGetRemoveInitiator(zapiRequest string) (string, string, error) {
 }
 
 func fakeSystemNodeGetIter(zapiRequest string) error {
-
 	var systemNodeGetIterRequest azgo.SystemNodeGetIterRequest
 	if err := xml.Unmarshal([]byte(zapiRequest), &systemNodeGetIterRequest); err != nil {
 		fmt.Printf("error: %v", err.Error())
@@ -436,8 +421,8 @@ func fakeSystemNodeGetIter(zapiRequest string) error {
 
 // TODO:remove all this once the new mocking framework is in place
 func fakeResponseObjectFactoryMethod(zapiRequestXMLTagName, vserverAdminHost, vserverAdminPort,
-	vserverAggrName string, zapiRequestXMLBuilder string) ([]byte, error) {
-
+	vserverAggrName string, zapiRequestXMLBuilder string,
+) ([]byte, error) {
 	zapiRequestXMLBuilder = strings.Split(zapiRequestXMLBuilder, "<netapp")[1]
 	zapiRequestXMLBuilder = strings.SplitN(zapiRequestXMLBuilder, ">", 2)[1]
 	zapiRequestXMLBuilder = strings.Split(zapiRequestXMLBuilder, "</netapp>")[0]
@@ -541,8 +526,8 @@ func findNextXMLStartElement(newReader io.Reader) (string, error) {
 }
 
 func getFakeResponse(ctx context.Context, requestBody io.Reader, vserverAdminHost,
-	vserverAdminPort, vserverAggrName string) ([]byte, error) {
-
+	vserverAdminPort, vserverAggrName string,
+) ([]byte, error) {
 	requestBodyString, err := ioutil.ReadAll(requestBody)
 	if err != nil {
 		Logc(ctx).WithField("zapi request: ", string(requestBodyString))
@@ -577,7 +562,6 @@ func NewFakeUnstartedVserver(ctx context.Context, vserverAdminHost, vserverAggrN
 	server.Listener = listener
 	_, port, _ := net.SplitHostPort(listener.Addr().String())
 	mux.HandleFunc("/servlets/", func(w http.ResponseWriter, r *http.Request) {
-
 		response, err := getFakeResponse(ctx, r.Body, vserverAdminHost, port, vserverAggrName)
 		if err != nil {
 			w.Write([]byte(err.Error()))

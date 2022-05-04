@@ -98,7 +98,6 @@ func (c *RestClient) SetConfigSVMName(svmName string) {
 
 // NewRestClient is a factory method for creating a new instance
 func NewRestClient(ctx context.Context, config ClientConfig) (*RestClient, error) {
-
 	var cert tls.Certificate
 	caCertPool := x509.NewCertPool()
 	skipVerify := true
@@ -175,7 +174,6 @@ func NewRestClient(ctx context.Context, config ClientConfig) (*RestClient, error
 func EnsureSVMWithRest(
 	ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig, restClient RestClientInterface,
 ) error {
-
 	if ontapConfig.SVM != "" {
 		// Attempt to use the specified SVM
 		vserver, err := restClient.SvmGetByName(ctx, ontapConfig.SVM)
@@ -230,7 +228,6 @@ func EnsureSVMWithRest(
 func NewRestClientFromOntapConfig(
 	ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig,
 ) (OntapAPI, error) {
-
 	restClient, err := NewRestClient(ctx, ClientConfig{
 		ManagementLIF:        ontapConfig.ManagementLIF,
 		SVM:                  ontapConfig.SVM,
@@ -261,13 +258,10 @@ func NewRestClientFromOntapConfig(
 	return apiREST, nil
 }
 
-var (
-	MinimumONTAPVersion = utils.MustParseSemantic("9.9.0")
-)
+var MinimumONTAPVersion = utils.MustParseSemantic("9.9.0")
 
 // SupportsFeature returns true if the Ontap version supports the supplied feature
 func (c RestClient) SupportsFeature(ctx context.Context, feature Feature) bool {
-
 	ontapVersion, err := c.SystemGetOntapVersion(ctx)
 	if err != nil {
 		return false
@@ -348,7 +342,6 @@ func WithNextLink(next *models.Href) func(*runtime.ClientOperation) {
 
 // HasNextLink checks if restResult.Links.Next exists using reflection
 func HasNextLink(restResult interface{}) (result bool) {
-
 	//
 	// using reflection, detect if we must paginate
 	// "num_records": 1,
@@ -411,7 +404,6 @@ func (c RestClient) getAllVolumePayloadRecords(
 	payload *models.VolumeResponse,
 	params *storage.VolumeCollectionGetParams,
 ) (*models.VolumeResponse, error) {
-
 	if HasNextLink(payload) {
 		nextLink := payload.Links.Next
 
@@ -441,7 +433,6 @@ func (c RestClient) getAllVolumePayloadRecords(
 func (c RestClient) getAllVolumesByPatternStyleAndState(
 	ctx context.Context, pattern, style, state string,
 ) (*storage.VolumeCollectionGetOK, error) {
-
 	if style != models.VolumeStyleFlexvol && style != models.VolumeStyleFlexgroup {
 		return nil, fmt.Errorf("unknown volume style %s", style)
 	}
@@ -473,7 +464,6 @@ func (c RestClient) getAllVolumesByPatternStyleAndState(
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.VolumeCollectionGet(params, c.authInfo)
-
 	if err != nil {
 		return nil, err
 	}
@@ -507,7 +497,6 @@ func (c RestClient) getVolumeByNameAndStyle(
 	volumeName string,
 	style string,
 ) (*models.Volume, error) {
-
 	result, err := c.getAllVolumesByPatternStyleAndState(ctx, volumeName, style, models.VolumeStateOnline)
 	if err != nil {
 		return nil, err
@@ -528,7 +517,6 @@ func (c RestClient) getVolumeInAnyStateByNameAndStyle(
 	volumeName string,
 	style string,
 ) (*models.Volume, error) {
-
 	result, err := c.getAllVolumesByPatternStyleAndState(ctx, volumeName, style, "")
 	if err != nil {
 		return nil, err
@@ -545,7 +533,6 @@ func (c RestClient) getVolumeInAnyStateByNameAndStyle(
 
 // getVolumeSizeByNameAndStyle retrieves the size of the volume of the style and name specified
 func (c RestClient) getVolumeSizeByNameAndStyle(ctx context.Context, volumeName, style string) (uint64, error) {
-
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style)
 	if err != nil {
 		return 0, err
@@ -559,7 +546,6 @@ func (c RestClient) getVolumeSizeByNameAndStyle(ctx context.Context, volumeName,
 
 // getVolumeUsedSizeByNameAndStyle retrieves the used bytes of the the volume of the style and name specified
 func (c RestClient) getVolumeUsedSizeByNameAndStyle(ctx context.Context, volumeName, style string) (int, error) {
-
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style)
 	if err != nil {
 		return 0, err
@@ -581,7 +567,6 @@ func (c RestClient) getVolumeUsedSizeByNameAndStyle(ctx context.Context, volumeN
 
 // setVolumeSizeByNameAndStyle sets the size of the specified volume of given style
 func (c RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName, newSize, style string) error {
-
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style)
 	if err != nil {
 		return err
@@ -619,9 +604,7 @@ func (c RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName,
 
 // mountVolumeByNameAndStyle mounts a volume at the specified junction
 func (c RestClient) mountVolumeByNameAndStyle(ctx context.Context, volumeName, junctionPath, style string) error {
-
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style)
-
 	if err != nil {
 		return err
 	}
@@ -664,9 +647,7 @@ func (c RestClient) unmountVolumeByNameAndStyle(
 	ctx context.Context,
 	volumeName, style string,
 ) error {
-
 	volume, err := c.getVolumeInAnyStateByNameAndStyle(ctx, volumeName, style)
-
 	if err != nil {
 		return err
 	}
@@ -708,7 +689,6 @@ func (c RestClient) unmountVolumeByNameAndStyle(
 
 // RenameVolumeByNameAndStyle changes the name of a FlexVol (but not a FlexGroup!)
 func (c RestClient) renameVolumeByNameAndStyle(ctx context.Context, volumeName, newVolumeName, style string) error {
-
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style)
 	if err != nil {
 		return err
@@ -743,7 +723,6 @@ func (c RestClient) renameVolumeByNameAndStyle(ctx context.Context, volumeName, 
 
 // destroyVolumeByNameAndStyle destroys a volume
 func (c RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, style string) error {
-
 	volume, err := c.getVolumeByNameAndStyle(ctx, name, style)
 	if err != nil {
 		return err
@@ -771,7 +750,6 @@ func (c RestClient) destroyVolumeByNameAndStyle(ctx context.Context, name, style
 func (c RestClient) modifyVolumeExportPolicyByNameAndStyle(
 	ctx context.Context, volumeName, exportPolicyName, style string,
 ) error {
-
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style)
 	if err != nil {
 		return err
@@ -807,7 +785,6 @@ func (c RestClient) modifyVolumeUnixPermissionsByNameAndStyle(
 	ctx context.Context,
 	volumeName, unixPermissions, style string,
 ) error {
-
 	if unixPermissions == "" {
 		return fmt.Errorf("missing new unix permissions value")
 	}
@@ -857,7 +834,6 @@ func (c RestClient) setVolumeCommentByNameAndStyle(
 	ctx context.Context,
 	volumeName, newVolumeComment, style string,
 ) error {
-
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style)
 	if err != nil {
 		return err
@@ -933,7 +909,6 @@ func convertUnixPermissions(s string) string {
 func (c RestClient) setVolumeQosPolicyGroupNameByNameAndStyle(
 	ctx context.Context, volumeName string, qosPolicyGroup QosPolicyGroup, style string,
 ) error {
-
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style)
 	if err != nil {
 		return err
@@ -976,7 +951,6 @@ func (c RestClient) setVolumeQosPolicyGroupNameByNameAndStyle(
 
 // startCloneSplitByNameAndStyle starts splitting the clone
 func (c RestClient) startCloneSplitByNameAndStyle(ctx context.Context, volumeName, style string) error {
-
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style)
 	if err != nil {
 		return err
@@ -1015,7 +989,6 @@ func (c RestClient) restoreSnapshotByNameAndStyle(
 	ctx context.Context,
 	snapshotName, volumeName, style string,
 ) error {
-
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style)
 	if err != nil {
 		return err
@@ -1075,8 +1048,8 @@ func (c RestClient) createCloneNAS(
 
 // listAllVolumeNamesBackedBySnapshot returns the names of all volumes backed by the specified snapshot
 func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) (
-	[]string, error) {
-
+	[]string, error,
+) {
 	params := storage.NewVolumeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1122,7 +1095,6 @@ func (c RestClient) createVolumeByStyle(
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool,
 	snapshotReserve int, style string,
 ) error {
-
 	params := storage.NewVolumeCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1208,7 +1180,6 @@ func (c RestClient) createVolumeByStyle(
 
 // VolumeList returns the names of all Flexvols whose names match the supplied pattern
 func (c RestClient) VolumeList(ctx context.Context, pattern string) (*storage.VolumeCollectionGetOK, error) {
-
 	return c.getAllVolumesByPatternStyleAndState(ctx, pattern, models.VolumeStyleFlexvol, models.VolumeStateOnline)
 }
 
@@ -1246,7 +1217,6 @@ func (c RestClient) VolumeCreate(
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool,
 	snapshotReserve int,
 ) error {
-
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(size)
 	sizeInBytes, _ := strconv.ParseInt(sizeBytesStr, 10, 64)
 
@@ -1278,7 +1248,6 @@ func (c RestClient) VolumeRename(
 	ctx context.Context,
 	volumeName, newVolumeName string,
 ) error {
-
 	return c.renameVolumeByNameAndStyle(ctx, volumeName, newVolumeName, models.VolumeStyleFlexvol)
 }
 
@@ -1286,7 +1255,6 @@ func (c RestClient) VolumeModifyExportPolicy(
 	ctx context.Context,
 	volumeName, exportPolicyName string,
 ) error {
-
 	return c.modifyVolumeExportPolicyByNameAndStyle(ctx, volumeName, exportPolicyName, models.VolumeStyleFlexvol)
 }
 
@@ -1308,7 +1276,6 @@ func (c RestClient) VolumeSetSize(ctx context.Context, volumeName, newSize strin
 }
 
 func (c RestClient) VolumeModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error {
-
 	return c.modifyVolumeUnixPermissionsByNameAndStyle(ctx, volumeName, unixPermissions, models.VolumeStyleFlexvol)
 }
 
@@ -1386,7 +1353,6 @@ func (c RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*stora
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.SnapshotCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -1425,7 +1391,8 @@ func (c RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*stora
 
 // SnapshotListByName lists snapshots by name
 func (c RestClient) SnapshotListByName(ctx context.Context, volumeUUID, snapshotName string) (
-	*storage.SnapshotCollectionGetOK, error) {
+	*storage.SnapshotCollectionGetOK, error,
+) {
 	params := storage.NewSnapshotCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1453,7 +1420,6 @@ func (c RestClient) SnapshotGet(ctx context.Context, volumeUUID, snapshotUUID st
 
 // SnapshotGetByName finds the snapshot by name
 func (c RestClient) SnapshotGetByName(ctx context.Context, volumeUUID, snapshotName string) (*models.Snapshot, error) {
-
 	// TODO improve this
 	result, err := c.SnapshotListByName(ctx, volumeUUID, snapshotName)
 	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
@@ -1467,7 +1433,6 @@ func (c RestClient) SnapshotDelete(
 	ctx context.Context,
 	volumeUUID, snapshotUUID string,
 ) (*storage.SnapshotDeleteAccepted, error) {
-
 	params := storage.NewSnapshotDeleteParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1506,7 +1471,8 @@ func (c RestClient) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, vo
 
 // VolumeListAllBackedBySnapshot returns the names of all FlexVols backed by the specified snapshot
 func (c RestClient) VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) ([]string,
-	error) {
+	error,
+) {
 	return c.listAllVolumeNamesBackedBySnapshot(ctx, volumeName, snapshotName)
 }
 
@@ -1517,7 +1483,8 @@ func (c RestClient) VolumeListAllBackedBySnapshot(ctx context.Context, volumeNam
 // VolumeCloneCreate creates a clone
 // see also: https://library.netapp.com/ecmdocs/ECMLP2858435/html/resources/volume.html#creating-a-flexclone-and-specifying-its-properties-using-post
 func (c RestClient) VolumeCloneCreate(ctx context.Context, cloneName, sourceVolumeName, snapshotName string) (
-	*storage.VolumeCreateAccepted, error) {
+	*storage.VolumeCreateAccepted, error,
+) {
 	return c.createCloneNAS(ctx, cloneName, sourceVolumeName, snapshotName)
 }
 
@@ -1541,7 +1508,6 @@ func (c RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourc
 // IscsiInitiatorGetDefaultAuth returns the authorization details for the default initiator
 // equivalent to filer::> vserver iscsi security show -vserver SVM -initiator-name default
 func (d RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.IscsiCredentialsCollectionGetOK, error) {
-
 	params := san.NewIscsiCredentialsCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
@@ -1556,7 +1522,6 @@ func (d RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.Iscs
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.San.IscsiCredentialsCollectionGet(params, d.authInfo)
-
 	if err != nil {
 		return nil, err
 	}
@@ -1569,8 +1534,8 @@ func (d RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.Iscs
 
 // IscsiInterfaceGet returns information about the vserver's  iSCSI interfaces
 func (d RestClient) IscsiInterfaceGet(ctx context.Context, svm string) (*san.IscsiServiceCollectionGetOK,
-	error) {
-
+	error,
+) {
 	params := san.NewIscsiServiceCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
@@ -1581,7 +1546,6 @@ func (d RestClient) IscsiInterfaceGet(ctx context.Context, svm string) (*san.Isc
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.San.IscsiServiceCollectionGet(params, d.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -1600,7 +1564,6 @@ func (d RestClient) IscsiInitiatorSetDefaultAuth(
 	ctx context.Context, authType, userName, passphrase,
 	outbountUserName, outboundPassphrase string,
 ) error {
-
 	getDefaultAuthResponse, err := d.IscsiInitiatorGetDefaultAuth(ctx)
 	if err != nil {
 		return err
@@ -1644,8 +1607,8 @@ func (d RestClient) IscsiInitiatorSetDefaultAuth(
 
 // IscsiNodeGetName returns information about the vserver's iSCSI node name
 func (d RestClient) IscsiNodeGetName(ctx context.Context) (*san.IscsiServiceGetOK,
-	error) {
-
+	error,
+) {
 	svm, err := d.SvmGetByName(ctx, d.config.SVM)
 	if err != nil {
 		return nil, err
@@ -1663,7 +1626,6 @@ func (d RestClient) IscsiNodeGetName(ctx context.Context) (*san.IscsiServiceGetO
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := d.api.San.IscsiServiceGet(params, d.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -1699,7 +1661,6 @@ func (c RestClient) IgroupCreate(ctx context.Context, initiatorGroupName, initia
 
 	igroupCreateAccepted, err := c.api.San.IgroupCreate(params, c.authInfo)
 	if err != nil {
-
 		return err
 	}
 	if igroupCreateAccepted == nil {
@@ -1722,7 +1683,6 @@ func (c RestClient) IgroupCreate(ctx context.Context, initiatorGroupName, initia
 // equivalent to filer::> lun igroup add -vserver iscsi_vs -igroup docker -initiator iqn.1993-08.org.
 // debian:01:9031309bbebd
 func (c RestClient) IgroupAdd(ctx context.Context, initiatorGroupName, initiator string) error {
-
 	igroup, err := c.IgroupGetByName(ctx, initiatorGroupName)
 	if err != nil {
 		return err
@@ -1753,7 +1713,6 @@ func (c RestClient) IgroupAdd(ctx context.Context, initiatorGroupName, initiator
 
 // IgroupRemove removes an initiator from an initiator group
 func (c RestClient) IgroupRemove(ctx context.Context, initiatorGroupName, initiator string) error {
-
 	igroup, err := c.IgroupGetByName(ctx, initiatorGroupName)
 	if err != nil {
 		return err
@@ -1782,7 +1741,6 @@ func (c RestClient) IgroupRemove(ctx context.Context, initiatorGroupName, initia
 
 // IgroupDestroy destroys an initiator group
 func (c RestClient) IgroupDestroy(ctx context.Context, initiatorGroupName string) error {
-
 	igroup, err := c.IgroupGetByName(ctx, initiatorGroupName)
 	if err != nil {
 		return err
@@ -1810,7 +1768,6 @@ func (c RestClient) IgroupDestroy(ctx context.Context, initiatorGroupName string
 
 // IgroupList lists initiator groups
 func (c RestClient) IgroupList(ctx context.Context, pattern string) (*san.IgroupCollectionGetOK, error) {
-
 	if pattern == "" {
 		pattern = "*"
 	}
@@ -1824,7 +1781,6 @@ func (c RestClient) IgroupList(ctx context.Context, pattern string) (*san.Igroup
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.San.IgroupCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -1863,7 +1819,6 @@ func (c RestClient) IgroupList(ctx context.Context, pattern string) (*san.Igroup
 
 // IgroupGet gets the igroup with the specified uuid
 func (c RestClient) IgroupGet(ctx context.Context, uuid string) (*san.IgroupGetOK, error) {
-
 	params := san.NewIgroupGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1874,7 +1829,6 @@ func (c RestClient) IgroupGet(ctx context.Context, uuid string) (*san.IgroupGetO
 
 // IgroupGetByName gets the igroup with the specified name
 func (c RestClient) IgroupGetByName(ctx context.Context, initiatorGroupName string) (*models.Igroup, error) {
-
 	// TODO improve this
 	result, err := c.IgroupList(ctx, initiatorGroupName)
 	if err != nil {
@@ -1894,7 +1848,6 @@ func (c RestClient) IgroupGetByName(ctx context.Context, initiatorGroupName stri
 
 // pollLunCreate polls for the created LUN to appear, with backoff retry logic
 func (c RestClient) pollLunCreate(ctx context.Context, lunPath string) error {
-
 	checkCreateStatus := func() error {
 		lun, err := c.LunGetByName(ctx, lunPath)
 		if err != nil {
@@ -1928,7 +1881,6 @@ func (c RestClient) pollLunCreate(ctx context.Context, lunPath string) error {
 func (c RestClient) LunCreate(
 	ctx context.Context, lunPath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup,
 ) error {
-
 	if strings.Contains(lunPath, failureLUNCreate) {
 		return errors.New("injected error")
 	}
@@ -1966,7 +1918,6 @@ func (c RestClient) LunCreate(
 
 // LunGet gets the LUN with the specified uuid
 func (c RestClient) LunGet(ctx context.Context, uuid string) (*san.LunGetOK, error) {
-
 	params := san.NewLunGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1977,7 +1928,6 @@ func (c RestClient) LunGet(ctx context.Context, uuid string) (*san.LunGetOK, err
 
 // LunGetByName gets the LUN with the specified name
 func (c RestClient) LunGetByName(ctx context.Context, name string) (*models.Lun, error) {
-
 	// TODO improve this
 	result, err := c.LunList(ctx, name)
 	if err != nil || result.Payload == nil {
@@ -1991,7 +1941,6 @@ func (c RestClient) LunGetByName(ctx context.Context, name string) (*models.Lun,
 
 // LunList finds LUNs with the specificed pattern
 func (c RestClient) LunList(ctx context.Context, pattern string) (*san.LunCollectionGetOK, error) {
-
 	params := san.NewLunCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -2001,7 +1950,6 @@ func (c RestClient) LunList(ctx context.Context, pattern string) (*san.LunCollec
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.San.LunCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -2043,7 +1991,6 @@ func (c RestClient) LunDelete(
 	ctx context.Context,
 	lunUUID string,
 ) error {
-
 	params := san.NewLunDeleteParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -2067,7 +2014,6 @@ func (d RestClient) LunGetComment(
 	ctx context.Context,
 	lunPath string,
 ) (string, error) {
-
 	lun, err := d.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return "", err
@@ -2088,7 +2034,6 @@ func (d RestClient) LunSetComment(
 	ctx context.Context,
 	lunPath, comment string,
 ) error {
-
 	lun, err := d.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return err
@@ -2126,7 +2071,6 @@ func (d RestClient) LunGetAttribute(
 	ctx context.Context,
 	lunPath, attributeName string,
 ) (string, error) {
-
 	lun, err := d.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return "", err
@@ -2154,7 +2098,6 @@ func (d RestClient) LunSetAttribute(
 	ctx context.Context,
 	lunPath, attributeName, attributeValue string,
 ) error {
-
 	lun, err := d.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return err
@@ -2193,7 +2136,6 @@ func (d RestClient) LunSetQosPolicyGroup(
 	ctx context.Context,
 	lunPath, qosPolicyGroup string,
 ) error {
-
 	lun, err := d.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return err
@@ -2234,7 +2176,6 @@ func (d RestClient) LunRename(
 	ctx context.Context,
 	lunPath, newLunPath string,
 ) error {
-
 	lun, err := d.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return err
@@ -2272,7 +2213,6 @@ func (d RestClient) LunMapInfo(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
 ) (*san.LunMapCollectionGetOK, error) {
-
 	params := san.NewLunMapCollectionGetParamsWithTimeout(d.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = d.httpClient
@@ -2290,7 +2230,6 @@ func (d RestClient) LunUnmap(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
 ) error {
-
 	lunMapResponse, err := d.LunMapInfo(ctx, initiatorGroupName, lunPath)
 	if err != nil {
 		return fmt.Errorf("problem reading maps for LUN %s: %v", lunPath, err)
@@ -2328,7 +2267,6 @@ func (d RestClient) LunMap(
 	initiatorGroupName, lunPath string,
 	lunID int,
 ) (*san.LunMapCreateCreated, error) {
-
 	lun, err := d.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return nil, err
@@ -2464,7 +2402,6 @@ func (d RestClient) LunSize(
 	ctx context.Context,
 	lunPath string,
 ) (int, error) {
-
 	lun, err := d.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return 0, err
@@ -2482,7 +2419,6 @@ func (d RestClient) LunSetSize(
 	ctx context.Context,
 	lunPath, newSize string,
 ) (uint64, error) {
-
 	lun, err := d.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return 0, err
@@ -2526,7 +2462,6 @@ func (d RestClient) LunSetSize(
 
 // NetworkIPInterfacesList lists all IP interfaces
 func (c RestClient) NetworkIPInterfacesList(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error) {
-
 	params := networking.NewNetworkIPInterfacesGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -2535,7 +2470,6 @@ func (c RestClient) NetworkIPInterfacesList(ctx context.Context) (*networking.Ne
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Networking.NetworkIPInterfacesGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -2573,7 +2507,6 @@ func (c RestClient) NetworkIPInterfacesList(ctx context.Context) (*networking.Ne
 }
 
 func (c RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
-
 	if protocol == "" {
 		return nil, fmt.Errorf("missing protocol specification")
 	}
@@ -2612,7 +2545,6 @@ func (c RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string
 
 // JobGet returns the job by ID
 func (c RestClient) JobGet(ctx context.Context, jobUUID string) (*cluster.JobGetOK, error) {
-
 	params := cluster.NewJobGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -2625,7 +2557,6 @@ func (c RestClient) JobGet(ctx context.Context, jobUUID string) (*cluster.JobGet
 
 // IsJobFinished lookus up the supplied JobLinkResponse's UUID to see if it's reached a terminal state
 func (c RestClient) IsJobFinished(ctx context.Context, payload *models.JobLinkResponse) (bool, error) {
-
 	if payload == nil {
 		return false, fmt.Errorf("payload is nil")
 	}
@@ -2670,7 +2601,6 @@ func (c RestClient) IsJobFinished(ctx context.Context, payload *models.JobLinkRe
 
 // PollJobStatus polls for the ONTAP job to complete, with backoff retry logic
 func (c RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkResponse) error {
-
 	job := payload.Job
 	jobUUID := job.UUID
 
@@ -2755,7 +2685,6 @@ func (c RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkRe
 
 // AggregateList returns the names of all Aggregates whose names match the supplied pattern
 func (c RestClient) AggregateList(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error) {
-
 	params := storage.NewAggregateCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 
 	params.Context = ctx
@@ -2765,7 +2694,6 @@ func (c RestClient) AggregateList(ctx context.Context, pattern string) (*storage
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.AggregateCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -2808,7 +2736,6 @@ func (c RestClient) AggregateList(ctx context.Context, pattern string) (*storage
 
 // SvmGet gets the volume with the specified uuid
 func (c RestClient) SvmGet(ctx context.Context, uuid string) (*svm.SvmGetOK, error) {
-
 	params := svm.NewSvmGetParamsWithTimeout(c.httpClient.Timeout)
 
 	params.Context = ctx
@@ -2820,7 +2747,6 @@ func (c RestClient) SvmGet(ctx context.Context, uuid string) (*svm.SvmGetOK, err
 
 // SvmList returns the names of all SVMs whose names match the supplied pattern
 func (c RestClient) SvmList(ctx context.Context, pattern string) (*svm.SvmCollectionGetOK, error) {
-
 	params := svm.NewSvmCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 
 	params.Context = ctx
@@ -2830,7 +2756,6 @@ func (c RestClient) SvmList(ctx context.Context, pattern string) (*svm.SvmCollec
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Svm.SvmCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -2869,7 +2794,6 @@ func (c RestClient) SvmList(ctx context.Context, pattern string) (*svm.SvmCollec
 
 // ValidatePayloadExists returns an error if the Payload field is missing from the supplied restResult
 func ValidatePayloadExists(ctx context.Context, restResult interface{}) (errorOut error) {
-
 	defer func() {
 		if r := recover(); r != nil {
 			Logc(ctx).Errorf("Panic in ontap_rest#ValidatePayloadExists. %v\nStack Trace: %v",
@@ -2917,7 +2841,6 @@ func getType(i interface{}) string {
 
 // SvmGetByName gets the volume with the specified name
 func (c RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.Svm, error) {
-
 	result, err := c.SvmList(ctx, svmName)
 	if err != nil {
 		return nil, err
@@ -2936,7 +2859,6 @@ func (c RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.S
 func (c RestClient) SVMGetAggregateNames(
 	ctx context.Context,
 ) ([]string, error) {
-
 	svm, err := c.SvmGetByName(ctx, c.config.SVM)
 	if err != nil {
 		return nil, err
@@ -2961,7 +2883,6 @@ func (c RestClient) SVMGetAggregateNames(
 func (c RestClient) ClusterInfo(
 	ctx context.Context,
 ) (*cluster.ClusterGetOK, error) {
-
 	params := cluster.NewClusterGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -2975,7 +2896,6 @@ func (c RestClient) ClusterInfo(
 func (c RestClient) SystemGetOntapVersion(
 	ctx context.Context,
 ) (string, error) {
-
 	if c.OntapVersion != "" {
 		// return cached version
 		return c.OntapVersion, nil
@@ -2999,7 +2919,6 @@ func (c RestClient) SystemGetOntapVersion(
 
 // ClusterInfo returns information about the cluster
 func (c RestClient) NodeList(ctx context.Context, pattern string) (*cluster.NodesGetOK, error) {
-
 	params := cluster.NewNodesGetParamsWithTimeout(c.httpClient.Timeout)
 
 	params.Context = ctx
@@ -3009,7 +2928,6 @@ func (c RestClient) NodeList(ctx context.Context, pattern string) (*cluster.Node
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Cluster.NodesGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -3047,7 +2965,6 @@ func (c RestClient) NodeList(ctx context.Context, pattern string) (*cluster.Node
 }
 
 func (c RestClient) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
-
 	serialNumbers := make([]string, 0)
 
 	nodeListResult, err := c.NodeList(ctx, "*")
@@ -3289,7 +3206,6 @@ func (c RestClient) EmsAutosupportLog(
 	eventSource string,
 	logLevel int,
 ) error {
-
 	// TODO handle non-cluster-admin user error when trying to generate an EMS message
 	_, err := c.CliPassthroughEventGeneratePost(
 		ctx,
@@ -3445,7 +3361,6 @@ func (c RestClient) TieringPolicyValue(
 // ExportPolicyCreate creates an export policy
 // equivalent to filer::> vserver export-policy create
 func (c RestClient) ExportPolicyCreate(ctx context.Context, policy string) (*nas.ExportPolicyCreateCreated, error) {
-
 	params := nas.NewExportPolicyCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -3463,7 +3378,6 @@ func (c RestClient) ExportPolicyCreate(ctx context.Context, policy string) (*nas
 
 // ExportPolicyGet gets the export policy with the specified uuid
 func (c RestClient) ExportPolicyGet(ctx context.Context, id int64) (*nas.ExportPolicyGetOK, error) {
-
 	params := nas.NewExportPolicyGetParamsWithTimeout(c.httpClient.Timeout)
 
 	params.Context = ctx
@@ -3475,7 +3389,6 @@ func (c RestClient) ExportPolicyGet(ctx context.Context, id int64) (*nas.ExportP
 
 // ExportPolicyList returns the names of all export polices whose names match the supplied pattern
 func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.ExportPolicyCollectionGetOK, error) {
-
 	params := nas.NewExportPolicyCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 
 	params.Context = ctx
@@ -3486,7 +3399,6 @@ func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Nas.ExportPolicyCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -3525,7 +3437,6 @@ func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.
 
 // ExportPolicyGetByName gets the volume with the specified name
 func (c RestClient) ExportPolicyGetByName(ctx context.Context, exportPolicyName string) (*models.ExportPolicy, error) {
-
 	// TODO validate/improve this logic?
 	result, err := c.ExportPolicyList(ctx, exportPolicyName)
 	if result.Payload.NumRecords == 1 && result.Payload.Records != nil {
@@ -3535,7 +3446,6 @@ func (c RestClient) ExportPolicyGetByName(ctx context.Context, exportPolicyName 
 }
 
 func (c RestClient) ExportPolicyDestroy(ctx context.Context, policy string) (*nas.ExportPolicyDeleteOK, error) {
-
 	exportPolicy, err := c.ExportPolicyGetByName(ctx, policy)
 	if err != nil {
 		return nil, err
@@ -3555,7 +3465,6 @@ func (c RestClient) ExportPolicyDestroy(ctx context.Context, policy string) (*na
 // ExportRuleList returns the export rules in an export policy
 // equivalent to filer::> vserver export-policy rule show
 func (c RestClient) ExportRuleList(ctx context.Context, policy string) (*nas.ExportRuleCollectionGetOK, error) {
-
 	exportPolicy, err := c.ExportPolicyGetByName(ctx, policy)
 	if err != nil {
 		return nil, err
@@ -3573,7 +3482,6 @@ func (c RestClient) ExportRuleList(ctx context.Context, policy string) (*nas.Exp
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Nas.ExportRuleCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -3615,7 +3523,6 @@ func (c RestClient) ExportRuleList(ctx context.Context, policy string) (*nas.Exp
 func (c RestClient) ExportRuleCreate(
 	ctx context.Context, policy, clientMatch string, protocols, roSecFlavors, rwSecFlavors, suSecFlavors []string,
 ) (*nas.ExportRuleCreateCreated, error) {
-
 	exportPolicy, err := c.ExportPolicyGetByName(ctx, policy)
 	if err != nil {
 		return nil, err
@@ -3685,7 +3592,6 @@ func ToExportAuthenticationFlavorSlice(authFlavor []string) []models.ExportAuthe
 func (c RestClient) ExportRuleDestroy(
 	ctx context.Context, policy string, ruleIndex int,
 ) (*nas.ExportRuleDeleteOK, error) {
-
 	exportPolicy, err := c.ExportPolicyGetByName(ctx, policy)
 	if err != nil {
 		return nil, err
@@ -3836,7 +3742,6 @@ func (c RestClient) FlexgroupModifyExportPolicy(ctx context.Context, volumeName,
 func (c RestClient) QtreeCreate(
 	ctx context.Context, name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy string,
 ) error {
-
 	params := storage.NewQtreeCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
@@ -3882,7 +3787,6 @@ func (c RestClient) QtreeCreate(
 // QtreeRename renames a qtree
 // equivalent to filer::> volume qtree rename
 func (c RestClient) QtreeRename(ctx context.Context, path, newPath string) error {
-
 	qtree, err := c.QtreeGetByPath(ctx, path)
 	if err != nil {
 		return err
@@ -3918,7 +3822,6 @@ func (c RestClient) QtreeRename(ctx context.Context, path, newPath string) error
 // QtreeDestroyAsync destroys a qtree in the background
 // equivalent to filer::> volume qtree delete -foreground false
 func (c RestClient) QtreeDestroyAsync(ctx context.Context, path string, force bool) error {
-
 	// TODO force isn't used
 
 	qtree, err := c.QtreeGetByPath(ctx, path)
@@ -3952,7 +3855,6 @@ func (c RestClient) QtreeDestroyAsync(ctx context.Context, path string, force bo
 // QtreeList returns the names of all Qtrees whose names match the supplied prefix
 // equivalent to filer::> volume qtree show
 func (c RestClient) QtreeList(ctx context.Context, prefix, volumePrefix string) (*storage.QtreeCollectionGetOK, error) {
-
 	namePattern := "*"
 	if prefix != "" {
 		namePattern = prefix + "*"
@@ -3976,7 +3878,6 @@ func (c RestClient) QtreeList(ctx context.Context, prefix, volumePrefix string) 
 	params.SetFieldsQueryParameter([]string{"**"})                     // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -4015,7 +3916,6 @@ func (c RestClient) QtreeList(ctx context.Context, prefix, volumePrefix string) 
 
 // QtreeGetByPath gets the qtree with the specified path
 func (c RestClient) QtreeGetByPath(ctx context.Context, path string) (*models.Qtree, error) {
-
 	// Limit the qtrees to those specified path
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
@@ -4028,7 +3928,6 @@ func (c RestClient) QtreeGetByPath(ctx context.Context, path string) (*models.Qt
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -4052,7 +3951,6 @@ func (c RestClient) QtreeGetByPath(ctx context.Context, path string) (*models.Qt
 
 // QtreeGetByName gets the qtree with the specified name in the specified volume
 func (c RestClient) QtreeGetByName(ctx context.Context, name, volumeName string) (*models.Qtree, error) {
-
 	// Limit to the single qtree /volumeName/name
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
@@ -4066,7 +3964,6 @@ func (c RestClient) QtreeGetByName(ctx context.Context, name, volumeName string)
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -4090,7 +3987,6 @@ func (c RestClient) QtreeGetByName(ctx context.Context, name, volumeName string)
 
 // QtreeCount returns the number of Qtrees in the specified Flexvol, not including the Flexvol itself
 func (c RestClient) QtreeCount(ctx context.Context, volumeName string) (int, error) {
-
 	// Limit the qtrees to those in the specified Flexvol name
 	params := storage.NewQtreeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
@@ -4103,7 +3999,6 @@ func (c RestClient) QtreeCount(ctx context.Context, volumeName string) (int, err
 	params.SetFieldsQueryParameter([]string{"**"})                  // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return 0, err
@@ -4149,7 +4044,6 @@ func (c RestClient) QtreeCount(ctx context.Context, volumeName string) (int, err
 
 // QtreeExists returns true if the named Qtree exists (and is unique in the matching Flexvols)
 func (c RestClient) QtreeExists(ctx context.Context, name, volumePrefix string) (bool, string, error) {
-
 	volumePattern := "*"
 	if volumePrefix != "" {
 		volumePattern = volumePrefix + "*"
@@ -4168,7 +4062,6 @@ func (c RestClient) QtreeExists(ctx context.Context, name, volumePrefix string) 
 	params.SetFieldsQueryParameter([]string{"**"})                     // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return false, "", err
@@ -4226,7 +4119,6 @@ func (c RestClient) QtreeExists(ctx context.Context, name, volumePrefix string) 
 // QtreeGet returns all relevant details for a single qtree
 // equivalent to filer::> volume qtree show
 func (c RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*models.Qtree, error) {
-
 	pattern := "*"
 	if volumePrefix != "" {
 		pattern = volumePrefix + "*"
@@ -4245,7 +4137,6 @@ func (c RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*m
 	params.SetFieldsQueryParameter([]string{"**"})               // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -4270,7 +4161,6 @@ func (c RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*m
 // QtreeGetAll returns all relevant details for all qtrees whose Flexvol names match the supplied prefix
 // equivalent to filer::> volume qtree show
 func (c RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*storage.QtreeCollectionGetOK, error) {
-
 	pattern := "*"
 	if volumePrefix != "" {
 		pattern = volumePrefix + "*"
@@ -4288,7 +4178,6 @@ func (c RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*stor
 	params.SetFieldsQueryParameter([]string{"**"})               // TODO trim these down to just what we need
 
 	result, err := c.api.Storage.QtreeCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -4327,7 +4216,6 @@ func (c RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*stor
 
 // QtreeModifyExportPolicy modifies the export policy for the qtree
 func (c RestClient) QtreeModifyExportPolicy(ctx context.Context, name, volumeName, newExportPolicyName string) error {
-
 	qtree, err := c.QtreeGetByName(ctx, name, volumeName)
 	if err != nil {
 		return err
@@ -4376,7 +4264,6 @@ func (c RestClient) QuotaOff(ctx context.Context, volumeName string) error {
 
 // quotaModify enables/disables quotas on a Flexvol
 func (c RestClient) quotaModify(ctx context.Context, volumeName string, quotaEnabled bool) error {
-
 	volume, err := c.VolumeGetByName(ctx, volumeName)
 	if err != nil {
 		return err
@@ -4439,7 +4326,6 @@ func (c RestClient) quotaModify(ctx context.Context, volumeName string, quotaEna
 // QuotaSetEntry updates (or creates) a quota rule with an optional hard disk limit
 // equivalent to filer::> volume quota policy rule modify
 func (c RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, quotaType, diskLimit string) error {
-
 	// We can only modify existing rules, so we must check if this rule exists first
 	quotaRule, err := c.QuotaGetEntry(ctx, volumeName, qtreeName, quotaType)
 	if err != nil && !utils.IsNotFoundError(err) {
@@ -4539,7 +4425,6 @@ func (c RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, qu
 func (c RestClient) QuotaGetEntry(
 	ctx context.Context, volumeName, qtreeName, quotaType string,
 ) (*models.QuotaRule, error) {
-
 	params := storage.NewQuotaRuleCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
@@ -4554,7 +4439,6 @@ func (c RestClient) QuotaGetEntry(
 	params.SetFieldsQueryParameter([]string{"uuid", "space.hard_limit"})
 
 	result, err := c.api.Storage.QuotaRuleCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -4609,7 +4493,6 @@ func (c RestClient) QuotaGetEntry(
 // QuotaEntryList returns the disk limit quotas for a Flexvol
 // equivalent to filer::> volume quota policy rule show
 func (c RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*storage.QuotaRuleCollectionGetOK, error) {
-
 	params := storage.NewQuotaRuleCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
@@ -4623,7 +4506,6 @@ func (c RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*sto
 	params.SetFieldsQueryParameter([]string{"space.hard_limit", "uuid", "qtree.name", "volume.name"})
 
 	result, err := c.api.Storage.QuotaRuleCollectionGet(params, c.authInfo)
-
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err

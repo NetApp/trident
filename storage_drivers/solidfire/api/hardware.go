@@ -12,7 +12,6 @@ import (
 
 // Get cluster hardware info
 func (c *Client) GetClusterHardwareInfo(ctx context.Context) (*ClusterHardwareInfo, error) {
-
 	var (
 		clusterHardwareInfoReq    struct{}
 		clusterHardwareInfoResult GetClusterHardwareInfoResult

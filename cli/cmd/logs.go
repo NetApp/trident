@@ -61,7 +61,6 @@ var logsCmd = &cobra.Command{
 	Short: "Print the logs from Trident",
 	Long:  "Print the logs from the Trident storage orchestrator for Kubernetes",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-
 		tridentOperatorPodName = ""
 		tridentOperatorPodNamespace = ""
 		var operatorErr error
@@ -95,7 +94,6 @@ var logsCmd = &cobra.Command{
 		}
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		err := checkValidLog()
 		if err != nil {
 			return err
@@ -128,7 +126,6 @@ func writeLogs(logName string, logEntry []byte) error {
 }
 
 func archiveLogs() error {
-
 	// In archive mode, "auto" means to attempt to get all logs (current & previous).
 	if logType == logTypeAuto {
 		logType = logTypeAll
@@ -167,7 +164,6 @@ func archiveLogs() error {
 }
 
 func consoleLogs() error {
-
 	err := getLogs()
 
 	SetExitCodeFromError(err)
@@ -185,7 +181,6 @@ func consoleLogs() error {
 }
 
 func getLogs() error {
-
 	var err error
 
 	if OperatingMode != ModeTunnel {
@@ -253,7 +248,6 @@ func checkValidLog() error {
 }
 
 func getTridentLogs(logName string) error {
-
 	var container string
 	var prev bool
 
@@ -313,7 +307,6 @@ func getTridentLogs(logName string) error {
 }
 
 func getNodeLogs(logName, nodeName string) error {
-
 	var container string
 	var prev bool
 
@@ -382,7 +375,6 @@ func getNodeLogs(logName, nodeName string) error {
 }
 
 func getAllNodeLogs(logName string) error {
-
 	var container string
 	var prev bool
 
@@ -452,7 +444,6 @@ func getAllNodeLogs(logName string) error {
 }
 
 func getTridentOperatorLogs(logName string) error {
-
 	var container string
 	var prev bool
 
@@ -487,7 +478,6 @@ func getTridentOperatorLogs(logName string) error {
 }
 
 func appendError(oldErrors, newError []byte) []byte {
-
 	if len(oldErrors) == 0 {
 		return newError
 	} else {

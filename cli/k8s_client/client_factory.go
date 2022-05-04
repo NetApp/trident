@@ -51,7 +51,6 @@ var cachedClients *Clients
 // using `kubectl config view --raw` and we attempt to discern the namespace from the kubeconfig context.  The
 // namespace may be overridden, and if the namespace may not be determined by any other means, it is set to 'default'.
 func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Clients, error) {
-
 	// Return a cached copy if available
 	if cachedClients != nil {
 		return cachedClients, nil
@@ -121,7 +120,6 @@ func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Cli
 }
 
 func createK8SClientsExCluster(masterURL, kubeConfigPath, overrideNamespace string) (*Clients, error) {
-
 	var namespace string
 	var restConfig *rest.Config
 	var err error
@@ -201,7 +199,6 @@ func createK8SClientsExCluster(masterURL, kubeConfigPath, overrideNamespace stri
 }
 
 func createK8SClientsInCluster(overrideNamespace string) (*Clients, error) {
-
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -232,7 +229,6 @@ func createK8SClientsInCluster(overrideNamespace string) (*Clients, error) {
 }
 
 func discoverKubernetesCLI() (string, error) {
-
 	// Try the OpenShift CLI first
 	_, err := exec.Command(CLIOpenShift, "version").Output()
 	if getExitCodeFromError(err) == ExitCodeSuccess {

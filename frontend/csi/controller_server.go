@@ -28,7 +28,6 @@ import (
 func (p *Plugin) CreateVolume(
 	ctx context.Context, req *csi.CreateVolumeRequest,
 ) (*csi.CreateVolumeResponse, error) {
-
 	fields := log.Fields{"Method": "CreateVolume", "Type": "CSI_Controller", "name": req.Name}
 	Logc(ctx).WithFields(fields).Debug(">>>> CreateVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< CreateVolume")
@@ -191,7 +190,7 @@ func (p *Plugin) CreateVolume(
 	}
 
 	// Get topology requirements
-	var requisiteTopologies = make([]map[string]string, 0)
+	requisiteTopologies := make([]map[string]string, 0)
 	for _, topReq := range req.GetAccessibilityRequirements().GetRequisite() {
 		requirement := make(map[string]string)
 		for k, v := range topReq.GetSegments() {
@@ -200,7 +199,7 @@ func (p *Plugin) CreateVolume(
 		requisiteTopologies = append(requisiteTopologies, requirement)
 	}
 
-	var preferredTopologies = make([]map[string]string, 0)
+	preferredTopologies := make([]map[string]string, 0)
 	for _, topReq := range req.GetAccessibilityRequirements().GetPreferred() {
 		preference := make(map[string]string)
 		for k, v := range topReq.GetSegments() {
@@ -277,7 +276,6 @@ func (p *Plugin) CreateVolume(
 func (p *Plugin) DeleteVolume(
 	ctx context.Context, req *csi.DeleteVolumeRequest,
 ) (*csi.DeleteVolumeResponse, error) {
-
 	fields := log.Fields{"Method": "DeleteVolume", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> DeleteVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteVolume")
@@ -303,7 +301,6 @@ func (p *Plugin) DeleteVolume(
 }
 
 func stashIscsiTargetPortals(publishInfo map[string]string, volumePublishInfo *utils.VolumePublishInfo) {
-
 	count := 1 + len(volumePublishInfo.IscsiPortals)
 	publishInfo["iscsiTargetPortalCount"] = strconv.Itoa(count)
 	publishInfo["p1"] = volumePublishInfo.IscsiTargetPortal
@@ -316,7 +313,6 @@ func stashIscsiTargetPortals(publishInfo map[string]string, volumePublishInfo *u
 func (p *Plugin) ControllerPublishVolume(
 	ctx context.Context, req *csi.ControllerPublishVolumeRequest,
 ) (*csi.ControllerPublishVolumeResponse, error) {
-
 	fields := log.Fields{"Method": "ControllerPublishVolume", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> ControllerPublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ControllerPublishVolume")
@@ -478,7 +474,6 @@ func generateVolumePublicationFromCSIPublishRequest(req *csi.ControllerPublishVo
 func (p *Plugin) ControllerUnpublishVolume(
 	ctx context.Context, req *csi.ControllerUnpublishVolumeRequest,
 ) (*csi.ControllerUnpublishVolumeResponse, error) {
-
 	fields := log.Fields{"Method": "ControllerUnpublishVolume", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> ControllerUnpublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ControllerUnpublishVolume")
@@ -519,7 +514,6 @@ func (p *Plugin) ControllerUnpublishVolume(
 func (p *Plugin) ValidateVolumeCapabilities(
 	ctx context.Context, req *csi.ValidateVolumeCapabilitiesRequest,
 ) (*csi.ValidateVolumeCapabilitiesResponse, error) {
-
 	volumeID := req.GetVolumeId()
 
 	if volumeID == "" {
@@ -565,7 +559,6 @@ func (p *Plugin) ValidateVolumeCapabilities(
 func (p *Plugin) ListVolumes(
 	ctx context.Context, req *csi.ListVolumesRequest,
 ) (*csi.ListVolumesResponse, error) {
-
 	fields := log.Fields{"Method": "ListVolumes", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> ListVolumes")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ListVolumes")
@@ -638,7 +631,6 @@ func (p *Plugin) ListVolumes(
 }
 
 func (p *Plugin) GetCapacity(_ context.Context, _ *csi.GetCapacityRequest) (*csi.GetCapacityResponse, error) {
-
 	// Trident doesn't report pool capacities
 	return nil, status.Error(codes.Unimplemented, "")
 }
@@ -646,7 +638,6 @@ func (p *Plugin) GetCapacity(_ context.Context, _ *csi.GetCapacityRequest) (*csi
 func (p *Plugin) ControllerGetCapabilities(
 	ctx context.Context, _ *csi.ControllerGetCapabilitiesRequest,
 ) (*csi.ControllerGetCapabilitiesResponse, error) {
-
 	fields := log.Fields{"Method": "ControllerGetCapabilities", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> ControllerGetCapabilities")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ControllerGetCapabilities")
@@ -657,7 +648,6 @@ func (p *Plugin) ControllerGetCapabilities(
 func (p *Plugin) CreateSnapshot(
 	ctx context.Context, req *csi.CreateSnapshotRequest,
 ) (*csi.CreateSnapshotResponse, error) {
-
 	fields := log.Fields{"Method": "CreateSnapshot", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
@@ -734,7 +724,6 @@ func (p *Plugin) CreateSnapshot(
 func (p *Plugin) DeleteSnapshot(
 	ctx context.Context, req *csi.DeleteSnapshotRequest,
 ) (*csi.DeleteSnapshotResponse, error) {
-
 	fields := log.Fields{"Method": "DeleteSnapshot", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
@@ -772,7 +761,6 @@ func (p *Plugin) DeleteSnapshot(
 func (p *Plugin) ListSnapshots(
 	ctx context.Context, req *csi.ListSnapshotsRequest,
 ) (*csi.ListSnapshotsResponse, error) {
-
 	fields := log.Fields{"Method": "ListSnapshots", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> ListSnapshots")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ListSnapshots")
@@ -835,7 +823,6 @@ func (p *Plugin) ListSnapshots(
 func (p *Plugin) getListSnapshots(
 	ctx context.Context, req *csi.ListSnapshotsRequest, snapshots []*storage.SnapshotExternal,
 ) (*csi.ListSnapshotsResponse, error) {
-
 	entries := make([]*csi.ListSnapshotsResponse_Entry, 0)
 	maxPageEntries := int(req.MaxEntries)
 	encounteredStartingToken := req.StartingToken == ""
@@ -874,7 +861,6 @@ func (p *Plugin) getListSnapshots(
 func (p *Plugin) ControllerExpandVolume(
 	ctx context.Context, req *csi.ControllerExpandVolumeRequest,
 ) (*csi.ControllerExpandVolumeResponse, error) {
-
 	fields := log.Fields{"Method": "ControllerExpandVolume", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> ControllerExpandVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ControllerExpandVolume")
@@ -965,7 +951,6 @@ func (p *Plugin) ControllerExpandVolume(
 func (p *Plugin) ControllerGetVolume(
 	_ context.Context, _ *csi.ControllerGetVolumeRequest,
 ) (*csi.ControllerGetVolumeResponse, error) {
-
 	// Trident doesn't support ControllerGetVolume
 	return nil, status.Error(codes.Unimplemented, "")
 }
@@ -973,7 +958,6 @@ func (p *Plugin) ControllerGetVolume(
 func (p *Plugin) getCSIVolumeFromTridentVolume(
 	ctx context.Context, volume *storage.VolumeExternal,
 ) (*csi.Volume, error) {
-
 	capacity, err := strconv.ParseInt(volume.Config.Size, 10, 64)
 	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
@@ -1008,7 +992,6 @@ func (p *Plugin) getCSIVolumeFromTridentVolume(
 func (p *Plugin) getCSISnapshotFromTridentSnapshot(
 	ctx context.Context, snapshot *storage.SnapshotExternal,
 ) (*csi.Snapshot, error) {
-
 	createdSeconds, err := time.Parse(time.RFC3339, snapshot.Created)
 	if err != nil {
 		Logc(ctx).WithField("time", snapshot.Created).Error("Could not parse RFC3339 snapshot time.")
@@ -1098,7 +1081,6 @@ func (p *Plugin) getProtocolForCSIAccessMode(
 
 // hasBackendForProtocol identifies if Trident has a backend with the matching protocol.
 func (p *Plugin) hasBackendForProtocol(ctx context.Context, protocol tridentconfig.Protocol) bool {
-
 	backends, err := p.orchestrator.ListBackends(ctx)
 	if err != nil || backends == nil || len(backends) == 0 {
 		return false

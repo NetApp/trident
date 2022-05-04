@@ -25,7 +25,6 @@ import (
 // detect PVCs with increased capacity requests and resize the underlying PV
 // and PVC to match the request.
 func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
-
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S)
 
 	// Ensure we got PVC objects
@@ -169,7 +168,6 @@ func (p *Plugin) updatePVCResize(oldObj, newObj interface{}) {
 
 // resizeVolumeAndPV resizes the volume on the storage backend and updates the PV size.
 func (p *Plugin) resizeVolumeAndPV(ctx context.Context, pv *v1.PersistentVolume, newSize resource.Quantity) error {
-
 	pvSize := pv.Spec.Capacity[v1.ResourceStorage]
 	if pvSize.Cmp(newSize) < 0 {
 		// Calling the orchestrator to resize the volume on the storage backend.
@@ -207,7 +205,6 @@ func (p *Plugin) resizeVolumeAndPV(ctx context.Context, pv *v1.PersistentVolume,
 func (p *Plugin) resizePVC(
 	ctx context.Context, pvc *v1.PersistentVolumeClaim, newSize resource.Quantity,
 ) (*v1.PersistentVolumeClaim, error) {
-
 	pvcClone := pvc.DeepCopy()
 	pvcClone.Status.Capacity[v1.ResourceStorage] = newSize
 	pvcUpdated, err := p.patchPVCStatus(ctx, pvc, pvcClone)

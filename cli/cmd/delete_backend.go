@@ -37,7 +37,6 @@ var deleteBackendCmd = &cobra.Command{
 }
 
 func backendDelete(backendNames []string) error {
-
 	var err error
 
 	if allBackends {

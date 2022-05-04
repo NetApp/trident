@@ -151,12 +151,10 @@ func newFakeStorageDriverConfigJSON(name string) (string, error) {
 }
 
 func addCrdTestReactors(crdFakeClient *crdFake.Clientset, testingCache *TestingCache) {
-
 	crdFakeClient.Fake.PrependReactor(
 		"*" /* all operations */, "*", /* all object types */
 		// "create" /* create operations only */, "tridentbackends", /* tridentbackends object types only */
 		func(actionCopy k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-
 			fmt.Printf("actionCopy: %T\n", actionCopy) // use this to find any other types to add
 			switch action := actionCopy.(type) {
 

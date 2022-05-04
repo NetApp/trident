@@ -19,8 +19,10 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-type AppStatus string
-type ResourceType string
+type (
+	AppStatus    string
+	ResourceType string
+)
 
 // addMirrorRelationship is the add handler for the TridentMirrorRelationship watcher.
 // This is called for every TMR when Trident starts
@@ -52,7 +54,6 @@ func (c *TridentCrdController) addMirrorRelationship(obj interface{}) {
 
 // updateMirrorRelationship is the update handler for the TridentMirrorRelationship watcher.
 func (c *TridentCrdController) updateMirrorRelationship(old, new interface{}) {
-
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
 
@@ -154,7 +155,6 @@ func (c *TridentCrdController) updateMirrorRelationship(old, new interface{}) {
 
 // deleteMirrorRelationship is the delete handler for the TridentMirrorRelationship watcher.
 func (c *TridentCrdController) deleteMirrorRelationship(obj interface{}) {
-
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
 
@@ -184,7 +184,6 @@ func updateTMRConditionLocalFields(
 	localPVCName,
 	remoteVolumeHandle string,
 ) (*netappv1.TridentMirrorRelationshipCondition, error) {
-
 	conditionCopy := statusCondition.DeepCopy()
 	if localVolumeHandle != "" {
 		conditionCopy.LocalVolumeHandle = localVolumeHandle
@@ -201,7 +200,6 @@ func (c *TridentCrdController) updateTMRStatus(
 	relationship *netappv1.TridentMirrorRelationship,
 	statusCondition *netappv1.TridentMirrorRelationshipCondition,
 ) (*netappv1.TridentMirrorRelationship, error) {
-
 	// Create new status
 	mirrorRCopy := relationship.DeepCopy()
 	statusCondition.ObservedGeneration = int(mirrorRCopy.Generation)
@@ -223,7 +221,6 @@ func (c *TridentCrdController) updateTMRStatus(
 func (c *TridentCrdController) updateTMRCR(
 	ctx context.Context, tmr *netappv1.TridentMirrorRelationship,
 ) (*netappv1.TridentMirrorRelationship, error) {
-
 	logFields := log.Fields{"TridentMirrorRelationship": tmr.Name}
 
 	// Update phase of the tmrCR
@@ -238,13 +235,11 @@ func (c *TridentCrdController) updateTMRCR(
 }
 
 func (c *TridentCrdController) reconcileTMR(keyItem *KeyItem) error {
-
 	Logx(keyItem.ctx).Debug("TridentCrdController#reconcileTMR")
 	logFields := log.Fields{"TridentMirrorRelationship": keyItem.key}
 
 	// Pass the namespace/name string of the resource to be synced.
 	if err := c.handleTridentMirrorRelationship(keyItem); err != nil {
-
 		if utils.IsReconcileDeferredError(err) {
 			c.workqueue.AddRateLimited(*keyItem)
 			errMessage := fmt.Sprintf(
@@ -275,7 +270,6 @@ func (c *TridentCrdController) reconcileTMR(keyItem *KeyItem) error {
 
 // handleTridentMirrorRelationship ensures we move to the desired state and the desired state is maintained
 func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem) error {
-
 	key := keyItem.key
 	ctx := keyItem.ctx
 
@@ -400,7 +394,6 @@ func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem)
 func (c *TridentCrdController) getCurrentMirrorState(
 	ctx context.Context, desiredMirrorState, backendUUID, localVolumeHandle, remoteVolumeHandle string,
 ) (string, error) {
-
 	currentMirrorState, err := c.orchestrator.GetMirrorStatus(ctx, backendUUID, localVolumeHandle, remoteVolumeHandle)
 	if err != nil {
 		// Unsupported backends are always "promoted"
@@ -432,7 +425,6 @@ func (c *TridentCrdController) ensureMirrorReadyForDeletion(
 	volumeMapping *netappv1.TridentMirrorRelationshipVolumeMapping,
 	currentCondition *netappv1.TridentMirrorRelationshipCondition,
 ) (bool, error) {
-
 	relCopy := relationship.DeepCopy()
 	relCopy.Spec.MirrorState = netappv1.MirrorStatePromoted
 	// We do not want to wait for a snapshot to appear if we are deleting
@@ -465,7 +457,6 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 	volumeMapping *netappv1.TridentMirrorRelationshipVolumeMapping,
 	currentCondition *netappv1.TridentMirrorRelationshipCondition,
 ) (*netappv1.TridentMirrorRelationshipCondition, error) {
-
 	logFields := log.Fields{"TridentMirrorRelationship": relationship.Name}
 	// Clear the status condition message
 	statusCondition := currentCondition.DeepCopy()
@@ -667,5 +658,4 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 
 	return updateTMRConditionLocalFields(
 		statusCondition, localVolumeHandle, localPVCName, volumeMapping.RemoteVolumeHandle)
-
 }

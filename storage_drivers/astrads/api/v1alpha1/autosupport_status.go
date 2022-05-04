@@ -207,7 +207,6 @@ func (asup *AutoSupportStatus) LastValidState() AutoSupportStateType {
 
 // LastHeartBeatTime
 func (asup *AutoSupportStatus) LastHeartBeat() metav1.Time {
-
 	lastCondition := asup.Conditions[len(asup.Conditions)-1]
 
 	return lastCondition.LastHeartbeatTime
@@ -215,7 +214,6 @@ func (asup *AutoSupportStatus) LastHeartBeat() metav1.Time {
 
 // Last Transition Time
 func (asup *AutoSupportStatus) LastTransitionTime() metav1.Time {
-
 	lastCondition := asup.Conditions[len(asup.Conditions)-1]
 
 	return lastCondition.LastTransitionTime

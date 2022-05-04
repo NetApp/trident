@@ -32,8 +32,7 @@ func newTestOntapStorageDriverConfig(debugTraceFlags map[string]bool) *OntapStor
 }
 
 func TestOntapStorageDriverConfigString(t *testing.T) {
-
-	var ontapStorageDriverConfigs = []OntapStorageDriverConfig{
+	ontapStorageDriverConfigs := []OntapStorageDriverConfig{
 		*newTestOntapStorageDriverConfig(map[string]bool{"method": true}),
 		*newTestOntapStorageDriverConfig(nil),
 	}
@@ -96,8 +95,7 @@ func newTestStorageDriverConfig(debugTraceFlags map[string]bool) *FakeStorageDri
 }
 
 func TestStorageDriverConfigString(t *testing.T) {
-
-	var fakeStorageDriverConfigs = []FakeStorageDriverConfig{
+	fakeStorageDriverConfigs := []FakeStorageDriverConfig{
 		*newTestStorageDriverConfig(map[string]bool{"method": true}),
 		*newTestStorageDriverConfig(nil),
 	}

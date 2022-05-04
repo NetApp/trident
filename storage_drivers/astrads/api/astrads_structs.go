@@ -64,7 +64,6 @@ type Volume struct {
 
 // IsReady checks several values to ensure a volume is ready for use.
 func (v *Volume) IsReady(ctx context.Context) bool {
-
 	// Volume must report as having been created
 	if !v.Created || v.CreateError != nil {
 		return false
@@ -96,7 +95,6 @@ func (v *Volume) IsReady(ctx context.Context) bool {
 }
 
 func (v *Volume) GetRequestedSize(ctx context.Context) (int64, error) {
-
 	var size string
 	var err error
 	if size, err = utils.ConvertSizeToBytes(v.RequestedSize.String()); err != nil {
@@ -114,7 +112,6 @@ func (v *Volume) GetRequestedSize(ctx context.Context) (int64, error) {
 }
 
 func (v *Volume) GetActualSize(ctx context.Context) (int64, error) {
-
 	var size string
 	var err error
 	if size, err = utils.ConvertSizeToBytes(v.ActualSize.String()); err != nil {
@@ -133,7 +130,6 @@ func (v *Volume) GetActualSize(ctx context.Context) (int64, error) {
 
 // GetCreationError returns any error indicating a volume creation error, or nil if the volume is created and online.
 func (v *Volume) GetCreationError() error {
-
 	if IsVolumeCreateError(v.CreateError) {
 		return v.CreateError
 	}
@@ -169,7 +165,6 @@ type ExportPolicyRule struct {
 
 // IsReady checks several values to ensure an export policy is ready for use.
 func (e *ExportPolicy) IsReady(_ context.Context) bool {
-
 	// Export policy must report as having been created
 	if e.CreateError != nil {
 		return false
@@ -185,7 +180,6 @@ func (e *ExportPolicy) IsReady(_ context.Context) bool {
 
 // GetCreationError returns any error indicating a export policy creation error, or nil if the export policy is created.
 func (e *ExportPolicy) GetCreationError() error {
-
 	if IsExportPolicyCreateError(e.CreateError) {
 		return e.CreateError
 	}
@@ -213,7 +207,6 @@ type Snapshot struct {
 
 // IsReady checks several values to ensure a snapshot is ready for use.
 func (s *Snapshot) IsReady(_ context.Context) bool {
-
 	// Snapshot must be ready to use
 	if !s.ReadyToUse || s.ReadyError != nil {
 		return false
@@ -230,7 +223,6 @@ func (s *Snapshot) IsReady(_ context.Context) bool {
 // GetReadyError returns any error indicating a snapshot creation error, or nil if the snapshot is either ready
 // or still being created.
 func (s *Snapshot) GetReadyError() error {
-
 	if IsSnapshotReadyError(s.ReadyError) {
 		return s.ReadyError
 	}

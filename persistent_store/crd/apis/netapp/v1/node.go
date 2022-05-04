@@ -12,7 +12,6 @@ import (
 
 // NewTridentNode creates a new node CRD object from a internal utils.TridentNode object.
 func NewTridentNode(persistent *utils.Node) (*TridentNode, error) {
-
 	node := &TridentNode{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "trident.netapp.io/v1",

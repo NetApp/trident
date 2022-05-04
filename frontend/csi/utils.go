@@ -52,8 +52,8 @@ func NewNodeServiceCapability(cap csi.NodeServiceCapability_RPC_Type) *csi.NodeS
 }
 
 func logGRPC(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{},
-	error) {
-
+	error,
+) {
 	ctx = GenerateRequestContext(ctx, "", ContextSourceCSI)
 	Logc(ctx).Debugf("GRPC call: %s", info.FullMethod)
 	Logc(ctx).Debugf("GRPC request: %+v", req)
@@ -99,7 +99,6 @@ func encryptCHAPPublishInfo(
 func decryptCHAPPublishInfo(
 	ctx context.Context, publishInfo *utils.VolumePublishInfo, publishContext map[string]string, aesKey []byte,
 ) error {
-
 	var err error
 
 	if publishInfo.IscsiUsername == "" && publishContext["encryptedIscsiUsername"] != "" {

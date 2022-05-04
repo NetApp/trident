@@ -20,8 +20,10 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
-var ontapConfigRedactList = [...]string{"Username", "Password", "ChapUsername", "ChapInitiatorSecret",
-	"ChapTargetUsername", "ChapTargetInitiatorSecret", "ClientPrivateKey"}
+var ontapConfigRedactList = [...]string{
+	"Username", "Password", "ChapUsername", "ChapInitiatorSecret",
+	"ChapTargetUsername", "ChapTargetInitiatorSecret", "ClientPrivateKey",
+}
 
 func GetOntapConfigRedactList() []string {
 	clone := ontapConfigRedactList
@@ -30,7 +32,6 @@ func GetOntapConfigRedactList() []string {
 
 // ValidateCommonSettings attempts to "partially" decode the JSON into just the settings in CommonStorageDriverConfig
 func ValidateCommonSettings(ctx context.Context, configJSON string) (*CommonStorageDriverConfig, error) {
-
 	config := &CommonStorageDriverConfig{}
 
 	// Decode configJSON into config object
@@ -141,7 +142,6 @@ func SanitizeCommonStorageDriverConfig(c *CommonStorageDriverConfig) {
 }
 
 func GetCommonInternalVolumeName(c *CommonStorageDriverConfig, name string) string {
-
 	prefixToUse := trident.OrchestratorName
 
 	// If a prefix was specified in the configuration, use that.
@@ -161,7 +161,6 @@ func GetCommonInternalVolumeName(c *CommonStorageDriverConfig, name string) stri
 func CheckVolumeSizeLimits(
 	ctx context.Context, requestedSizeInt uint64, config *CommonStorageDriverConfig,
 ) (bool, uint64, error) {
-
 	requestedSize := float64(requestedSizeInt)
 	// If the user specified a limit for volume size, parse and enforce it
 	limitVolumeSize := config.LimitVolumeSize
@@ -196,7 +195,7 @@ func CheckVolumeSizeLimits(
 
 // CheckMinVolumeSize returns UnsupportedCapacityRangeError if the requested volume size is less than the minimum
 // volume size
-func CheckMinVolumeSize(requestedSizeBytes uint64, minVolumeSizeBytes uint64) error {
+func CheckMinVolumeSize(requestedSizeBytes, minVolumeSizeBytes uint64) error {
 	if requestedSizeBytes < minVolumeSizeBytes {
 		return utils.UnsupportedCapacityRangeError(fmt.Errorf("requested volume size ("+
 			"%d bytes) is too small; the minimum volume size is %d bytes",
@@ -207,7 +206,6 @@ func CheckMinVolumeSize(requestedSizeBytes uint64, minVolumeSizeBytes uint64) er
 
 // Clone will create a copy of the source object and store it into the destination object (which must be a pointer)
 func Clone(ctx context.Context, source, destination interface{}) {
-
 	if reflect.TypeOf(destination).Kind() != reflect.Ptr {
 		Logc(ctx).Error("storage_drivers.Clone, destination parameter must be a pointer")
 	}
@@ -224,8 +222,7 @@ func Clone(ctx context.Context, source, destination interface{}) {
 }
 
 // CheckSupportedFilesystem checks for a supported file system type
-func CheckSupportedFilesystem(ctx context.Context, fs string, volumeInternalName string) (string, error) {
-
+func CheckSupportedFilesystem(ctx context.Context, fs, volumeInternalName string) (string, error) {
 	fsType, err := utils.VerifyFilesystemSupport(fs)
 	if err == nil {
 		Logc(ctx).WithFields(log.Fields{"fileSystemType": fsType, "name": volumeInternalName}).Debug("Filesystem format.")

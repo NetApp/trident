@@ -11,12 +11,9 @@ import (
 	"github.com/netapp/trident/storage"
 )
 
-var (
-	ctx = context.TODO()
-)
+var ctx = context.TODO()
 
 func getFakeSDK() *Client {
-
 	sdk := &Client{
 		config: &ClientConfig{
 			SubscriptionID:  "mySubscription",
@@ -283,7 +280,6 @@ func getFakeSDK() *Client {
 }
 
 func TestCheckForUnsatisfiedPools_NoPools(t *testing.T) {
-
 	sPool1 := storage.NewStoragePool(nil, "pool1")
 	sPool2 := storage.NewStoragePool(nil, "pool2")
 
@@ -296,7 +292,6 @@ func TestCheckForUnsatisfiedPools_NoPools(t *testing.T) {
 }
 
 func TestCheckForUnsatisfiedPools_EmptyPools(t *testing.T) {
-
 	sPool1 := storage.NewStoragePool(nil, "pool1")
 	sPool1.InternalAttributes()[PCapacityPools] = ""
 	sPool2 := storage.NewStoragePool(nil, "pool2")
@@ -311,7 +306,6 @@ func TestCheckForUnsatisfiedPools_EmptyPools(t *testing.T) {
 }
 
 func TestCheckForUnsatisfiedPools_ValidPools(t *testing.T) {
-
 	sPool1 := storage.NewStoragePool(nil, "pool1")
 	sPool1.InternalAttributes()[PCapacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP3"
 	sPool2 := storage.NewStoragePool(nil, "pool2")
@@ -326,7 +320,6 @@ func TestCheckForUnsatisfiedPools_ValidPools(t *testing.T) {
 }
 
 func TestCheckForUnsatisfiedPools_OneInvalidPool(t *testing.T) {
-
 	sPool1 := storage.NewStoragePool(nil, "pool1")
 	sPool1.InternalAttributes()[PCapacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP4"
 	sPool2 := storage.NewStoragePool(nil, "pool2")
@@ -341,7 +334,6 @@ func TestCheckForUnsatisfiedPools_OneInvalidPool(t *testing.T) {
 }
 
 func TestCheckForUnsatisfiedPools_TwoInvalidPools(t *testing.T) {
-
 	sPool1 := storage.NewStoragePool(nil, "pool1")
 	sPool1.InternalAttributes()[PServiceLevel] = ServiceLevelUltra
 	sPool1.InternalAttributes()[PCapacityPools] = "CP2"
@@ -359,7 +351,6 @@ func TestCheckForUnsatisfiedPools_TwoInvalidPools(t *testing.T) {
 }
 
 func TestCheckForNonexistentResourceGroups_NoPools(t *testing.T) {
-
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
 
@@ -369,7 +360,6 @@ func TestCheckForNonexistentResourceGroups_NoPools(t *testing.T) {
 }
 
 func TestCheckForNonexistentResourceGroups_Empty(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PResourceGroups] = ""
 
@@ -382,7 +372,6 @@ func TestCheckForNonexistentResourceGroups_Empty(t *testing.T) {
 }
 
 func TestCheckForNonexistentResourceGroups_OK(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PResourceGroups] = "RG1,RG2"
 
@@ -395,7 +384,6 @@ func TestCheckForNonexistentResourceGroups_OK(t *testing.T) {
 }
 
 func TestCheckForNonexistentResourceGroups_Missing(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PResourceGroups] = "RG1,RG2,RG3"
 
@@ -408,7 +396,6 @@ func TestCheckForNonexistentResourceGroups_Missing(t *testing.T) {
 }
 
 func TestCheckForNonexistentNetAppAccounts_NoPools(t *testing.T) {
-
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
 
@@ -418,7 +405,6 @@ func TestCheckForNonexistentNetAppAccounts_NoPools(t *testing.T) {
 }
 
 func TestCheckForNonexistentNetAppAccounts_Empty(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PNetappAccounts] = ""
 
@@ -431,7 +417,6 @@ func TestCheckForNonexistentNetAppAccounts_Empty(t *testing.T) {
 }
 
 func TestCheckForNonexistentNetAppAccounts_OK(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PNetappAccounts] = "RG1/NA1,RG2/NA1,NA2"
 
@@ -444,7 +429,6 @@ func TestCheckForNonexistentNetAppAccounts_OK(t *testing.T) {
 }
 
 func TestCheckForNonexistentNetAppAccounts_Missing(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PNetappAccounts] = "RG1/NA1,RG2/NA1,NA3"
 
@@ -457,7 +441,6 @@ func TestCheckForNonexistentNetAppAccounts_Missing(t *testing.T) {
 }
 
 func TestCheckForNonexistentCapacityPools_NoPools(t *testing.T) {
-
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
 
@@ -467,7 +450,6 @@ func TestCheckForNonexistentCapacityPools_NoPools(t *testing.T) {
 }
 
 func TestCheckForNonexistentCapacityPools_Empty(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PCapacityPools] = ""
 
@@ -480,7 +462,6 @@ func TestCheckForNonexistentCapacityPools_Empty(t *testing.T) {
 }
 
 func TestCheckForNonexistentCapacityPools_OK(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PCapacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP3"
 
@@ -493,7 +474,6 @@ func TestCheckForNonexistentCapacityPools_OK(t *testing.T) {
 }
 
 func TestCheckForNonexistentCapacityPools_Missing(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PCapacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP4"
 
@@ -506,7 +486,6 @@ func TestCheckForNonexistentCapacityPools_Missing(t *testing.T) {
 }
 
 func TestCheckForNonexistentVirtualNetworks_NoPools(t *testing.T) {
-
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
 
@@ -516,7 +495,6 @@ func TestCheckForNonexistentVirtualNetworks_NoPools(t *testing.T) {
 }
 
 func TestCheckForNonexistentVirtualNetworks_Empty(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PVirtualNetwork] = ""
 
@@ -529,7 +507,6 @@ func TestCheckForNonexistentVirtualNetworks_Empty(t *testing.T) {
 }
 
 func TestCheckForNonexistentVirtualNetworks_OK(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PVirtualNetwork] = "RG1/VN1"
 
@@ -542,7 +519,6 @@ func TestCheckForNonexistentVirtualNetworks_OK(t *testing.T) {
 }
 
 func TestCheckForNonexistentVirtualNetworks_Missing(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PVirtualNetwork] = "VN4"
 
@@ -555,7 +531,6 @@ func TestCheckForNonexistentVirtualNetworks_Missing(t *testing.T) {
 }
 
 func TestCheckForNonexistentSubnets_NoPools(t *testing.T) {
-
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
 
@@ -565,7 +540,6 @@ func TestCheckForNonexistentSubnets_NoPools(t *testing.T) {
 }
 
 func TestCheckForNonexistentSubnets_Empty(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PSubnet] = ""
 
@@ -578,7 +552,6 @@ func TestCheckForNonexistentSubnets_Empty(t *testing.T) {
 }
 
 func TestCheckForNonexistentSubnets_OK(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PSubnet] = "RG1/VN2/SN3"
 
@@ -591,7 +564,6 @@ func TestCheckForNonexistentSubnets_OK(t *testing.T) {
 }
 
 func TestCheckForNonexistentSubnets_Missing(t *testing.T) {
-
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[PSubnet] = "RG1/VN2/SN4"
 
@@ -604,7 +576,6 @@ func TestCheckForNonexistentSubnets_Missing(t *testing.T) {
 }
 
 func TestFeatures(t *testing.T) {
-
 	sdk := getFakeSDK()
 
 	tests := []struct {
@@ -650,7 +621,6 @@ func TestFeatures(t *testing.T) {
 }
 
 func TestCapacityPools(t *testing.T) {
-
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
 
@@ -670,7 +640,6 @@ func TestCapacityPools(t *testing.T) {
 }
 
 func TestCapacityPoolsForStoragePools(t *testing.T) {
-
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
 
@@ -694,7 +663,6 @@ func TestCapacityPoolsForStoragePools(t *testing.T) {
 }
 
 func TestCapacityPoolsForStoragePool(t *testing.T) {
-
 	sdk := getFakeSDK()
 	RG1_NA1_CP1 := sdk.capacityPool("RG1/NA1/CP1")
 	RG1_NA1_CP2 := sdk.capacityPool("RG1/NA1/CP2")
@@ -854,7 +822,6 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 }
 
 func TestEnsureVolumeInValidCapacityPool(t *testing.T) {
-
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = make(map[string]storage.Pool)
 
@@ -881,7 +848,6 @@ func TestEnsureVolumeInValidCapacityPool(t *testing.T) {
 }
 
 func TestSubnetsForStoragePool(t *testing.T) {
-
 	sdk := getFakeSDK()
 	RG1_VN1_SN1 := sdk.subnet("RG1/VN1/SN1")
 	RG1_VN2_SN2 := sdk.subnet("RG1/VN2/SN2")
