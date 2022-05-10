@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -526,7 +527,7 @@ func TunnelCommand(commandArgs []string) {
 	}
 }
 
-func TunnelCommandRaw(commandArgs []string) ([]byte, error) {
+func TunnelCommandRaw(commandArgs []string) ([]byte, []byte, error) {
 	// Build tunnel command to exec command in container
 	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", config.ContainerTrident, "--"}
 
@@ -541,11 +542,17 @@ func TunnelCommandRaw(commandArgs []string) ([]byte, error) {
 		fmt.Printf("Invoking tunneled command: %s %v\n", KubernetesCLI, strings.Join(execCommand, " "))
 	}
 
-	// Invoke tridentctl inside the Trident pod
-	output, err := exec.Command(KubernetesCLI, execCommand...).CombinedOutput()
+	// Invoke tridentctl inside the Trident pod and get Stdout and Stderr separately in two buffers
+	// Capture the Stdout for the command in outbuff which will later be unmarshalled and
+	// capture the Stderr for the command in os.Stderr
+	cmd := exec.Command(KubernetesCLI, execCommand...)
+	var outbuff, stderrBuff bytes.Buffer
+	cmd.Stdout = &outbuff
+	cmd.Stderr = &stderrBuff
+	err := cmd.Run()
 
 	SetExitCodeFromError(err)
-	return output, err
+	return outbuff.Bytes(), stderrBuff.Bytes(), err
 }
 
 func GetErrorFromHTTPResponse(response *http.Response, responseBody []byte) error {

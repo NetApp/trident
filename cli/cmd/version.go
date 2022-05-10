@@ -96,13 +96,15 @@ func getVersionFromRest() (rest.GetVersionResponse, error) {
 // getVersionFromTunnel retrieves the Trident server version using the exec tunnel
 func getVersionFromTunnel() (rest.GetVersionResponse, error) {
 	command := []string{"version", "-o", "json"}
-	versionJSON, err := TunnelCommandRaw(command)
+	versionJSON, stderrOut, err := TunnelCommandRaw(command)
 	if err != nil {
 		if len(versionJSON) > 0 {
 			err = fmt.Errorf("%v; %s", err, string(versionJSON))
 		}
 		return rest.GetVersionResponse{}, err
 	}
+
+	os.Stderr.Write(stderrOut)
 
 	if Debug {
 		fmt.Printf("Version JSON: %s\n", versionJSON)
