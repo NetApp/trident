@@ -14,6 +14,17 @@ type FakeTridentV1 struct {
 	*testing.Fake
 }
 
+// TridentProvisioners implements TridentProvisionerInterface
+type FakeTridentProvisioners struct {
+	*FakeTridentV1
+	namespace string
+}
+// Parameters:
+//   namespace - name of the Namespace
+// It returns a TridentProvisionerInterface
+// Example:
+//   tridentProvisioners, err := client.TridentV1().TridentProvisioners("default")
+
 func (c *FakeTridentV1) TridentProvisioners(namespace string) v1.TridentProvisionerInterface {
 	return &FakeTridentProvisioners{c, namespace}
 }

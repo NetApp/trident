@@ -20,6 +20,12 @@ type TridentV1Client struct {
 	restClient rest.Interface
 }
 
+// TridentProvisioners returns a TridentProvisionerInterface.
+// Parameters:
+//      namespace - the namespace where Trident is installed
+// Example:
+//      tridentProvisioners := tridentV1Client.TridentProvisioners("trident")
+
 func (c *TridentV1Client) TridentProvisioners(namespace string) TridentProvisionerInterface {
 	return newTridentProvisioners(c, namespace)
 }
@@ -51,6 +57,17 @@ func NewForConfigOrDie(c *rest.Config) *TridentV1Client {
 func New(c rest.Interface) *TridentV1Client {
 	return &TridentV1Client{c}
 }
+
+// setConfigDefaults sets the default values for the provided config
+// Parameters:
+//     config - config to set defaults on
+// It returns an error if the config is nil
+// Example:
+//     config := k8sclient.NewConfig()
+//     err := setConfigDefaults(config)
+//     if err != nil {
+//         // handle error
+//     }
 
 func setConfigDefaults(config *rest.Config) error {
 	gv := v1.SchemeGroupVersion

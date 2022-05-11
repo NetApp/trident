@@ -40,14 +40,6 @@ var (
 	ctx            = context.Background
 )
 
-func init() {
-	testing.Init()
-	if *debug {
-		log.SetLevel(log.DebugLevel)
-	}
-
-	inMemoryClient = persistentstore.NewInMemoryClient()
-}
 
 type deleteTest struct {
 	name            string
@@ -60,6 +52,13 @@ type recoveryTest struct {
 	snapshotConfig *storage.SnapshotConfig
 	expectDestroy  bool
 }
+
+// cleanup is a helper function to clean up the persistent store.
+// Parameters:
+//   t - the test object
+//   o - the orchestrator object
+// Example:
+//   defer cleanup(t, o)
 
 func cleanup(t *testing.T, o *TridentOrchestrator) {
 	err := o.storeClient.DeleteBackends(ctx())
@@ -94,6 +93,21 @@ func cleanup(t *testing.T, o *TridentOrchestrator) {
 	}
 }
 
+// diffConfig compares two structs, ignoring the fieldToSkip
+// and returns a list of differences
+// Parameters:
+//   expected: the expected struct
+//   got: the actual struct
+//   fieldToSkip: the name of a field to skip
+// Returns:
+//   a list of differences
+// It returns an empty list if there are no differences
+// Example:
+//   diffs := diffConfig(expected, got, "")
+//   if len(diffs) > 0 {
+//     t.Errorf("Config differs: %v", diffs)
+//   }
+
 func diffConfig(expected, got interface{}, fieldToSkip string) []string {
 
 	diffs := make([]string, 0)
@@ -121,6 +135,18 @@ func diffConfig(expected, got interface{}, fieldToSkip string) []string {
 }
 
 // To be called after reflect.DeepEqual has failed.
+// diffExternalBackends compares two external backends and returns a list of differences
+// Parameters:
+//   expected: the expected backend
+//   got: the backend to compare against
+// Returns:
+//   A list of differences
+// Example:
+//   diffs := diffExternalBackends(expected, got)
+//   if len(diffs) > 0 {
+//     t.Errorf("External backends differ:\n\t%s", strings.Join(diffs, "\n\t"))
+//   }
+
 func diffExternalBackends(t *testing.T, expected, got *storage.BackendExternal) {
 
 	diffs := make([]string, 0)
@@ -212,6 +238,15 @@ func diffExternalBackends(t *testing.T, expected, got *storage.BackendExternal) 
 	}
 }
 
+// runDeleteTest runs a delete test.
+// Parameters:
+//   t: the test object
+//   d: the delete test to run
+//   orchestrator: the orchestrator to use
+// Example:
+//   d := &deleteTest{name: "test1", expectedSuccess: true}
+//   runDeleteTest(t, d, orchestrator)
+
 func runDeleteTest(
 	t *testing.T, d *deleteTest, orchestrator *TridentOrchestrator,
 ) {
@@ -269,6 +304,16 @@ type storageClassTest struct {
 	expected []*tu.PoolMatch
 }
 
+// getOrchestrator returns an orchestrator with a bootstrapped backend
+// and a single node.
+// Parameters:
+//   t - the test object
+// Returns:
+//   *TridentOrchestrator - the orchestrator
+// Example:
+//   o := getOrchestrator(t)
+//   defer o.Terminate()
+
 func getOrchestrator(t *testing.T) *TridentOrchestrator {
 	var (
 		storeClient persistentstore.Client
@@ -285,6 +330,18 @@ func getOrchestrator(t *testing.T) *TridentOrchestrator {
 	}
 	return o
 }
+
+// validateStorageClass checks that the storage class matches the expected pools.
+// Parameters:
+//   t: The test object.
+//   o: The orchestrator.
+//   name: The name of the storage class.
+//   expected: A list of expected pool matches.
+// Example:
+//   validateStorageClass(t, o, "sc1", []*tu.PoolMatch{
+//       {BackendName: "be1", PoolName: "pool1"},
+//       {BackendName: "be2", PoolName: "pool2"},
+//   })
 
 func validateStorageClass(
 	t *testing.T,
@@ -360,739 +417,19 @@ func validateStorageClass(
 // This test is fairly heavyweight, but, due to the need to accumulate state
 // to run the later tests, it's easier to do this all in one go at the moment.
 // Consider breaking this up if it gets unwieldy, though.
-func TestAddStorageClassVolumes(t *testing.T) {
-	mockPools := tu.GetFakePools()
-	orchestrator := getOrchestrator(t)
-
-	errored := false
-	for _, c := range []struct {
-		name      string
-		protocol  config.Protocol
-		poolNames []string
-	}{
-		{
-			name:      "fast-a",
-			protocol:  config.File,
-			poolNames: []string{tu.FastSmall, tu.FastThinOnly},
-		},
-		{
-			name:      "fast-b",
-			protocol:  config.File,
-			poolNames: []string{tu.FastThinOnly, tu.FastUniqueAttr},
-		},
-		{
-			name:      "slow-file",
-			protocol:  config.File,
-			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots},
-		},
-		{
-			name:      "slow-block",
-			protocol:  config.Block,
-			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots, tu.MediumOverlap},
-		},
-	} {
-		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
-		for _, poolName := range c.poolNames {
-			pools[poolName] = mockPools[poolName]
-		}
-		volumes := make([]fake.Volume, 0)
-		fakeConfig, err := fakedriver.NewFakeStorageDriverConfigJSON(c.name, c.protocol, pools, volumes)
-		if err != nil {
-			t.Fatalf("Unable to generate config JSON for %s: %v", c.name, err)
-		}
-		_, err = orchestrator.AddBackend(ctx(), fakeConfig, "")
-		if err != nil {
-			t.Errorf("Unable to add backend %s: %v", c.name, err)
-			errored = true
-		}
-		orchestrator.mutex.Lock()
-		backend, err := orchestrator.getBackendByBackendName(c.name)
-		if err != nil {
-			t.Fatalf("Backend %s not stored in orchestrator, err %s", c.name, err)
-		}
-		persistentBackend, err := orchestrator.storeClient.GetBackend(ctx(), c.name)
-		if err != nil {
-			t.Fatalf("Unable to get backend %s from persistent store: %v", c.name, err)
-		} else if !reflect.DeepEqual(backend.ConstructPersistent(ctx()), persistentBackend) {
-			t.Error("Wrong data stored for backend ", c.name)
-		}
-		orchestrator.mutex.Unlock()
-	}
-	if errored {
-		t.Fatal("Failed to add all backends; aborting remaining tests.")
-	}
-
-	// Add storage classes
-	scTests := []storageClassTest{
-		{
-			config: &storageclass.Config{
-				Name: "slow",
-				Attributes: map[string]sa.Request{
-					sa.IOPS:             sa.NewIntRequest(40),
-					sa.Snapshots:        sa.NewBoolRequest(true),
-					sa.ProvisioningType: sa.NewStringRequest("thin"),
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "slow-file", Pool: tu.SlowSnapshots},
-				{Backend: "slow-block", Pool: tu.SlowSnapshots},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "fast",
-				Attributes: map[string]sa.Request{
-					sa.IOPS:             sa.NewIntRequest(2000),
-					sa.Snapshots:        sa.NewBoolRequest(true),
-					sa.ProvisioningType: sa.NewStringRequest("thin"),
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastSmall},
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "fast-unique",
-				Attributes: map[string]sa.Request{
-					sa.IOPS:             sa.NewIntRequest(2000),
-					sa.Snapshots:        sa.NewBoolRequest(true),
-					sa.ProvisioningType: sa.NewStringRequest("thin"),
-					sa.UniqueOptions:    sa.NewStringRequest("baz"),
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "pools",
-				Pools: map[string][]string{
-					"fast-a":     {tu.FastSmall},
-					"slow-block": {tu.SlowNoSnapshots, tu.MediumOverlap},
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastSmall},
-				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
-				{Backend: "slow-block", Pool: tu.MediumOverlap},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "additionalPools",
-				AdditionalPools: map[string][]string{
-					"fast-a":     {tu.FastThinOnly},
-					"slow-block": {tu.SlowNoSnapshots, tu.MediumOverlap},
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
-				{Backend: "slow-block", Pool: tu.MediumOverlap},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "poolsWithAttributes",
-				Attributes: map[string]sa.Request{
-					sa.IOPS:      sa.NewIntRequest(2000),
-					sa.Snapshots: sa.NewBoolRequest(true),
-				},
-				Pools: map[string][]string{
-					"fast-a":     {tu.FastThinOnly},
-					"slow-block": {tu.SlowNoSnapshots, tu.MediumOverlap},
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "additionalPoolsWithAttributes",
-				Attributes: map[string]sa.Request{
-					sa.IOPS:      sa.NewIntRequest(2000),
-					sa.Snapshots: sa.NewBoolRequest(true),
-				},
-				AdditionalPools: map[string][]string{
-					"fast-a":     {tu.FastThinOnly},
-					"slow-block": {tu.SlowNoSnapshots},
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastSmall},
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
-				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "additionalPoolsWithAttributesAndPools",
-				Attributes: map[string]sa.Request{
-					sa.IOPS:      sa.NewIntRequest(2000),
-					sa.Snapshots: sa.NewBoolRequest(true),
-				},
-				Pools: map[string][]string{
-					"fast-a":     {tu.FastThinOnly},
-					"slow-block": {tu.SlowNoSnapshots, tu.MediumOverlap},
-				},
-				AdditionalPools: map[string][]string{
-					"fast-b":     {tu.FastThinOnly},
-					"slow-block": {tu.SlowNoSnapshots},
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastThinOnly},
-				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "additionalPoolsNoMatch",
-				AdditionalPools: map[string][]string{
-					"unknown": {tu.FastThinOnly},
-				},
-			},
-			expected: []*tu.PoolMatch{},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "mixed",
-				AdditionalPools: map[string][]string{
-					"slow-file": {tu.SlowNoSnapshots},
-					"fast-b":    {tu.FastThinOnly, tu.FastUniqueAttr},
-				},
-				Attributes: map[string]sa.Request{
-					sa.IOPS:             sa.NewIntRequest(2000),
-					sa.Snapshots:        sa.NewBoolRequest(true),
-					sa.ProvisioningType: sa.NewStringRequest("thin"),
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastSmall},
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
-				{Backend: "slow-file", Pool: tu.SlowNoSnapshots},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "emptyStorageClass",
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastSmall},
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
-				{Backend: "slow-file", Pool: tu.SlowNoSnapshots},
-				{Backend: "slow-file", Pool: tu.SlowSnapshots},
-				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
-				{Backend: "slow-block", Pool: tu.SlowSnapshots},
-				{Backend: "slow-block", Pool: tu.MediumOverlap},
-			},
-		},
-	}
-	for _, s := range scTests {
-		_, err := orchestrator.AddStorageClass(ctx(), s.config)
-		if err != nil {
-			t.Errorf("Unable to add storage class %s: %v", s.config.Name, err)
-			continue
-		}
-		validateStorageClass(t, orchestrator, s.config.Name, s.expected)
-	}
-	preSCDeleteTests := make([]*deleteTest, 0)
-	postSCDeleteTests := make([]*deleteTest, 0)
-	for _, s := range []struct {
-		name            string
-		config          *storage.VolumeConfig
-		expectedSuccess bool
-		expectedMatches []*tu.PoolMatch
-		expectedCount   int
-		deleteAfterSC   bool
-	}{
-		{
-			name:            "basic",
-			config:          tu.GenerateVolumeConfig("basic", 1, "fast", config.File),
-			expectedSuccess: true,
-			expectedMatches: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastSmall},
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
-			},
-			expectedCount: 1,
-			deleteAfterSC: false,
-		},
-		{
-			name:            "large",
-			config:          tu.GenerateVolumeConfig("large", 100, "fast", config.File),
-			expectedSuccess: false,
-			expectedMatches: []*tu.PoolMatch{},
-			expectedCount:   0,
-			deleteAfterSC:   false,
-		},
-		{
-			name:            "block",
-			config:          tu.GenerateVolumeConfig("block", 1, "pools", config.Block),
-			expectedSuccess: true,
-			expectedMatches: []*tu.PoolMatch{
-				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
-				{Backend: "slow-block", Pool: tu.MediumOverlap},
-			},
-			expectedCount: 1,
-			deleteAfterSC: false,
-		},
-		{
-			name:            "block2",
-			config:          tu.GenerateVolumeConfig("block2", 1, "additionalPools", config.Block),
-			expectedSuccess: true,
-			expectedMatches: []*tu.PoolMatch{
-				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
-				{Backend: "slow-block", Pool: tu.MediumOverlap},
-			},
-			expectedCount: 1,
-			deleteAfterSC: false,
-		},
-		{
-			name:            "invalid-storage-class",
-			config:          tu.GenerateVolumeConfig("invalid", 1, "nonexistent", config.File),
-			expectedSuccess: false,
-			expectedMatches: []*tu.PoolMatch{},
-			expectedCount:   0,
-			deleteAfterSC:   false,
-		},
-		{
-			name:            "repeated",
-			config:          tu.GenerateVolumeConfig("basic", 20, "fast", config.File),
-			expectedSuccess: false,
-			expectedMatches: []*tu.PoolMatch{},
-			expectedCount:   1,
-			deleteAfterSC:   false,
-		},
-		{
-			name:            "postSCDelete",
-			config:          tu.GenerateVolumeConfig("postSCDelete", 20, "fast", config.File),
-			expectedSuccess: true,
-			expectedMatches: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastSmall},
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
-			},
-			expectedCount: 1,
-			deleteAfterSC: false,
-		},
-	} {
-		vol, err := orchestrator.AddVolume(ctx(), s.config)
-		if err != nil && s.expectedSuccess {
-			t.Errorf("%s: got unexpected error %v", s.name, err)
-			continue
-		} else if err == nil && !s.expectedSuccess {
-			t.Errorf("%s: volume create succeeded unexpectedly.", s.name)
-			continue
-		}
-		orchestrator.mutex.Lock()
-		volume, found := orchestrator.volumes[s.config.Name]
-		if s.expectedCount == 1 && !found {
-			t.Errorf("%s: did not get volume where expected.", s.name)
-		} else if s.expectedCount == 0 && found {
-			t.Errorf("%s: got a volume where none expected.", s.name)
-		}
-		if !s.expectedSuccess {
-			deleteTest := &deleteTest{
-				name:            s.config.Name,
-				expectedSuccess: false,
-			}
-			if s.deleteAfterSC {
-				postSCDeleteTests = append(postSCDeleteTests, deleteTest)
-			} else {
-				preSCDeleteTests = append(preSCDeleteTests, deleteTest)
-			}
-			orchestrator.mutex.Unlock()
-			continue
-		}
-		matched := false
-		for _, potentialMatch := range s.expectedMatches {
-			volumeBackend, err := orchestrator.getBackendByBackendUUID(volume.BackendUUID)
-			if volumeBackend == nil || err != nil {
-				continue
-			}
-			if potentialMatch.Backend == volumeBackend.Name() &&
-				potentialMatch.Pool == volume.Pool {
-				matched = true
-				deleteTest := &deleteTest{
-					name:            s.config.Name,
-					expectedSuccess: true,
-				}
-				if s.deleteAfterSC {
-					postSCDeleteTests = append(postSCDeleteTests, deleteTest)
-				} else {
-					preSCDeleteTests = append(preSCDeleteTests, deleteTest)
-				}
-				break
-			}
-		}
-		if !matched {
-			t.Errorf(
-				"%s: Volume placed on unexpected backend and storage pool: %s, %s",
-				s.name,
-				volume.BackendUUID,
-				volume.Pool,
-			)
-		}
-
-		externalVolume, err := orchestrator.storeClient.GetVolume(ctx(), s.config.Name)
-		if err != nil {
-			t.Errorf("%s: unable to communicate with backing store: %v", s.name, err)
-		}
-		if !reflect.DeepEqual(externalVolume, vol) {
-			t.Errorf("%s: external volume %s stored in backend does not match created volume.", s.name,
-				externalVolume.Config.Name)
-			externalVolJSON, err := json.Marshal(externalVolume)
-			if err != nil {
-				t.Fatal("Unable to remarshal JSON: ", err)
-			}
-			origVolJSON, err := json.Marshal(vol)
-			if err != nil {
-				t.Fatal("Unable to remarshal JSON: ", err)
-			}
-			t.Logf("\tExpected: %s\n\tGot: %s\n", string(externalVolJSON), string(origVolJSON))
-		}
-		orchestrator.mutex.Unlock()
-	}
-	for _, d := range preSCDeleteTests {
-		runDeleteTest(t, d, orchestrator)
-	}
-
-	// Delete storage classes.  Note: there are currently no error cases.
-	for _, s := range scTests {
-		err := orchestrator.DeleteStorageClass(ctx(), s.config.Name)
-		if err != nil {
-			t.Errorf("%s delete: Unable to remove storage class: %v", s.config.Name, err)
-		}
-		orchestrator.mutex.Lock()
-		if _, ok := orchestrator.storageClasses[s.config.Name]; ok {
-			t.Errorf("%s delete: Storage class still found in map.", s.config.Name)
-		}
-		// Ensure that the storage class was cleared from its backends.
-		for _, poolMatch := range s.expected {
-			b, err := orchestrator.getBackendByBackendName(poolMatch.Backend)
-			if b == nil || err != nil {
-				t.Errorf("%s delete: backend %s not found in orchestrator.", s.config.Name, poolMatch.Backend)
-				continue
-			}
-			p, ok := b.Storage()[poolMatch.Pool]
-			if !ok {
-				t.Errorf("%s delete: storage pool %s not found for backend %s", s.config.Name, poolMatch.Pool,
-					poolMatch.Backend)
-				continue
-			}
-			for _, sc := range p.StorageClasses() {
-				if sc == s.config.Name {
-					t.Errorf("%s delete: storage class name not removed from backend %s, storage pool %s",
-						s.config.Name, poolMatch.Backend, poolMatch.Pool)
-				}
-			}
-		}
-		externalSC, err := orchestrator.storeClient.GetStorageClass(ctx(), s.config.Name)
-		if err != nil {
-			if !persistentstore.MatchKeyNotFoundErr(err) {
-				t.Errorf("%s: unable to communicate with backing store: %v", s.config.Name, err)
-			}
-			// We're successful if we get to here; we expect an
-			// ErrorCodeKeyNotFound.
-		} else if externalSC != nil {
-			t.Errorf("%s: storageClass not properly deleted from backing store", s.config.Name)
-		}
-		orchestrator.mutex.Unlock()
-	}
-	for _, d := range postSCDeleteTests {
-		runDeleteTest(t, d, orchestrator)
-	}
-	cleanup(t, orchestrator)
-}
 
 // This test is modeled after TestAddStorageClassVolumes, but we don't need all the
 // tests around storage class deletion, etc.
-func TestCloneVolumes(t *testing.T) {
-	mockPools := tu.GetFakePools()
-	orchestrator := getOrchestrator(t)
 
-	errored := false
-	for _, c := range []struct {
-		name      string
-		protocol  config.Protocol
-		poolNames []string
-	}{
-		{
-			name:      "fast-a",
-			protocol:  config.File,
-			poolNames: []string{tu.FastSmall, tu.FastThinOnly},
-		},
-		{
-			name:      "fast-b",
-			protocol:  config.File,
-			poolNames: []string{tu.FastThinOnly, tu.FastUniqueAttr},
-		},
-		{
-			name:      "slow-file",
-			protocol:  config.File,
-			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots},
-		},
-		{
-			name:      "slow-block",
-			protocol:  config.Block,
-			poolNames: []string{tu.SlowNoSnapshots, tu.SlowSnapshots, tu.MediumOverlap},
-		},
-	} {
-		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
-		for _, poolName := range c.poolNames {
-			pools[poolName] = mockPools[poolName]
-		}
-
-		volumes := make([]fake.Volume, 0)
-		cfg, err := fakedriver.NewFakeStorageDriverConfigJSON(
-			c.name, c.protocol,
-			pools, volumes,
-		)
-		if err != nil {
-			t.Fatalf("Unable to generate cfg JSON for %s: %v", c.name, err)
-		}
-		_, err = orchestrator.AddBackend(ctx(), cfg, "")
-		if err != nil {
-			t.Errorf("Unable to add backend %s: %v", c.name, err)
-			errored = true
-		}
-		orchestrator.mutex.Lock()
-		backend, err := orchestrator.getBackendByBackendName(c.name)
-		if backend == nil || err != nil {
-			t.Fatalf("Backend %s not stored in orchestrator", c.name)
-		}
-		persistentBackend, err := orchestrator.storeClient.GetBackend(ctx(), c.name)
-		if err != nil {
-			t.Fatalf("Unable to get backend %s from persistent store: %v", c.name, err)
-		} else if !reflect.DeepEqual(backend.ConstructPersistent(ctx()), persistentBackend) {
-			t.Error("Wrong data stored for backend ", c.name)
-		}
-		orchestrator.mutex.Unlock()
-	}
-	if errored {
-		t.Fatal("Failed to add all backends; aborting remaining tests.")
-	}
-
-	// Add storage classes
-	storageClasses := []storageClassTest{
-		{
-			config: &storageclass.Config{
-				Name: "slow",
-				Attributes: map[string]sa.Request{
-					sa.IOPS:             sa.NewIntRequest(40),
-					sa.Snapshots:        sa.NewBoolRequest(true),
-					sa.ProvisioningType: sa.NewStringRequest("thin"),
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "slow-file", Pool: tu.SlowSnapshots},
-				{Backend: "slow-block", Pool: tu.SlowSnapshots},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "fast",
-				Attributes: map[string]sa.Request{
-					sa.IOPS:             sa.NewIntRequest(2000),
-					sa.Snapshots:        sa.NewBoolRequest(true),
-					sa.ProvisioningType: sa.NewStringRequest("thin"),
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastSmall},
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "fast-unique",
-				Attributes: map[string]sa.Request{
-					sa.IOPS:             sa.NewIntRequest(2000),
-					sa.Snapshots:        sa.NewBoolRequest(true),
-					sa.ProvisioningType: sa.NewStringRequest("thin"),
-					sa.UniqueOptions:    sa.NewStringRequest("baz"),
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "specific",
-				AdditionalPools: map[string][]string{
-					"fast-a":     {tu.FastThinOnly},
-					"slow-block": {tu.SlowNoSnapshots, tu.MediumOverlap},
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
-				{Backend: "slow-block", Pool: tu.MediumOverlap},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "specificNoMatch",
-				AdditionalPools: map[string][]string{
-					"unknown": {tu.FastThinOnly},
-				},
-			},
-			expected: []*tu.PoolMatch{},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "mixed",
-				AdditionalPools: map[string][]string{
-					"slow-file": {tu.SlowNoSnapshots},
-					"fast-b":    {tu.FastThinOnly, tu.FastUniqueAttr},
-				},
-				Attributes: map[string]sa.Request{
-					sa.IOPS:             sa.NewIntRequest(2000),
-					sa.Snapshots:        sa.NewBoolRequest(true),
-					sa.ProvisioningType: sa.NewStringRequest("thin"),
-				},
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastSmall},
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
-				{Backend: "slow-file", Pool: tu.SlowNoSnapshots},
-			},
-		},
-		{
-			config: &storageclass.Config{
-				Name: "emptyStorageClass",
-			},
-			expected: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastSmall},
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
-				{Backend: "slow-file", Pool: tu.SlowNoSnapshots},
-				{Backend: "slow-file", Pool: tu.SlowSnapshots},
-				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
-				{Backend: "slow-block", Pool: tu.SlowSnapshots},
-				{Backend: "slow-block", Pool: tu.MediumOverlap},
-			},
-		},
-	}
-	for _, s := range storageClasses {
-		_, err := orchestrator.AddStorageClass(ctx(), s.config)
-		if err != nil {
-			t.Errorf("Unable to add storage class %s: %v", s.config.Name, err)
-			continue
-		}
-		validateStorageClass(t, orchestrator, s.config.Name, s.expected)
-	}
-
-	for _, s := range []struct {
-		name            string
-		config          *storage.VolumeConfig
-		expectedSuccess bool
-		expectedMatches []*tu.PoolMatch
-	}{
-		{
-			name:            "file",
-			config:          tu.GenerateVolumeConfig("file", 1, "fast", config.File),
-			expectedSuccess: true,
-			expectedMatches: []*tu.PoolMatch{
-				{Backend: "fast-a", Pool: tu.FastSmall},
-				{Backend: "fast-a", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastThinOnly},
-				{Backend: "fast-b", Pool: tu.FastUniqueAttr},
-			},
-		},
-		{
-			name:            "block",
-			config:          tu.GenerateVolumeConfig("block", 1, "specific", config.Block),
-			expectedSuccess: true,
-			expectedMatches: []*tu.PoolMatch{
-				{Backend: "slow-block", Pool: tu.SlowNoSnapshots},
-				{Backend: "slow-block", Pool: tu.MediumOverlap},
-			},
-		},
-	} {
-		// Create the source volume
-		_, err := orchestrator.AddVolume(ctx(), s.config)
-		if err != nil {
-			t.Errorf("%s: got unexpected error %v", s.name, err)
-			continue
-		}
-
-		// Now clone the volume and ensure everything looks fine
-		cloneName := s.config.Name + "_clone"
-		cloneConfig := &storage.VolumeConfig{
-			Name:              cloneName,
-			StorageClass:      s.config.StorageClass,
-			CloneSourceVolume: s.config.Name,
-			VolumeMode:        s.config.VolumeMode,
-		}
-		cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
-		if err != nil {
-			t.Errorf("%s: got unexpected error %v", s.name, err)
-			continue
-		}
-
-		orchestrator.mutex.Lock()
-
-		volume, found := orchestrator.volumes[s.config.Name]
-		if !found {
-			t.Errorf("%s: did not get volume where expected.", s.name)
-		}
-		clone, found := orchestrator.volumes[cloneName]
-		if !found {
-			t.Errorf("%s: did not get volume clone where expected.", cloneName)
-		}
-
-		// Clone must reside in the same place as the source
-		if clone.BackendUUID != volume.BackendUUID {
-			t.Errorf("%s: Clone placed on unexpected backend: %s", cloneName, clone.BackendUUID)
-		}
-
-		// Clone should be registered in the store just like any other volume
-		externalClone, err := orchestrator.storeClient.GetVolume(ctx(), cloneName)
-		if err != nil {
-			t.Errorf("%s: unable to communicate with backing store: %v", cloneName, err)
-		}
-		if !reflect.DeepEqual(externalClone, cloneResult) {
-			t.Errorf("%s: external volume %s stored in backend does not match created volume.", cloneName,
-				externalClone.Config.Name)
-			externalCloneJSON, err := json.Marshal(externalClone)
-			if err != nil {
-				t.Fatal("Unable to remarshal JSON: ", err)
-			}
-			origCloneJSON, err := json.Marshal(cloneResult)
-			if err != nil {
-				t.Fatal("Unable to remarshal JSON: ", err)
-			}
-			t.Logf("\tExpected: %s\n\tGot: %s\n", string(externalCloneJSON), string(origCloneJSON))
-		}
-
-		orchestrator.mutex.Unlock()
-	}
-
-	cleanup(t, orchestrator)
-}
+// addBackend adds a backend to the orchestrator.
+// Parameters:
+//   t: the test object
+//   orchestrator: the orchestrator to add the backend to
+//   backendName: the name of the backend to add
+//   backendProtocol: the protocol of the backend to add
+// Example:
+//   addBackend(t, orchestrator, "fake", config.File)
+//   addBackend(t, orchestrator, "fake", config.Block)
 
 func addBackend(
 	t *testing.T, orchestrator *TridentOrchestrator, backendName string, backendProtocol config.Protocol,
@@ -1152,6 +489,17 @@ func addBackendStorageClass(
 	}
 }
 
+// captureOutput captures the output of the log package.
+// It returns the captured output as a string.
+// Parameters:
+//     f: function to execute
+// It returns the captured output as a string.
+// Example:
+//     output := captureOutput(func() {
+//         log.Println("Hello, world")
+//     })
+//     fmt.Println(output)
+
 func captureOutput(f func()) string {
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
@@ -1159,6 +507,44 @@ func captureOutput(f func()) string {
 	f()
 	return buf.String()
 }
+
+// TestBackendUpdateAndDelete tests the update and delete functionality of the
+// orchestrator.
+// It checks that the orchestrator can update a backend with a non-conflicting
+// change, and that the backend is correctly updated in the orchestrator and
+// persistent store.
+// It also checks that the orchestrator can offline a backend, and that the
+// backend is correctly offlined in the orchestrator and persistent store.
+// Parameters:
+//   - New pool: Add a new storage pool to the backend.
+//   - Removed pool: Remove a storage pool from the backend.
+//   - Expanded offer: Expand the offer of an existing storage pool.
+// Example:
+//   - New pool:
+//     - Starting state:
+//         - Backend:
+//           - Storage pools: "primary"
+//     - Updated state:
+//         - Backend:
+//           - Storage pools: "primary", "secondary"
+//   - Removed pool:
+//     - Starting state:
+//         - Backend:
+//           - Storage pools: "primary", "secondary"
+//     - Updated state:
+//         - Backend:
+//           - Storage pools: "primary"
+//   - Expanded offer:
+//     - Starting state:
+//         - Backend:
+//           - Storage pools: "primary"
+//           - Storage pool "primary":
+//             - Offer: "hdd"
+//     - Updated state:
+//         - Backend:
+//           - Storage pools: "primary"
+//           - Storage pool "primary":
+//             - Offer: "hdd", "ssd"
 
 func TestBackendUpdateAndDelete(t *testing.T) {
 	const (
@@ -1471,6 +857,16 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+// backendPasswordsInLogsHelper is a helper function for backendPasswordsInLogs
+// and backendPasswordsInLogsWithDebugTraceFlags tests.
+// Parameters:
+//   t: test object
+//   debugTraceFlags: map of debug trace flags
+// Example:
+//   backendPasswordsInLogsHelper(t, map[string]bool{
+//       "orchestrator": true,
+//   })
+
 func backendPasswordsInLogsHelper(t *testing.T, debugTraceFlags map[string]bool) {
 
 	backendName := "passwordBackend"
@@ -1518,10 +914,29 @@ func backendPasswordsInLogsHelper(t *testing.T, debugTraceFlags map[string]bool)
 	cleanup(t, orchestrator)
 }
 
+// TestBackendPasswordsInLogs tests that backend passwords are not logged
+// when the "method" field is present in the config.
+// It checks that backend passwords are logged when the "method" field is not present.
+// Parameters:
+//   t: testing.T
+//   config: map[string]bool
+//     "method": true if the "method" field is present in the config
+// Example:
+//   backendPasswordsInLogsHelper(t, map[string]bool{"method": true})
+
 func TestBackendPasswordsInLogs(t *testing.T) {
 	backendPasswordsInLogsHelper(t, nil)
 	backendPasswordsInLogsHelper(t, map[string]bool{"method": true})
 }
+
+// TestEmptyBackendDeletion tests that an empty backend can be deleted.
+// It checks that the backend is removed from the orchestrator and the
+// store client.
+// Parameters:
+//   backendName: The name of the backend to be deleted.
+//   backendProtocol: The protocol of the backend to be deleted.
+// Example:
+//   TestEmptyBackendDeletion(t, "emptyBackend", config.File)
 
 func TestEmptyBackendDeletion(t *testing.T) {
 	const (
@@ -1557,6 +972,17 @@ func TestEmptyBackendDeletion(t *testing.T) {
 	orchestrator.mutex.Unlock()
 	cleanup(t, orchestrator)
 }
+
+// TestBootstrapSnapshotMissingVolume tests that a snapshot in missing_volume state is bootstrapped correctly.
+// It checks that the snapshot is in the correct state and that it can be deleted.
+// Parameters:
+//   offlineBackendName: Name of the backend to use for the test
+//   scName: Name of the storage class to use for the test
+//   volumeName: Name of the volume to use for the test
+//   snapName: Name of the snapshot to use for the test
+//   backendProtocol: Protocol of the backend to use for the test
+// Example:
+//   TestBootstrapSnapshotMissingVolume(t, "snapNoVolBackend", "snapNoVolSC", "snapNoVolVolume", "snapNoVolSnapshot", config.File)
 
 func TestBootstrapSnapshotMissingVolume(t *testing.T) {
 	const (
@@ -1616,6 +1042,16 @@ func TestBootstrapSnapshotMissingVolume(t *testing.T) {
 	}
 }
 
+// TestBootstrapSnapshotMissingBackend tests that a snapshot in missing_backend state is bootstrapped correctly.
+// It checks that the snapshot is bootstrapped and that it is in the correct state.
+// Parameters:
+//   offlineBackendName - name of the backend that will be deleted
+//   scName - name of the storage class
+//   volumeName - name of the volume
+//   snapName - name of the snapshot
+// Example:
+//   TestBootstrapSnapshotMissingBackend(t, "snapNoBackBackend", "snapNoBackSC", "snapNoBackVolume", "snapNoBackSnapshot")
+
 func TestBootstrapSnapshotMissingBackend(t *testing.T) {
 	const (
 		offlineBackendName = "snapNoBackBackend"
@@ -1674,6 +1110,15 @@ func TestBootstrapSnapshotMissingBackend(t *testing.T) {
 	}
 }
 
+// TestBootstrapVolumeMissingBackend tests that a volume in missing_backend state is bootstrapped correctly
+// It checks that the volume is in the correct state and can be deleted
+// Parameters:
+//   offlineBackendName - name of the backend to be deleted
+//   scName - name of the storage class to be created
+//   volumeName - name of the volume to be created
+// Example:
+//   TestBootstrapVolumeMissingBackend("bootstrapVolBackend", "bootstrapVolSC", "bootstrapVolVolume")
+
 func TestBootstrapVolumeMissingBackend(t *testing.T) {
 	const (
 		offlineBackendName = "bootstrapVolBackend"
@@ -1726,6 +1171,17 @@ func TestBootstrapVolumeMissingBackend(t *testing.T) {
 	}
 }
 
+// TestBackendCleanup tests that empty offline backends are cleaned up during bootstrap.
+// It checks that empty online backends are not cleaned up during bootstrap.
+// Parameters:
+//   offlineBackendName: Name of the backend to be offlined.
+//   onlineBackendName: Name of the backend to be left online.
+//   scName: Name of the storage class to be used.
+//   volumeName: Name of the volume to be created.
+//   backendProtocol: Protocol of the backends to be created.
+// Example:
+//   TestBackendCleanup(t, "cleanupBackend", "onlineBackend", "cleanupBackendTest", "cleanupVolume", config.File)
+
 func TestBackendCleanup(t *testing.T) {
 	const (
 		offlineBackendName = "cleanupBackend"
@@ -1775,6 +1231,13 @@ func TestBackendCleanup(t *testing.T) {
 		t.Error("Empty online backend deleted during bootstrap.")
 	}
 }
+
+// TestLoadBackend tests that a backend can be loaded from a config and that it matches the original.
+// It checks that the backend is also loaded after bootstrapping.
+// Parameters:
+//    t *testing.T
+// Example:
+//    TestLoadBackend(t)
 
 func TestLoadBackend(t *testing.T) {
 	const (
@@ -1828,6 +1291,15 @@ func TestLoadBackend(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+// prepRecoveryTest sets up a backend and storage class for testing recovery
+// Parameters:
+//   t: test object
+//   orchestrator: orchestrator object
+//   backendName: name of backend to create
+//   scName: name of storage class to create
+// Example:
+//   prepRecoveryTest(t, orchestrator, "ontap-nas-test", "ontap-nas-sc")
+
 func prepRecoveryTest(
 	t *testing.T, orchestrator *TridentOrchestrator, backendName, scName string,
 ) {
@@ -1864,6 +1336,29 @@ func prepRecoveryTest(
 		t.Fatal("Unable to add storage class: ", err)
 	}
 }
+
+// runRecoveryTests runs a set of tests to verify that the orchestrator
+// recovers from a partially completed volume addition.
+// Parameters:
+//   t: Test object
+//   orchestrator: The orchestrator to test
+//   backendName: The name of the backend to use
+//   op: The operation to test
+//   testCases: The set of test cases to run
+// Example:
+//   runRecoveryTests(t, orchestrator, "fake", storage.AddVolume,
+//     []recoveryTest{
+//       {
+//         "volumeConfig",
+//         &storage.VolumeConfig{
+//           Name: "test",
+//           Size: "10GiB",
+//           Attributes: map[string]sa.Request{},
+//         },
+//         true,
+//       },
+//       ...
+//     })
 
 func runRecoveryTests(
 	t *testing.T,
@@ -1921,6 +1416,18 @@ func runRecoveryTests(
 	}
 }
 
+// TestAddVolumeRecovery tests that adding a volume is properly recovered
+// after a crash.
+// It checks that the volume is properly destroyed if the transaction was
+// not committed, and that the volume is properly created if the transaction
+// was committed.
+// Parameters:
+//   - full: the volume was created and the transaction was committed
+//   - txOnly: the volume was not created and the transaction was not committed
+// Example:
+//   - TestAddVolumeRecovery(full)
+//   - TestAddVolumeRecovery(txOnly)
+
 func TestAddVolumeRecovery(t *testing.T) {
 	const (
 		backendName      = "addRecoveryBackend"
@@ -1949,6 +1456,16 @@ func TestAddVolumeRecovery(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+// TestAddVolumeWithTMRNonONTAPNAS tests that a volume with a relationship
+// annotation that is not ONTAP NAS is rejected
+// It checks that the volume is rejected
+// Parameters:
+//    backendName: name of the backend
+//    scName: name of the storage class
+//    fullVolumeName: name of the full volume
+// Example:
+//    TestAddVolumeWithTMRNonONTAPNAS("be1", "sc1", "vol1")
+
 func TestAddVolumeWithTMRNonONTAPNAS(t *testing.T) {
 	// Add a single backend of fake
 	// create volume with relationship annotation added
@@ -1974,6 +1491,16 @@ func TestAddVolumeWithTMRNonONTAPNAS(t *testing.T) {
 	}
 	cleanup(t, orchestrator)
 }
+
+// TestDeleteVolumeRecovery tests the recovery of a volume delete operation.
+// It checks that a volume that was deleted but not fully committed is
+// recovered, and that a volume that was only created in the transaction
+// is cleaned up.
+// Parameters:
+//   backendName: The name of the backend to use for the test.
+//   scName: The name of the storage class to use for the test.
+// Example:
+//   TestDeleteVolumeRecovery(t, "ontap-san", "ontap-san-sc")
 
 func TestDeleteVolumeRecovery(t *testing.T) {
 	const (
@@ -2010,6 +1537,17 @@ func TestDeleteVolumeRecovery(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+// generateSnapshotConfig generates a SnapshotConfig object
+// Parameters:
+//   name - the name of the snapshot
+//   volumeName - the name of the volume
+//   volumeInternalName - the internal name of the volume
+// Returns:
+//   a SnapshotConfig object
+// It returns an error if the volume name is not set
+// Example:
+//   config := generateSnapshotConfig("snap1", "vol1", "pvc-xxx-xx-xx")
+
 func generateSnapshotConfig(
 	name, volumeName, volumeInternalName string,
 ) *storage.SnapshotConfig {
@@ -2020,6 +1558,43 @@ func generateSnapshotConfig(
 		VolumeInternalName: volumeInternalName,
 	}
 }
+
+// runSnapshotRecoveryTests runs a set of recovery tests.
+// Parameters:
+//   t: the test object
+//   orchestrator: the orchestrator to use for the tests
+//   backendName: the name of the backend to use for the tests
+//   op: the operation to test
+//   testCases: the set of test cases to run
+// Example:
+//   runSnapshotRecoveryTests(
+//     t,
+//     orchestrator,
+//     "ontap-nas",
+//     storage.AddSnapshot,
+//     []recoveryTest{
+//       {
+//         name: "VolumePresent",
+//         volumeConfig: &storage.VolumeConfig{
+//           Version:      tridentconfig.OrchestratorAPIVersion,
+//           Name:         "myvol",
+//           BackendUUID:  "ontap-nas-0",
+//           Backend:      "ontap-nas",
+//           Size:         "1GiB",
+//           InternalName: "myvol",
+//           Attributes:   map[string]sa.Request{},
+//         },
+//         snapshotConfig: &storage.SnapshotConfig{
+//           Version:      tridentconfig.OrchestratorAPIVersion,
+//           Name:         "mysnap",
+//           VolumeName:   "myvol",
+//           VolumeInternalName: "myvol",
+//           Attributes:   map[string]sa.Request{},
+//         },
+//         expectDestroy: true,
+//       },
+//     },
+//   )
 
 func runSnapshotRecoveryTests(
 	t *testing.T,
@@ -2081,6 +1656,19 @@ func runSnapshotRecoveryTests(
 	}
 }
 
+// TestAddSnapshotRecovery tests that the orchestrator can recover from a failure
+// during the AddSnapshot transaction.
+// It checks that the snapshot is deleted if the transaction is complete, and that
+// it is not deleted if the transaction is not complete.
+// Parameters:
+//   backendName: Name of the backend to use for the test
+//   scName: Name of the storage class to use for the test
+//   volumeName: Name of the volume to use for the test
+//   fullSnapshotName: Name of the snapshot to use for the full test
+//   txOnlySnapshotName: Name of the snapshot to use for the partial test
+// Example:
+//   TestAddSnapshotRecovery(t, "addSnapshotRecoveryBackend", "addSnapshotRecoveryBackendSC", "addSnapshotRecoveryVolume", "addSnapshotRecoverySnapshotFull", "addSnapshotRecoverySnapshotTxOnly")
+
 func TestAddSnapshotRecovery(t *testing.T) {
 	const (
 		backendName        = "addSnapshotRecoveryBackend"
@@ -2119,6 +1707,17 @@ func TestAddSnapshotRecovery(t *testing.T) {
 	)
 	cleanup(t, orchestrator)
 }
+
+// TestDeleteSnapshotRecovery tests that the orchestrator can recover from a delete snapshot
+// transaction.
+// It checks that the snapshot is deleted if the transaction was fully committed, and that
+// the snapshot is not deleted if the transaction was only partially committed.
+// Parameters:
+//   - full: the transaction was fully committed, so the snapshot should be deleted
+//   - txOnly: the transaction was only partially committed, so the snapshot should not be deleted
+// Example:
+//   - TestDeleteSnapshotRecovery full
+//   - TestDeleteSnapshotRecovery txOnly
 
 func TestDeleteSnapshotRecovery(t *testing.T) {
 	const (
@@ -2166,6 +1765,14 @@ func TestDeleteSnapshotRecovery(t *testing.T) {
 
 // The next series of tests test that bootstrap doesn't exit early if it
 // encounters a key error for one of the main types of entries.
+// TestStorageClassOnlyBootstrap tests that a storage class can be bootstrapped
+// without any volumes.
+// It checks that the storage class is bootstrapped correctly.
+// Parameters:
+//   t *testing.T
+// Example:
+//   TestStorageClassOnlyBootstrap(t)
+
 func TestStorageClassOnlyBootstrap(t *testing.T) {
 	const scName = "storageclass-only"
 
@@ -2193,6 +1800,16 @@ func TestStorageClassOnlyBootstrap(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+// TestFirstVolumeRecovery tests that the first volume added to a backend is
+// recovered correctly.
+// It checks that the volume is destroyed, and that the backend is not.
+// Parameters:
+//   backendName: name of the backend to be used
+//   scName: name of the storage class to be used
+//   txOnlyVolumeName: name of the volume to be created
+// Example:
+//   TestFirstVolumeRecovery(t, "firstRecoveryBackend", "firstRecoveryBackendSC", "firstRecoveryVolumeTxOnly")
+
 func TestFirstVolumeRecovery(t *testing.T) {
 	const (
 		backendName      = "firstRecoveryBackend"
@@ -2213,6 +1830,14 @@ func TestFirstVolumeRecovery(t *testing.T) {
 	)
 	cleanup(t, orchestrator)
 }
+
+// TestOrchestratorNotReady tests that the orchestrator returns an error when not ready.
+// It checks that all orchestrator methods return an error.
+// Parameters:
+//   t *testing.T : go test helper
+// It returns nothing.
+// Example:
+//   TestOrchestratorNotReady(t *testing.T)
 
 func TestOrchestratorNotReady(t *testing.T) {
 
@@ -2353,6 +1978,22 @@ func TestOrchestratorNotReady(t *testing.T) {
 	}
 }
 
+// importVolumeSetup creates a backend, storage class, and volume config for
+// Parameters:
+//   t - test object
+//   backendName - name of the backend to create
+//   scName - name of the storage class to create
+//   volumeName - name of the volume to create
+//   importOriginalName - original name of the volume to import
+//   backendProtocol - protocol of the backend to create
+// Returns:
+//   *TridentOrchestrator - orchestrator object
+//   *storage.VolumeConfig - volume config object
+// It returns the orchestrator and volume config objects.
+// Example:
+//   orchestrator, volumeConfig := importVolumeSetup(t, "testBackend", "testSC",
+//     "testVolume", "testVolumeOrig", config.File)
+
 func importVolumeSetup(
 	t *testing.T, backendName string, scName string, volumeName string, importOriginalName string,
 	backendProtocol config.Protocol,
@@ -2385,6 +2026,18 @@ func importVolumeSetup(
 	volumeConfig.ImportBackendUUID = backendUUID
 	return orchestrator, volumeConfig
 }
+
+// TestImportVolumeFailures tests the failure paths of importVolume
+// It checks that the volume is renamed to the original name and that the persisted state is cleaned up
+// Parameters:
+//   volumeName: the name of the volume to import
+//   originalName: the original name of the volume
+//   backendProtocol: the protocol of the backend
+//   createPVandPVCError: function to inject an error into the PV/PVC creation
+// It returns the orchestrator and the volumeConfig
+// Example:
+//   orchestrator, volumeConfig := importVolumeSetup(t, "backend82", "sc01", "volume82", "origVolume01", config.File)
+//   _, err := orchestrator.LegacyImportVolume(ctx(), volumeConfig, "backend82", false, createPVandPVCError)
 
 func TestImportVolumeFailures(t *testing.T) {
 	const (
@@ -2424,6 +2077,19 @@ func TestImportVolumeFailures(t *testing.T) {
 
 	cleanup(t, orchestrator)
 }
+
+// TestLegacyImportVolume tests the legacy
+// It checks that the volume is imported with the correct internal name.
+// It checks that the volume is persisted if it is managed.
+// It checks that the volume is not persisted if it is not managed.
+// Parameters:
+//   volumeConfig: the volume config to use for the import
+//   notManaged: true if the volume is not managed
+//   createFunc: the function to use to create the PV and PVC
+//   expectedInternalName: the expected internal name of the volume
+// It returns the volumeExternal returned by the import.
+// Example:
+//   TestLegacyImportVolume(t, volumeConfig, false, createPVandPVCNoOp, volumeConfig.InternalName)
 
 func TestLegacyImportVolume(t *testing.T) {
 	const (
@@ -2502,6 +2168,18 @@ func TestLegacyImportVolume(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+// TestImportVolume tests the
+// It checks that the volume is imported with the correct internal name
+// and that the volume is persisted in the orchestrator.
+// Parameters:
+//   backendName: name of the backend
+//   scName: name of the storage class
+//   volumeName: name of the volume to be imported
+//   originalName: original name of the volume to be imported
+//   backendProtocol: protocol of the backend
+// Example:
+//   TestImportVolume(t, "backend02", "sc01", "volume01", "origVolume01", config.File)
+
 func TestImportVolume(t *testing.T) {
 	const (
 		backendName     = "backend02"
@@ -2558,6 +2236,28 @@ func TestImportVolume(t *testing.T) {
 	}
 	cleanup(t, orchestrator)
 }
+
+// TestValidateImportVolumeNasBackend tests the validateImportVolume function for NAS backends.
+// It checks for the following error conditions:
+// - The volume exists on the backend with the original name
+// - The storage class is unknown
+// - The volume does not exist on the backend
+// - The access mode is incompatible with the backend
+// - The volume mode is incompatible with the backend
+// - The protocol is incompatible with the backend
+// Parameters:
+//   backendName - the name of the backend
+//   scName - the name of the storage class
+//   volumeName - the name of the volume to import
+//   originalName - the original name of the volume to import
+//   backendProtocol - the protocol of the backend
+// Example:
+//   backendName := "backend01"
+//   scName := "sc01"
+//   volumeName := "volume01"
+//   originalName := "origVolume01"
+//   backendProtocol := config.File
+//   TestValidateImportVolumeNasBackend(t, backendName, scName, volumeName, originalName, backendProtocol)
 
 func TestValidateImportVolumeNasBackend(t *testing.T) {
 	const (
@@ -2637,6 +2337,20 @@ func TestValidateImportVolumeNasBackend(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+// TestValidateImportVolumeSanBackend tests the validateImportVolume function for
+// SAN backends.
+// It checks for the following error conditions:
+// - protocol mismatch
+// - file system mismatch
+// Parameters:
+//   - backendName: name of the backend to use
+//   - scName: name of the storage class to use
+//   - volumeName: name of the volume to create
+//   - originalName: name of the volume to import
+//   - backendProtocol: protocol of the backend to use
+// Example:
+//   TestValidateImportVolumeSanBackend("backend01", "sc01", "volume01", "origVolume01", config.Block)
+
 func TestValidateImportVolumeSanBackend(t *testing.T) {
 	const (
 		backendName     = "backend01"
@@ -2698,6 +2412,16 @@ func TestValidateImportVolumeSanBackend(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+// TestAddVolumePublication tests that the orchestrator correctly adds a volume publication
+// to its cache and calls the store client to add the volume publication to the persistent store
+// It checks that the orchestrator's cache is updated correctly
+// Parameters:
+//    t *testing.T - test object
+// Example:
+//    TestAddVolumePublication(t)
+// Returns:
+//    None
+
 func TestAddVolumePublication(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	// Create a mocked persistent store client
@@ -2730,6 +2454,16 @@ func TestAddVolumePublication(t *testing.T) {
 		"volume publication was not correctly added")
 }
 
+// TestAddVolumePublicationError tests the error path for AddVolumePublication
+// It checks that the orchestrator does not add the volume publication to its cache
+// when the store client returns an error
+// Parameters:
+//   t *testing.T
+//     The test object
+// It returns nothing
+// Example:
+//   TestAddVolumePublicationError(t)
+
 func TestAddVolumePublicationError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	// Create a mocked persistent store client
@@ -2758,6 +2492,13 @@ func TestAddVolumePublicationError(t *testing.T) {
 		"volume publication was added orchestrator's cache")
 }
 
+// TestGetVolumePublication tests the GetVolumePublication method
+// It checks that the volume publication is correctly retrieved from the cache
+// Parameters:
+//    t *testing.T: go test helper
+// Example:
+//    TestGetVolumePublication(t *testing.T)
+
 func TestGetVolumePublication(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	// Create a mocked persistent store client
@@ -2783,6 +2524,14 @@ func TestGetVolumePublication(t *testing.T) {
 	assert.Equal(t, fakePub, actualPub, "volume publication was not correctly retrieved")
 }
 
+// TestGetVolumePublicationNotFound tests that a volume publication is not found
+// when the volume is not found
+// It checks that the correct error is returned
+// Parameters:
+//   t *testing.T
+// Example:
+//   TestGetVolumePublicationNotFound(t)
+
 func TestGetVolumePublicationNotFound(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	// Create a mocked persistent store client
@@ -2799,6 +2548,14 @@ func TestGetVolumePublicationNotFound(t *testing.T) {
 	assert.True(t, utils.IsNotFoundError(err), "incorrect error type returned")
 	assert.Empty(t, actualPub, "non-empty publication returned")
 }
+
+// TestGetVolumePublicationError tests the GetVolumePublication function when
+// there is an error during bootstrap
+// It checks that the correct error is returned
+// Parameters:
+//    t *testing.T - go test helper object
+// Example:
+//   TestGetVolumePublicationError(t *testing.T)
 
 func TestGetVolumePublicationError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -2828,6 +2585,15 @@ func TestGetVolumePublicationError(t *testing.T) {
 	assert.False(t, utils.IsNotFoundError(err), "incorrect error type returned")
 	assert.Empty(t, actualPub, "non-empty publication returned")
 }
+
+// TestListVolumePublications tests the ListVolumePublications method
+// It checks that the correct list of publications is returned
+// Parameters:
+//     t *testing.T : go test framework object used for setup, teardown, etc.
+// Example:
+//     TestListVolumePublications(t)
+// Returns:
+//     None
 
 func TestListVolumePublications(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -2872,6 +2638,13 @@ func TestListVolumePublications(t *testing.T) {
 	assert.ElementsMatch(t, expectedPubs, actualPubs, "incorrect publication list returned")
 }
 
+// TestListVolumePublicationsNotFound tests that ListVolumePublications returns an empty list when no publications are found
+// It checks that the orchestrator does not return an error when no publications are found
+// Parameters:
+//    t *testing.T : go test framework object used to generate test failures
+// Example:
+//    TestListVolumePublicationsNotFound(t *testing.T)
+
 func TestListVolumePublicationsNotFound(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	// Create a mocked persistent store client
@@ -2887,6 +2660,13 @@ func TestListVolumePublicationsNotFound(t *testing.T) {
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
+
+// TestListVolumePublicationsError tests the error path for ListVolumePublications
+// It checks that the error is returned and the publication list is empty
+// Parameters:
+//    t *testing.T - go test handler
+// Example:
+//    TestListVolumePublicationsError(t)
 
 func TestListVolumePublicationsError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -2916,6 +2696,13 @@ func TestListVolumePublicationsError(t *testing.T) {
 	assert.NotNil(t, err, fmt.Sprintf("unexpected success listing volume publications"))
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
+
+// TestListVolumePublicationsForVolume tests the ListVolumePublicationsForVolume method
+// It checks that the correct list of publications is returned for a given volume
+// Parameters:
+//   t *testing.T - test object
+// Example:
+//   TestListVolumePublicationsForVolume(t)
 
 func TestListVolumePublicationsForVolume(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -2960,6 +2747,18 @@ func TestListVolumePublicationsForVolume(t *testing.T) {
 	assert.ElementsMatch(t, expectedPubs, actualPubs, "incorrect publication list returned")
 }
 
+// TestListVolumePublicationsForVolumeNotFound tests that ListVolumePublicationsForVolume
+// returns an empty list when the volume is not found
+// It checks that the orchestrator does not return an error
+// Parameters:
+//   t *testing.T : go test helper
+// Example:
+//   TestListVolumePublicationsForVolumeNotFound(t)
+// Returns:
+//   nothing
+// Side Effects:
+//   none
+
 func TestListVolumePublicationsForVolumeNotFound(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	// Create a mocked persistent store client
@@ -2985,6 +2784,13 @@ func TestListVolumePublicationsForVolumeNotFound(t *testing.T) {
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
+
+// TestListVolumePublicationsForVolumeError tests the error path for ListVolumePublicationsForVolume
+// It checks that the error is returned if the orchestrator is in an error state
+// Parameters:
+//    t *testing.T : go test helper
+// Example:
+//    TestListVolumePublicationsForVolumeError(t *testing.T)
 
 func TestListVolumePublicationsForVolumeError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -3014,6 +2820,13 @@ func TestListVolumePublicationsForVolumeError(t *testing.T) {
 	assert.NotNil(t, err, fmt.Sprintf("unexpected success listing volume publications"))
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
+
+// TestListVolumePublicationsForNode tests the ListVolumePublicationsForNode method
+// It checks that a list of publications for a given node is returned
+// Parameters:
+//   t *testing.T - go test object
+// Example:
+//   TestListVolumePublicationsForNode(t *testing.T)
 
 func TestListVolumePublicationsForNode(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -3058,6 +2871,14 @@ func TestListVolumePublicationsForNode(t *testing.T) {
 	assert.ElementsMatch(t, expectedPubs, actualPubs, "incorrect publication list returned")
 }
 
+// TestListVolumePublicationsForNodeNotFound tests the ListVolumePublicationsForNode function
+// when the node is not found
+// It checks that an empty list is returned
+// Parameters:
+//   t *testing.T
+// Example:
+//   TestListVolumePublicationsForNodeNotFound(t)
+
 func TestListVolumePublicationsForNodeNotFound(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	// Create a mocked persistent store client
@@ -3083,6 +2904,14 @@ func TestListVolumePublicationsForNodeNotFound(t *testing.T) {
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
+
+// TestListVolumePublicationsForNodeError tests that ListVolumePublicationsForNode
+// returns an error when the orchestrator is in an error state
+// It checks that the error is returned and that the publication list is empty
+// Parameters:
+//   t *testing.T : go test helper object
+// Example:
+//   TestListVolumePublicationsForNodeError(t)
 
 func TestListVolumePublicationsForNodeError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -3112,6 +2941,14 @@ func TestListVolumePublicationsForNodeError(t *testing.T) {
 	assert.NotNil(t, err, fmt.Sprintf("unexpected success listing volume publications"))
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
+
+// TestDeleteVolumePublication tests the DeleteVolumePublication method
+// It checks that the volume publication is removed from the cache
+// and that the volume entry is removed from the cache if this is the last nodeID for a given volume
+// Parameters:
+//    t *testing.T: go test helper
+// Example:
+//   TestDeleteVolumePublication(t)
 
 func TestDeleteVolumePublication(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -3169,6 +3006,14 @@ func TestDeleteVolumePublication(t *testing.T) {
 		"publication not properly removed from cache")
 }
 
+// TestDeleteVolumePublicationNotFound tests that the DeleteVolumePublication method returns a not found error
+// when the volume publication is not found
+// It checks that the volume publication is not deleted from the cache
+// Parameters:
+//    t *testing.T : go test helper
+// Example:
+//    TestDeleteVolumePublicationNotFound(t *testing.T)
+
 func TestDeleteVolumePublicationNotFound(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	// Create a mocked persistent store client
@@ -3194,6 +3039,14 @@ func TestDeleteVolumePublicationNotFound(t *testing.T) {
 	assert.NotNil(t, err, fmt.Sprintf("unexpected success deleting volume publication"))
 	assert.True(t, utils.IsNotFoundError(err), "incorrect error type returned")
 }
+
+// TestDeleteVolumePublicationNotFoundPersistence tests that delete volume publication is idempotent
+// when the persistence object is missing
+// It checks that the cache is updated and that the orchestrator does not panic
+// Parameters:
+//   t *testing.T : go test framework object
+// Example:
+//   TestDeleteVolumePublicationNotFoundPersistence(t *testing.T)
 
 func TestDeleteVolumePublicationNotFoundPersistence(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -3223,6 +3076,13 @@ func TestDeleteVolumePublicationNotFoundPersistence(t *testing.T) {
 	assert.NotContains(t, orchestrator.volumePublications, fakePub.VolumeName,
 		"publication not properly removed from cache")
 }
+
+// TestDeleteVolumePublicationError tests the error path of DeleteVolumePublication
+// It checks that the orchestrator returns an error when the store client returns an error
+// Parameters:
+//    t *testing.T : go test helper
+// Example:
+//     TestDeleteVolumePublicationError(t)
 
 func TestDeleteVolumePublicationError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -3254,6 +3114,14 @@ func TestDeleteVolumePublicationError(t *testing.T) {
 		"publication improperly removed/updated in cache")
 }
 
+// TestAddNode tests adding a node to the orchestrator
+// It checks that the node is added to the orchestrator and that the orchestrator
+// is able to retrieve the node
+// Parameters:
+//   t *testing.T : go test helper object for running tests
+// Example:
+//   TestAddNode(t *testing.T)
+
 func TestAddNode(t *testing.T) {
 	node := &utils.Node{
 		Name:           "testNode",
@@ -3267,6 +3135,13 @@ func TestAddNode(t *testing.T) {
 		t.Errorf("adding node failed; %v", err)
 	}
 }
+
+// TestGetNode tests the GetNode method
+// It checks that the correct node is returned
+// Parameters:
+//   t *testing.T
+// Example:
+//   TestGetNode(t)
 
 func TestGetNode(t *testing.T) {
 	orchestrator := getOrchestrator(t)
@@ -3299,6 +3174,13 @@ func TestGetNode(t *testing.T) {
 	}
 }
 
+// TestListNodes tests the ListNodes function
+// It checks that the list of nodes returned is the same as the list of nodes in the orchestrator
+// Parameters:
+//     t *testing.T : go test framework object used for running the test
+// Example:
+//     TestListNodes(t)
+
 func TestListNodes(t *testing.T) {
 	orchestrator := getOrchestrator(t)
 	expectedNode1 := &utils.Node{
@@ -3329,6 +3211,18 @@ func TestListNodes(t *testing.T) {
 	}
 }
 
+// unorderedNodeSlicesEqual returns true if the two slices contain the same nodes,
+// regardless of order.
+// Parameters:
+//   x, y - the slices to compare
+// Returns:
+//   bool - true if the slices contain the same nodes, regardless of order
+// Example:
+//   x := []*utils.Node{&utils.Node{Name: "node1"}, &utils.Node{Name: "node2"}}
+//   y := []*utils.Node{&utils.Node{Name: "node2"}, &utils.Node{Name: "node1"}}
+//   unorderedNodeSlicesEqual(x, y)
+//   >> true
+
 func unorderedNodeSlicesEqual(x, y []*utils.Node) bool {
 	if len(x) != len(y) {
 		return false
@@ -3352,6 +3246,13 @@ func unorderedNodeSlicesEqual(x, y []*utils.Node) bool {
 	return len(diff) == 0
 }
 
+// TestDeleteNode tests the deletion of a node
+// It checks that the node is properly deleted from the orchestrator
+// Parameters:
+//     t *testing.T : go testing object used to handle logging
+// Example:
+//     TestDeleteNode(t *testing.T)
+
 func TestDeleteNode(t *testing.T) {
 	orchestrator := getOrchestrator(t)
 	initialNode := &utils.Node{
@@ -3372,6 +3273,14 @@ func TestDeleteNode(t *testing.T) {
 		t.Errorf("node was not properly deleted")
 	}
 }
+
+// TestSnapshotVolumes tests snapshotting of volumes
+// It checks that the snapshot is created, and that it is stored in the persistent store
+// It also checks that the snapshot can be deleted
+// Parameters:
+//   t: the test object
+// Example:
+//   TestSnapshotVolumes(t)
 
 func TestSnapshotVolumes(t *testing.T) {
 	mockPools := tu.GetFakePools()
@@ -3578,6 +3487,19 @@ func TestSnapshotVolumes(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+// TestGetProtocol tests the getProtocol function
+// It checks for positive and negative cases
+// Parameters:
+//   volumeMode: Filesystem or RawBlock
+//   accessMode: ReadWriteOnce, ReadOnlyMany, ReadWriteMany
+//   protocol: File, Block, BlockOnFile
+//   expected: File, Block, BlockOnFile
+// Example:
+//   volumeMode: RawBlock
+//   accessMode: ReadWriteOnce
+//   protocol: File
+//   expected: ProtocolAny
+
 func TestGetProtocol(t *testing.T) {
 	orchestrator := getOrchestrator(t)
 
@@ -3647,6 +3569,14 @@ func TestGetProtocol(t *testing.T) {
 	}
 }
 
+// TestGetBackend tests the GetBackend function
+// It checks that the expected object is returned
+// Parameters:
+//    t *testing.T: The test object
+// It returns nothing
+// Example:
+//     TestGetBackend(t)
+
 func TestGetBackend(t *testing.T) {
 	// Boilerplate mocking code
 	mockCtrl := gomock.NewController(t)
@@ -3681,6 +3611,15 @@ func TestGetBackend(t *testing.T) {
 	assert.Equal(t, expectedBackendExternal, actualBackendExternal, "Did not get the expected backend object")
 }
 
+// TestGetBackendByBackendUUID tests the GetBackendByBackendUUID method
+// It checks that the correct backend is returned
+// Parameters:
+//   backendName: Name of the backend to return
+//   backendUUID: UUID of the backend to return
+// It returns the expected backend object
+// Example:
+//   backend:=TestGetBackendByBackendUUID("foobar","1234")
+
 func TestGetBackendByBackendUUID(t *testing.T) {
 	// Boilerplate mocking code
 	mockCtrl := gomock.NewController(t)
@@ -3710,6 +3649,14 @@ func TestGetBackendByBackendUUID(t *testing.T) {
 	assert.Nilf(t, err, "Error getting backend; %v", err)
 	assert.Equal(t, expectedBackendExternal, actualBackendExternal, "Did not get the expected backend object")
 }
+
+// TestListBackends tests the ListBackends function
+// It checks that the function returns a list of backends that matches the list of backends that were added to the orchestrator
+// Parameters:
+//     t *testing.T : go testing object used to control test flow
+// It returns nothing
+// Example:
+//     TestListBackends(t *testing.T)
 
 func TestListBackends(t *testing.T) {
 	// Boilerplate mocking code
@@ -3746,6 +3693,14 @@ func TestListBackends(t *testing.T) {
 	assert.Nilf(t, err, "Error listing backends; %v", err)
 	assert.ElementsMatch(t, expectedBackendList, actualBackendList, "Did not get expected list of backends")
 }
+
+// TestDeleteBackend tests the DeleteBackend method
+// It checks that the backend is properly deleted from the orchestrator
+// Parameters:
+//    t *testing.T - test object
+// It returns nothing
+// Example:
+//    TestDeleteBackend(t *testing.T)
 
 func TestDeleteBackend(t *testing.T) {
 	// Boilerplate mocking code
@@ -3791,6 +3746,13 @@ func TestDeleteBackend(t *testing.T) {
 	assert.False(t, ok, "Backend was not properly deleted")
 }
 
+// TestPublishVolume tests the PublishVolume method
+// It checks that the correct backend method is called
+// Parameters:
+//   t *testing.T
+// Example:
+//   TestPublishVolume(t)
+
 func TestPublishVolume(t *testing.T) {
 	// Boilerplate mocking code
 	mockCtrl := gomock.NewController(t)
@@ -3821,6 +3783,18 @@ func TestPublishVolume(t *testing.T) {
 	// Verify the results
 	assert.Nilf(t, err, "Error publishing volume; %v", err)
 }
+
+// TestPublishVolumeFailedToUpdatePersistentStore tests the case where the
+// orchestrator fails to update the persistent store after a successful
+// publish operation.
+// It checks that the orchestrator returns the error from the persistent
+// store client.
+// Parameters:
+//    mockCtrl - the mocked controller
+//    backendUUID - the UUID of the backend to use for the test
+//    expectedError - the error expected from the persistent store client
+// Example:
+//    TestPublishVolumeFailedToUpdatePersistentStore(t, "1234", fmt.Errorf("failure"))
 
 func TestPublishVolumeFailedToUpdatePersistentStore(t *testing.T) {
 	// Boilerplate mocking code
@@ -3857,6 +3831,15 @@ func TestPublishVolumeFailedToUpdatePersistentStore(t *testing.T) {
 	}
 }
 
+// TestGetCHAP tests the GetCHAP method of the orchestrator
+// It checks that the orchestrator calls the correct backend method
+// and returns the expected result
+// Parameters:
+//    volumeName: the name of the volume to get CHAP info for
+//    nodeName: the name of the node to get CHAP info for
+// Example:
+//    TestGetCHAP("foobar", "foobar")
+
 func TestGetCHAP(t *testing.T) {
 	// Boilerplate mocking code
 	mockCtrl := gomock.NewController(t)
@@ -3888,6 +3871,13 @@ func TestGetCHAP(t *testing.T) {
 	assert.Nil(t, err, "Unexpected error")
 	assert.Equal(t, expectedChapInfo, actualChapInfo, "Unexpected chap info returned.")
 }
+
+// TestGetCHAPFailure tests the failure path of GetCHAP
+// It checks that the orchestrator returns an error when the backend returns an error
+// Parameters:
+//    t *testing.T: go test helper
+// Example:
+//    TestGetCHAPFailure(t *testing.T)
 
 func TestGetCHAPFailure(t *testing.T) {
 	// Boilerplate mocking code

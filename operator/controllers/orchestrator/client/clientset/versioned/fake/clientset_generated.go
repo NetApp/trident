@@ -52,9 +52,29 @@ type Clientset struct {
 	tracker   testing.ObjectTracker
 }
 
+// Discovery retrieves the DiscoveryClient
+// It returns a fake if the fake flag is set
+// Example:
+//   clientset := fake.Clientset{}
+//   clientset.fakeDiscovery = true
+//   discoveryClient := clientset.Discovery()
+
 func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 	return c.discovery
 }
+
+// Tracker is a fake implementation of the ObjectTracker interface.
+type Tracker struct {
+	objects map[string]interface{}
+}
+
+// NewTracker returns a new Tracker.
+// It returns an error if the tracker could not be created.
+// Example:
+//   tracker, err := fake.NewTracker()
+//   if err != nil {
+//     panic(err)
+//   }
 
 func (c *Clientset) Tracker() testing.ObjectTracker {
 	return c.tracker

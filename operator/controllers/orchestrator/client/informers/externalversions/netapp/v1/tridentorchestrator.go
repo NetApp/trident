@@ -62,13 +62,75 @@ func NewFilteredTridentOrchestratorInformer(client versioned.Interface, resyncPe
 	)
 }
 
+// defaultInformer is used to informer for TridentOrchestrator types.
+type tridentOrchestratorInformer struct {
+	factory          internalinterfaces.SharedInformerFactory
+	tweakListOptions internalinterfaces.TweakListOptionsFunc
+}
+
+// NewTridentOrchestratorInformer constructs a new informer for TridentOrchestrator type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+// Parameters:
+//     resyncPeriod - the period at which the informer should re-list the resources.
+//     tweakListOptions - the function to tweak the list options.
+// It returns a shared informer for TridentOrchestrator type.
+// Example:
+//     // Get a shared informer for the resource.
+//     informer := NewTridentOrchestratorInformer(
+//         resyncPeriod,
+//         tweakListOptions,
+//     )
+//     // Register the resource with the shared informer.
+//     informer.AddEventHandler(
+//         cache.ResourceEventHandlerFuncs{
+//             AddFunc: func(obj interface{}) {},
+//             UpdateFunc: func(oldObj, newObj interface{}) {},
+//             DeleteFunc: func(obj interface{}) {},
+//         },
+//     )
+
 func (f *tridentOrchestratorInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
 	return NewFilteredTridentOrchestratorInformer(client, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
+// Informer is used to obtain a shared index informer for TridentOrchestrator objects.
+type tridentOrchestratorInformer struct {
+	factory          internalinterfaces.SharedInformerFactory
+	tweakListOptions internalinterfaces.TweakListOptionsFunc
+	namespace        string
+	tenant           string
+}
+
+// NewTridentOrchestratorInformer constructs a new informer for TridentOrchestrator type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+// It returns a SharedIndexInformer.
+// Example:
+//   tridentOrchestratorInformer := v1.NewTridentOrchestratorInformer(client, namespace, resyncPeriod, indexers)
+
 func (f *tridentOrchestratorInformer) Informer() cache.SharedIndexInformer {
 	return f.factory.InformerFor(&netappv1.TridentOrchestrator{}, f.defaultInformer)
 }
+
+// Lister implements the TridentOrchestratorLister interface.
+type tridentOrchestratorInformer struct {
+	factory          internalinterfaces.SharedInformerFactory
+	tweakListOptions internalinterfaces.TweakListOptionsFunc
+	namespace        string
+}
+
+// NewTridentOrchestratorInformer constructs a new informer for TridentOrchestrator type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+// It returns a TridentOrchestratorInformer.
+// Example:
+//     // Create a new controller
+//     ctrl := NewController(...
+//     // Create a new informer
+//     informer := ctrl.Informer()
+//     // Create a new lister
+//     lister := ctrl.Lister()
 
 func (f *tridentOrchestratorInformer) Lister() v1.TridentOrchestratorLister {
 	return v1.NewTridentOrchestratorLister(f.Informer().GetIndexer())

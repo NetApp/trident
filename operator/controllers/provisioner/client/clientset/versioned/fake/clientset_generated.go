@@ -52,9 +52,26 @@ type Clientset struct {
 	tracker   testing.ObjectTracker
 }
 
+// Discovery retrieves the DiscoveryClient
+// It returns a fake DiscoveryClient
+// Example:
+//   clientset := fake.NewSimpleClientset()
+//   clientset.Discovery().RESTClient()
+
 func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 	return c.discovery
 }
+
+// Tracker is a fake implementation of the Tracker interface
+type Tracker struct {
+	objects map[string]interface{}
+}
+
+// NewTracker returns a new Tracker
+// It returns a pointer to the Tracker
+// Example:
+//   tracker := NewTracker()
+//   tracker.Add("foo", "bar")
 
 func (c *Clientset) Tracker() testing.ObjectTracker {
 	return c.tracker

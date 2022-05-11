@@ -30,6 +30,17 @@ var (
 )
 
 // Adds the list of known types to the given scheme.
+// addKnownTypes adds the set of types defined in this
+// Parameters:
+//     scheme *runtime.Scheme
+//
+// Returns:
+//     error
+//
+// It returns an error if there was an issue with adding the types.
+// Example:
+//     addKnownTypes(s)
+
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&TridentProvisioner{},

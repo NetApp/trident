@@ -130,6 +130,24 @@ func (f *sharedInformerFactory) WaitForCacheSync(stopCh <-chan struct{}) map[ref
 
 // InternalInformerFor returns the SharedIndexInformer for obj using an internal
 // client.
+// InformerFor is a function that returns a SharedIndexInformer for a given object and namespace.
+type InformerFor func(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
+
+// SharedInformerFactory is type of SharedInformerFactory interface.
+type SharedInformerFactory interface {
+	Start(stopCh <-chan struct{})
+	InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
+}
+
+// NewSharedInformerFactory constructs a new instance of sharedInformerFactory for all namespaces.
+// Parameters:
+//   - client        - kubernetes client
+//   - defaultResync - default resync period for informers created by this factory
+// It returns a new instance of SharedInformerFactory.
+// Example:
+//   kubeClient := kubernetes.NewForConfigOrDie(c)
+//   kubeInformerFactory := externalversions.NewSharedInformerFactory(kubeClient, 30*time.Second)
+
 func (f *sharedInformerFactory) InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer {
 	f.lock.Lock()
 	defer f.lock.Unlock()
@@ -160,6 +178,17 @@ type SharedInformerFactory interface {
 
 	Trident() netapp.Interface
 }
+
+// Trident is the external version of the API.
+type Trident struct {
+	groupVersion string
+}
+
+// NewTrident returns a new Trident.
+// It returns nil if the version is not known.
+// Example:
+//   trident := externalversions.NewTrident("trident.netapp.io", "v1alpha1")
+//   clientset, err := trident.ClientsetForVersion("v1alpha1")
 
 func (f *sharedInformerFactory) Trident() netapp.Interface {
 	return netapp.New(f, f.namespace, f.tweakListOptions)

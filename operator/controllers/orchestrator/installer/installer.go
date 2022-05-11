@@ -109,6 +109,19 @@ type Installer struct {
 	namespace        string
 }
 
+// NewInstaller creates a new Trident installer
+// Parameters:
+//   kubeConfig: Kubernetes client configuration
+//   namespace: Kubernetes namespace
+//   timeout: Timeout for Kubernetes operations
+// It returns a Trident installer and error
+// Example:
+//   installer, err := installer.NewInstaller(kubeConfig, namespace, timeout)
+//   if err != nil {
+//       return nil, err
+//   }
+//   defer installer.Close()
+
 func NewInstaller(kubeConfig *rest.Config, namespace string, timeout int) (TridentInstaller, error) {
 
 	if timeout <= 0 {
@@ -137,6 +150,14 @@ func NewInstaller(kubeConfig *rest.Config, namespace string, timeout int) (Tride
 		namespace:        namespace,
 	}, nil
 }
+
+// logFormatPrechecks performs pre-checks on the logFormat
+// It returns an error if the logFormat is not valid
+// Example:
+//     err := i.logFormatPrechecks()
+//     if err != nil {
+//          return err
+//     }
 
 func (i *Installer) logFormatPrechecks() (returnError error) {
 	switch logFormat {
@@ -413,6 +434,19 @@ func (i *Installer) setInstallationParams(
 	return controllingCRDetails, labels, tridentUpdateNeeded, nil
 }
 
+// InstallOrPatchTrident installs or updates Trident
+// Parameters:
+//   cr - the controlling CR
+//   currentInstallationVersion - the current version of Trident installed
+//   k8sUpdateNeeded - true if the Kubernetes version has changed
+// Returns:
+//   *netappv1.TridentOrchestratorSpecValues - the values from the CR spec
+//   string - the version of Trident installed
+//   error - any error encountered
+// It returns the values from the CR spec, the version of Trident installed, and any error encountered.
+// Example:
+//   values, version, err := i.InstallOrPatchTrident(cr, currentInstallationVersion, k8sUpdateNeeded)
+
 func (i *Installer) InstallOrPatchTrident(
 	cr netappv1.TridentOrchestrator, currentInstallationVersion string, k8sUpdateNeeded bool,
 ) (*netappv1.TridentOrchestratorSpecValues, string, error) {
@@ -683,6 +717,12 @@ func (i *Installer) ensureCRDEstablished(crdName string) error {
 	return nil
 }
 
+// createOrPatchK8sBetaCSIDriver creates or patches the K8s (beta) CSI driver
+// It returns an error if the operation fails
+// Example:
+//   installer := installer.NewInstaller(k8sClient, k8sVersion)
+//   err := installer.createOrPatchK8sBetaCSIDriver(controllingCRDetails, labels, shouldUpdate)
+
 func (i *Installer) createOrPatchK8sBetaCSIDriver(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
@@ -711,6 +751,20 @@ func (i *Installer) createOrPatchK8sBetaCSIDriver(
 	return nil
 }
 
+// createOrPatchK8sCSIDriver creates or patches the K8s CSI driver
+// Parameters:
+//   controllingCRDetails: map of controlling CR details
+//   labels: map of labels
+//   shouldUpdate: boolean to indicate if the CSI driver should be updated
+// Return:
+//   error: error if any
+// It returns error if it fails to create or patch the K8s CSI driver
+// Example:
+//   err := createOrPatchK8sCSIDriver(controllingCRDetails, labels, shouldUpdate)
+//   if err != nil {
+//       log.Errorf("failed to create or patch K8s CSI driver; %v", err)
+//   }
+
 func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[string]string, shouldUpdate bool) error {
 
 	CSIDriverName := getCSIDriverName()
@@ -735,6 +789,21 @@ func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[s
 
 	return nil
 }
+
+// createRBACObjects creates the RBAC objects for Trident.
+// Parameters:
+//   controllingCRDetails - a map of labels and annotations to be applied to the RBAC objects
+//   labels - a map of labels to be applied to the RBAC objects
+//   shouldUpdate - whether or not to update the RBAC objects if they already exist
+// Returns:
+//   newServiceAccount - whether or not a new service account was created
+//   returnError - any error encountered
+// Example:
+//   newServiceAccount, returnError := createRBACObjects(controllingCRDetails, labels, false)
+//   if returnError != nil {
+//      log.Errorf("Failed to create RBAC objects for Trident; %v", returnError)
+//      return returnError
+//   }
 
 func (i *Installer) createRBACObjects(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
@@ -774,6 +843,14 @@ func (i *Installer) createRBACObjects(
 	return
 }
 
+// createTridentInstallationNamespace creates the Trident installation namespace
+// It returns an error if the namespace could not be created.
+// Example:
+//     err := installer.createTridentInstallationNamespace()
+//     if err != nil {
+//         return fmt.Errorf("failed to create Trident installation namespace; %v", err)
+//     }
+
 func (i *Installer) createTridentInstallationNamespace() error {
 	createNamespace := true
 
@@ -803,6 +880,18 @@ func (i *Installer) createTridentInstallationNamespace() error {
 	return nil
 }
 
+// createOrPatchTridentServiceAccount creates or patches the Trident service account
+// Parameters:
+//   controllingCRDetails - a map of labels and values that will be applied to the Trident service account
+//   labels - a map of labels and values that will be applied to the Trident service account
+//   shouldUpdate - true if the Trident service account should be updated
+// Return values:
+//   bool - true if the Trident service account was created
+//   error - nil if the Trident service account was created or patched successfully, or an error if it failed
+// It returns an error if the Trident service account could not be created or patched.
+// Example:
+//   created, err := createOrPatchTridentServiceAccount(controllingCRDetails, labels, shouldUpdate)
+
 func (i *Installer) createOrPatchTridentServiceAccount(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) (bool, error) {
@@ -829,6 +918,20 @@ func (i *Installer) createOrPatchTridentServiceAccount(
 
 	return newServiceAccount, nil
 }
+
+// createOrPatchTridentClusterRole creates or patches the Trident cluster role
+// Parameters:
+//   controllingCRDetails - details of the controlling CR
+//   labels - labels to apply to the Trident cluster role
+//   shouldUpdate - whether the Trident cluster role should be updated
+// Return:
+//   error - error if any
+// It returns error if it fails to create or patch the Trident cluster role.
+// Example:
+//   err := i.createOrPatchTridentClusterRole(controllingCRDetails, labels, shouldUpdate)
+//   if err != nil {
+//       return err
+//   }
 
 func (i *Installer) createOrPatchTridentClusterRole(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
@@ -858,6 +961,21 @@ func (i *Installer) createOrPatchTridentClusterRole(
 	return nil
 }
 
+// createOrPatchTridentClusterRoleBinding creates or patches the Trident cluster role binding.
+// Parameters:
+//   controllingCRDetails: map of controlling CR details
+//   labels: map of labels
+//   shouldUpdate: true if the cluster role binding should be updated
+// It returns an error if the operation fails.
+// Example:
+//   controllingCRDetails := map[string]string{
+//   	"name": "trident-csi-driver",
+//   	"kind": "CSIDriver",
+//   }
+//   labels := map[string]string{"app": "trident"}
+//   shouldUpdate = true
+//   err = i.createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels, shouldUpdate)
+
 func (i *Installer) createOrPatchTridentClusterRoleBinding(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
@@ -886,6 +1004,20 @@ func (i *Installer) createOrPatchTridentClusterRoleBinding(
 
 	return nil
 }
+
+// createOrPatchTridentOpenShiftSCC creates or patches the Trident OpenShift SCC
+// Parameters:
+//   controllingCRDetails - a map of the controlling CR's details
+//   labels - a map of labels to apply to the OpenShift SCC
+//   shouldUpdate - true if the SCC should be updated, false if it should be created
+// Returns:
+//   error - error if any
+// It returns an error if it fails to create or patch the OpenShift SCC
+// Example:
+//   err := i.createOrPatchTridentOpenShiftSCC(controllingCRDetails, labels, shouldUpdate)
+//   if err != nil {
+//       return fmt.Errorf("failed to create or patch Trident OpenShift SCC; %v", err)
+//   }
 
 func (i *Installer) createOrPatchTridentOpenShiftSCC(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
@@ -928,6 +1060,12 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(
 	return nil
 }
 
+// createAndEnsureCRDs creates the Trident CRDs.
+// Example:
+//     if err := i.createAndEnsureCRDs(); err != nil {
+//         return err
+//     }
+
 func (i *Installer) createAndEnsureCRDs() (returnError error) {
 
 	returnError = i.createCRDs()
@@ -936,6 +1074,20 @@ func (i *Installer) createAndEnsureCRDs() (returnError error) {
 	}
 	return
 }
+
+// createOrPatchTridentPodSecurityPolicy creates or patches the Trident pod security policy
+// Parameters:
+//   controllingCRDetails - a map of the controlling CR's details
+//   labels - a map of labels to apply to the Trident pod security policy
+//   shouldUpdate - indicates whether the Trident pod security policy should be updated
+// Return:
+//   error - error if any
+// It returns an error if it fails to create or patch the Trident pod security policy
+// Example:
+//   err := i.createOrPatchTridentPodSecurityPolicy(controllingCRDetails, labels, true)
+//   if err != nil {
+//     return err
+//   }
 
 func (i *Installer) createOrPatchTridentPodSecurityPolicy(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
@@ -962,6 +1114,20 @@ func (i *Installer) createOrPatchTridentPodSecurityPolicy(
 	return nil
 }
 
+// createOrPatchTridentService creates or patches the Trident service.
+// Parameters:
+//   controllingCRDetails - map of controlling CR details
+//   labels - map of labels
+//   shouldUpdate - true if the service should be updated, false otherwise
+// Returns:
+//   error - error, if any
+// It returns an error if it fails to create or patch the Trident service.
+// Example:
+//   err := installer.createOrPatchTridentService(controllingCRDetails, labels, shouldUpdate)
+//   if err != nil {
+//       return err
+//   }
+
 func (i *Installer) createOrPatchTridentService(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
@@ -986,6 +1152,17 @@ func (i *Installer) createOrPatchTridentService(
 
 	return nil
 }
+
+// createOrPatchTridentProtocolSecret creates or patches the Trident protocol secret
+// Parameters:
+//   controllingCRDetails - the controlling CR's details
+//   labels - the labels to apply to the secret
+//   shouldUpdate - whether the secret should be updated if it already exists
+// Return:
+//   error - error if any
+// It returns an error if the secret cannot be created or patched.
+// Example:
+//   err := i.createOrPatchTridentProtocolSecret(controllingCRDetails, labels, shouldUpdate)
 
 func (i *Installer) createOrPatchTridentProtocolSecret(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
@@ -1081,6 +1258,22 @@ func (i *Installer) createOrConsumeTridentEncryptionSecret(
 	return nil
 }
 
+// createOrPatchTridentDeployment creates or patches the Trident deployment
+// Parameters:
+//   controllingCRDetails - the labels and annotations to add to the Trident deployment
+//   labels - the labels to add to the Trident deployment
+//   shouldUpdate - whether or not to update the Trident deployment
+//   newServiceAccount - whether or not a new service account should be created
+// Returns:
+//   error - error if there was a problem creating or patching the Trident deployment
+// It returns an error if there was a problem creating or patching the Trident deployment.
+// Example:
+//   i := installer.NewInstaller(client)
+//   err := i.createOrPatchTridentDeployment(controllingCRDetails, labels, false, false)
+//   if err != nil {
+//       return err
+//   }
+
 func (i *Installer) createOrPatchTridentDeployment(
 	controllingCRDetails, labels map[string]string, shouldUpdate, newServiceAccount bool,
 ) error {
@@ -1163,6 +1356,18 @@ func (i *Installer) TridentDeploymentInformation(
 	return i.client.GetDeploymentInformation(getDeploymentName(true), deploymentLabel, i.namespace)
 }
 
+// createOrPatchTridentDaemonSet creates or patches the Trident daemonset
+// Parameters:
+//   controllingCRDetails - map of details about the controlling CR
+//   labels - map of labels to add to the daemonset
+//   shouldUpdate - true if the daemonset should be updated
+//   newServiceAccount - true if a new service account should be created
+// Return:
+//   error - error if any
+// It returns an error if it fails to create or patch the daemonset
+// Example:
+//   err := i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
+
 func (i *Installer) createOrPatchTridentDaemonSet(
 	controllingCRDetails, labels map[string]string, shouldUpdate, newServiceAccount bool,
 ) error {
@@ -1234,6 +1439,15 @@ func (i *Installer) TridentDaemonSetInformation() (*appsv1.DaemonSet,
 	nodeLabel := TridentNodeLabel
 	return i.client.GetDaemonSetInformation(daemonSetName, nodeLabel, i.namespace)
 }
+
+// waitForTridentPod waits for the Trident pod to start.
+// It returns the pod object if successful.
+// Example:
+//    pod, err := waitForTridentPod()
+//    if err != nil {
+//        log.Error(err)
+//        return err
+//    }
 
 func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 
@@ -1345,6 +1559,19 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 
 	return pod, nil
 }
+
+// waitForRESTInterface waits for the Trident REST interface to become available.
+// Parameters:
+//   tridentPodName - the name of the Trident pod
+// Returns:
+//   error - nil if the REST interface is available, error otherwise
+// It returns an error if the REST interface is not available after 30 seconds.
+// Example:
+//   err := waitForRESTInterface("trident-csi-trident-0")
+//   if err != nil {
+//       return err
+//   }
+//   fmt.Println("Trident REST interface is up.")
 
 func (i *Installer) waitForRESTInterface(tridentPodName string) error {
 

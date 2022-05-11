@@ -24,16 +24,27 @@ const (
 	maxAge = 3 * time.Second
 )
 
-func init() {
-	testing.Init()
-	log.SetLevel(log.DebugLevel)
-}
+
+// waitForTransactionMontitorToStart waits for the transaction monitor to start
+// before proceeding with tests.
+// Parameters:
+//   o - the orchestrator
+// Example:
+//   waitForTransactionMontitorToStart(o)
 
 func waitForTransactionMontitorToStart(o *TridentOrchestrator) {
 	if o.txnMonitorChannel == nil {
 		time.Sleep(1 * time.Second)
 	}
 }
+
+// TestStartStop tests the start and stop of the transaction monitor
+// It checks that the transaction monitor is started and stopped correctly
+// It also checks that the transaction monitor channel is set correctly
+// Parameters:
+//     t *testing.T : go test framework object used for running the test
+// Example:
+//     TestStartStop(t)
 
 func TestStartStop(t *testing.T) {
 
@@ -121,6 +132,15 @@ func TestCancelledLongRunningTransaction(t *testing.T) {
 }
 
 // TestUpdateTransactionVolumeCreatingTransaction tests that a VolumeCreatingTransaction can be updated.
+// TestUpdateVolumeCreatingTransaction tests the ability to update a volume creating transaction
+// in the store.
+// It checks that the transaction is created, then updates the size and checks that the size
+// was updated.
+// Parameters:
+//   t *testing.T
+// Example:
+//   TestUpdateVolumeCreatingTransaction(t)
+
 func TestUpdateVolumeCreatingTransaction(t *testing.T) {
 	o, storeClient := setupOrchestratorAndBackend(t)
 	restartTransactionMonitor(o)
@@ -194,6 +214,17 @@ func TestErrorVolumeCreatingTransaction(t *testing.T) {
 }
 
 // TestVolumeCreatingTwoTransaction tests that two volumeCreatingTransactions work as expected
+// TestVolumeCreatingTwoTransactions tests that two volume creating transactions can be created
+// and that the second one is not deleted until the first one is completed.
+// It checks that the second transaction is not deleted when the first one is completed.
+// Parameters:
+//   volName - name of the volume to create
+//   cloneName - name of the volume to clone
+//   volName02 - name of the second volume to create
+//   cloneName02 - name of the second volume to clone
+// Example:
+//   TestVolumeCreatingTwoTransactions(t, "volToClone_01", "volToClone_02")
+
 func TestVolumeCreatingTwoTransactions(t *testing.T) {
 	o, storeClient := setupOrchestratorAndBackend(t)
 	restartTransactionMonitor(o)
@@ -258,6 +289,20 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 	assert.Equal(t, volName02, volTxns[0].VolumeCreatingConfig.InternalName, "failed to find matching transaction")
 }
 
+// setupOrchestratorAndBackend sets up an orchestrator and a backend
+// for use in tests.
+// Parameters:
+//   t: the test object
+// Returns:
+//   o: the orchestrator
+//   storeClient: the persistent store client
+// It returns an error if the setup fails.
+// Example:
+//   o, storeClient, err := setupOrchestratorAndBackend(t)
+//   if err != nil {
+//       t.Errorf("Unable to setup orchestrator and backend: %v", err)
+//   }
+
 func setupOrchestratorAndBackend(t *testing.T) (*TridentOrchestrator, *persistentstore.InMemoryClient) {
 	storeClient := persistentstore.NewInMemoryClient()
 	o := NewTridentOrchestrator(storeClient)
@@ -297,6 +342,14 @@ func setupOrchestratorAndBackend(t *testing.T) (*TridentOrchestrator, *persisten
 	}
 	return o, storeClient
 }
+
+// restartTransactionMonitor stops and restarts the transaction monitor.
+// Parameters:
+//   o - the orchestrator
+//   period - the period between transaction monitor runs
+//   maxAge - the maximum age of a transaction before it is considered abandoned
+// Example:
+//   restartTransactionMonitor(o, 1*time.Second, 30*time.Minute)
 
 func restartTransactionMonitor(o *TridentOrchestrator) {
 

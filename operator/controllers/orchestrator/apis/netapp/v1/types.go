@@ -67,6 +67,17 @@ type Toleration struct {
 	TolerationSeconds int    `json:"tolerationSeconds,omitempty"`
 }
 
+// GetMap returns a map of the toleration
+// Example:
+//   toleration := &Toleration{
+//		Key:               "key",
+//		Operator:          "Equal",
+//		Value:             "value",
+//		Effect:            "NoSchedule",
+//		TolerationSeconds: 10,
+//   }
+//   tolerationMap := toleration.GetMap()
+
 func (t *Toleration) GetMap() map[string]string {
 	toleration := map[string]string{}
 

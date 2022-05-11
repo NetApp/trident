@@ -63,13 +63,73 @@ func NewFilteredTridentProvisionerInformer(client versioned.Interface, namespace
 	)
 }
 
+// defaultInformer is used to informer for TridentProvisioner types.
+type tridentProvisionerInformer struct {
+	factory          internalinterfaces.SharedInformerFactory
+	tweakListOptions internalinterfaces.TweakListOptionsFunc
+	namespace        string
+}
+
+// NewTridentProvisionerInformer constructs a new informer for TridentProvisioner type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+// Parameters:
+//     namespace: The namespace of the TridentProvisioner.
+//     resyncPeriod: The resync period to use for this informer.
+//     tweakListOptions: The tweak list options for this informer.
+// It returns a new informer for TridentProvisioner type.
+// Example:
+//     // create the informer for TridentProvisioner
+//     informer := v1.NewTridentProvisionerInformer(
+//         kubeClient,
+//         resyncPeriod,
+//         cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+//     )
+
 func (f *tridentProvisionerInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
 	return NewFilteredTridentProvisionerInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
+// Informer is used to fetch and store TridentProvisioner objects from the API server.
+type TridentProvisionerInformer interface {
+	Informer() cache.SharedIndexInformer
+	Lister() *TridentProvisionerLister
+}
+
+type tridentProvisionerInformer struct {
+	factory          internalinterfaces.SharedInformerFactory
+	tweakListOptions internalinterfaces.TweakListOptionsFunc
+	namespace        string
+}
+
+// NewTridentProvisionerInformer constructs a new informer for TridentProvisioner type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+// It returns a TridentProvisionerInformer.
+// Example:
+//     // obtain a shared informer for the deployment object
+//     deploymentInformer := NewTridentProvisionerInformer(client, namespace)
+//     // obtain a shared informer for the pod object
+//     podInformer := NewTridentProvisionerInformer(client, namespace)
+
 func (f *tridentProvisionerInformer) Informer() cache.SharedIndexInformer {
 	return f.factory.InformerFor(&netappv1.TridentProvisioner{}, f.defaultInformer)
 }
+
+// Lister implements the TridentProvisionerLister interface.
+type tridentProvisionerInformer struct {
+	factory          InternalInformerFactory
+	tweakListOptions internalinterfaces.TweakListOptionsFunc
+}
+
+// NewTridentProvisionerInformer constructs a new informer for TridentProvisioner type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+// It returns a TridentProvisionerInformer.
+// Example:
+//   lis, err := factory.NetAppV1().TridentProvisioners().Lister()
+//   ...
+//   lis.List(namespace).Items
 
 func (f *tridentProvisionerInformer) Lister() v1.TridentProvisionerLister {
 	return v1.NewTridentProvisionerLister(f.Informer().GetIndexer())

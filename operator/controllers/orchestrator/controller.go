@@ -107,6 +107,21 @@ type Controller struct {
 	workqueue workqueue.RateLimitingInterface
 }
 
+// NewController creates a new TridentOrchestrator controller
+// Parameters:
+//   clients - Trident clients
+//   stopChan - channel to signal controller shutdown
+//   workqueue - work queue for the controller
+// It returns a pointer to the controller
+// Example:
+//   c, err := NewController(clients, stopChan, workqueue)
+//   if err != nil {
+//       log.Fatal(err)
+//   }
+//   if err = c.Run(2, stopChan); err != nil {
+//       log.Fatal(err)
+//   }
+
 func NewController(clients *clients.Clients) (*Controller, error) {
 
 	log.WithField("Controller", ControllerName).Info("Initializing controller.")
@@ -215,6 +230,17 @@ func NewController(clients *clients.Clients) (*Controller, error) {
 	return c, nil
 }
 
+// Activate starts the controller
+// It returns an error if the controller is already active
+// Example:
+//   controller, err := NewController(client, kubeClient, "namespace", "trident", config)
+//   if err != nil {
+//     return err
+//   }
+//   if err := controller.Activate(); err != nil {
+//     return err
+//   }
+
 func (c *Controller) Activate() error {
 	log.WithField("Controller", ControllerName).Infof("Activating controller.")
 
@@ -236,6 +262,15 @@ func (c *Controller) Activate() error {
 	return nil
 }
 
+// Deactivate stops the controller
+// It returns an error if the controller could not be stopped
+// Example:
+//   c := NewController(...)
+//   err := c.Deactivate()
+//   if err != nil {
+//     return err
+//   }
+
 func (c *Controller) Deactivate() error {
 	log.WithField("Controller", ControllerName).Infof("Deactivating controller.")
 
@@ -246,9 +281,17 @@ func (c *Controller) Deactivate() error {
 	return nil
 }
 
+// GetName returns the name of the controller
+// Example:
+//    name := c.GetName()
+
 func (c *Controller) GetName() string {
 	return ControllerName
 }
+
+// Version returns the current version of the orchestrator
+// Example:
+//   v := Version()
 
 func (c *Controller) Version() string {
 	return ControllerVersion
@@ -923,6 +966,15 @@ func (c *Controller) reconcile(key KeyItem) error {
 	}
 }
 
+// reconcileTridentNotPresent reconciles the state when Trident is not present
+// in the cluster.
+// It returns an error if the reconciliation failed.
+// Example:
+//     err := c.reconcileTridentNotPresent()
+//     if err != nil {
+//         return err
+//     }
+
 func (c *Controller) reconcileTridentNotPresent() error {
 
 	log.Info("Reconciler found no operator-based Trident installation.")
@@ -1006,6 +1058,22 @@ func (c *Controller) reconcileTridentNotPresent() error {
 
 	return err
 }
+
+// reconcileTridentPresent reconciles the state of the operator when Trident is present
+// Parameters:
+//   key: KeyItem containing the namespace and name of the calling CR
+//   operatorCSIDeployments: List of all operator based Trident CSI deployments
+//   deploymentNamespace: Namespace where Trident is deployed
+//   isCSI: True if Trident is deployed as CSI, false if Trident is deployed as in-tree
+//   controllingCRBasedOnStatus: Controlling CR based on status field of the calling CR
+// Return:
+//   error: Any error encountered
+// It returns an error if it encounters an error condition.
+// Example:
+//   err := c.reconcileTridentPresent(key, operatorCSIDeployments, deploymentNamespace, isCSI, controllingCRBasedOnStatus)
+//   if err != nil {
+//       return err
+//   }
 
 func (c *Controller) reconcileTridentPresent(key KeyItem, operatorCSIDeployments []appsv1.Deployment,
 	deploymentNamespace string, isCSI bool,
@@ -1592,6 +1660,11 @@ func (c *Controller) updateOtherCRs(controllingCRName string) error {
 }
 
 // updateLogAndStatus updates the event logs and status of a TridentOrchestrator CR (if required)
+// updateTorcEventAndStatus updates the status of the TridentOrchestrator CR and logs an event
+// Example:
+//   torcCR, err := c.updateTorcEventAndStatus(tridentCR, debugMessage, message, status, version, namespace,
+//		corev1.EventTypeNormal, specValues)
+
 func (c *Controller) updateTorcEventAndStatus(
 	tridentCR *netappv1.TridentOrchestrator, debugMessage, message, status, version, namespace, eventType string,
 	specValues *netappv1.TridentOrchestratorSpecValues) (torcCR *netappv1.TridentOrchestrator, err error) {
@@ -1773,6 +1846,14 @@ func (c *Controller) deleteTridentTprovCRAll() error {
 	log.Info("TridentProvisioner CRs deleted.")
 	return nil
 }
+
+// cleanupTridentProvisioner cleans up the Trident provisioner resources.
+// It returns an error if any of the operations fail.
+// Example:
+//   err := cleanupTridentProvisioner()
+//   if err != nil {
+//       return err
+//   }
 
 func (c *Controller) cleanupTridentProvisioner() error {
 	if err := c.deleteTridentTprovCRAll(); err != nil {
@@ -2064,6 +2145,11 @@ func (c *Controller) doesCRDExist(crdName string) (bool, error) {
 
 	return crdExist, returnError
 }
+
+// isNotFoundError returns true if the error is an API not found error.
+// Example:
+//   err := errors.NewNotFound(schema.GroupResource{Resource: "pods"}, "123")
+//   isNotFoundError(err) // true
 
 func isNotFoundError(err error) bool {
 	if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {

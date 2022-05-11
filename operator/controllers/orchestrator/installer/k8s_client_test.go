@@ -29,6 +29,14 @@ import (
 	"github.com/netapp/trident/utils"
 )
 
+// TestMain is the entry point for all tests.
+// It checks for the presence of the KUBECONFIG environment variable.
+// If it is not set, the tests are skipped.
+// Parameters:
+//     m: the test suite
+// Example:
+//     $ KUBECONFIG=<path_to_kubeconfig> go test ./...
+
 func TestMain(m *testing.M) {
 	// Disable any standard log output
 	log.SetOutput(ioutil.Discard)
@@ -60,9 +68,23 @@ func (m *JSONMatcher) Matches(x interface{}) bool {
 	return reflect.DeepEqual(actual, expected)
 }
 
+// String returns a string representation of the matcher.
+// Example:
+//     json.String()
+
 func (m *JSONMatcher) String() string {
 	return ""
 }
+
+// TestCreateCustomResourceDefinition tests the CreateCustomResourceDefinition function
+// It checks that the function returns the expected error
+// Parameters:
+//   crdName: the name of the CRD to create
+//   crdYAML: the YAML of the CRD to create
+// Example:
+//   TestCreateCustomResourceDefinition("crd-name", "crd-yaml")
+// Expected Results:
+//   The function should return an error if the K8s client returns an error
 
 func TestCreateCustomResourceDefinition(t *testing.T) {
 
@@ -123,6 +145,14 @@ func TestCreateCustomResourceDefinition(t *testing.T) {
 	}
 }
 
+// TestDeleteCustomResourceDefinition tests the DeleteCustomResourceDefinition function
+// It checks that the function returns the expected error
+// Parameters:
+//   crdName: the name of the CRD to delete
+//   crdYAML: the YAML of the CRD to delete
+// Example:
+//    TestDeleteCustomResourceDefinition("test-crd", "test-crd-yaml")
+
 func TestDeleteCustomResourceDefinition(t *testing.T) {
 
 	crdName := "crd-name"
@@ -181,6 +211,20 @@ func TestDeleteCustomResourceDefinition(t *testing.T) {
 		)
 	}
 }
+
+// TestWaitForCRDEstablished tests the WaitForCRDEstablished function
+// It checks for the following conditions:
+// - CRD is not found
+// - CRD is found but not in the expected state
+// - CRD is found and in the expected state
+// Parameters:
+//   - crdName: the name of the CRD to wait for
+//   - timeout: the time to wait for the CRD to be established
+// Returns:
+//   - error: nil if the CRD is found and in the expected state, otherwise an error
+// It returns an error if the CRD is not found or is not in the expected state
+// Example:
+//   err := WaitForCRDEstablished("trident-crd", 5 * time.Second)
 
 func TestWaitForCRDEstablished(t *testing.T) {
 
@@ -282,6 +326,19 @@ func TestWaitForCRDEstablished(t *testing.T) {
 		)
 	}
 }
+
+// TestDeleteTransientVersionPod tests the DeleteTransientVersionPod function
+// It checks for the following cases:
+// 1. k8s client error during GetPodsByLabel
+// 2. no k8s client error and no transient pods found
+// 3. no k8s client error and transient pods found but not removed
+// 4. no k8s client error and transient pods found and removed
+// Parameters:
+//     t *testing.T : go testing framework
+// Example:
+//     TestDeleteTransientVersionPod(t)
+// Output:
+//     asserts that the expected output is equal to the actual output
 
 func TestDeleteTransientVersionPod(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
@@ -391,6 +448,16 @@ func TestDeleteTransientVersionPod(t *testing.T) {
 		)
 	}
 }
+
+// TestGetBetaCSIDriverInformation tests the GetBetaCSIDriverInformation function
+// It checks the following cases:
+// - k8s error
+// - no beta CSI driver found and no k8s error
+// - valid current beta CSI driver found and no k8s error
+// Parameters:
+//   - t: test object
+// Example:
+//   - installer.TestGetBetaCSIDriverInformation(t)
 
 func TestGetBetaCSIDriverInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
@@ -527,6 +594,17 @@ func TestGetBetaCSIDriverInformation(t *testing.T) {
 		)
 	}
 }
+
+// TestPutBetaCSIDriver tests the PutBetaCSIDriver function
+// It checks that the function returns the correct error
+// It also checks that the function calls the correct k8s client functions
+// Parameters:
+//    currentBetaCSIDriver: the current beta CSI driver
+//    createBetaCSIDriver: whether or not to create the beta CSI driver
+//    newBetaCSIDriverYAML: the YAML for the new beta CSI driver
+//    appLabel: the app label to use for the beta CSI driver
+// Example:
+//    TestPutBetaCSIDriver(&storagev1beta1.CSIDriver{}, false, "", "")
 
 func TestPutBetaCSIDriver(t *testing.T) {
 
@@ -672,6 +750,18 @@ func TestPutBetaCSIDriver(t *testing.T) {
 	}
 }
 
+// TestDeleteTridentBetaCSIDriverCR tests the DeleteTridentBetaCSIDriverCR method
+// It checks that the correct error is returned when the method fails
+// Parameters:
+//   secretName: the name of the secret to delete
+//   appLabel: the label to use to find the secret
+// It returns the error returned by the method
+// Example:
+//   err := TestDeleteTridentBetaCSIDriverCR(secretName, appLabel)
+//   if err != nil {
+//       // handle error
+//   }
+
 func TestDeleteTridentBetaCSIDriverCR(t *testing.T) {
 	// arrange variables for the tests
 	var emptyBetaCSIDriverList, unwantedBetaCSIDrivers []storagev1beta1.CSIDriver
@@ -770,6 +860,16 @@ func TestDeleteTridentBetaCSIDriverCR(t *testing.T) {
 	}
 }
 
+// TestRemoveMultipleBetaCSIDriverCRs tests the RemoveMultipleBetaCSIDriverCRs function
+// It checks the following cases:
+// 1. No beta csi driver crs
+// 2. K8s call error
+// 3. Valid beta csi driver crs
+// Parameters:
+//    t *testing.T - go test handler
+// Example:
+//    TestRemoveMultipleBetaCSIDriverCRs(t)
+
 func TestRemoveMultipleBetaCSIDriverCRs(t *testing.T) {
 	// arrange variables for the tests
 	var emptyCSIDriversCRs, undeletedCSIDriverCRs, unwantedCSIDriverCRs []storagev1beta1.CSIDriver
@@ -849,6 +949,16 @@ func TestRemoveMultipleBetaCSIDriverCRs(t *testing.T) {
 		)
 	}
 }
+
+// TestGetCSIDriverInformation tests the GetCSIDriverInformation function
+// It checks for the following conditions:
+// 1. If the function returns an error when it is unable to get a list of CSI driver custom resources by label
+// 2. If the function returns no error when there are no CSI driver custom resources found by label
+// 3. If the function returns no error when there are valid CSI driver custom resources found by label
+// Parameters:
+//     t *testing.T - go testing object
+// Example:
+//     TestGetCSIDriverInformation(t)
 
 func TestGetCSIDriverInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
@@ -985,6 +1095,28 @@ func TestGetCSIDriverInformation(t *testing.T) {
 		)
 	}
 }
+
+// TestPutCSIDriver tests the PutCSIDriver method
+// It checks to make sure the correct k8s client calls are made
+// It also checks to make sure the correct errors are returned
+// Parameters:
+//     currentCSIDriver: the current CSI driver
+//     createCSIDriver: whether or not to create the CSI driver
+//     newCSIDriverYAML: the new CSI driver YAML
+//     appLabel: the app label
+// Returns:
+//     error: the error returned by PutCSIDriver
+// Example:
+//     TestPutCSIDriver(t,
+//         &storagev1.CSIDriver{
+//             ObjectMeta: metav1.ObjectMeta{
+//                 Name: driverName,
+//             },
+//         },
+//         false,
+//         newCSIDriverYAML,
+//         appLabel,
+//     )
 
 func TestPutCSIDriver(t *testing.T) {
 
@@ -1131,6 +1263,19 @@ func TestPutCSIDriver(t *testing.T) {
 	}
 }
 
+// TestDeleteTridentCSIDriverCR tests the DeleteTridentCSIDriverCR function
+// It checks the following cases:
+// - GetCSIDriversByLabel fails
+// - GetCSIDriversByLabel returns no services
+// - GetCSIDriversByLabel succeeds but RemoveMultipleCSIDriverCRs fails
+// - GetCSIDriversByLabel succeeds and RemoveMultipleCSIDriverCRs succeeds
+// Parameters:
+//   csiDriverName - the name of the CSI driver to delete
+//   appLabel - the label to use to find the CSI driver CRs to delete
+// It returns an error if any of the above cases fail
+// Example:
+//   err := DeleteTridentCSIDriverCR("trident-csi-driver", "app=trident")
+
 func TestDeleteTridentCSIDriverCR(t *testing.T) {
 	// arrange variables for the tests
 	var emptyCSIDriverList, unwantedCSIDrivers []storagev1.CSIDriver
@@ -1229,6 +1374,16 @@ func TestDeleteTridentCSIDriverCR(t *testing.T) {
 	}
 }
 
+// TestRemoveMultipleCSIDriverCRs tests the RemoveMultipleCSIDriverCRs function
+// It checks the following cases:
+// - no CSI driver CRs
+// - k8s call error
+// - valid CSI driver CRs
+// Parameters:
+//     t *testing.T - go test helper
+// Example:
+//     TestRemoveMultipleCSIDriverCRs(t)
+
 func TestRemoveMultipleCSIDriverCRs(t *testing.T) {
 	// arrange variables for the tests
 	var emptyCSIDriversCRs, undeletedCSIDriverCRs, unwantedCSIDriverCRs []storagev1.CSIDriver
@@ -1308,6 +1463,14 @@ func TestRemoveMultipleCSIDriverCRs(t *testing.T) {
 		)
 	}
 }
+
+// TestGetClusterRoleInformation tests the GetClusterRoleInformation function
+// It checks that the function returns the correct currentClusterRole, unwantedClusterRoles,
+// createClusterRole, and error based on the input and mock k8s client
+// Parameters:
+//     t *testing.T: go testing framework object used to manage test flow
+// Example:
+//     TestGetClusterRoleInformation(t)
 
 func TestGetClusterRoleInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
@@ -1444,6 +1607,17 @@ func TestGetClusterRoleInformation(t *testing.T) {
 		)
 	}
 }
+
+// TestPutClusterRole tests the PutClusterRole function
+// It checks the following cases:
+// - creating a ClusterRole and no k8s error occurs
+// - creating a ClusterRole and a k8s error occurs
+// - updating a ClusterRole and no k8s error occurs
+// - updating a ClusterRole and a k8s error occurs
+// Parameters:
+//   t *testing.T
+// Example:
+//   TestPutClusterRole(t)
 
 func TestPutClusterRole(t *testing.T) {
 
@@ -1587,6 +1761,17 @@ func TestPutClusterRole(t *testing.T) {
 	}
 }
 
+// TestDeleteTridentClusterRole tests the DeleteTridentClusterRole function
+// It checks the following cases:
+// 1. GetClusterRolesByLabel fails
+// 2. GetClusterRolesByLabel returns no cluster roles
+// 3. GetClusterRolesByLabel succeeds but RemoveMultipleClusterRoles fails
+// 4. GetClusterRolesByLabel succeeds and RemoveMultipleClusterRoles succeeds
+// Parameters:
+//     t *testing.T - go test handler
+// Example:
+//     TestDeleteTridentClusterRole(t)
+
 func TestDeleteTridentClusterRole(t *testing.T) {
 	// arrange variables for the tests
 	var emptyClusterRoleList, unwantedClusterRoles []rbacv1.ClusterRole
@@ -1684,6 +1869,16 @@ func TestDeleteTridentClusterRole(t *testing.T) {
 	}
 }
 
+// TestRemoveMultipleClusterRoles tests the RemoveMultipleClusterRoles function
+// It checks to see if the correct error is returned when the k8s client returns an error
+// It also checks to see if the correct error is returned when the k8s client does not return an error
+// Parameters:
+//     t *testing.T : go test helper
+// Example:
+//     TestRemoveMultipleClusterRoles(t)
+// Returns:
+//     nothing
+
 func TestRemoveMultipleClusterRoles(t *testing.T) {
 	// arrange variables for the tests
 	var emptyClusterRoles, unwantedClusterRoles, undeletedClusterRoles []rbacv1.ClusterRole
@@ -1763,6 +1958,16 @@ func TestRemoveMultipleClusterRoles(t *testing.T) {
 		)
 	}
 }
+
+// TestGetClusterRoleBindingInformation tests the GetClusterRoleBindingInformation function
+// It checks for the following conditions:
+// 1. k8s error
+// 2. no cluster role binding found and no k8s error
+// 3. valid current cluster role binding found and no k8s error
+// Parameters:
+//    t *testing.T - go test handler
+// Example:
+//     TestGetClusterRoleBindingInformation(t)
 
 func TestGetClusterRoleBindingInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
@@ -1903,6 +2108,16 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 		)
 	}
 }
+
+// TestPutClusterRoleBinding tests the PutClusterRoleBinding function
+// It checks for error conditions and also for the correct patching of the ClusterRoleBinding
+// Parameters:
+//   currentClusterRoleBinding: the current ClusterRoleBinding
+//   createClusterRoleBinding: whether to create or update the ClusterRoleBinding
+//   newClusterRoleBindingYAML: the new ClusterRoleBinding YAML
+//   appLabel: the app label to use for patching
+// Example:
+//   TestPutClusterRoleBinding(t, nil, true, "", "trident")
 
 func TestPutClusterRoleBinding(t *testing.T) {
 
@@ -2048,6 +2263,14 @@ func TestPutClusterRoleBinding(t *testing.T) {
 	}
 }
 
+// TestDeleteTridentClusterRoleBinding tests the DeleteTridentClusterRoleBinding function
+// It checks that the function returns the expected error
+// Parameters:
+//   clusterRoleBindingName: the name of the cluster role binding to delete
+//   appLabel: the label of the cluster role bindings to delete
+// Example:
+//   TestDeleteTridentClusterRoleBinding("clusterRoleBindingName", "appLabel")
+
 func TestDeleteTridentClusterRoleBinding(t *testing.T) {
 	// arrange variables for the tests
 	var emptyClusterRoleBindingList, unwantedClusterRoleBindings []rbacv1.ClusterRoleBinding
@@ -2145,6 +2368,16 @@ func TestDeleteTridentClusterRoleBinding(t *testing.T) {
 	}
 }
 
+// TestRemoveMultipleClusterRoleBindings tests the RemoveMultipleClusterRoleBindings function
+// It checks the following cases:
+// - no cluster role bindings
+// - k8s call error
+// - valid cluster role bindings
+// Parameters:
+//     t *testing.T : go test helper
+// Example:
+//     TestRemoveMultipleClusterRoleBindings(t *testing.T)
+
 func TestRemoveMultipleClusterRoleBindings(t *testing.T) {
 	// arrange variables for the tests
 	var emptyClusterRoleBindings, unwantedClusterRoleBindings, undeletedClusterRoleBindings []rbacv1.ClusterRoleBinding
@@ -2226,6 +2459,16 @@ func TestRemoveMultipleClusterRoleBindings(t *testing.T) {
 		)
 	}
 }
+
+// TestGetDaemonSetInformation tests the GetDaemonSetInformation function
+// It checks the following cases:
+// 1. Expect to fail with k8s error
+// 2. Expect to pass with no daemonset found and no k8s error
+// 3. Expect to pass with current daemonset found and no k8s error
+// Parameters:
+//     t *testing.T : go test helper type
+// Example:
+//      TestGetDaemonSetInformation(t *testing.T)
 
 func TestGetDaemonSetInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
@@ -2358,6 +2601,18 @@ func TestGetDaemonSetInformation(t *testing.T) {
 		)
 	}
 }
+
+// TestPutDaemonSet tests the PutDaemonSet function
+// It checks that the correct k8s client calls are made and that the correct errors are returned
+// Parameters:
+//   currentDaemonSet: the current Trident DaemonSet
+//   createDaemonSet: whether or not to create a DaemonSet
+//   newDaemonSetYAML: the YAML for the new Trident DaemonSet
+//   nodeLabel: the label to use for the DaemonSet
+// Expected Results:
+//   The correct k8s client calls are made and the correct errors are returned
+// Example:
+//   TestPutDaemonSet(nil, true, "newDaemonSetYAML", "nodeLabel")
 
 func TestPutDaemonSet(t *testing.T) {
 
@@ -2506,6 +2761,14 @@ func TestPutDaemonSet(t *testing.T) {
 	}
 }
 
+// TestDeleteTridentDaemonSet tests the DeleteTridentDaemonSet function
+// It checks that the function returns the expected error when the k8s client returns an error
+// It also checks that the function returns nil when the k8s client returns no error
+// Parameters:
+//     t *testing.T: go test helper
+// Example:
+//     TestDeleteTridentDaemonSet(t)
+
 func TestDeleteTridentDaemonSet(t *testing.T) {
 	// arrange variables for the tests
 	var emptyDaemonSetList, unwantedDaemonSets []appsv1.DaemonSet
@@ -2588,6 +2851,14 @@ func TestDeleteTridentDaemonSet(t *testing.T) {
 	}
 }
 
+// TestRemoveMultipleDaemonSets tests the RemoveMultipleDaemonSets function
+// It checks that the correct error is returned when the k8s client returns an error
+// It also checks that the correct error is returned when the k8s client does not return an error
+// Parameters:
+//     t *testing.T : go test helper
+// Example:
+//     TestRemoveMultipleDaemonSets(t *testing.T)
+
 func TestRemoveMultipleDaemonSets(t *testing.T) {
 	// arrange variables for the tests
 	var emptyDaemonSets, unwantedDaemonSets []appsv1.DaemonSet
@@ -2665,6 +2936,16 @@ func TestRemoveMultipleDaemonSets(t *testing.T) {
 		)
 	}
 }
+
+// TestGetDeploymentInformation tests the GetDeploymentInformation function
+// It checks the following cases:
+//		- k8s error
+//		- no daemonset found
+//		- current daemonset found
+// Parameters:
+//      t *testing.T - go testing object
+// Example:
+//      TestGetDeploymentInformation(t)
 
 func TestGetDeploymentInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
@@ -2797,6 +3078,17 @@ func TestGetDeploymentInformation(t *testing.T) {
 		)
 	}
 }
+
+// TestPutDeployment tests the PutDeployment function
+// It checks for the following:
+// - creating a Deployment when one does not exist
+// - updating a Deployment when one does exist
+// - error handling
+// Parameters:
+//   t *testing.T
+// Example:
+//   t := &testing.T{}
+//   TestPutDeployment(t)
 
 func TestPutDeployment(t *testing.T) {
 
@@ -2947,6 +3239,13 @@ func TestPutDeployment(t *testing.T) {
 	}
 }
 
+// TestDeleteTridentDeployment tests the DeleteTridentDeployment function
+// It checks that the function returns the expected error codes
+// Parameters:
+//   t: the test object
+// Example:
+//   TestDeleteTridentDeployment(t)
+
 func TestDeleteTridentDeployment(t *testing.T) {
 	// arrange variables for the tests
 	var emptyDeploymentList, unwantedDeployments []appsv1.Deployment
@@ -3029,6 +3328,16 @@ func TestDeleteTridentDeployment(t *testing.T) {
 	}
 }
 
+// TestRemoveMultipleDeployments tests the RemoveMultipleDeployments function
+// It checks for the following cases:
+// 1. No deployments to remove
+// 2. Error from k8s client call
+// 3. Valid deployments to remove
+// Parameters:
+//    t *testing.T : go test handler
+// Example:
+//   TestRemoveMultipleDeployments(t *testing.T)
+
 func TestRemoveMultipleDeployments(t *testing.T) {
 	// arrange variables for the tests
 	var emptyDeploymentList, unwantedDeployments []appsv1.Deployment
@@ -3106,6 +3415,18 @@ func TestRemoveMultipleDeployments(t *testing.T) {
 		)
 	}
 }
+
+// TestGetPodSecurityPolicyInformation tests the GetPodSecurityPolicyInformation function
+// It checks the following cases:
+// - k8s error
+// - no pod security policies found
+// - valid pod security policies found
+// Parameters:
+//   t *testing.T
+// Example:
+//   TestGetPodSecurityPolicyInformation(t)
+// Returns:
+//   nil
 
 func TestGetPodSecurityPolicyInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
@@ -3245,6 +3566,31 @@ func TestGetPodSecurityPolicyInformation(t *testing.T) {
 	}
 }
 
+// TestPutPodSecurityPolicy tests the PutPodSecurityPolicy function
+// It checks that the correct k8s client calls are made and that the correct error is returned
+// Parameters:
+//   currentPSP: the current PSP
+//   createPSP: whether to create a new PSP or update an existing one
+//   newPSPYAML: the YAML for the new PSP
+//   appLabel: the label to use for the PSP
+// Expected results:
+//   err: the expected error
+// Example:
+//   TestPutPodSecurityPolicy(
+//     &policyv1beta1.PodSecurityPolicy{
+//       ObjectMeta: metav1.ObjectMeta{
+//         Name: "trident",
+//       },
+//     },
+//     false,
+//     k8sclient.GetPrivilegedPodSecurityPolicyYAML(
+//       "trident",
+//       make(map[string]string),
+//       make(map[string]string),
+//     ),
+//     "trident",
+//   )
+
 func TestPutPodSecurityPolicy(t *testing.T) {
 
 	pspName := getPSPName()
@@ -3382,6 +3728,16 @@ func TestPutPodSecurityPolicy(t *testing.T) {
 	}
 }
 
+// TestDeleteTridentPodSecurityPolicy tests the DeleteTridentPodSecurityPolicy function
+// It checks that the function returns the expected error when the k8s client returns an error
+// It checks that the function returns nil when the k8s client returns no policies
+// It checks that the function returns the expected error when the k8s client returns policies but fails to delete them
+// It checks that the function returns nil when the k8s client returns policies and deletes them successfully
+// Parameters:
+//    t *testing.T - go test handler
+// Example:
+//     TestDeleteTridentPodSecurityPolicy(t)
+
 func TestDeleteTridentPodSecurityPolicy(t *testing.T) {
 	// arrange variables for the tests
 	var emptyPSPList, unwantedPSPs []policyv1beta1.PodSecurityPolicy
@@ -3479,6 +3835,14 @@ func TestDeleteTridentPodSecurityPolicy(t *testing.T) {
 	}
 }
 
+// TestRemoveMultiplePodSecurityPolicies tests the RemoveMultiplePodSecurityPolicies function
+// It checks that the function returns the expected error when given a list of pod security policies
+// It also checks that the function returns nil when given an empty list of pod security policies
+// Parameters:
+//     t *testing.T - go test handler
+// Example:
+//     TestRemoveMultiplePodSecurityPolicies(t)
+
 func TestRemoveMultiplePodSecurityPolicies(t *testing.T) {
 	// arrange variables for the tests
 	var emptyPodSecurityPolicyList, undeletedPodSecurityPolicies, unwantedPodSecurityPolicies []policyv1beta1.PodSecurityPolicy
@@ -3559,6 +3923,14 @@ func TestRemoveMultiplePodSecurityPolicies(t *testing.T) {
 		)
 	}
 }
+
+// TestGetSecretInformation tests the GetSecretInformation function
+// It checks to make sure that the function returns the correct values
+// for the current secret, unwanted secrets, create secret, and error
+// Parameters:
+//     t *testing.T: go testing object that manages the test lifecycle
+// Example:
+//     TestGetSecretInformation(t)
 
 func TestGetSecretInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
@@ -3703,6 +4075,18 @@ func TestGetSecretInformation(t *testing.T) {
 	}
 }
 
+// TestPutSecret tests the PutSecret method
+// It checks for the following conditions:
+// - createSecret is true and no k8s error occurs
+// - createSecret is false
+// - createSecret is true and a k8s error occurs
+// Parameters:
+//   createSecret: true if the Secret should be created, false if it should be updated
+//   newSecretYAML: the YAML for the Secret to be created or updated
+//   secretName: the name of the Secret to be created or updated
+// Example:
+//   TestPutSecret(true, secretYAML, "test-secret")
+
 func TestPutSecret(t *testing.T) {
 
 	secretName := getProtocolSecretName()
@@ -3796,6 +4180,16 @@ func TestPutSecret(t *testing.T) {
 		)
 	}
 }
+
+// TestDeleteTridentSecret tests the DeleteTridentSecret function
+// It checks that the function returns an error when the k8s client returns an error
+// It checks that the function returns nil when the k8s client returns no secrets
+// It checks that the function returns an error when the k8s client returns secrets but fails to delete them
+// It checks that the function returns nil when the k8s client returns secrets and deletes them successfully
+// Parameters:
+//     t *testing.T: go test helper
+// Example:
+//     TestDeleteTridentSecret(t)
 
 func TestDeleteTridentSecret(t *testing.T) {
 	// arrange variables for the tests
@@ -3903,6 +4297,14 @@ func TestDeleteTridentSecret(t *testing.T) {
 	}
 }
 
+// TestRemoveMultipleSecrets tests the RemoveMultipleSecrets function
+// It checks that the function returns the correct error when the k8s client returns an error
+// It also checks that the function returns nil when the k8s client does not return an error
+// Parameters:
+//     t *testing.T : go test helper
+// Example:
+//     TestRemoveMultipleSecrets(t)
+
 func TestRemoveMultipleSecrets(t *testing.T) {
 	// arrange variables for the tests
 	var emptySecretList, undeletedSecrets, unwantedSecrets []corev1.Secret
@@ -3989,6 +4391,17 @@ func TestRemoveMultipleSecrets(t *testing.T) {
 		)
 	}
 }
+
+// TestGetServiceInformation tests the GetServiceInformation function
+// It checks the following cases:
+// - k8s error
+// - no services found
+// - valid current services found
+// Parameters:
+//   - t: test object
+// Example:
+//   - t := new(testing.T)
+//   - TestGetServiceInformation(t)
 
 func TestGetServiceInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
@@ -4132,6 +4545,16 @@ func TestGetServiceInformation(t *testing.T) {
 	}
 }
 
+// TestPutService tests the PutService function
+// It checks that the correct k8s client calls are made and that the correct errors are returned
+// Parameters:
+//    currentService: the current service object
+//    createService: whether to create a new service or update an existing one
+//    newServiceYAML: the new service YAML
+//    appLabel: the app label
+// Example:
+//    TestPutService(t, service, true, newServiceYAML, TridentCSILabel)
+
 func TestPutService(t *testing.T) {
 
 	serviceName := getServiceName()
@@ -4271,6 +4694,15 @@ func TestPutService(t *testing.T) {
 	}
 }
 
+// TestDeleteTridentService tests the DeleteTridentService function
+// It checks that the function returns the correct error when the
+// k8s client returns an error, and that the function returns no error
+// when the k8s client returns no error
+// Parameters:
+//     t *testing.T : go test helper object
+// Example:
+//     TestDeleteTridentService(t *testing.T)
+
 func TestDeleteTridentService(t *testing.T) {
 	// arrange variables for the tests
 	var emptyServiceList, unwantedServices []corev1.Service
@@ -4378,6 +4810,15 @@ func TestDeleteTridentService(t *testing.T) {
 	}
 }
 
+// TestRemoveMultipleServices tests the RemoveMultipleServices function
+// It checks that the function returns the correct error when the k8s client
+// returns an error and that it returns nil when the k8s client does not return
+// an error
+// Parameters:
+//     t *testing.T : go test helper
+// Example:
+//     TestRemoveMultipleServices(t)
+
 func TestRemoveMultipleServices(t *testing.T) {
 	// arrange variables for the tests
 	var emptyServiceList, unwantedServices []corev1.Service
@@ -4455,6 +4896,16 @@ func TestRemoveMultipleServices(t *testing.T) {
 		)
 	}
 }
+
+// TestGetServiceAccountInformation tests the GetServiceAccountInformation function
+// It checks for the following:
+// 1. k8s error
+// 2. no service accounts found
+// 3. valid service accounts found
+// Parameters:
+//    t *testing.T - go test framework object used for running the test
+// Example:
+//    TestGetServiceAccountInformation(t *testing.T)
 
 func TestGetServiceAccountInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
@@ -4622,6 +5073,17 @@ func TestGetServiceAccountInformation(t *testing.T) {
 	}
 }
 
+// TestPutServiceAccount tests the PutServiceAccount function
+// It checks the following cases:
+// - when creating a service account, it should return a new service account and no error
+// - when creating a service account, it should return an error if a k8s error occurs
+// - when updating a service account, it should return no new service account and no error
+// - when updating a service account, it should return an error if a k8s error occurs
+// Parameters:
+//   t *testing.T
+// Example:
+//   TestPutServiceAccount(t)
+
 func TestPutServiceAccount(t *testing.T) {
 
 	serviceAccountName := getServiceAccountName(true)
@@ -4785,6 +5247,15 @@ func TestPutServiceAccount(t *testing.T) {
 	}
 }
 
+// TestDeleteTridentServiceAccount tests the DeleteTridentServiceAccount function
+// It checks that the function returns the expected error when the k8s client
+// returns an error and that it returns nil when the k8s client does not return
+// an error
+// Parameters:
+//     t *testing.T: go testing framework object used to control test flow
+// Example:
+//     TestDeleteTridentServiceAccount(t)
+
 func TestDeleteTridentServiceAccount(t *testing.T) {
 	// arrange variables for the tests
 	var emptyServiceAccountList, unwantedServiceAccounts []corev1.ServiceAccount
@@ -4892,6 +5363,14 @@ func TestDeleteTridentServiceAccount(t *testing.T) {
 	}
 }
 
+// TestRemoveMultipleServiceAccounts tests the RemoveMultipleServiceAccounts function
+// It checks that the function returns the correct error codes and that the correct
+// k8s calls are made
+// Parameters:
+//    t *testing.T : go test handler
+// Example:
+//    TestRemoveMultipleServiceAccounts(t *testing.T)
+
 func TestRemoveMultipleServiceAccounts(t *testing.T) {
 	// arrange variables for the tests
 	var emptyServiceAccountList, undeletedServiceAccounts, unwantedServiceAccounts []corev1.ServiceAccount
@@ -4978,6 +5457,17 @@ func TestRemoveMultipleServiceAccounts(t *testing.T) {
 		)
 	}
 }
+
+// TestGetTridentOpenShiftSCCInformation tests the GetTridentOpenShiftSCCInformation function
+// It checks the following cases:
+// - k8s error
+// - no openshift scc found, no k8s error, and an scc user does not exist
+// - no openshift scc found, no k8s error, and a it should update
+// - valid current services found and no k8s error
+// Parameters:
+//   t *testing.T: the test object
+// Example:
+//   TestGetTridentOpenShiftSCCInformation(t *testing.T)
 
 func TestGetTridentOpenShiftSCCInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
@@ -5124,6 +5614,16 @@ func TestGetTridentOpenShiftSCCInformation(t *testing.T) {
 	}
 }
 
+// TestExecPodForVersionInformation tests the ExecPodForVersionInformation function
+// It checks the following cases:
+// - no supplied cmd to exec
+// - k8s error when exec the supplied cmd
+// - no error when exec the supplied cmd
+// Parameters:
+//    t *testing.T - go test handler
+// Example:
+//     TestExecPodForVersionInformation(t *testing.T)
+
 func TestExecPodForVersionInformation(t *testing.T) {
 
 	podName := "trident-transient-pod"
@@ -5218,6 +5718,23 @@ func TestExecPodForVersionInformation(t *testing.T) {
 	}
 }
 
+// TestGetCSISnapshotterVersion tests the GetCSISnapshotterVersion function
+// It checks the following cases:
+// 1. When the deployment is empty, it should return the snapshot CRD version
+// 2. When the deployment has a snapshotter container with a version tag, it should return the snapshot CRD version
+// 3. When the deployment has a snapshotter container without a version tag, it should return an empty string
+// Parameters:
+//   deployment: The deployment to check
+// Returns:
+//   string: The snapshot CRD version
+// Example:
+//   snapshotCRDName := GetCSISnapshotterVersion(deployment)
+//   if snapshotCRDName == "" {
+//     fmt.Println("Snapshot CRD name is empty")
+//   } else {
+//     fmt.Println("Snapshot CRD name is: " + snapshotCRDName)
+//   }
+
 func TestGetCSISnapshotterVersion(t *testing.T) {
 
 	var emptyDeployment, validDeployment, invalidDeployment *appsv1.Deployment
@@ -5298,6 +5815,18 @@ func TestGetCSISnapshotterVersion(t *testing.T) {
 		)
 	}
 }
+
+// TestDeleteTridentStatefulSet tests the DeleteTridentStatefulSet function
+// It checks that the correct error is returned when the k8s client returns an error
+// It also checks that the correct error is returned when the k8s client returns no statefulsets
+// It also checks that the correct error is returned when the k8s client returns statefulsets but
+// the delete fails
+// It also checks that no error is returned when the k8s client returns statefulsets and
+// the delete succeeds
+// Parameters:
+//     t *testing.T
+// Example:
+//     TestDeleteTridentStatefulSet(t)
 
 func TestDeleteTridentStatefulSet(t *testing.T) {
 	// arrange variables for the tests
@@ -5380,6 +5909,37 @@ func TestDeleteTridentStatefulSet(t *testing.T) {
 		)
 	}
 }
+
+// TestPutOpenShiftSCC tests the PutOpenShiftSCC function
+// It checks the following cases:
+// - create OpenShift SCCs and no k8s error occurs when removing Trident users from OpenShiftSCC
+// - create OpenShift SCCs and a k8s error occurs when removing Trident users from OpenShiftSCC
+// - create OpenShift SCCs and no k8s error occurs
+// - create OpenShift SCCs and a k8s error occurs
+// - update OpenShift SCCs and no k8s error occurs
+// - update OpenShift SCCs and a k8s error occurs
+// Parameters:
+//   currentOpenShiftSCCJSON: the current OpenShift SCC in JSON format
+//   createOpenShiftSCC: whether to create or update the OpenShift SCC
+//   newOpenShiftSCCYAML: the new OpenShift SCC in YAML format
+// Example:
+//   currentOpenShiftSCCJSON, err := yaml.YAMLToJSON([]byte(k8sclient.GetOpenShiftSCCYAML(
+//		openShiftSCCUserName+"old",
+//		openShiftSCCName+"old",
+//		"trident",
+//		make(map[string]string),
+//		make(map[string]string)),
+//	))
+//   if err != nil {
+//	   t.Fatal("GetOpenShiftSCCYAML() returned invalid YAML")
+//   }
+//   newOpenShiftSCCYAML := k8sclient.GetOpenShiftSCCYAML(
+//	   openShiftSCCUserName,
+//	   openShiftSCCName,
+//	   "trident",
+//	   make(map[string]string),
+//	   make(map[string]string))
+//   err = extendedK8sClient.PutOpenShiftSCC(currentOpenShiftSCCJSON, createOpenShiftSCC, newOpenShiftSCCYAML)
 
 func TestPutOpenShiftSCC(t *testing.T) {
 	// arrange variables for the tests
@@ -5574,6 +6134,16 @@ func TestPutOpenShiftSCC(t *testing.T) {
 	}
 }
 
+// TestDeleteOpenShiftSCC tests the DeleteOpenShiftSCC function
+// It checks the following cases:
+// 1. GetOpenShiftSCCByName fails
+// 2. GetOpenShiftSCCByName succeeds but DeleteObjectByYAML fails
+// 3. GetOpenShiftSCCByName succeeds and RemoveTridentUserFromOpenShiftSCC is called
+// Parameters:
+//   t *testing.T - the test object
+// Example:
+//   TestDeleteOpenShiftSCC(t *testing.T)
+
 func TestDeleteOpenShiftSCC(t *testing.T) {
 	// arrange variables for the tests
 	openShiftSCCName := "trident"
@@ -5667,6 +6237,16 @@ func TestDeleteOpenShiftSCC(t *testing.T) {
 	}
 }
 
+// TestRemoveMultiplePods tests the RemoveMultiplePods function
+// It checks the following cases:
+// - no pods to delete
+// - k8s call error
+// - valid pods
+// Parameters:
+//     t *testing.T : go test framework object
+// Example:
+//     TestRemoveMultiplePods(t)
+
 func TestRemoveMultiplePods(t *testing.T) {
 	// arrange variables for the tests
 	var emptyPodList, undeletedPods, unwantedPods []corev1.Pod
@@ -5753,6 +6333,16 @@ func TestRemoveMultiplePods(t *testing.T) {
 		)
 	}
 }
+
+// TestRemoveMultipleStatefulSets tests the RemoveMultipleStatefulSets function
+// It checks the following cases:
+// 1. No stateful sets to remove
+// 2. Error from k8s call
+// 3. Successful removal of stateful sets
+// Parameters:
+//     t *testing.T : go test helper
+// Example:
+//     TestRemoveMultipleStatefulSets(t)
 
 func TestRemoveMultipleStatefulSets(t *testing.T) {
 	// arrange variables for the tests

@@ -20,6 +20,12 @@ type TridentV1Client struct {
 	restClient rest.Interface
 }
 
+// TridentOrchestrators returns a TridentOrchestratorInterface.
+// Example:
+//     myClient := v1.NewTridentV1Client(c)
+//     ctx := context.TODO()
+//     myClient.TridentOrchestrators().Version(ctx)
+
 func (c *TridentV1Client) TridentOrchestrators() TridentOrchestratorInterface {
 	return newTridentOrchestrators(c)
 }
@@ -51,6 +57,16 @@ func NewForConfigOrDie(c *rest.Config) *TridentV1Client {
 func New(c rest.Interface) *TridentV1Client {
 	return &TridentV1Client{c}
 }
+
+// setConfigDefaults sets the default values for the provided config.
+// Parameters:
+//     config - the config to set the default values for
+// Return:
+//     error - nil if successful, error if not
+// It returns an error if the config is nil.
+// Example:
+//     config := &rest.Config{}
+//     err := setConfigDefaults(config)
 
 func setConfigDefaults(config *rest.Config) error {
 	gv := v1.SchemeGroupVersion

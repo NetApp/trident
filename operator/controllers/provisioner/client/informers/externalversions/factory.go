@@ -130,6 +130,29 @@ func (f *sharedInformerFactory) WaitForCacheSync(stopCh <-chan struct{}) map[ref
 
 // InternalInformerFor returns the SharedIndexInformer for obj using an internal
 // client.
+// InformerFor is the same as InformerFor without the lock.
+// Parameters:
+//   obj - the object type to register the informer for
+//   newFunc - a function that returns a new informer for the given type
+//   resyncPeriod - resync period for the informer
+// It returns the registered SharedIndexInformer for the given type.
+// Example:
+//   lister := factory.InformerFor(&v1.Pod{}, func(client kubernetes.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+//     return cache.NewSharedIndexInformer(
+//       &cache.ListWatch{
+//         ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+//           return client.CoreV1().Pods(metav1.NamespaceAll).List(options)
+//         },
+//         WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+//           return client.CoreV1().Pods(metav1.NamespaceAll).Watch(options)
+//         },
+//       },
+//       &v1.Pod{},
+//       resyncPeriod,
+//       cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+//     )
+//   }, 0)
+
 func (f *sharedInformerFactory) InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer {
 	f.lock.Lock()
 	defer f.lock.Unlock()
@@ -160,6 +183,11 @@ type SharedInformerFactory interface {
 
 	Trident() netapp.Interface
 }
+
+// Trident returns a new Interface.
+// Example:
+//   f := externalversions.NewSharedInformerFactory(cSharedClient, resyncPeriod)
+//   i := f.Trident().V1alpha1().Tridents()
 
 func (f *sharedInformerFactory) Trident() netapp.Interface {
 	return netapp.New(f, f.namespace, f.tweakListOptions)

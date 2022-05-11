@@ -14,6 +14,11 @@ type FakeTridentV1 struct {
 	*testing.Fake
 }
 
+// TridentOrchestrators returns a TridentOrchestratorInterface.
+// Example:
+//   c := fake.NewSimpleClientset()
+//   c.TridentV1().TridentOrchestrators()
+
 func (c *FakeTridentV1) TridentOrchestrators() v1.TridentOrchestratorInterface {
 	return &FakeTridentOrchestrators{c}
 }

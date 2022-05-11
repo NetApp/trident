@@ -11,6 +11,14 @@ import (
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 )
 
+// UninstallTrident uninstalls Trident from the Kubernetes cluster.
+// It returns an error if the uninstallation fails.
+// Example:
+//     err := installer.UninstallTrident()
+//     if err != nil {
+//         log.Errorf("Could not uninstall Trident: %v", err)
+//     }
+
 func (i *Installer) UninstallTrident() error {
 
 	// 1. preview CSI Trident --> uninstall preview CSI Trident
@@ -107,6 +115,14 @@ func (i *Installer) UninstallTrident() error {
 	return nil
 }
 
+// UninstallCSIPreviewTrident uninstalls Trident CSI Preview
+// It returns an error if the uninstall fails.
+// Example:
+//     err := installer.UninstallCSIPreviewTrident()
+//     if err != nil {
+//         panic(err)
+//     }
+
 func (i *Installer) UninstallCSIPreviewTrident() error {
 	appLabel = TridentCSILabel
 	appLabelKey = TridentCSILabelKey
@@ -114,6 +130,11 @@ func (i *Installer) UninstallCSIPreviewTrident() error {
 
 	return i.client.DeleteTridentStatefulSet(appLabel)
 }
+
+// UninstallLegacyTrident uninstalls legacy Trident
+// It returns an error if the uninstall fails.
+// Example:
+//   err := installer.UninstallLegacyTrident()
 
 func (i *Installer) UninstallLegacyTrident() error {
 	appLabel = TridentLegacyLabel
@@ -158,6 +179,14 @@ func (i *Installer) removeRBACObjects(csi bool) error {
 
 	return nil
 }
+
+// ObliviateCRDs removes all Trident CRDs from the cluster.
+// It returns an error if the CRDs cannot be removed.
+// Example:
+//   err := installer.ObliviateCRDs()
+//   if err != nil {
+//       log.Fatalf("Could not remove Trident CRDs: %v", err)
+//   }
 
 func (i *Installer) ObliviateCRDs() error {
 	return cmd.ObliviateCRDs(i.client, i.tridentCRDClient, k8sTimeout)

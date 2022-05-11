@@ -30,6 +30,17 @@ var (
 )
 
 // Adds the list of known types to the given scheme.
+// addKnownTypes adds the set of types defined in this
+// Parameters:
+//   scheme - the scheme to add the types to
+//   version - the version of the API
+//   addTo - the map of group and version to add the types to
+// It returns the scheme with the types added.
+// Example:
+//   scheme := runtime.NewScheme()
+//   addKnownTypes(scheme)
+//   addToGroupVersion(scheme, SchemeGroupVersion)
+
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&TridentOrchestrator{},
