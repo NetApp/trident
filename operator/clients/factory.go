@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package clients
 
@@ -7,8 +7,6 @@ import (
 	"io/ioutil"
 	"time"
 
-	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	commonconfig "github.com/netapp/trident/config"
 	log "github.com/sirupsen/logrus"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
@@ -16,6 +14,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
+	k8sclient "github.com/netapp/trident/cli/k8s_client"
+	commonconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
 	versionedTprov "github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned"
 )

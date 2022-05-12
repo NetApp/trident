@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package main
 
@@ -13,13 +13,13 @@ import (
 	"syscall"
 	"time"
 
-	operatorclient "github.com/netapp/trident/operator/clients"
-	"github.com/netapp/trident/operator/controllers/orchestrator"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/logging"
+	operatorclient "github.com/netapp/trident/operator/clients"
 	"github.com/netapp/trident/operator/config"
 	"github.com/netapp/trident/operator/controllers"
+	"github.com/netapp/trident/operator/controllers/orchestrator"
 )
 
 var (

@@ -1,12 +1,15 @@
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package kubernetes
 
 import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	storageattribute "github.com/netapp/trident/storage_attribute"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	storageattribute "github.com/netapp/trident/storage_attribute"
 
 	"github.com/netapp/trident/frontend/csi"
 	mockcore "github.com/netapp/trident/mocks/mock_core"

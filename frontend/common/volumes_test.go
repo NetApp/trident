@@ -1,12 +1,13 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package common
 
 import (
 	"testing"
 
-	"github.com/netapp/trident/config"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/config"
 )
 
 func TestCombineAccessModes(t *testing.T) {

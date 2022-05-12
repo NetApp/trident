@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/netapp/trident/cli/api"
 	"github.com/spf13/cobra"
+
+	"github.com/netapp/trident/cli/api"
 )
 
 var allStorageClasses bool

@@ -9,8 +9,8 @@ linters:
   # https://golangci-lint.run/usage/linters/#enabled-by-default-linters
   enable:
     - gofumpt
-      # - goimports
-      # - lll
+    - goimports
+    # - lll
 
 issues:
   exclude-rules:

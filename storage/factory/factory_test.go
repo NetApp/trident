@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package factory
 
@@ -10,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/netapp/trident/storage"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
 )
 

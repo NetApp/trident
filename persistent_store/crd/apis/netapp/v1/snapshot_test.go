@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -8,9 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/netapp/trident/storage"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/netapp/trident/storage"
 )
 
 func TestNewSnapshot(t *testing.T) {
