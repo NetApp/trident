@@ -11,6 +11,7 @@
 - Fixed duplicate key declaration in Trident CRD. (Issue [#671](https://github.com/NetApp/trident/issues/671))
 - Fixed inaccurate CSI Snapshot logs. (Issue [#629](https://github.com/NetApp/trident/issues/629))
 - Fixed issue with unpublishing volumes on deleted nodes. (Issue [#691](https://github.com/NetApp/trident/issues/691))
+- Fixed Registry missing issue. (Issue [#702](https://github.com/NetApp/trident/issues/702))
 - Added handling of filesystem inconsistencies on block devices. (Issue [#656](https://github.com/NetApp/trident/issues/656))
 - Fixed issue pulling auto-support images when setting the `imageRegistry` flag during installation. (Issue [#715](https://github.com/NetApp/trident/issues/715))
 - Fixed issue where ANF driver failed to clone a volume with multiple export rules.

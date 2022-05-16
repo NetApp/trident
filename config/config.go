@@ -147,7 +147,7 @@ const (
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
 
-	DefaultAutosupportImage = "netapp/trident-autosupport:22.04"
+	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:22.04"
 )
 
 var (
@@ -173,7 +173,7 @@ var (
 	BuildTime = "unknown"
 
 	// BuildImage is the Trident image that was built
-	BuildImage = "netapp/trident:" + DefaultOrchestratorVersion + "-custom.0"
+	BuildImage = "docker.io/netapp/trident:" + DefaultOrchestratorVersion + "-custom.0"
 
 	OrchestratorVersion = utils.MustParseDate(version())
 

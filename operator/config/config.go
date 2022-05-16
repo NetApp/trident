@@ -40,7 +40,7 @@ var (
 	BuildTime = "unknown"
 
 	// BuildImage is the Trident Operator image that was built
-	BuildImage = "netapp/trident-operator:" + operatorVersion + "-custom.0"
+	BuildImage = "docker.io/netapp/trident-operator:" + operatorVersion + "-custom.0"
 
 	OperatorVersion = tridentutils.MustParseDate(Version())
 
