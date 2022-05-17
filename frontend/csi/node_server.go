@@ -336,16 +336,27 @@ func (p *Plugin) NodeExpandVolume(
 		}
 	}
 
+	err = p.nodeExpandVolume(ctx, publishInfo, requiredBytes, stagingTargetPath, volumeId)
+	if err != nil {
+		return nil, err
+	}
+	return &csi.NodeExpandVolumeResponse{}, nil
+}
+
+func (p *Plugin) nodeExpandVolume(
+	ctx context.Context, publishInfo *utils.VolumePublishInfo, requiredBytes int64, stagingTargetPath string,
+	volumeId string,
+) error {
 	protocol, err := p.getVolumeProtocolFromPublishInfo(publishInfo)
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, "unable to read protocol info from publish info; %s", err)
+		return status.Errorf(codes.FailedPrecondition, "unable to read protocol info from publish info; %s", err)
 	}
 
 	var fsType, mountOptions string
 
 	switch protocol {
 	case tridentconfig.File:
-		return nil, status.Error(codes.InvalidArgument, "NFS does not need to explicitly expand the filesystem")
+		return status.Error(codes.InvalidArgument, "NFS does not need to explicitly expand the filesystem")
 	case tridentconfig.Block:
 		if fsType, err = utils.VerifyFilesystemSupport(publishInfo.FilesystemType); err != nil {
 			break
@@ -359,13 +370,13 @@ func (p *Plugin) NodeExpandVolume(
 		err = nodePrepareBlockOnFileVolumeForExpansion(ctx, publishInfo, requiredBytes)
 		mountOptions = publishInfo.SubvolumeMountOptions
 	default:
-		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
+		return status.Error(codes.InvalidArgument, "unknown protocol")
 	}
 
 	if err != nil {
 		Logc(ctx).WithField("devicePath", publishInfo.DevicePath).WithError(err).Error(
 			"Unable to expand volume")
-		return nil, err
+		return err
 	}
 
 	// Expand filesystem
@@ -377,17 +388,16 @@ func (p *Plugin) NodeExpandVolume(
 				"device":         publishInfo.DevicePath,
 				"filesystemType": fsType,
 			}).WithError(err).Error("Unable to expand filesystem.")
-			return nil, status.Error(codes.Internal, err.Error())
+			return status.Error(codes.Internal, err.Error())
 		}
 		Logc(ctx).WithFields(log.Fields{
 			"filesystemSize": filesystemSize,
 			"requiredBytes":  requiredBytes,
-			"limitBytes":     limitBytes,
 		}).Debug("Filesystem size after expand.")
 	}
 
 	Logc(ctx).WithField("volumeId", volumeId).Info("Filesystem expansion completed.")
-	return &csi.NodeExpandVolumeResponse{}, nil
+	return nil
 }
 
 // nodePrepareISCSIVolumeForExpansion readies volume expansion for Block (i.e. iSCSI) volumes
@@ -1207,12 +1217,25 @@ func (p *Plugin) nodeStageNFSBlockVolume(ctx context.Context, req *csi.NodeStage
 	//       in case location of the NFS mountpoint changes in the future.
 	publishInfo.NFSMountpoint = path.Join(tridentDeviceInfoPath, publishInfo.NfsUniqueID, publishInfo.NfsPath)
 
+	loopFile := path.Join(publishInfo.NFSMountpoint, publishInfo.SubvolumeName)
 	loopDeviceName, stagingMountpoint, err := utils.AttachBlockOnFileVolume(ctx, stagingTargetPath, publishInfo)
 	if err != nil {
 		return nil, err
 	}
 	publishInfo.DevicePath = loopDeviceName
 	publishInfo.StagingMountpoint = stagingMountpoint
+
+	loopFileInfo, err := os.Stat(loopFile)
+	if err != nil {
+		Logc(ctx).WithField("loopFile", loopFile).WithError(err).Error("Failed to get loop file size")
+		return nil, fmt.Errorf("failed to get loop file size: %s, %s", loopFile, err.Error())
+	}
+
+	loopFileSize := loopFileInfo.Size()
+	err = p.nodeExpandVolume(ctx, publishInfo, loopFileSize, stagingTargetPath, volumeId)
+	if err != nil {
+		return nil, err
+	}
 
 	// Save the device info to the staging path for use in the publish & unstage calls
 	if err := p.writeStagedDeviceInfo(ctx, stagingTargetPath, publishInfo, volumeId); err != nil {
