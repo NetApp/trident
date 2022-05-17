@@ -124,6 +124,17 @@ func (c *TridentCrdController) updateMirrorRelationship(old, new interface{}) {
 			}
 		}
 
+		// Ensure replicationPolicy and replicationSchedule (if already set) are not being changed
+		// Ignore changes if relationship is going to promoted (or deleted)
+		newRelationship, conditionCopy, err := c.validateTMRUpdate(ctx, oldRelationship, newRelationship)
+		if err != nil {
+			_, err = c.updateTMRStatus(ctx, newRelationship, conditionCopy)
+			if err != nil {
+				Logx(ctx).WithFields(logFields).WithError(err).Error("Unable to update TMR status.")
+			}
+			return
+		}
+
 		if oldRelationship == nil {
 			needsUpdate = true
 		} else if !newRelationship.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -576,10 +587,12 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			remoteVolumeHandle != "" &&
 			currentMirrorState != netappv1.MirrorStateEstablished {
 			Logc(ctx).WithFields(logFields).Debugf("Attempting to establish mirror")
+
+			// Pass in the replicationPolicy and replicationSchedule to establish mirror
 			// Initialize snapmirror relationship
 			err = c.orchestrator.EstablishMirror(
 				ctx, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
-			)
+				relationship.Spec.ReplicationPolicy, relationship.Spec.ReplicationSchedule)
 			if err != nil && !api.IsNotReadyError(err) {
 				currentMirrorState = netappv1.MirrorStateFailed
 				statusCondition.Message = "Could not establish mirror"
@@ -596,6 +609,15 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 				currentMirrorState, _ = c.getCurrentMirrorState(
 					ctx, desiredMirrorState, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
 				)
+
+				// Get the replication policy and schedule
+				policy, schedule, err := c.orchestrator.GetReplicationDetails(ctx, existingVolume.BackendUUID,
+					localVolumeHandle, remoteVolumeHandle)
+				if err != nil {
+					Logc(ctx).Debugf("Error getting replication details: %v", err)
+				}
+				statusCondition.ReplicationPolicy = policy
+				statusCondition.ReplicationSchedule = schedule
 			}
 		} else if desiredMirrorState == netappv1.MirrorStateReestablished &&
 			remoteVolumeHandle != "" &&
@@ -604,7 +626,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			// Resync snapmirror relationship
 			err = c.orchestrator.ReestablishMirror(
 				ctx, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
-			)
+				relationship.Spec.ReplicationPolicy, relationship.Spec.ReplicationSchedule)
 			if err != nil {
 				currentMirrorState = netappv1.MirrorStateFailed
 				statusCondition.Message = "Could not reestablish mirror"
@@ -617,6 +639,12 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 				currentMirrorState, _ = c.getCurrentMirrorState(
 					ctx, desiredMirrorState, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
 				)
+
+				// Get the replication policy and schedule
+				policy, schedule, _ := c.orchestrator.GetReplicationDetails(ctx, existingVolume.BackendUUID,
+					localVolumeHandle, remoteVolumeHandle)
+				statusCondition.ReplicationPolicy = policy
+				statusCondition.ReplicationSchedule = schedule
 			}
 		} else if desiredMirrorState == netappv1.MirrorStatePromoted &&
 			currentMirrorState != netappv1.MirrorStatePromoted {
@@ -658,4 +686,68 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 
 	return updateTMRConditionLocalFields(
 		statusCondition, localVolumeHandle, localPVCName, volumeMapping.RemoteVolumeHandle)
+}
+
+// validateTMRUpdate checks to see if there are changes in the replication policy or schedule and will return if the
+// TMR should be updated
+func (c *TridentCrdController) validateTMRUpdate(
+	ctx context.Context, oldRelationship,
+	newRelationship *netappv1.TridentMirrorRelationship,
+) (*netappv1.TridentMirrorRelationship, *netappv1.TridentMirrorRelationshipCondition, error) {
+	logFields := log.Fields{}
+	logFields = log.Fields{"TridentMirrorRelationship": newRelationship.Name}
+
+	// Ignore changes if relationship is going to promoted (or deleted)
+	if oldRelationship != nil && len(newRelationship.Status.Conditions) > 0 && newRelationship.Spec.
+		MirrorState != netappv1.MirrorStatePromoted {
+		oldReplicationPolicyStatus := newRelationship.Status.Conditions[0].ReplicationPolicy
+		oldReplicationPolicySpec := oldRelationship.Spec.ReplicationPolicy
+		newReplicationPolicySpec := newRelationship.Spec.ReplicationPolicy
+
+		// Ensure replicationPolicy (if already set) is not being changed
+		if oldReplicationPolicyStatus != "" {
+			// Old replication policy in status must be equal to new policy to allow change
+			// And old replication policy in spec must be equal to the new policy in spec to allow change
+			if oldReplicationPolicyStatus != newReplicationPolicySpec &&
+				newReplicationPolicySpec != oldReplicationPolicySpec {
+				Logx(ctx).WithFields(logFields).WithFields(log.Fields{
+					"oldReplicationPolicySpec":   oldReplicationPolicySpec,
+					"newReplicationPolicySpec":   newReplicationPolicySpec,
+					"oldReplicationPolicyStatus": oldReplicationPolicyStatus,
+				}).Error("replication policy cannot be changed, must delete TMR to change policy.")
+				conditionCopy := newRelationship.Status.Conditions[0].DeepCopy()
+				conditionCopy.MirrorState = netappv1.MirrorStateFailed
+				conditionCopy.Message = fmt.Sprintf("replication policy may not be changed from %v",
+					oldReplicationPolicyStatus)
+
+				return newRelationship, conditionCopy, fmt.Errorf(
+					"replication policy cannot be changed, must delete TMR to change policy.")
+			}
+		}
+
+		// Ensure replicationSchedule (if already set) is not being changed
+		oldReplicationScheduleStatus := newRelationship.Status.Conditions[0].ReplicationSchedule
+		oldReplicationScheduleSpec := oldRelationship.Spec.ReplicationSchedule
+		newReplicationScheduleSpec := newRelationship.Spec.ReplicationSchedule
+		if oldReplicationScheduleStatus != "" {
+			// Old replication schedule in status must be equal to new schedule to allow change
+			// And old replication schedule in spec must be equal to the new schedule in spec to allow change
+			if oldReplicationScheduleStatus != newReplicationScheduleSpec &&
+				newReplicationScheduleSpec != oldReplicationScheduleSpec {
+				Logx(ctx).WithFields(logFields).WithFields(log.Fields{
+					"oldReplicationScheduleSpec":   oldReplicationScheduleSpec,
+					"newReplicationScheduleSpec":   newReplicationScheduleSpec,
+					"oldReplicationScheduleStatus": oldReplicationScheduleStatus,
+				}).Error("replication schedule cannot be changed, must delete TMR to change schedule.")
+				conditionCopy := newRelationship.Status.Conditions[0].DeepCopy()
+				conditionCopy.MirrorState = netappv1.MirrorStateFailed
+				conditionCopy.Message = fmt.Sprintf("replication schedule may not be changed from %v",
+					oldReplicationScheduleStatus)
+
+				return newRelationship, conditionCopy, fmt.Errorf(
+					"replication schedule cannot be changed, must delete TMR to change schedule.")
+			}
+		}
+	}
+	return newRelationship, nil, nil
 }

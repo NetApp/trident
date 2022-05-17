@@ -1277,16 +1277,74 @@ func (d SANStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorag
 
 // EstablishMirror will create a new snapmirror relationship between a RW and a DP volume that have not previously
 // had a relationship
-func (d *SANStorageDriver) EstablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error {
-	return establishMirror(ctx, localVolumeHandle, remoteVolumeHandle, d.GetConfig().ReplicationPolicy,
-		d.GetConfig().ReplicationSchedule, d.API)
+func (d *SANStorageDriver) EstablishMirror(
+	ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+) error {
+	// If replication policy in TMR is empty use the backend policy
+	if replicationPolicy == "" {
+		replicationPolicy = d.GetConfig().ReplicationPolicy
+	}
+
+	// Validate replication policy, if it is invalid, use the backend policy
+	isAsync, err := validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
+	if err != nil {
+		Logc(ctx).Debugf("replication policy given in TMR %s is invalid, using policy %s from backend",
+			replicationPolicy, d.GetConfig().ReplicationPolicy)
+		replicationPolicy = d.GetConfig().ReplicationPolicy
+	}
+
+	// If replication policy is async type, validate the replication schedule from TMR or use backend schedule
+	if isAsync {
+		if replicationSchedule != "" {
+			if err := validateReplicationSchedule(ctx, replicationSchedule, d.API); err != nil {
+				Logc(ctx).Debugf("replication schedule given in TMR %s is invalid, using schedule %s from backend",
+					replicationSchedule, d.GetConfig().ReplicationSchedule)
+				replicationSchedule = d.GetConfig().ReplicationSchedule
+			}
+		} else {
+			replicationSchedule = d.GetConfig().ReplicationSchedule
+		}
+	} else {
+		replicationSchedule = ""
+	}
+
+	return establishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
 }
 
 // ReestablishMirror will attempt to resync a snapmirror relationship,
 // if and only if the relationship existed previously
-func (d *SANStorageDriver) ReestablishMirror(ctx context.Context, localVolumeHandle, remoteVolumeHandle string) error {
-	return reestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, d.GetConfig().ReplicationPolicy,
-		d.GetConfig().ReplicationSchedule, d.API)
+func (d *SANStorageDriver) ReestablishMirror(
+	ctx context.Context, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+) error {
+	// If replication policy in TMR is empty use the backend policy
+	if replicationPolicy == "" {
+		replicationPolicy = d.GetConfig().ReplicationPolicy
+	}
+
+	// Validate replication policy, if it is invalid, use the backend policy
+	isAsync, err := validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
+	if err != nil {
+		Logc(ctx).Debugf("replication policy given in TMR %s is invalid, using policy %s from backend",
+			replicationPolicy, d.GetConfig().ReplicationPolicy)
+		replicationPolicy = d.GetConfig().ReplicationPolicy
+	}
+
+	// If replication policy is async type, validate the replication schedule from TMR or use backend schedule
+	if isAsync {
+		if replicationSchedule != "" {
+			if err := validateReplicationSchedule(ctx, replicationSchedule, d.API); err != nil {
+				Logc(ctx).Debugf("replication schedule given in TMR %s is invalid, using schedule %s from backend",
+					replicationSchedule, d.GetConfig().ReplicationSchedule)
+				replicationSchedule = d.GetConfig().ReplicationSchedule
+			}
+		} else {
+			replicationSchedule = d.GetConfig().ReplicationSchedule
+		}
+	} else {
+		replicationSchedule = ""
+	}
+
+	return reestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
 }
 
 // PromoteMirror will break the snapmirror and make the destination volume RW,
@@ -1308,6 +1366,13 @@ func (d *SANStorageDriver) GetMirrorStatus(
 // ReleaseMirror will release the snapmirror relationship data of the source volume
 func (d *SANStorageDriver) ReleaseMirror(ctx context.Context, localVolumeHandle string) error {
 	return releaseMirror(ctx, localVolumeHandle, d.API)
+}
+
+// GetReplicationDetails returns the replication policy and schedule of a snapmirror relationship
+func (d *SANStorageDriver) GetReplicationDetails(
+	ctx context.Context, localVolumeHandle, remoteVolumeHandle string,
+) (string, string, error) {
+	return getReplicationDetails(ctx, localVolumeHandle, remoteVolumeHandle, d.API)
 }
 
 func (d *SANStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*utils.IscsiChapInfo, error) {

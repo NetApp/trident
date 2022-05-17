@@ -117,9 +117,10 @@ type TridentMirrorRelationshipList struct {
 
 // TridentMirrorRelationshipSpec defines the desired state of TridentMirrorRelationship
 type TridentMirrorRelationshipSpec struct {
-	MirrorState           string                                    `json:"state"`
-	ReplicationPolicyName string                                    `json:"replicationPolicyName"`
-	VolumeMappings        []*TridentMirrorRelationshipVolumeMapping `json:"volumeMappings"`
+	MirrorState         string                                    `json:"state"`
+	ReplicationPolicy   string                                    `json:"replicationPolicy"`
+	ReplicationSchedule string                                    `json:"replicationSchedule"`
+	VolumeMappings      []*TridentMirrorRelationshipVolumeMapping `json:"volumeMappings"`
 }
 type TridentMirrorRelationshipVolumeMapping struct {
 	RemoteVolumeHandle     string `json:"remoteVolumeHandle"`
@@ -127,13 +128,15 @@ type TridentMirrorRelationshipVolumeMapping struct {
 	PromotedSnapshotHandle string `json:"promotedSnapshotHandle"`
 }
 type TridentMirrorRelationshipCondition struct {
-	MirrorState        string `json:"state"`
-	Message            string `json:"message"`
-	LastTransitionTime string `json:"lastTransitionTime"`
-	ObservedGeneration int    `json:"observedGeneration"`
-	LocalVolumeHandle  string `json:"localVolumeHandle"`
-	LocalPVCName       string `json:"localPVCName"`
-	RemoteVolumeHandle string `json:"remoteVolumeHandle"`
+	MirrorState         string `json:"state"`
+	Message             string `json:"message"`
+	LastTransitionTime  string `json:"lastTransitionTime"`
+	ObservedGeneration  int    `json:"observedGeneration"`
+	LocalVolumeHandle   string `json:"localVolumeHandle"`
+	LocalPVCName        string `json:"localPVCName"`
+	RemoteVolumeHandle  string `json:"remoteVolumeHandle"`
+	ReplicationPolicy   string `json:"replicationPolicy"`
+	ReplicationSchedule string `json:"replicationSchedule"`
 }
 
 // TridentMirrorRelationshipStatus defines the observed state of TridentMirrorRelationship

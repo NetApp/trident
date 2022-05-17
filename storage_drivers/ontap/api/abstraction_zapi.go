@@ -1928,6 +1928,14 @@ func (d OntapAPIZAPI) SnapmirrorGet(
 		}
 	}
 
+	if info.PolicyPtr != nil {
+		snapmirror.ReplicationPolicy = info.Policy()
+	}
+
+	if info.SchedulePtr != nil {
+		snapmirror.ReplicationSchedule = info.Schedule()
+	}
+
 	return snapmirror, nil
 }
 

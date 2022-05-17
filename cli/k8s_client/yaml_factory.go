@@ -1453,6 +1453,10 @@ spec:
                   - promoted
                   - established
                   - reestablished
+                replicationPolicy:
+                  type: string
+                replicationSchedule:
+                  type: string
                 volumeMappings:
                   items:
                     type: object
@@ -1491,6 +1495,10 @@ spec:
                       observedGeneration:
                         type: integer
                       state:
+                        type: string
+                      replicationPolicy:
+                        type: string
+                      replicationSchedule:
                         type: string
       subresources:
         status: {}

@@ -144,11 +144,13 @@ func (s SnapmirrorStatus) IsBreaking() bool {
 }
 
 type Snapmirror struct {
-	State              SnapmirrorState
-	RelationshipStatus SnapmirrorStatus
-	LastTransferType   string
-	IsHealthy          bool
-	UnhealthyReason    string
+	State               SnapmirrorState
+	RelationshipStatus  SnapmirrorStatus
+	LastTransferType    string
+	IsHealthy           bool
+	UnhealthyReason     string
+	ReplicationPolicy   string
+	ReplicationSchedule string
 }
 
 type SnapmirrorPolicyType string

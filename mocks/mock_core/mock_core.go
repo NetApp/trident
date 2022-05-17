@@ -339,17 +339,17 @@ func (mr *MockOrchestratorMockRecorder) DetachVolume(arg0, arg1, arg2 interface{
 }
 
 // EstablishMirror mocks base method.
-func (m *MockOrchestrator) EstablishMirror(arg0 context.Context, arg1, arg2, arg3 string) error {
+func (m *MockOrchestrator) EstablishMirror(arg0 context.Context, arg1, arg2, arg3, arg4, arg5 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EstablishMirror", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "EstablishMirror", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EstablishMirror indicates an expected call of EstablishMirror.
-func (mr *MockOrchestratorMockRecorder) EstablishMirror(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) EstablishMirror(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EstablishMirror", reflect.TypeOf((*MockOrchestrator)(nil).EstablishMirror), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EstablishMirror", reflect.TypeOf((*MockOrchestrator)(nil).EstablishMirror), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
 // GetBackend mocks base method.
@@ -455,6 +455,22 @@ func (m *MockOrchestrator) GetNode(arg0 context.Context, arg1 string) (*utils.No
 func (mr *MockOrchestratorMockRecorder) GetNode(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNode", reflect.TypeOf((*MockOrchestrator)(nil).GetNode), arg0, arg1)
+}
+
+// GetReplicationDetails mocks base method.
+func (m *MockOrchestrator) GetReplicationDetails(arg0 context.Context, arg1, arg2, arg3 string) (string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetReplicationDetails", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetReplicationDetails indicates an expected call of GetReplicationDetails.
+func (mr *MockOrchestratorMockRecorder) GetReplicationDetails(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReplicationDetails", reflect.TypeOf((*MockOrchestrator)(nil).GetReplicationDetails), arg0, arg1, arg2, arg3)
 }
 
 // GetSnapshot mocks base method.
@@ -844,17 +860,17 @@ func (mr *MockOrchestratorMockRecorder) ReadSnapshotsForVolume(arg0, arg1 interf
 }
 
 // ReestablishMirror mocks base method.
-func (m *MockOrchestrator) ReestablishMirror(arg0 context.Context, arg1, arg2, arg3 string) error {
+func (m *MockOrchestrator) ReestablishMirror(arg0 context.Context, arg1, arg2, arg3, arg4, arg5 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReestablishMirror", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "ReestablishMirror", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ReestablishMirror indicates an expected call of ReestablishMirror.
-func (mr *MockOrchestratorMockRecorder) ReestablishMirror(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) ReestablishMirror(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReestablishMirror", reflect.TypeOf((*MockOrchestrator)(nil).ReestablishMirror), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReestablishMirror", reflect.TypeOf((*MockOrchestrator)(nil).ReestablishMirror), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
 // ReleaseMirror mocks base method.

@@ -3,11 +3,13 @@
 package crd
 
 import (
+	"context"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	mockcore "github.com/netapp/trident/mocks/mock_core"
@@ -166,4 +168,79 @@ func TestUpdateTMRConditionLocalFields(t *testing.T) {
 		t.Fatalf("Actual does not equal expected, actual: %v, expected: %v",
 			newStatusCondition, expectedStatusCondition)
 	}
+}
+
+func TestValidateTMRUpdate_InvalidPolicyUpdate(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	testingCache := NewTestingCache()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	ctx := context.Background()
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	crdClient := GetTestCrdClientset()
+	snapClient := GetTestSnapshotClientset()
+	addCrdTestReactors(crdClient, testingCache)
+
+	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	conditions := &netappv1.TridentMirrorRelationshipCondition{}
+	oldRelationship := &netappv1.TridentMirrorRelationship{}
+	newRelationship := &netappv1.TridentMirrorRelationship{}
+	errMessage := "replication policy may not be changed"
+
+	oldRelationship.Spec.ReplicationPolicy = "Sync"
+
+	newRelationship.Spec.MirrorState = netappv1.MirrorStateEstablished
+	newRelationship.Spec.ReplicationPolicy = "MirrorAllSnapshots"
+
+	conditions.MirrorState = netappv1.MirrorStateEstablishing
+	conditions.ReplicationPolicy = "Sync"
+	newRelationship.Status.Conditions = append(newRelationship.Status.Conditions, conditions)
+	oldRelationship.Status.Conditions = append(oldRelationship.Status.Conditions, conditions)
+
+	_, conditionCopy, err := controller.validateTMRUpdate(ctx, oldRelationship, newRelationship)
+
+	assert.Error(t, err, "Should be invalid update error")
+	assert.Equal(t, netappv1.MirrorStateFailed, conditionCopy.MirrorState,
+		"Mirror state should be failed")
+	assert.Contains(t, conditionCopy.Message, errMessage, "Wrong error message")
+}
+
+func TestValidateTMRUpdate_InvalidScheduleUpdate(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	testingCache := NewTestingCache()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	ctx := context.Background()
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	crdClient := GetTestCrdClientset()
+	snapClient := GetTestSnapshotClientset()
+	addCrdTestReactors(crdClient, testingCache)
+
+	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	conditions := &netappv1.TridentMirrorRelationshipCondition{}
+	oldRelationship := &netappv1.TridentMirrorRelationship{}
+	newRelationship := &netappv1.TridentMirrorRelationship{}
+	errMessage := "replication schedule may not be changed"
+
+	oldRelationship.Spec.ReplicationPolicy = "MirrorAllSnapshots"
+	oldRelationship.Spec.ReplicationSchedule = "1min"
+
+	newRelationship.Spec.MirrorState = netappv1.MirrorStateReestablished
+	newRelationship.Spec.ReplicationPolicy = "MirrorAllSnapshots"
+	newRelationship.Spec.ReplicationSchedule = "2min"
+
+	conditions.MirrorState = netappv1.MirrorStateEstablishing
+	conditions.ReplicationPolicy = "MirrorAllSnapshots"
+	conditions.ReplicationSchedule = "1min"
+	newRelationship.Status.Conditions = append(newRelationship.Status.Conditions, conditions)
+	oldRelationship.Status.Conditions = append(oldRelationship.Status.Conditions, conditions)
+
+	_, conditionCopy, err := controller.validateTMRUpdate(ctx, oldRelationship, newRelationship)
+
+	assert.Error(t, err, "Should be invalid update error")
+	assert.Equal(t, netappv1.MirrorStateFailed, conditionCopy.MirrorState,
+		"Mirror state should be failed")
+	assert.Contains(t, conditionCopy.Message, errMessage, "Wrong error message")
 }

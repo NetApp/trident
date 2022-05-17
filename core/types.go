@@ -96,14 +96,23 @@ type Orchestrator interface {
 	GetVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
 	DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
 
-	EstablishMirror(ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string) error
-	ReestablishMirror(ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string) error
+	EstablishMirror(
+		ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+		replicationSchedule string,
+	) error
+	ReestablishMirror(
+		ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+		replicationSchedule string,
+	) error
 	PromoteMirror(
 		ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, snapshotHandle string,
 	) (bool, error)
 	GetMirrorStatus(ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string) (string, error)
 	CanBackendMirror(ctx context.Context, backendUUID string) (bool, error)
 	ReleaseMirror(ctx context.Context, backendUUID, localVolumeHandle string) error
+	GetReplicationDetails(
+		ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string,
+	) (string, string, error)
 
 	GetCHAP(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
 }

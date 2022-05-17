@@ -341,22 +341,24 @@ func checkSVMPeeredAbstraction(
 	return nil
 }
 
-func validateReplicationPolicyAbstraction(ctx context.Context, policyName string, d api.OntapAPI) error {
+// validateReplicationPolicyAbstraction checks that a given replication policy is valid and returns if the policy is
+// of async type
+func validateReplicationPolicyAbstraction(ctx context.Context, policyName string, d api.OntapAPI) (bool, error) {
 	if policyName == "" {
-		return nil
+		return false, nil
 	}
 
 	// Validate replication options
 	snapmirrorPolicy, err := d.SnapmirrorPolicyGet(ctx, policyName)
 	if err != nil {
-		return fmt.Errorf("error getting snapmirror policy: %v", err)
+		return false, fmt.Errorf("error getting snapmirror policy: %v", err)
 	}
 
 	if snapmirrorPolicy.Type.IsSnapmirrorPolicyTypeSync() {
 		// If the policy is synchronous we're fine
-		return nil
+		return false, nil
 	} else if !snapmirrorPolicy.Type.IsSnapmirrorPolicyTypeAsync() {
-		return fmt.Errorf("unsupported mirror policy type %v, must be %v or %v",
+		return false, fmt.Errorf("unsupported mirror policy type %v, must be %v or %v",
 			snapmirrorPolicy.Type, api.SnapmirrorPolicyTypeSync, api.SnapmirrorPolicyTypeAsync)
 	}
 
@@ -365,15 +367,15 @@ func validateReplicationPolicyAbstraction(ctx context.Context, policyName string
 	if snapmirrorPolicy.Type.IsSnapmirrorPolicyTypeAsync() {
 		for rule := range snapmirrorPolicy.Rules {
 			if rule == api.SnapmirrorPolicyRuleAll {
-				return nil
+				return true, nil
 			}
 		}
 
-		return fmt.Errorf("snapmirror policy %v is of type %v and is missing the %v rule",
+		return true, fmt.Errorf("snapmirror policy %v is of type %v and is missing the %v rule",
 			policyName, api.SnapmirrorPolicyTypeAsync, api.SnapmirrorPolicyRuleAll)
 
 	}
-	return nil
+	return false, nil
 }
 
 func validateReplicationSchedule(ctx context.Context, replicationSchedule string, d api.OntapAPI) error {
@@ -389,7 +391,7 @@ func validateReplicationSchedule(ctx context.Context, replicationSchedule string
 func validateReplicationConfig(
 	ctx context.Context, replicationPolicy, replicationSchedule string, d api.OntapAPI,
 ) error {
-	if err := validateReplicationPolicyAbstraction(ctx, replicationPolicy, d); err != nil {
+	if _, err := validateReplicationPolicyAbstraction(ctx, replicationPolicy, d); err != nil {
 		return fmt.Errorf("failed to validate replication policy: %v", replicationPolicy)
 	}
 
@@ -415,4 +417,35 @@ func releaseMirror(ctx context.Context, localVolumeHandle string, d api.OntapAPI
 		return err
 	}
 	return nil
+}
+
+// getReplicationDetails returns the replication policy and schedule of a snapmirror relationship
+func getReplicationDetails(
+	ctx context.Context, localVolumeHandle, remoteVolumeHandle string, d api.OntapAPI,
+) (string, string, error) {
+	// Empty remote means there is no mirror to check for
+	if remoteVolumeHandle == "" {
+		return "", "", nil
+	}
+
+	localSVMName, localFlexvolName, err := parseVolumeHandle(localVolumeHandle)
+	if err != nil {
+		return "", "", fmt.Errorf("could not parse localVolumeHandle '%v'; %v", localVolumeHandle, err)
+	}
+	remoteSVMName, remoteFlexvolName, err := parseVolumeHandle(remoteVolumeHandle)
+	if err != nil {
+		return "", "", fmt.Errorf("could not parse remoteVolumeHandle '%v'; %v", remoteVolumeHandle, err)
+	}
+
+	snapmirror, err := d.SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+	if err != nil {
+		if !api.IsNotFoundError(err) {
+			return "", "", err
+		} else {
+			Logc(ctx).WithError(err).Error("Error on snapmirror get")
+			return "", "", err
+		}
+	}
+
+	return snapmirror.ReplicationPolicy, snapmirror.ReplicationSchedule, nil
 }

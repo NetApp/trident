@@ -4516,7 +4516,8 @@ func (o *TridentOrchestrator) isCRDContext(ctx context.Context) bool {
 
 // EstablishMirror creates a net-new replication mirror relationship between 2 volumes on a backend
 func (o *TridentOrchestrator) EstablishMirror(
-	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string,
+	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+	replicationSchedule string,
 ) (err error) {
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -4534,12 +4535,14 @@ func (o *TridentOrchestrator) EstablishMirror(
 	if !ok {
 		return fmt.Errorf("backend does not support mirroring")
 	}
-	return mirrorBackend.EstablishMirror(ctx, localVolumeHandle, remoteVolumeHandle)
+	return mirrorBackend.EstablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+		replicationSchedule)
 }
 
 // ReestablishMirror recreates a previously existing replication mirror relationship between 2 volumes on a backend
 func (o *TridentOrchestrator) ReestablishMirror(
-	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string,
+	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+	replicationSchedule string,
 ) (err error) {
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -4557,7 +4560,8 @@ func (o *TridentOrchestrator) ReestablishMirror(
 	if !ok {
 		return fmt.Errorf("backend does not support mirroring")
 	}
-	return mirrorBackend.ReestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle)
+	return mirrorBackend.ReestablishMirror(ctx, localVolumeHandle, remoteVolumeHandle, replicationPolicy,
+		replicationSchedule)
 }
 
 // PromoteMirror makes the local volume the primary
@@ -4643,6 +4647,29 @@ func (o *TridentOrchestrator) ReleaseMirror(
 		return fmt.Errorf("backend does not support mirroring")
 	}
 	return mirrorBackend.ReleaseMirror(ctx, localVolumeHandle)
+}
+
+// GetReplicationDetails returns the current replication policy and schedule of a relationship
+func (o *TridentOrchestrator) GetReplicationDetails(
+	ctx context.Context, backendUUID, localVolumeHandle, remoteVolumeHandle string,
+) (policy, schedule string, err error) {
+	if o.bootstrapError != nil {
+		return "", "", o.bootstrapError
+	}
+	defer recordTiming("replication_details", &err)()
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	backend, err := o.getBackendByBackendUUID(backendUUID)
+	if err != nil {
+		return "", "", err
+	}
+	mirrorBackend, ok := backend.(storage.Mirrorer)
+	if !ok {
+		return "", "", fmt.Errorf("backend does not support mirroring")
+	}
+	return mirrorBackend.GetReplicationDetails(ctx, localVolumeHandle, remoteVolumeHandle)
 }
 
 func (o *TridentOrchestrator) GetCHAP(
