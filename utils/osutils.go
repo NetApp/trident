@@ -194,6 +194,14 @@ func AttachBlockOnFileVolume(
 		}
 	}
 
+	mounted, err := IsMounted(ctx, loopDevice.Name, "")
+	if err != nil {
+		return "", "", err
+	}
+	if !mounted {
+		_ = repairVolume(ctx, loopDevice.Name, fsType)
+	}
+
 	if deviceMountpoint != "" {
 		err = MountDevice(ctx, loopDevice.Name, deviceMountpoint, deviceOptions, false)
 		if err != nil {
