@@ -738,7 +738,6 @@ func PublishLUN(
 		Logc(ctx).WithFields(log.Fields{"LUN": lunPath, "fstype": fstype}).Debug("Found LUN attribute fstype.")
 	}
 
-	allowEmptyIQN := false
 	if config.DriverContext == tridentconfig.ContextCSI {
 		// Get the info about the targeted node
 		var targetNode *utils.Node
@@ -752,14 +751,6 @@ func PublishLUN(
 			err = fmt.Errorf("node %s has not registered with Trident", publishInfo.HostName)
 			Logc(ctx).Error(err)
 			return err
-		}
-
-		// The IQN may be blank if we're in CSI mode and node prep is enabled and hasn't run yet.
-		if targetNode.NodePrep.Enabled {
-			switch targetNode.NodePrep.ISCSI {
-			case "", utils.PrepPending, utils.PrepOutdated, utils.PrepRunning:
-				allowEmptyIQN = true
-			}
 		}
 	}
 
@@ -778,10 +769,6 @@ func PublishLUN(
 			} else {
 				return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
 			}
-		} else if !allowEmptyIQN {
-			err = fmt.Errorf("unknown initiator for node %s", publishInfo.HostName)
-			Logc(ctx).Error(err)
-			return err
 		}
 	}
 

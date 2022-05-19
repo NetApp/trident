@@ -40,7 +40,6 @@ type Plugin struct {
 	unsafeDetach bool
 
 	hostInfo *utils.HostSystem
-	nodePrep *utils.NodePrep
 
 	restClient controllerAPI.TridentController
 	helper     helpers.HybridPlugin
@@ -106,7 +105,7 @@ func NewControllerPlugin(
 
 func NewNodePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
-	unsafeDetach, nodePrep bool,
+	unsafeDetach bool,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
@@ -119,11 +118,7 @@ func NewNodePlugin(
 		role:         CSINode,
 		unsafeDetach: unsafeDetach,
 		opCache:      sync.Map{},
-		nodePrep:     &utils.NodePrep{Enabled: nodePrep},
 	}
-
-	// Initialize node prep statuses
-	p.initNodePrep(ctx)
 
 	p.addNodeServiceCapabilities(
 		[]csi.NodeServiceCapability_RPC_Type{
@@ -172,9 +167,8 @@ func NewNodePlugin(
 // CSI Sanity expects a single process to respond to controller, node, and
 // identity interfaces.
 func NewAllInOnePlugin(
-	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string,
-	orchestrator core.Orchestrator, helper *helpers.HybridPlugin,
-	unsafeDetach, nodePrep bool,
+	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
+	helper *helpers.HybridPlugin, unsafeDetach bool,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 
@@ -188,11 +182,7 @@ func NewAllInOnePlugin(
 		unsafeDetach: unsafeDetach,
 		helper:       *helper,
 		opCache:      sync.Map{},
-		nodePrep:     &utils.NodePrep{Enabled: nodePrep},
 	}
-
-	// Initialize node prep statuses
-	p.initNodePrep(ctx)
 
 	// Define controller capabilities
 	p.addControllerServiceCapabilities([]csi.ControllerServiceCapability_RPC_Type{
@@ -319,37 +309,6 @@ func (p *Plugin) getCSIErrorForOrchestratorError(err error) error {
 		return status.Error(codes.AlreadyExists, err.Error())
 	} else {
 		return status.Error(codes.Unknown, err.Error())
-	}
-}
-
-func (p *Plugin) initNodePrep(ctx context.Context) {
-	if p.nodePrep.Enabled {
-
-		p.nodePrep.NFS = utils.PrepPending
-		p.nodePrep.ISCSI = utils.PrepPending
-
-		// Check if the protocols have previously been successfully set up
-		breadcrumb, err := p.readNodePrepBreadcrumbFile(ctx)
-		if err != nil && !utils.IsNotFoundError(err) {
-			Logc(ctx).Warn("Node prep status file was found, but could not be read; ignoring old statuses.")
-		} else if err == nil {
-			if breadcrumb.NFS != "" {
-				if breadcrumb.TridentVersion == tridentconfig.OrchestratorVersion.String() {
-					p.nodePrep.NFS = utils.PrepCompleted
-				} else {
-					p.nodePrep.NFS = utils.PrepOutdated
-				}
-				p.nodePrep.NFSStatusMessage = breadcrumb.NFS
-			}
-			if breadcrumb.ISCSI != "" {
-				if breadcrumb.TridentVersion == tridentconfig.OrchestratorVersion.String() {
-					p.nodePrep.ISCSI = utils.PrepCompleted
-				} else {
-					p.nodePrep.ISCSI = utils.PrepOutdated
-				}
-				p.nodePrep.ISCSIStatusMessage = breadcrumb.ISCSI
-			}
-		}
 	}
 }
 

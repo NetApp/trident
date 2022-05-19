@@ -351,12 +351,12 @@ func main() {
 			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, *aesKey, orchestrator, &hybridPlugin)
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, *nodePrep)
+				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach)
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
 		case csi.CSIAllInOne:
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, *aesKey, orchestrator, &hybridPlugin, *csiUnsafeNodeDetach, *nodePrep)
+				*httpsClientKey, *aesKey, orchestrator, &hybridPlugin, *csiUnsafeNodeDetach)
 		}
 		if err != nil {
 			log.Fatalf("Unable to start the CSI frontend. %v", err)

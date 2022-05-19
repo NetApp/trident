@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -749,7 +749,6 @@ func GetCSIDaemonSetYAML(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DEBUG}", debugLine)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", logLevel)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", args.LogFormat)
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{NODE_PREP}", strconv.FormatBool(args.NodePrep))
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", args.ProbePort)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
@@ -801,7 +800,6 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
         - "--log_format={LOG_FORMAT}"
-        - "--node_prep={NODE_PREP}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--https_rest"
         - "--https_port={PROBE_PORT}"
@@ -961,7 +959,6 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
         - "--log_format={LOG_FORMAT}"
-        - "--node_prep={NODE_PREP}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--https_rest"
         - "--https_port={PROBE_PORT}"

@@ -4136,23 +4136,10 @@ func (o *TridentOrchestrator) AddNode(
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
-
-	if node.NodePrep != nil && node.NodePrep.Enabled {
-		// Check if node prep status has changed
-		oldNode, found := o.nodes[node.Name]
-		if found && oldNode.NodePrep != nil {
-			// NFS
-			if node.NodePrep.NFS != oldNode.NodePrep.NFS {
-				o.handleUpdatedNodePrep(ctx, "NFS", node, nodeEventCallback)
-			}
-			// iSCSI
-			if node.NodePrep.ISCSI != oldNode.NodePrep.ISCSI {
-				o.handleUpdatedNodePrep(ctx, "ISCSI", node, nodeEventCallback)
-			}
-		} else {
-			o.handleUpdatedNodePrep(ctx, "NFS", node, nodeEventCallback)
-			o.handleUpdatedNodePrep(ctx, "ISCSI", node, nodeEventCallback)
-		}
+	// Check if node services have changed
+	if node.HostInfo != nil && len(node.HostInfo.Services) > 0 {
+		nodeEventCallback(helpers.EventTypeNormal, "TridentServiceDiscovery", fmt.Sprintf("%s detected on host.",
+			node.HostInfo.Services))
 	}
 
 	if err := o.storeClient.AddOrUpdateNode(ctx, node); err != nil {
@@ -4169,47 +4156,6 @@ func (o *TridentOrchestrator) AddNode(
 func (o *TridentOrchestrator) invalidateAllBackendNodeAccess() {
 	for _, backend := range o.backends {
 		backend.InvalidateNodeAccess()
-	}
-}
-
-func (o *TridentOrchestrator) handleUpdatedNodePrep(
-	ctx context.Context, protocol string, node *utils.Node, nodeEventCallback NodeEventCallback,
-) {
-	var status utils.NodePrepStatus
-	var message string
-
-	switch protocol {
-	case "NFS":
-		status = node.NodePrep.NFS
-		message = node.NodePrep.NFSStatusMessage
-	case "ISCSI":
-		status = node.NodePrep.ISCSI
-		message = node.NodePrep.ISCSIStatusMessage
-	default:
-		Logc(ctx).WithField("protocol", protocol).Error("Cannot report node prep status: unsupported protocol.")
-		return
-	}
-
-	fields := log.Fields{
-		"node":    node.Name,
-		"message": message,
-	}
-
-	switch status {
-	case utils.PrepFailed:
-		Logc(ctx).WithFields(fields).Warnf("Node prep for %s failed on node.", protocol)
-		nodeEventCallback(helpers.EventTypeWarning, fmt.Sprintf("%sNodePrepFailed", protocol), message)
-	case utils.PrepPreConfigured:
-		Logc(ctx).WithFields(fields).Warnf("Node was preconfigured for %s.", protocol)
-		nodeEventCallback(helpers.EventTypeWarning, fmt.Sprintf("%sNodePrepPreconfigured", protocol), message)
-	case utils.PrepCompleted:
-		Logc(ctx).WithFields(fields).Infof("Node prep for %s completed on node.", protocol)
-		nodeEventCallback(helpers.EventTypeNormal, fmt.Sprintf("%sNodePrepCompleted", protocol), message)
-	case utils.PrepRunning:
-		Logc(ctx).WithFields(fields).Debugf("Node prep for %s started on node.", protocol)
-		if log.GetLevel() == log.DebugLevel {
-			nodeEventCallback(helpers.EventTypeNormal, fmt.Sprintf("%sNodePrepStarted", protocol), message)
-		}
 	}
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -160,7 +160,6 @@ func getInstallYaml(semVersion *utils.Version) (string, error) {
 		Labels:               map[string]string{},
 		ControllingCRDetails: map[string]string{},
 		Debug:                false,
-		NodePrep:             false,
 		Version:              semVersion,
 		HTTPRequestTimeout:   tridentconfig.HTTPTimeoutString,
 	}

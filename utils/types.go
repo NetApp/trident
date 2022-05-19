@@ -80,11 +80,12 @@ type Node struct {
 	IQN            string            `json:"iqn,omitempty"`
 	IPs            []string          `json:"ips,omitempty"`
 	TopologyLabels map[string]string `json:"topologyLabels,omitempty"`
-	NodePrep       *NodePrep         `json:"nodePrep"`
+	NodePrep       *NodePrep         `json:"nodePrep,omitempty"`
 	HostInfo       *HostSystem       `json:"hostInfo,omitempty"`
 	Deleted        bool              `json:"deleted"`
 }
 
+// NodePrep struct is deprecated and only here for backwards compatibility
 type NodePrep struct {
 	Enabled            bool           `json:"enabled"`
 	NFS                NodePrepStatus `json:"nfs,omitempty"`
@@ -96,7 +97,8 @@ type NodePrep struct {
 type NodePrepStatus string
 
 type HostSystem struct {
-	OS SystemOS `json:"os"`
+	OS       SystemOS `json:"os"`
+	Services []string `json:"services,omitempty"`
 }
 
 type SystemOS struct {

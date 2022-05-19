@@ -1,3 +1,5 @@
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package installer
 
 import (
@@ -2367,7 +2369,6 @@ func TestPutDaemonSet(t *testing.T) {
 		Labels:               make(map[string]string),
 		ControllingCRDetails: make(map[string]string),
 		Debug:                false,
-		NodePrep:             false,
 		Version:              version,
 	}
 	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonSetArgs)

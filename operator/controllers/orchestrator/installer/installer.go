@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -52,7 +52,6 @@ var (
 	debug              bool
 	useIPv6            bool
 	silenceAutosupport bool
-	enableNodePrep     bool
 
 	logFormat     string
 	probePort     string
@@ -276,7 +275,6 @@ func (i *Installer) setInstallationParams(
 	csi = true
 	debug = cr.Spec.Debug
 	useIPv6 = cr.Spec.IPv6
-	enableNodePrep = cr.Spec.EnableNodePrep
 	silenceAutosupport = cr.Spec.SilenceAutosupport
 	if cr.Spec.AutosupportProxy != "" {
 		autosupportProxy = cr.Spec.AutosupportProxy
@@ -544,7 +542,6 @@ func (i *Installer) InstallOrPatchTrident(
 		K8sTimeout:              strconv.Itoa(int(k8sTimeout.Seconds())),
 		HTTPRequestTimeout:      httpTimeout,
 		ImagePullSecrets:        imagePullSecrets,
-		EnableNodePrep:          strconv.FormatBool(enableNodePrep),
 		NodePluginNodeSelector:  nodePluginNodeSelector,
 		NodePluginTolerations:   nodePluginTolerations,
 	}
@@ -1189,7 +1186,6 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		Labels:               labels,
 		ControllingCRDetails: controllingCRDetails,
 		Debug:                debug,
-		NodePrep:             enableNodePrep,
 		Version:              i.client.ServerVersion(),
 		HTTPRequestTimeout:   httpTimeout,
 		NodeSelector:         nodePluginNodeSelector,

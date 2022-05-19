@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -45,7 +45,6 @@ type TridentProvisionerSpec struct {
 	KubeletDir              string   `json:"kubeletDir,omitempty"`
 	Wipeout                 []string `json:"wipeout,omitempty"`
 	ImagePullSecrets        []string `json:"imagePullSecrets,omitempty"`
-	EnableNodePrep          bool     `json:"enableNodePrep,omitempty"`
 }
 
 // TridentProvisionerStatus defines the observed state of TridentProvisioner
@@ -70,5 +69,4 @@ type TridentProvisionerSpecValues struct {
 	ImageRegistry           string   `json:"imageRegistry"`
 	KubeletDir              string   `json:"kubeletDir"`
 	ImagePullSecrets        []string `json:"imagePullSecrets"`
-	EnableNodePrep          string   `json:"enableNodePrep"`
 }

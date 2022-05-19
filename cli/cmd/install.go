@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -188,6 +188,10 @@ func init() {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 	if err := installCmd.Flags().MarkHidden("autosupport-hostname"); err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, err)
+	}
+	if err := installCmd.Flags().MarkDeprecated("enable-node-prep",
+		"enable-node-prep is disabled; flag may be removed in a future release."); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 }
@@ -489,7 +493,6 @@ func prepareYAMLFiles() error {
 		Labels:               daemonSetlabels,
 		ControllingCRDetails: nil,
 		Debug:                Debug,
-		NodePrep:             enableNodePrep,
 		Version:              client.ServerVersion(),
 		HTTPRequestTimeout:   httpRequestTimeout.String(),
 	}
@@ -897,7 +900,6 @@ func installTrident() (returnError error) {
 			Labels:               daemonSetlabels,
 			ControllingCRDetails: nil,
 			Debug:                Debug,
-			NodePrep:             enableNodePrep,
 			Version:              client.ServerVersion(),
 			HTTPRequestTimeout:   httpRequestTimeout.String(),
 		}

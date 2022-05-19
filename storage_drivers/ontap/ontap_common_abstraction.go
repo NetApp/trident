@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -508,7 +508,6 @@ func PublishLUNAbstraction(
 		fstype = lunComment
 	}
 
-	allowEmptyIQN := false
 	if config.DriverContext == tridentconfig.ContextCSI {
 		// Get the info about the targeted node
 		var targetNode *utils.Node
@@ -523,14 +522,6 @@ func PublishLUNAbstraction(
 			Logc(ctx).Error(err)
 			return err
 		}
-
-		// The IQN may be blank if we're in CSI mode and node prep is enabled and hasn't run yet.
-		if targetNode.NodePrep.Enabled {
-			switch targetNode.NodePrep.ISCSI {
-			case "", utils.PrepPending, utils.PrepOutdated, utils.PrepRunning:
-				allowEmptyIQN = true
-			}
-		}
 	}
 
 	if !publishInfo.Unmanaged {
@@ -540,10 +531,6 @@ func PublishLUNAbstraction(
 			if err != nil {
 				return fmt.Errorf("error adding IQN %v to igroup %v: %v", iqn, igroupName, err)
 			}
-		} else if !allowEmptyIQN {
-			err = fmt.Errorf("unknown initiator for node %s", publishInfo.HostName)
-			Logc(ctx).Error(err)
-			return err
 		}
 	}
 

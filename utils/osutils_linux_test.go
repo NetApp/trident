@@ -1,4 +1,4 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 //go:build linux
 
@@ -6,139 +6,15 @@ package utils
 
 import (
 	"context"
+	"fmt"
 	"net"
+	"os/exec"
 	"strings"
 	"testing"
+	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestDetermineNFSPackages(t *testing.T) {
-	log.Debug("Running TestDetermineNFSPackages...")
-
-	tests := map[string]struct {
-		host             HostSystem
-		expectedPackages []string
-		errorExpected    bool
-	}{
-		"Ubuntu": {
-			host: HostSystem{OS: SystemOS{
-				Distro:  Ubuntu,
-				Version: "18.04",
-				Release: "18.04.1",
-			}},
-			expectedPackages: []string{"nfs-common"},
-			errorExpected:    false,
-		},
-		"Centos": {
-			host: HostSystem{OS: SystemOS{
-				Distro:  Centos,
-				Version: "8",
-				Release: "8.1",
-			}},
-			expectedPackages: []string{"nfs-utils"},
-			errorExpected:    false,
-		},
-		"RHEL": {
-			host: HostSystem{OS: SystemOS{
-				Distro:  RHEL,
-				Version: "8",
-				Release: "8.1",
-			}},
-			expectedPackages: []string{"nfs-utils"},
-			errorExpected:    false,
-		},
-		"Foobar": {
-			host: HostSystem{OS: SystemOS{
-				Distro:  "Foobar",
-				Version: "",
-				Release: "",
-			}},
-			expectedPackages: nil,
-			errorExpected:    true,
-		},
-	}
-	for testName, test := range tests {
-		t.Logf("Running test case '%s'", testName)
-
-		packages, err := determineNFSPackages(context.Background(), test.host)
-		assert.Equal(t, test.errorExpected, err != nil, "Unexpected error value")
-		assert.ElementsMatch(t, test.expectedPackages, packages, "Incorrect packages returned")
-	}
-}
-
-func TestGetPackageManagerForHost(t *testing.T) {
-	log.Debug("Running TestGetPackageManagerForHost...")
-
-	tests := map[string]struct {
-		host          HostSystem
-		expectedPM    string
-		errorExpected bool
-	}{
-		"Ubuntu": {
-			host: HostSystem{OS: SystemOS{
-				Distro:  Ubuntu,
-				Version: "18.04",
-				Release: "18.04.1",
-			}},
-			expectedPM:    "apt",
-			errorExpected: false,
-		},
-		"Centos7": {
-			host: HostSystem{OS: SystemOS{
-				Distro:  Centos,
-				Version: "7",
-				Release: "7.1",
-			}},
-			expectedPM:    "yum",
-			errorExpected: false,
-		},
-		"RHEL7": {
-			host: HostSystem{OS: SystemOS{
-				Distro:  RHEL,
-				Version: "7",
-				Release: "7.1",
-			}},
-			expectedPM:    "yum",
-			errorExpected: false,
-		},
-		"Centos8": {
-			host: HostSystem{OS: SystemOS{
-				Distro:  Centos,
-				Version: "8",
-				Release: "8.1",
-			}},
-			expectedPM:    "dnf",
-			errorExpected: false,
-		},
-		"RHEL8": {
-			host: HostSystem{OS: SystemOS{
-				Distro:  RHEL,
-				Version: "8",
-				Release: "8.1",
-			}},
-			expectedPM:    "dnf",
-			errorExpected: false,
-		},
-		"Foobar": {
-			host: HostSystem{OS: SystemOS{
-				Distro:  "Foobar",
-				Version: "",
-				Release: "",
-			}},
-			expectedPM:    "",
-			errorExpected: true,
-		},
-	}
-	for testName, test := range tests {
-		t.Logf("Running test case '%s'", testName)
-
-		pm, err := getPackageManagerForHost(context.Background(), test.host)
-		assert.Equal(t, test.errorExpected, err != nil, "Unexpected error value")
-		assert.Equal(t, test.expectedPM, pm, "Incorrect package manager returned")
-	}
-}
 
 func TestGetIPAddresses(t *testing.T) {
 	addrs, err := getIPAddresses(context.TODO())
@@ -185,5 +61,133 @@ func TestGetIPAddressesExceptingNondefaultRoutes(t *testing.T) {
 		parsedAddr := net.ParseIP(strings.Split(addr.String(), "/")[0])
 		assert.False(t, parsedAddr.IsLoopback(), "Address is loopback")
 		assert.True(t, parsedAddr.IsGlobalUnicast(), "Address is not global unicast")
+	}
+}
+
+func TestNFSActiveOnHost(t *testing.T) {
+	ExecCommand = fakeExecCommand
+	// Reset exec command after tests
+	defer func() {
+		ExecCommand = exec.Command
+	}()
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name        string
+		args        args
+		want        bool
+		wantErr     assert.ErrorAssertionFunc
+		returnValue string
+		returnCode  int
+		delay       string
+	}{
+		{
+			name: "Active", args: args{
+				ctx: context.Background(),
+			}, want: true, wantErr: assert.NoError, returnValue: "is-active", returnCode: 0, delay: "0s",
+		},
+		{
+			name: "Inactive", args: args{
+				ctx: context.Background(),
+			}, want: false, wantErr: assert.NoError, returnValue: "not-active", returnCode: 1, delay: "0s",
+		},
+		// TODO: Reduce time required to induce timeout error condition
+		// {
+		// 	name: "Error", args: args{
+		// 		ctx:     context.Background(),
+		// 	}, want: true, wantErr: assert.Error, returnValue: "is-active", returnCode: 0, delay: "31s",
+		// },
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			execReturnValue = tt.returnValue
+			execReturnCode = tt.returnCode
+			delay, err := time.ParseDuration(tt.delay)
+			if err != nil {
+				t.Error("Invalid duration value provided.")
+			}
+			execDelay = delay
+			got, err := NFSActiveOnHost(tt.args.ctx)
+			if !tt.wantErr(t, err, fmt.Sprintf("NFSActiveOnHost(%v)", tt.args.ctx)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "NFSActiveOnHost(%v)", tt.args.ctx)
+		})
+	}
+}
+
+func TestISCSIActiveOnHost(t *testing.T) {
+	ExecCommand = fakeExecCommand
+	// Reset exec command after tests
+	defer func() {
+		ExecCommand = exec.Command
+	}()
+	type args struct {
+		ctx  context.Context
+		host HostSystem
+	}
+	tests := []struct {
+		name        string
+		args        args
+		want        bool
+		wantErr     assert.ErrorAssertionFunc
+		returnValue string
+		returnCode  int
+		delay       string
+	}{
+		{
+			name: "ActiveCentos", args: args{
+				ctx:  context.Background(),
+				host: HostSystem{OS: SystemOS{Distro: Centos}},
+			}, want: true, wantErr: assert.NoError, returnValue: "is-active", returnCode: 0, delay: "0s",
+		},
+		{
+			name: "ActiveRHEL", args: args{
+				ctx:  context.Background(),
+				host: HostSystem{OS: SystemOS{Distro: RHEL}},
+			}, want: true, wantErr: assert.NoError, returnValue: "is-active", returnCode: 0, delay: "0s",
+		},
+		{
+			name: "ActiveUbuntu", args: args{
+				ctx:  context.Background(),
+				host: HostSystem{OS: SystemOS{Distro: Ubuntu}},
+			}, want: true, wantErr: assert.NoError, returnValue: "is-active", returnCode: 0, delay: "0s",
+		},
+		{
+			name: "InactiveRHEL", args: args{
+				ctx:  context.Background(),
+				host: HostSystem{OS: SystemOS{Distro: RHEL}},
+			}, want: false, wantErr: assert.NoError, returnValue: "not-active", returnCode: 1, delay: "0s",
+		},
+		// TODO: Reduce time required to induce timeout error condition
+		// {
+		// 	name: "TimeoutRHEL", args: args{
+		// 	ctx: context.Background(),
+		// 	host: HostSystem{OS: SystemOS{Distro: RHEL}},
+		// }, want: false, wantErr: assert.Error, returnValue: "is-active", returnCode: 0, delay: "31s",
+		// },
+		{
+			name: "UnknownDistro", args: args{
+				ctx:  context.Background(),
+				host: HostSystem{OS: SystemOS{Distro: "SUSE"}},
+			}, want: false, wantErr: assert.NoError, returnValue: "not-found", returnCode: 1, delay: "0s",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			execReturnValue = tt.returnValue
+			execReturnCode = tt.returnCode
+			delay, err := time.ParseDuration(tt.delay)
+			if err != nil {
+				t.Error("Invalid duration value provided.")
+			}
+			execDelay = delay
+			got, err := ISCSIActiveOnHost(tt.args.ctx, tt.args.host)
+			if !tt.wantErr(t, err, fmt.Sprintf("NFSActiveOnHost(%v)", tt.args.ctx)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "NFSActiveOnHost(%v)", tt.args.ctx)
+		})
 	}
 }

@@ -52,6 +52,8 @@ var (
 	deviceRegex           = regexp.MustCompile(`/dev/(?P<device>[\w-]+)`)
 
 	chrootPathPrefix string
+
+	ExecCommand = exec.Command
 )
 
 func IPv6Check(ip string) bool {
@@ -3803,7 +3805,7 @@ func execCommand(ctx context.Context, name string, args ...string) ([]byte, erro
 		"args":    args,
 	}).Debug(">>>> osutils.execCommand.")
 
-	out, err := exec.Command(name, args...).CombinedOutput()
+	out, err := ExecCommand(name, args...).CombinedOutput()
 
 	Logc(ctx).WithFields(log.Fields{
 		"command": name,
@@ -3835,7 +3837,7 @@ func execCommandRedacted(ctx context.Context, name string, args []string,
 		"args":    sanitizedArgs,
 	}).Debug(">>>> osutils.execCommand.")
 
-	out, err := exec.Command(name, args...).CombinedOutput()
+	out, err := ExecCommand(name, args...).CombinedOutput()
 
 	Logc(ctx).WithFields(log.Fields{
 		"command": name,
@@ -3864,7 +3866,7 @@ func execCommandWithTimeout(
 		"args":           args,
 	}).Debug(">>>> osutils.execCommandWithTimeout.")
 
-	cmd := exec.Command(name, args...)
+	cmd := ExecCommand(name, args...)
 	done := make(chan execCommandResult, 1)
 	var result execCommandResult
 

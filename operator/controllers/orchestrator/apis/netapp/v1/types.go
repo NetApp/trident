@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -51,7 +51,6 @@ type TridentOrchestratorSpec struct {
 	KubeletDir                   string            `json:"kubeletDir,omitempty"`
 	Wipeout                      []string          `json:"wipeout,omitempty"`
 	ImagePullSecrets             []string          `json:"imagePullSecrets,omitempty"`
-	EnableNodePrep               bool              `json:"enableNodePrep,omitempty"`
 	ControllerPluginNodeSelector map[string]string `json:"controllerPluginNodeSelector,omitempty"`
 	ControllerPluginTolerations  []Toleration      `json:"controllerPluginTolerations,omitempty"`
 	NodePluginNodeSelector       map[string]string `json:"nodePluginNodeSelector,omitempty"`
@@ -118,7 +117,6 @@ type TridentOrchestratorSpecValues struct {
 	ImageRegistry           string            `json:"imageRegistry"`
 	KubeletDir              string            `json:"kubeletDir"`
 	ImagePullSecrets        []string          `json:"imagePullSecrets"`
-	EnableNodePrep          string            `json:"enableNodePrep"`
 	NodePluginNodeSelector  map[string]string `json:"nodePluginNodeSelector,omitempty"`
 	NodePluginTolerations   []Toleration      `json:"nodePluginTolerations,omitempty"`
 }

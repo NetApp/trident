@@ -499,17 +499,12 @@ func (p *Plugin) NodeGetInfo(
 }
 
 func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
-	// Only get the host system info if node prep is enabled and we don't have the info yet.
-	if p.nodePrep.Enabled && p.hostInfo == nil {
-		// Discover host OS info
+	// Only get the host system info if we don't have the info yet.
+	if p.hostInfo == nil {
 		host, err := utils.GetHostSystemInfo(ctx)
 		if err != nil {
-			p.hostInfo = nil
-			if p.nodePrep.NFS != utils.PrepCompleted {
-				p.nodePrep.NFS = utils.PrepFailed
-				p.nodePrep.NFSStatusMessage = "Unable to get host system information."
-			}
-			Logc(ctx).WithError(err).Warn("Unable to get host system information; worker prep will be skipped.")
+			p.hostInfo = &utils.HostSystem{}
+			Logc(ctx).WithError(err).Warn("Unable to get host system information.")
 		} else {
 			p.hostInfo = host
 			Logc(ctx).WithFields(
@@ -540,11 +535,31 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 		Logc(ctx).WithField("IP Addresses", ips).Info("Discovered IP addresses.")
 	}
 
+	// Discover active protocol services on the host
+	var services []string
+	nfsActive, err := utils.NFSActiveOnHost(ctx)
+	if err != nil {
+		Logc(ctx).WithError(err).Warn("Error discovering NFS service on host.")
+	}
+	if nfsActive {
+		services = append(services, "NFS")
+	}
+
+	iscsiActive, err := utils.ISCSIActiveOnHost(ctx, *p.hostInfo)
+	if err != nil {
+		Logc(ctx).WithError(err).Warn("Error discovering iSCSI service on host.")
+	}
+	if iscsiActive {
+		services = append(services, "iSCSI")
+	}
+	p.hostInfo.Services = services
+
+	// Generate node object
 	node := &utils.Node{
 		Name:     p.nodeName,
 		IQN:      iscsiWWN,
 		IPs:      ips,
-		NodePrep: p.nodePrep,
+		NodePrep: nil,
 		HostInfo: p.hostInfo,
 		Deleted:  false,
 	}
@@ -595,10 +610,6 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 func (p *Plugin) nodeStageNFSVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
-	if p.nodePrep.Enabled {
-		p.nodePrepForNFS(ctx)
-	}
-
 	publishInfo := &utils.VolumePublishInfo{
 		Localhost:      true,
 		FilesystemType: "nfs",
@@ -619,238 +630,6 @@ func (p *Plugin) nodeStageNFSVolume(
 	}
 
 	return &csi.NodeStageVolumeResponse{}, nil
-}
-
-func (p *Plugin) nodePrepForNFS(ctx context.Context) {
-	switch p.nodePrep.NFS {
-	case utils.PrepCompleted:
-		Logc(ctx).Debug("Node preparation for NFS has already completed; continuing.")
-		return
-	case utils.PrepFailed:
-		Logc(ctx).WithField("FailureReason", p.nodePrep.NFSStatusMessage).Warn(
-			"Node preparation for NFS failed; NFS mounts to this node may fail.")
-		return
-	case utils.PrepRunning:
-		Logc(ctx).Warn("Node preparation for NFS is incomplete; NFS mounts to this node may fail.")
-		return
-	case utils.PrepOutdated:
-		Logc(ctx).Debug("Previously completed node preparation was from a different version of Trident; will rerun.")
-		fallthrough
-	case utils.PrepPending:
-		Logc(ctx).Debug("Preparing node for NFS...")
-	default:
-		Logc(ctx).WithField("nfsStatus", p.nodePrep.NFS).Error(
-			"Node preparation for NFS is in an unknown state; NFS mounts to this node may fail")
-		return
-	}
-
-	// Set NFS prep to running
-	t := time.Now()
-	p.nodePrep.NFS = utils.PrepRunning
-	p.nodePrep.NFSStatusMessage = fmt.Sprintf("Started at %s", t.Format("2006-01-02 15:04:05"))
-
-	// Update the controller with the new status
-	p.nodeRegisterWithController(ctx, 30*time.Second)
-	defer p.nodeRegisterWithController(ctx, 30*time.Second)
-
-	// Install required packages
-	err := utils.PrepareNFSPackagesOnHost(ctx, *p.hostInfo)
-	if err != nil {
-		err = fmt.Errorf("error preparing NFS packages on the host; %+v", err)
-		Logc(ctx).Warn(err)
-		p.nodePrep.NFS = utils.PrepFailed
-		p.nodePrep.NFSStatusMessage = fmt.Sprint(err)
-		return
-	}
-
-	// Enable required services
-	err = utils.PrepareNFSServicesOnHost(ctx)
-	if err != nil {
-		err = fmt.Errorf("error preparing NFS services on the host; %+v", err)
-		Logc(ctx).Warn(err)
-		p.nodePrep.NFS = utils.PrepFailed
-		p.nodePrep.NFSStatusMessage = fmt.Sprint(err)
-		return
-	}
-
-	// Set NFS prep to completed
-	t = time.Now()
-	p.nodePrep.NFS = utils.PrepCompleted
-	p.nodePrep.NFSStatusMessage = fmt.Sprintf("Completed at %s", t.Format("2006-01-02 15:04:05"))
-	Logc(ctx).Info("Successfully completed Worker Node Prep for NFS.")
-
-	// Write the breadcrumb file to persist completed status beyond restarts
-	err = p.writeNodePrepBreadcrumbFile(ctx)
-	if err != nil {
-		Logc(ctx).WithError(err).Warn(
-			"Could not write node prep status file; node prep may run again if node restarts.")
-	}
-}
-
-func (p *Plugin) nodePrepForISCSI(ctx context.Context) {
-	outdated := false
-
-	switch p.nodePrep.ISCSI {
-	case utils.PrepCompleted:
-		Logc(ctx).Debug("Node preparation for iSCSI has already completed; continuing.")
-		return
-	case utils.PrepFailed:
-		Logc(ctx).WithField("FailureReason", p.nodePrep.ISCSIStatusMessage).Warn(
-			"Node preparation for iSCSI failed; iSCSI mounts to this node may fail.")
-		return
-	case utils.PrepRunning:
-		Logc(ctx).Warn("Node preparation for iSCSI is incomplete; iSCSI mounts to this node may fail.")
-		return
-	case utils.PrepPreConfigured:
-		// We do not record a preconfigured status in the breadcrumb file.
-		// This is so that it will retry on pod restarts as the user may not have been aware that iscsi was partially
-		// implemented on their nodes already.
-		Logc(ctx).Warn("iSCSI was preconfigured; iSCSI mounts to this node may fail.")
-		return
-	case utils.PrepOutdated:
-		Logc(ctx).Debug("Previously completed node preparation was from a different version of Trident; will rerun.")
-		outdated = true
-		fallthrough
-	case utils.PrepPending:
-		Logc(ctx).Debug("Preparing node for iSCSI...")
-	default:
-		Logc(ctx).WithField("iscsiStatus", p.nodePrep.ISCSI).Warn(
-			"Node preparation for iSCSI is in an unknown state; iSCSI mounts to this node may fail")
-		return
-	}
-
-	// Set iSCSI prep to running
-	t := time.Now()
-	p.nodePrep.ISCSI = utils.PrepRunning
-	p.nodePrep.ISCSIStatusMessage = fmt.Sprintf("Started at %s", t.Format("2006-01-02 15:04:05"))
-
-	// Update the controller with the new status
-	p.nodeRegisterWithController(ctx, 30*time.Second)
-	defer p.nodeRegisterWithController(ctx, 30*time.Second)
-
-	var iscsiPreconfigured bool
-	var err error
-
-	// If this is an outdated Trident prep, then iscsi is expected to be preconfigured, so skip this check.
-	if !outdated {
-		// Check if iSCSI is currently running as that indicates it may be in use and we should not adjust iSCSI or
-		// multipath settings/packages.
-		iscsiPreconfigured, err = utils.ISCSIActiveOnHost(ctx, *p.hostInfo)
-		if err != nil {
-			err = fmt.Errorf("error checking status of iscsi daemon on host; %+v", err)
-			Logc(ctx).Warn(err)
-			p.nodePrep.ISCSI = utils.PrepFailed
-			p.nodePrep.ISCSIStatusMessage = fmt.Sprint(err)
-			return
-		}
-	}
-
-	// Install required packages, skipping iscsi/multipath if iscsi already is running
-	err = utils.PrepareISCSIPackagesOnHost(ctx, *p.hostInfo, iscsiPreconfigured)
-	if err != nil {
-		err = fmt.Errorf("error preparing iSCSI packages on the host; %+v", err)
-		Logc(ctx).Warn(err)
-		p.nodePrep.ISCSI = utils.PrepFailed
-		p.nodePrep.ISCSIStatusMessage = fmt.Sprint(err)
-		return
-	}
-
-	if iscsiPreconfigured {
-		Logc(ctx).Warn("iSCSI service is already running; skipping iSCSI and multipath configuration; iSCSI " +
-			"mounts to this node may fail.")
-		p.nodePrep.ISCSI = utils.PrepPreConfigured
-		p.nodePrep.ISCSIStatusMessage = "iSCSI service was already running on the host; " +
-			"iSCSI and multipath configuration skipped; iSCSI mounts to this node may fail."
-		return
-	}
-
-	// Enable required services
-	err = utils.PrepareISCSIServicesOnHost(ctx, *p.hostInfo)
-	if err != nil {
-		err = fmt.Errorf("error preparing iSCSI services on the host; %+v", err)
-		Logc(ctx).Warn(err)
-		p.nodePrep.ISCSI = utils.PrepFailed
-		p.nodePrep.ISCSIStatusMessage = fmt.Sprint(err)
-		return
-	}
-
-	// Set iSCSI prep to completed
-	t = time.Now()
-	p.nodePrep.ISCSI = utils.PrepCompleted
-	p.nodePrep.ISCSIStatusMessage = fmt.Sprintf("Completed at %s", t.Format("2006-01-02 15:04:05"))
-	Logc(ctx).Info("Successfully completed node prep for iSCSI.")
-
-	// Write the breadcrumb file to persist completed status beyond restarts
-	err = p.writeNodePrepBreadcrumbFile(ctx)
-	if err != nil {
-		Logc(ctx).WithError(err).Warn(
-			"Could not write node prep status file; node prep may run again if node restarts.")
-	}
-}
-
-func (p *Plugin) writeNodePrepBreadcrumbFile(ctx context.Context) error {
-	// We should only write statuses that have succeeded
-	breadcrumbs := utils.NodePrepBreadcrumb{TridentVersion: tridentconfig.OrchestratorVersion.String()}
-	if p.nodePrep.NFS == utils.PrepCompleted {
-		breadcrumbs.NFS = p.nodePrep.NFSStatusMessage
-	}
-	if p.nodePrep.ISCSI == utils.PrepCompleted {
-		breadcrumbs.ISCSI = p.nodePrep.ISCSIStatusMessage
-	}
-
-	// Convert struct to json
-	breadcrumbBytes, err := json.Marshal(breadcrumbs)
-	if err != nil {
-		return err
-	}
-
-	// Write the file; piggyback on deviceInfoPath as that is already being created on the host
-	breadcrumbFile := path.Join(tridentDeviceInfoPath, nodePrepBreadcrumbFilename)
-	err = ioutil.WriteFile(breadcrumbFile, breadcrumbBytes, 0o600)
-	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
-			"file":  breadcrumbFile,
-			"error": err,
-		}).Error("Could not write file.")
-		return err
-	}
-
-	Logc(ctx).Debug("Node prep status file written.")
-	return nil
-}
-
-// readNodePrepBreadcrumbFile returns the contents of the node prep status file, if it exists.
-// Returns a status.Error if an error is returned.
-func (p *Plugin) readNodePrepBreadcrumbFile(ctx context.Context) (*utils.NodePrepBreadcrumb, error) {
-	// File may not exist so caller needs to handle not found error
-	breadcrumbFile := path.Join(tridentDeviceInfoPath, nodePrepBreadcrumbFilename)
-	if _, err := os.Stat(breadcrumbFile); err != nil {
-		Logc(ctx).WithFields(log.Fields{
-			"file":  breadcrumbFile,
-			"error": err.Error(),
-		}).Debug("Unable to find node prep status file.")
-		return nil, utils.NotFoundError("node prep status file not found")
-	}
-
-	breadcrumb := utils.NodePrepBreadcrumb{}
-
-	breadcrumbBytes, err := ioutil.ReadFile(breadcrumbFile)
-	if err != nil {
-		return nil, fmt.Errorf(err.Error())
-	}
-
-	err = json.Unmarshal(breadcrumbBytes, &breadcrumb)
-	if err != nil {
-		Logc(ctx).WithFields(log.Fields{
-			"file":  breadcrumb,
-			"raw":   string(breadcrumbBytes),
-			"error": err.Error(),
-		}).Error("Could not parse node prep status.")
-		return nil, err
-	}
-
-	Logc(ctx).WithField("nodePrepStatus", breadcrumb).Debug("Node prep status found.")
-	return &breadcrumb, nil
 }
 
 func (p *Plugin) nodeUnstageNFSVolume(
@@ -942,10 +721,6 @@ func (p *Plugin) nodeStageISCSIVolume(
 ) (*csi.NodeStageVolumeResponse, error) {
 	var err error
 	var fstype string
-
-	if p.nodePrep.Enabled {
-		p.nodePrepForISCSI(ctx)
-	}
 
 	mountCapability := req.GetVolumeCapability().GetMount()
 	blockCapability := req.GetVolumeCapability().GetBlock()
@@ -1187,10 +962,6 @@ func (p *Plugin) nodePublishISCSIVolume(
 
 func (p *Plugin) nodeStageNFSBlockVolume(ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
-	if p.nodePrep.Enabled {
-		p.nodePrepForNFS(ctx)
-	}
-
 	// Get VolumeID and Staging Path
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
 	if err != nil {

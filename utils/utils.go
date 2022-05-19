@@ -42,6 +42,7 @@ const (
 	Centos = "centos"
 	RHEL   = "rhel"
 	Ubuntu = "ubuntu"
+	Debian = "debian"
 
 	REDACTED = "<REDACTED>"
 )
