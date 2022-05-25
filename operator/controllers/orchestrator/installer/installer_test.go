@@ -1,3 +1,5 @@
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package installer
 
 import (
@@ -48,7 +50,7 @@ func createTestLabels() map[string]string {
 	labels := make(map[string]string)
 	labels[appLabelKey] = appLabelValue
 	labels[K8sVersionLabelKey] = "v1.21.8"
-	labels[TridentVersionLabelKey] = "v22.04.0"
+	labels[TridentVersionLabelKey] = "v22.07.0"
 
 	return labels
 }

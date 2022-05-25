@@ -1,6 +1,6 @@
 module github.com/netapp/trident
 
-go 1.17
+go 1.18
 
 require (
 	github.com/Azure/azure-sdk-for-go v63.0.0+incompatible

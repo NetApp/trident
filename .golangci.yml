@@ -30,7 +30,7 @@ linters-settings:
   gofumpt:
     # Select the Go version to target.
     # Default: 1.15
-    lang-version: "1.17"
+    lang-version: "1.18"
     
     # Choose whether to use the extra rules.
     # Default: false
