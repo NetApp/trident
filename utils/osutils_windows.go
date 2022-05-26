@@ -50,55 +50,20 @@ func flushOneDevice(ctx context.Context, devicePath string) error {
 func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.GetHostSystemInfo")
 	defer Logc(ctx).Debug("<<<< osutils_windows.GetHostSystemInfo")
-	msg := "GetHostSystemInfo is not is not supported for windows"
+	msg := "GetHostSystemInfo is not supported for windows"
 	return nil, UnsupportedError(msg)
-}
-
-func PrepareNFSPackagesOnHost(ctx context.Context, host HostSystem) error {
-	Logc(ctx).Debug(">>>> osutils_windows.PrepareNFSPackagesOnHost")
-	defer Logc(ctx).Debug("<<<< osutils_windows.PrepareNFSPackagesOnHost")
-	msg := "PrepareNFSPackagesOnHost is not is not supported for windows"
-	return UnsupportedError(msg)
-}
-
-func PrepareNFSServicesOnHost(ctx context.Context) error {
-	Logc(ctx).Debug(">>>> osutils_windows.PrepareNFSServicesOnHost")
-	defer Logc(ctx).Debug("<<<< osutils_windows.PrepareNFSServicesOnHost")
-	msg := "PrepareNFSServicesOnHost is not is not supported for windows"
-	return UnsupportedError(msg)
-}
-
-func ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
-	Logc(ctx).Debug(">>>> osutils_windows.ServiceActiveOnHost")
-	defer Logc(ctx).Debug("<<<< osutils_windows.ServiceActiveOnHost")
-	msg := "ServiceActiveOnHost is not is not supported for windows"
-	return false, UnsupportedError(msg)
-}
-
-func ServiceEnabledOnHost(ctx context.Context, service string) (bool, error) {
-	Logc(ctx).Debug(">>>> osutils_windows.ServiceEnabledOnHost")
-	defer Logc(ctx).Debug("<<<< osutils_windows.ServiceEnabledOnHost")
-	msg := "ServiceEnabledOnHost is not is not supported for windows"
-	return false, UnsupportedError(msg)
 }
 
 func ISCSIActiveOnHost(ctx context.Context, host HostSystem) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.ISCSIActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_windows.ISCSIActiveOnHost")
-	msg := "ISCSIActiveOnHost is not is not supported for windows"
+	msg := "ISCSIActiveOnHost is not supported for windows"
 	return false, UnsupportedError(msg)
 }
 
-func PrepareISCSIPackagesOnHost(ctx context.Context, host HostSystem, iscsiPreconfigured bool) error {
-	Logc(ctx).Debug(">>>> osutils_windows.PrepareISCSIPackagesOnHost")
-	defer Logc(ctx).Debug("<<<< osutils_windows.PrepareISCSIPackagesOnHost")
-	msg := "PrepareISCSIPackagesOnHost is not is not supported for windows"
-	return UnsupportedError(msg)
-}
-
-func PrepareISCSIServicesOnHost(ctx context.Context, host HostSystem) error {
-	Logc(ctx).Debug(">>>> osutils_windows.PrepareISCSIServicesOnHost")
-	defer Logc(ctx).Debug("<<<< osutils_windows.PrepareISCSIServicesOnHost")
-	msg := "PrepareISCSIServicesOnHost is not is not supported for windows"
-	return UnsupportedError(msg)
+func NFSActiveOnHost(ctx context.Context) (bool, error) {
+	Logc(ctx).Debug(">>>> osutils_windows.NFSActiveOnHost")
+	defer Logc(ctx).Debug("<<<< osutils_windows.NFSActiveOnHost")
+	msg := "NFSActiveOnHost is not supported for windows"
+	return false, UnsupportedError(msg)
 }
