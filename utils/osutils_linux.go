@@ -7,11 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"os/exec"
-	"syscall"
-	"time"
-	"unsafe"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
@@ -26,146 +22,12 @@ type statFSResult struct {
 	Error  error
 }
 
-// GetFilesystemStats returns the size of the filesystem for the given path.
-// The caller of the func is responsible for verifying the mountPoint existence and readiness.
-func GetFilesystemStats(
-	ctx context.Context, path string,
-) (available, capacity, usage, inodes, inodesFree, inodesUsed int64, err error) {
-	Logc(ctx).Debug(">>>> osutils_linux.GetFilesystemStats")
-	defer Logc(ctx).Debug("<<<< osutils_linux.GetFilesystemStats")
-
-	timedOut := false
-	timeout := 30 * time.Second
-	done := make(chan statFSResult, 1)
-	var result statFSResult
-
-	go func() {
-		// Warning: syscall.Statfs_t uses types that are OS and arch dependent. The following code has been
-		// confirmed to work with Linux/amd64 and Darwin/amd64.
-		var buf unix.Statfs_t
-		err := unix.Statfs(path, &buf)
-		done <- statFSResult{Output: buf, Error: err}
-	}()
-
-	select {
-	case <-time.After(timeout):
-		timedOut = true
-	case result = <-done:
-		break
-	}
-
-	if result.Error != nil {
-		Logc(ctx).WithField("path", path).Errorf("Failed to statfs: %s", result.Error)
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("couldn't get filesystem stats %s: %s", path, result.Error)
-	} else if timedOut {
-		Logc(ctx).WithField("path", path).Errorf("Failed to statfs due to timeout")
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("couldn't get filesystem stats %s: timeout", path)
-	}
-
-	buf := result.Output
-	size := int64(buf.Blocks) * buf.Bsize
-	Logc(ctx).WithFields(log.Fields{
-		"path":   path,
-		"size":   size,
-		"bsize":  buf.Bsize,
-		"blocks": buf.Blocks,
-		"avail":  buf.Bavail,
-		"free":   buf.Bfree,
-	}).Debug("Filesystem size information")
-
-	available = int64(buf.Bavail) * buf.Bsize
-	capacity = size
-	usage = capacity - available
-	inodes = int64(buf.Files)
-	inodesFree = int64(buf.Ffree)
-	inodesUsed = inodes - inodesFree
-	return available, capacity, usage, inodes, inodesFree, inodesUsed, nil
-}
-
-// getFilesystemSize returns the size of the filesystem for the given path.
-// The caller of the func is responsible for verifying the mountPoint existence and readiness.
-func getFilesystemSize(ctx context.Context, path string) (int64, error) {
-	Logc(ctx).Debug(">>>> osutils_linux.getFilesystemSize")
-	defer Logc(ctx).Debug("<<<< osutils_linux.getFilesystemSize")
-
-	_, size, _, _, _, _, err := GetFilesystemStats(ctx, path)
-	if err != nil {
-		return 0, err
-	}
-
-	return size, nil
-}
-
-// getISCSIDiskSize queries the current block size in bytes
-func getISCSIDiskSize(ctx context.Context, devicePath string) (int64, error) {
-	fields := log.Fields{"devicePath": devicePath}
-	Logc(ctx).WithFields(fields).Debug(">>>> osutils_linux.getISCSIDiskSize")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils_linux.getISCSIDiskSize")
-
-	disk, err := os.Open(devicePath)
-	if err != nil {
-		Logc(ctx).Error("Failed to open disk.")
-		return 0, fmt.Errorf("failed to open disk %s: %s", devicePath, err)
-	}
-	defer disk.Close()
-
-	var size int64
-	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, disk.Fd(), unix.BLKGETSIZE64, uintptr(unsafe.Pointer(&size)))
-	if errno != 0 {
-		err := os.NewSyscallError("ioctl", errno)
-		Logc(ctx).Error("BLKGETSIZE64 ioctl failed")
-		return 0, fmt.Errorf("BLKGETSIZE64 ioctl failed %s: %s", devicePath, err)
-	}
-
-	return size, nil
-}
-
-// flushOneDevice flushes any outstanding I/O to a disk
-func flushOneDevice(ctx context.Context, devicePath string) error {
-	fields := log.Fields{"devicePath": devicePath}
-	Logc(ctx).WithFields(fields).Debug(">>>> osutils_linux.flushOneDevice")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< osutils_linux.flushOneDevice")
-
-	disk, err := os.Open(devicePath)
-	if err != nil {
-		Logc(ctx).Error("Failed to open disk.")
-		return fmt.Errorf("failed to open disk %s: %s", devicePath, err)
-	}
-	defer disk.Close()
-
-	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, disk.Fd(), unix.BLKFLSBUF, 0)
-	if errno != 0 {
-		err := os.NewSyscallError("ioctl", errno)
-		Logc(ctx).Error("BLKFLSBUF ioctl failed")
-		return fmt.Errorf("BLKFLSBUF ioctl failed %s: %s", devicePath, err)
-	}
-
-	return nil
-}
-
 // NFSActiveOnHost will return if the rpc-statd daemon is active on the given host
 func NFSActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_linux.NFSActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_linux.NFSActiveOnHost")
 
 	return ServiceActiveOnHost(ctx, "rpc-statd")
-}
-
-// ISCSIActiveOnHost will return if the iscsi daemon is active on the given host
-func ISCSIActiveOnHost(ctx context.Context, host HostSystem) (bool, error) {
-	Logc(ctx).Debug(">>>> osutils_linux.ISCSIActiveOnHost")
-	defer Logc(ctx).Debug("<<<< osutils_linux.ISCSIActiveOnHost")
-
-	var serviceName string
-
-	switch host.OS.Distro {
-	case Ubuntu, Debian:
-		serviceName = "open-iscsi"
-	default:
-		serviceName = "iscsid"
-	}
-
-	return ServiceActiveOnHost(ctx, serviceName)
 }
 
 // ServiceActiveOnHost checks if the service is currently running

@@ -20,42 +20,11 @@ func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	return nil, errors.New("getIPAddresses is not supported for darwin")
 }
 
-func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
-	Logc(ctx).Debug(">>>> osutils_darwin.getFilesystemSize")
-	defer Logc(ctx).Debug("<<<< osutils_darwin.getFilesystemSize")
-	return 0, errors.New("getFilesystemSize is not supported for darwin")
-}
-
-func GetFilesystemStats(ctx context.Context, _ string) (int64, int64, int64, int64, int64, int64, error) {
-	Logc(ctx).Debug(">>>> osutils_darwin.GetFilesystemStats")
-	defer Logc(ctx).Debug("<<<< osutils_darwin.GetFilesystemStats")
-	return 0, 0, 0, 0, 0, 0, errors.New("GetFilesystemStats is not supported for darwin")
-}
-
-func getISCSIDiskSize(ctx context.Context, _ string) (int64, error) {
-	Logc(ctx).Debug(">>>> osutils_darwin.getISCSIDiskSize")
-	defer Logc(ctx).Debug("<<<< osutils_darwin.getISCSIDiskSize")
-	return 0, errors.New("getBlockSize is not supported for darwin")
-}
-
-func flushOneDevice(ctx context.Context, devicePath string) error {
-	Logc(ctx).Debug(">>>> osutils_darwin.flushOneDevice")
-	defer Logc(ctx).Debug("<<<< osutils_darwin.flushOneDevice")
-	return errors.New("flushOneDevice is not supported for darwin")
-}
-
 func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.GetHostSystemInfo")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.GetHostSystemInfo")
 	msg := "GetHostSystemInfo is not supported for darwin"
 	return nil, UnsupportedError(msg)
-}
-
-func ISCSIActiveOnHost(ctx context.Context, host HostSystem) (bool, error) {
-	Logc(ctx).Debug(">>>> osutils_darwin.ISCSIActiveOnHost")
-	defer Logc(ctx).Debug("<<<< osutils_darwin.ISCSIActiveOnHost")
-	msg := "ISCSIActiveOnHost is not supported for darwin"
-	return false, UnsupportedError(msg)
 }
 
 func NFSActiveOnHost(ctx context.Context) (bool, error) {

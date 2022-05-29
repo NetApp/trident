@@ -1,10 +1,12 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
-
+// File to implement common utilities .
 package utils
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
@@ -905,4 +907,60 @@ func AppendToStringList(stringList, newItem, sep string) string {
 
 	stringListItems = append(stringListItems, newItem)
 	return strings.Join(stringListItems, sep)
+}
+
+// getHostportIP returns just the IP address part of the given input IP address and strips any port information
+func getHostportIP(hostport string) string {
+	ipAddress := ""
+	if IPv6Check(hostport) {
+		// this is an IPv6 address, remove port value and add square brackets around the IP address
+		if hostport[0] == '[' {
+			ipAddress = strings.Split(hostport, "]")[0] + "]"
+		} else {
+			// assumption here is that without the square brackets its only IP address without port information
+			ipAddress = "[" + hostport + "]"
+		}
+	} else {
+		ipAddress = strings.Split(hostport, ":")[0]
+	}
+
+	return ipAddress
+}
+
+// ensureHostportFormatted ensures IPv6 hostport is in correct format
+func ensureHostportFormatted(hostport string) string {
+	// If this is an IPv6 address, ensure IP address is enclosed in square
+	// brackets, as in "[::1]:80".
+	if IPv6Check(hostport) && hostport[0] != '[' {
+		// assumption here is that without the square brackets its only IP address without port information
+		return "[" + hostport + "]"
+	}
+
+	return hostport
+}
+
+func IPv6Check(ip string) bool {
+	return strings.Count(ip, ":") >= 2
+}
+
+// ConsistentRead repeatedly reads a file until it gets the same content twice.
+// This is useful when reading files in /proc that are larger than page size
+// and kernel may modify them between individual read() syscalls.
+func ConsistentRead(filename string, attempts int) ([]byte, error) {
+	oldContent, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < attempts; i++ {
+		newContent, err := ioutil.ReadFile(filename)
+		if err != nil {
+			return nil, err
+		}
+		if bytes.Equal(oldContent, newContent) {
+			return newContent, nil
+		}
+		// Files are different, continue reading
+		oldContent = newContent
+	}
+	return nil, fmt.Errorf("could not get consistent content of %s after %d attempts", filename, attempts)
 }

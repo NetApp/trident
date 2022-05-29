@@ -1,13 +1,9 @@
-//go:build windows
-// +build windows
-
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
-
+// Copyright 2022 Netapp Inc. All Rights Reserved.
+// Note: File related to mount functionalities for windows flavor
 package utils
 
 import (
 	"context"
-	"errors"
 
 	. "github.com/netapp/trident/logger"
 )

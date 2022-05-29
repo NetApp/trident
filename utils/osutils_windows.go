@@ -23,30 +23,6 @@ func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	return nil, errors.New("getIPAddresses is not supported for windows")
 }
 
-func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
-	Logc(ctx).Debug(">>>> osutils_windows.getFilesystemSize")
-	defer Logc(ctx).Debug("<<<< osutils_windows.getFilesystemSize")
-	return 0, errors.New("getFilesystemSize is not supported for windows")
-}
-
-func GetFilesystemStats(ctx context.Context, _ string) (int64, int64, int64, int64, int64, int64, error) {
-	Logc(ctx).Debug(">>>> osutils_windows.GetFilesystemStats")
-	defer Logc(ctx).Debug("<<<< osutils_windows.GetFilesystemStats")
-	return 0, 0, 0, 0, 0, 0, errors.New("GetFilesystemStats is not supported for windows")
-}
-
-func getISCSIDiskSize(ctx context.Context, _ string) (int64, error) {
-	Logc(ctx).Debug(">>>> osutils_windows.getISCSIDiskSize")
-	defer Logc(ctx).Debug("<<<< osutils_windows.getISCSIDiskSize")
-	return 0, errors.New("getBlockSize is not supported for windows")
-}
-
-func flushOneDevice(ctx context.Context, devicePath string) error {
-	Logc(ctx).Debug(">>>> osutils_windows.flushOneDevice")
-	defer Logc(ctx).Debug("<<<< osutils_windows.flushOneDevice")
-	return errors.New("flushOneDevice is not supported for windows")
-}
-
 func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.GetHostSystemInfo")
 	defer Logc(ctx).Debug("<<<< osutils_windows.GetHostSystemInfo")

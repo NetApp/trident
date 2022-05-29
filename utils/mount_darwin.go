@@ -1,16 +1,15 @@
-// Copyright 2017 The Kubernetes Authors.
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
-
+// Copyright 2022 Netapp Inc. All Rights Reserved.
+// Note: File related to mount functionalities for darwin flavor
 package utils
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"strings"
 	"syscall"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/net/context"
 
 	. "github.com/netapp/trident/logger"
 )
@@ -25,8 +24,8 @@ import (
 // but it could still be a mount point.
 func IsLikelyNotMountPoint(ctx context.Context, mountpoint string) (bool, error) {
 	fields := log.Fields{"mountpoint": mountpoint}
-	Logc(ctx).WithFields(fields).Debug(">>>> k8s_utils.IsLikelyNotMountPoint")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< k8s_utils.IsLikelyNotMountPoint")
+	Logc(ctx).WithFields(fields).Debug(">>>> k8s_utils_darwin.IsLikelyNotMountPoint")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< k8s_utils_darwin.IsLikelyNotMountPoint")
 
 	stat, err := os.Stat(mountpoint)
 	if err != nil {

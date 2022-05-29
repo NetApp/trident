@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -1213,5 +1213,199 @@ func TestAreMountOptionsInList(t *testing.T) {
 
 	for _, test := range tests {
 		assert.Equal(t, test.found, AreMountOptionsInList(test.mountOptions, test.optionList))
+	}
+}
+
+func TestParseIPv6Valid(t *testing.T) {
+	tests := map[string]struct {
+		input     string
+		output    bool
+		predicate func(string) bool
+	}{
+		"IPv6 Address": {
+			input:  "fd20:8b1e:b258:2000:f816:3eff:feec:0",
+			output: true,
+			predicate: func(input string) bool {
+				return IPv6Check(input)
+			},
+		},
+		"IPv6 Address with Brackets": {
+			input:  "[fd20:8b1e:b258:2000:f816:3eff:feec:0]",
+			output: true,
+			predicate: func(input string) bool {
+				return IPv6Check(input)
+			},
+		},
+		"IPv6 Address with Port": {
+			input:  "[fd20:8b1e:b258:2000:f816:3eff:feec:0]:8000",
+			output: true,
+			predicate: func(input string) bool {
+				return IPv6Check(input)
+			},
+		},
+		"IPv6 localhost Address": {
+			input:  "::1",
+			output: true,
+			predicate: func(input string) bool {
+				return IPv6Check(input)
+			},
+		},
+		"IPv6 localhost Address with Brackets": {
+			input:  "[::1]",
+			output: true,
+			predicate: func(input string) bool {
+				return IPv6Check(input)
+			},
+		},
+		"IPv6 Zero Address": {
+			input:  "::",
+			output: true,
+			predicate: func(input string) bool {
+				return IPv6Check(input)
+			},
+		},
+		"IPv6 Zero Address with Brackets": {
+			input:  "[::]",
+			output: true,
+			predicate: func(input string) bool {
+				return IPv6Check(input)
+			},
+		},
+	}
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			assert.True(t, test.predicate(test.input), "Predicate failed")
+		})
+	}
+}
+
+func TestParseIPv4Valid(t *testing.T) {
+	tests := map[string]struct {
+		input     string
+		output    bool
+		predicate func(string) bool
+	}{
+		"IPv4 Address": {
+			input:  "127.0.0.1",
+			output: false,
+			predicate: func(input string) bool {
+				return IPv6Check(input)
+			},
+		},
+		"IPv4 Address with Brackets": {
+			input:  "[127.0.0.1]",
+			output: false,
+			predicate: func(input string) bool {
+				return IPv6Check(input)
+			},
+		},
+		"IPv4 Address with Port": {
+			input:  "127.0.0.1:8000",
+			output: false,
+			predicate: func(input string) bool {
+				return IPv6Check(input)
+			},
+		},
+		"IPv4 Zero Address": {
+			input:  "0.0.0.0",
+			output: false,
+			predicate: func(input string) bool {
+				return IPv6Check(input)
+			},
+		},
+	}
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			assert.False(t, test.predicate(test.input), "Predicate failed")
+		})
+	}
+}
+
+func TestGetHostportIP(t *testing.T) {
+	type IPAddresses struct {
+		InputIP  string
+		OutputIP string
+	}
+	tests := []IPAddresses{
+		{
+			InputIP:  "1.2.3.4:5678",
+			OutputIP: "1.2.3.4",
+		},
+		{
+			InputIP:  "1.2.3.4",
+			OutputIP: "1.2.3.4",
+		},
+		{
+			InputIP:  "[1:2:3:4]:5678",
+			OutputIP: "[1:2:3:4]",
+		},
+		{
+			InputIP:  "[1:2:3:4]",
+			OutputIP: "[1:2:3:4]",
+		},
+		{
+			InputIP:  "[2607:f8b0:4006:818:0:0:0:2004]",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+		{
+			InputIP:  "[2607:f8b0:4006:818:0:0:0:2004]:5678",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+		{
+			InputIP:  "2607:f8b0:4006:818:0:0:0:2004",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.InputIP, func(t *testing.T) {
+			assert.Equal(t, testCase.OutputIP, getHostportIP(testCase.InputIP), "IP mismatch")
+		})
+	}
+}
+
+func TestEnsureHostportFormatted(t *testing.T) {
+	type IPAddresses struct {
+		InputIP  string
+		OutputIP string
+	}
+	tests := []IPAddresses{
+		{
+			InputIP:  "1.2.3.4:5678",
+			OutputIP: "1.2.3.4:5678",
+		},
+		{
+			InputIP:  "1.2.3.4",
+			OutputIP: "1.2.3.4",
+		},
+		{
+			InputIP:  "[1:2:3:4]:5678",
+			OutputIP: "[1:2:3:4]:5678",
+		},
+		{
+			InputIP:  "[1:2:3:4]",
+			OutputIP: "[1:2:3:4]",
+		},
+		{
+			InputIP:  "1:2:3:4",
+			OutputIP: "[1:2:3:4]",
+		},
+		{
+			InputIP:  "2607:f8b0:4006:818:0:0:0:2004",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+		{
+			InputIP:  "[2607:f8b0:4006:818:0:0:0:2004]",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]",
+		},
+		{
+			InputIP:  "[2607:f8b0:4006:818:0:0:0:2004]:5678",
+			OutputIP: "[2607:f8b0:4006:818:0:0:0:2004]:5678",
+		},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.InputIP, func(t *testing.T) {
+			assert.Equal(t, testCase.OutputIP, ensureHostportFormatted(testCase.InputIP),
+				"Hostport not correctly formatted")
+		})
 	}
 }
