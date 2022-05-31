@@ -30,13 +30,6 @@ func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 	return nil, UnsupportedError(msg)
 }
 
-func ISCSIActiveOnHost(ctx context.Context, host HostSystem) (bool, error) {
-	Logc(ctx).Debug(">>>> osutils_windows.ISCSIActiveOnHost")
-	defer Logc(ctx).Debug("<<<< osutils_windows.ISCSIActiveOnHost")
-	msg := "ISCSIActiveOnHost is not supported for windows"
-	return false, UnsupportedError(msg)
-}
-
 func NFSActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.NFSActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_windows.NFSActiveOnHost")
