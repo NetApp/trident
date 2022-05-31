@@ -46,7 +46,7 @@ DR_WINDOWS = docker run \
 
 GO_WINDOWS = ${DR_WINDOWS} ${GO_CMD}
 
-.PHONY: default trident_build_windows
+.PHONY: default trident_build_windows push
 
 ## version variables
 TRIDENT_VERSION ?= ${VERSION}
@@ -85,3 +85,5 @@ endif
 	@copy ${BIN_DIR}\${BIN} ${ROOT}\${BIN}
 	@copy ${BIN_DIR}\${CLI_BIN} ${ROOT}\${CLI_BIN}
 	docker build --file Dockerfile.Windows --build-arg ARCH=${GOARCH} --build-arg WINDOWS_VERSION=${WINDOWS_IMG_VERSION} --build-arg PORT=${PORT} --build-arg BIN=${BIN} --build-arg CLI_BIN=${CLI_BIN} --build-arg K8S=${K8S} -t ${TRIDENT_DIST_TAG} --rm .
+push:
+	docker push ${TRIDENT_DIST_TAG}
