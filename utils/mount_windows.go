@@ -4,6 +4,7 @@ package utils
 
 import (
 	"context"
+	"errors"
 
 	. "github.com/netapp/trident/logger"
 )
