@@ -117,14 +117,8 @@ ifdef CREATE_BASE_IMAGE
 endif
 	@docker rm ${BUILD_CONTAINER_NAME}
 	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/${CLI_BIN} ${CLI_PKG}
-ifdef CREATE_BASE_IMAGE
-	@docker commit ${BUILD_CONTAINER_NAME} ${CREATE_BASE_IMAGE}
-endif
 	@docker rm ${BUILD_CONTAINER_NAME}
 	@${GO_LINUX} ${BUILD} -ldflags $(BUILD_FLAGS) -o ${TRIDENT_VOLUME_PATH}/bin/chwrap chwrap/chwrap.go
-ifdef CREATE_BASE_IMAGE
-	@docker commit ${BUILD_CONTAINER_NAME} ${CREATE_BASE_IMAGE}
-endif
 	@docker rm ${BUILD_CONTAINER_NAME}
 	cp ${BIN_DIR}/${BIN} ${BIN_DIR}/${CLI_BIN} .
 	chwrap/make-tarball.sh ${BIN_DIR}/chwrap chwrap.tar
