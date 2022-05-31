@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorGetIterRequest is a structure to represent a snapmirror-get-iter Request ZAPI object
@@ -116,7 +117,7 @@ func (o *SnapmirrorGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Snapmi
 	combined.Result.SetAttributesList(SnapmirrorGetIterResponseResultAttributesList{})
 	var nextTagPtr *string
 	done := false
-	for done != true {
+	for !done {
 		n, err := o.executeWithoutIteration(zr)
 
 		if err != nil {
@@ -151,7 +152,7 @@ func (o *SnapmirrorGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Snapmi
 			combined.Result.AttributesListPtr.setValues(append(combinedAttributes, resultAttributes...))
 		}
 
-		if done == true {
+		if done {
 
 			combined.Result.ResultErrnoAttr = n.Result.ResultErrnoAttr
 			combined.Result.ResultReasonAttr = n.Result.ResultReasonAttr
@@ -179,7 +180,11 @@ func (o SnapmirrorGetIterRequestDesiredAttributes) String() string {
 
 // SnapmirrorInfo is a 'getter' method
 func (o *SnapmirrorGetIterRequestDesiredAttributes) SnapmirrorInfo() SnapmirrorInfoType {
-	r := *o.SnapmirrorInfoPtr
+	var r SnapmirrorInfoType
+	if o.SnapmirrorInfoPtr == nil {
+		return r
+	}
+	r = *o.SnapmirrorInfoPtr
 	return r
 }
 
@@ -191,7 +196,11 @@ func (o *SnapmirrorGetIterRequestDesiredAttributes) SetSnapmirrorInfo(newValue S
 
 // DesiredAttributes is a 'getter' method
 func (o *SnapmirrorGetIterRequest) DesiredAttributes() SnapmirrorGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r SnapmirrorGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -203,7 +212,11 @@ func (o *SnapmirrorGetIterRequest) SetDesiredAttributes(newValue SnapmirrorGetIt
 
 // Expand is a 'getter' method
 func (o *SnapmirrorGetIterRequest) Expand() bool {
-	r := *o.ExpandPtr
+	var r bool
+	if o.ExpandPtr == nil {
+		return r
+	}
+	r = *o.ExpandPtr
 	return r
 }
 
@@ -215,7 +228,11 @@ func (o *SnapmirrorGetIterRequest) SetExpand(newValue bool) *SnapmirrorGetIterRe
 
 // MaxRecords is a 'getter' method
 func (o *SnapmirrorGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -238,7 +255,11 @@ func (o SnapmirrorGetIterRequestQuery) String() string {
 
 // SnapmirrorInfo is a 'getter' method
 func (o *SnapmirrorGetIterRequestQuery) SnapmirrorInfo() SnapmirrorInfoType {
-	r := *o.SnapmirrorInfoPtr
+	var r SnapmirrorInfoType
+	if o.SnapmirrorInfoPtr == nil {
+		return r
+	}
+	r = *o.SnapmirrorInfoPtr
 	return r
 }
 
@@ -250,7 +271,11 @@ func (o *SnapmirrorGetIterRequestQuery) SetSnapmirrorInfo(newValue SnapmirrorInf
 
 // Query is a 'getter' method
 func (o *SnapmirrorGetIterRequest) Query() SnapmirrorGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r SnapmirrorGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -262,7 +287,11 @@ func (o *SnapmirrorGetIterRequest) SetQuery(newValue SnapmirrorGetIterRequestQue
 
 // Tag is a 'getter' method
 func (o *SnapmirrorGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -313,7 +342,11 @@ func (o *SnapmirrorGetIterResponseResultAttributesList) setValues(newValue []Sna
 
 // AttributesList is a 'getter' method
 func (o *SnapmirrorGetIterResponseResult) AttributesList() SnapmirrorGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r SnapmirrorGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -325,7 +358,11 @@ func (o *SnapmirrorGetIterResponseResult) SetAttributesList(newValue SnapmirrorG
 
 // NextTag is a 'getter' method
 func (o *SnapmirrorGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -337,7 +374,11 @@ func (o *SnapmirrorGetIterResponseResult) SetNextTag(newValue string) *Snapmirro
 
 // NumRecords is a 'getter' method
 func (o *SnapmirrorGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

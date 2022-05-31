@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunSetQosPolicyGroupRequest is a structure to represent a lun-set-qos-policy-group Request ZAPI object
@@ -107,7 +108,11 @@ func (o *LunSetQosPolicyGroupRequest) executeWithoutIteration(zr *ZapiRunner) (*
 
 // Path is a 'getter' method
 func (o *LunSetQosPolicyGroupRequest) Path() LunPathType {
-	r := *o.PathPtr
+	var r LunPathType
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 
@@ -119,7 +124,11 @@ func (o *LunSetQosPolicyGroupRequest) SetPath(newValue LunPathType) *LunSetQosPo
 
 // QosAdaptivePolicyGroup is a 'getter' method
 func (o *LunSetQosPolicyGroupRequest) QosAdaptivePolicyGroup() string {
-	r := *o.QosAdaptivePolicyGroupPtr
+	var r string
+	if o.QosAdaptivePolicyGroupPtr == nil {
+		return r
+	}
+	r = *o.QosAdaptivePolicyGroupPtr
 	return r
 }
 
@@ -131,7 +140,11 @@ func (o *LunSetQosPolicyGroupRequest) SetQosAdaptivePolicyGroup(newValue string)
 
 // QosPolicyGroup is a 'getter' method
 func (o *LunSetQosPolicyGroupRequest) QosPolicyGroup() string {
-	r := *o.QosPolicyGroupPtr
+	var r string
+	if o.QosPolicyGroupPtr == nil {
+		return r
+	}
+	r = *o.QosPolicyGroupPtr
 	return r
 }
 

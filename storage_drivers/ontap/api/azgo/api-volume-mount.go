@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeMountRequest is a structure to represent a volume-mount Request ZAPI object
@@ -108,7 +109,11 @@ func (o *VolumeMountRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeMou
 
 // ActivateJunction is a 'getter' method
 func (o *VolumeMountRequest) ActivateJunction() bool {
-	r := *o.ActivateJunctionPtr
+	var r bool
+	if o.ActivateJunctionPtr == nil {
+		return r
+	}
+	r = *o.ActivateJunctionPtr
 	return r
 }
 
@@ -120,7 +125,11 @@ func (o *VolumeMountRequest) SetActivateJunction(newValue bool) *VolumeMountRequ
 
 // ExportPolicyOverride is a 'getter' method
 func (o *VolumeMountRequest) ExportPolicyOverride() bool {
-	r := *o.ExportPolicyOverridePtr
+	var r bool
+	if o.ExportPolicyOverridePtr == nil {
+		return r
+	}
+	r = *o.ExportPolicyOverridePtr
 	return r
 }
 
@@ -132,7 +141,11 @@ func (o *VolumeMountRequest) SetExportPolicyOverride(newValue bool) *VolumeMount
 
 // JunctionPath is a 'getter' method
 func (o *VolumeMountRequest) JunctionPath() string {
-	r := *o.JunctionPathPtr
+	var r string
+	if o.JunctionPathPtr == nil {
+		return r
+	}
+	r = *o.JunctionPathPtr
 	return r
 }
 
@@ -144,7 +157,11 @@ func (o *VolumeMountRequest) SetJunctionPath(newValue string) *VolumeMountReques
 
 // VolumeName is a 'getter' method
 func (o *VolumeMountRequest) VolumeName() string {
-	r := *o.VolumeNamePtr
+	var r string
+	if o.VolumeNamePtr == nil {
+		return r
+	}
+	r = *o.VolumeNamePtr
 	return r
 }
 

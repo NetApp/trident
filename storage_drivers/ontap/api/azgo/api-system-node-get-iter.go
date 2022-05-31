@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SystemNodeGetIterRequest is a structure to represent a system-node-get-iter Request ZAPI object
@@ -178,7 +179,11 @@ func (o SystemNodeGetIterRequestDesiredAttributes) String() string {
 
 // NodeDetailsInfo is a 'getter' method
 func (o *SystemNodeGetIterRequestDesiredAttributes) NodeDetailsInfo() NodeDetailsInfoType {
-	r := *o.NodeDetailsInfoPtr
+	var r NodeDetailsInfoType
+	if o.NodeDetailsInfoPtr == nil {
+		return r
+	}
+	r = *o.NodeDetailsInfoPtr
 	return r
 }
 
@@ -190,7 +195,11 @@ func (o *SystemNodeGetIterRequestDesiredAttributes) SetNodeDetailsInfo(newValue 
 
 // DesiredAttributes is a 'getter' method
 func (o *SystemNodeGetIterRequest) DesiredAttributes() SystemNodeGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r SystemNodeGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -202,7 +211,11 @@ func (o *SystemNodeGetIterRequest) SetDesiredAttributes(newValue SystemNodeGetIt
 
 // MaxRecords is a 'getter' method
 func (o *SystemNodeGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -225,7 +238,11 @@ func (o SystemNodeGetIterRequestQuery) String() string {
 
 // NodeDetailsInfo is a 'getter' method
 func (o *SystemNodeGetIterRequestQuery) NodeDetailsInfo() NodeDetailsInfoType {
-	r := *o.NodeDetailsInfoPtr
+	var r NodeDetailsInfoType
+	if o.NodeDetailsInfoPtr == nil {
+		return r
+	}
+	r = *o.NodeDetailsInfoPtr
 	return r
 }
 
@@ -237,7 +254,11 @@ func (o *SystemNodeGetIterRequestQuery) SetNodeDetailsInfo(newValue NodeDetailsI
 
 // Query is a 'getter' method
 func (o *SystemNodeGetIterRequest) Query() SystemNodeGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r SystemNodeGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -249,7 +270,11 @@ func (o *SystemNodeGetIterRequest) SetQuery(newValue SystemNodeGetIterRequestQue
 
 // Tag is a 'getter' method
 func (o *SystemNodeGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -300,7 +325,11 @@ func (o *SystemNodeGetIterResponseResultAttributesList) setValues(newValue []Nod
 
 // AttributesList is a 'getter' method
 func (o *SystemNodeGetIterResponseResult) AttributesList() SystemNodeGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r SystemNodeGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -312,7 +341,11 @@ func (o *SystemNodeGetIterResponseResult) SetAttributesList(newValue SystemNodeG
 
 // NextTag is a 'getter' method
 func (o *SystemNodeGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -324,7 +357,11 @@ func (o *SystemNodeGetIterResponseResult) SetNextTag(newValue string) *SystemNod
 
 // NumRecords is a 'getter' method
 func (o *SystemNodeGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

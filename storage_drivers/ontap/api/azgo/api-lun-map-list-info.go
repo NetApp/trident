@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunMapListInfoRequest is a structure to represent a lun-map-list-info Request ZAPI object
@@ -106,7 +107,11 @@ func (o *LunMapListInfoRequest) executeWithoutIteration(zr *ZapiRunner) (*LunMap
 
 // Path is a 'getter' method
 func (o *LunMapListInfoRequest) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 
@@ -157,7 +162,11 @@ func (o *LunMapListInfoResponseResultInitiatorGroups) setValues(newValue []Initi
 
 // InitiatorGroups is a 'getter' method
 func (o *LunMapListInfoResponseResult) InitiatorGroups() LunMapListInfoResponseResultInitiatorGroups {
-	r := *o.InitiatorGroupsPtr
+	var r LunMapListInfoResponseResultInitiatorGroups
+	if o.InitiatorGroupsPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupsPtr
 	return r
 }
 

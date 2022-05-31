@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeSpaceAttributesType is a structure to represent a volume-space-attributes ZAPI object
@@ -73,7 +74,11 @@ func (o VolumeSpaceAttributesType) String() string {
 
 // ExpectedAvailable is a 'getter' method
 func (o *VolumeSpaceAttributesType) ExpectedAvailable() int {
-	r := *o.ExpectedAvailablePtr
+	var r int
+	if o.ExpectedAvailablePtr == nil {
+		return r
+	}
+	r = *o.ExpectedAvailablePtr
 	return r
 }
 
@@ -85,7 +90,11 @@ func (o *VolumeSpaceAttributesType) SetExpectedAvailable(newValue int) *VolumeSp
 
 // FilesystemSize is a 'getter' method
 func (o *VolumeSpaceAttributesType) FilesystemSize() int {
-	r := *o.FilesystemSizePtr
+	var r int
+	if o.FilesystemSizePtr == nil {
+		return r
+	}
+	r = *o.FilesystemSizePtr
 	return r
 }
 
@@ -97,7 +106,11 @@ func (o *VolumeSpaceAttributesType) SetFilesystemSize(newValue int) *VolumeSpace
 
 // IsFilesysSizeFixed is a 'getter' method
 func (o *VolumeSpaceAttributesType) IsFilesysSizeFixed() bool {
-	r := *o.IsFilesysSizeFixedPtr
+	var r bool
+	if o.IsFilesysSizeFixedPtr == nil {
+		return r
+	}
+	r = *o.IsFilesysSizeFixedPtr
 	return r
 }
 
@@ -109,7 +122,11 @@ func (o *VolumeSpaceAttributesType) SetIsFilesysSizeFixed(newValue bool) *Volume
 
 // IsSpaceEnforcementLogical is a 'getter' method
 func (o *VolumeSpaceAttributesType) IsSpaceEnforcementLogical() bool {
-	r := *o.IsSpaceEnforcementLogicalPtr
+	var r bool
+	if o.IsSpaceEnforcementLogicalPtr == nil {
+		return r
+	}
+	r = *o.IsSpaceEnforcementLogicalPtr
 	return r
 }
 
@@ -121,7 +138,11 @@ func (o *VolumeSpaceAttributesType) SetIsSpaceEnforcementLogical(newValue bool) 
 
 // IsSpaceGuaranteeEnabled is a 'getter' method
 func (o *VolumeSpaceAttributesType) IsSpaceGuaranteeEnabled() bool {
-	r := *o.IsSpaceGuaranteeEnabledPtr
+	var r bool
+	if o.IsSpaceGuaranteeEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsSpaceGuaranteeEnabledPtr
 	return r
 }
 
@@ -133,7 +154,11 @@ func (o *VolumeSpaceAttributesType) SetIsSpaceGuaranteeEnabled(newValue bool) *V
 
 // IsSpaceReportingLogical is a 'getter' method
 func (o *VolumeSpaceAttributesType) IsSpaceReportingLogical() bool {
-	r := *o.IsSpaceReportingLogicalPtr
+	var r bool
+	if o.IsSpaceReportingLogicalPtr == nil {
+		return r
+	}
+	r = *o.IsSpaceReportingLogicalPtr
 	return r
 }
 
@@ -145,7 +170,11 @@ func (o *VolumeSpaceAttributesType) SetIsSpaceReportingLogical(newValue bool) *V
 
 // IsSpaceSloEnabled is a 'getter' method
 func (o *VolumeSpaceAttributesType) IsSpaceSloEnabled() string {
-	r := *o.IsSpaceSloEnabledPtr
+	var r string
+	if o.IsSpaceSloEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsSpaceSloEnabledPtr
 	return r
 }
 
@@ -157,7 +186,11 @@ func (o *VolumeSpaceAttributesType) SetIsSpaceSloEnabled(newValue string) *Volum
 
 // LogicalAvailable is a 'getter' method
 func (o *VolumeSpaceAttributesType) LogicalAvailable() int {
-	r := *o.LogicalAvailablePtr
+	var r int
+	if o.LogicalAvailablePtr == nil {
+		return r
+	}
+	r = *o.LogicalAvailablePtr
 	return r
 }
 
@@ -169,7 +202,11 @@ func (o *VolumeSpaceAttributesType) SetLogicalAvailable(newValue int) *VolumeSpa
 
 // LogicalUsed is a 'getter' method
 func (o *VolumeSpaceAttributesType) LogicalUsed() int {
-	r := *o.LogicalUsedPtr
+	var r int
+	if o.LogicalUsedPtr == nil {
+		return r
+	}
+	r = *o.LogicalUsedPtr
 	return r
 }
 
@@ -181,7 +218,11 @@ func (o *VolumeSpaceAttributesType) SetLogicalUsed(newValue int) *VolumeSpaceAtt
 
 // LogicalUsedByAfs is a 'getter' method
 func (o *VolumeSpaceAttributesType) LogicalUsedByAfs() int {
-	r := *o.LogicalUsedByAfsPtr
+	var r int
+	if o.LogicalUsedByAfsPtr == nil {
+		return r
+	}
+	r = *o.LogicalUsedByAfsPtr
 	return r
 }
 
@@ -193,7 +234,11 @@ func (o *VolumeSpaceAttributesType) SetLogicalUsedByAfs(newValue int) *VolumeSpa
 
 // LogicalUsedBySnapshots is a 'getter' method
 func (o *VolumeSpaceAttributesType) LogicalUsedBySnapshots() int {
-	r := *o.LogicalUsedBySnapshotsPtr
+	var r int
+	if o.LogicalUsedBySnapshotsPtr == nil {
+		return r
+	}
+	r = *o.LogicalUsedBySnapshotsPtr
 	return r
 }
 
@@ -205,7 +250,11 @@ func (o *VolumeSpaceAttributesType) SetLogicalUsedBySnapshots(newValue int) *Vol
 
 // LogicalUsedPercent is a 'getter' method
 func (o *VolumeSpaceAttributesType) LogicalUsedPercent() int {
-	r := *o.LogicalUsedPercentPtr
+	var r int
+	if o.LogicalUsedPercentPtr == nil {
+		return r
+	}
+	r = *o.LogicalUsedPercentPtr
 	return r
 }
 
@@ -217,7 +266,11 @@ func (o *VolumeSpaceAttributesType) SetLogicalUsedPercent(newValue int) *VolumeS
 
 // MaxConstituentSize is a 'getter' method
 func (o *VolumeSpaceAttributesType) MaxConstituentSize() SizeType {
-	r := *o.MaxConstituentSizePtr
+	var r SizeType
+	if o.MaxConstituentSizePtr == nil {
+		return r
+	}
+	r = *o.MaxConstituentSizePtr
 	return r
 }
 
@@ -229,7 +282,11 @@ func (o *VolumeSpaceAttributesType) SetMaxConstituentSize(newValue SizeType) *Vo
 
 // OverProvisioned is a 'getter' method
 func (o *VolumeSpaceAttributesType) OverProvisioned() int {
-	r := *o.OverProvisionedPtr
+	var r int
+	if o.OverProvisionedPtr == nil {
+		return r
+	}
+	r = *o.OverProvisionedPtr
 	return r
 }
 
@@ -241,7 +298,11 @@ func (o *VolumeSpaceAttributesType) SetOverProvisioned(newValue int) *VolumeSpac
 
 // OverwriteReserve is a 'getter' method
 func (o *VolumeSpaceAttributesType) OverwriteReserve() int {
-	r := *o.OverwriteReservePtr
+	var r int
+	if o.OverwriteReservePtr == nil {
+		return r
+	}
+	r = *o.OverwriteReservePtr
 	return r
 }
 
@@ -253,7 +314,11 @@ func (o *VolumeSpaceAttributesType) SetOverwriteReserve(newValue int) *VolumeSpa
 
 // OverwriteReserveRequired is a 'getter' method
 func (o *VolumeSpaceAttributesType) OverwriteReserveRequired() int {
-	r := *o.OverwriteReserveRequiredPtr
+	var r int
+	if o.OverwriteReserveRequiredPtr == nil {
+		return r
+	}
+	r = *o.OverwriteReserveRequiredPtr
 	return r
 }
 
@@ -265,7 +330,11 @@ func (o *VolumeSpaceAttributesType) SetOverwriteReserveRequired(newValue int) *V
 
 // OverwriteReserveUsed is a 'getter' method
 func (o *VolumeSpaceAttributesType) OverwriteReserveUsed() int {
-	r := *o.OverwriteReserveUsedPtr
+	var r int
+	if o.OverwriteReserveUsedPtr == nil {
+		return r
+	}
+	r = *o.OverwriteReserveUsedPtr
 	return r
 }
 
@@ -277,7 +346,11 @@ func (o *VolumeSpaceAttributesType) SetOverwriteReserveUsed(newValue int) *Volum
 
 // OverwriteReserveUsedActual is a 'getter' method
 func (o *VolumeSpaceAttributesType) OverwriteReserveUsedActual() int {
-	r := *o.OverwriteReserveUsedActualPtr
+	var r int
+	if o.OverwriteReserveUsedActualPtr == nil {
+		return r
+	}
+	r = *o.OverwriteReserveUsedActualPtr
 	return r
 }
 
@@ -289,7 +362,11 @@ func (o *VolumeSpaceAttributesType) SetOverwriteReserveUsedActual(newValue int) 
 
 // PercentageFractionalReserve is a 'getter' method
 func (o *VolumeSpaceAttributesType) PercentageFractionalReserve() int {
-	r := *o.PercentageFractionalReservePtr
+	var r int
+	if o.PercentageFractionalReservePtr == nil {
+		return r
+	}
+	r = *o.PercentageFractionalReservePtr
 	return r
 }
 
@@ -301,7 +378,11 @@ func (o *VolumeSpaceAttributesType) SetPercentageFractionalReserve(newValue int)
 
 // PercentageSizeUsed is a 'getter' method
 func (o *VolumeSpaceAttributesType) PercentageSizeUsed() int {
-	r := *o.PercentageSizeUsedPtr
+	var r int
+	if o.PercentageSizeUsedPtr == nil {
+		return r
+	}
+	r = *o.PercentageSizeUsedPtr
 	return r
 }
 
@@ -313,7 +394,11 @@ func (o *VolumeSpaceAttributesType) SetPercentageSizeUsed(newValue int) *VolumeS
 
 // PercentageSnapshotReserve is a 'getter' method
 func (o *VolumeSpaceAttributesType) PercentageSnapshotReserve() int {
-	r := *o.PercentageSnapshotReservePtr
+	var r int
+	if o.PercentageSnapshotReservePtr == nil {
+		return r
+	}
+	r = *o.PercentageSnapshotReservePtr
 	return r
 }
 
@@ -325,7 +410,11 @@ func (o *VolumeSpaceAttributesType) SetPercentageSnapshotReserve(newValue int) *
 
 // PercentageSnapshotReserveUsed is a 'getter' method
 func (o *VolumeSpaceAttributesType) PercentageSnapshotReserveUsed() int {
-	r := *o.PercentageSnapshotReserveUsedPtr
+	var r int
+	if o.PercentageSnapshotReserveUsedPtr == nil {
+		return r
+	}
+	r = *o.PercentageSnapshotReserveUsedPtr
 	return r
 }
 
@@ -337,7 +426,11 @@ func (o *VolumeSpaceAttributesType) SetPercentageSnapshotReserveUsed(newValue in
 
 // PerformanceTierInactiveUserData is a 'getter' method
 func (o *VolumeSpaceAttributesType) PerformanceTierInactiveUserData() int {
-	r := *o.PerformanceTierInactiveUserDataPtr
+	var r int
+	if o.PerformanceTierInactiveUserDataPtr == nil {
+		return r
+	}
+	r = *o.PerformanceTierInactiveUserDataPtr
 	return r
 }
 
@@ -349,7 +442,11 @@ func (o *VolumeSpaceAttributesType) SetPerformanceTierInactiveUserData(newValue 
 
 // PerformanceTierInactiveUserDataPercent is a 'getter' method
 func (o *VolumeSpaceAttributesType) PerformanceTierInactiveUserDataPercent() int {
-	r := *o.PerformanceTierInactiveUserDataPercentPtr
+	var r int
+	if o.PerformanceTierInactiveUserDataPercentPtr == nil {
+		return r
+	}
+	r = *o.PerformanceTierInactiveUserDataPercentPtr
 	return r
 }
 
@@ -361,7 +458,11 @@ func (o *VolumeSpaceAttributesType) SetPerformanceTierInactiveUserDataPercent(ne
 
 // PhysicalUsed is a 'getter' method
 func (o *VolumeSpaceAttributesType) PhysicalUsed() int {
-	r := *o.PhysicalUsedPtr
+	var r int
+	if o.PhysicalUsedPtr == nil {
+		return r
+	}
+	r = *o.PhysicalUsedPtr
 	return r
 }
 
@@ -373,7 +474,11 @@ func (o *VolumeSpaceAttributesType) SetPhysicalUsed(newValue int) *VolumeSpaceAt
 
 // PhysicalUsedPercent is a 'getter' method
 func (o *VolumeSpaceAttributesType) PhysicalUsedPercent() int {
-	r := *o.PhysicalUsedPercentPtr
+	var r int
+	if o.PhysicalUsedPercentPtr == nil {
+		return r
+	}
+	r = *o.PhysicalUsedPercentPtr
 	return r
 }
 
@@ -385,7 +490,11 @@ func (o *VolumeSpaceAttributesType) SetPhysicalUsedPercent(newValue int) *Volume
 
 // Size is a 'getter' method
 func (o *VolumeSpaceAttributesType) Size() int {
-	r := *o.SizePtr
+	var r int
+	if o.SizePtr == nil {
+		return r
+	}
+	r = *o.SizePtr
 	return r
 }
 
@@ -397,7 +506,11 @@ func (o *VolumeSpaceAttributesType) SetSize(newValue int) *VolumeSpaceAttributes
 
 // SizeAvailable is a 'getter' method
 func (o *VolumeSpaceAttributesType) SizeAvailable() int {
-	r := *o.SizeAvailablePtr
+	var r int
+	if o.SizeAvailablePtr == nil {
+		return r
+	}
+	r = *o.SizeAvailablePtr
 	return r
 }
 
@@ -409,7 +522,11 @@ func (o *VolumeSpaceAttributesType) SetSizeAvailable(newValue int) *VolumeSpaceA
 
 // SizeAvailableForSnapshots is a 'getter' method
 func (o *VolumeSpaceAttributesType) SizeAvailableForSnapshots() int {
-	r := *o.SizeAvailableForSnapshotsPtr
+	var r int
+	if o.SizeAvailableForSnapshotsPtr == nil {
+		return r
+	}
+	r = *o.SizeAvailableForSnapshotsPtr
 	return r
 }
 
@@ -421,7 +538,11 @@ func (o *VolumeSpaceAttributesType) SetSizeAvailableForSnapshots(newValue int) *
 
 // SizeTotal is a 'getter' method
 func (o *VolumeSpaceAttributesType) SizeTotal() int {
-	r := *o.SizeTotalPtr
+	var r int
+	if o.SizeTotalPtr == nil {
+		return r
+	}
+	r = *o.SizeTotalPtr
 	return r
 }
 
@@ -433,7 +554,11 @@ func (o *VolumeSpaceAttributesType) SetSizeTotal(newValue int) *VolumeSpaceAttri
 
 // SizeUsed is a 'getter' method
 func (o *VolumeSpaceAttributesType) SizeUsed() int {
-	r := *o.SizeUsedPtr
+	var r int
+	if o.SizeUsedPtr == nil {
+		return r
+	}
+	r = *o.SizeUsedPtr
 	return r
 }
 
@@ -445,7 +570,11 @@ func (o *VolumeSpaceAttributesType) SetSizeUsed(newValue int) *VolumeSpaceAttrib
 
 // SizeUsedBySnapshots is a 'getter' method
 func (o *VolumeSpaceAttributesType) SizeUsedBySnapshots() int {
-	r := *o.SizeUsedBySnapshotsPtr
+	var r int
+	if o.SizeUsedBySnapshotsPtr == nil {
+		return r
+	}
+	r = *o.SizeUsedBySnapshotsPtr
 	return r
 }
 
@@ -457,7 +586,11 @@ func (o *VolumeSpaceAttributesType) SetSizeUsedBySnapshots(newValue int) *Volume
 
 // SnapshotReserveAvailable is a 'getter' method
 func (o *VolumeSpaceAttributesType) SnapshotReserveAvailable() int {
-	r := *o.SnapshotReserveAvailablePtr
+	var r int
+	if o.SnapshotReserveAvailablePtr == nil {
+		return r
+	}
+	r = *o.SnapshotReserveAvailablePtr
 	return r
 }
 
@@ -469,7 +602,11 @@ func (o *VolumeSpaceAttributesType) SetSnapshotReserveAvailable(newValue int) *V
 
 // SnapshotReserveSize is a 'getter' method
 func (o *VolumeSpaceAttributesType) SnapshotReserveSize() int {
-	r := *o.SnapshotReserveSizePtr
+	var r int
+	if o.SnapshotReserveSizePtr == nil {
+		return r
+	}
+	r = *o.SnapshotReserveSizePtr
 	return r
 }
 
@@ -481,7 +618,11 @@ func (o *VolumeSpaceAttributesType) SetSnapshotReserveSize(newValue int) *Volume
 
 // SpaceFullThresholdPercent is a 'getter' method
 func (o *VolumeSpaceAttributesType) SpaceFullThresholdPercent() int {
-	r := *o.SpaceFullThresholdPercentPtr
+	var r int
+	if o.SpaceFullThresholdPercentPtr == nil {
+		return r
+	}
+	r = *o.SpaceFullThresholdPercentPtr
 	return r
 }
 
@@ -493,7 +634,11 @@ func (o *VolumeSpaceAttributesType) SetSpaceFullThresholdPercent(newValue int) *
 
 // SpaceGuarantee is a 'getter' method
 func (o *VolumeSpaceAttributesType) SpaceGuarantee() string {
-	r := *o.SpaceGuaranteePtr
+	var r string
+	if o.SpaceGuaranteePtr == nil {
+		return r
+	}
+	r = *o.SpaceGuaranteePtr
 	return r
 }
 
@@ -505,7 +650,11 @@ func (o *VolumeSpaceAttributesType) SetSpaceGuarantee(newValue string) *VolumeSp
 
 // SpaceMgmtOptionTryFirst is a 'getter' method
 func (o *VolumeSpaceAttributesType) SpaceMgmtOptionTryFirst() string {
-	r := *o.SpaceMgmtOptionTryFirstPtr
+	var r string
+	if o.SpaceMgmtOptionTryFirstPtr == nil {
+		return r
+	}
+	r = *o.SpaceMgmtOptionTryFirstPtr
 	return r
 }
 
@@ -517,7 +666,11 @@ func (o *VolumeSpaceAttributesType) SetSpaceMgmtOptionTryFirst(newValue string) 
 
 // SpaceNearlyFullThresholdPercent is a 'getter' method
 func (o *VolumeSpaceAttributesType) SpaceNearlyFullThresholdPercent() int {
-	r := *o.SpaceNearlyFullThresholdPercentPtr
+	var r int
+	if o.SpaceNearlyFullThresholdPercentPtr == nil {
+		return r
+	}
+	r = *o.SpaceNearlyFullThresholdPercentPtr
 	return r
 }
 
@@ -529,7 +682,11 @@ func (o *VolumeSpaceAttributesType) SetSpaceNearlyFullThresholdPercent(newValue 
 
 // SpaceSlo is a 'getter' method
 func (o *VolumeSpaceAttributesType) SpaceSlo() SpaceSloEnumType {
-	r := *o.SpaceSloPtr
+	var r SpaceSloEnumType
+	if o.SpaceSloPtr == nil {
+		return r
+	}
+	r = *o.SpaceSloPtr
 	return r
 }
 

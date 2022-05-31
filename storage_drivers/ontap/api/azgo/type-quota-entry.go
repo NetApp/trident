@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // QuotaEntryType is a structure to represent a quota-entry ZAPI object
@@ -46,7 +47,11 @@ func (o QuotaEntryType) String() string {
 
 // DiskLimit is a 'getter' method
 func (o *QuotaEntryType) DiskLimit() string {
-	r := *o.DiskLimitPtr
+	var r string
+	if o.DiskLimitPtr == nil {
+		return r
+	}
+	r = *o.DiskLimitPtr
 	return r
 }
 
@@ -58,7 +63,11 @@ func (o *QuotaEntryType) SetDiskLimit(newValue string) *QuotaEntryType {
 
 // FileLimit is a 'getter' method
 func (o *QuotaEntryType) FileLimit() string {
-	r := *o.FileLimitPtr
+	var r string
+	if o.FileLimitPtr == nil {
+		return r
+	}
+	r = *o.FileLimitPtr
 	return r
 }
 
@@ -70,7 +79,11 @@ func (o *QuotaEntryType) SetFileLimit(newValue string) *QuotaEntryType {
 
 // PerformUserMapping is a 'getter' method
 func (o *QuotaEntryType) PerformUserMapping() bool {
-	r := *o.PerformUserMappingPtr
+	var r bool
+	if o.PerformUserMappingPtr == nil {
+		return r
+	}
+	r = *o.PerformUserMappingPtr
 	return r
 }
 
@@ -82,7 +95,11 @@ func (o *QuotaEntryType) SetPerformUserMapping(newValue bool) *QuotaEntryType {
 
 // Policy is a 'getter' method
 func (o *QuotaEntryType) Policy() string {
-	r := *o.PolicyPtr
+	var r string
+	if o.PolicyPtr == nil {
+		return r
+	}
+	r = *o.PolicyPtr
 	return r
 }
 
@@ -94,7 +111,11 @@ func (o *QuotaEntryType) SetPolicy(newValue string) *QuotaEntryType {
 
 // Qtree is a 'getter' method
 func (o *QuotaEntryType) Qtree() string {
-	r := *o.QtreePtr
+	var r string
+	if o.QtreePtr == nil {
+		return r
+	}
+	r = *o.QtreePtr
 	return r
 }
 
@@ -106,7 +127,11 @@ func (o *QuotaEntryType) SetQtree(newValue string) *QuotaEntryType {
 
 // QuotaTarget is a 'getter' method
 func (o *QuotaEntryType) QuotaTarget() string {
-	r := *o.QuotaTargetPtr
+	var r string
+	if o.QuotaTargetPtr == nil {
+		return r
+	}
+	r = *o.QuotaTargetPtr
 	return r
 }
 
@@ -118,7 +143,11 @@ func (o *QuotaEntryType) SetQuotaTarget(newValue string) *QuotaEntryType {
 
 // QuotaType is a 'getter' method
 func (o *QuotaEntryType) QuotaType() string {
-	r := *o.QuotaTypePtr
+	var r string
+	if o.QuotaTypePtr == nil {
+		return r
+	}
+	r = *o.QuotaTypePtr
 	return r
 }
 
@@ -130,7 +159,11 @@ func (o *QuotaEntryType) SetQuotaType(newValue string) *QuotaEntryType {
 
 // SoftDiskLimit is a 'getter' method
 func (o *QuotaEntryType) SoftDiskLimit() string {
-	r := *o.SoftDiskLimitPtr
+	var r string
+	if o.SoftDiskLimitPtr == nil {
+		return r
+	}
+	r = *o.SoftDiskLimitPtr
 	return r
 }
 
@@ -142,7 +175,11 @@ func (o *QuotaEntryType) SetSoftDiskLimit(newValue string) *QuotaEntryType {
 
 // SoftFileLimit is a 'getter' method
 func (o *QuotaEntryType) SoftFileLimit() string {
-	r := *o.SoftFileLimitPtr
+	var r string
+	if o.SoftFileLimitPtr == nil {
+		return r
+	}
+	r = *o.SoftFileLimitPtr
 	return r
 }
 
@@ -154,7 +191,11 @@ func (o *QuotaEntryType) SetSoftFileLimit(newValue string) *QuotaEntryType {
 
 // Threshold is a 'getter' method
 func (o *QuotaEntryType) Threshold() string {
-	r := *o.ThresholdPtr
+	var r string
+	if o.ThresholdPtr == nil {
+		return r
+	}
+	r = *o.ThresholdPtr
 	return r
 }
 
@@ -166,7 +207,11 @@ func (o *QuotaEntryType) SetThreshold(newValue string) *QuotaEntryType {
 
 // Volume is a 'getter' method
 func (o *QuotaEntryType) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -178,7 +223,11 @@ func (o *QuotaEntryType) SetVolume(newValue string) *QuotaEntryType {
 
 // Vserver is a 'getter' method
 func (o *QuotaEntryType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

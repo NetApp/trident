@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VmhostInfoType is a structure to represent a vmhost-info ZAPI object
@@ -56,7 +57,11 @@ func (o VmhostInfoType) String() string {
 
 // VmCustomMaxCapacity is a 'getter' method
 func (o *VmhostInfoType) VmCustomMaxCapacity() int {
-	r := *o.VmCustomMaxCapacityPtr
+	var r int
+	if o.VmCustomMaxCapacityPtr == nil {
+		return r
+	}
+	r = *o.VmCustomMaxCapacityPtr
 	return r
 }
 
@@ -68,7 +73,11 @@ func (o *VmhostInfoType) SetVmCustomMaxCapacity(newValue int) *VmhostInfoType {
 
 // VmUuid is a 'getter' method
 func (o *VmhostInfoType) VmUuid() string {
-	r := *o.VmUuidPtr
+	var r string
+	if o.VmUuidPtr == nil {
+		return r
+	}
+	r = *o.VmUuidPtr
 	return r
 }
 
@@ -80,7 +89,11 @@ func (o *VmhostInfoType) SetVmUuid(newValue string) *VmhostInfoType {
 
 // VmhostBiosReleaseDate is a 'getter' method
 func (o *VmhostInfoType) VmhostBiosReleaseDate() string {
-	r := *o.VmhostBiosReleaseDatePtr
+	var r string
+	if o.VmhostBiosReleaseDatePtr == nil {
+		return r
+	}
+	r = *o.VmhostBiosReleaseDatePtr
 	return r
 }
 
@@ -92,7 +105,11 @@ func (o *VmhostInfoType) SetVmhostBiosReleaseDate(newValue string) *VmhostInfoTy
 
 // VmhostBiosVersion is a 'getter' method
 func (o *VmhostInfoType) VmhostBiosVersion() string {
-	r := *o.VmhostBiosVersionPtr
+	var r string
+	if o.VmhostBiosVersionPtr == nil {
+		return r
+	}
+	r = *o.VmhostBiosVersionPtr
 	return r
 }
 
@@ -104,7 +121,11 @@ func (o *VmhostInfoType) SetVmhostBiosVersion(newValue string) *VmhostInfoType {
 
 // VmhostBootTime is a 'getter' method
 func (o *VmhostInfoType) VmhostBootTime() string {
-	r := *o.VmhostBootTimePtr
+	var r string
+	if o.VmhostBootTimePtr == nil {
+		return r
+	}
+	r = *o.VmhostBootTimePtr
 	return r
 }
 
@@ -116,7 +137,11 @@ func (o *VmhostInfoType) SetVmhostBootTime(newValue string) *VmhostInfoType {
 
 // VmhostCpuClockRate is a 'getter' method
 func (o *VmhostInfoType) VmhostCpuClockRate() int {
-	r := *o.VmhostCpuClockRatePtr
+	var r int
+	if o.VmhostCpuClockRatePtr == nil {
+		return r
+	}
+	r = *o.VmhostCpuClockRatePtr
 	return r
 }
 
@@ -128,7 +153,11 @@ func (o *VmhostInfoType) SetVmhostCpuClockRate(newValue int) *VmhostInfoType {
 
 // VmhostCpuCoreCount is a 'getter' method
 func (o *VmhostInfoType) VmhostCpuCoreCount() int {
-	r := *o.VmhostCpuCoreCountPtr
+	var r int
+	if o.VmhostCpuCoreCountPtr == nil {
+		return r
+	}
+	r = *o.VmhostCpuCoreCountPtr
 	return r
 }
 
@@ -140,7 +169,11 @@ func (o *VmhostInfoType) SetVmhostCpuCoreCount(newValue int) *VmhostInfoType {
 
 // VmhostCpuSocketCount is a 'getter' method
 func (o *VmhostInfoType) VmhostCpuSocketCount() int {
-	r := *o.VmhostCpuSocketCountPtr
+	var r int
+	if o.VmhostCpuSocketCountPtr == nil {
+		return r
+	}
+	r = *o.VmhostCpuSocketCountPtr
 	return r
 }
 
@@ -152,7 +185,11 @@ func (o *VmhostInfoType) SetVmhostCpuSocketCount(newValue int) *VmhostInfoType {
 
 // VmhostCpuThreadCount is a 'getter' method
 func (o *VmhostInfoType) VmhostCpuThreadCount() int {
-	r := *o.VmhostCpuThreadCountPtr
+	var r int
+	if o.VmhostCpuThreadCountPtr == nil {
+		return r
+	}
+	r = *o.VmhostCpuThreadCountPtr
 	return r
 }
 
@@ -164,7 +201,11 @@ func (o *VmhostInfoType) SetVmhostCpuThreadCount(newValue int) *VmhostInfoType {
 
 // VmhostError is a 'getter' method
 func (o *VmhostInfoType) VmhostError() string {
-	r := *o.VmhostErrorPtr
+	var r string
+	if o.VmhostErrorPtr == nil {
+		return r
+	}
+	r = *o.VmhostErrorPtr
 	return r
 }
 
@@ -176,7 +217,11 @@ func (o *VmhostInfoType) SetVmhostError(newValue string) *VmhostInfoType {
 
 // VmhostGateway is a 'getter' method
 func (o *VmhostInfoType) VmhostGateway() string {
-	r := *o.VmhostGatewayPtr
+	var r string
+	if o.VmhostGatewayPtr == nil {
+		return r
+	}
+	r = *o.VmhostGatewayPtr
 	return r
 }
 
@@ -188,7 +233,11 @@ func (o *VmhostInfoType) SetVmhostGateway(newValue string) *VmhostInfoType {
 
 // VmhostHardwareVendor is a 'getter' method
 func (o *VmhostInfoType) VmhostHardwareVendor() string {
-	r := *o.VmhostHardwareVendorPtr
+	var r string
+	if o.VmhostHardwareVendorPtr == nil {
+		return r
+	}
+	r = *o.VmhostHardwareVendorPtr
 	return r
 }
 
@@ -200,7 +249,11 @@ func (o *VmhostInfoType) SetVmhostHardwareVendor(newValue string) *VmhostInfoTyp
 
 // VmhostHypervisor is a 'getter' method
 func (o *VmhostInfoType) VmhostHypervisor() string {
-	r := *o.VmhostHypervisorPtr
+	var r string
+	if o.VmhostHypervisorPtr == nil {
+		return r
+	}
+	r = *o.VmhostHypervisorPtr
 	return r
 }
 
@@ -212,7 +265,11 @@ func (o *VmhostInfoType) SetVmhostHypervisor(newValue string) *VmhostInfoType {
 
 // VmhostIpAddress is a 'getter' method
 func (o *VmhostInfoType) VmhostIpAddress() string {
-	r := *o.VmhostIpAddressPtr
+	var r string
+	if o.VmhostIpAddressPtr == nil {
+		return r
+	}
+	r = *o.VmhostIpAddressPtr
 	return r
 }
 
@@ -224,7 +281,11 @@ func (o *VmhostInfoType) SetVmhostIpAddress(newValue string) *VmhostInfoType {
 
 // VmhostMemory is a 'getter' method
 func (o *VmhostInfoType) VmhostMemory() int {
-	r := *o.VmhostMemoryPtr
+	var r int
+	if o.VmhostMemoryPtr == nil {
+		return r
+	}
+	r = *o.VmhostMemoryPtr
 	return r
 }
 
@@ -236,7 +297,11 @@ func (o *VmhostInfoType) SetVmhostMemory(newValue int) *VmhostInfoType {
 
 // VmhostModel is a 'getter' method
 func (o *VmhostInfoType) VmhostModel() string {
-	r := *o.VmhostModelPtr
+	var r string
+	if o.VmhostModelPtr == nil {
+		return r
+	}
+	r = *o.VmhostModelPtr
 	return r
 }
 
@@ -248,7 +313,11 @@ func (o *VmhostInfoType) SetVmhostModel(newValue string) *VmhostInfoType {
 
 // VmhostName is a 'getter' method
 func (o *VmhostInfoType) VmhostName() string {
-	r := *o.VmhostNamePtr
+	var r string
+	if o.VmhostNamePtr == nil {
+		return r
+	}
+	r = *o.VmhostNamePtr
 	return r
 }
 
@@ -260,7 +329,11 @@ func (o *VmhostInfoType) SetVmhostName(newValue string) *VmhostInfoType {
 
 // VmhostNetmask is a 'getter' method
 func (o *VmhostInfoType) VmhostNetmask() string {
-	r := *o.VmhostNetmaskPtr
+	var r string
+	if o.VmhostNetmaskPtr == nil {
+		return r
+	}
+	r = *o.VmhostNetmaskPtr
 	return r
 }
 
@@ -272,7 +345,11 @@ func (o *VmhostInfoType) SetVmhostNetmask(newValue string) *VmhostInfoType {
 
 // VmhostProcessorId is a 'getter' method
 func (o *VmhostInfoType) VmhostProcessorId() string {
-	r := *o.VmhostProcessorIdPtr
+	var r string
+	if o.VmhostProcessorIdPtr == nil {
+		return r
+	}
+	r = *o.VmhostProcessorIdPtr
 	return r
 }
 
@@ -284,7 +361,11 @@ func (o *VmhostInfoType) SetVmhostProcessorId(newValue string) *VmhostInfoType {
 
 // VmhostProcessorType is a 'getter' method
 func (o *VmhostInfoType) VmhostProcessorType() string {
-	r := *o.VmhostProcessorTypePtr
+	var r string
+	if o.VmhostProcessorTypePtr == nil {
+		return r
+	}
+	r = *o.VmhostProcessorTypePtr
 	return r
 }
 
@@ -296,7 +377,11 @@ func (o *VmhostInfoType) SetVmhostProcessorType(newValue string) *VmhostInfoType
 
 // VmhostSoftwareVendor is a 'getter' method
 func (o *VmhostInfoType) VmhostSoftwareVendor() string {
-	r := *o.VmhostSoftwareVendorPtr
+	var r string
+	if o.VmhostSoftwareVendorPtr == nil {
+		return r
+	}
+	r = *o.VmhostSoftwareVendorPtr
 	return r
 }
 
@@ -308,7 +393,11 @@ func (o *VmhostInfoType) SetVmhostSoftwareVendor(newValue string) *VmhostInfoTyp
 
 // VmhostUuid is a 'getter' method
 func (o *VmhostInfoType) VmhostUuid() string {
-	r := *o.VmhostUuidPtr
+	var r string
+	if o.VmhostUuidPtr == nil {
+		return r
+	}
+	r = *o.VmhostUuidPtr
 	return r
 }
 

@@ -1,17 +1,19 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorDestinationInfoType is a structure to represent a snapmirror-destination-info ZAPI object
-// WARNING: Keep unint/unint64 types as it is, changing them to some other type may cause failures
 type SnapmirrorDestinationInfoType struct {
-	XMLName                  xml.Name
+	XMLName           xml.Name                                     `xml:"snapmirror-destination-info"`
+	CgItemMappingsPtr *SnapmirrorDestinationInfoTypeCgItemMappings `xml:"cg-item-mappings"`
+	// work in progress
 	DestinationLocationPtr   *string `xml:"destination-location"`
 	DestinationVolumePtr     *string `xml:"destination-volume"`
 	DestinationVserverPtr    *string `xml:"destination-vserver"`
@@ -48,9 +50,49 @@ func (o SnapmirrorDestinationInfoType) String() string {
 	return ToString(reflect.ValueOf(o))
 }
 
+// SnapmirrorDestinationInfoTypeCgItemMappings is a wrapper
+type SnapmirrorDestinationInfoTypeCgItemMappings struct {
+	XMLName   xml.Name `xml:"cg-item-mappings"`
+	StringPtr []string `xml:"string"`
+}
+
+// String is a 'getter' method
+func (o *SnapmirrorDestinationInfoTypeCgItemMappings) String() []string {
+	r := o.StringPtr
+	return r
+}
+
+// SetString is a fluent style 'setter' method that can be chained
+func (o *SnapmirrorDestinationInfoTypeCgItemMappings) SetString(newValue []string) *SnapmirrorDestinationInfoTypeCgItemMappings {
+	newSlice := make([]string, len(newValue))
+	copy(newSlice, newValue)
+	o.StringPtr = newSlice
+	return o
+}
+
+// CgItemMappings is a 'getter' method
+func (o *SnapmirrorDestinationInfoType) CgItemMappings() SnapmirrorDestinationInfoTypeCgItemMappings {
+	var r SnapmirrorDestinationInfoTypeCgItemMappings
+	if o.CgItemMappingsPtr == nil {
+		return r
+	}
+	r = *o.CgItemMappingsPtr
+	return r
+}
+
+// SetCgItemMappings is a fluent style 'setter' method that can be chained
+func (o *SnapmirrorDestinationInfoType) SetCgItemMappings(newValue SnapmirrorDestinationInfoTypeCgItemMappings) *SnapmirrorDestinationInfoType {
+	o.CgItemMappingsPtr = &newValue
+	return o
+}
+
 // DestinationLocation is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) DestinationLocation() string {
-	r := *o.DestinationLocationPtr
+	var r string
+	if o.DestinationLocationPtr == nil {
+		return r
+	}
+	r = *o.DestinationLocationPtr
 	return r
 }
 
@@ -62,7 +104,11 @@ func (o *SnapmirrorDestinationInfoType) SetDestinationLocation(newValue string) 
 
 // DestinationVolume is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) DestinationVolume() string {
-	r := *o.DestinationVolumePtr
+	var r string
+	if o.DestinationVolumePtr == nil {
+		return r
+	}
+	r = *o.DestinationVolumePtr
 	return r
 }
 
@@ -74,7 +120,11 @@ func (o *SnapmirrorDestinationInfoType) SetDestinationVolume(newValue string) *S
 
 // DestinationVserver is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) DestinationVserver() string {
-	r := *o.DestinationVserverPtr
+	var r string
+	if o.DestinationVserverPtr == nil {
+		return r
+	}
+	r = *o.DestinationVserverPtr
 	return r
 }
 
@@ -84,29 +134,13 @@ func (o *SnapmirrorDestinationInfoType) SetDestinationVserver(newValue string) *
 	return o
 }
 
-// SnapmirrorDestinationInfoTypeFileRestoreFileList is a wrapper
-type SnapmirrorDestinationInfoTypeFileRestoreFileList struct {
-	XMLName   xml.Name `xml:"file-restore-file-list"`
-	StringPtr []string `xml:"string"`
-}
-
-// String is a 'getter' method
-func (o *SnapmirrorDestinationInfoTypeFileRestoreFileList) String() []string {
-	r := o.StringPtr
-	return r
-}
-
-// SetString is a fluent style 'setter' method that can be chained
-func (o *SnapmirrorDestinationInfoTypeFileRestoreFileList) SetString(newValue []string) *SnapmirrorDestinationInfoTypeFileRestoreFileList {
-	newSlice := make([]string, len(newValue))
-	copy(newSlice, newValue)
-	o.StringPtr = newSlice
-	return o
-}
-
 // IsConstituent is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) IsConstituent() bool {
-	r := *o.IsConstituentPtr
+	var r bool
+	if o.IsConstituentPtr == nil {
+		return r
+	}
+	r = *o.IsConstituentPtr
 	return r
 }
 
@@ -116,29 +150,13 @@ func (o *SnapmirrorDestinationInfoType) SetIsConstituent(newValue bool) *Snapmir
 	return o
 }
 
-// SnapmirrorDestinationInfoTypeLastTransferErrorCodes is a wrapper
-type SnapmirrorDestinationInfoTypeLastTransferErrorCodes struct {
-	XMLName    xml.Name `xml:"last-transfer-error-codes"`
-	IntegerPtr []int    `xml:"integer"`
-}
-
-// Integer is a 'getter' method
-func (o *SnapmirrorDestinationInfoTypeLastTransferErrorCodes) Integer() []int {
-	r := o.IntegerPtr
-	return r
-}
-
-// SetInteger is a fluent style 'setter' method that can be chained
-func (o *SnapmirrorDestinationInfoTypeLastTransferErrorCodes) SetInteger(newValue []int) *SnapmirrorDestinationInfoTypeLastTransferErrorCodes {
-	newSlice := make([]int, len(newValue))
-	copy(newSlice, newValue)
-	o.IntegerPtr = newSlice
-	return o
-}
-
 // PolicyType is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) PolicyType() string {
-	r := *o.PolicyTypePtr
+	var r string
+	if o.PolicyTypePtr == nil {
+		return r
+	}
+	r = *o.PolicyTypePtr
 	return r
 }
 
@@ -150,7 +168,11 @@ func (o *SnapmirrorDestinationInfoType) SetPolicyType(newValue string) *Snapmirr
 
 // ProgressLastUpdated is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) ProgressLastUpdated() uint {
-	r := *o.ProgressLastUpdatedPtr
+	var r uint
+	if o.ProgressLastUpdatedPtr == nil {
+		return r
+	}
+	r = *o.ProgressLastUpdatedPtr
 	return r
 }
 
@@ -162,7 +184,11 @@ func (o *SnapmirrorDestinationInfoType) SetProgressLastUpdated(newValue uint) *S
 
 // RelationshipGroupType is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) RelationshipGroupType() string {
-	r := *o.RelationshipGroupTypePtr
+	var r string
+	if o.RelationshipGroupTypePtr == nil {
+		return r
+	}
+	r = *o.RelationshipGroupTypePtr
 	return r
 }
 
@@ -174,7 +200,11 @@ func (o *SnapmirrorDestinationInfoType) SetRelationshipGroupType(newValue string
 
 // RelationshipId is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) RelationshipId() string {
-	r := *o.RelationshipIdPtr
+	var r string
+	if o.RelationshipIdPtr == nil {
+		return r
+	}
+	r = *o.RelationshipIdPtr
 	return r
 }
 
@@ -186,7 +216,11 @@ func (o *SnapmirrorDestinationInfoType) SetRelationshipId(newValue string) *Snap
 
 // RelationshipStatus is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) RelationshipStatus() string {
-	r := *o.RelationshipStatusPtr
+	var r string
+	if o.RelationshipStatusPtr == nil {
+		return r
+	}
+	r = *o.RelationshipStatusPtr
 	return r
 }
 
@@ -198,7 +232,11 @@ func (o *SnapmirrorDestinationInfoType) SetRelationshipStatus(newValue string) *
 
 // RelationshipType is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) RelationshipType() string {
-	r := *o.RelationshipTypePtr
+	var r string
+	if o.RelationshipTypePtr == nil {
+		return r
+	}
+	r = *o.RelationshipTypePtr
 	return r
 }
 
@@ -210,7 +248,11 @@ func (o *SnapmirrorDestinationInfoType) SetRelationshipType(newValue string) *Sn
 
 // SourceLocation is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) SourceLocation() string {
-	r := *o.SourceLocationPtr
+	var r string
+	if o.SourceLocationPtr == nil {
+		return r
+	}
+	r = *o.SourceLocationPtr
 	return r
 }
 
@@ -222,7 +264,11 @@ func (o *SnapmirrorDestinationInfoType) SetSourceLocation(newValue string) *Snap
 
 // SourceVolume is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) SourceVolume() string {
-	r := *o.SourceVolumePtr
+	var r string
+	if o.SourceVolumePtr == nil {
+		return r
+	}
+	r = *o.SourceVolumePtr
 	return r
 }
 
@@ -234,7 +280,11 @@ func (o *SnapmirrorDestinationInfoType) SetSourceVolume(newValue string) *Snapmi
 
 // SourceVolumeNode is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) SourceVolumeNode() string {
-	r := *o.SourceVolumeNodePtr
+	var r string
+	if o.SourceVolumeNodePtr == nil {
+		return r
+	}
+	r = *o.SourceVolumeNodePtr
 	return r
 }
 
@@ -246,7 +296,11 @@ func (o *SnapmirrorDestinationInfoType) SetSourceVolumeNode(newValue string) *Sn
 
 // SourceVserver is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) SourceVserver() string {
-	r := *o.SourceVserverPtr
+	var r string
+	if o.SourceVserverPtr == nil {
+		return r
+	}
+	r = *o.SourceVserverPtr
 	return r
 }
 
@@ -258,7 +312,11 @@ func (o *SnapmirrorDestinationInfoType) SetSourceVserver(newValue string) *Snapm
 
 // TransferProgress is a 'getter' method
 func (o *SnapmirrorDestinationInfoType) TransferProgress() uint64 {
-	r := *o.TransferProgressPtr
+	var r uint64
+	if o.TransferProgressPtr == nil {
+		return r
+	}
+	r = *o.TransferProgressPtr
 	return r
 }
 

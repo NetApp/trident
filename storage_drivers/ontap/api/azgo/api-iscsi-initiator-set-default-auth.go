@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiInitiatorSetDefaultAuthRequest is a structure to represent a iscsi-initiator-set-default-auth Request ZAPI object
@@ -112,7 +113,11 @@ func (o *IscsiInitiatorSetDefaultAuthRequest) executeWithoutIteration(zr *ZapiRu
 
 // AuthType is a 'getter' method
 func (o *IscsiInitiatorSetDefaultAuthRequest) AuthType() string {
-	r := *o.AuthTypePtr
+	var r string
+	if o.AuthTypePtr == nil {
+		return r
+	}
+	r = *o.AuthTypePtr
 	return r
 }
 
@@ -124,7 +129,11 @@ func (o *IscsiInitiatorSetDefaultAuthRequest) SetAuthType(newValue string) *Iscs
 
 // OutboundPassphrase is a 'getter' method
 func (o *IscsiInitiatorSetDefaultAuthRequest) OutboundPassphrase() string {
-	r := *o.OutboundPassphrasePtr
+	var r string
+	if o.OutboundPassphrasePtr == nil {
+		return r
+	}
+	r = *o.OutboundPassphrasePtr
 	return r
 }
 
@@ -136,7 +145,11 @@ func (o *IscsiInitiatorSetDefaultAuthRequest) SetOutboundPassphrase(newValue str
 
 // OutboundPassword is a 'getter' method
 func (o *IscsiInitiatorSetDefaultAuthRequest) OutboundPassword() string {
-	r := *o.OutboundPasswordPtr
+	var r string
+	if o.OutboundPasswordPtr == nil {
+		return r
+	}
+	r = *o.OutboundPasswordPtr
 	return r
 }
 
@@ -148,7 +161,11 @@ func (o *IscsiInitiatorSetDefaultAuthRequest) SetOutboundPassword(newValue strin
 
 // OutboundUserName is a 'getter' method
 func (o *IscsiInitiatorSetDefaultAuthRequest) OutboundUserName() string {
-	r := *o.OutboundUserNamePtr
+	var r string
+	if o.OutboundUserNamePtr == nil {
+		return r
+	}
+	r = *o.OutboundUserNamePtr
 	return r
 }
 
@@ -160,7 +177,11 @@ func (o *IscsiInitiatorSetDefaultAuthRequest) SetOutboundUserName(newValue strin
 
 // Passphrase is a 'getter' method
 func (o *IscsiInitiatorSetDefaultAuthRequest) Passphrase() string {
-	r := *o.PassphrasePtr
+	var r string
+	if o.PassphrasePtr == nil {
+		return r
+	}
+	r = *o.PassphrasePtr
 	return r
 }
 
@@ -172,7 +193,11 @@ func (o *IscsiInitiatorSetDefaultAuthRequest) SetPassphrase(newValue string) *Is
 
 // Password is a 'getter' method
 func (o *IscsiInitiatorSetDefaultAuthRequest) Password() string {
-	r := *o.PasswordPtr
+	var r string
+	if o.PasswordPtr == nil {
+		return r
+	}
+	r = *o.PasswordPtr
 	return r
 }
 
@@ -184,7 +209,11 @@ func (o *IscsiInitiatorSetDefaultAuthRequest) SetPassword(newValue string) *Iscs
 
 // Radius is a 'getter' method
 func (o *IscsiInitiatorSetDefaultAuthRequest) Radius() bool {
-	r := *o.RadiusPtr
+	var r bool
+	if o.RadiusPtr == nil {
+		return r
+	}
+	r = *o.RadiusPtr
 	return r
 }
 
@@ -196,7 +225,11 @@ func (o *IscsiInitiatorSetDefaultAuthRequest) SetRadius(newValue bool) *IscsiIni
 
 // UserName is a 'getter' method
 func (o *IscsiInitiatorSetDefaultAuthRequest) UserName() string {
-	r := *o.UserNamePtr
+	var r string
+	if o.UserNamePtr == nil {
+		return r
+	}
+	r = *o.UserNamePtr
 	return r
 }
 

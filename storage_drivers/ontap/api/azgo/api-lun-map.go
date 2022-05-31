@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunMapRequest is a structure to represent a lun-map Request ZAPI object
@@ -110,7 +111,11 @@ func (o *LunMapRequest) executeWithoutIteration(zr *ZapiRunner) (*LunMapResponse
 
 // AdditionalReportingNode is a 'getter' method
 func (o *LunMapRequest) AdditionalReportingNode() NodeNameType {
-	r := *o.AdditionalReportingNodePtr
+	var r NodeNameType
+	if o.AdditionalReportingNodePtr == nil {
+		return r
+	}
+	r = *o.AdditionalReportingNodePtr
 	return r
 }
 
@@ -122,7 +127,11 @@ func (o *LunMapRequest) SetAdditionalReportingNode(newValue NodeNameType) *LunMa
 
 // Force is a 'getter' method
 func (o *LunMapRequest) Force() bool {
-	r := *o.ForcePtr
+	var r bool
+	if o.ForcePtr == nil {
+		return r
+	}
+	r = *o.ForcePtr
 	return r
 }
 
@@ -134,7 +143,11 @@ func (o *LunMapRequest) SetForce(newValue bool) *LunMapRequest {
 
 // InitiatorGroup is a 'getter' method
 func (o *LunMapRequest) InitiatorGroup() string {
-	r := *o.InitiatorGroupPtr
+	var r string
+	if o.InitiatorGroupPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupPtr
 	return r
 }
 
@@ -146,7 +159,11 @@ func (o *LunMapRequest) SetInitiatorGroup(newValue string) *LunMapRequest {
 
 // LunId is a 'getter' method
 func (o *LunMapRequest) LunId() int {
-	r := *o.LunIdPtr
+	var r int
+	if o.LunIdPtr == nil {
+		return r
+	}
+	r = *o.LunIdPtr
 	return r
 }
 
@@ -158,7 +175,11 @@ func (o *LunMapRequest) SetLunId(newValue int) *LunMapRequest {
 
 // Path is a 'getter' method
 func (o *LunMapRequest) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 
@@ -170,7 +191,11 @@ func (o *LunMapRequest) SetPath(newValue string) *LunMapRequest {
 
 // LunIdAssigned is a 'getter' method
 func (o *LunMapResponseResult) LunIdAssigned() int {
-	r := *o.LunIdAssignedPtr
+	var r int
+	if o.LunIdAssignedPtr == nil {
+		return r
+	}
+	r = *o.LunIdAssignedPtr
 	return r
 }
 

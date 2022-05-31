@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapshotInfoType is a structure to represent a snapshot-info ZAPI object
@@ -18,6 +19,7 @@ type SnapshotInfoType struct {
 	CompressSavingsPtr                   *int                                `xml:"compress-savings"`
 	CompressionTypePtr                   *string                             `xml:"compression-type"`
 	ContainsLunClonesPtr                 *bool                               `xml:"contains-lun-clones"`
+	ConvertRecoveryPtr                   *bool                               `xml:"convert-recovery"`
 	CumulativePercentageOfTotalBlocksPtr *int                                `xml:"cumulative-percentage-of-total-blocks"`
 	CumulativePercentageOfUsedBlocksPtr  *int                                `xml:"cumulative-percentage-of-used-blocks"`
 	CumulativeTotalPtr                   *int                                `xml:"cumulative-total"`
@@ -31,6 +33,7 @@ type SnapshotInfoType struct {
 	NamePtr                              *string                             `xml:"name"`
 	PercentageOfTotalBlocksPtr           *int                                `xml:"percentage-of-total-blocks"`
 	PercentageOfUsedBlocksPtr            *int                                `xml:"percentage-of-used-blocks"`
+	PerformanceMetadataPtr               *int                                `xml:"performance-metadata"`
 	SnaplockExpiryTimePtr                *int                                `xml:"snaplock-expiry-time"`
 	SnapmirrorLabelPtr                   *string                             `xml:"snapmirror-label"`
 	SnapshotInstanceUuidPtr              *UUIDType                           `xml:"snapshot-instance-uuid"`
@@ -66,7 +69,11 @@ func (o SnapshotInfoType) String() string {
 
 // AccessTime is a 'getter' method
 func (o *SnapshotInfoType) AccessTime() int {
-	r := *o.AccessTimePtr
+	var r int
+	if o.AccessTimePtr == nil {
+		return r
+	}
+	r = *o.AccessTimePtr
 	return r
 }
 
@@ -78,7 +85,11 @@ func (o *SnapshotInfoType) SetAccessTime(newValue int) *SnapshotInfoType {
 
 // AfsUsed is a 'getter' method
 func (o *SnapshotInfoType) AfsUsed() int {
-	r := *o.AfsUsedPtr
+	var r int
+	if o.AfsUsedPtr == nil {
+		return r
+	}
+	r = *o.AfsUsedPtr
 	return r
 }
 
@@ -90,7 +101,11 @@ func (o *SnapshotInfoType) SetAfsUsed(newValue int) *SnapshotInfoType {
 
 // Busy is a 'getter' method
 func (o *SnapshotInfoType) Busy() bool {
-	r := *o.BusyPtr
+	var r bool
+	if o.BusyPtr == nil {
+		return r
+	}
+	r = *o.BusyPtr
 	return r
 }
 
@@ -102,7 +117,11 @@ func (o *SnapshotInfoType) SetBusy(newValue bool) *SnapshotInfoType {
 
 // Comment is a 'getter' method
 func (o *SnapshotInfoType) Comment() string {
-	r := *o.CommentPtr
+	var r string
+	if o.CommentPtr == nil {
+		return r
+	}
+	r = *o.CommentPtr
 	return r
 }
 
@@ -114,7 +133,11 @@ func (o *SnapshotInfoType) SetComment(newValue string) *SnapshotInfoType {
 
 // CompressSavings is a 'getter' method
 func (o *SnapshotInfoType) CompressSavings() int {
-	r := *o.CompressSavingsPtr
+	var r int
+	if o.CompressSavingsPtr == nil {
+		return r
+	}
+	r = *o.CompressSavingsPtr
 	return r
 }
 
@@ -126,7 +149,11 @@ func (o *SnapshotInfoType) SetCompressSavings(newValue int) *SnapshotInfoType {
 
 // CompressionType is a 'getter' method
 func (o *SnapshotInfoType) CompressionType() string {
-	r := *o.CompressionTypePtr
+	var r string
+	if o.CompressionTypePtr == nil {
+		return r
+	}
+	r = *o.CompressionTypePtr
 	return r
 }
 
@@ -138,7 +165,11 @@ func (o *SnapshotInfoType) SetCompressionType(newValue string) *SnapshotInfoType
 
 // ContainsLunClones is a 'getter' method
 func (o *SnapshotInfoType) ContainsLunClones() bool {
-	r := *o.ContainsLunClonesPtr
+	var r bool
+	if o.ContainsLunClonesPtr == nil {
+		return r
+	}
+	r = *o.ContainsLunClonesPtr
 	return r
 }
 
@@ -148,9 +179,29 @@ func (o *SnapshotInfoType) SetContainsLunClones(newValue bool) *SnapshotInfoType
 	return o
 }
 
+// ConvertRecovery is a 'getter' method
+func (o *SnapshotInfoType) ConvertRecovery() bool {
+	var r bool
+	if o.ConvertRecoveryPtr == nil {
+		return r
+	}
+	r = *o.ConvertRecoveryPtr
+	return r
+}
+
+// SetConvertRecovery is a fluent style 'setter' method that can be chained
+func (o *SnapshotInfoType) SetConvertRecovery(newValue bool) *SnapshotInfoType {
+	o.ConvertRecoveryPtr = &newValue
+	return o
+}
+
 // CumulativePercentageOfTotalBlocks is a 'getter' method
 func (o *SnapshotInfoType) CumulativePercentageOfTotalBlocks() int {
-	r := *o.CumulativePercentageOfTotalBlocksPtr
+	var r int
+	if o.CumulativePercentageOfTotalBlocksPtr == nil {
+		return r
+	}
+	r = *o.CumulativePercentageOfTotalBlocksPtr
 	return r
 }
 
@@ -162,7 +213,11 @@ func (o *SnapshotInfoType) SetCumulativePercentageOfTotalBlocks(newValue int) *S
 
 // CumulativePercentageOfUsedBlocks is a 'getter' method
 func (o *SnapshotInfoType) CumulativePercentageOfUsedBlocks() int {
-	r := *o.CumulativePercentageOfUsedBlocksPtr
+	var r int
+	if o.CumulativePercentageOfUsedBlocksPtr == nil {
+		return r
+	}
+	r = *o.CumulativePercentageOfUsedBlocksPtr
 	return r
 }
 
@@ -174,7 +229,11 @@ func (o *SnapshotInfoType) SetCumulativePercentageOfUsedBlocks(newValue int) *Sn
 
 // CumulativeTotal is a 'getter' method
 func (o *SnapshotInfoType) CumulativeTotal() int {
-	r := *o.CumulativeTotalPtr
+	var r int
+	if o.CumulativeTotalPtr == nil {
+		return r
+	}
+	r = *o.CumulativeTotalPtr
 	return r
 }
 
@@ -186,7 +245,11 @@ func (o *SnapshotInfoType) SetCumulativeTotal(newValue int) *SnapshotInfoType {
 
 // DedupSavings is a 'getter' method
 func (o *SnapshotInfoType) DedupSavings() int {
-	r := *o.DedupSavingsPtr
+	var r int
+	if o.DedupSavingsPtr == nil {
+		return r
+	}
+	r = *o.DedupSavingsPtr
 	return r
 }
 
@@ -198,7 +261,11 @@ func (o *SnapshotInfoType) SetDedupSavings(newValue int) *SnapshotInfoType {
 
 // Dependency is a 'getter' method
 func (o *SnapshotInfoType) Dependency() string {
-	r := *o.DependencyPtr
+	var r string
+	if o.DependencyPtr == nil {
+		return r
+	}
+	r = *o.DependencyPtr
 	return r
 }
 
@@ -210,7 +277,11 @@ func (o *SnapshotInfoType) SetDependency(newValue string) *SnapshotInfoType {
 
 // ExpiryTime is a 'getter' method
 func (o *SnapshotInfoType) ExpiryTime() int {
-	r := *o.ExpiryTimePtr
+	var r int
+	if o.ExpiryTimePtr == nil {
+		return r
+	}
+	r = *o.ExpiryTimePtr
 	return r
 }
 
@@ -222,7 +293,11 @@ func (o *SnapshotInfoType) SetExpiryTime(newValue int) *SnapshotInfoType {
 
 // InfiniteSnaplockExpiryTime is a 'getter' method
 func (o *SnapshotInfoType) InfiniteSnaplockExpiryTime() bool {
-	r := *o.InfiniteSnaplockExpiryTimePtr
+	var r bool
+	if o.InfiniteSnaplockExpiryTimePtr == nil {
+		return r
+	}
+	r = *o.InfiniteSnaplockExpiryTimePtr
 	return r
 }
 
@@ -234,7 +309,11 @@ func (o *SnapshotInfoType) SetInfiniteSnaplockExpiryTime(newValue bool) *Snapsho
 
 // InofileVersion is a 'getter' method
 func (o *SnapshotInfoType) InofileVersion() int {
-	r := *o.InofileVersionPtr
+	var r int
+	if o.InofileVersionPtr == nil {
+		return r
+	}
+	r = *o.InofileVersionPtr
 	return r
 }
 
@@ -246,7 +325,11 @@ func (o *SnapshotInfoType) SetInofileVersion(newValue int) *SnapshotInfoType {
 
 // Is7ModeSnapshot is a 'getter' method
 func (o *SnapshotInfoType) Is7ModeSnapshot() bool {
-	r := *o.Is7ModeSnapshotPtr
+	var r bool
+	if o.Is7ModeSnapshotPtr == nil {
+		return r
+	}
+	r = *o.Is7ModeSnapshotPtr
 	return r
 }
 
@@ -258,7 +341,11 @@ func (o *SnapshotInfoType) SetIs7ModeSnapshot(newValue bool) *SnapshotInfoType {
 
 // IsConstituentSnapshot is a 'getter' method
 func (o *SnapshotInfoType) IsConstituentSnapshot() bool {
-	r := *o.IsConstituentSnapshotPtr
+	var r bool
+	if o.IsConstituentSnapshotPtr == nil {
+		return r
+	}
+	r = *o.IsConstituentSnapshotPtr
 	return r
 }
 
@@ -270,7 +357,11 @@ func (o *SnapshotInfoType) SetIsConstituentSnapshot(newValue bool) *SnapshotInfo
 
 // Name is a 'getter' method
 func (o *SnapshotInfoType) Name() string {
-	r := *o.NamePtr
+	var r string
+	if o.NamePtr == nil {
+		return r
+	}
+	r = *o.NamePtr
 	return r
 }
 
@@ -282,7 +373,11 @@ func (o *SnapshotInfoType) SetName(newValue string) *SnapshotInfoType {
 
 // PercentageOfTotalBlocks is a 'getter' method
 func (o *SnapshotInfoType) PercentageOfTotalBlocks() int {
-	r := *o.PercentageOfTotalBlocksPtr
+	var r int
+	if o.PercentageOfTotalBlocksPtr == nil {
+		return r
+	}
+	r = *o.PercentageOfTotalBlocksPtr
 	return r
 }
 
@@ -294,7 +389,11 @@ func (o *SnapshotInfoType) SetPercentageOfTotalBlocks(newValue int) *SnapshotInf
 
 // PercentageOfUsedBlocks is a 'getter' method
 func (o *SnapshotInfoType) PercentageOfUsedBlocks() int {
-	r := *o.PercentageOfUsedBlocksPtr
+	var r int
+	if o.PercentageOfUsedBlocksPtr == nil {
+		return r
+	}
+	r = *o.PercentageOfUsedBlocksPtr
 	return r
 }
 
@@ -304,9 +403,29 @@ func (o *SnapshotInfoType) SetPercentageOfUsedBlocks(newValue int) *SnapshotInfo
 	return o
 }
 
+// PerformanceMetadata is a 'getter' method
+func (o *SnapshotInfoType) PerformanceMetadata() int {
+	var r int
+	if o.PerformanceMetadataPtr == nil {
+		return r
+	}
+	r = *o.PerformanceMetadataPtr
+	return r
+}
+
+// SetPerformanceMetadata is a fluent style 'setter' method that can be chained
+func (o *SnapshotInfoType) SetPerformanceMetadata(newValue int) *SnapshotInfoType {
+	o.PerformanceMetadataPtr = &newValue
+	return o
+}
+
 // SnaplockExpiryTime is a 'getter' method
 func (o *SnapshotInfoType) SnaplockExpiryTime() int {
-	r := *o.SnaplockExpiryTimePtr
+	var r int
+	if o.SnaplockExpiryTimePtr == nil {
+		return r
+	}
+	r = *o.SnaplockExpiryTimePtr
 	return r
 }
 
@@ -318,7 +437,11 @@ func (o *SnapshotInfoType) SetSnaplockExpiryTime(newValue int) *SnapshotInfoType
 
 // SnapmirrorLabel is a 'getter' method
 func (o *SnapshotInfoType) SnapmirrorLabel() string {
-	r := *o.SnapmirrorLabelPtr
+	var r string
+	if o.SnapmirrorLabelPtr == nil {
+		return r
+	}
+	r = *o.SnapmirrorLabelPtr
 	return r
 }
 
@@ -330,7 +453,11 @@ func (o *SnapshotInfoType) SetSnapmirrorLabel(newValue string) *SnapshotInfoType
 
 // SnapshotInstanceUuid is a 'getter' method
 func (o *SnapshotInfoType) SnapshotInstanceUuid() UUIDType {
-	r := *o.SnapshotInstanceUuidPtr
+	var r UUIDType
+	if o.SnapshotInstanceUuidPtr == nil {
+		return r
+	}
+	r = *o.SnapshotInstanceUuidPtr
 	return r
 }
 
@@ -362,7 +489,11 @@ func (o *SnapshotInfoTypeSnapshotOwnersList) SetSnapshotOwner(newValue []Snapsho
 
 // SnapshotOwnersList is a 'getter' method
 func (o *SnapshotInfoType) SnapshotOwnersList() SnapshotInfoTypeSnapshotOwnersList {
-	r := *o.SnapshotOwnersListPtr
+	var r SnapshotInfoTypeSnapshotOwnersList
+	if o.SnapshotOwnersListPtr == nil {
+		return r
+	}
+	r = *o.SnapshotOwnersListPtr
 	return r
 }
 
@@ -374,7 +505,11 @@ func (o *SnapshotInfoType) SetSnapshotOwnersList(newValue SnapshotInfoTypeSnapsh
 
 // SnapshotVersionUuid is a 'getter' method
 func (o *SnapshotInfoType) SnapshotVersionUuid() UUIDType {
-	r := *o.SnapshotVersionUuidPtr
+	var r UUIDType
+	if o.SnapshotVersionUuidPtr == nil {
+		return r
+	}
+	r = *o.SnapshotVersionUuidPtr
 	return r
 }
 
@@ -386,7 +521,11 @@ func (o *SnapshotInfoType) SetSnapshotVersionUuid(newValue UUIDType) *SnapshotIn
 
 // State is a 'getter' method
 func (o *SnapshotInfoType) State() string {
-	r := *o.StatePtr
+	var r string
+	if o.StatePtr == nil {
+		return r
+	}
+	r = *o.StatePtr
 	return r
 }
 
@@ -398,7 +537,11 @@ func (o *SnapshotInfoType) SetState(newValue string) *SnapshotInfoType {
 
 // Total is a 'getter' method
 func (o *SnapshotInfoType) Total() int {
-	r := *o.TotalPtr
+	var r int
+	if o.TotalPtr == nil {
+		return r
+	}
+	r = *o.TotalPtr
 	return r
 }
 
@@ -410,7 +553,11 @@ func (o *SnapshotInfoType) SetTotal(newValue int) *SnapshotInfoType {
 
 // Vbn0Savings is a 'getter' method
 func (o *SnapshotInfoType) Vbn0Savings() int {
-	r := *o.Vbn0SavingsPtr
+	var r int
+	if o.Vbn0SavingsPtr == nil {
+		return r
+	}
+	r = *o.Vbn0SavingsPtr
 	return r
 }
 
@@ -422,7 +569,11 @@ func (o *SnapshotInfoType) SetVbn0Savings(newValue int) *SnapshotInfoType {
 
 // Volume is a 'getter' method
 func (o *SnapshotInfoType) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -434,7 +585,11 @@ func (o *SnapshotInfoType) SetVolume(newValue string) *SnapshotInfoType {
 
 // VolumeProvenanceUuid is a 'getter' method
 func (o *SnapshotInfoType) VolumeProvenanceUuid() UUIDType {
-	r := *o.VolumeProvenanceUuidPtr
+	var r UUIDType
+	if o.VolumeProvenanceUuidPtr == nil {
+		return r
+	}
+	r = *o.VolumeProvenanceUuidPtr
 	return r
 }
 
@@ -446,7 +601,11 @@ func (o *SnapshotInfoType) SetVolumeProvenanceUuid(newValue UUIDType) *SnapshotI
 
 // Vserver is a 'getter' method
 func (o *SnapshotInfoType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

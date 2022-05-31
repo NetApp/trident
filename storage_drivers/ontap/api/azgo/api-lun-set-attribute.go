@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunSetAttributeRequest is a structure to represent a lun-set-attribute Request ZAPI object
@@ -107,7 +108,11 @@ func (o *LunSetAttributeRequest) executeWithoutIteration(zr *ZapiRunner) (*LunSe
 
 // Name is a 'getter' method
 func (o *LunSetAttributeRequest) Name() string {
-	r := *o.NamePtr
+	var r string
+	if o.NamePtr == nil {
+		return r
+	}
+	r = *o.NamePtr
 	return r
 }
 
@@ -119,7 +124,11 @@ func (o *LunSetAttributeRequest) SetName(newValue string) *LunSetAttributeReques
 
 // Path is a 'getter' method
 func (o *LunSetAttributeRequest) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 
@@ -131,7 +140,11 @@ func (o *LunSetAttributeRequest) SetPath(newValue string) *LunSetAttributeReques
 
 // Value is a 'getter' method
 func (o *LunSetAttributeRequest) Value() string {
-	r := *o.ValuePtr
+	var r string
+	if o.ValuePtr == nil {
+		return r
+	}
+	r = *o.ValuePtr
 	return r
 }
 

@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeFlexcacheAttributesType is a structure to represent a volume-flexcache-attributes ZAPI object
@@ -38,7 +39,11 @@ func (o VolumeFlexcacheAttributesType) String() string {
 
 // CachePolicy is a 'getter' method
 func (o *VolumeFlexcacheAttributesType) CachePolicy() CachePolicyType {
-	r := *o.CachePolicyPtr
+	var r CachePolicyType
+	if o.CachePolicyPtr == nil {
+		return r
+	}
+	r = *o.CachePolicyPtr
 	return r
 }
 
@@ -50,7 +55,11 @@ func (o *VolumeFlexcacheAttributesType) SetCachePolicy(newValue CachePolicyType)
 
 // FillPolicy is a 'getter' method
 func (o *VolumeFlexcacheAttributesType) FillPolicy() CachePolicyType {
-	r := *o.FillPolicyPtr
+	var r CachePolicyType
+	if o.FillPolicyPtr == nil {
+		return r
+	}
+	r = *o.FillPolicyPtr
 	return r
 }
 
@@ -62,7 +71,11 @@ func (o *VolumeFlexcacheAttributesType) SetFillPolicy(newValue CachePolicyType) 
 
 // MinReserve is a 'getter' method
 func (o *VolumeFlexcacheAttributesType) MinReserve() SizeType {
-	r := *o.MinReservePtr
+	var r SizeType
+	if o.MinReservePtr == nil {
+		return r
+	}
+	r = *o.MinReservePtr
 	return r
 }
 
@@ -74,7 +87,11 @@ func (o *VolumeFlexcacheAttributesType) SetMinReserve(newValue SizeType) *Volume
 
 // Origin is a 'getter' method
 func (o *VolumeFlexcacheAttributesType) Origin() VolumeNameType {
-	r := *o.OriginPtr
+	var r VolumeNameType
+	if o.OriginPtr == nil {
+		return r
+	}
+	r = *o.OriginPtr
 	return r
 }
 

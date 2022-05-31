@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VmSystemDisksType is a structure to represent a vm-system-disks ZAPI object
@@ -40,7 +41,11 @@ func (o VmSystemDisksType) String() string {
 
 // VmBootdiskAreaName is a 'getter' method
 func (o *VmSystemDisksType) VmBootdiskAreaName() string {
-	r := *o.VmBootdiskAreaNamePtr
+	var r string
+	if o.VmBootdiskAreaNamePtr == nil {
+		return r
+	}
+	r = *o.VmBootdiskAreaNamePtr
 	return r
 }
 
@@ -52,7 +57,11 @@ func (o *VmSystemDisksType) SetVmBootdiskAreaName(newValue string) *VmSystemDisk
 
 // VmBootdiskFileName is a 'getter' method
 func (o *VmSystemDisksType) VmBootdiskFileName() string {
-	r := *o.VmBootdiskFileNamePtr
+	var r string
+	if o.VmBootdiskFileNamePtr == nil {
+		return r
+	}
+	r = *o.VmBootdiskFileNamePtr
 	return r
 }
 
@@ -64,7 +73,11 @@ func (o *VmSystemDisksType) SetVmBootdiskFileName(newValue string) *VmSystemDisk
 
 // VmCorediskAreaName is a 'getter' method
 func (o *VmSystemDisksType) VmCorediskAreaName() string {
-	r := *o.VmCorediskAreaNamePtr
+	var r string
+	if o.VmCorediskAreaNamePtr == nil {
+		return r
+	}
+	r = *o.VmCorediskAreaNamePtr
 	return r
 }
 
@@ -76,7 +89,11 @@ func (o *VmSystemDisksType) SetVmCorediskAreaName(newValue string) *VmSystemDisk
 
 // VmCorediskFileName is a 'getter' method
 func (o *VmSystemDisksType) VmCorediskFileName() string {
-	r := *o.VmCorediskFileNamePtr
+	var r string
+	if o.VmCorediskFileNamePtr == nil {
+		return r
+	}
+	r = *o.VmCorediskFileNamePtr
 	return r
 }
 
@@ -88,7 +105,11 @@ func (o *VmSystemDisksType) SetVmCorediskFileName(newValue string) *VmSystemDisk
 
 // VmLogdiskAreaName is a 'getter' method
 func (o *VmSystemDisksType) VmLogdiskAreaName() string {
-	r := *o.VmLogdiskAreaNamePtr
+	var r string
+	if o.VmLogdiskAreaNamePtr == nil {
+		return r
+	}
+	r = *o.VmLogdiskAreaNamePtr
 	return r
 }
 
@@ -100,7 +121,11 @@ func (o *VmSystemDisksType) SetVmLogdiskAreaName(newValue string) *VmSystemDisks
 
 // VmLogdiskFileName is a 'getter' method
 func (o *VmSystemDisksType) VmLogdiskFileName() string {
-	r := *o.VmLogdiskFileNamePtr
+	var r string
+	if o.VmLogdiskFileNamePtr == nil {
+		return r
+	}
+	r = *o.VmLogdiskFileNamePtr
 	return r
 }
 

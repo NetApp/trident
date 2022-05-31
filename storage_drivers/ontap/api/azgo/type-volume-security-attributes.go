@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeSecurityAttributesType is a structure to represent a volume-security-attributes ZAPI object
@@ -36,7 +37,11 @@ func (o VolumeSecurityAttributesType) String() string {
 
 // Style is a 'getter' method
 func (o *VolumeSecurityAttributesType) Style() string {
-	r := *o.StylePtr
+	var r string
+	if o.StylePtr == nil {
+		return r
+	}
+	r = *o.StylePtr
 	return r
 }
 
@@ -48,7 +53,11 @@ func (o *VolumeSecurityAttributesType) SetStyle(newValue string) *VolumeSecurity
 
 // VolumeSecurityUnixAttributes is a 'getter' method
 func (o *VolumeSecurityAttributesType) VolumeSecurityUnixAttributes() VolumeSecurityUnixAttributesType {
-	r := *o.VolumeSecurityUnixAttributesPtr
+	var r VolumeSecurityUnixAttributesType
+	if o.VolumeSecurityUnixAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeSecurityUnixAttributesPtr
 	return r
 }
 

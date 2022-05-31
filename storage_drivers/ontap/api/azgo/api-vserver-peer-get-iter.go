@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VserverPeerGetIterRequest is a structure to represent a vserver-peer-get-iter Request ZAPI object
@@ -115,7 +116,7 @@ func (o *VserverPeerGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Vserv
 	combined.Result.SetAttributesList(VserverPeerGetIterResponseResultAttributesList{})
 	var nextTagPtr *string
 	done := false
-	for done != true {
+	for !done {
 		n, err := o.executeWithoutIteration(zr)
 
 		if err != nil {
@@ -150,7 +151,7 @@ func (o *VserverPeerGetIterRequest) executeWithIteration(zr *ZapiRunner) (*Vserv
 			combined.Result.AttributesListPtr.setValues(append(combinedAttributes, resultAttributes...))
 		}
 
-		if done == true {
+		if done {
 
 			combined.Result.ResultErrnoAttr = n.Result.ResultErrnoAttr
 			combined.Result.ResultReasonAttr = n.Result.ResultReasonAttr
@@ -178,7 +179,11 @@ func (o VserverPeerGetIterRequestDesiredAttributes) String() string {
 
 // VserverPeerInfo is a 'getter' method
 func (o *VserverPeerGetIterRequestDesiredAttributes) VserverPeerInfo() VserverPeerInfoType {
-	r := *o.VserverPeerInfoPtr
+	var r VserverPeerInfoType
+	if o.VserverPeerInfoPtr == nil {
+		return r
+	}
+	r = *o.VserverPeerInfoPtr
 	return r
 }
 
@@ -190,7 +195,11 @@ func (o *VserverPeerGetIterRequestDesiredAttributes) SetVserverPeerInfo(newValue
 
 // DesiredAttributes is a 'getter' method
 func (o *VserverPeerGetIterRequest) DesiredAttributes() VserverPeerGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r VserverPeerGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -202,7 +211,11 @@ func (o *VserverPeerGetIterRequest) SetDesiredAttributes(newValue VserverPeerGet
 
 // MaxRecords is a 'getter' method
 func (o *VserverPeerGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -225,7 +238,11 @@ func (o VserverPeerGetIterRequestQuery) String() string {
 
 // VserverPeerInfo is a 'getter' method
 func (o *VserverPeerGetIterRequestQuery) VserverPeerInfo() VserverPeerInfoType {
-	r := *o.VserverPeerInfoPtr
+	var r VserverPeerInfoType
+	if o.VserverPeerInfoPtr == nil {
+		return r
+	}
+	r = *o.VserverPeerInfoPtr
 	return r
 }
 
@@ -237,7 +254,11 @@ func (o *VserverPeerGetIterRequestQuery) SetVserverPeerInfo(newValue VserverPeer
 
 // Query is a 'getter' method
 func (o *VserverPeerGetIterRequest) Query() VserverPeerGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r VserverPeerGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -249,7 +270,11 @@ func (o *VserverPeerGetIterRequest) SetQuery(newValue VserverPeerGetIterRequestQ
 
 // Tag is a 'getter' method
 func (o *VserverPeerGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -300,7 +325,11 @@ func (o *VserverPeerGetIterResponseResultAttributesList) setValues(newValue []Vs
 
 // AttributesList is a 'getter' method
 func (o *VserverPeerGetIterResponseResult) AttributesList() VserverPeerGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r VserverPeerGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -312,7 +341,11 @@ func (o *VserverPeerGetIterResponseResult) SetAttributesList(newValue VserverPee
 
 // NextTag is a 'getter' method
 func (o *VserverPeerGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -324,7 +357,11 @@ func (o *VserverPeerGetIterResponseResult) SetNextTag(newValue string) *VserverP
 
 // NumRecords is a 'getter' method
 func (o *VserverPeerGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

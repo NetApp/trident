@@ -1,12 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // ExportPolicyDestroyRequest is a structure to represent a export-policy-destroy Request ZAPI object
@@ -106,7 +106,11 @@ func (o *ExportPolicyDestroyRequest) executeWithoutIteration(zr *ZapiRunner) (*E
 
 // PolicyName is a 'getter' method
 func (o *ExportPolicyDestroyRequest) PolicyName() ExportPolicyNameType {
-	r := *o.PolicyNamePtr
+	var r ExportPolicyNameType
+	if o.PolicyNamePtr == nil {
+		return r
+	}
+	r = *o.PolicyNamePtr
 	return r
 }
 

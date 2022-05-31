@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunInfoType is a structure to represent a lun-info ZAPI object
@@ -74,7 +75,11 @@ func (o LunInfoType) String() string {
 
 // Alignment is a 'getter' method
 func (o *LunInfoType) Alignment() string {
-	r := *o.AlignmentPtr
+	var r string
+	if o.AlignmentPtr == nil {
+		return r
+	}
+	r = *o.AlignmentPtr
 	return r
 }
 
@@ -86,7 +91,11 @@ func (o *LunInfoType) SetAlignment(newValue string) *LunInfoType {
 
 // Application is a 'getter' method
 func (o *LunInfoType) Application() string {
-	r := *o.ApplicationPtr
+	var r string
+	if o.ApplicationPtr == nil {
+		return r
+	}
+	r = *o.ApplicationPtr
 	return r
 }
 
@@ -98,7 +107,11 @@ func (o *LunInfoType) SetApplication(newValue string) *LunInfoType {
 
 // ApplicationUuid is a 'getter' method
 func (o *LunInfoType) ApplicationUuid() string {
-	r := *o.ApplicationUuidPtr
+	var r string
+	if o.ApplicationUuidPtr == nil {
+		return r
+	}
+	r = *o.ApplicationUuidPtr
 	return r
 }
 
@@ -110,7 +123,11 @@ func (o *LunInfoType) SetApplicationUuid(newValue string) *LunInfoType {
 
 // BackingSnapshot is a 'getter' method
 func (o *LunInfoType) BackingSnapshot() string {
-	r := *o.BackingSnapshotPtr
+	var r string
+	if o.BackingSnapshotPtr == nil {
+		return r
+	}
+	r = *o.BackingSnapshotPtr
 	return r
 }
 
@@ -122,7 +139,11 @@ func (o *LunInfoType) SetBackingSnapshot(newValue string) *LunInfoType {
 
 // BlockSize is a 'getter' method
 func (o *LunInfoType) BlockSize() int {
-	r := *o.BlockSizePtr
+	var r int
+	if o.BlockSizePtr == nil {
+		return r
+	}
+	r = *o.BlockSizePtr
 	return r
 }
 
@@ -134,7 +155,11 @@ func (o *LunInfoType) SetBlockSize(newValue int) *LunInfoType {
 
 // CachingPolicy is a 'getter' method
 func (o *LunInfoType) CachingPolicy() string {
-	r := *o.CachingPolicyPtr
+	var r string
+	if o.CachingPolicyPtr == nil {
+		return r
+	}
+	r = *o.CachingPolicyPtr
 	return r
 }
 
@@ -146,7 +171,11 @@ func (o *LunInfoType) SetCachingPolicy(newValue string) *LunInfoType {
 
 // Class is a 'getter' method
 func (o *LunInfoType) Class() string {
-	r := *o.ClassPtr
+	var r string
+	if o.ClassPtr == nil {
+		return r
+	}
+	r = *o.ClassPtr
 	return r
 }
 
@@ -158,7 +187,11 @@ func (o *LunInfoType) SetClass(newValue string) *LunInfoType {
 
 // CloneBackingSnapshot is a 'getter' method
 func (o *LunInfoType) CloneBackingSnapshot() string {
-	r := *o.CloneBackingSnapshotPtr
+	var r string
+	if o.CloneBackingSnapshotPtr == nil {
+		return r
+	}
+	r = *o.CloneBackingSnapshotPtr
 	return r
 }
 
@@ -170,7 +203,11 @@ func (o *LunInfoType) SetCloneBackingSnapshot(newValue string) *LunInfoType {
 
 // Comment is a 'getter' method
 func (o *LunInfoType) Comment() string {
-	r := *o.CommentPtr
+	var r string
+	if o.CommentPtr == nil {
+		return r
+	}
+	r = *o.CommentPtr
 	return r
 }
 
@@ -182,7 +219,11 @@ func (o *LunInfoType) SetComment(newValue string) *LunInfoType {
 
 // CreationTimestamp is a 'getter' method
 func (o *LunInfoType) CreationTimestamp() int {
-	r := *o.CreationTimestampPtr
+	var r int
+	if o.CreationTimestampPtr == nil {
+		return r
+	}
+	r = *o.CreationTimestampPtr
 	return r
 }
 
@@ -194,7 +235,11 @@ func (o *LunInfoType) SetCreationTimestamp(newValue int) *LunInfoType {
 
 // DeviceBinaryId is a 'getter' method
 func (o *LunInfoType) DeviceBinaryId() string {
-	r := *o.DeviceBinaryIdPtr
+	var r string
+	if o.DeviceBinaryIdPtr == nil {
+		return r
+	}
+	r = *o.DeviceBinaryIdPtr
 	return r
 }
 
@@ -206,7 +251,11 @@ func (o *LunInfoType) SetDeviceBinaryId(newValue string) *LunInfoType {
 
 // DeviceId is a 'getter' method
 func (o *LunInfoType) DeviceId() int {
-	r := *o.DeviceIdPtr
+	var r int
+	if o.DeviceIdPtr == nil {
+		return r
+	}
+	r = *o.DeviceIdPtr
 	return r
 }
 
@@ -218,7 +267,11 @@ func (o *LunInfoType) SetDeviceId(newValue int) *LunInfoType {
 
 // DeviceTextId is a 'getter' method
 func (o *LunInfoType) DeviceTextId() string {
-	r := *o.DeviceTextIdPtr
+	var r string
+	if o.DeviceTextIdPtr == nil {
+		return r
+	}
+	r = *o.DeviceTextIdPtr
 	return r
 }
 
@@ -230,7 +283,11 @@ func (o *LunInfoType) SetDeviceTextId(newValue string) *LunInfoType {
 
 // IsClone is a 'getter' method
 func (o *LunInfoType) IsClone() bool {
-	r := *o.IsClonePtr
+	var r bool
+	if o.IsClonePtr == nil {
+		return r
+	}
+	r = *o.IsClonePtr
 	return r
 }
 
@@ -242,7 +299,11 @@ func (o *LunInfoType) SetIsClone(newValue bool) *LunInfoType {
 
 // IsCloneAutodeleteEnabled is a 'getter' method
 func (o *LunInfoType) IsCloneAutodeleteEnabled() bool {
-	r := *o.IsCloneAutodeleteEnabledPtr
+	var r bool
+	if o.IsCloneAutodeleteEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsCloneAutodeleteEnabledPtr
 	return r
 }
 
@@ -254,7 +315,11 @@ func (o *LunInfoType) SetIsCloneAutodeleteEnabled(newValue bool) *LunInfoType {
 
 // IsInconsistentImport is a 'getter' method
 func (o *LunInfoType) IsInconsistentImport() bool {
-	r := *o.IsInconsistentImportPtr
+	var r bool
+	if o.IsInconsistentImportPtr == nil {
+		return r
+	}
+	r = *o.IsInconsistentImportPtr
 	return r
 }
 
@@ -266,7 +331,11 @@ func (o *LunInfoType) SetIsInconsistentImport(newValue bool) *LunInfoType {
 
 // IsRestoreInaccessible is a 'getter' method
 func (o *LunInfoType) IsRestoreInaccessible() bool {
-	r := *o.IsRestoreInaccessiblePtr
+	var r bool
+	if o.IsRestoreInaccessiblePtr == nil {
+		return r
+	}
+	r = *o.IsRestoreInaccessiblePtr
 	return r
 }
 
@@ -278,7 +347,11 @@ func (o *LunInfoType) SetIsRestoreInaccessible(newValue bool) *LunInfoType {
 
 // IsSpaceAllocEnabled is a 'getter' method
 func (o *LunInfoType) IsSpaceAllocEnabled() bool {
-	r := *o.IsSpaceAllocEnabledPtr
+	var r bool
+	if o.IsSpaceAllocEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsSpaceAllocEnabledPtr
 	return r
 }
 
@@ -290,7 +363,11 @@ func (o *LunInfoType) SetIsSpaceAllocEnabled(newValue bool) *LunInfoType {
 
 // IsSpaceReservationEnabled is a 'getter' method
 func (o *LunInfoType) IsSpaceReservationEnabled() bool {
-	r := *o.IsSpaceReservationEnabledPtr
+	var r bool
+	if o.IsSpaceReservationEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsSpaceReservationEnabledPtr
 	return r
 }
 
@@ -302,7 +379,11 @@ func (o *LunInfoType) SetIsSpaceReservationEnabled(newValue bool) *LunInfoType {
 
 // Mapped is a 'getter' method
 func (o *LunInfoType) Mapped() bool {
-	r := *o.MappedPtr
+	var r bool
+	if o.MappedPtr == nil {
+		return r
+	}
+	r = *o.MappedPtr
 	return r
 }
 
@@ -314,7 +395,11 @@ func (o *LunInfoType) SetMapped(newValue bool) *LunInfoType {
 
 // MultiprotocolType is a 'getter' method
 func (o *LunInfoType) MultiprotocolType() LunOsTypeType {
-	r := *o.MultiprotocolTypePtr
+	var r LunOsTypeType
+	if o.MultiprotocolTypePtr == nil {
+		return r
+	}
+	r = *o.MultiprotocolTypePtr
 	return r
 }
 
@@ -326,7 +411,11 @@ func (o *LunInfoType) SetMultiprotocolType(newValue LunOsTypeType) *LunInfoType 
 
 // Node is a 'getter' method
 func (o *LunInfoType) Node() NodeNameType {
-	r := *o.NodePtr
+	var r NodeNameType
+	if o.NodePtr == nil {
+		return r
+	}
+	r = *o.NodePtr
 	return r
 }
 
@@ -338,7 +427,11 @@ func (o *LunInfoType) SetNode(newValue NodeNameType) *LunInfoType {
 
 // Online is a 'getter' method
 func (o *LunInfoType) Online() bool {
-	r := *o.OnlinePtr
+	var r bool
+	if o.OnlinePtr == nil {
+		return r
+	}
+	r = *o.OnlinePtr
 	return r
 }
 
@@ -350,7 +443,11 @@ func (o *LunInfoType) SetOnline(newValue bool) *LunInfoType {
 
 // Path is a 'getter' method
 func (o *LunInfoType) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 
@@ -362,7 +459,11 @@ func (o *LunInfoType) SetPath(newValue string) *LunInfoType {
 
 // PrefixSize is a 'getter' method
 func (o *LunInfoType) PrefixSize() int {
-	r := *o.PrefixSizePtr
+	var r int
+	if o.PrefixSizePtr == nil {
+		return r
+	}
+	r = *o.PrefixSizePtr
 	return r
 }
 
@@ -374,7 +475,11 @@ func (o *LunInfoType) SetPrefixSize(newValue int) *LunInfoType {
 
 // QosAdaptivePolicyGroup is a 'getter' method
 func (o *LunInfoType) QosAdaptivePolicyGroup() string {
-	r := *o.QosAdaptivePolicyGroupPtr
+	var r string
+	if o.QosAdaptivePolicyGroupPtr == nil {
+		return r
+	}
+	r = *o.QosAdaptivePolicyGroupPtr
 	return r
 }
 
@@ -386,7 +491,11 @@ func (o *LunInfoType) SetQosAdaptivePolicyGroup(newValue string) *LunInfoType {
 
 // QosPolicyGroup is a 'getter' method
 func (o *LunInfoType) QosPolicyGroup() string {
-	r := *o.QosPolicyGroupPtr
+	var r string
+	if o.QosPolicyGroupPtr == nil {
+		return r
+	}
+	r = *o.QosPolicyGroupPtr
 	return r
 }
 
@@ -398,7 +507,11 @@ func (o *LunInfoType) SetQosPolicyGroup(newValue string) *LunInfoType {
 
 // Qtree is a 'getter' method
 func (o *LunInfoType) Qtree() string {
-	r := *o.QtreePtr
+	var r string
+	if o.QtreePtr == nil {
+		return r
+	}
+	r = *o.QtreePtr
 	return r
 }
 
@@ -410,7 +523,11 @@ func (o *LunInfoType) SetQtree(newValue string) *LunInfoType {
 
 // ReadOnly is a 'getter' method
 func (o *LunInfoType) ReadOnly() bool {
-	r := *o.ReadOnlyPtr
+	var r bool
+	if o.ReadOnlyPtr == nil {
+		return r
+	}
+	r = *o.ReadOnlyPtr
 	return r
 }
 
@@ -422,7 +539,11 @@ func (o *LunInfoType) SetReadOnly(newValue bool) *LunInfoType {
 
 // Serial7Mode is a 'getter' method
 func (o *LunInfoType) Serial7Mode() string {
-	r := *o.Serial7ModePtr
+	var r string
+	if o.Serial7ModePtr == nil {
+		return r
+	}
+	r = *o.Serial7ModePtr
 	return r
 }
 
@@ -434,7 +555,11 @@ func (o *LunInfoType) SetSerial7Mode(newValue string) *LunInfoType {
 
 // SerialNumber is a 'getter' method
 func (o *LunInfoType) SerialNumber() string {
-	r := *o.SerialNumberPtr
+	var r string
+	if o.SerialNumberPtr == nil {
+		return r
+	}
+	r = *o.SerialNumberPtr
 	return r
 }
 
@@ -446,7 +571,11 @@ func (o *LunInfoType) SetSerialNumber(newValue string) *LunInfoType {
 
 // ShareState is a 'getter' method
 func (o *LunInfoType) ShareState() string {
-	r := *o.ShareStatePtr
+	var r string
+	if o.ShareStatePtr == nil {
+		return r
+	}
+	r = *o.ShareStatePtr
 	return r
 }
 
@@ -458,7 +587,11 @@ func (o *LunInfoType) SetShareState(newValue string) *LunInfoType {
 
 // Size is a 'getter' method
 func (o *LunInfoType) Size() int {
-	r := *o.SizePtr
+	var r int
+	if o.SizePtr == nil {
+		return r
+	}
+	r = *o.SizePtr
 	return r
 }
 
@@ -470,7 +603,11 @@ func (o *LunInfoType) SetSize(newValue int) *LunInfoType {
 
 // SizeUsed is a 'getter' method
 func (o *LunInfoType) SizeUsed() int {
-	r := *o.SizeUsedPtr
+	var r int
+	if o.SizeUsedPtr == nil {
+		return r
+	}
+	r = *o.SizeUsedPtr
 	return r
 }
 
@@ -482,7 +619,11 @@ func (o *LunInfoType) SetSizeUsed(newValue int) *LunInfoType {
 
 // Staging is a 'getter' method
 func (o *LunInfoType) Staging() bool {
-	r := *o.StagingPtr
+	var r bool
+	if o.StagingPtr == nil {
+		return r
+	}
+	r = *o.StagingPtr
 	return r
 }
 
@@ -494,7 +635,11 @@ func (o *LunInfoType) SetStaging(newValue bool) *LunInfoType {
 
 // State is a 'getter' method
 func (o *LunInfoType) State() string {
-	r := *o.StatePtr
+	var r string
+	if o.StatePtr == nil {
+		return r
+	}
+	r = *o.StatePtr
 	return r
 }
 
@@ -506,7 +651,11 @@ func (o *LunInfoType) SetState(newValue string) *LunInfoType {
 
 // SuffixSize is a 'getter' method
 func (o *LunInfoType) SuffixSize() int {
-	r := *o.SuffixSizePtr
+	var r int
+	if o.SuffixSizePtr == nil {
+		return r
+	}
+	r = *o.SuffixSizePtr
 	return r
 }
 
@@ -518,7 +667,11 @@ func (o *LunInfoType) SetSuffixSize(newValue int) *LunInfoType {
 
 // Uuid is a 'getter' method
 func (o *LunInfoType) Uuid() string {
-	r := *o.UuidPtr
+	var r string
+	if o.UuidPtr == nil {
+		return r
+	}
+	r = *o.UuidPtr
 	return r
 }
 
@@ -530,7 +683,11 @@ func (o *LunInfoType) SetUuid(newValue string) *LunInfoType {
 
 // Volume is a 'getter' method
 func (o *LunInfoType) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -542,7 +699,11 @@ func (o *LunInfoType) SetVolume(newValue string) *LunInfoType {
 
 // Vserver is a 'getter' method
 func (o *LunInfoType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

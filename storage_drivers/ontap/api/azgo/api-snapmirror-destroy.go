@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorDestroyRequest is a structure to represent a snapmirror-destroy Request ZAPI object
@@ -113,7 +114,11 @@ func (o *SnapmirrorDestroyRequest) executeWithoutIteration(zr *ZapiRunner) (*Sna
 
 // DestinationCluster is a 'getter' method
 func (o *SnapmirrorDestroyRequest) DestinationCluster() string {
-	r := *o.DestinationClusterPtr
+	var r string
+	if o.DestinationClusterPtr == nil {
+		return r
+	}
+	r = *o.DestinationClusterPtr
 	return r
 }
 
@@ -125,7 +130,11 @@ func (o *SnapmirrorDestroyRequest) SetDestinationCluster(newValue string) *Snapm
 
 // DestinationLocation is a 'getter' method
 func (o *SnapmirrorDestroyRequest) DestinationLocation() string {
-	r := *o.DestinationLocationPtr
+	var r string
+	if o.DestinationLocationPtr == nil {
+		return r
+	}
+	r = *o.DestinationLocationPtr
 	return r
 }
 
@@ -137,7 +146,11 @@ func (o *SnapmirrorDestroyRequest) SetDestinationLocation(newValue string) *Snap
 
 // DestinationVolume is a 'getter' method
 func (o *SnapmirrorDestroyRequest) DestinationVolume() string {
-	r := *o.DestinationVolumePtr
+	var r string
+	if o.DestinationVolumePtr == nil {
+		return r
+	}
+	r = *o.DestinationVolumePtr
 	return r
 }
 
@@ -149,7 +162,11 @@ func (o *SnapmirrorDestroyRequest) SetDestinationVolume(newValue string) *Snapmi
 
 // DestinationVserver is a 'getter' method
 func (o *SnapmirrorDestroyRequest) DestinationVserver() string {
-	r := *o.DestinationVserverPtr
+	var r string
+	if o.DestinationVserverPtr == nil {
+		return r
+	}
+	r = *o.DestinationVserverPtr
 	return r
 }
 
@@ -161,7 +178,11 @@ func (o *SnapmirrorDestroyRequest) SetDestinationVserver(newValue string) *Snapm
 
 // SourceCluster is a 'getter' method
 func (o *SnapmirrorDestroyRequest) SourceCluster() string {
-	r := *o.SourceClusterPtr
+	var r string
+	if o.SourceClusterPtr == nil {
+		return r
+	}
+	r = *o.SourceClusterPtr
 	return r
 }
 
@@ -173,7 +194,11 @@ func (o *SnapmirrorDestroyRequest) SetSourceCluster(newValue string) *Snapmirror
 
 // SourceLocation is a 'getter' method
 func (o *SnapmirrorDestroyRequest) SourceLocation() string {
-	r := *o.SourceLocationPtr
+	var r string
+	if o.SourceLocationPtr == nil {
+		return r
+	}
+	r = *o.SourceLocationPtr
 	return r
 }
 
@@ -185,7 +210,11 @@ func (o *SnapmirrorDestroyRequest) SetSourceLocation(newValue string) *Snapmirro
 
 // SourceVolume is a 'getter' method
 func (o *SnapmirrorDestroyRequest) SourceVolume() string {
-	r := *o.SourceVolumePtr
+	var r string
+	if o.SourceVolumePtr == nil {
+		return r
+	}
+	r = *o.SourceVolumePtr
 	return r
 }
 
@@ -197,7 +226,11 @@ func (o *SnapmirrorDestroyRequest) SetSourceVolume(newValue string) *SnapmirrorD
 
 // SourceVserver is a 'getter' method
 func (o *SnapmirrorDestroyRequest) SourceVserver() string {
-	r := *o.SourceVserverPtr
+	var r string
+	if o.SourceVserverPtr == nil {
+		return r
+	}
+	r = *o.SourceVserverPtr
 	return r
 }
 
@@ -209,7 +242,11 @@ func (o *SnapmirrorDestroyRequest) SetSourceVserver(newValue string) *Snapmirror
 
 // ResultOperationId is a 'getter' method
 func (o *SnapmirrorDestroyResponseResult) ResultOperationId() UuidType {
-	r := *o.ResultOperationIdPtr
+	var r UuidType
+	if o.ResultOperationIdPtr == nil {
+		return r
+	}
+	r = *o.ResultOperationIdPtr
 	return r
 }
 

@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapshotRestoreVolumeRequest is a structure to represent a snapshot-restore-volume Request ZAPI object
@@ -109,7 +110,11 @@ func (o *SnapshotRestoreVolumeRequest) executeWithoutIteration(zr *ZapiRunner) (
 
 // Force is a 'getter' method
 func (o *SnapshotRestoreVolumeRequest) Force() bool {
-	r := *o.ForcePtr
+	var r bool
+	if o.ForcePtr == nil {
+		return r
+	}
+	r = *o.ForcePtr
 	return r
 }
 
@@ -121,7 +126,11 @@ func (o *SnapshotRestoreVolumeRequest) SetForce(newValue bool) *SnapshotRestoreV
 
 // PreserveLunIds is a 'getter' method
 func (o *SnapshotRestoreVolumeRequest) PreserveLunIds() bool {
-	r := *o.PreserveLunIdsPtr
+	var r bool
+	if o.PreserveLunIdsPtr == nil {
+		return r
+	}
+	r = *o.PreserveLunIdsPtr
 	return r
 }
 
@@ -133,7 +142,11 @@ func (o *SnapshotRestoreVolumeRequest) SetPreserveLunIds(newValue bool) *Snapsho
 
 // Snapshot is a 'getter' method
 func (o *SnapshotRestoreVolumeRequest) Snapshot() string {
-	r := *o.SnapshotPtr
+	var r string
+	if o.SnapshotPtr == nil {
+		return r
+	}
+	r = *o.SnapshotPtr
 	return r
 }
 
@@ -145,7 +158,11 @@ func (o *SnapshotRestoreVolumeRequest) SetSnapshot(newValue string) *SnapshotRes
 
 // SnapshotInstanceUuid is a 'getter' method
 func (o *SnapshotRestoreVolumeRequest) SnapshotInstanceUuid() UUIDType {
-	r := *o.SnapshotInstanceUuidPtr
+	var r UUIDType
+	if o.SnapshotInstanceUuidPtr == nil {
+		return r
+	}
+	r = *o.SnapshotInstanceUuidPtr
 	return r
 }
 
@@ -157,7 +174,11 @@ func (o *SnapshotRestoreVolumeRequest) SetSnapshotInstanceUuid(newValue UUIDType
 
 // Volume is a 'getter' method
 func (o *SnapshotRestoreVolumeRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 

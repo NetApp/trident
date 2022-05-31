@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeErrorType is a structure to represent a volume-error ZAPI object
@@ -38,7 +39,11 @@ func (o VolumeErrorType) String() string {
 
 // Errno is a 'getter' method
 func (o *VolumeErrorType) Errno() int {
-	r := *o.ErrnoPtr
+	var r int
+	if o.ErrnoPtr == nil {
+		return r
+	}
+	r = *o.ErrnoPtr
 	return r
 }
 
@@ -50,7 +55,11 @@ func (o *VolumeErrorType) SetErrno(newValue int) *VolumeErrorType {
 
 // Name is a 'getter' method
 func (o *VolumeErrorType) Name() VolumeNameType {
-	r := *o.NamePtr
+	var r VolumeNameType
+	if o.NamePtr == nil {
+		return r
+	}
+	r = *o.NamePtr
 	return r
 }
 
@@ -62,7 +71,11 @@ func (o *VolumeErrorType) SetName(newValue VolumeNameType) *VolumeErrorType {
 
 // Reason is a 'getter' method
 func (o *VolumeErrorType) Reason() string {
-	r := *o.ReasonPtr
+	var r string
+	if o.ReasonPtr == nil {
+		return r
+	}
+	r = *o.ReasonPtr
 	return r
 }
 
@@ -74,7 +87,11 @@ func (o *VolumeErrorType) SetReason(newValue string) *VolumeErrorType {
 
 // Vserver is a 'getter' method
 func (o *VolumeErrorType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeSisAttributesType is a structure to represent a volume-sis-attributes ZAPI object
@@ -44,7 +45,11 @@ func (o VolumeSisAttributesType) String() string {
 
 // CompressionSpaceSaved is a 'getter' method
 func (o *VolumeSisAttributesType) CompressionSpaceSaved() int {
-	r := *o.CompressionSpaceSavedPtr
+	var r int
+	if o.CompressionSpaceSavedPtr == nil {
+		return r
+	}
+	r = *o.CompressionSpaceSavedPtr
 	return r
 }
 
@@ -56,7 +61,11 @@ func (o *VolumeSisAttributesType) SetCompressionSpaceSaved(newValue int) *Volume
 
 // DeduplicationSpaceSaved is a 'getter' method
 func (o *VolumeSisAttributesType) DeduplicationSpaceSaved() int {
-	r := *o.DeduplicationSpaceSavedPtr
+	var r int
+	if o.DeduplicationSpaceSavedPtr == nil {
+		return r
+	}
+	r = *o.DeduplicationSpaceSavedPtr
 	return r
 }
 
@@ -68,7 +77,11 @@ func (o *VolumeSisAttributesType) SetDeduplicationSpaceSaved(newValue int) *Volu
 
 // DeduplicationSpaceShared is a 'getter' method
 func (o *VolumeSisAttributesType) DeduplicationSpaceShared() SizeType {
-	r := *o.DeduplicationSpaceSharedPtr
+	var r SizeType
+	if o.DeduplicationSpaceSharedPtr == nil {
+		return r
+	}
+	r = *o.DeduplicationSpaceSharedPtr
 	return r
 }
 
@@ -80,7 +93,11 @@ func (o *VolumeSisAttributesType) SetDeduplicationSpaceShared(newValue SizeType)
 
 // IsSisLoggingEnabled is a 'getter' method
 func (o *VolumeSisAttributesType) IsSisLoggingEnabled() bool {
-	r := *o.IsSisLoggingEnabledPtr
+	var r bool
+	if o.IsSisLoggingEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsSisLoggingEnabledPtr
 	return r
 }
 
@@ -92,7 +109,11 @@ func (o *VolumeSisAttributesType) SetIsSisLoggingEnabled(newValue bool) *VolumeS
 
 // IsSisStateEnabled is a 'getter' method
 func (o *VolumeSisAttributesType) IsSisStateEnabled() bool {
-	r := *o.IsSisStateEnabledPtr
+	var r bool
+	if o.IsSisStateEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsSisStateEnabledPtr
 	return r
 }
 
@@ -104,7 +125,11 @@ func (o *VolumeSisAttributesType) SetIsSisStateEnabled(newValue bool) *VolumeSis
 
 // IsSisVolume is a 'getter' method
 func (o *VolumeSisAttributesType) IsSisVolume() bool {
-	r := *o.IsSisVolumePtr
+	var r bool
+	if o.IsSisVolumePtr == nil {
+		return r
+	}
+	r = *o.IsSisVolumePtr
 	return r
 }
 
@@ -116,7 +141,11 @@ func (o *VolumeSisAttributesType) SetIsSisVolume(newValue bool) *VolumeSisAttrib
 
 // PercentageCompressionSpaceSaved is a 'getter' method
 func (o *VolumeSisAttributesType) PercentageCompressionSpaceSaved() int {
-	r := *o.PercentageCompressionSpaceSavedPtr
+	var r int
+	if o.PercentageCompressionSpaceSavedPtr == nil {
+		return r
+	}
+	r = *o.PercentageCompressionSpaceSavedPtr
 	return r
 }
 
@@ -128,7 +157,11 @@ func (o *VolumeSisAttributesType) SetPercentageCompressionSpaceSaved(newValue in
 
 // PercentageDeduplicationSpaceSaved is a 'getter' method
 func (o *VolumeSisAttributesType) PercentageDeduplicationSpaceSaved() int {
-	r := *o.PercentageDeduplicationSpaceSavedPtr
+	var r int
+	if o.PercentageDeduplicationSpaceSavedPtr == nil {
+		return r
+	}
+	r = *o.PercentageDeduplicationSpaceSavedPtr
 	return r
 }
 
@@ -140,7 +173,11 @@ func (o *VolumeSisAttributesType) SetPercentageDeduplicationSpaceSaved(newValue 
 
 // PercentageTotalSpaceSaved is a 'getter' method
 func (o *VolumeSisAttributesType) PercentageTotalSpaceSaved() int {
-	r := *o.PercentageTotalSpaceSavedPtr
+	var r int
+	if o.PercentageTotalSpaceSavedPtr == nil {
+		return r
+	}
+	r = *o.PercentageTotalSpaceSavedPtr
 	return r
 }
 
@@ -152,7 +189,11 @@ func (o *VolumeSisAttributesType) SetPercentageTotalSpaceSaved(newValue int) *Vo
 
 // TotalSpaceSaved is a 'getter' method
 func (o *VolumeSisAttributesType) TotalSpaceSaved() int {
-	r := *o.TotalSpaceSavedPtr
+	var r int
+	if o.TotalSpaceSavedPtr == nil {
+		return r
+	}
+	r = *o.TotalSpaceSavedPtr
 	return r
 }
 

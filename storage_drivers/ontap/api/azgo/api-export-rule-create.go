@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // ExportRuleCreateRequest is a structure to represent a export-rule-create Request ZAPI object
@@ -116,7 +117,11 @@ func (o *ExportRuleCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*Expo
 
 // AnonymousUserId is a 'getter' method
 func (o *ExportRuleCreateRequest) AnonymousUserId() string {
-	r := *o.AnonymousUserIdPtr
+	var r string
+	if o.AnonymousUserIdPtr == nil {
+		return r
+	}
+	r = *o.AnonymousUserIdPtr
 	return r
 }
 
@@ -128,7 +133,11 @@ func (o *ExportRuleCreateRequest) SetAnonymousUserId(newValue string) *ExportRul
 
 // ClientMatch is a 'getter' method
 func (o *ExportRuleCreateRequest) ClientMatch() string {
-	r := *o.ClientMatchPtr
+	var r string
+	if o.ClientMatchPtr == nil {
+		return r
+	}
+	r = *o.ClientMatchPtr
 	return r
 }
 
@@ -140,7 +149,11 @@ func (o *ExportRuleCreateRequest) SetClientMatch(newValue string) *ExportRuleCre
 
 // ExportChownMode is a 'getter' method
 func (o *ExportRuleCreateRequest) ExportChownMode() ExportchownmodeType {
-	r := *o.ExportChownModePtr
+	var r ExportchownmodeType
+	if o.ExportChownModePtr == nil {
+		return r
+	}
+	r = *o.ExportChownModePtr
 	return r
 }
 
@@ -152,7 +165,11 @@ func (o *ExportRuleCreateRequest) SetExportChownMode(newValue ExportchownmodeTyp
 
 // ExportNtfsUnixSecurityOps is a 'getter' method
 func (o *ExportRuleCreateRequest) ExportNtfsUnixSecurityOps() ExportntfsunixsecopsType {
-	r := *o.ExportNtfsUnixSecurityOpsPtr
+	var r ExportntfsunixsecopsType
+	if o.ExportNtfsUnixSecurityOpsPtr == nil {
+		return r
+	}
+	r = *o.ExportNtfsUnixSecurityOpsPtr
 	return r
 }
 
@@ -164,7 +181,11 @@ func (o *ExportRuleCreateRequest) SetExportNtfsUnixSecurityOps(newValue Exportnt
 
 // IsAllowDevIsEnabled is a 'getter' method
 func (o *ExportRuleCreateRequest) IsAllowDevIsEnabled() bool {
-	r := *o.IsAllowDevIsEnabledPtr
+	var r bool
+	if o.IsAllowDevIsEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsAllowDevIsEnabledPtr
 	return r
 }
 
@@ -176,7 +197,11 @@ func (o *ExportRuleCreateRequest) SetIsAllowDevIsEnabled(newValue bool) *ExportR
 
 // IsAllowSetUidEnabled is a 'getter' method
 func (o *ExportRuleCreateRequest) IsAllowSetUidEnabled() bool {
-	r := *o.IsAllowSetUidEnabledPtr
+	var r bool
+	if o.IsAllowSetUidEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsAllowSetUidEnabledPtr
 	return r
 }
 
@@ -188,7 +213,11 @@ func (o *ExportRuleCreateRequest) SetIsAllowSetUidEnabled(newValue bool) *Export
 
 // PolicyName is a 'getter' method
 func (o *ExportRuleCreateRequest) PolicyName() ExportPolicyNameType {
-	r := *o.PolicyNamePtr
+	var r ExportPolicyNameType
+	if o.PolicyNamePtr == nil {
+		return r
+	}
+	r = *o.PolicyNamePtr
 	return r
 }
 
@@ -225,7 +254,11 @@ func (o *ExportRuleCreateRequestProtocol) SetAccessProtocol(newValue []AccessPro
 
 // Protocol is a 'getter' method
 func (o *ExportRuleCreateRequest) Protocol() ExportRuleCreateRequestProtocol {
-	r := *o.ProtocolPtr
+	var r ExportRuleCreateRequestProtocol
+	if o.ProtocolPtr == nil {
+		return r
+	}
+	r = *o.ProtocolPtr
 	return r
 }
 
@@ -262,7 +295,11 @@ func (o *ExportRuleCreateRequestRoRule) SetSecurityFlavor(newValue []SecurityFla
 
 // RoRule is a 'getter' method
 func (o *ExportRuleCreateRequest) RoRule() ExportRuleCreateRequestRoRule {
-	r := *o.RoRulePtr
+	var r ExportRuleCreateRequestRoRule
+	if o.RoRulePtr == nil {
+		return r
+	}
+	r = *o.RoRulePtr
 	return r
 }
 
@@ -274,7 +311,11 @@ func (o *ExportRuleCreateRequest) SetRoRule(newValue ExportRuleCreateRequestRoRu
 
 // RuleIndex is a 'getter' method
 func (o *ExportRuleCreateRequest) RuleIndex() int {
-	r := *o.RuleIndexPtr
+	var r int
+	if o.RuleIndexPtr == nil {
+		return r
+	}
+	r = *o.RuleIndexPtr
 	return r
 }
 
@@ -311,7 +352,11 @@ func (o *ExportRuleCreateRequestRwRule) SetSecurityFlavor(newValue []SecurityFla
 
 // RwRule is a 'getter' method
 func (o *ExportRuleCreateRequest) RwRule() ExportRuleCreateRequestRwRule {
-	r := *o.RwRulePtr
+	var r ExportRuleCreateRequestRwRule
+	if o.RwRulePtr == nil {
+		return r
+	}
+	r = *o.RwRulePtr
 	return r
 }
 
@@ -348,7 +393,11 @@ func (o *ExportRuleCreateRequestSuperUserSecurity) SetSecurityFlavor(newValue []
 
 // SuperUserSecurity is a 'getter' method
 func (o *ExportRuleCreateRequest) SuperUserSecurity() ExportRuleCreateRequestSuperUserSecurity {
-	r := *o.SuperUserSecurityPtr
+	var r ExportRuleCreateRequestSuperUserSecurity
+	if o.SuperUserSecurityPtr == nil {
+		return r
+	}
+	r = *o.SuperUserSecurityPtr
 	return r
 }
 

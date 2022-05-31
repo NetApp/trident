@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiServiceGetIterRequest is a structure to represent a iscsi-service-get-iter Request ZAPI object
@@ -178,7 +179,11 @@ func (o IscsiServiceGetIterRequestDesiredAttributes) String() string {
 
 // IscsiServiceInfo is a 'getter' method
 func (o *IscsiServiceGetIterRequestDesiredAttributes) IscsiServiceInfo() IscsiServiceInfoType {
-	r := *o.IscsiServiceInfoPtr
+	var r IscsiServiceInfoType
+	if o.IscsiServiceInfoPtr == nil {
+		return r
+	}
+	r = *o.IscsiServiceInfoPtr
 	return r
 }
 
@@ -190,7 +195,11 @@ func (o *IscsiServiceGetIterRequestDesiredAttributes) SetIscsiServiceInfo(newVal
 
 // DesiredAttributes is a 'getter' method
 func (o *IscsiServiceGetIterRequest) DesiredAttributes() IscsiServiceGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r IscsiServiceGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -202,7 +211,11 @@ func (o *IscsiServiceGetIterRequest) SetDesiredAttributes(newValue IscsiServiceG
 
 // MaxRecords is a 'getter' method
 func (o *IscsiServiceGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -225,7 +238,11 @@ func (o IscsiServiceGetIterRequestQuery) String() string {
 
 // IscsiServiceInfo is a 'getter' method
 func (o *IscsiServiceGetIterRequestQuery) IscsiServiceInfo() IscsiServiceInfoType {
-	r := *o.IscsiServiceInfoPtr
+	var r IscsiServiceInfoType
+	if o.IscsiServiceInfoPtr == nil {
+		return r
+	}
+	r = *o.IscsiServiceInfoPtr
 	return r
 }
 
@@ -237,7 +254,11 @@ func (o *IscsiServiceGetIterRequestQuery) SetIscsiServiceInfo(newValue IscsiServ
 
 // Query is a 'getter' method
 func (o *IscsiServiceGetIterRequest) Query() IscsiServiceGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r IscsiServiceGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -249,7 +270,11 @@ func (o *IscsiServiceGetIterRequest) SetQuery(newValue IscsiServiceGetIterReques
 
 // Tag is a 'getter' method
 func (o *IscsiServiceGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -300,7 +325,11 @@ func (o *IscsiServiceGetIterResponseResultAttributesList) setValues(newValue []I
 
 // AttributesList is a 'getter' method
 func (o *IscsiServiceGetIterResponseResult) AttributesList() IscsiServiceGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r IscsiServiceGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -312,7 +341,11 @@ func (o *IscsiServiceGetIterResponseResult) SetAttributesList(newValue IscsiServ
 
 // NextTag is a 'getter' method
 func (o *IscsiServiceGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -324,7 +357,11 @@ func (o *IscsiServiceGetIterResponseResult) SetNextTag(newValue string) *IscsiSe
 
 // NumRecords is a 'getter' method
 func (o *IscsiServiceGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

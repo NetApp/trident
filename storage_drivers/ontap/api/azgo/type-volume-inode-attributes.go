@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeInodeAttributesType is a structure to represent a volume-inode-attributes ZAPI object
@@ -41,7 +42,11 @@ func (o VolumeInodeAttributesType) String() string {
 
 // BlockType is a 'getter' method
 func (o *VolumeInodeAttributesType) BlockType() string {
-	r := *o.BlockTypePtr
+	var r string
+	if o.BlockTypePtr == nil {
+		return r
+	}
+	r = *o.BlockTypePtr
 	return r
 }
 
@@ -53,7 +58,11 @@ func (o *VolumeInodeAttributesType) SetBlockType(newValue string) *VolumeInodeAt
 
 // FilesPrivateUsed is a 'getter' method
 func (o *VolumeInodeAttributesType) FilesPrivateUsed() int {
-	r := *o.FilesPrivateUsedPtr
+	var r int
+	if o.FilesPrivateUsedPtr == nil {
+		return r
+	}
+	r = *o.FilesPrivateUsedPtr
 	return r
 }
 
@@ -65,7 +74,11 @@ func (o *VolumeInodeAttributesType) SetFilesPrivateUsed(newValue int) *VolumeIno
 
 // FilesTotal is a 'getter' method
 func (o *VolumeInodeAttributesType) FilesTotal() int {
-	r := *o.FilesTotalPtr
+	var r int
+	if o.FilesTotalPtr == nil {
+		return r
+	}
+	r = *o.FilesTotalPtr
 	return r
 }
 
@@ -77,7 +90,11 @@ func (o *VolumeInodeAttributesType) SetFilesTotal(newValue int) *VolumeInodeAttr
 
 // FilesUsed is a 'getter' method
 func (o *VolumeInodeAttributesType) FilesUsed() int {
-	r := *o.FilesUsedPtr
+	var r int
+	if o.FilesUsedPtr == nil {
+		return r
+	}
+	r = *o.FilesUsedPtr
 	return r
 }
 
@@ -89,7 +106,11 @@ func (o *VolumeInodeAttributesType) SetFilesUsed(newValue int) *VolumeInodeAttri
 
 // InodefilePrivateCapacity is a 'getter' method
 func (o *VolumeInodeAttributesType) InodefilePrivateCapacity() int {
-	r := *o.InodefilePrivateCapacityPtr
+	var r int
+	if o.InodefilePrivateCapacityPtr == nil {
+		return r
+	}
+	r = *o.InodefilePrivateCapacityPtr
 	return r
 }
 
@@ -101,7 +122,11 @@ func (o *VolumeInodeAttributesType) SetInodefilePrivateCapacity(newValue int) *V
 
 // InodefilePublicCapacity is a 'getter' method
 func (o *VolumeInodeAttributesType) InodefilePublicCapacity() int {
-	r := *o.InodefilePublicCapacityPtr
+	var r int
+	if o.InodefilePublicCapacityPtr == nil {
+		return r
+	}
+	r = *o.InodefilePublicCapacityPtr
 	return r
 }
 
@@ -113,7 +138,11 @@ func (o *VolumeInodeAttributesType) SetInodefilePublicCapacity(newValue int) *Vo
 
 // InofileVersion is a 'getter' method
 func (o *VolumeInodeAttributesType) InofileVersion() int {
-	r := *o.InofileVersionPtr
+	var r int
+	if o.InofileVersionPtr == nil {
+		return r
+	}
+	r = *o.InofileVersionPtr
 	return r
 }
 

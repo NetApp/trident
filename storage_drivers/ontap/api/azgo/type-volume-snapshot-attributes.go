@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeSnapshotAttributesType is a structure to represent a volume-snapshot-attributes ZAPI object
@@ -39,7 +40,11 @@ func (o VolumeSnapshotAttributesType) String() string {
 
 // AutoSnapshotsEnabled is a 'getter' method
 func (o *VolumeSnapshotAttributesType) AutoSnapshotsEnabled() bool {
-	r := *o.AutoSnapshotsEnabledPtr
+	var r bool
+	if o.AutoSnapshotsEnabledPtr == nil {
+		return r
+	}
+	r = *o.AutoSnapshotsEnabledPtr
 	return r
 }
 
@@ -51,7 +56,11 @@ func (o *VolumeSnapshotAttributesType) SetAutoSnapshotsEnabled(newValue bool) *V
 
 // SnapdirAccessEnabled is a 'getter' method
 func (o *VolumeSnapshotAttributesType) SnapdirAccessEnabled() bool {
-	r := *o.SnapdirAccessEnabledPtr
+	var r bool
+	if o.SnapdirAccessEnabledPtr == nil {
+		return r
+	}
+	r = *o.SnapdirAccessEnabledPtr
 	return r
 }
 
@@ -63,7 +72,11 @@ func (o *VolumeSnapshotAttributesType) SetSnapdirAccessEnabled(newValue bool) *V
 
 // SnapshotCloneDependencyEnabled is a 'getter' method
 func (o *VolumeSnapshotAttributesType) SnapshotCloneDependencyEnabled() bool {
-	r := *o.SnapshotCloneDependencyEnabledPtr
+	var r bool
+	if o.SnapshotCloneDependencyEnabledPtr == nil {
+		return r
+	}
+	r = *o.SnapshotCloneDependencyEnabledPtr
 	return r
 }
 
@@ -75,7 +88,11 @@ func (o *VolumeSnapshotAttributesType) SetSnapshotCloneDependencyEnabled(newValu
 
 // SnapshotCount is a 'getter' method
 func (o *VolumeSnapshotAttributesType) SnapshotCount() int {
-	r := *o.SnapshotCountPtr
+	var r int
+	if o.SnapshotCountPtr == nil {
+		return r
+	}
+	r = *o.SnapshotCountPtr
 	return r
 }
 
@@ -87,7 +104,11 @@ func (o *VolumeSnapshotAttributesType) SetSnapshotCount(newValue int) *VolumeSna
 
 // SnapshotPolicy is a 'getter' method
 func (o *VolumeSnapshotAttributesType) SnapshotPolicy() string {
-	r := *o.SnapshotPolicyPtr
+	var r string
+	if o.SnapshotPolicyPtr == nil {
+		return r
+	}
+	r = *o.SnapshotPolicyPtr
 	return r
 }
 

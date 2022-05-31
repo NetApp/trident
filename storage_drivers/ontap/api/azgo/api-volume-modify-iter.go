@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeModifyIterRequest is a structure to represent a volume-modify-iter Request ZAPI object
@@ -128,7 +129,11 @@ func (o VolumeModifyIterRequestAttributes) String() string {
 
 // VolumeAttributes is a 'getter' method
 func (o *VolumeModifyIterRequestAttributes) VolumeAttributes() VolumeAttributesType {
-	r := *o.VolumeAttributesPtr
+	var r VolumeAttributesType
+	if o.VolumeAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeAttributesPtr
 	return r
 }
 
@@ -140,7 +145,11 @@ func (o *VolumeModifyIterRequestAttributes) SetVolumeAttributes(newValue VolumeA
 
 // Attributes is a 'getter' method
 func (o *VolumeModifyIterRequest) Attributes() VolumeModifyIterRequestAttributes {
-	r := *o.AttributesPtr
+	var r VolumeModifyIterRequestAttributes
+	if o.AttributesPtr == nil {
+		return r
+	}
+	r = *o.AttributesPtr
 	return r
 }
 
@@ -152,7 +161,11 @@ func (o *VolumeModifyIterRequest) SetAttributes(newValue VolumeModifyIterRequest
 
 // ContinueOnFailure is a 'getter' method
 func (o *VolumeModifyIterRequest) ContinueOnFailure() bool {
-	r := *o.ContinueOnFailurePtr
+	var r bool
+	if o.ContinueOnFailurePtr == nil {
+		return r
+	}
+	r = *o.ContinueOnFailurePtr
 	return r
 }
 
@@ -164,7 +177,11 @@ func (o *VolumeModifyIterRequest) SetContinueOnFailure(newValue bool) *VolumeMod
 
 // MaxFailureCount is a 'getter' method
 func (o *VolumeModifyIterRequest) MaxFailureCount() int {
-	r := *o.MaxFailureCountPtr
+	var r int
+	if o.MaxFailureCountPtr == nil {
+		return r
+	}
+	r = *o.MaxFailureCountPtr
 	return r
 }
 
@@ -176,7 +193,11 @@ func (o *VolumeModifyIterRequest) SetMaxFailureCount(newValue int) *VolumeModify
 
 // MaxRecords is a 'getter' method
 func (o *VolumeModifyIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -199,7 +220,11 @@ func (o VolumeModifyIterRequestQuery) String() string {
 
 // VolumeAttributes is a 'getter' method
 func (o *VolumeModifyIterRequestQuery) VolumeAttributes() VolumeAttributesType {
-	r := *o.VolumeAttributesPtr
+	var r VolumeAttributesType
+	if o.VolumeAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeAttributesPtr
 	return r
 }
 
@@ -211,7 +236,11 @@ func (o *VolumeModifyIterRequestQuery) SetVolumeAttributes(newValue VolumeAttrib
 
 // Query is a 'getter' method
 func (o *VolumeModifyIterRequest) Query() VolumeModifyIterRequestQuery {
-	r := *o.QueryPtr
+	var r VolumeModifyIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -223,7 +252,11 @@ func (o *VolumeModifyIterRequest) SetQuery(newValue VolumeModifyIterRequestQuery
 
 // ReturnFailureList is a 'getter' method
 func (o *VolumeModifyIterRequest) ReturnFailureList() bool {
-	r := *o.ReturnFailureListPtr
+	var r bool
+	if o.ReturnFailureListPtr == nil {
+		return r
+	}
+	r = *o.ReturnFailureListPtr
 	return r
 }
 
@@ -235,7 +268,11 @@ func (o *VolumeModifyIterRequest) SetReturnFailureList(newValue bool) *VolumeMod
 
 // ReturnSuccessList is a 'getter' method
 func (o *VolumeModifyIterRequest) ReturnSuccessList() bool {
-	r := *o.ReturnSuccessListPtr
+	var r bool
+	if o.ReturnSuccessListPtr == nil {
+		return r
+	}
+	r = *o.ReturnSuccessListPtr
 	return r
 }
 
@@ -247,7 +284,11 @@ func (o *VolumeModifyIterRequest) SetReturnSuccessList(newValue bool) *VolumeMod
 
 // Tag is a 'getter' method
 func (o *VolumeModifyIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -298,7 +339,11 @@ func (o *VolumeModifyIterResponseResultFailureList) setValues(newValue []VolumeM
 
 // FailureList is a 'getter' method
 func (o *VolumeModifyIterResponseResult) FailureList() VolumeModifyIterResponseResultFailureList {
-	r := *o.FailureListPtr
+	var r VolumeModifyIterResponseResultFailureList
+	if o.FailureListPtr == nil {
+		return r
+	}
+	r = *o.FailureListPtr
 	return r
 }
 
@@ -310,7 +355,11 @@ func (o *VolumeModifyIterResponseResult) SetFailureList(newValue VolumeModifyIte
 
 // NextTag is a 'getter' method
 func (o *VolumeModifyIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -322,7 +371,11 @@ func (o *VolumeModifyIterResponseResult) SetNextTag(newValue string) *VolumeModi
 
 // NumFailed is a 'getter' method
 func (o *VolumeModifyIterResponseResult) NumFailed() int {
-	r := *o.NumFailedPtr
+	var r int
+	if o.NumFailedPtr == nil {
+		return r
+	}
+	r = *o.NumFailedPtr
 	return r
 }
 
@@ -334,7 +387,11 @@ func (o *VolumeModifyIterResponseResult) SetNumFailed(newValue int) *VolumeModif
 
 // NumSucceeded is a 'getter' method
 func (o *VolumeModifyIterResponseResult) NumSucceeded() int {
-	r := *o.NumSucceededPtr
+	var r int
+	if o.NumSucceededPtr == nil {
+		return r
+	}
+	r = *o.NumSucceededPtr
 	return r
 }
 
@@ -385,7 +442,11 @@ func (o *VolumeModifyIterResponseResultSuccessList) setValues(newValue []VolumeM
 
 // SuccessList is a 'getter' method
 func (o *VolumeModifyIterResponseResult) SuccessList() VolumeModifyIterResponseResultSuccessList {
-	r := *o.SuccessListPtr
+	var r VolumeModifyIterResponseResultSuccessList
+	if o.SuccessListPtr == nil {
+		return r
+	}
+	r = *o.SuccessListPtr
 	return r
 }
 

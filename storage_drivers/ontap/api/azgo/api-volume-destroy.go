@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeDestroyRequest is a structure to represent a volume-destroy Request ZAPI object
@@ -106,7 +107,11 @@ func (o *VolumeDestroyRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeD
 
 // Name is a 'getter' method
 func (o *VolumeDestroyRequest) Name() string {
-	r := *o.NamePtr
+	var r string
+	if o.NamePtr == nil {
+		return r
+	}
+	r = *o.NamePtr
 	return r
 }
 
@@ -118,7 +123,11 @@ func (o *VolumeDestroyRequest) SetName(newValue string) *VolumeDestroyRequest {
 
 // UnmountAndOffline is a 'getter' method
 func (o *VolumeDestroyRequest) UnmountAndOffline() bool {
-	r := *o.UnmountAndOfflinePtr
+	var r bool
+	if o.UnmountAndOfflinePtr == nil {
+		return r
+	}
+	r = *o.UnmountAndOfflinePtr
 	return r
 }
 

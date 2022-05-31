@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeOfflineRequest is a structure to represent a volume-offline Request ZAPI object
@@ -105,7 +106,11 @@ func (o *VolumeOfflineRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeO
 
 // Name is a 'getter' method
 func (o *VolumeOfflineRequest) Name() string {
-	r := *o.NamePtr
+	var r string
+	if o.NamePtr == nil {
+		return r
+	}
+	r = *o.NamePtr
 	return r
 }
 

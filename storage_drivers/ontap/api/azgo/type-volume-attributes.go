@@ -1,17 +1,20 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeAttributesType is a structure to represent a volume-attributes ZAPI object
 type VolumeAttributesType struct {
 	XMLName                                xml.Name                                 `xml:"volume-attributes"`
 	EncryptPtr                             *bool                                    `xml:"encrypt"`
+	EncryptionStatePtr                     *string                                  `xml:"encryption-state"`
+	EncryptionTypePtr                      *EncryptiontypeType                      `xml:"encryption-type"`
 	KeyIdPtr                               *string                                  `xml:"key-id"`
 	VolumeAntivirusAttributesPtr           *VolumeAntivirusAttributesType           `xml:"volume-antivirus-attributes"`
 	VolumeAutobalanceAttributesPtr         *VolumeAutobalanceAttributesType         `xml:"volume-autobalance-attributes"`
@@ -62,7 +65,11 @@ func (o VolumeAttributesType) String() string {
 
 // Encrypt is a 'getter' method
 func (o *VolumeAttributesType) Encrypt() bool {
-	r := *o.EncryptPtr
+	var r bool
+	if o.EncryptPtr == nil {
+		return r
+	}
+	r = *o.EncryptPtr
 	return r
 }
 
@@ -72,9 +79,45 @@ func (o *VolumeAttributesType) SetEncrypt(newValue bool) *VolumeAttributesType {
 	return o
 }
 
+// EncryptionState is a 'getter' method
+func (o *VolumeAttributesType) EncryptionState() string {
+	var r string
+	if o.EncryptionStatePtr == nil {
+		return r
+	}
+	r = *o.EncryptionStatePtr
+	return r
+}
+
+// SetEncryptionState is a fluent style 'setter' method that can be chained
+func (o *VolumeAttributesType) SetEncryptionState(newValue string) *VolumeAttributesType {
+	o.EncryptionStatePtr = &newValue
+	return o
+}
+
+// EncryptionType is a 'getter' method
+func (o *VolumeAttributesType) EncryptionType() EncryptiontypeType {
+	var r EncryptiontypeType
+	if o.EncryptionTypePtr == nil {
+		return r
+	}
+	r = *o.EncryptionTypePtr
+	return r
+}
+
+// SetEncryptionType is a fluent style 'setter' method that can be chained
+func (o *VolumeAttributesType) SetEncryptionType(newValue EncryptiontypeType) *VolumeAttributesType {
+	o.EncryptionTypePtr = &newValue
+	return o
+}
+
 // KeyId is a 'getter' method
 func (o *VolumeAttributesType) KeyId() string {
-	r := *o.KeyIdPtr
+	var r string
+	if o.KeyIdPtr == nil {
+		return r
+	}
+	r = *o.KeyIdPtr
 	return r
 }
 
@@ -86,7 +129,11 @@ func (o *VolumeAttributesType) SetKeyId(newValue string) *VolumeAttributesType {
 
 // VolumeAntivirusAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeAntivirusAttributes() VolumeAntivirusAttributesType {
-	r := *o.VolumeAntivirusAttributesPtr
+	var r VolumeAntivirusAttributesType
+	if o.VolumeAntivirusAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeAntivirusAttributesPtr
 	return r
 }
 
@@ -98,7 +145,11 @@ func (o *VolumeAttributesType) SetVolumeAntivirusAttributes(newValue VolumeAntiv
 
 // VolumeAutobalanceAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeAutobalanceAttributes() VolumeAutobalanceAttributesType {
-	r := *o.VolumeAutobalanceAttributesPtr
+	var r VolumeAutobalanceAttributesType
+	if o.VolumeAutobalanceAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeAutobalanceAttributesPtr
 	return r
 }
 
@@ -110,7 +161,11 @@ func (o *VolumeAttributesType) SetVolumeAutobalanceAttributes(newValue VolumeAut
 
 // VolumeAutosizeAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeAutosizeAttributes() VolumeAutosizeAttributesType {
-	r := *o.VolumeAutosizeAttributesPtr
+	var r VolumeAutosizeAttributesType
+	if o.VolumeAutosizeAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeAutosizeAttributesPtr
 	return r
 }
 
@@ -122,7 +177,11 @@ func (o *VolumeAttributesType) SetVolumeAutosizeAttributes(newValue VolumeAutosi
 
 // VolumeCloneAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeCloneAttributes() VolumeCloneAttributesType {
-	r := *o.VolumeCloneAttributesPtr
+	var r VolumeCloneAttributesType
+	if o.VolumeCloneAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeCloneAttributesPtr
 	return r
 }
 
@@ -134,7 +193,11 @@ func (o *VolumeAttributesType) SetVolumeCloneAttributes(newValue VolumeCloneAttr
 
 // VolumeCompAggrAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeCompAggrAttributes() VolumeCompAggrAttributesType {
-	r := *o.VolumeCompAggrAttributesPtr
+	var r VolumeCompAggrAttributesType
+	if o.VolumeCompAggrAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeCompAggrAttributesPtr
 	return r
 }
 
@@ -146,7 +209,11 @@ func (o *VolumeAttributesType) SetVolumeCompAggrAttributes(newValue VolumeCompAg
 
 // VolumeDirectoryAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeDirectoryAttributes() VolumeDirectoryAttributesType {
-	r := *o.VolumeDirectoryAttributesPtr
+	var r VolumeDirectoryAttributesType
+	if o.VolumeDirectoryAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeDirectoryAttributesPtr
 	return r
 }
 
@@ -158,7 +225,11 @@ func (o *VolumeAttributesType) SetVolumeDirectoryAttributes(newValue VolumeDirec
 
 // VolumeExportAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeExportAttributes() VolumeExportAttributesType {
-	r := *o.VolumeExportAttributesPtr
+	var r VolumeExportAttributesType
+	if o.VolumeExportAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeExportAttributesPtr
 	return r
 }
 
@@ -170,7 +241,11 @@ func (o *VolumeAttributesType) SetVolumeExportAttributes(newValue VolumeExportAt
 
 // VolumeFlexcacheAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeFlexcacheAttributes() VolumeFlexcacheAttributesType {
-	r := *o.VolumeFlexcacheAttributesPtr
+	var r VolumeFlexcacheAttributesType
+	if o.VolumeFlexcacheAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeFlexcacheAttributesPtr
 	return r
 }
 
@@ -182,7 +257,11 @@ func (o *VolumeAttributesType) SetVolumeFlexcacheAttributes(newValue VolumeFlexc
 
 // VolumeHybridCacheAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeHybridCacheAttributes() VolumeHybridCacheAttributesType {
-	r := *o.VolumeHybridCacheAttributesPtr
+	var r VolumeHybridCacheAttributesType
+	if o.VolumeHybridCacheAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeHybridCacheAttributesPtr
 	return r
 }
 
@@ -194,7 +273,11 @@ func (o *VolumeAttributesType) SetVolumeHybridCacheAttributes(newValue VolumeHyb
 
 // VolumeIdAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeIdAttributes() VolumeIdAttributesType {
-	r := *o.VolumeIdAttributesPtr
+	var r VolumeIdAttributesType
+	if o.VolumeIdAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeIdAttributesPtr
 	return r
 }
 
@@ -206,7 +289,11 @@ func (o *VolumeAttributesType) SetVolumeIdAttributes(newValue VolumeIdAttributes
 
 // VolumeInfinitevolAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeInfinitevolAttributes() VolumeInfinitevolAttributesType {
-	r := *o.VolumeInfinitevolAttributesPtr
+	var r VolumeInfinitevolAttributesType
+	if o.VolumeInfinitevolAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeInfinitevolAttributesPtr
 	return r
 }
 
@@ -218,7 +305,11 @@ func (o *VolumeAttributesType) SetVolumeInfinitevolAttributes(newValue VolumeInf
 
 // VolumeInodeAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeInodeAttributes() VolumeInodeAttributesType {
-	r := *o.VolumeInodeAttributesPtr
+	var r VolumeInodeAttributesType
+	if o.VolumeInodeAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeInodeAttributesPtr
 	return r
 }
 
@@ -230,7 +321,11 @@ func (o *VolumeAttributesType) SetVolumeInodeAttributes(newValue VolumeInodeAttr
 
 // VolumeLanguageAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeLanguageAttributes() VolumeLanguageAttributesType {
-	r := *o.VolumeLanguageAttributesPtr
+	var r VolumeLanguageAttributesType
+	if o.VolumeLanguageAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeLanguageAttributesPtr
 	return r
 }
 
@@ -242,7 +337,11 @@ func (o *VolumeAttributesType) SetVolumeLanguageAttributes(newValue VolumeLangua
 
 // VolumeMirrorAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeMirrorAttributes() VolumeMirrorAttributesType {
-	r := *o.VolumeMirrorAttributesPtr
+	var r VolumeMirrorAttributesType
+	if o.VolumeMirrorAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeMirrorAttributesPtr
 	return r
 }
 
@@ -254,7 +353,11 @@ func (o *VolumeAttributesType) SetVolumeMirrorAttributes(newValue VolumeMirrorAt
 
 // VolumePerformanceAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumePerformanceAttributes() VolumePerformanceAttributesType {
-	r := *o.VolumePerformanceAttributesPtr
+	var r VolumePerformanceAttributesType
+	if o.VolumePerformanceAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumePerformanceAttributesPtr
 	return r
 }
 
@@ -266,7 +369,11 @@ func (o *VolumeAttributesType) SetVolumePerformanceAttributes(newValue VolumePer
 
 // VolumeQosAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeQosAttributes() VolumeQosAttributesType {
-	r := *o.VolumeQosAttributesPtr
+	var r VolumeQosAttributesType
+	if o.VolumeQosAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeQosAttributesPtr
 	return r
 }
 
@@ -278,7 +385,11 @@ func (o *VolumeAttributesType) SetVolumeQosAttributes(newValue VolumeQosAttribut
 
 // VolumeSecurityAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeSecurityAttributes() VolumeSecurityAttributesType {
-	r := *o.VolumeSecurityAttributesPtr
+	var r VolumeSecurityAttributesType
+	if o.VolumeSecurityAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeSecurityAttributesPtr
 	return r
 }
 
@@ -290,7 +401,11 @@ func (o *VolumeAttributesType) SetVolumeSecurityAttributes(newValue VolumeSecuri
 
 // VolumeSisAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeSisAttributes() VolumeSisAttributesType {
-	r := *o.VolumeSisAttributesPtr
+	var r VolumeSisAttributesType
+	if o.VolumeSisAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeSisAttributesPtr
 	return r
 }
 
@@ -302,7 +417,11 @@ func (o *VolumeAttributesType) SetVolumeSisAttributes(newValue VolumeSisAttribut
 
 // VolumeSnaplockAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeSnaplockAttributes() VolumeSnaplockAttributesType {
-	r := *o.VolumeSnaplockAttributesPtr
+	var r VolumeSnaplockAttributesType
+	if o.VolumeSnaplockAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeSnaplockAttributesPtr
 	return r
 }
 
@@ -314,7 +433,11 @@ func (o *VolumeAttributesType) SetVolumeSnaplockAttributes(newValue VolumeSnaplo
 
 // VolumeSnapshotAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeSnapshotAttributes() VolumeSnapshotAttributesType {
-	r := *o.VolumeSnapshotAttributesPtr
+	var r VolumeSnapshotAttributesType
+	if o.VolumeSnapshotAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeSnapshotAttributesPtr
 	return r
 }
 
@@ -326,7 +449,11 @@ func (o *VolumeAttributesType) SetVolumeSnapshotAttributes(newValue VolumeSnapsh
 
 // VolumeSnapshotAutodeleteAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeSnapshotAutodeleteAttributes() VolumeSnapshotAutodeleteAttributesType {
-	r := *o.VolumeSnapshotAutodeleteAttributesPtr
+	var r VolumeSnapshotAutodeleteAttributesType
+	if o.VolumeSnapshotAutodeleteAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeSnapshotAutodeleteAttributesPtr
 	return r
 }
 
@@ -338,7 +465,11 @@ func (o *VolumeAttributesType) SetVolumeSnapshotAutodeleteAttributes(newValue Vo
 
 // VolumeSpaceAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeSpaceAttributes() VolumeSpaceAttributesType {
-	r := *o.VolumeSpaceAttributesPtr
+	var r VolumeSpaceAttributesType
+	if o.VolumeSpaceAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeSpaceAttributesPtr
 	return r
 }
 
@@ -350,7 +481,11 @@ func (o *VolumeAttributesType) SetVolumeSpaceAttributes(newValue VolumeSpaceAttr
 
 // VolumeStateAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeStateAttributes() VolumeStateAttributesType {
-	r := *o.VolumeStateAttributesPtr
+	var r VolumeStateAttributesType
+	if o.VolumeStateAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeStateAttributesPtr
 	return r
 }
 
@@ -362,7 +497,11 @@ func (o *VolumeAttributesType) SetVolumeStateAttributes(newValue VolumeStateAttr
 
 // VolumeTransitionAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeTransitionAttributes() VolumeTransitionAttributesType {
-	r := *o.VolumeTransitionAttributesPtr
+	var r VolumeTransitionAttributesType
+	if o.VolumeTransitionAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeTransitionAttributesPtr
 	return r
 }
 
@@ -374,7 +513,11 @@ func (o *VolumeAttributesType) SetVolumeTransitionAttributes(newValue VolumeTran
 
 // VolumeVmAlignAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeVmAlignAttributes() VolumeVmAlignAttributesType {
-	r := *o.VolumeVmAlignAttributesPtr
+	var r VolumeVmAlignAttributesType
+	if o.VolumeVmAlignAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeVmAlignAttributesPtr
 	return r
 }
 
@@ -386,7 +529,11 @@ func (o *VolumeAttributesType) SetVolumeVmAlignAttributes(newValue VolumeVmAlign
 
 // VolumeVserverDrProtectionAttributes is a 'getter' method
 func (o *VolumeAttributesType) VolumeVserverDrProtectionAttributes() VolumeVserverDrProtectionAttributesType {
-	r := *o.VolumeVserverDrProtectionAttributesPtr
+	var r VolumeVserverDrProtectionAttributesType
+	if o.VolumeVserverDrProtectionAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeVserverDrProtectionAttributesPtr
 	return r
 }
 

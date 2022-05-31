@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeCreateRequest is a structure to represent a volume-create Request ZAPI object
@@ -149,7 +150,11 @@ func (o *VolumeCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeCr
 
 // AntivirusOnAccessPolicy is a 'getter' method
 func (o *VolumeCreateRequest) AntivirusOnAccessPolicy() string {
-	r := *o.AntivirusOnAccessPolicyPtr
+	var r string
+	if o.AntivirusOnAccessPolicyPtr == nil {
+		return r
+	}
+	r = *o.AntivirusOnAccessPolicyPtr
 	return r
 }
 
@@ -161,7 +166,11 @@ func (o *VolumeCreateRequest) SetAntivirusOnAccessPolicy(newValue string) *Volum
 
 // CacheRetentionPriority is a 'getter' method
 func (o *VolumeCreateRequest) CacheRetentionPriority() string {
-	r := *o.CacheRetentionPriorityPtr
+	var r string
+	if o.CacheRetentionPriorityPtr == nil {
+		return r
+	}
+	r = *o.CacheRetentionPriorityPtr
 	return r
 }
 
@@ -173,7 +182,11 @@ func (o *VolumeCreateRequest) SetCacheRetentionPriority(newValue string) *Volume
 
 // CachingPolicy is a 'getter' method
 func (o *VolumeCreateRequest) CachingPolicy() string {
-	r := *o.CachingPolicyPtr
+	var r string
+	if o.CachingPolicyPtr == nil {
+		return r
+	}
+	r = *o.CachingPolicyPtr
 	return r
 }
 
@@ -185,7 +198,11 @@ func (o *VolumeCreateRequest) SetCachingPolicy(newValue string) *VolumeCreateReq
 
 // ConstituentRole is a 'getter' method
 func (o *VolumeCreateRequest) ConstituentRole() string {
-	r := *o.ConstituentRolePtr
+	var r string
+	if o.ConstituentRolePtr == nil {
+		return r
+	}
+	r = *o.ConstituentRolePtr
 	return r
 }
 
@@ -197,7 +214,11 @@ func (o *VolumeCreateRequest) SetConstituentRole(newValue string) *VolumeCreateR
 
 // ContainingAggrName is a 'getter' method
 func (o *VolumeCreateRequest) ContainingAggrName() string {
-	r := *o.ContainingAggrNamePtr
+	var r string
+	if o.ContainingAggrNamePtr == nil {
+		return r
+	}
+	r = *o.ContainingAggrNamePtr
 	return r
 }
 
@@ -209,7 +230,11 @@ func (o *VolumeCreateRequest) SetContainingAggrName(newValue string) *VolumeCrea
 
 // EfficiencyPolicy is a 'getter' method
 func (o *VolumeCreateRequest) EfficiencyPolicy() string {
-	r := *o.EfficiencyPolicyPtr
+	var r string
+	if o.EfficiencyPolicyPtr == nil {
+		return r
+	}
+	r = *o.EfficiencyPolicyPtr
 	return r
 }
 
@@ -221,7 +246,11 @@ func (o *VolumeCreateRequest) SetEfficiencyPolicy(newValue string) *VolumeCreate
 
 // Encrypt is a 'getter' method
 func (o *VolumeCreateRequest) Encrypt() bool {
-	r := *o.EncryptPtr
+	var r bool
+	if o.EncryptPtr == nil {
+		return r
+	}
+	r = *o.EncryptPtr
 	return r
 }
 
@@ -233,7 +262,11 @@ func (o *VolumeCreateRequest) SetEncrypt(newValue bool) *VolumeCreateRequest {
 
 // ExcludedFromAutobalance is a 'getter' method
 func (o *VolumeCreateRequest) ExcludedFromAutobalance() bool {
-	r := *o.ExcludedFromAutobalancePtr
+	var r bool
+	if o.ExcludedFromAutobalancePtr == nil {
+		return r
+	}
+	r = *o.ExcludedFromAutobalancePtr
 	return r
 }
 
@@ -245,7 +278,11 @@ func (o *VolumeCreateRequest) SetExcludedFromAutobalance(newValue bool) *VolumeC
 
 // ExportPolicy is a 'getter' method
 func (o *VolumeCreateRequest) ExportPolicy() string {
-	r := *o.ExportPolicyPtr
+	var r string
+	if o.ExportPolicyPtr == nil {
+		return r
+	}
+	r = *o.ExportPolicyPtr
 	return r
 }
 
@@ -257,7 +294,11 @@ func (o *VolumeCreateRequest) SetExportPolicy(newValue string) *VolumeCreateRequ
 
 // ExtentSize is a 'getter' method
 func (o *VolumeCreateRequest) ExtentSize() string {
-	r := *o.ExtentSizePtr
+	var r string
+	if o.ExtentSizePtr == nil {
+		return r
+	}
+	r = *o.ExtentSizePtr
 	return r
 }
 
@@ -269,7 +310,11 @@ func (o *VolumeCreateRequest) SetExtentSize(newValue string) *VolumeCreateReques
 
 // FlexcacheCachePolicy is a 'getter' method
 func (o *VolumeCreateRequest) FlexcacheCachePolicy() string {
-	r := *o.FlexcacheCachePolicyPtr
+	var r string
+	if o.FlexcacheCachePolicyPtr == nil {
+		return r
+	}
+	r = *o.FlexcacheCachePolicyPtr
 	return r
 }
 
@@ -281,7 +326,11 @@ func (o *VolumeCreateRequest) SetFlexcacheCachePolicy(newValue string) *VolumeCr
 
 // FlexcacheFillPolicy is a 'getter' method
 func (o *VolumeCreateRequest) FlexcacheFillPolicy() string {
-	r := *o.FlexcacheFillPolicyPtr
+	var r string
+	if o.FlexcacheFillPolicyPtr == nil {
+		return r
+	}
+	r = *o.FlexcacheFillPolicyPtr
 	return r
 }
 
@@ -293,7 +342,11 @@ func (o *VolumeCreateRequest) SetFlexcacheFillPolicy(newValue string) *VolumeCre
 
 // FlexcacheOriginVolumeName is a 'getter' method
 func (o *VolumeCreateRequest) FlexcacheOriginVolumeName() string {
-	r := *o.FlexcacheOriginVolumeNamePtr
+	var r string
+	if o.FlexcacheOriginVolumeNamePtr == nil {
+		return r
+	}
+	r = *o.FlexcacheOriginVolumeNamePtr
 	return r
 }
 
@@ -305,7 +358,11 @@ func (o *VolumeCreateRequest) SetFlexcacheOriginVolumeName(newValue string) *Vol
 
 // GroupId is a 'getter' method
 func (o *VolumeCreateRequest) GroupId() int {
-	r := *o.GroupIdPtr
+	var r int
+	if o.GroupIdPtr == nil {
+		return r
+	}
+	r = *o.GroupIdPtr
 	return r
 }
 
@@ -317,7 +374,11 @@ func (o *VolumeCreateRequest) SetGroupId(newValue int) *VolumeCreateRequest {
 
 // IsJunctionActive is a 'getter' method
 func (o *VolumeCreateRequest) IsJunctionActive() bool {
-	r := *o.IsJunctionActivePtr
+	var r bool
+	if o.IsJunctionActivePtr == nil {
+		return r
+	}
+	r = *o.IsJunctionActivePtr
 	return r
 }
 
@@ -329,7 +390,11 @@ func (o *VolumeCreateRequest) SetIsJunctionActive(newValue bool) *VolumeCreateRe
 
 // IsNvfailEnabled is a 'getter' method
 func (o *VolumeCreateRequest) IsNvfailEnabled() string {
-	r := *o.IsNvfailEnabledPtr
+	var r string
+	if o.IsNvfailEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsNvfailEnabledPtr
 	return r
 }
 
@@ -341,7 +406,11 @@ func (o *VolumeCreateRequest) SetIsNvfailEnabled(newValue string) *VolumeCreateR
 
 // IsVserverRoot is a 'getter' method
 func (o *VolumeCreateRequest) IsVserverRoot() bool {
-	r := *o.IsVserverRootPtr
+	var r bool
+	if o.IsVserverRootPtr == nil {
+		return r
+	}
+	r = *o.IsVserverRootPtr
 	return r
 }
 
@@ -353,7 +422,11 @@ func (o *VolumeCreateRequest) SetIsVserverRoot(newValue bool) *VolumeCreateReque
 
 // JunctionPath is a 'getter' method
 func (o *VolumeCreateRequest) JunctionPath() string {
-	r := *o.JunctionPathPtr
+	var r string
+	if o.JunctionPathPtr == nil {
+		return r
+	}
+	r = *o.JunctionPathPtr
 	return r
 }
 
@@ -365,7 +438,11 @@ func (o *VolumeCreateRequest) SetJunctionPath(newValue string) *VolumeCreateRequ
 
 // LanguageCode is a 'getter' method
 func (o *VolumeCreateRequest) LanguageCode() string {
-	r := *o.LanguageCodePtr
+	var r string
+	if o.LanguageCodePtr == nil {
+		return r
+	}
+	r = *o.LanguageCodePtr
 	return r
 }
 
@@ -377,7 +454,11 @@ func (o *VolumeCreateRequest) SetLanguageCode(newValue string) *VolumeCreateRequ
 
 // MaxDirSize is a 'getter' method
 func (o *VolumeCreateRequest) MaxDirSize() int {
-	r := *o.MaxDirSizePtr
+	var r int
+	if o.MaxDirSizePtr == nil {
+		return r
+	}
+	r = *o.MaxDirSizePtr
 	return r
 }
 
@@ -389,7 +470,11 @@ func (o *VolumeCreateRequest) SetMaxDirSize(newValue int) *VolumeCreateRequest {
 
 // MaxWriteAllocBlocks is a 'getter' method
 func (o *VolumeCreateRequest) MaxWriteAllocBlocks() int {
-	r := *o.MaxWriteAllocBlocksPtr
+	var r int
+	if o.MaxWriteAllocBlocksPtr == nil {
+		return r
+	}
+	r = *o.MaxWriteAllocBlocksPtr
 	return r
 }
 
@@ -401,7 +486,11 @@ func (o *VolumeCreateRequest) SetMaxWriteAllocBlocks(newValue int) *VolumeCreate
 
 // PercentageSnapshotReserve is a 'getter' method
 func (o *VolumeCreateRequest) PercentageSnapshotReserve() int {
-	r := *o.PercentageSnapshotReservePtr
+	var r int
+	if o.PercentageSnapshotReservePtr == nil {
+		return r
+	}
+	r = *o.PercentageSnapshotReservePtr
 	return r
 }
 
@@ -413,7 +502,11 @@ func (o *VolumeCreateRequest) SetPercentageSnapshotReserve(newValue int) *Volume
 
 // QosAdaptivePolicyGroupName is a 'getter' method
 func (o *VolumeCreateRequest) QosAdaptivePolicyGroupName() string {
-	r := *o.QosAdaptivePolicyGroupNamePtr
+	var r string
+	if o.QosAdaptivePolicyGroupNamePtr == nil {
+		return r
+	}
+	r = *o.QosAdaptivePolicyGroupNamePtr
 	return r
 }
 
@@ -425,7 +518,11 @@ func (o *VolumeCreateRequest) SetQosAdaptivePolicyGroupName(newValue string) *Vo
 
 // QosPolicyGroupName is a 'getter' method
 func (o *VolumeCreateRequest) QosPolicyGroupName() string {
-	r := *o.QosPolicyGroupNamePtr
+	var r string
+	if o.QosPolicyGroupNamePtr == nil {
+		return r
+	}
+	r = *o.QosPolicyGroupNamePtr
 	return r
 }
 
@@ -437,7 +534,11 @@ func (o *VolumeCreateRequest) SetQosPolicyGroupName(newValue string) *VolumeCrea
 
 // Size is a 'getter' method
 func (o *VolumeCreateRequest) Size() string {
-	r := *o.SizePtr
+	var r string
+	if o.SizePtr == nil {
+		return r
+	}
+	r = *o.SizePtr
 	return r
 }
 
@@ -449,7 +550,11 @@ func (o *VolumeCreateRequest) SetSize(newValue string) *VolumeCreateRequest {
 
 // SnapshotPolicy is a 'getter' method
 func (o *VolumeCreateRequest) SnapshotPolicy() string {
-	r := *o.SnapshotPolicyPtr
+	var r string
+	if o.SnapshotPolicyPtr == nil {
+		return r
+	}
+	r = *o.SnapshotPolicyPtr
 	return r
 }
 
@@ -461,7 +566,11 @@ func (o *VolumeCreateRequest) SetSnapshotPolicy(newValue string) *VolumeCreateRe
 
 // SpaceReserve is a 'getter' method
 func (o *VolumeCreateRequest) SpaceReserve() string {
-	r := *o.SpaceReservePtr
+	var r string
+	if o.SpaceReservePtr == nil {
+		return r
+	}
+	r = *o.SpaceReservePtr
 	return r
 }
 
@@ -473,7 +582,11 @@ func (o *VolumeCreateRequest) SetSpaceReserve(newValue string) *VolumeCreateRequ
 
 // SpaceSlo is a 'getter' method
 func (o *VolumeCreateRequest) SpaceSlo() string {
-	r := *o.SpaceSloPtr
+	var r string
+	if o.SpaceSloPtr == nil {
+		return r
+	}
+	r = *o.SpaceSloPtr
 	return r
 }
 
@@ -485,7 +598,11 @@ func (o *VolumeCreateRequest) SetSpaceSlo(newValue string) *VolumeCreateRequest 
 
 // StorageService is a 'getter' method
 func (o *VolumeCreateRequest) StorageService() string {
-	r := *o.StorageServicePtr
+	var r string
+	if o.StorageServicePtr == nil {
+		return r
+	}
+	r = *o.StorageServicePtr
 	return r
 }
 
@@ -497,7 +614,11 @@ func (o *VolumeCreateRequest) SetStorageService(newValue string) *VolumeCreateRe
 
 // StripeAlgorithm is a 'getter' method
 func (o *VolumeCreateRequest) StripeAlgorithm() string {
-	r := *o.StripeAlgorithmPtr
+	var r string
+	if o.StripeAlgorithmPtr == nil {
+		return r
+	}
+	r = *o.StripeAlgorithmPtr
 	return r
 }
 
@@ -509,7 +630,11 @@ func (o *VolumeCreateRequest) SetStripeAlgorithm(newValue string) *VolumeCreateR
 
 // StripeConcurrency is a 'getter' method
 func (o *VolumeCreateRequest) StripeConcurrency() string {
-	r := *o.StripeConcurrencyPtr
+	var r string
+	if o.StripeConcurrencyPtr == nil {
+		return r
+	}
+	r = *o.StripeConcurrencyPtr
 	return r
 }
 
@@ -521,7 +646,11 @@ func (o *VolumeCreateRequest) SetStripeConcurrency(newValue string) *VolumeCreat
 
 // StripeConstituentVolumeCount is a 'getter' method
 func (o *VolumeCreateRequest) StripeConstituentVolumeCount() int {
-	r := *o.StripeConstituentVolumeCountPtr
+	var r int
+	if o.StripeConstituentVolumeCountPtr == nil {
+		return r
+	}
+	r = *o.StripeConstituentVolumeCountPtr
 	return r
 }
 
@@ -533,7 +662,11 @@ func (o *VolumeCreateRequest) SetStripeConstituentVolumeCount(newValue int) *Vol
 
 // StripeOptimize is a 'getter' method
 func (o *VolumeCreateRequest) StripeOptimize() string {
-	r := *o.StripeOptimizePtr
+	var r string
+	if o.StripeOptimizePtr == nil {
+		return r
+	}
+	r = *o.StripeOptimizePtr
 	return r
 }
 
@@ -545,7 +678,11 @@ func (o *VolumeCreateRequest) SetStripeOptimize(newValue string) *VolumeCreateRe
 
 // StripeWidth is a 'getter' method
 func (o *VolumeCreateRequest) StripeWidth() int {
-	r := *o.StripeWidthPtr
+	var r int
+	if o.StripeWidthPtr == nil {
+		return r
+	}
+	r = *o.StripeWidthPtr
 	return r
 }
 
@@ -557,7 +694,11 @@ func (o *VolumeCreateRequest) SetStripeWidth(newValue int) *VolumeCreateRequest 
 
 // TieringPolicy is a 'getter' method
 func (o *VolumeCreateRequest) TieringPolicy() string {
-	r := *o.TieringPolicyPtr
+	var r string
+	if o.TieringPolicyPtr == nil {
+		return r
+	}
+	r = *o.TieringPolicyPtr
 	return r
 }
 
@@ -569,7 +710,11 @@ func (o *VolumeCreateRequest) SetTieringPolicy(newValue string) *VolumeCreateReq
 
 // UnixPermissions is a 'getter' method
 func (o *VolumeCreateRequest) UnixPermissions() string {
-	r := *o.UnixPermissionsPtr
+	var r string
+	if o.UnixPermissionsPtr == nil {
+		return r
+	}
+	r = *o.UnixPermissionsPtr
 	return r
 }
 
@@ -581,7 +726,11 @@ func (o *VolumeCreateRequest) SetUnixPermissions(newValue string) *VolumeCreateR
 
 // UserId is a 'getter' method
 func (o *VolumeCreateRequest) UserId() int {
-	r := *o.UserIdPtr
+	var r int
+	if o.UserIdPtr == nil {
+		return r
+	}
+	r = *o.UserIdPtr
 	return r
 }
 
@@ -593,7 +742,11 @@ func (o *VolumeCreateRequest) SetUserId(newValue int) *VolumeCreateRequest {
 
 // VmAlignSector is a 'getter' method
 func (o *VolumeCreateRequest) VmAlignSector() int {
-	r := *o.VmAlignSectorPtr
+	var r int
+	if o.VmAlignSectorPtr == nil {
+		return r
+	}
+	r = *o.VmAlignSectorPtr
 	return r
 }
 
@@ -605,7 +758,11 @@ func (o *VolumeCreateRequest) SetVmAlignSector(newValue int) *VolumeCreateReques
 
 // VmAlignSuffix is a 'getter' method
 func (o *VolumeCreateRequest) VmAlignSuffix() string {
-	r := *o.VmAlignSuffixPtr
+	var r string
+	if o.VmAlignSuffixPtr == nil {
+		return r
+	}
+	r = *o.VmAlignSuffixPtr
 	return r
 }
 
@@ -617,7 +774,11 @@ func (o *VolumeCreateRequest) SetVmAlignSuffix(newValue string) *VolumeCreateReq
 
 // Volume is a 'getter' method
 func (o *VolumeCreateRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -629,7 +790,11 @@ func (o *VolumeCreateRequest) SetVolume(newValue string) *VolumeCreateRequest {
 
 // VolumeComment is a 'getter' method
 func (o *VolumeCreateRequest) VolumeComment() string {
-	r := *o.VolumeCommentPtr
+	var r string
+	if o.VolumeCommentPtr == nil {
+		return r
+	}
+	r = *o.VolumeCommentPtr
 	return r
 }
 
@@ -641,7 +806,11 @@ func (o *VolumeCreateRequest) SetVolumeComment(newValue string) *VolumeCreateReq
 
 // VolumeSecurityStyle is a 'getter' method
 func (o *VolumeCreateRequest) VolumeSecurityStyle() string {
-	r := *o.VolumeSecurityStylePtr
+	var r string
+	if o.VolumeSecurityStylePtr == nil {
+		return r
+	}
+	r = *o.VolumeSecurityStylePtr
 	return r
 }
 
@@ -653,7 +822,11 @@ func (o *VolumeCreateRequest) SetVolumeSecurityStyle(newValue string) *VolumeCre
 
 // VolumeState is a 'getter' method
 func (o *VolumeCreateRequest) VolumeState() string {
-	r := *o.VolumeStatePtr
+	var r string
+	if o.VolumeStatePtr == nil {
+		return r
+	}
+	r = *o.VolumeStatePtr
 	return r
 }
 
@@ -665,7 +838,11 @@ func (o *VolumeCreateRequest) SetVolumeState(newValue string) *VolumeCreateReque
 
 // VolumeType is a 'getter' method
 func (o *VolumeCreateRequest) VolumeType() string {
-	r := *o.VolumeTypePtr
+	var r string
+	if o.VolumeTypePtr == nil {
+		return r
+	}
+	r = *o.VolumeTypePtr
 	return r
 }
 
@@ -677,7 +854,11 @@ func (o *VolumeCreateRequest) SetVolumeType(newValue string) *VolumeCreateReques
 
 // VserverDrProtection is a 'getter' method
 func (o *VolumeCreateRequest) VserverDrProtection() string {
-	r := *o.VserverDrProtectionPtr
+	var r string
+	if o.VserverDrProtectionPtr == nil {
+		return r
+	}
+	r = *o.VserverDrProtectionPtr
 	return r
 }
 

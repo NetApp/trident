@@ -1,33 +1,38 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorCreateRequest is a structure to represent a snapmirror-create Request ZAPI object
 type SnapmirrorCreateRequest struct {
-	XMLName                xml.Name `xml:"snapmirror-create"`
-	DestinationClusterPtr  *string  `xml:"destination-cluster"`
-	DestinationLocationPtr *string  `xml:"destination-location"`
-	DestinationVolumePtr   *string  `xml:"destination-volume"`
-	DestinationVserverPtr  *string  `xml:"destination-vserver"`
-	IdentityPreservePtr    *bool    `xml:"identity-preserve"`
-	IsAutoExpandEnabledPtr *bool    `xml:"is-auto-expand-enabled"`
-	MaxTransferRatePtr     *int     `xml:"max-transfer-rate"`
-	PolicyPtr              *string  `xml:"policy"`
-	RelationshipTypePtr    *string  `xml:"relationship-type"`
-	ReturnRecordPtr        *bool    `xml:"return-record"`
-	SchedulePtr            *string  `xml:"schedule"`
-	SourceClusterPtr       *string  `xml:"source-cluster"`
-	SourceLocationPtr      *string  `xml:"source-location"`
-	SourceVolumePtr        *string  `xml:"source-volume"`
-	SourceVserverPtr       *string  `xml:"source-vserver"`
-	TriesPtr               *string  `xml:"tries"`
-	VserverPtr             *string  `xml:"vserver"`
+	XMLName                    xml.Name                               `xml:"snapmirror-create"`
+	CgItemMappingsPtr          *SnapmirrorCreateRequestCgItemMappings `xml:"cg-item-mappings"`
+	DestinationClusterPtr      *string                                `xml:"destination-cluster"`
+	DestinationEndpointUuidPtr *string                                `xml:"destination-endpoint-uuid"`
+	DestinationLocationPtr     *string                                `xml:"destination-location"`
+	DestinationVolumePtr       *string                                `xml:"destination-volume"`
+	DestinationVserverPtr      *string                                `xml:"destination-vserver"`
+	IdentityPreservePtr        *bool                                  `xml:"identity-preserve"`
+	IsAutoExpandEnabledPtr     *bool                                  `xml:"is-auto-expand-enabled"`
+	IsCatalogEnabledPtr        *bool                                  `xml:"is-catalog-enabled"`
+	MaxTransferRatePtr         *int                                   `xml:"max-transfer-rate"`
+	PolicyPtr                  *string                                `xml:"policy"`
+	RelationshipTypePtr        *string                                `xml:"relationship-type"`
+	ReturnRecordPtr            *bool                                  `xml:"return-record"`
+	SchedulePtr                *string                                `xml:"schedule"`
+	SourceClusterPtr           *string                                `xml:"source-cluster"`
+	SourceEndpointUuidPtr      *string                                `xml:"source-endpoint-uuid"`
+	SourceLocationPtr          *string                                `xml:"source-location"`
+	SourceVolumePtr            *string                                `xml:"source-volume"`
+	SourceVserverPtr           *string                                `xml:"source-vserver"`
+	TriesPtr                   *string                                `xml:"tries"`
+	VserverPtr                 *string                                `xml:"vserver"`
 }
 
 // SnapmirrorCreateResponse is a structure to represent a snapmirror-create Response ZAPI object
@@ -120,9 +125,49 @@ func (o *SnapmirrorCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*Snap
 	return result.(*SnapmirrorCreateResponse), err
 }
 
+// SnapmirrorCreateRequestCgItemMappings is a wrapper
+type SnapmirrorCreateRequestCgItemMappings struct {
+	XMLName   xml.Name `xml:"cg-item-mappings"`
+	StringPtr []string `xml:"string"`
+}
+
+// String is a 'getter' method
+func (o *SnapmirrorCreateRequestCgItemMappings) String() []string {
+	r := o.StringPtr
+	return r
+}
+
+// SetString is a fluent style 'setter' method that can be chained
+func (o *SnapmirrorCreateRequestCgItemMappings) SetString(newValue []string) *SnapmirrorCreateRequestCgItemMappings {
+	newSlice := make([]string, len(newValue))
+	copy(newSlice, newValue)
+	o.StringPtr = newSlice
+	return o
+}
+
+// CgItemMappings is a 'getter' method
+func (o *SnapmirrorCreateRequest) CgItemMappings() SnapmirrorCreateRequestCgItemMappings {
+	var r SnapmirrorCreateRequestCgItemMappings
+	if o.CgItemMappingsPtr == nil {
+		return r
+	}
+	r = *o.CgItemMappingsPtr
+	return r
+}
+
+// SetCgItemMappings is a fluent style 'setter' method that can be chained
+func (o *SnapmirrorCreateRequest) SetCgItemMappings(newValue SnapmirrorCreateRequestCgItemMappings) *SnapmirrorCreateRequest {
+	o.CgItemMappingsPtr = &newValue
+	return o
+}
+
 // DestinationCluster is a 'getter' method
 func (o *SnapmirrorCreateRequest) DestinationCluster() string {
-	r := *o.DestinationClusterPtr
+	var r string
+	if o.DestinationClusterPtr == nil {
+		return r
+	}
+	r = *o.DestinationClusterPtr
 	return r
 }
 
@@ -132,9 +177,29 @@ func (o *SnapmirrorCreateRequest) SetDestinationCluster(newValue string) *Snapmi
 	return o
 }
 
+// DestinationEndpointUuid is a 'getter' method
+func (o *SnapmirrorCreateRequest) DestinationEndpointUuid() string {
+	var r string
+	if o.DestinationEndpointUuidPtr == nil {
+		return r
+	}
+	r = *o.DestinationEndpointUuidPtr
+	return r
+}
+
+// SetDestinationEndpointUuid is a fluent style 'setter' method that can be chained
+func (o *SnapmirrorCreateRequest) SetDestinationEndpointUuid(newValue string) *SnapmirrorCreateRequest {
+	o.DestinationEndpointUuidPtr = &newValue
+	return o
+}
+
 // DestinationLocation is a 'getter' method
 func (o *SnapmirrorCreateRequest) DestinationLocation() string {
-	r := *o.DestinationLocationPtr
+	var r string
+	if o.DestinationLocationPtr == nil {
+		return r
+	}
+	r = *o.DestinationLocationPtr
 	return r
 }
 
@@ -146,7 +211,11 @@ func (o *SnapmirrorCreateRequest) SetDestinationLocation(newValue string) *Snapm
 
 // DestinationVolume is a 'getter' method
 func (o *SnapmirrorCreateRequest) DestinationVolume() string {
-	r := *o.DestinationVolumePtr
+	var r string
+	if o.DestinationVolumePtr == nil {
+		return r
+	}
+	r = *o.DestinationVolumePtr
 	return r
 }
 
@@ -158,7 +227,11 @@ func (o *SnapmirrorCreateRequest) SetDestinationVolume(newValue string) *Snapmir
 
 // DestinationVserver is a 'getter' method
 func (o *SnapmirrorCreateRequest) DestinationVserver() string {
-	r := *o.DestinationVserverPtr
+	var r string
+	if o.DestinationVserverPtr == nil {
+		return r
+	}
+	r = *o.DestinationVserverPtr
 	return r
 }
 
@@ -170,7 +243,11 @@ func (o *SnapmirrorCreateRequest) SetDestinationVserver(newValue string) *Snapmi
 
 // IdentityPreserve is a 'getter' method
 func (o *SnapmirrorCreateRequest) IdentityPreserve() bool {
-	r := *o.IdentityPreservePtr
+	var r bool
+	if o.IdentityPreservePtr == nil {
+		return r
+	}
+	r = *o.IdentityPreservePtr
 	return r
 }
 
@@ -182,7 +259,11 @@ func (o *SnapmirrorCreateRequest) SetIdentityPreserve(newValue bool) *Snapmirror
 
 // IsAutoExpandEnabled is a 'getter' method
 func (o *SnapmirrorCreateRequest) IsAutoExpandEnabled() bool {
-	r := *o.IsAutoExpandEnabledPtr
+	var r bool
+	if o.IsAutoExpandEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsAutoExpandEnabledPtr
 	return r
 }
 
@@ -192,9 +273,29 @@ func (o *SnapmirrorCreateRequest) SetIsAutoExpandEnabled(newValue bool) *Snapmir
 	return o
 }
 
+// IsCatalogEnabled is a 'getter' method
+func (o *SnapmirrorCreateRequest) IsCatalogEnabled() bool {
+	var r bool
+	if o.IsCatalogEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsCatalogEnabledPtr
+	return r
+}
+
+// SetIsCatalogEnabled is a fluent style 'setter' method that can be chained
+func (o *SnapmirrorCreateRequest) SetIsCatalogEnabled(newValue bool) *SnapmirrorCreateRequest {
+	o.IsCatalogEnabledPtr = &newValue
+	return o
+}
+
 // MaxTransferRate is a 'getter' method
 func (o *SnapmirrorCreateRequest) MaxTransferRate() int {
-	r := *o.MaxTransferRatePtr
+	var r int
+	if o.MaxTransferRatePtr == nil {
+		return r
+	}
+	r = *o.MaxTransferRatePtr
 	return r
 }
 
@@ -206,7 +307,11 @@ func (o *SnapmirrorCreateRequest) SetMaxTransferRate(newValue int) *SnapmirrorCr
 
 // Policy is a 'getter' method
 func (o *SnapmirrorCreateRequest) Policy() string {
-	r := *o.PolicyPtr
+	var r string
+	if o.PolicyPtr == nil {
+		return r
+	}
+	r = *o.PolicyPtr
 	return r
 }
 
@@ -218,7 +323,11 @@ func (o *SnapmirrorCreateRequest) SetPolicy(newValue string) *SnapmirrorCreateRe
 
 // RelationshipType is a 'getter' method
 func (o *SnapmirrorCreateRequest) RelationshipType() string {
-	r := *o.RelationshipTypePtr
+	var r string
+	if o.RelationshipTypePtr == nil {
+		return r
+	}
+	r = *o.RelationshipTypePtr
 	return r
 }
 
@@ -230,7 +339,11 @@ func (o *SnapmirrorCreateRequest) SetRelationshipType(newValue string) *Snapmirr
 
 // ReturnRecord is a 'getter' method
 func (o *SnapmirrorCreateRequest) ReturnRecord() bool {
-	r := *o.ReturnRecordPtr
+	var r bool
+	if o.ReturnRecordPtr == nil {
+		return r
+	}
+	r = *o.ReturnRecordPtr
 	return r
 }
 
@@ -242,7 +355,11 @@ func (o *SnapmirrorCreateRequest) SetReturnRecord(newValue bool) *SnapmirrorCrea
 
 // Schedule is a 'getter' method
 func (o *SnapmirrorCreateRequest) Schedule() string {
-	r := *o.SchedulePtr
+	var r string
+	if o.SchedulePtr == nil {
+		return r
+	}
+	r = *o.SchedulePtr
 	return r
 }
 
@@ -254,7 +371,11 @@ func (o *SnapmirrorCreateRequest) SetSchedule(newValue string) *SnapmirrorCreate
 
 // SourceCluster is a 'getter' method
 func (o *SnapmirrorCreateRequest) SourceCluster() string {
-	r := *o.SourceClusterPtr
+	var r string
+	if o.SourceClusterPtr == nil {
+		return r
+	}
+	r = *o.SourceClusterPtr
 	return r
 }
 
@@ -264,9 +385,29 @@ func (o *SnapmirrorCreateRequest) SetSourceCluster(newValue string) *SnapmirrorC
 	return o
 }
 
+// SourceEndpointUuid is a 'getter' method
+func (o *SnapmirrorCreateRequest) SourceEndpointUuid() string {
+	var r string
+	if o.SourceEndpointUuidPtr == nil {
+		return r
+	}
+	r = *o.SourceEndpointUuidPtr
+	return r
+}
+
+// SetSourceEndpointUuid is a fluent style 'setter' method that can be chained
+func (o *SnapmirrorCreateRequest) SetSourceEndpointUuid(newValue string) *SnapmirrorCreateRequest {
+	o.SourceEndpointUuidPtr = &newValue
+	return o
+}
+
 // SourceLocation is a 'getter' method
 func (o *SnapmirrorCreateRequest) SourceLocation() string {
-	r := *o.SourceLocationPtr
+	var r string
+	if o.SourceLocationPtr == nil {
+		return r
+	}
+	r = *o.SourceLocationPtr
 	return r
 }
 
@@ -278,7 +419,11 @@ func (o *SnapmirrorCreateRequest) SetSourceLocation(newValue string) *Snapmirror
 
 // SourceVolume is a 'getter' method
 func (o *SnapmirrorCreateRequest) SourceVolume() string {
-	r := *o.SourceVolumePtr
+	var r string
+	if o.SourceVolumePtr == nil {
+		return r
+	}
+	r = *o.SourceVolumePtr
 	return r
 }
 
@@ -290,7 +435,11 @@ func (o *SnapmirrorCreateRequest) SetSourceVolume(newValue string) *SnapmirrorCr
 
 // SourceVserver is a 'getter' method
 func (o *SnapmirrorCreateRequest) SourceVserver() string {
-	r := *o.SourceVserverPtr
+	var r string
+	if o.SourceVserverPtr == nil {
+		return r
+	}
+	r = *o.SourceVserverPtr
 	return r
 }
 
@@ -302,7 +451,11 @@ func (o *SnapmirrorCreateRequest) SetSourceVserver(newValue string) *SnapmirrorC
 
 // Tries is a 'getter' method
 func (o *SnapmirrorCreateRequest) Tries() string {
-	r := *o.TriesPtr
+	var r string
+	if o.TriesPtr == nil {
+		return r
+	}
+	r = *o.TriesPtr
 	return r
 }
 
@@ -314,7 +467,11 @@ func (o *SnapmirrorCreateRequest) SetTries(newValue string) *SnapmirrorCreateReq
 
 // Vserver is a 'getter' method
 func (o *SnapmirrorCreateRequest) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 
@@ -337,7 +494,11 @@ func (o SnapmirrorCreateResponseResultResult) String() string {
 
 // SnapmirrorInfo is a 'getter' method
 func (o *SnapmirrorCreateResponseResultResult) SnapmirrorInfo() SnapmirrorInfoType {
-	r := *o.SnapmirrorInfoPtr
+	var r SnapmirrorInfoType
+	if o.SnapmirrorInfoPtr == nil {
+		return r
+	}
+	r = *o.SnapmirrorInfoPtr
 	return r
 }
 
@@ -349,7 +510,11 @@ func (o *SnapmirrorCreateResponseResultResult) SetSnapmirrorInfo(newValue Snapmi
 
 // values is a 'getter' method
 func (o *SnapmirrorCreateResponseResultResult) values() SnapmirrorInfoType {
-	r := *o.SnapmirrorInfoPtr
+	var r SnapmirrorInfoType
+	if o.SnapmirrorInfoPtr == nil {
+		return r
+	}
+	r = *o.SnapmirrorInfoPtr
 	return r
 }
 
@@ -361,7 +526,11 @@ func (o *SnapmirrorCreateResponseResultResult) setValues(newValue SnapmirrorInfo
 
 // Result is a 'getter' method
 func (o *SnapmirrorCreateResponseResult) Result() SnapmirrorCreateResponseResultResult {
-	r := *o.ResultPtr
+	var r SnapmirrorCreateResponseResultResult
+	if o.ResultPtr == nil {
+		return r
+	}
+	r = *o.ResultPtr
 	return r
 }
 

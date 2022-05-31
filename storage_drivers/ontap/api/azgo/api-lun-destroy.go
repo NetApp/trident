@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunDestroyRequest is a structure to represent a lun-destroy Request ZAPI object
@@ -108,7 +109,11 @@ func (o *LunDestroyRequest) executeWithoutIteration(zr *ZapiRunner) (*LunDestroy
 
 // DestroyApplicationLun is a 'getter' method
 func (o *LunDestroyRequest) DestroyApplicationLun() bool {
-	r := *o.DestroyApplicationLunPtr
+	var r bool
+	if o.DestroyApplicationLunPtr == nil {
+		return r
+	}
+	r = *o.DestroyApplicationLunPtr
 	return r
 }
 
@@ -120,7 +125,11 @@ func (o *LunDestroyRequest) SetDestroyApplicationLun(newValue bool) *LunDestroyR
 
 // DestroyFencedLun is a 'getter' method
 func (o *LunDestroyRequest) DestroyFencedLun() bool {
-	r := *o.DestroyFencedLunPtr
+	var r bool
+	if o.DestroyFencedLunPtr == nil {
+		return r
+	}
+	r = *o.DestroyFencedLunPtr
 	return r
 }
 
@@ -132,7 +141,11 @@ func (o *LunDestroyRequest) SetDestroyFencedLun(newValue bool) *LunDestroyReques
 
 // Force is a 'getter' method
 func (o *LunDestroyRequest) Force() bool {
-	r := *o.ForcePtr
+	var r bool
+	if o.ForcePtr == nil {
+		return r
+	}
+	r = *o.ForcePtr
 	return r
 }
 
@@ -144,7 +157,11 @@ func (o *LunDestroyRequest) SetForce(newValue bool) *LunDestroyRequest {
 
 // Path is a 'getter' method
 func (o *LunDestroyRequest) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 

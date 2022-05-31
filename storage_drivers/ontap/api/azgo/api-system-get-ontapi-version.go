@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SystemGetOntapiVersionRequest is a structure to represent a system-get-ontapi-version Request ZAPI object
@@ -107,7 +108,11 @@ func (o *SystemGetOntapiVersionRequest) executeWithoutIteration(zr *ZapiRunner) 
 
 // MajorVersion is a 'getter' method
 func (o *SystemGetOntapiVersionResponseResult) MajorVersion() int {
-	r := *o.MajorVersionPtr
+	var r int
+	if o.MajorVersionPtr == nil {
+		return r
+	}
+	r = *o.MajorVersionPtr
 	return r
 }
 
@@ -119,7 +124,11 @@ func (o *SystemGetOntapiVersionResponseResult) SetMajorVersion(newValue int) *Sy
 
 // MinorVersion is a 'getter' method
 func (o *SystemGetOntapiVersionResponseResult) MinorVersion() int {
-	r := *o.MinorVersionPtr
+	var r int
+	if o.MinorVersionPtr == nil {
+		return r
+	}
+	r = *o.MinorVersionPtr
 	return r
 }
 
@@ -170,7 +179,11 @@ func (o *SystemGetOntapiVersionResponseResultNodeOntapiDetails) setValues(newVal
 
 // NodeOntapiDetails is a 'getter' method
 func (o *SystemGetOntapiVersionResponseResult) NodeOntapiDetails() SystemGetOntapiVersionResponseResultNodeOntapiDetails {
-	r := *o.NodeOntapiDetailsPtr
+	var r SystemGetOntapiVersionResponseResultNodeOntapiDetails
+	if o.NodeOntapiDetailsPtr == nil {
+		return r
+	}
+	r = *o.NodeOntapiDetailsPtr
 	return r
 }
 

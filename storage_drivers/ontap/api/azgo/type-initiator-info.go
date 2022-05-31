@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // InitiatorInfoType is a structure to represent a initiator-info ZAPI object
@@ -35,7 +36,11 @@ func (o InitiatorInfoType) String() string {
 
 // InitiatorName is a 'getter' method
 func (o *InitiatorInfoType) InitiatorName() string {
-	r := *o.InitiatorNamePtr
+	var r string
+	if o.InitiatorNamePtr == nil {
+		return r
+	}
+	r = *o.InitiatorNamePtr
 	return r
 }
 

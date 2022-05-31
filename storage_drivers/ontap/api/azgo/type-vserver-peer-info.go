@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VserverPeerInfoType is a structure to represent a vserver-peer-info ZAPI object
@@ -63,7 +64,11 @@ func (o *VserverPeerInfoTypeApplications) SetVserverPeerApplication(newValue []V
 
 // Applications is a 'getter' method
 func (o *VserverPeerInfoType) Applications() VserverPeerInfoTypeApplications {
-	r := *o.ApplicationsPtr
+	var r VserverPeerInfoTypeApplications
+	if o.ApplicationsPtr == nil {
+		return r
+	}
+	r = *o.ApplicationsPtr
 	return r
 }
 
@@ -75,7 +80,11 @@ func (o *VserverPeerInfoType) SetApplications(newValue VserverPeerInfoTypeApplic
 
 // PeerCluster is a 'getter' method
 func (o *VserverPeerInfoType) PeerCluster() string {
-	r := *o.PeerClusterPtr
+	var r string
+	if o.PeerClusterPtr == nil {
+		return r
+	}
+	r = *o.PeerClusterPtr
 	return r
 }
 
@@ -87,7 +96,11 @@ func (o *VserverPeerInfoType) SetPeerCluster(newValue string) *VserverPeerInfoTy
 
 // PeerState is a 'getter' method
 func (o *VserverPeerInfoType) PeerState() VserverPeerStateType {
-	r := *o.PeerStatePtr
+	var r VserverPeerStateType
+	if o.PeerStatePtr == nil {
+		return r
+	}
+	r = *o.PeerStatePtr
 	return r
 }
 
@@ -99,7 +112,11 @@ func (o *VserverPeerInfoType) SetPeerState(newValue VserverPeerStateType) *Vserv
 
 // PeerVserver is a 'getter' method
 func (o *VserverPeerInfoType) PeerVserver() string {
-	r := *o.PeerVserverPtr
+	var r string
+	if o.PeerVserverPtr == nil {
+		return r
+	}
+	r = *o.PeerVserverPtr
 	return r
 }
 
@@ -111,7 +128,11 @@ func (o *VserverPeerInfoType) SetPeerVserver(newValue string) *VserverPeerInfoTy
 
 // PeerVserverUuid is a 'getter' method
 func (o *VserverPeerInfoType) PeerVserverUuid() UuidType {
-	r := *o.PeerVserverUuidPtr
+	var r UuidType
+	if o.PeerVserverUuidPtr == nil {
+		return r
+	}
+	r = *o.PeerVserverUuidPtr
 	return r
 }
 
@@ -123,7 +144,11 @@ func (o *VserverPeerInfoType) SetPeerVserverUuid(newValue UuidType) *VserverPeer
 
 // RemoteVserverName is a 'getter' method
 func (o *VserverPeerInfoType) RemoteVserverName() string {
-	r := *o.RemoteVserverNamePtr
+	var r string
+	if o.RemoteVserverNamePtr == nil {
+		return r
+	}
+	r = *o.RemoteVserverNamePtr
 	return r
 }
 
@@ -135,7 +160,11 @@ func (o *VserverPeerInfoType) SetRemoteVserverName(newValue string) *VserverPeer
 
 // Vserver is a 'getter' method
 func (o *VserverPeerInfoType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 
@@ -147,7 +176,11 @@ func (o *VserverPeerInfoType) SetVserver(newValue string) *VserverPeerInfoType {
 
 // VserverUuid is a 'getter' method
 func (o *VserverPeerInfoType) VserverUuid() UuidType {
-	r := *o.VserverUuidPtr
+	var r UuidType
+	if o.VserverUuidPtr == nil {
+		return r
+	}
+	r = *o.VserverUuidPtr
 	return r
 }
 

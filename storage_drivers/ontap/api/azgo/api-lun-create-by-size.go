@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunCreateBySizeRequest is a structure to represent a lun-create-by-size Request ZAPI object
@@ -120,7 +121,11 @@ func (o *LunCreateBySizeRequest) executeWithoutIteration(zr *ZapiRunner) (*LunCr
 
 // Application is a 'getter' method
 func (o *LunCreateBySizeRequest) Application() string {
-	r := *o.ApplicationPtr
+	var r string
+	if o.ApplicationPtr == nil {
+		return r
+	}
+	r = *o.ApplicationPtr
 	return r
 }
 
@@ -132,7 +137,11 @@ func (o *LunCreateBySizeRequest) SetApplication(newValue string) *LunCreateBySiz
 
 // CachingPolicy is a 'getter' method
 func (o *LunCreateBySizeRequest) CachingPolicy() string {
-	r := *o.CachingPolicyPtr
+	var r string
+	if o.CachingPolicyPtr == nil {
+		return r
+	}
+	r = *o.CachingPolicyPtr
 	return r
 }
 
@@ -144,7 +153,11 @@ func (o *LunCreateBySizeRequest) SetCachingPolicy(newValue string) *LunCreateByS
 
 // Class is a 'getter' method
 func (o *LunCreateBySizeRequest) Class() string {
-	r := *o.ClassPtr
+	var r string
+	if o.ClassPtr == nil {
+		return r
+	}
+	r = *o.ClassPtr
 	return r
 }
 
@@ -156,7 +169,11 @@ func (o *LunCreateBySizeRequest) SetClass(newValue string) *LunCreateBySizeReque
 
 // Comment is a 'getter' method
 func (o *LunCreateBySizeRequest) Comment() string {
-	r := *o.CommentPtr
+	var r string
+	if o.CommentPtr == nil {
+		return r
+	}
+	r = *o.CommentPtr
 	return r
 }
 
@@ -168,7 +185,11 @@ func (o *LunCreateBySizeRequest) SetComment(newValue string) *LunCreateBySizeReq
 
 // ForeignDisk is a 'getter' method
 func (o *LunCreateBySizeRequest) ForeignDisk() string {
-	r := *o.ForeignDiskPtr
+	var r string
+	if o.ForeignDiskPtr == nil {
+		return r
+	}
+	r = *o.ForeignDiskPtr
 	return r
 }
 
@@ -180,7 +201,11 @@ func (o *LunCreateBySizeRequest) SetForeignDisk(newValue string) *LunCreateBySiz
 
 // Ostype is a 'getter' method
 func (o *LunCreateBySizeRequest) Ostype() LunOsTypeType {
-	r := *o.OstypePtr
+	var r LunOsTypeType
+	if o.OstypePtr == nil {
+		return r
+	}
+	r = *o.OstypePtr
 	return r
 }
 
@@ -192,7 +217,11 @@ func (o *LunCreateBySizeRequest) SetOstype(newValue LunOsTypeType) *LunCreateByS
 
 // Path is a 'getter' method
 func (o *LunCreateBySizeRequest) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 
@@ -204,7 +233,11 @@ func (o *LunCreateBySizeRequest) SetPath(newValue string) *LunCreateBySizeReques
 
 // PrefixSize is a 'getter' method
 func (o *LunCreateBySizeRequest) PrefixSize() int {
-	r := *o.PrefixSizePtr
+	var r int
+	if o.PrefixSizePtr == nil {
+		return r
+	}
+	r = *o.PrefixSizePtr
 	return r
 }
 
@@ -216,7 +249,11 @@ func (o *LunCreateBySizeRequest) SetPrefixSize(newValue int) *LunCreateBySizeReq
 
 // QosPolicyGroup is a 'getter' method
 func (o *LunCreateBySizeRequest) QosPolicyGroup() string {
-	r := *o.QosPolicyGroupPtr
+	var r string
+	if o.QosPolicyGroupPtr == nil {
+		return r
+	}
+	r = *o.QosPolicyGroupPtr
 	return r
 }
 
@@ -228,7 +265,10 @@ func (o *LunCreateBySizeRequest) SetQosPolicyGroup(newValue string) *LunCreateBy
 
 // QosAdaptivePolicyGroup is a 'getter' method
 func (o *LunCreateBySizeRequest) QosAdaptivePolicyGroup() string {
-	r := *o.QosAdaptivePolicyGroupPtr
+	var r string
+	if o.QosAdaptivePolicyGroupPtr != nil {
+		r = *o.QosAdaptivePolicyGroupPtr
+	}
 	return r
 }
 
@@ -240,7 +280,11 @@ func (o *LunCreateBySizeRequest) SetQosAdaptivePolicyGroup(newValue string) *Lun
 
 // Size is a 'getter' method
 func (o *LunCreateBySizeRequest) Size() int {
-	r := *o.SizePtr
+	var r int
+	if o.SizePtr == nil {
+		return r
+	}
+	r = *o.SizePtr
 	return r
 }
 
@@ -252,7 +296,11 @@ func (o *LunCreateBySizeRequest) SetSize(newValue int) *LunCreateBySizeRequest {
 
 // SpaceAllocationEnabled is a 'getter' method
 func (o *LunCreateBySizeRequest) SpaceAllocationEnabled() bool {
-	r := *o.SpaceAllocationEnabledPtr
+	var r bool
+	if o.SpaceAllocationEnabledPtr == nil {
+		return r
+	}
+	r = *o.SpaceAllocationEnabledPtr
 	return r
 }
 
@@ -264,7 +312,11 @@ func (o *LunCreateBySizeRequest) SetSpaceAllocationEnabled(newValue bool) *LunCr
 
 // SpaceReservationEnabled is a 'getter' method
 func (o *LunCreateBySizeRequest) SpaceReservationEnabled() bool {
-	r := *o.SpaceReservationEnabledPtr
+	var r bool
+	if o.SpaceReservationEnabledPtr == nil {
+		return r
+	}
+	r = *o.SpaceReservationEnabledPtr
 	return r
 }
 
@@ -276,7 +328,11 @@ func (o *LunCreateBySizeRequest) SetSpaceReservationEnabled(newValue bool) *LunC
 
 // Type is a 'getter' method
 func (o *LunCreateBySizeRequest) Type() LunOsTypeType {
-	r := *o.TypePtr
+	var r LunOsTypeType
+	if o.TypePtr == nil {
+		return r
+	}
+	r = *o.TypePtr
 	return r
 }
 
@@ -288,7 +344,11 @@ func (o *LunCreateBySizeRequest) SetType(newValue LunOsTypeType) *LunCreateBySiz
 
 // UseExactSize is a 'getter' method
 func (o *LunCreateBySizeRequest) UseExactSize() bool {
-	r := *o.UseExactSizePtr
+	var r bool
+	if o.UseExactSizePtr == nil {
+		return r
+	}
+	r = *o.UseExactSizePtr
 	return r
 }
 
@@ -300,7 +360,11 @@ func (o *LunCreateBySizeRequest) SetUseExactSize(newValue bool) *LunCreateBySize
 
 // ActualSize is a 'getter' method
 func (o *LunCreateBySizeResponseResult) ActualSize() int {
-	r := *o.ActualSizePtr
+	var r int
+	if o.ActualSizePtr == nil {
+		return r
+	}
+	r = *o.ActualSizePtr
 	return r
 }
 

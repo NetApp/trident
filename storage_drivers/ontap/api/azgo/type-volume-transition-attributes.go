@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeTransitionAttributesType is a structure to represent a volume-transition-attributes ZAPI object
@@ -38,7 +39,11 @@ func (o VolumeTransitionAttributesType) String() string {
 
 // IsCftPrecommit is a 'getter' method
 func (o *VolumeTransitionAttributesType) IsCftPrecommit() bool {
-	r := *o.IsCftPrecommitPtr
+	var r bool
+	if o.IsCftPrecommitPtr == nil {
+		return r
+	}
+	r = *o.IsCftPrecommitPtr
 	return r
 }
 
@@ -50,7 +55,11 @@ func (o *VolumeTransitionAttributesType) SetIsCftPrecommit(newValue bool) *Volum
 
 // IsCopiedForTransition is a 'getter' method
 func (o *VolumeTransitionAttributesType) IsCopiedForTransition() bool {
-	r := *o.IsCopiedForTransitionPtr
+	var r bool
+	if o.IsCopiedForTransitionPtr == nil {
+		return r
+	}
+	r = *o.IsCopiedForTransitionPtr
 	return r
 }
 
@@ -62,7 +71,11 @@ func (o *VolumeTransitionAttributesType) SetIsCopiedForTransition(newValue bool)
 
 // IsTransitioned is a 'getter' method
 func (o *VolumeTransitionAttributesType) IsTransitioned() bool {
-	r := *o.IsTransitionedPtr
+	var r bool
+	if o.IsTransitionedPtr == nil {
+		return r
+	}
+	r = *o.IsTransitionedPtr
 	return r
 }
 
@@ -74,7 +87,11 @@ func (o *VolumeTransitionAttributesType) SetIsTransitioned(newValue bool) *Volum
 
 // TransitionBehavior is a 'getter' method
 func (o *VolumeTransitionAttributesType) TransitionBehavior() string {
-	r := *o.TransitionBehaviorPtr
+	var r string
+	if o.TransitionBehaviorPtr == nil {
+		return r
+	}
+	r = *o.TransitionBehaviorPtr
 	return r
 }
 

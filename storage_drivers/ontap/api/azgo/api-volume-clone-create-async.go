@@ -1,23 +1,27 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeCloneCreateAsyncRequest is a structure to represent a volume-clone-create-async Request ZAPI object
 type VolumeCloneCreateAsyncRequest struct {
 	XMLName                  xml.Name `xml:"volume-clone-create-async"`
+	GidPtr                   *int     `xml:"gid"`
+	JunctionActivePtr        *bool    `xml:"junction-active"`
+	JunctionPathPtr          *string  `xml:"junction-path"`
 	ParentSnapshotPtr        *string  `xml:"parent-snapshot"`
 	ParentVolumePtr          *string  `xml:"parent-volume"`
-	ParentVserverPtr         *string  `xml:"parent-vserver"`
 	SpaceReservePtr          *string  `xml:"space-reserve"`
+	UidPtr                   *int     `xml:"uid"`
 	UseSnaprestoreLicensePtr *bool    `xml:"use-snaprestore-license"`
 	VolumePtr                *string  `xml:"volume"`
-	VserverPtr               *string  `xml:"vserver"`
+	VserverDrProtectionPtr   *string  `xml:"vserver-dr-protection"`
 }
 
 // VolumeCloneCreateAsyncResponse is a structure to represent a volume-clone-create-async Response ZAPI object
@@ -113,9 +117,61 @@ func (o *VolumeCloneCreateAsyncRequest) executeWithoutIteration(zr *ZapiRunner) 
 	return result.(*VolumeCloneCreateAsyncResponse), err
 }
 
+// Gid is a 'getter' method
+func (o *VolumeCloneCreateAsyncRequest) Gid() int {
+	var r int
+	if o.GidPtr == nil {
+		return r
+	}
+	r = *o.GidPtr
+	return r
+}
+
+// SetGid is a fluent style 'setter' method that can be chained
+func (o *VolumeCloneCreateAsyncRequest) SetGid(newValue int) *VolumeCloneCreateAsyncRequest {
+	o.GidPtr = &newValue
+	return o
+}
+
+// JunctionActive is a 'getter' method
+func (o *VolumeCloneCreateAsyncRequest) JunctionActive() bool {
+	var r bool
+	if o.JunctionActivePtr == nil {
+		return r
+	}
+	r = *o.JunctionActivePtr
+	return r
+}
+
+// SetJunctionActive is a fluent style 'setter' method that can be chained
+func (o *VolumeCloneCreateAsyncRequest) SetJunctionActive(newValue bool) *VolumeCloneCreateAsyncRequest {
+	o.JunctionActivePtr = &newValue
+	return o
+}
+
+// JunctionPath is a 'getter' method
+func (o *VolumeCloneCreateAsyncRequest) JunctionPath() string {
+	var r string
+	if o.JunctionPathPtr == nil {
+		return r
+	}
+	r = *o.JunctionPathPtr
+	return r
+}
+
+// SetJunctionPath is a fluent style 'setter' method that can be chained
+func (o *VolumeCloneCreateAsyncRequest) SetJunctionPath(newValue string) *VolumeCloneCreateAsyncRequest {
+	o.JunctionPathPtr = &newValue
+	return o
+}
+
 // ParentSnapshot is a 'getter' method
 func (o *VolumeCloneCreateAsyncRequest) ParentSnapshot() string {
-	r := *o.ParentSnapshotPtr
+	var r string
+	if o.ParentSnapshotPtr == nil {
+		return r
+	}
+	r = *o.ParentSnapshotPtr
 	return r
 }
 
@@ -127,7 +183,11 @@ func (o *VolumeCloneCreateAsyncRequest) SetParentSnapshot(newValue string) *Volu
 
 // ParentVolume is a 'getter' method
 func (o *VolumeCloneCreateAsyncRequest) ParentVolume() string {
-	r := *o.ParentVolumePtr
+	var r string
+	if o.ParentVolumePtr == nil {
+		return r
+	}
+	r = *o.ParentVolumePtr
 	return r
 }
 
@@ -137,21 +197,13 @@ func (o *VolumeCloneCreateAsyncRequest) SetParentVolume(newValue string) *Volume
 	return o
 }
 
-// ParentVserver is a 'getter' method
-func (o *VolumeCloneCreateAsyncRequest) ParentVserver() string {
-	r := *o.ParentVserverPtr
-	return r
-}
-
-// SetParentVserver is a fluent style 'setter' method that can be chained
-func (o *VolumeCloneCreateAsyncRequest) SetParentVserver(newValue string) *VolumeCloneCreateAsyncRequest {
-	o.ParentVserverPtr = &newValue
-	return o
-}
-
 // SpaceReserve is a 'getter' method
 func (o *VolumeCloneCreateAsyncRequest) SpaceReserve() string {
-	r := *o.SpaceReservePtr
+	var r string
+	if o.SpaceReservePtr == nil {
+		return r
+	}
+	r = *o.SpaceReservePtr
 	return r
 }
 
@@ -161,9 +213,29 @@ func (o *VolumeCloneCreateAsyncRequest) SetSpaceReserve(newValue string) *Volume
 	return o
 }
 
+// Uid is a 'getter' method
+func (o *VolumeCloneCreateAsyncRequest) Uid() int {
+	var r int
+	if o.UidPtr == nil {
+		return r
+	}
+	r = *o.UidPtr
+	return r
+}
+
+// SetUid is a fluent style 'setter' method that can be chained
+func (o *VolumeCloneCreateAsyncRequest) SetUid(newValue int) *VolumeCloneCreateAsyncRequest {
+	o.UidPtr = &newValue
+	return o
+}
+
 // UseSnaprestoreLicense is a 'getter' method
 func (o *VolumeCloneCreateAsyncRequest) UseSnaprestoreLicense() bool {
-	r := *o.UseSnaprestoreLicensePtr
+	var r bool
+	if o.UseSnaprestoreLicensePtr == nil {
+		return r
+	}
+	r = *o.UseSnaprestoreLicensePtr
 	return r
 }
 
@@ -175,7 +247,11 @@ func (o *VolumeCloneCreateAsyncRequest) SetUseSnaprestoreLicense(newValue bool) 
 
 // Volume is a 'getter' method
 func (o *VolumeCloneCreateAsyncRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -185,21 +261,29 @@ func (o *VolumeCloneCreateAsyncRequest) SetVolume(newValue string) *VolumeCloneC
 	return o
 }
 
-// Vserver is a 'getter' method
-func (o *VolumeCloneCreateAsyncRequest) Vserver() string {
-	r := *o.VserverPtr
+// VserverDrProtection is a 'getter' method
+func (o *VolumeCloneCreateAsyncRequest) VserverDrProtection() string {
+	var r string
+	if o.VserverDrProtectionPtr == nil {
+		return r
+	}
+	r = *o.VserverDrProtectionPtr
 	return r
 }
 
-// SetVserver is a fluent style 'setter' method that can be chained
-func (o *VolumeCloneCreateAsyncRequest) SetVserver(newValue string) *VolumeCloneCreateAsyncRequest {
-	o.VserverPtr = &newValue
+// SetVserverDrProtection is a fluent style 'setter' method that can be chained
+func (o *VolumeCloneCreateAsyncRequest) SetVserverDrProtection(newValue string) *VolumeCloneCreateAsyncRequest {
+	o.VserverDrProtectionPtr = &newValue
 	return o
 }
 
 // ResultErrorCode is a 'getter' method
 func (o *VolumeCloneCreateAsyncResponseResult) ResultErrorCode() int {
-	r := *o.ResultErrorCodePtr
+	var r int
+	if o.ResultErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorCodePtr
 	return r
 }
 
@@ -211,7 +295,11 @@ func (o *VolumeCloneCreateAsyncResponseResult) SetResultErrorCode(newValue int) 
 
 // ResultErrorMessage is a 'getter' method
 func (o *VolumeCloneCreateAsyncResponseResult) ResultErrorMessage() string {
-	r := *o.ResultErrorMessagePtr
+	var r string
+	if o.ResultErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorMessagePtr
 	return r
 }
 
@@ -223,7 +311,11 @@ func (o *VolumeCloneCreateAsyncResponseResult) SetResultErrorMessage(newValue st
 
 // ResultJobid is a 'getter' method
 func (o *VolumeCloneCreateAsyncResponseResult) ResultJobid() int {
-	r := *o.ResultJobidPtr
+	var r int
+	if o.ResultJobidPtr == nil {
+		return r
+	}
+	r = *o.ResultJobidPtr
 	return r
 }
 
@@ -235,7 +327,11 @@ func (o *VolumeCloneCreateAsyncResponseResult) SetResultJobid(newValue int) *Vol
 
 // ResultStatus is a 'getter' method
 func (o *VolumeCloneCreateAsyncResponseResult) ResultStatus() string {
-	r := *o.ResultStatusPtr
+	var r string
+	if o.ResultStatusPtr == nil {
+		return r
+	}
+	r = *o.ResultStatusPtr
 	return r
 }
 

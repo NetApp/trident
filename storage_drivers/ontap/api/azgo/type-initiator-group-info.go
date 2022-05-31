@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // InitiatorGroupInfoType is a structure to represent a initiator-group-info ZAPI object
@@ -50,7 +51,11 @@ func (o InitiatorGroupInfoType) String() string {
 
 // InitiatorGroupAluaEnabled is a 'getter' method
 func (o *InitiatorGroupInfoType) InitiatorGroupAluaEnabled() bool {
-	r := *o.InitiatorGroupAluaEnabledPtr
+	var r bool
+	if o.InitiatorGroupAluaEnabledPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupAluaEnabledPtr
 	return r
 }
 
@@ -62,7 +67,11 @@ func (o *InitiatorGroupInfoType) SetInitiatorGroupAluaEnabled(newValue bool) *In
 
 // InitiatorGroupDeleteOnUnmap is a 'getter' method
 func (o *InitiatorGroupInfoType) InitiatorGroupDeleteOnUnmap() bool {
-	r := *o.InitiatorGroupDeleteOnUnmapPtr
+	var r bool
+	if o.InitiatorGroupDeleteOnUnmapPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupDeleteOnUnmapPtr
 	return r
 }
 
@@ -74,7 +83,11 @@ func (o *InitiatorGroupInfoType) SetInitiatorGroupDeleteOnUnmap(newValue bool) *
 
 // InitiatorGroupName is a 'getter' method
 func (o *InitiatorGroupInfoType) InitiatorGroupName() string {
-	r := *o.InitiatorGroupNamePtr
+	var r string
+	if o.InitiatorGroupNamePtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupNamePtr
 	return r
 }
 
@@ -86,7 +99,11 @@ func (o *InitiatorGroupInfoType) SetInitiatorGroupName(newValue string) *Initiat
 
 // InitiatorGroupOsType is a 'getter' method
 func (o *InitiatorGroupInfoType) InitiatorGroupOsType() InitiatorGroupOsTypeType {
-	r := *o.InitiatorGroupOsTypePtr
+	var r InitiatorGroupOsTypeType
+	if o.InitiatorGroupOsTypePtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupOsTypePtr
 	return r
 }
 
@@ -98,7 +115,11 @@ func (o *InitiatorGroupInfoType) SetInitiatorGroupOsType(newValue InitiatorGroup
 
 // InitiatorGroupPortsetName is a 'getter' method
 func (o *InitiatorGroupInfoType) InitiatorGroupPortsetName() string {
-	r := *o.InitiatorGroupPortsetNamePtr
+	var r string
+	if o.InitiatorGroupPortsetNamePtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupPortsetNamePtr
 	return r
 }
 
@@ -110,7 +131,11 @@ func (o *InitiatorGroupInfoType) SetInitiatorGroupPortsetName(newValue string) *
 
 // InitiatorGroupReportScsiNameEnabled is a 'getter' method
 func (o *InitiatorGroupInfoType) InitiatorGroupReportScsiNameEnabled() bool {
-	r := *o.InitiatorGroupReportScsiNameEnabledPtr
+	var r bool
+	if o.InitiatorGroupReportScsiNameEnabledPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupReportScsiNameEnabledPtr
 	return r
 }
 
@@ -122,7 +147,11 @@ func (o *InitiatorGroupInfoType) SetInitiatorGroupReportScsiNameEnabled(newValue
 
 // InitiatorGroupThrottleBorrow is a 'getter' method
 func (o *InitiatorGroupInfoType) InitiatorGroupThrottleBorrow() bool {
-	r := *o.InitiatorGroupThrottleBorrowPtr
+	var r bool
+	if o.InitiatorGroupThrottleBorrowPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupThrottleBorrowPtr
 	return r
 }
 
@@ -134,7 +163,11 @@ func (o *InitiatorGroupInfoType) SetInitiatorGroupThrottleBorrow(newValue bool) 
 
 // InitiatorGroupThrottleReserve is a 'getter' method
 func (o *InitiatorGroupInfoType) InitiatorGroupThrottleReserve() int {
-	r := *o.InitiatorGroupThrottleReservePtr
+	var r int
+	if o.InitiatorGroupThrottleReservePtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupThrottleReservePtr
 	return r
 }
 
@@ -146,7 +179,11 @@ func (o *InitiatorGroupInfoType) SetInitiatorGroupThrottleReserve(newValue int) 
 
 // InitiatorGroupType is a 'getter' method
 func (o *InitiatorGroupInfoType) InitiatorGroupType() string {
-	r := *o.InitiatorGroupTypePtr
+	var r string
+	if o.InitiatorGroupTypePtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupTypePtr
 	return r
 }
 
@@ -158,7 +195,11 @@ func (o *InitiatorGroupInfoType) SetInitiatorGroupType(newValue string) *Initiat
 
 // InitiatorGroupUsePartner is a 'getter' method
 func (o *InitiatorGroupInfoType) InitiatorGroupUsePartner() bool {
-	r := *o.InitiatorGroupUsePartnerPtr
+	var r bool
+	if o.InitiatorGroupUsePartnerPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupUsePartnerPtr
 	return r
 }
 
@@ -170,7 +211,11 @@ func (o *InitiatorGroupInfoType) SetInitiatorGroupUsePartner(newValue bool) *Ini
 
 // InitiatorGroupUuid is a 'getter' method
 func (o *InitiatorGroupInfoType) InitiatorGroupUuid() string {
-	r := *o.InitiatorGroupUuidPtr
+	var r string
+	if o.InitiatorGroupUuidPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupUuidPtr
 	return r
 }
 
@@ -182,7 +227,11 @@ func (o *InitiatorGroupInfoType) SetInitiatorGroupUuid(newValue string) *Initiat
 
 // InitiatorGroupVsaEnabled is a 'getter' method
 func (o *InitiatorGroupInfoType) InitiatorGroupVsaEnabled() bool {
-	r := *o.InitiatorGroupVsaEnabledPtr
+	var r bool
+	if o.InitiatorGroupVsaEnabledPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupVsaEnabledPtr
 	return r
 }
 
@@ -214,7 +263,11 @@ func (o *InitiatorGroupInfoTypeInitiators) SetInitiatorInfo(newValue []Initiator
 
 // Initiators is a 'getter' method
 func (o *InitiatorGroupInfoType) Initiators() InitiatorGroupInfoTypeInitiators {
-	r := *o.InitiatorsPtr
+	var r InitiatorGroupInfoTypeInitiators
+	if o.InitiatorsPtr == nil {
+		return r
+	}
+	r = *o.InitiatorsPtr
 	return r
 }
 
@@ -226,7 +279,11 @@ func (o *InitiatorGroupInfoType) SetInitiators(newValue InitiatorGroupInfoTypeIn
 
 // LunId is a 'getter' method
 func (o *InitiatorGroupInfoType) LunId() int {
-	r := *o.LunIdPtr
+	var r int
+	if o.LunIdPtr == nil {
+		return r
+	}
+	r = *o.LunIdPtr
 	return r
 }
 
@@ -238,7 +295,11 @@ func (o *InitiatorGroupInfoType) SetLunId(newValue int) *InitiatorGroupInfoType 
 
 // Vserver is a 'getter' method
 func (o *InitiatorGroupInfoType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunOnlineRequest is a structure to represent a lun-online Request ZAPI object
@@ -106,7 +107,11 @@ func (o *LunOnlineRequest) executeWithoutIteration(zr *ZapiRunner) (*LunOnlineRe
 
 // Force is a 'getter' method
 func (o *LunOnlineRequest) Force() bool {
-	r := *o.ForcePtr
+	var r bool
+	if o.ForcePtr == nil {
+		return r
+	}
+	r = *o.ForcePtr
 	return r
 }
 
@@ -118,7 +123,11 @@ func (o *LunOnlineRequest) SetForce(newValue bool) *LunOnlineRequest {
 
 // Path is a 'getter' method
 func (o *LunOnlineRequest) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 

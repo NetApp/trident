@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SystemVersionTupleType is a structure to represent a system-version-tuple ZAPI object
@@ -37,7 +38,11 @@ func (o SystemVersionTupleType) String() string {
 
 // Generation is a 'getter' method
 func (o *SystemVersionTupleType) Generation() int {
-	r := *o.GenerationPtr
+	var r int
+	if o.GenerationPtr == nil {
+		return r
+	}
+	r = *o.GenerationPtr
 	return r
 }
 
@@ -49,7 +54,11 @@ func (o *SystemVersionTupleType) SetGeneration(newValue int) *SystemVersionTuple
 
 // Major is a 'getter' method
 func (o *SystemVersionTupleType) Major() int {
-	r := *o.MajorPtr
+	var r int
+	if o.MajorPtr == nil {
+		return r
+	}
+	r = *o.MajorPtr
 	return r
 }
 
@@ -61,7 +70,11 @@ func (o *SystemVersionTupleType) SetMajor(newValue int) *SystemVersionTupleType 
 
 // Minor is a 'getter' method
 func (o *SystemVersionTupleType) Minor() int {
-	r := *o.MinorPtr
+	var r int
+	if o.MinorPtr == nil {
+		return r
+	}
+	r = *o.MinorPtr
 	return r
 }
 

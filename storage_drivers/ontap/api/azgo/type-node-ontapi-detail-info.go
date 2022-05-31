@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // NodeOntapiDetailInfoType is a structure to represent a node-ontapi-detail-info ZAPI object
@@ -38,7 +39,11 @@ func (o NodeOntapiDetailInfoType) String() string {
 
 // MajorVersion is a 'getter' method
 func (o *NodeOntapiDetailInfoType) MajorVersion() int {
-	r := *o.MajorVersionPtr
+	var r int
+	if o.MajorVersionPtr == nil {
+		return r
+	}
+	r = *o.MajorVersionPtr
 	return r
 }
 
@@ -50,7 +55,11 @@ func (o *NodeOntapiDetailInfoType) SetMajorVersion(newValue int) *NodeOntapiDeta
 
 // MinorVersion is a 'getter' method
 func (o *NodeOntapiDetailInfoType) MinorVersion() int {
-	r := *o.MinorVersionPtr
+	var r int
+	if o.MinorVersionPtr == nil {
+		return r
+	}
+	r = *o.MinorVersionPtr
 	return r
 }
 
@@ -62,7 +71,11 @@ func (o *NodeOntapiDetailInfoType) SetMinorVersion(newValue int) *NodeOntapiDeta
 
 // NodeName is a 'getter' method
 func (o *NodeOntapiDetailInfoType) NodeName() string {
-	r := *o.NodeNamePtr
+	var r string
+	if o.NodeNamePtr == nil {
+		return r
+	}
+	r = *o.NodeNamePtr
 	return r
 }
 
@@ -74,7 +87,11 @@ func (o *NodeOntapiDetailInfoType) SetNodeName(newValue string) *NodeOntapiDetai
 
 // NodeUuid is a 'getter' method
 func (o *NodeOntapiDetailInfoType) NodeUuid() string {
-	r := *o.NodeUuidPtr
+	var r string
+	if o.NodeUuidPtr == nil {
+		return r
+	}
+	r = *o.NodeUuidPtr
 	return r
 }
 

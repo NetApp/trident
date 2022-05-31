@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunOfflineRequest is a structure to represent a lun-offline Request ZAPI object
@@ -105,7 +106,11 @@ func (o *LunOfflineRequest) executeWithoutIteration(zr *ZapiRunner) (*LunOffline
 
 // Path is a 'getter' method
 func (o *LunOfflineRequest) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 

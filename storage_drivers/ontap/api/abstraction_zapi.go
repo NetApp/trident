@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -524,9 +524,11 @@ func (d OntapAPIZAPI) LunMapGetReportingNodes(ctx context.Context, initiatorGrou
 		return nil, fmt.Errorf("could not get iSCSI reported nodes: %v", err)
 	}
 	if lunMapGetResponse.Result.AttributesListPtr != nil {
-		for _, lunMapInfo := range lunMapGetResponse.Result.AttributesListPtr {
-			for _, reportingNode := range lunMapInfo.ReportingNodes() {
-				results = append(results, reportingNode)
+		for _, lunMapInfo := range lunMapGetResponse.Result.AttributesListPtr.LunMapInfo() {
+			if lunMapInfo.ReportingNodesPtr != nil {
+				for _, reportingNode := range lunMapInfo.ReportingNodesPtr.NodeName() {
+					results = append(results, reportingNode)
+				}
 			}
 		}
 	}

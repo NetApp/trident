@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // ShowAggregatesType is a structure to represent a show-aggregates ZAPI object
@@ -14,6 +15,7 @@ type ShowAggregatesType struct {
 	AggregateNamePtr *AggrNameType      `xml:"aggregate-name"`
 	AggregateTypePtr *AggregatetypeType `xml:"aggregate-type"`
 	AvailableSizePtr *SizeType          `xml:"available-size"`
+	IsNveCapablePtr  *bool              `xml:"is-nve-capable"`
 	SnaplockTypePtr  *SnaplocktypeType  `xml:"snaplock-type"`
 	VserverNamePtr   *string            `xml:"vserver-name"`
 }
@@ -39,7 +41,11 @@ func (o ShowAggregatesType) String() string {
 
 // AggregateName is a 'getter' method
 func (o *ShowAggregatesType) AggregateName() AggrNameType {
-	r := *o.AggregateNamePtr
+	var r AggrNameType
+	if o.AggregateNamePtr == nil {
+		return r
+	}
+	r = *o.AggregateNamePtr
 	return r
 }
 
@@ -51,7 +57,11 @@ func (o *ShowAggregatesType) SetAggregateName(newValue AggrNameType) *ShowAggreg
 
 // AggregateType is a 'getter' method
 func (o *ShowAggregatesType) AggregateType() AggregatetypeType {
-	r := *o.AggregateTypePtr
+	var r AggregatetypeType
+	if o.AggregateTypePtr == nil {
+		return r
+	}
+	r = *o.AggregateTypePtr
 	return r
 }
 
@@ -63,7 +73,11 @@ func (o *ShowAggregatesType) SetAggregateType(newValue AggregatetypeType) *ShowA
 
 // AvailableSize is a 'getter' method
 func (o *ShowAggregatesType) AvailableSize() SizeType {
-	r := *o.AvailableSizePtr
+	var r SizeType
+	if o.AvailableSizePtr == nil {
+		return r
+	}
+	r = *o.AvailableSizePtr
 	return r
 }
 
@@ -73,9 +87,29 @@ func (o *ShowAggregatesType) SetAvailableSize(newValue SizeType) *ShowAggregates
 	return o
 }
 
+// IsNveCapable is a 'getter' method
+func (o *ShowAggregatesType) IsNveCapable() bool {
+	var r bool
+	if o.IsNveCapablePtr == nil {
+		return r
+	}
+	r = *o.IsNveCapablePtr
+	return r
+}
+
+// SetIsNveCapable is a fluent style 'setter' method that can be chained
+func (o *ShowAggregatesType) SetIsNveCapable(newValue bool) *ShowAggregatesType {
+	o.IsNveCapablePtr = &newValue
+	return o
+}
+
 // SnaplockType is a 'getter' method
 func (o *ShowAggregatesType) SnaplockType() SnaplocktypeType {
-	r := *o.SnaplockTypePtr
+	var r SnaplocktypeType
+	if o.SnaplockTypePtr == nil {
+		return r
+	}
+	r = *o.SnaplockTypePtr
 	return r
 }
 
@@ -87,7 +121,11 @@ func (o *ShowAggregatesType) SetSnaplockType(newValue SnaplocktypeType) *ShowAgg
 
 // VserverName is a 'getter' method
 func (o *ShowAggregatesType) VserverName() string {
-	r := *o.VserverNamePtr
+	var r string
+	if o.VserverNamePtr == nil {
+		return r
+	}
+	r = *o.VserverNamePtr
 	return r
 }
 

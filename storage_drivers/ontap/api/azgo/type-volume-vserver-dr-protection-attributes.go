@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeVserverDrProtectionAttributesType is a structure to represent a volume-vserver-dr-protection-attributes ZAPI object
@@ -35,7 +36,11 @@ func (o VolumeVserverDrProtectionAttributesType) String() string {
 
 // VserverDrProtection is a 'getter' method
 func (o *VolumeVserverDrProtectionAttributesType) VserverDrProtection() string {
-	r := *o.VserverDrProtectionPtr
+	var r string
+	if o.VserverDrProtectionPtr == nil {
+		return r
+	}
+	r = *o.VserverDrProtectionPtr
 	return r
 }
 

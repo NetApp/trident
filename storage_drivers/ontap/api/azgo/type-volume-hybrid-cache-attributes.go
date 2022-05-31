@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeHybridCacheAttributesType is a structure to represent a volume-hybrid-cache-attributes ZAPI object
@@ -38,7 +39,11 @@ func (o VolumeHybridCacheAttributesType) String() string {
 
 // CacheRetentionPriority is a 'getter' method
 func (o *VolumeHybridCacheAttributesType) CacheRetentionPriority() string {
-	r := *o.CacheRetentionPriorityPtr
+	var r string
+	if o.CacheRetentionPriorityPtr == nil {
+		return r
+	}
+	r = *o.CacheRetentionPriorityPtr
 	return r
 }
 
@@ -50,7 +55,11 @@ func (o *VolumeHybridCacheAttributesType) SetCacheRetentionPriority(newValue str
 
 // CachingPolicy is a 'getter' method
 func (o *VolumeHybridCacheAttributesType) CachingPolicy() string {
-	r := *o.CachingPolicyPtr
+	var r string
+	if o.CachingPolicyPtr == nil {
+		return r
+	}
+	r = *o.CachingPolicyPtr
 	return r
 }
 
@@ -62,7 +71,11 @@ func (o *VolumeHybridCacheAttributesType) SetCachingPolicy(newValue string) *Vol
 
 // Eligibility is a 'getter' method
 func (o *VolumeHybridCacheAttributesType) Eligibility() string {
-	r := *o.EligibilityPtr
+	var r string
+	if o.EligibilityPtr == nil {
+		return r
+	}
+	r = *o.EligibilityPtr
 	return r
 }
 
@@ -74,7 +87,11 @@ func (o *VolumeHybridCacheAttributesType) SetEligibility(newValue string) *Volum
 
 // WriteCacheIneligibilityReason is a 'getter' method
 func (o *VolumeHybridCacheAttributesType) WriteCacheIneligibilityReason() string {
-	r := *o.WriteCacheIneligibilityReasonPtr
+	var r string
+	if o.WriteCacheIneligibilityReasonPtr == nil {
+		return r
+	}
+	r = *o.WriteCacheIneligibilityReasonPtr
 	return r
 }
 

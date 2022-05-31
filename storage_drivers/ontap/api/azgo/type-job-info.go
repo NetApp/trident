@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // JobInfoType is a structure to represent a job-info ZAPI object
@@ -54,7 +55,11 @@ func (o JobInfoType) String() string {
 
 // IsRestarted is a 'getter' method
 func (o *JobInfoType) IsRestarted() bool {
-	r := *o.IsRestartedPtr
+	var r bool
+	if o.IsRestartedPtr == nil {
+		return r
+	}
+	r = *o.IsRestartedPtr
 	return r
 }
 
@@ -66,7 +71,11 @@ func (o *JobInfoType) SetIsRestarted(newValue bool) *JobInfoType {
 
 // JobCategory is a 'getter' method
 func (o *JobInfoType) JobCategory() string {
-	r := *o.JobCategoryPtr
+	var r string
+	if o.JobCategoryPtr == nil {
+		return r
+	}
+	r = *o.JobCategoryPtr
 	return r
 }
 
@@ -78,7 +87,11 @@ func (o *JobInfoType) SetJobCategory(newValue string) *JobInfoType {
 
 // JobCompletion is a 'getter' method
 func (o *JobInfoType) JobCompletion() string {
-	r := *o.JobCompletionPtr
+	var r string
+	if o.JobCompletionPtr == nil {
+		return r
+	}
+	r = *o.JobCompletionPtr
 	return r
 }
 
@@ -90,7 +103,11 @@ func (o *JobInfoType) SetJobCompletion(newValue string) *JobInfoType {
 
 // JobDescription is a 'getter' method
 func (o *JobInfoType) JobDescription() string {
-	r := *o.JobDescriptionPtr
+	var r string
+	if o.JobDescriptionPtr == nil {
+		return r
+	}
+	r = *o.JobDescriptionPtr
 	return r
 }
 
@@ -102,7 +119,11 @@ func (o *JobInfoType) SetJobDescription(newValue string) *JobInfoType {
 
 // JobDropdeadTime is a 'getter' method
 func (o *JobInfoType) JobDropdeadTime() int {
-	r := *o.JobDropdeadTimePtr
+	var r int
+	if o.JobDropdeadTimePtr == nil {
+		return r
+	}
+	r = *o.JobDropdeadTimePtr
 	return r
 }
 
@@ -114,7 +135,11 @@ func (o *JobInfoType) SetJobDropdeadTime(newValue int) *JobInfoType {
 
 // JobEndTime is a 'getter' method
 func (o *JobInfoType) JobEndTime() int {
-	r := *o.JobEndTimePtr
+	var r int
+	if o.JobEndTimePtr == nil {
+		return r
+	}
+	r = *o.JobEndTimePtr
 	return r
 }
 
@@ -126,7 +151,11 @@ func (o *JobInfoType) SetJobEndTime(newValue int) *JobInfoType {
 
 // JobId is a 'getter' method
 func (o *JobInfoType) JobId() int {
-	r := *o.JobIdPtr
+	var r int
+	if o.JobIdPtr == nil {
+		return r
+	}
+	r = *o.JobIdPtr
 	return r
 }
 
@@ -138,7 +167,11 @@ func (o *JobInfoType) SetJobId(newValue int) *JobInfoType {
 
 // JobName is a 'getter' method
 func (o *JobInfoType) JobName() string {
-	r := *o.JobNamePtr
+	var r string
+	if o.JobNamePtr == nil {
+		return r
+	}
+	r = *o.JobNamePtr
 	return r
 }
 
@@ -150,7 +183,11 @@ func (o *JobInfoType) SetJobName(newValue string) *JobInfoType {
 
 // JobNode is a 'getter' method
 func (o *JobInfoType) JobNode() NodeNameType {
-	r := *o.JobNodePtr
+	var r NodeNameType
+	if o.JobNodePtr == nil {
+		return r
+	}
+	r = *o.JobNodePtr
 	return r
 }
 
@@ -162,7 +199,11 @@ func (o *JobInfoType) SetJobNode(newValue NodeNameType) *JobInfoType {
 
 // JobPriority is a 'getter' method
 func (o *JobInfoType) JobPriority() JobPriorityType {
-	r := *o.JobPriorityPtr
+	var r JobPriorityType
+	if o.JobPriorityPtr == nil {
+		return r
+	}
+	r = *o.JobPriorityPtr
 	return r
 }
 
@@ -174,7 +215,11 @@ func (o *JobInfoType) SetJobPriority(newValue JobPriorityType) *JobInfoType {
 
 // JobProgress is a 'getter' method
 func (o *JobInfoType) JobProgress() string {
-	r := *o.JobProgressPtr
+	var r string
+	if o.JobProgressPtr == nil {
+		return r
+	}
+	r = *o.JobProgressPtr
 	return r
 }
 
@@ -186,7 +231,11 @@ func (o *JobInfoType) SetJobProgress(newValue string) *JobInfoType {
 
 // JobQueueTime is a 'getter' method
 func (o *JobInfoType) JobQueueTime() int {
-	r := *o.JobQueueTimePtr
+	var r int
+	if o.JobQueueTimePtr == nil {
+		return r
+	}
+	r = *o.JobQueueTimePtr
 	return r
 }
 
@@ -198,7 +247,11 @@ func (o *JobInfoType) SetJobQueueTime(newValue int) *JobInfoType {
 
 // JobSchedule is a 'getter' method
 func (o *JobInfoType) JobSchedule() string {
-	r := *o.JobSchedulePtr
+	var r string
+	if o.JobSchedulePtr == nil {
+		return r
+	}
+	r = *o.JobSchedulePtr
 	return r
 }
 
@@ -210,7 +263,11 @@ func (o *JobInfoType) SetJobSchedule(newValue string) *JobInfoType {
 
 // JobStartTime is a 'getter' method
 func (o *JobInfoType) JobStartTime() int {
-	r := *o.JobStartTimePtr
+	var r int
+	if o.JobStartTimePtr == nil {
+		return r
+	}
+	r = *o.JobStartTimePtr
 	return r
 }
 
@@ -222,7 +279,11 @@ func (o *JobInfoType) SetJobStartTime(newValue int) *JobInfoType {
 
 // JobState is a 'getter' method
 func (o *JobInfoType) JobState() JobStateType {
-	r := *o.JobStatePtr
+	var r JobStateType
+	if o.JobStatePtr == nil {
+		return r
+	}
+	r = *o.JobStatePtr
 	return r
 }
 
@@ -234,7 +295,11 @@ func (o *JobInfoType) SetJobState(newValue JobStateType) *JobInfoType {
 
 // JobStatusCode is a 'getter' method
 func (o *JobInfoType) JobStatusCode() int {
-	r := *o.JobStatusCodePtr
+	var r int
+	if o.JobStatusCodePtr == nil {
+		return r
+	}
+	r = *o.JobStatusCodePtr
 	return r
 }
 
@@ -246,7 +311,11 @@ func (o *JobInfoType) SetJobStatusCode(newValue int) *JobInfoType {
 
 // JobType is a 'getter' method
 func (o *JobInfoType) JobType() string {
-	r := *o.JobTypePtr
+	var r string
+	if o.JobTypePtr == nil {
+		return r
+	}
+	r = *o.JobTypePtr
 	return r
 }
 
@@ -258,7 +327,11 @@ func (o *JobInfoType) SetJobType(newValue string) *JobInfoType {
 
 // JobUsername is a 'getter' method
 func (o *JobInfoType) JobUsername() string {
-	r := *o.JobUsernamePtr
+	var r string
+	if o.JobUsernamePtr == nil {
+		return r
+	}
+	r = *o.JobUsernamePtr
 	return r
 }
 
@@ -270,7 +343,11 @@ func (o *JobInfoType) SetJobUsername(newValue string) *JobInfoType {
 
 // JobUuid is a 'getter' method
 func (o *JobInfoType) JobUuid() UuidType {
-	r := *o.JobUuidPtr
+	var r UuidType
+	if o.JobUuidPtr == nil {
+		return r
+	}
+	r = *o.JobUuidPtr
 	return r
 }
 
@@ -282,7 +359,11 @@ func (o *JobInfoType) SetJobUuid(newValue UuidType) *JobInfoType {
 
 // JobVserver is a 'getter' method
 func (o *JobInfoType) JobVserver() VserverNameType {
-	r := *o.JobVserverPtr
+	var r VserverNameType
+	if o.JobVserverPtr == nil {
+		return r
+	}
+	r = *o.JobVserverPtr
 	return r
 }
 

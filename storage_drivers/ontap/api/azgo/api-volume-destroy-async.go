@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeDestroyAsyncRequest is a structure to represent a volume-destroy-async Request ZAPI object
@@ -110,7 +111,11 @@ func (o *VolumeDestroyAsyncRequest) executeWithoutIteration(zr *ZapiRunner) (*Vo
 
 // UnmountAndOffline is a 'getter' method
 func (o *VolumeDestroyAsyncRequest) UnmountAndOffline() bool {
-	r := *o.UnmountAndOfflinePtr
+	var r bool
+	if o.UnmountAndOfflinePtr == nil {
+		return r
+	}
+	r = *o.UnmountAndOfflinePtr
 	return r
 }
 
@@ -122,7 +127,11 @@ func (o *VolumeDestroyAsyncRequest) SetUnmountAndOffline(newValue bool) *VolumeD
 
 // VolumeName is a 'getter' method
 func (o *VolumeDestroyAsyncRequest) VolumeName() string {
-	r := *o.VolumeNamePtr
+	var r string
+	if o.VolumeNamePtr == nil {
+		return r
+	}
+	r = *o.VolumeNamePtr
 	return r
 }
 
@@ -134,7 +143,11 @@ func (o *VolumeDestroyAsyncRequest) SetVolumeName(newValue string) *VolumeDestro
 
 // ResultErrorCode is a 'getter' method
 func (o *VolumeDestroyAsyncResponseResult) ResultErrorCode() int {
-	r := *o.ResultErrorCodePtr
+	var r int
+	if o.ResultErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorCodePtr
 	return r
 }
 
@@ -146,7 +159,11 @@ func (o *VolumeDestroyAsyncResponseResult) SetResultErrorCode(newValue int) *Vol
 
 // ResultErrorMessage is a 'getter' method
 func (o *VolumeDestroyAsyncResponseResult) ResultErrorMessage() string {
-	r := *o.ResultErrorMessagePtr
+	var r string
+	if o.ResultErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorMessagePtr
 	return r
 }
 
@@ -158,7 +175,11 @@ func (o *VolumeDestroyAsyncResponseResult) SetResultErrorMessage(newValue string
 
 // ResultJobid is a 'getter' method
 func (o *VolumeDestroyAsyncResponseResult) ResultJobid() int {
-	r := *o.ResultJobidPtr
+	var r int
+	if o.ResultJobidPtr == nil {
+		return r
+	}
+	r = *o.ResultJobidPtr
 	return r
 }
 
@@ -170,7 +191,11 @@ func (o *VolumeDestroyAsyncResponseResult) SetResultJobid(newValue int) *VolumeD
 
 // ResultStatus is a 'getter' method
 func (o *VolumeDestroyAsyncResponseResult) ResultStatus() string {
-	r := *o.ResultStatusPtr
+	var r string
+	if o.ResultStatusPtr == nil {
+		return r
+	}
+	r = *o.ResultStatusPtr
 	return r
 }
 

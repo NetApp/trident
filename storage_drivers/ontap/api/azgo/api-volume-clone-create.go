@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeCloneCreateRequest is a structure to represent a volume-clone-create Request ZAPI object
@@ -114,7 +115,11 @@ func (o *VolumeCloneCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*Vol
 
 // CachingPolicy is a 'getter' method
 func (o *VolumeCloneCreateRequest) CachingPolicy() string {
-	r := *o.CachingPolicyPtr
+	var r string
+	if o.CachingPolicyPtr == nil {
+		return r
+	}
+	r = *o.CachingPolicyPtr
 	return r
 }
 
@@ -126,7 +131,11 @@ func (o *VolumeCloneCreateRequest) SetCachingPolicy(newValue string) *VolumeClon
 
 // ParentSnapshot is a 'getter' method
 func (o *VolumeCloneCreateRequest) ParentSnapshot() string {
-	r := *o.ParentSnapshotPtr
+	var r string
+	if o.ParentSnapshotPtr == nil {
+		return r
+	}
+	r = *o.ParentSnapshotPtr
 	return r
 }
 
@@ -138,7 +147,11 @@ func (o *VolumeCloneCreateRequest) SetParentSnapshot(newValue string) *VolumeClo
 
 // ParentVolume is a 'getter' method
 func (o *VolumeCloneCreateRequest) ParentVolume() string {
-	r := *o.ParentVolumePtr
+	var r string
+	if o.ParentVolumePtr == nil {
+		return r
+	}
+	r = *o.ParentVolumePtr
 	return r
 }
 
@@ -150,7 +163,11 @@ func (o *VolumeCloneCreateRequest) SetParentVolume(newValue string) *VolumeClone
 
 // ParentVserver is a 'getter' method
 func (o *VolumeCloneCreateRequest) ParentVserver() string {
-	r := *o.ParentVserverPtr
+	var r string
+	if o.ParentVserverPtr == nil {
+		return r
+	}
+	r = *o.ParentVserverPtr
 	return r
 }
 
@@ -162,7 +179,11 @@ func (o *VolumeCloneCreateRequest) SetParentVserver(newValue string) *VolumeClon
 
 // QosPolicyGroupName is a 'getter' method
 func (o *VolumeCloneCreateRequest) QosPolicyGroupName() string {
-	r := *o.QosPolicyGroupNamePtr
+	var r string
+	if o.QosPolicyGroupNamePtr == nil {
+		return r
+	}
+	r = *o.QosPolicyGroupNamePtr
 	return r
 }
 
@@ -174,7 +195,11 @@ func (o *VolumeCloneCreateRequest) SetQosPolicyGroupName(newValue string) *Volum
 
 // SpaceReserve is a 'getter' method
 func (o *VolumeCloneCreateRequest) SpaceReserve() string {
-	r := *o.SpaceReservePtr
+	var r string
+	if o.SpaceReservePtr == nil {
+		return r
+	}
+	r = *o.SpaceReservePtr
 	return r
 }
 
@@ -186,7 +211,11 @@ func (o *VolumeCloneCreateRequest) SetSpaceReserve(newValue string) *VolumeClone
 
 // UseSnaprestoreLicense is a 'getter' method
 func (o *VolumeCloneCreateRequest) UseSnaprestoreLicense() bool {
-	r := *o.UseSnaprestoreLicensePtr
+	var r bool
+	if o.UseSnaprestoreLicensePtr == nil {
+		return r
+	}
+	r = *o.UseSnaprestoreLicensePtr
 	return r
 }
 
@@ -198,7 +227,11 @@ func (o *VolumeCloneCreateRequest) SetUseSnaprestoreLicense(newValue bool) *Volu
 
 // Volume is a 'getter' method
 func (o *VolumeCloneCreateRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -210,7 +243,11 @@ func (o *VolumeCloneCreateRequest) SetVolume(newValue string) *VolumeCloneCreate
 
 // VolumeType is a 'getter' method
 func (o *VolumeCloneCreateRequest) VolumeType() string {
-	r := *o.VolumeTypePtr
+	var r string
+	if o.VolumeTypePtr == nil {
+		return r
+	}
+	r = *o.VolumeTypePtr
 	return r
 }
 
@@ -222,7 +259,11 @@ func (o *VolumeCloneCreateRequest) SetVolumeType(newValue string) *VolumeCloneCr
 
 // Vserver is a 'getter' method
 func (o *VolumeCloneCreateRequest) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

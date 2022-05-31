@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiInitiatorGetAuthRequest is a structure to represent a iscsi-initiator-get-auth Request ZAPI object
@@ -110,7 +111,11 @@ func (o *IscsiInitiatorGetAuthRequest) executeWithoutIteration(zr *ZapiRunner) (
 
 // Initiator is a 'getter' method
 func (o *IscsiInitiatorGetAuthRequest) Initiator() string {
-	r := *o.InitiatorPtr
+	var r string
+	if o.InitiatorPtr == nil {
+		return r
+	}
+	r = *o.InitiatorPtr
 	return r
 }
 
@@ -122,7 +127,11 @@ func (o *IscsiInitiatorGetAuthRequest) SetInitiator(newValue string) *IscsiIniti
 
 // AuthChapPolicy is a 'getter' method
 func (o *IscsiInitiatorGetAuthResponseResult) AuthChapPolicy() string {
-	r := *o.AuthChapPolicyPtr
+	var r string
+	if o.AuthChapPolicyPtr == nil {
+		return r
+	}
+	r = *o.AuthChapPolicyPtr
 	return r
 }
 
@@ -134,7 +143,11 @@ func (o *IscsiInitiatorGetAuthResponseResult) SetAuthChapPolicy(newValue string)
 
 // AuthType is a 'getter' method
 func (o *IscsiInitiatorGetAuthResponseResult) AuthType() string {
-	r := *o.AuthTypePtr
+	var r string
+	if o.AuthTypePtr == nil {
+		return r
+	}
+	r = *o.AuthTypePtr
 	return r
 }
 
@@ -185,7 +198,11 @@ func (o *IscsiInitiatorGetAuthResponseResultInitiatorAddressRanges) setValues(ne
 
 // InitiatorAddressRanges is a 'getter' method
 func (o *IscsiInitiatorGetAuthResponseResult) InitiatorAddressRanges() IscsiInitiatorGetAuthResponseResultInitiatorAddressRanges {
-	r := *o.InitiatorAddressRangesPtr
+	var r IscsiInitiatorGetAuthResponseResultInitiatorAddressRanges
+	if o.InitiatorAddressRangesPtr == nil {
+		return r
+	}
+	r = *o.InitiatorAddressRangesPtr
 	return r
 }
 
@@ -197,7 +214,11 @@ func (o *IscsiInitiatorGetAuthResponseResult) SetInitiatorAddressRanges(newValue
 
 // OutboundUserName is a 'getter' method
 func (o *IscsiInitiatorGetAuthResponseResult) OutboundUserName() string {
-	r := *o.OutboundUserNamePtr
+	var r string
+	if o.OutboundUserNamePtr == nil {
+		return r
+	}
+	r = *o.OutboundUserNamePtr
 	return r
 }
 
@@ -209,7 +230,11 @@ func (o *IscsiInitiatorGetAuthResponseResult) SetOutboundUserName(newValue strin
 
 // UserName is a 'getter' method
 func (o *IscsiInitiatorGetAuthResponseResult) UserName() string {
-	r := *o.UserNamePtr
+	var r string
+	if o.UserNamePtr == nil {
+		return r
+	}
+	r = *o.UserNamePtr
 	return r
 }
 

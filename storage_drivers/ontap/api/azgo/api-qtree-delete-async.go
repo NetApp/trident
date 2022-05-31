@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // QtreeDeleteAsyncRequest is a structure to represent a qtree-delete-async Request ZAPI object
@@ -110,7 +111,11 @@ func (o *QtreeDeleteAsyncRequest) executeWithoutIteration(zr *ZapiRunner) (*Qtre
 
 // Force is a 'getter' method
 func (o *QtreeDeleteAsyncRequest) Force() bool {
-	r := *o.ForcePtr
+	var r bool
+	if o.ForcePtr == nil {
+		return r
+	}
+	r = *o.ForcePtr
 	return r
 }
 
@@ -122,7 +127,11 @@ func (o *QtreeDeleteAsyncRequest) SetForce(newValue bool) *QtreeDeleteAsyncReque
 
 // Qtree is a 'getter' method
 func (o *QtreeDeleteAsyncRequest) Qtree() string {
-	r := *o.QtreePtr
+	var r string
+	if o.QtreePtr == nil {
+		return r
+	}
+	r = *o.QtreePtr
 	return r
 }
 
@@ -134,7 +143,11 @@ func (o *QtreeDeleteAsyncRequest) SetQtree(newValue string) *QtreeDeleteAsyncReq
 
 // ResultErrorCode is a 'getter' method
 func (o *QtreeDeleteAsyncResponseResult) ResultErrorCode() int {
-	r := *o.ResultErrorCodePtr
+	var r int
+	if o.ResultErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorCodePtr
 	return r
 }
 
@@ -146,7 +159,11 @@ func (o *QtreeDeleteAsyncResponseResult) SetResultErrorCode(newValue int) *Qtree
 
 // ResultErrorMessage is a 'getter' method
 func (o *QtreeDeleteAsyncResponseResult) ResultErrorMessage() string {
-	r := *o.ResultErrorMessagePtr
+	var r string
+	if o.ResultErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorMessagePtr
 	return r
 }
 
@@ -158,7 +175,11 @@ func (o *QtreeDeleteAsyncResponseResult) SetResultErrorMessage(newValue string) 
 
 // ResultJobid is a 'getter' method
 func (o *QtreeDeleteAsyncResponseResult) ResultJobid() int {
-	r := *o.ResultJobidPtr
+	var r int
+	if o.ResultJobidPtr == nil {
+		return r
+	}
+	r = *o.ResultJobidPtr
 	return r
 }
 
@@ -170,7 +191,11 @@ func (o *QtreeDeleteAsyncResponseResult) SetResultJobid(newValue int) *QtreeDele
 
 // ResultStatus is a 'getter' method
 func (o *QtreeDeleteAsyncResponseResult) ResultStatus() string {
-	r := *o.ResultStatusPtr
+	var r string
+	if o.ResultStatusPtr == nil {
+		return r
+	}
+	r = *o.ResultStatusPtr
 	return r
 }
 

@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiInitiatorModifyChapParamsRequest is a structure to represent a iscsi-initiator-modify-chap-params Request ZAPI object
@@ -113,7 +114,11 @@ func (o *IscsiInitiatorModifyChapParamsRequest) executeWithoutIteration(zr *Zapi
 
 // Initiator is a 'getter' method
 func (o *IscsiInitiatorModifyChapParamsRequest) Initiator() string {
-	r := *o.InitiatorPtr
+	var r string
+	if o.InitiatorPtr == nil {
+		return r
+	}
+	r = *o.InitiatorPtr
 	return r
 }
 
@@ -125,7 +130,11 @@ func (o *IscsiInitiatorModifyChapParamsRequest) SetInitiator(newValue string) *I
 
 // OutboundPassphrase is a 'getter' method
 func (o *IscsiInitiatorModifyChapParamsRequest) OutboundPassphrase() string {
-	r := *o.OutboundPassphrasePtr
+	var r string
+	if o.OutboundPassphrasePtr == nil {
+		return r
+	}
+	r = *o.OutboundPassphrasePtr
 	return r
 }
 
@@ -137,7 +146,11 @@ func (o *IscsiInitiatorModifyChapParamsRequest) SetOutboundPassphrase(newValue s
 
 // OutboundPassword is a 'getter' method
 func (o *IscsiInitiatorModifyChapParamsRequest) OutboundPassword() string {
-	r := *o.OutboundPasswordPtr
+	var r string
+	if o.OutboundPasswordPtr == nil {
+		return r
+	}
+	r = *o.OutboundPasswordPtr
 	return r
 }
 
@@ -149,7 +162,11 @@ func (o *IscsiInitiatorModifyChapParamsRequest) SetOutboundPassword(newValue str
 
 // OutboundUserName is a 'getter' method
 func (o *IscsiInitiatorModifyChapParamsRequest) OutboundUserName() string {
-	r := *o.OutboundUserNamePtr
+	var r string
+	if o.OutboundUserNamePtr == nil {
+		return r
+	}
+	r = *o.OutboundUserNamePtr
 	return r
 }
 
@@ -161,7 +178,11 @@ func (o *IscsiInitiatorModifyChapParamsRequest) SetOutboundUserName(newValue str
 
 // Passphrase is a 'getter' method
 func (o *IscsiInitiatorModifyChapParamsRequest) Passphrase() string {
-	r := *o.PassphrasePtr
+	var r string
+	if o.PassphrasePtr == nil {
+		return r
+	}
+	r = *o.PassphrasePtr
 	return r
 }
 
@@ -173,7 +194,11 @@ func (o *IscsiInitiatorModifyChapParamsRequest) SetPassphrase(newValue string) *
 
 // Password is a 'getter' method
 func (o *IscsiInitiatorModifyChapParamsRequest) Password() string {
-	r := *o.PasswordPtr
+	var r string
+	if o.PasswordPtr == nil {
+		return r
+	}
+	r = *o.PasswordPtr
 	return r
 }
 
@@ -185,7 +210,11 @@ func (o *IscsiInitiatorModifyChapParamsRequest) SetPassword(newValue string) *Is
 
 // Radius is a 'getter' method
 func (o *IscsiInitiatorModifyChapParamsRequest) Radius() bool {
-	r := *o.RadiusPtr
+	var r bool
+	if o.RadiusPtr == nil {
+		return r
+	}
+	r = *o.RadiusPtr
 	return r
 }
 
@@ -197,7 +226,11 @@ func (o *IscsiInitiatorModifyChapParamsRequest) SetRadius(newValue bool) *IscsiI
 
 // RemoveOutbound is a 'getter' method
 func (o *IscsiInitiatorModifyChapParamsRequest) RemoveOutbound() bool {
-	r := *o.RemoveOutboundPtr
+	var r bool
+	if o.RemoveOutboundPtr == nil {
+		return r
+	}
+	r = *o.RemoveOutboundPtr
 	return r
 }
 
@@ -209,7 +242,11 @@ func (o *IscsiInitiatorModifyChapParamsRequest) SetRemoveOutbound(newValue bool)
 
 // UserName is a 'getter' method
 func (o *IscsiInitiatorModifyChapParamsRequest) UserName() string {
-	r := *o.UserNamePtr
+	var r string
+	if o.UserNamePtr == nil {
+		return r
+	}
+	r = *o.UserNamePtr
 	return r
 }
 

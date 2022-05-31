@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunUnmapRequest is a structure to represent a lun-unmap Request ZAPI object
@@ -106,7 +107,11 @@ func (o *LunUnmapRequest) executeWithoutIteration(zr *ZapiRunner) (*LunUnmapResp
 
 // InitiatorGroup is a 'getter' method
 func (o *LunUnmapRequest) InitiatorGroup() string {
-	r := *o.InitiatorGroupPtr
+	var r string
+	if o.InitiatorGroupPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupPtr
 	return r
 }
 
@@ -118,7 +123,11 @@ func (o *LunUnmapRequest) SetInitiatorGroup(newValue string) *LunUnmapRequest {
 
 // Path is a 'getter' method
 func (o *LunUnmapRequest) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 

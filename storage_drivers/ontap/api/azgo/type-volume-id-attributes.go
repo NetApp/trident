@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeIdAttributesType is a structure to represent a volume-id-attributes ZAPI object
@@ -85,7 +86,11 @@ func (o *VolumeIdAttributesTypeAggrList) SetAggrName(newValue []AggrNameType) *V
 
 // AggrList is a 'getter' method
 func (o *VolumeIdAttributesType) AggrList() VolumeIdAttributesTypeAggrList {
-	r := *o.AggrListPtr
+	var r VolumeIdAttributesTypeAggrList
+	if o.AggrListPtr == nil {
+		return r
+	}
+	r = *o.AggrListPtr
 	return r
 }
 
@@ -97,7 +102,11 @@ func (o *VolumeIdAttributesType) SetAggrList(newValue VolumeIdAttributesTypeAggr
 
 // Application is a 'getter' method
 func (o *VolumeIdAttributesType) Application() string {
-	r := *o.ApplicationPtr
+	var r string
+	if o.ApplicationPtr == nil {
+		return r
+	}
+	r = *o.ApplicationPtr
 	return r
 }
 
@@ -109,7 +118,11 @@ func (o *VolumeIdAttributesType) SetApplication(newValue string) *VolumeIdAttrib
 
 // ApplicationUuid is a 'getter' method
 func (o *VolumeIdAttributesType) ApplicationUuid() UuidType {
-	r := *o.ApplicationUuidPtr
+	var r UuidType
+	if o.ApplicationUuidPtr == nil {
+		return r
+	}
+	r = *o.ApplicationUuidPtr
 	return r
 }
 
@@ -121,7 +134,11 @@ func (o *VolumeIdAttributesType) SetApplicationUuid(newValue UuidType) *VolumeId
 
 // Comment is a 'getter' method
 func (o *VolumeIdAttributesType) Comment() string {
-	r := *o.CommentPtr
+	var r string
+	if o.CommentPtr == nil {
+		return r
+	}
+	r = *o.CommentPtr
 	return r
 }
 
@@ -133,7 +150,11 @@ func (o *VolumeIdAttributesType) SetComment(newValue string) *VolumeIdAttributes
 
 // ContainingAggregateName is a 'getter' method
 func (o *VolumeIdAttributesType) ContainingAggregateName() string {
-	r := *o.ContainingAggregateNamePtr
+	var r string
+	if o.ContainingAggregateNamePtr == nil {
+		return r
+	}
+	r = *o.ContainingAggregateNamePtr
 	return r
 }
 
@@ -145,7 +166,11 @@ func (o *VolumeIdAttributesType) SetContainingAggregateName(newValue string) *Vo
 
 // ContainingAggregateUuid is a 'getter' method
 func (o *VolumeIdAttributesType) ContainingAggregateUuid() UuidType {
-	r := *o.ContainingAggregateUuidPtr
+	var r UuidType
+	if o.ContainingAggregateUuidPtr == nil {
+		return r
+	}
+	r = *o.ContainingAggregateUuidPtr
 	return r
 }
 
@@ -157,7 +182,11 @@ func (o *VolumeIdAttributesType) SetContainingAggregateUuid(newValue UuidType) *
 
 // CreationTime is a 'getter' method
 func (o *VolumeIdAttributesType) CreationTime() int {
-	r := *o.CreationTimePtr
+	var r int
+	if o.CreationTimePtr == nil {
+		return r
+	}
+	r = *o.CreationTimePtr
 	return r
 }
 
@@ -169,7 +198,11 @@ func (o *VolumeIdAttributesType) SetCreationTime(newValue int) *VolumeIdAttribut
 
 // Dsid is a 'getter' method
 func (o *VolumeIdAttributesType) Dsid() int {
-	r := *o.DsidPtr
+	var r int
+	if o.DsidPtr == nil {
+		return r
+	}
+	r = *o.DsidPtr
 	return r
 }
 
@@ -181,7 +214,11 @@ func (o *VolumeIdAttributesType) SetDsid(newValue int) *VolumeIdAttributesType {
 
 // ExtentSize is a 'getter' method
 func (o *VolumeIdAttributesType) ExtentSize() string {
-	r := *o.ExtentSizePtr
+	var r string
+	if o.ExtentSizePtr == nil {
+		return r
+	}
+	r = *o.ExtentSizePtr
 	return r
 }
 
@@ -193,7 +230,11 @@ func (o *VolumeIdAttributesType) SetExtentSize(newValue string) *VolumeIdAttribu
 
 // FlexcacheEndpointType is a 'getter' method
 func (o *VolumeIdAttributesType) FlexcacheEndpointType() string {
-	r := *o.FlexcacheEndpointTypePtr
+	var r string
+	if o.FlexcacheEndpointTypePtr == nil {
+		return r
+	}
+	r = *o.FlexcacheEndpointTypePtr
 	return r
 }
 
@@ -205,7 +246,11 @@ func (o *VolumeIdAttributesType) SetFlexcacheEndpointType(newValue string) *Volu
 
 // FlexgroupIndex is a 'getter' method
 func (o *VolumeIdAttributesType) FlexgroupIndex() int {
-	r := *o.FlexgroupIndexPtr
+	var r int
+	if o.FlexgroupIndexPtr == nil {
+		return r
+	}
+	r = *o.FlexgroupIndexPtr
 	return r
 }
 
@@ -217,7 +262,11 @@ func (o *VolumeIdAttributesType) SetFlexgroupIndex(newValue int) *VolumeIdAttrib
 
 // FlexgroupMsid is a 'getter' method
 func (o *VolumeIdAttributesType) FlexgroupMsid() int {
-	r := *o.FlexgroupMsidPtr
+	var r int
+	if o.FlexgroupMsidPtr == nil {
+		return r
+	}
+	r = *o.FlexgroupMsidPtr
 	return r
 }
 
@@ -229,7 +278,11 @@ func (o *VolumeIdAttributesType) SetFlexgroupMsid(newValue int) *VolumeIdAttribu
 
 // FlexgroupUuid is a 'getter' method
 func (o *VolumeIdAttributesType) FlexgroupUuid() UuidType {
-	r := *o.FlexgroupUuidPtr
+	var r UuidType
+	if o.FlexgroupUuidPtr == nil {
+		return r
+	}
+	r = *o.FlexgroupUuidPtr
 	return r
 }
 
@@ -241,7 +294,11 @@ func (o *VolumeIdAttributesType) SetFlexgroupUuid(newValue UuidType) *VolumeIdAt
 
 // Fsid is a 'getter' method
 func (o *VolumeIdAttributesType) Fsid() string {
-	r := *o.FsidPtr
+	var r string
+	if o.FsidPtr == nil {
+		return r
+	}
+	r = *o.FsidPtr
 	return r
 }
 
@@ -253,7 +310,11 @@ func (o *VolumeIdAttributesType) SetFsid(newValue string) *VolumeIdAttributesTyp
 
 // InstanceUuid is a 'getter' method
 func (o *VolumeIdAttributesType) InstanceUuid() UuidType {
-	r := *o.InstanceUuidPtr
+	var r UuidType
+	if o.InstanceUuidPtr == nil {
+		return r
+	}
+	r = *o.InstanceUuidPtr
 	return r
 }
 
@@ -265,7 +326,11 @@ func (o *VolumeIdAttributesType) SetInstanceUuid(newValue UuidType) *VolumeIdAtt
 
 // JunctionParentName is a 'getter' method
 func (o *VolumeIdAttributesType) JunctionParentName() VolumeNameType {
-	r := *o.JunctionParentNamePtr
+	var r VolumeNameType
+	if o.JunctionParentNamePtr == nil {
+		return r
+	}
+	r = *o.JunctionParentNamePtr
 	return r
 }
 
@@ -277,7 +342,11 @@ func (o *VolumeIdAttributesType) SetJunctionParentName(newValue VolumeNameType) 
 
 // JunctionPath is a 'getter' method
 func (o *VolumeIdAttributesType) JunctionPath() JunctionPathType {
-	r := *o.JunctionPathPtr
+	var r JunctionPathType
+	if o.JunctionPathPtr == nil {
+		return r
+	}
+	r = *o.JunctionPathPtr
 	return r
 }
 
@@ -289,7 +358,11 @@ func (o *VolumeIdAttributesType) SetJunctionPath(newValue JunctionPathType) *Vol
 
 // Msid is a 'getter' method
 func (o *VolumeIdAttributesType) Msid() int {
-	r := *o.MsidPtr
+	var r int
+	if o.MsidPtr == nil {
+		return r
+	}
+	r = *o.MsidPtr
 	return r
 }
 
@@ -301,7 +374,11 @@ func (o *VolumeIdAttributesType) SetMsid(newValue int) *VolumeIdAttributesType {
 
 // Name is a 'getter' method
 func (o *VolumeIdAttributesType) Name() VolumeNameType {
-	r := *o.NamePtr
+	var r VolumeNameType
+	if o.NamePtr == nil {
+		return r
+	}
+	r = *o.NamePtr
 	return r
 }
 
@@ -313,7 +390,11 @@ func (o *VolumeIdAttributesType) SetName(newValue VolumeNameType) *VolumeIdAttri
 
 // NameOrdinal is a 'getter' method
 func (o *VolumeIdAttributesType) NameOrdinal() string {
-	r := *o.NameOrdinalPtr
+	var r string
+	if o.NameOrdinalPtr == nil {
+		return r
+	}
+	r = *o.NameOrdinalPtr
 	return r
 }
 
@@ -325,7 +406,11 @@ func (o *VolumeIdAttributesType) SetNameOrdinal(newValue string) *VolumeIdAttrib
 
 // Node is a 'getter' method
 func (o *VolumeIdAttributesType) Node() NodeNameType {
-	r := *o.NodePtr
+	var r NodeNameType
+	if o.NodePtr == nil {
+		return r
+	}
+	r = *o.NodePtr
 	return r
 }
 
@@ -357,7 +442,11 @@ func (o *VolumeIdAttributesTypeNodes) SetNodeName(newValue []NodeNameType) *Volu
 
 // Nodes is a 'getter' method
 func (o *VolumeIdAttributesType) Nodes() VolumeIdAttributesTypeNodes {
-	r := *o.NodesPtr
+	var r VolumeIdAttributesTypeNodes
+	if o.NodesPtr == nil {
+		return r
+	}
+	r = *o.NodesPtr
 	return r
 }
 
@@ -369,7 +458,11 @@ func (o *VolumeIdAttributesType) SetNodes(newValue VolumeIdAttributesTypeNodes) 
 
 // OwningVserverName is a 'getter' method
 func (o *VolumeIdAttributesType) OwningVserverName() string {
-	r := *o.OwningVserverNamePtr
+	var r string
+	if o.OwningVserverNamePtr == nil {
+		return r
+	}
+	r = *o.OwningVserverNamePtr
 	return r
 }
 
@@ -381,7 +474,11 @@ func (o *VolumeIdAttributesType) SetOwningVserverName(newValue string) *VolumeId
 
 // OwningVserverUuid is a 'getter' method
 func (o *VolumeIdAttributesType) OwningVserverUuid() UuidType {
-	r := *o.OwningVserverUuidPtr
+	var r UuidType
+	if o.OwningVserverUuidPtr == nil {
+		return r
+	}
+	r = *o.OwningVserverUuidPtr
 	return r
 }
 
@@ -393,7 +490,11 @@ func (o *VolumeIdAttributesType) SetOwningVserverUuid(newValue UuidType) *Volume
 
 // ProvenanceUuid is a 'getter' method
 func (o *VolumeIdAttributesType) ProvenanceUuid() UuidType {
-	r := *o.ProvenanceUuidPtr
+	var r UuidType
+	if o.ProvenanceUuidPtr == nil {
+		return r
+	}
+	r = *o.ProvenanceUuidPtr
 	return r
 }
 
@@ -405,7 +506,11 @@ func (o *VolumeIdAttributesType) SetProvenanceUuid(newValue UuidType) *VolumeIdA
 
 // Style is a 'getter' method
 func (o *VolumeIdAttributesType) Style() VolstyleType {
-	r := *o.StylePtr
+	var r VolstyleType
+	if o.StylePtr == nil {
+		return r
+	}
+	r = *o.StylePtr
 	return r
 }
 
@@ -417,7 +522,11 @@ func (o *VolumeIdAttributesType) SetStyle(newValue VolstyleType) *VolumeIdAttrib
 
 // StyleExtended is a 'getter' method
 func (o *VolumeIdAttributesType) StyleExtended() string {
-	r := *o.StyleExtendedPtr
+	var r string
+	if o.StyleExtendedPtr == nil {
+		return r
+	}
+	r = *o.StyleExtendedPtr
 	return r
 }
 
@@ -429,7 +538,11 @@ func (o *VolumeIdAttributesType) SetStyleExtended(newValue string) *VolumeIdAttr
 
 // Type is a 'getter' method
 func (o *VolumeIdAttributesType) Type() string {
-	r := *o.TypePtr
+	var r string
+	if o.TypePtr == nil {
+		return r
+	}
+	r = *o.TypePtr
 	return r
 }
 
@@ -441,7 +554,11 @@ func (o *VolumeIdAttributesType) SetType(newValue string) *VolumeIdAttributesTyp
 
 // Uuid is a 'getter' method
 func (o *VolumeIdAttributesType) Uuid() UuidType {
-	r := *o.UuidPtr
+	var r UuidType
+	if o.UuidPtr == nil {
+		return r
+	}
+	r = *o.UuidPtr
 	return r
 }
 

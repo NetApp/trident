@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorPolicyGetIterRequest is a structure to represent a snapmirror-policy-get-iter Request ZAPI object
@@ -178,13 +179,11 @@ func (o SnapmirrorPolicyGetIterRequestDesiredAttributes) String() string {
 
 // SnapmirrorPolicyInfo is a 'getter' method
 func (o *SnapmirrorPolicyGetIterRequestDesiredAttributes) SnapmirrorPolicyInfo() SnapmirrorPolicyInfoType {
-
 	var r SnapmirrorPolicyInfoType
 	if o.SnapmirrorPolicyInfoPtr == nil {
 		return r
 	}
 	r = *o.SnapmirrorPolicyInfoPtr
-
 	return r
 }
 
@@ -196,13 +195,11 @@ func (o *SnapmirrorPolicyGetIterRequestDesiredAttributes) SetSnapmirrorPolicyInf
 
 // DesiredAttributes is a 'getter' method
 func (o *SnapmirrorPolicyGetIterRequest) DesiredAttributes() SnapmirrorPolicyGetIterRequestDesiredAttributes {
-
 	var r SnapmirrorPolicyGetIterRequestDesiredAttributes
 	if o.DesiredAttributesPtr == nil {
 		return r
 	}
 	r = *o.DesiredAttributesPtr
-
 	return r
 }
 
@@ -214,13 +211,11 @@ func (o *SnapmirrorPolicyGetIterRequest) SetDesiredAttributes(newValue Snapmirro
 
 // MaxRecords is a 'getter' method
 func (o *SnapmirrorPolicyGetIterRequest) MaxRecords() int {
-
 	var r int
 	if o.MaxRecordsPtr == nil {
 		return r
 	}
 	r = *o.MaxRecordsPtr
-
 	return r
 }
 
@@ -243,13 +238,11 @@ func (o SnapmirrorPolicyGetIterRequestQuery) String() string {
 
 // SnapmirrorPolicyInfo is a 'getter' method
 func (o *SnapmirrorPolicyGetIterRequestQuery) SnapmirrorPolicyInfo() SnapmirrorPolicyInfoType {
-
 	var r SnapmirrorPolicyInfoType
 	if o.SnapmirrorPolicyInfoPtr == nil {
 		return r
 	}
 	r = *o.SnapmirrorPolicyInfoPtr
-
 	return r
 }
 
@@ -261,13 +254,11 @@ func (o *SnapmirrorPolicyGetIterRequestQuery) SetSnapmirrorPolicyInfo(newValue S
 
 // Query is a 'getter' method
 func (o *SnapmirrorPolicyGetIterRequest) Query() SnapmirrorPolicyGetIterRequestQuery {
-
 	var r SnapmirrorPolicyGetIterRequestQuery
 	if o.QueryPtr == nil {
 		return r
 	}
 	r = *o.QueryPtr
-
 	return r
 }
 
@@ -279,13 +270,11 @@ func (o *SnapmirrorPolicyGetIterRequest) SetQuery(newValue SnapmirrorPolicyGetIt
 
 // Tag is a 'getter' method
 func (o *SnapmirrorPolicyGetIterRequest) Tag() string {
-
 	var r string
 	if o.TagPtr == nil {
 		return r
 	}
 	r = *o.TagPtr
-
 	return r
 }
 
@@ -336,13 +325,11 @@ func (o *SnapmirrorPolicyGetIterResponseResultAttributesList) setValues(newValue
 
 // AttributesList is a 'getter' method
 func (o *SnapmirrorPolicyGetIterResponseResult) AttributesList() SnapmirrorPolicyGetIterResponseResultAttributesList {
-
 	var r SnapmirrorPolicyGetIterResponseResultAttributesList
 	if o.AttributesListPtr == nil {
 		return r
 	}
 	r = *o.AttributesListPtr
-
 	return r
 }
 
@@ -354,13 +341,11 @@ func (o *SnapmirrorPolicyGetIterResponseResult) SetAttributesList(newValue Snapm
 
 // NextTag is a 'getter' method
 func (o *SnapmirrorPolicyGetIterResponseResult) NextTag() string {
-
 	var r string
 	if o.NextTagPtr == nil {
 		return r
 	}
 	r = *o.NextTagPtr
-
 	return r
 }
 
@@ -372,13 +357,11 @@ func (o *SnapmirrorPolicyGetIterResponseResult) SetNextTag(newValue string) *Sna
 
 // NumRecords is a 'getter' method
 func (o *SnapmirrorPolicyGetIterResponseResult) NumRecords() int {
-
 	var r int
 	if o.NumRecordsPtr == nil {
 		return r
 	}
 	r = *o.NumRecordsPtr
-
 	return r
 }
 

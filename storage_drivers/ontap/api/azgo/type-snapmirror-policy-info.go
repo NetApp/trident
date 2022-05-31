@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorPolicyInfoType is a structure to represent a snapmirror-policy-info ZAPI object
@@ -55,13 +56,11 @@ func (o SnapmirrorPolicyInfoType) String() string {
 
 // ArchiveAfterDays is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) ArchiveAfterDays() int {
-
 	var r int
 	if o.ArchiveAfterDaysPtr == nil {
 		return r
 	}
 	r = *o.ArchiveAfterDaysPtr
-
 	return r
 }
 
@@ -73,13 +72,11 @@ func (o *SnapmirrorPolicyInfoType) SetArchiveAfterDays(newValue int) *Snapmirror
 
 // AreDataOpsSequentiallySplit is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) AreDataOpsSequentiallySplit() bool {
-
 	var r bool
 	if o.AreDataOpsSequentiallySplitPtr == nil {
 		return r
 	}
 	r = *o.AreDataOpsSequentiallySplitPtr
-
 	return r
 }
 
@@ -91,13 +88,11 @@ func (o *SnapmirrorPolicyInfoType) SetAreDataOpsSequentiallySplit(newValue bool)
 
 // Comment is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) Comment() string {
-
 	var r string
 	if o.CommentPtr == nil {
 		return r
 	}
 	r = *o.CommentPtr
-
 	return r
 }
 
@@ -109,13 +104,11 @@ func (o *SnapmirrorPolicyInfoType) SetComment(newValue string) *SnapmirrorPolicy
 
 // CommonSnapshotSchedule is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) CommonSnapshotSchedule() string {
-
 	var r string
 	if o.CommonSnapshotSchedulePtr == nil {
 		return r
 	}
 	r = *o.CommonSnapshotSchedulePtr
-
 	return r
 }
 
@@ -127,13 +120,11 @@ func (o *SnapmirrorPolicyInfoType) SetCommonSnapshotSchedule(newValue string) *S
 
 // CreateSnapshot is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) CreateSnapshot() bool {
-
 	var r bool
 	if o.CreateSnapshotPtr == nil {
 		return r
 	}
 	r = *o.CreateSnapshotPtr
-
 	return r
 }
 
@@ -165,13 +156,11 @@ func (o *SnapmirrorPolicyInfoTypeDiscardConfigs) SetSvmdrConfigObj(newValue []Sv
 
 // DiscardConfigs is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) DiscardConfigs() SnapmirrorPolicyInfoTypeDiscardConfigs {
-
 	var r SnapmirrorPolicyInfoTypeDiscardConfigs
 	if o.DiscardConfigsPtr == nil {
 		return r
 	}
 	r = *o.DiscardConfigsPtr
-
 	return r
 }
 
@@ -183,13 +172,11 @@ func (o *SnapmirrorPolicyInfoType) SetDiscardConfigs(newValue SnapmirrorPolicyIn
 
 // IgnoreAtime is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) IgnoreAtime() bool {
-
 	var r bool
 	if o.IgnoreAtimePtr == nil {
 		return r
 	}
 	r = *o.IgnoreAtimePtr
-
 	return r
 }
 
@@ -201,13 +188,11 @@ func (o *SnapmirrorPolicyInfoType) SetIgnoreAtime(newValue bool) *SnapmirrorPoli
 
 // IsNetworkCompressionEnabled is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) IsNetworkCompressionEnabled() bool {
-
 	var r bool
 	if o.IsNetworkCompressionEnabledPtr == nil {
 		return r
 	}
 	r = *o.IsNetworkCompressionEnabledPtr
-
 	return r
 }
 
@@ -219,13 +204,11 @@ func (o *SnapmirrorPolicyInfoType) SetIsNetworkCompressionEnabled(newValue bool)
 
 // Owner is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) Owner() PolicyOwnerType {
-
 	var r PolicyOwnerType
 	if o.OwnerPtr == nil {
 		return r
 	}
 	r = *o.OwnerPtr
-
 	return r
 }
 
@@ -237,13 +220,11 @@ func (o *SnapmirrorPolicyInfoType) SetOwner(newValue PolicyOwnerType) *Snapmirro
 
 // PolicyName is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) PolicyName() SmPolicyType {
-
 	var r SmPolicyType
 	if o.PolicyNamePtr == nil {
 		return r
 	}
 	r = *o.PolicyNamePtr
-
 	return r
 }
 
@@ -255,13 +236,11 @@ func (o *SnapmirrorPolicyInfoType) SetPolicyName(newValue SmPolicyType) *Snapmir
 
 // Restart is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) Restart() SmRestartEnumType {
-
 	var r SmRestartEnumType
 	if o.RestartPtr == nil {
 		return r
 	}
 	r = *o.RestartPtr
-
 	return r
 }
 
@@ -293,13 +272,11 @@ func (o *SnapmirrorPolicyInfoTypeSnapmirrorPolicyRules) SetSnapmirrorPolicyRuleI
 
 // SnapmirrorPolicyRules is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) SnapmirrorPolicyRules() SnapmirrorPolicyInfoTypeSnapmirrorPolicyRules {
-
 	var r SnapmirrorPolicyInfoTypeSnapmirrorPolicyRules
 	if o.SnapmirrorPolicyRulesPtr == nil {
 		return r
 	}
 	r = *o.SnapmirrorPolicyRulesPtr
-
 	return r
 }
 
@@ -311,13 +288,11 @@ func (o *SnapmirrorPolicyInfoType) SetSnapmirrorPolicyRules(newValue SnapmirrorP
 
 // TotalKeep is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) TotalKeep() int {
-
 	var r int
 	if o.TotalKeepPtr == nil {
 		return r
 	}
 	r = *o.TotalKeepPtr
-
 	return r
 }
 
@@ -329,13 +304,11 @@ func (o *SnapmirrorPolicyInfoType) SetTotalKeep(newValue int) *SnapmirrorPolicyI
 
 // TotalRules is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) TotalRules() int {
-
 	var r int
 	if o.TotalRulesPtr == nil {
 		return r
 	}
 	r = *o.TotalRulesPtr
-
 	return r
 }
 
@@ -347,13 +320,11 @@ func (o *SnapmirrorPolicyInfoType) SetTotalRules(newValue int) *SnapmirrorPolicy
 
 // TransferPriority is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) TransferPriority() SmTransferPriorityEnumType {
-
 	var r SmTransferPriorityEnumType
 	if o.TransferPriorityPtr == nil {
 		return r
 	}
 	r = *o.TransferPriorityPtr
-
 	return r
 }
 
@@ -365,13 +336,11 @@ func (o *SnapmirrorPolicyInfoType) SetTransferPriority(newValue SmTransferPriori
 
 // Tries is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) Tries() string {
-
 	var r string
 	if o.TriesPtr == nil {
 		return r
 	}
 	r = *o.TriesPtr
-
 	return r
 }
 
@@ -383,13 +352,11 @@ func (o *SnapmirrorPolicyInfoType) SetTries(newValue string) *SnapmirrorPolicyIn
 
 // Type is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) Type() SmPolicyTypeEnumType {
-
 	var r SmPolicyTypeEnumType
 	if o.TypePtr == nil {
 		return r
 	}
 	r = *o.TypePtr
-
 	return r
 }
 
@@ -401,13 +368,11 @@ func (o *SnapmirrorPolicyInfoType) SetType(newValue SmPolicyTypeEnumType) *Snapm
 
 // VserverName is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) VserverName() VserverNameType {
-
 	var r VserverNameType
 	if o.VserverNamePtr == nil {
 		return r
 	}
 	r = *o.VserverNamePtr
-
 	return r
 }
 
@@ -419,13 +384,11 @@ func (o *SnapmirrorPolicyInfoType) SetVserverName(newValue VserverNameType) *Sna
 
 // WindowSizeForTdpMirror is a 'getter' method
 func (o *SnapmirrorPolicyInfoType) WindowSizeForTdpMirror() SizeType {
-
 	var r SizeType
 	if o.WindowSizeForTdpMirrorPtr == nil {
 		return r
 	}
 	r = *o.WindowSizeForTdpMirrorPtr
-
 	return r
 }
 

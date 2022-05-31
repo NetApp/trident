@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiInitiatorDeleteAuthRequest is a structure to represent a iscsi-initiator-delete-auth Request ZAPI object
@@ -105,7 +106,11 @@ func (o *IscsiInitiatorDeleteAuthRequest) executeWithoutIteration(zr *ZapiRunner
 
 // Initiator is a 'getter' method
 func (o *IscsiInitiatorDeleteAuthRequest) Initiator() string {
-	r := *o.InitiatorPtr
+	var r string
+	if o.InitiatorPtr == nil {
+		return r
+	}
+	r = *o.InitiatorPtr
 	return r
 }
 

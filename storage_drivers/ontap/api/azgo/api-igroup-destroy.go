@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IgroupDestroyRequest is a structure to represent a igroup-destroy Request ZAPI object
@@ -106,7 +107,11 @@ func (o *IgroupDestroyRequest) executeWithoutIteration(zr *ZapiRunner) (*IgroupD
 
 // Force is a 'getter' method
 func (o *IgroupDestroyRequest) Force() bool {
-	r := *o.ForcePtr
+	var r bool
+	if o.ForcePtr == nil {
+		return r
+	}
+	r = *o.ForcePtr
 	return r
 }
 
@@ -118,7 +123,11 @@ func (o *IgroupDestroyRequest) SetForce(newValue bool) *IgroupDestroyRequest {
 
 // InitiatorGroupName is a 'getter' method
 func (o *IgroupDestroyRequest) InitiatorGroupName() string {
-	r := *o.InitiatorGroupNamePtr
+	var r string
+	if o.InitiatorGroupNamePtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupNamePtr
 	return r
 }
 

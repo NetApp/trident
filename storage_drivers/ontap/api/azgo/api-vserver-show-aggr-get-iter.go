@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VserverShowAggrGetIterRequest is a structure to represent a vserver-show-aggr-get-iter Request ZAPI object
@@ -179,7 +180,11 @@ func (o VserverShowAggrGetIterRequestDesiredAttributes) String() string {
 
 // ShowAggregates is a 'getter' method
 func (o *VserverShowAggrGetIterRequestDesiredAttributes) ShowAggregates() ShowAggregatesType {
-	r := *o.ShowAggregatesPtr
+	var r ShowAggregatesType
+	if o.ShowAggregatesPtr == nil {
+		return r
+	}
+	r = *o.ShowAggregatesPtr
 	return r
 }
 
@@ -191,7 +196,11 @@ func (o *VserverShowAggrGetIterRequestDesiredAttributes) SetShowAggregates(newVa
 
 // DesiredAttributes is a 'getter' method
 func (o *VserverShowAggrGetIterRequest) DesiredAttributes() VserverShowAggrGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r VserverShowAggrGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -203,7 +212,11 @@ func (o *VserverShowAggrGetIterRequest) SetDesiredAttributes(newValue VserverSho
 
 // MaxRecords is a 'getter' method
 func (o *VserverShowAggrGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -226,7 +239,11 @@ func (o VserverShowAggrGetIterRequestQuery) String() string {
 
 // ShowAggregates is a 'getter' method
 func (o *VserverShowAggrGetIterRequestQuery) ShowAggregates() ShowAggregatesType {
-	r := *o.ShowAggregatesPtr
+	var r ShowAggregatesType
+	if o.ShowAggregatesPtr == nil {
+		return r
+	}
+	r = *o.ShowAggregatesPtr
 	return r
 }
 
@@ -238,7 +255,11 @@ func (o *VserverShowAggrGetIterRequestQuery) SetShowAggregates(newValue ShowAggr
 
 // Query is a 'getter' method
 func (o *VserverShowAggrGetIterRequest) Query() VserverShowAggrGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r VserverShowAggrGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -250,7 +271,11 @@ func (o *VserverShowAggrGetIterRequest) SetQuery(newValue VserverShowAggrGetIter
 
 // Tag is a 'getter' method
 func (o *VserverShowAggrGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -262,7 +287,11 @@ func (o *VserverShowAggrGetIterRequest) SetTag(newValue string) *VserverShowAggr
 
 // Vserver is a 'getter' method
 func (o *VserverShowAggrGetIterRequest) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 
@@ -313,7 +342,11 @@ func (o *VserverShowAggrGetIterResponseResultAttributesList) setValues(newValue 
 
 // AttributesList is a 'getter' method
 func (o *VserverShowAggrGetIterResponseResult) AttributesList() VserverShowAggrGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r VserverShowAggrGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -325,7 +358,11 @@ func (o *VserverShowAggrGetIterResponseResult) SetAttributesList(newValue Vserve
 
 // NextTag is a 'getter' method
 func (o *VserverShowAggrGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -337,7 +374,11 @@ func (o *VserverShowAggrGetIterResponseResult) SetNextTag(newValue string) *Vser
 
 // NumRecords is a 'getter' method
 func (o *VserverShowAggrGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

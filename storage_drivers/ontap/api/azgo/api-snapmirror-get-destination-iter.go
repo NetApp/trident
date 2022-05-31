@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorGetDestinationIterRequest is a structure to represent a snapmirror-get-destination-iter Request ZAPI object
@@ -179,7 +180,11 @@ func (o SnapmirrorGetDestinationIterRequestDesiredAttributes) String() string {
 
 // SnapmirrorDestinationInfo is a 'getter' method
 func (o *SnapmirrorGetDestinationIterRequestDesiredAttributes) SnapmirrorDestinationInfo() SnapmirrorDestinationInfoType {
-	r := *o.SnapmirrorDestinationInfoPtr
+	var r SnapmirrorDestinationInfoType
+	if o.SnapmirrorDestinationInfoPtr == nil {
+		return r
+	}
+	r = *o.SnapmirrorDestinationInfoPtr
 	return r
 }
 
@@ -191,7 +196,11 @@ func (o *SnapmirrorGetDestinationIterRequestDesiredAttributes) SetSnapmirrorDest
 
 // DesiredAttributes is a 'getter' method
 func (o *SnapmirrorGetDestinationIterRequest) DesiredAttributes() SnapmirrorGetDestinationIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r SnapmirrorGetDestinationIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -203,7 +212,11 @@ func (o *SnapmirrorGetDestinationIterRequest) SetDesiredAttributes(newValue Snap
 
 // Expand is a 'getter' method
 func (o *SnapmirrorGetDestinationIterRequest) Expand() bool {
-	r := *o.ExpandPtr
+	var r bool
+	if o.ExpandPtr == nil {
+		return r
+	}
+	r = *o.ExpandPtr
 	return r
 }
 
@@ -215,7 +228,11 @@ func (o *SnapmirrorGetDestinationIterRequest) SetExpand(newValue bool) *Snapmirr
 
 // MaxRecords is a 'getter' method
 func (o *SnapmirrorGetDestinationIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -238,7 +255,11 @@ func (o SnapmirrorGetDestinationIterRequestQuery) String() string {
 
 // SnapmirrorDestinationInfo is a 'getter' method
 func (o *SnapmirrorGetDestinationIterRequestQuery) SnapmirrorDestinationInfo() SnapmirrorDestinationInfoType {
-	r := *o.SnapmirrorDestinationInfoPtr
+	var r SnapmirrorDestinationInfoType
+	if o.SnapmirrorDestinationInfoPtr == nil {
+		return r
+	}
+	r = *o.SnapmirrorDestinationInfoPtr
 	return r
 }
 
@@ -250,7 +271,11 @@ func (o *SnapmirrorGetDestinationIterRequestQuery) SetSnapmirrorDestinationInfo(
 
 // Query is a 'getter' method
 func (o *SnapmirrorGetDestinationIterRequest) Query() SnapmirrorGetDestinationIterRequestQuery {
-	r := *o.QueryPtr
+	var r SnapmirrorGetDestinationIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -262,7 +287,11 @@ func (o *SnapmirrorGetDestinationIterRequest) SetQuery(newValue SnapmirrorGetDes
 
 // Tag is a 'getter' method
 func (o *SnapmirrorGetDestinationIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -313,7 +342,11 @@ func (o *SnapmirrorGetDestinationIterResponseResultAttributesList) setValues(new
 
 // AttributesList is a 'getter' method
 func (o *SnapmirrorGetDestinationIterResponseResult) AttributesList() SnapmirrorGetDestinationIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r SnapmirrorGetDestinationIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -325,7 +358,11 @@ func (o *SnapmirrorGetDestinationIterResponseResult) SetAttributesList(newValue 
 
 // NextTag is a 'getter' method
 func (o *SnapmirrorGetDestinationIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -337,7 +374,11 @@ func (o *SnapmirrorGetDestinationIterResponseResult) SetNextTag(newValue string)
 
 // NumRecords is a 'getter' method
 func (o *SnapmirrorGetDestinationIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

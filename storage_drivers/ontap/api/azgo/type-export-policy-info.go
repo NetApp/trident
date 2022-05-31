@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // ExportPolicyInfoType is a structure to represent a export-policy-info ZAPI object
@@ -37,7 +38,11 @@ func (o ExportPolicyInfoType) String() string {
 
 // PolicyId is a 'getter' method
 func (o *ExportPolicyInfoType) PolicyId() int {
-	r := *o.PolicyIdPtr
+	var r int
+	if o.PolicyIdPtr == nil {
+		return r
+	}
+	r = *o.PolicyIdPtr
 	return r
 }
 
@@ -49,7 +54,11 @@ func (o *ExportPolicyInfoType) SetPolicyId(newValue int) *ExportPolicyInfoType {
 
 // PolicyName is a 'getter' method
 func (o *ExportPolicyInfoType) PolicyName() ExportPolicyNameType {
-	r := *o.PolicyNamePtr
+	var r ExportPolicyNameType
+	if o.PolicyNamePtr == nil {
+		return r
+	}
+	r = *o.PolicyNamePtr
 	return r
 }
 
@@ -61,7 +70,11 @@ func (o *ExportPolicyInfoType) SetPolicyName(newValue ExportPolicyNameType) *Exp
 
 // Vserver is a 'getter' method
 func (o *ExportPolicyInfoType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

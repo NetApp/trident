@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // JobScheduleGetIterRequest is a structure to represent a job-schedule-get-iter Request ZAPI object
@@ -178,13 +179,11 @@ func (o JobScheduleGetIterRequestDesiredAttributes) String() string {
 
 // JobScheduleInfo is a 'getter' method
 func (o *JobScheduleGetIterRequestDesiredAttributes) JobScheduleInfo() JobScheduleInfoType {
-
 	var r JobScheduleInfoType
 	if o.JobScheduleInfoPtr == nil {
 		return r
 	}
 	r = *o.JobScheduleInfoPtr
-
 	return r
 }
 
@@ -196,13 +195,11 @@ func (o *JobScheduleGetIterRequestDesiredAttributes) SetJobScheduleInfo(newValue
 
 // DesiredAttributes is a 'getter' method
 func (o *JobScheduleGetIterRequest) DesiredAttributes() JobScheduleGetIterRequestDesiredAttributes {
-
 	var r JobScheduleGetIterRequestDesiredAttributes
 	if o.DesiredAttributesPtr == nil {
 		return r
 	}
 	r = *o.DesiredAttributesPtr
-
 	return r
 }
 
@@ -214,13 +211,11 @@ func (o *JobScheduleGetIterRequest) SetDesiredAttributes(newValue JobScheduleGet
 
 // MaxRecords is a 'getter' method
 func (o *JobScheduleGetIterRequest) MaxRecords() int {
-
 	var r int
 	if o.MaxRecordsPtr == nil {
 		return r
 	}
 	r = *o.MaxRecordsPtr
-
 	return r
 }
 
@@ -243,13 +238,11 @@ func (o JobScheduleGetIterRequestQuery) String() string {
 
 // JobScheduleInfo is a 'getter' method
 func (o *JobScheduleGetIterRequestQuery) JobScheduleInfo() JobScheduleInfoType {
-
 	var r JobScheduleInfoType
 	if o.JobScheduleInfoPtr == nil {
 		return r
 	}
 	r = *o.JobScheduleInfoPtr
-
 	return r
 }
 
@@ -261,13 +254,11 @@ func (o *JobScheduleGetIterRequestQuery) SetJobScheduleInfo(newValue JobSchedule
 
 // Query is a 'getter' method
 func (o *JobScheduleGetIterRequest) Query() JobScheduleGetIterRequestQuery {
-
 	var r JobScheduleGetIterRequestQuery
 	if o.QueryPtr == nil {
 		return r
 	}
 	r = *o.QueryPtr
-
 	return r
 }
 
@@ -279,13 +270,11 @@ func (o *JobScheduleGetIterRequest) SetQuery(newValue JobScheduleGetIterRequestQ
 
 // Tag is a 'getter' method
 func (o *JobScheduleGetIterRequest) Tag() string {
-
 	var r string
 	if o.TagPtr == nil {
 		return r
 	}
 	r = *o.TagPtr
-
 	return r
 }
 
@@ -336,13 +325,11 @@ func (o *JobScheduleGetIterResponseResultAttributesList) setValues(newValue []Jo
 
 // AttributesList is a 'getter' method
 func (o *JobScheduleGetIterResponseResult) AttributesList() JobScheduleGetIterResponseResultAttributesList {
-
 	var r JobScheduleGetIterResponseResultAttributesList
 	if o.AttributesListPtr == nil {
 		return r
 	}
 	r = *o.AttributesListPtr
-
 	return r
 }
 
@@ -354,13 +341,11 @@ func (o *JobScheduleGetIterResponseResult) SetAttributesList(newValue JobSchedul
 
 // NextTag is a 'getter' method
 func (o *JobScheduleGetIterResponseResult) NextTag() string {
-
 	var r string
 	if o.NextTagPtr == nil {
 		return r
 	}
 	r = *o.NextTagPtr
-
 	return r
 }
 
@@ -372,13 +357,11 @@ func (o *JobScheduleGetIterResponseResult) SetNextTag(newValue string) *JobSched
 
 // NumRecords is a 'getter' method
 func (o *JobScheduleGetIterResponseResult) NumRecords() int {
-
 	var r int
 	if o.NumRecordsPtr == nil {
 		return r
 	}
 	r = *o.NumRecordsPtr
-
 	return r
 }
 

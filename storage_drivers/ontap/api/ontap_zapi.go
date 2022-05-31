@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -585,9 +585,9 @@ func (c Client) LunMapGet(initiatorGroupName, lunPath string) (*azgo.LunMapGetIt
 		SetPath(lunPath)
 
 	response, err := azgo.NewLunMapGetIterRequest().
-		SetQuery(lunMapInfo).
+		SetQuery(azgo.LunMapGetIterRequestQuery{LunMapInfoPtr: &lunMapInfo}).
 		ExecuteUsing(c.zr)
-	return &response, err
+	return response, err
 }
 
 // LunMap maps a lun to an id in an initiator group

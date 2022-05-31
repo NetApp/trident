@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // QtreeCreateRequest is a structure to represent a qtree-create Request ZAPI object
@@ -111,7 +112,11 @@ func (o *QtreeCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*QtreeCrea
 
 // ExportPolicy is a 'getter' method
 func (o *QtreeCreateRequest) ExportPolicy() string {
-	r := *o.ExportPolicyPtr
+	var r string
+	if o.ExportPolicyPtr == nil {
+		return r
+	}
+	r = *o.ExportPolicyPtr
 	return r
 }
 
@@ -123,7 +128,11 @@ func (o *QtreeCreateRequest) SetExportPolicy(newValue string) *QtreeCreateReques
 
 // Mode is a 'getter' method
 func (o *QtreeCreateRequest) Mode() string {
-	r := *o.ModePtr
+	var r string
+	if o.ModePtr == nil {
+		return r
+	}
+	r = *o.ModePtr
 	return r
 }
 
@@ -135,7 +144,11 @@ func (o *QtreeCreateRequest) SetMode(newValue string) *QtreeCreateRequest {
 
 // Oplocks is a 'getter' method
 func (o *QtreeCreateRequest) Oplocks() string {
-	r := *o.OplocksPtr
+	var r string
+	if o.OplocksPtr == nil {
+		return r
+	}
+	r = *o.OplocksPtr
 	return r
 }
 
@@ -147,7 +160,11 @@ func (o *QtreeCreateRequest) SetOplocks(newValue string) *QtreeCreateRequest {
 
 // QosPolicyGroup is a 'getter' method
 func (o *QtreeCreateRequest) QosPolicyGroup() string {
-	r := *o.QosPolicyGroupPtr
+	var r string
+	if o.QosPolicyGroupPtr == nil {
+		return r
+	}
+	r = *o.QosPolicyGroupPtr
 	return r
 }
 
@@ -159,7 +176,11 @@ func (o *QtreeCreateRequest) SetQosPolicyGroup(newValue string) *QtreeCreateRequ
 
 // Qtree is a 'getter' method
 func (o *QtreeCreateRequest) Qtree() string {
-	r := *o.QtreePtr
+	var r string
+	if o.QtreePtr == nil {
+		return r
+	}
+	r = *o.QtreePtr
 	return r
 }
 
@@ -171,7 +192,11 @@ func (o *QtreeCreateRequest) SetQtree(newValue string) *QtreeCreateRequest {
 
 // SecurityStyle is a 'getter' method
 func (o *QtreeCreateRequest) SecurityStyle() string {
-	r := *o.SecurityStylePtr
+	var r string
+	if o.SecurityStylePtr == nil {
+		return r
+	}
+	r = *o.SecurityStylePtr
 	return r
 }
 
@@ -183,7 +208,11 @@ func (o *QtreeCreateRequest) SetSecurityStyle(newValue string) *QtreeCreateReque
 
 // Volume is a 'getter' method
 func (o *QtreeCreateRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 

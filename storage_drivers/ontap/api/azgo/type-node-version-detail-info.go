@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // NodeVersionDetailInfoType is a structure to represent a node-version-detail-info ZAPI object
@@ -38,7 +39,11 @@ func (o NodeVersionDetailInfoType) String() string {
 
 // BuildTimestamp is a 'getter' method
 func (o *NodeVersionDetailInfoType) BuildTimestamp() int {
-	r := *o.BuildTimestampPtr
+	var r int
+	if o.BuildTimestampPtr == nil {
+		return r
+	}
+	r = *o.BuildTimestampPtr
 	return r
 }
 
@@ -50,7 +55,11 @@ func (o *NodeVersionDetailInfoType) SetBuildTimestamp(newValue int) *NodeVersion
 
 // NodeName is a 'getter' method
 func (o *NodeVersionDetailInfoType) NodeName() string {
-	r := *o.NodeNamePtr
+	var r string
+	if o.NodeNamePtr == nil {
+		return r
+	}
+	r = *o.NodeNamePtr
 	return r
 }
 
@@ -62,7 +71,11 @@ func (o *NodeVersionDetailInfoType) SetNodeName(newValue string) *NodeVersionDet
 
 // NodeUuid is a 'getter' method
 func (o *NodeVersionDetailInfoType) NodeUuid() string {
-	r := *o.NodeUuidPtr
+	var r string
+	if o.NodeUuidPtr == nil {
+		return r
+	}
+	r = *o.NodeUuidPtr
 	return r
 }
 
@@ -74,7 +87,11 @@ func (o *NodeVersionDetailInfoType) SetNodeUuid(newValue string) *NodeVersionDet
 
 // Version is a 'getter' method
 func (o *NodeVersionDetailInfoType) Version() string {
-	r := *o.VersionPtr
+	var r string
+	if o.VersionPtr == nil {
+		return r
+	}
+	r = *o.VersionPtr
 	return r
 }
 

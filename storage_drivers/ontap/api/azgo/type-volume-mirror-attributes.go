@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeMirrorAttributesType is a structure to represent a volume-mirror-attributes ZAPI object
@@ -41,7 +42,11 @@ func (o VolumeMirrorAttributesType) String() string {
 
 // IsDataProtectionMirror is a 'getter' method
 func (o *VolumeMirrorAttributesType) IsDataProtectionMirror() bool {
-	r := *o.IsDataProtectionMirrorPtr
+	var r bool
+	if o.IsDataProtectionMirrorPtr == nil {
+		return r
+	}
+	r = *o.IsDataProtectionMirrorPtr
 	return r
 }
 
@@ -53,7 +58,11 @@ func (o *VolumeMirrorAttributesType) SetIsDataProtectionMirror(newValue bool) *V
 
 // IsLoadSharingMirror is a 'getter' method
 func (o *VolumeMirrorAttributesType) IsLoadSharingMirror() bool {
-	r := *o.IsLoadSharingMirrorPtr
+	var r bool
+	if o.IsLoadSharingMirrorPtr == nil {
+		return r
+	}
+	r = *o.IsLoadSharingMirrorPtr
 	return r
 }
 
@@ -65,7 +74,11 @@ func (o *VolumeMirrorAttributesType) SetIsLoadSharingMirror(newValue bool) *Volu
 
 // IsMoveMirror is a 'getter' method
 func (o *VolumeMirrorAttributesType) IsMoveMirror() bool {
-	r := *o.IsMoveMirrorPtr
+	var r bool
+	if o.IsMoveMirrorPtr == nil {
+		return r
+	}
+	r = *o.IsMoveMirrorPtr
 	return r
 }
 
@@ -77,7 +90,11 @@ func (o *VolumeMirrorAttributesType) SetIsMoveMirror(newValue bool) *VolumeMirro
 
 // IsReplicaVolume is a 'getter' method
 func (o *VolumeMirrorAttributesType) IsReplicaVolume() bool {
-	r := *o.IsReplicaVolumePtr
+	var r bool
+	if o.IsReplicaVolumePtr == nil {
+		return r
+	}
+	r = *o.IsReplicaVolumePtr
 	return r
 }
 
@@ -89,7 +106,11 @@ func (o *VolumeMirrorAttributesType) SetIsReplicaVolume(newValue bool) *VolumeMi
 
 // IsSnapmirrorSource is a 'getter' method
 func (o *VolumeMirrorAttributesType) IsSnapmirrorSource() bool {
-	r := *o.IsSnapmirrorSourcePtr
+	var r bool
+	if o.IsSnapmirrorSourcePtr == nil {
+		return r
+	}
+	r = *o.IsSnapmirrorSourcePtr
 	return r
 }
 
@@ -101,7 +122,11 @@ func (o *VolumeMirrorAttributesType) SetIsSnapmirrorSource(newValue bool) *Volum
 
 // MirrorTransferInProgress is a 'getter' method
 func (o *VolumeMirrorAttributesType) MirrorTransferInProgress() bool {
-	r := *o.MirrorTransferInProgressPtr
+	var r bool
+	if o.MirrorTransferInProgressPtr == nil {
+		return r
+	}
+	r = *o.MirrorTransferInProgressPtr
 	return r
 }
 
@@ -113,7 +138,11 @@ func (o *VolumeMirrorAttributesType) SetMirrorTransferInProgress(newValue bool) 
 
 // RedirectSnapshotId is a 'getter' method
 func (o *VolumeMirrorAttributesType) RedirectSnapshotId() int {
-	r := *o.RedirectSnapshotIdPtr
+	var r int
+	if o.RedirectSnapshotIdPtr == nil {
+		return r
+	}
+	r = *o.RedirectSnapshotIdPtr
 	return r
 }
 

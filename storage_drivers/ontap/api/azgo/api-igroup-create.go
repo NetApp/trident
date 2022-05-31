@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IgroupCreateRequest is a structure to represent a igroup-create Request ZAPI object
@@ -109,7 +110,11 @@ func (o *IgroupCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*IgroupCr
 
 // BindPortset is a 'getter' method
 func (o *IgroupCreateRequest) BindPortset() string {
-	r := *o.BindPortsetPtr
+	var r string
+	if o.BindPortsetPtr == nil {
+		return r
+	}
+	r = *o.BindPortsetPtr
 	return r
 }
 
@@ -121,7 +126,11 @@ func (o *IgroupCreateRequest) SetBindPortset(newValue string) *IgroupCreateReque
 
 // InitiatorGroupName is a 'getter' method
 func (o *IgroupCreateRequest) InitiatorGroupName() string {
-	r := *o.InitiatorGroupNamePtr
+	var r string
+	if o.InitiatorGroupNamePtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupNamePtr
 	return r
 }
 
@@ -133,7 +142,11 @@ func (o *IgroupCreateRequest) SetInitiatorGroupName(newValue string) *IgroupCrea
 
 // InitiatorGroupType is a 'getter' method
 func (o *IgroupCreateRequest) InitiatorGroupType() string {
-	r := *o.InitiatorGroupTypePtr
+	var r string
+	if o.InitiatorGroupTypePtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupTypePtr
 	return r
 }
 
@@ -145,7 +158,11 @@ func (o *IgroupCreateRequest) SetInitiatorGroupType(newValue string) *IgroupCrea
 
 // OsType is a 'getter' method
 func (o *IgroupCreateRequest) OsType() InitiatorGroupOsTypeType {
-	r := *o.OsTypePtr
+	var r InitiatorGroupOsTypeType
+	if o.OsTypePtr == nil {
+		return r
+	}
+	r = *o.OsTypePtr
 	return r
 }
 
@@ -157,7 +174,11 @@ func (o *IgroupCreateRequest) SetOsType(newValue InitiatorGroupOsTypeType) *Igro
 
 // Ostype is a 'getter' method
 func (o *IgroupCreateRequest) Ostype() InitiatorGroupOsTypeType {
-	r := *o.OstypePtr
+	var r InitiatorGroupOsTypeType
+	if o.OstypePtr == nil {
+		return r
+	}
+	r = *o.OstypePtr
 	return r
 }
 

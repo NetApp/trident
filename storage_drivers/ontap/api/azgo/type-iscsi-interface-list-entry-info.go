@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiInterfaceListEntryInfoType is a structure to represent a iscsi-interface-list-entry-info ZAPI object
@@ -45,7 +46,11 @@ func (o IscsiInterfaceListEntryInfoType) String() string {
 
 // CurrentNode is a 'getter' method
 func (o *IscsiInterfaceListEntryInfoType) CurrentNode() string {
-	r := *o.CurrentNodePtr
+	var r string
+	if o.CurrentNodePtr == nil {
+		return r
+	}
+	r = *o.CurrentNodePtr
 	return r
 }
 
@@ -57,7 +62,11 @@ func (o *IscsiInterfaceListEntryInfoType) SetCurrentNode(newValue string) *Iscsi
 
 // CurrentPort is a 'getter' method
 func (o *IscsiInterfaceListEntryInfoType) CurrentPort() string {
-	r := *o.CurrentPortPtr
+	var r string
+	if o.CurrentPortPtr == nil {
+		return r
+	}
+	r = *o.CurrentPortPtr
 	return r
 }
 
@@ -69,7 +78,11 @@ func (o *IscsiInterfaceListEntryInfoType) SetCurrentPort(newValue string) *Iscsi
 
 // InterfaceName is a 'getter' method
 func (o *IscsiInterfaceListEntryInfoType) InterfaceName() string {
-	r := *o.InterfaceNamePtr
+	var r string
+	if o.InterfaceNamePtr == nil {
+		return r
+	}
+	r = *o.InterfaceNamePtr
 	return r
 }
 
@@ -81,7 +94,11 @@ func (o *IscsiInterfaceListEntryInfoType) SetInterfaceName(newValue string) *Isc
 
 // IpAddress is a 'getter' method
 func (o *IscsiInterfaceListEntryInfoType) IpAddress() string {
-	r := *o.IpAddressPtr
+	var r string
+	if o.IpAddressPtr == nil {
+		return r
+	}
+	r = *o.IpAddressPtr
 	return r
 }
 
@@ -93,7 +110,11 @@ func (o *IscsiInterfaceListEntryInfoType) SetIpAddress(newValue string) *IscsiIn
 
 // IpPort is a 'getter' method
 func (o *IscsiInterfaceListEntryInfoType) IpPort() int {
-	r := *o.IpPortPtr
+	var r int
+	if o.IpPortPtr == nil {
+		return r
+	}
+	r = *o.IpPortPtr
 	return r
 }
 
@@ -105,7 +126,11 @@ func (o *IscsiInterfaceListEntryInfoType) SetIpPort(newValue int) *IscsiInterfac
 
 // IsInterfaceEnabled is a 'getter' method
 func (o *IscsiInterfaceListEntryInfoType) IsInterfaceEnabled() bool {
-	r := *o.IsInterfaceEnabledPtr
+	var r bool
+	if o.IsInterfaceEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsInterfaceEnabledPtr
 	return r
 }
 
@@ -117,7 +142,11 @@ func (o *IscsiInterfaceListEntryInfoType) SetIsInterfaceEnabled(newValue bool) *
 
 // RelativePortId is a 'getter' method
 func (o *IscsiInterfaceListEntryInfoType) RelativePortId() int {
-	r := *o.RelativePortIdPtr
+	var r int
+	if o.RelativePortIdPtr == nil {
+		return r
+	}
+	r = *o.RelativePortIdPtr
 	return r
 }
 
@@ -129,7 +158,11 @@ func (o *IscsiInterfaceListEntryInfoType) SetRelativePortId(newValue int) *Iscsi
 
 // SendtargetsFqdn is a 'getter' method
 func (o *IscsiInterfaceListEntryInfoType) SendtargetsFqdn() string {
-	r := *o.SendtargetsFqdnPtr
+	var r string
+	if o.SendtargetsFqdnPtr == nil {
+		return r
+	}
+	r = *o.SendtargetsFqdnPtr
 	return r
 }
 
@@ -141,7 +174,11 @@ func (o *IscsiInterfaceListEntryInfoType) SetSendtargetsFqdn(newValue string) *I
 
 // TpgroupName is a 'getter' method
 func (o *IscsiInterfaceListEntryInfoType) TpgroupName() string {
-	r := *o.TpgroupNamePtr
+	var r string
+	if o.TpgroupNamePtr == nil {
+		return r
+	}
+	r = *o.TpgroupNamePtr
 	return r
 }
 
@@ -153,7 +190,11 @@ func (o *IscsiInterfaceListEntryInfoType) SetTpgroupName(newValue string) *Iscsi
 
 // TpgroupTag is a 'getter' method
 func (o *IscsiInterfaceListEntryInfoType) TpgroupTag() int {
-	r := *o.TpgroupTagPtr
+	var r int
+	if o.TpgroupTagPtr == nil {
+		return r
+	}
+	r = *o.TpgroupTagPtr
 	return r
 }
 
@@ -165,7 +206,11 @@ func (o *IscsiInterfaceListEntryInfoType) SetTpgroupTag(newValue int) *IscsiInte
 
 // Vserver is a 'getter' method
 func (o *IscsiInterfaceListEntryInfoType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

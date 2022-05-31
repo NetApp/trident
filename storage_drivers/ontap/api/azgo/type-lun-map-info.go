@@ -1,29 +1,31 @@
 // Code generated automatically. DO NOT EDIT.
-/*
- * Copyright 2019 NetApp, Inc. All Rights Reserved
- */
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunMapInfoType is a structure to represent a lun-map-info ZAPI object
 type LunMapInfoType struct {
-	XMLName xml.Name `xml:"lun-map-info"`
+	XMLName               xml.Name                      `xml:"lun-map-info"`
+	InitiatorGroupPtr     *string                       `xml:"initiator-group"`
+	InitiatorGroupUuidPtr *string                       `xml:"initiator-group-uuid"`
+	LunIdPtr              *int                          `xml:"lun-id"`
+	LunUuidPtr            *string                       `xml:"lun-uuid"`
+	NodePtr               *NodeNameType                 `xml:"node"`
+	PathPtr               *string                       `xml:"path"`
+	ReportingNodesPtr     *LunMapInfoTypeReportingNodes `xml:"reporting-nodes"`
+	// work in progress
+	VserverPtr *string `xml:"vserver"`
+}
 
-	InitiatorGroupPtr     *string        `xml:"initiator-group"`
-	InitiatorGroupUuidPtr *string        `xml:"initiator-group-uuid"`
-	LunIdPtr              *int           `xml:"lun-id"`
-	LunUuidPtr            *string        `xml:"lun-uuid"`
-	NodePtr               *NodeNameType  `xml:"node"`
-	PathPtr               *string        `xml:"path"`
-	ReportingNodesPtr     []NodeNameType `xml:"reporting-nodes>node-name"`
-	VserverPtr            *string        `xml:"vserver"`
+// NewLunMapInfoType is a factory method for creating new instances of LunMapInfoType objects
+func NewLunMapInfoType() *LunMapInfoType {
+	return &LunMapInfoType{}
 }
 
 // ToXML converts this object into an xml string representation
@@ -35,17 +37,18 @@ func (o *LunMapInfoType) ToXML() (string, error) {
 	return string(output), err
 }
 
-// NewLunMapInfoType is a factory method for creating new instances of LunMapInfoType objects
-func NewLunMapInfoType() *LunMapInfoType { return &LunMapInfoType{} }
-
 // String returns a string representation of this object's fields and implements the Stringer interface
 func (o LunMapInfoType) String() string {
 	return ToString(reflect.ValueOf(o))
 }
 
-// InitiatorGroup is a fluent style 'getter' method that can be chained
+// InitiatorGroup is a 'getter' method
 func (o *LunMapInfoType) InitiatorGroup() string {
-	r := *o.InitiatorGroupPtr
+	var r string
+	if o.InitiatorGroupPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupPtr
 	return r
 }
 
@@ -55,9 +58,13 @@ func (o *LunMapInfoType) SetInitiatorGroup(newValue string) *LunMapInfoType {
 	return o
 }
 
-// InitiatorGroupUuid is a fluent style 'getter' method that can be chained
+// InitiatorGroupUuid is a 'getter' method
 func (o *LunMapInfoType) InitiatorGroupUuid() string {
-	r := *o.InitiatorGroupUuidPtr
+	var r string
+	if o.InitiatorGroupUuidPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupUuidPtr
 	return r
 }
 
@@ -67,9 +74,13 @@ func (o *LunMapInfoType) SetInitiatorGroupUuid(newValue string) *LunMapInfoType 
 	return o
 }
 
-// LunId is a fluent style 'getter' method that can be chained
+// LunId is a 'getter' method
 func (o *LunMapInfoType) LunId() int {
-	r := *o.LunIdPtr
+	var r int
+	if o.LunIdPtr == nil {
+		return r
+	}
+	r = *o.LunIdPtr
 	return r
 }
 
@@ -79,9 +90,13 @@ func (o *LunMapInfoType) SetLunId(newValue int) *LunMapInfoType {
 	return o
 }
 
-// LunUuid is a fluent style 'getter' method that can be chained
+// LunUuid is a 'getter' method
 func (o *LunMapInfoType) LunUuid() string {
-	r := *o.LunUuidPtr
+	var r string
+	if o.LunUuidPtr == nil {
+		return r
+	}
+	r = *o.LunUuidPtr
 	return r
 }
 
@@ -91,9 +106,13 @@ func (o *LunMapInfoType) SetLunUuid(newValue string) *LunMapInfoType {
 	return o
 }
 
-// Node is a fluent style 'getter' method that can be chained
+// Node is a 'getter' method
 func (o *LunMapInfoType) Node() NodeNameType {
-	r := *o.NodePtr
+	var r NodeNameType
+	if o.NodePtr == nil {
+		return r
+	}
+	r = *o.NodePtr
 	return r
 }
 
@@ -103,9 +122,13 @@ func (o *LunMapInfoType) SetNode(newValue NodeNameType) *LunMapInfoType {
 	return o
 }
 
-// Path is a fluent style 'getter' method that can be chained
+// Path is a 'getter' method
 func (o *LunMapInfoType) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 
@@ -115,23 +138,49 @@ func (o *LunMapInfoType) SetPath(newValue string) *LunMapInfoType {
 	return o
 }
 
-// ReportingNodes is a fluent style 'getter' method that can be chained
-func (o *LunMapInfoType) ReportingNodes() []NodeNameType {
-	r := o.ReportingNodesPtr
+// LunMapInfoTypeReportingNodes is a wrapper
+type LunMapInfoTypeReportingNodes struct {
+	XMLName     xml.Name       `xml:"reporting-nodes"`
+	NodeNamePtr []NodeNameType `xml:"node-name"`
+}
+
+// NodeName is a 'getter' method
+func (o *LunMapInfoTypeReportingNodes) NodeName() []NodeNameType {
+	r := o.NodeNamePtr
+	return r
+}
+
+// SetNodeName is a fluent style 'setter' method that can be chained
+func (o *LunMapInfoTypeReportingNodes) SetNodeName(newValue []NodeNameType) *LunMapInfoTypeReportingNodes {
+	newSlice := make([]NodeNameType, len(newValue))
+	copy(newSlice, newValue)
+	o.NodeNamePtr = newSlice
+	return o
+}
+
+// ReportingNodes is a 'getter' method
+func (o *LunMapInfoType) ReportingNodes() LunMapInfoTypeReportingNodes {
+	var r LunMapInfoTypeReportingNodes
+	if o.ReportingNodesPtr == nil {
+		return r
+	}
+	r = *o.ReportingNodesPtr
 	return r
 }
 
 // SetReportingNodes is a fluent style 'setter' method that can be chained
-func (o *LunMapInfoType) SetReportingNodes(newValue []NodeNameType) *LunMapInfoType {
-	newSlice := make([]NodeNameType, len(newValue))
-	copy(newSlice, newValue)
-	o.ReportingNodesPtr = newSlice
+func (o *LunMapInfoType) SetReportingNodes(newValue LunMapInfoTypeReportingNodes) *LunMapInfoType {
+	o.ReportingNodesPtr = &newValue
 	return o
 }
 
-// Vserver is a fluent style 'getter' method that can be chained
+// Vserver is a 'getter' method
 func (o *LunMapInfoType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

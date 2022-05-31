@@ -1,24 +1,26 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorReleaseRequest is a structure to represent a snapmirror-release Request ZAPI object
 type SnapmirrorReleaseRequest struct {
-	XMLName                 xml.Name `xml:"snapmirror-release"`
-	DestinationLocationPtr  *string  `xml:"destination-location"`
-	DestinationVolumePtr    *string  `xml:"destination-volume"`
-	DestinationVserverPtr   *string  `xml:"destination-vserver"`
-	RelationshipIdPtr       *string  `xml:"relationship-id"`
-	RelationshipInfoOnlyPtr *bool    `xml:"relationship-info-only"`
-	SourceLocationPtr       *string  `xml:"source-location"`
-	SourceVolumePtr         *string  `xml:"source-volume"`
-	SourceVserverPtr        *string  `xml:"source-vserver"`
+	XMLName                    xml.Name  `xml:"snapmirror-release"`
+	DestinationEndpointUuidPtr *UuidType `xml:"destination-endpoint-uuid"`
+	DestinationLocationPtr     *string   `xml:"destination-location"`
+	DestinationVolumePtr       *string   `xml:"destination-volume"`
+	DestinationVserverPtr      *string   `xml:"destination-vserver"`
+	RelationshipIdPtr          *string   `xml:"relationship-id"`
+	RelationshipInfoOnlyPtr    *bool     `xml:"relationship-info-only"`
+	SourceLocationPtr          *string   `xml:"source-location"`
+	SourceVolumePtr            *string   `xml:"source-volume"`
+	SourceVserverPtr           *string   `xml:"source-vserver"`
 }
 
 // SnapmirrorReleaseResponse is a structure to represent a snapmirror-release Response ZAPI object
@@ -111,9 +113,29 @@ func (o *SnapmirrorReleaseRequest) executeWithoutIteration(zr *ZapiRunner) (*Sna
 	return result.(*SnapmirrorReleaseResponse), err
 }
 
+// DestinationEndpointUuid is a 'getter' method
+func (o *SnapmirrorReleaseRequest) DestinationEndpointUuid() UuidType {
+	var r UuidType
+	if o.DestinationEndpointUuidPtr == nil {
+		return r
+	}
+	r = *o.DestinationEndpointUuidPtr
+	return r
+}
+
+// SetDestinationEndpointUuid is a fluent style 'setter' method that can be chained
+func (o *SnapmirrorReleaseRequest) SetDestinationEndpointUuid(newValue UuidType) *SnapmirrorReleaseRequest {
+	o.DestinationEndpointUuidPtr = &newValue
+	return o
+}
+
 // DestinationLocation is a 'getter' method
 func (o *SnapmirrorReleaseRequest) DestinationLocation() string {
-	r := *o.DestinationLocationPtr
+	var r string
+	if o.DestinationLocationPtr == nil {
+		return r
+	}
+	r = *o.DestinationLocationPtr
 	return r
 }
 
@@ -125,7 +147,11 @@ func (o *SnapmirrorReleaseRequest) SetDestinationLocation(newValue string) *Snap
 
 // DestinationVolume is a 'getter' method
 func (o *SnapmirrorReleaseRequest) DestinationVolume() string {
-	r := *o.DestinationVolumePtr
+	var r string
+	if o.DestinationVolumePtr == nil {
+		return r
+	}
+	r = *o.DestinationVolumePtr
 	return r
 }
 
@@ -137,7 +163,11 @@ func (o *SnapmirrorReleaseRequest) SetDestinationVolume(newValue string) *Snapmi
 
 // DestinationVserver is a 'getter' method
 func (o *SnapmirrorReleaseRequest) DestinationVserver() string {
-	r := *o.DestinationVserverPtr
+	var r string
+	if o.DestinationVserverPtr == nil {
+		return r
+	}
+	r = *o.DestinationVserverPtr
 	return r
 }
 
@@ -149,7 +179,11 @@ func (o *SnapmirrorReleaseRequest) SetDestinationVserver(newValue string) *Snapm
 
 // RelationshipId is a 'getter' method
 func (o *SnapmirrorReleaseRequest) RelationshipId() string {
-	r := *o.RelationshipIdPtr
+	var r string
+	if o.RelationshipIdPtr == nil {
+		return r
+	}
+	r = *o.RelationshipIdPtr
 	return r
 }
 
@@ -161,7 +195,11 @@ func (o *SnapmirrorReleaseRequest) SetRelationshipId(newValue string) *Snapmirro
 
 // RelationshipInfoOnly is a 'getter' method
 func (o *SnapmirrorReleaseRequest) RelationshipInfoOnly() bool {
-	r := *o.RelationshipInfoOnlyPtr
+	var r bool
+	if o.RelationshipInfoOnlyPtr == nil {
+		return r
+	}
+	r = *o.RelationshipInfoOnlyPtr
 	return r
 }
 
@@ -173,7 +211,11 @@ func (o *SnapmirrorReleaseRequest) SetRelationshipInfoOnly(newValue bool) *Snapm
 
 // SourceLocation is a 'getter' method
 func (o *SnapmirrorReleaseRequest) SourceLocation() string {
-	r := *o.SourceLocationPtr
+	var r string
+	if o.SourceLocationPtr == nil {
+		return r
+	}
+	r = *o.SourceLocationPtr
 	return r
 }
 
@@ -185,7 +227,11 @@ func (o *SnapmirrorReleaseRequest) SetSourceLocation(newValue string) *Snapmirro
 
 // SourceVolume is a 'getter' method
 func (o *SnapmirrorReleaseRequest) SourceVolume() string {
-	r := *o.SourceVolumePtr
+	var r string
+	if o.SourceVolumePtr == nil {
+		return r
+	}
+	r = *o.SourceVolumePtr
 	return r
 }
 
@@ -197,7 +243,11 @@ func (o *SnapmirrorReleaseRequest) SetSourceVolume(newValue string) *SnapmirrorR
 
 // SourceVserver is a 'getter' method
 func (o *SnapmirrorReleaseRequest) SourceVserver() string {
-	r := *o.SourceVserverPtr
+	var r string
+	if o.SourceVserverPtr == nil {
+		return r
+	}
+	r = *o.SourceVserverPtr
 	return r
 }
 
@@ -209,7 +259,11 @@ func (o *SnapmirrorReleaseRequest) SetSourceVserver(newValue string) *Snapmirror
 
 // ResultOperationId is a 'getter' method
 func (o *SnapmirrorReleaseResponseResult) ResultOperationId() string {
-	r := *o.ResultOperationIdPtr
+	var r string
+	if o.ResultOperationIdPtr == nil {
+		return r
+	}
+	r = *o.ResultOperationIdPtr
 	return r
 }
 

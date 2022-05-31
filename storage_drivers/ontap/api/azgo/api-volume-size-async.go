@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeSizeAsyncRequest is a structure to represent a volume-size-async Request ZAPI object
@@ -111,7 +112,11 @@ func (o *VolumeSizeAsyncRequest) executeWithoutIteration(zr *ZapiRunner) (*Volum
 
 // NewSize is a 'getter' method
 func (o *VolumeSizeAsyncRequest) NewSize() string {
-	r := *o.NewSizePtr
+	var r string
+	if o.NewSizePtr == nil {
+		return r
+	}
+	r = *o.NewSizePtr
 	return r
 }
 
@@ -123,7 +128,11 @@ func (o *VolumeSizeAsyncRequest) SetNewSize(newValue string) *VolumeSizeAsyncReq
 
 // VolumeName is a 'getter' method
 func (o *VolumeSizeAsyncRequest) VolumeName() string {
-	r := *o.VolumeNamePtr
+	var r string
+	if o.VolumeNamePtr == nil {
+		return r
+	}
+	r = *o.VolumeNamePtr
 	return r
 }
 
@@ -135,7 +144,11 @@ func (o *VolumeSizeAsyncRequest) SetVolumeName(newValue string) *VolumeSizeAsync
 
 // ResultErrorCode is a 'getter' method
 func (o *VolumeSizeAsyncResponseResult) ResultErrorCode() int {
-	r := *o.ResultErrorCodePtr
+	var r int
+	if o.ResultErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorCodePtr
 	return r
 }
 
@@ -147,7 +160,11 @@ func (o *VolumeSizeAsyncResponseResult) SetResultErrorCode(newValue int) *Volume
 
 // ResultErrorMessage is a 'getter' method
 func (o *VolumeSizeAsyncResponseResult) ResultErrorMessage() string {
-	r := *o.ResultErrorMessagePtr
+	var r string
+	if o.ResultErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorMessagePtr
 	return r
 }
 
@@ -159,7 +176,11 @@ func (o *VolumeSizeAsyncResponseResult) SetResultErrorMessage(newValue string) *
 
 // ResultJobid is a 'getter' method
 func (o *VolumeSizeAsyncResponseResult) ResultJobid() int {
-	r := *o.ResultJobidPtr
+	var r int
+	if o.ResultJobidPtr == nil {
+		return r
+	}
+	r = *o.ResultJobidPtr
 	return r
 }
 
@@ -171,7 +192,11 @@ func (o *VolumeSizeAsyncResponseResult) SetResultJobid(newValue int) *VolumeSize
 
 // ResultStatus is a 'getter' method
 func (o *VolumeSizeAsyncResponseResult) ResultStatus() string {
-	r := *o.ResultStatusPtr
+	var r string
+	if o.ResultStatusPtr == nil {
+		return r
+	}
+	r = *o.ResultStatusPtr
 	return r
 }
 
@@ -183,7 +208,11 @@ func (o *VolumeSizeAsyncResponseResult) SetResultStatus(newValue string) *Volume
 
 // VolumeSize is a 'getter' method
 func (o *VolumeSizeAsyncResponseResult) VolumeSize() string {
-	r := *o.VolumeSizePtr
+	var r string
+	if o.VolumeSizePtr == nil {
+		return r
+	}
+	r = *o.VolumeSizePtr
 	return r
 }
 

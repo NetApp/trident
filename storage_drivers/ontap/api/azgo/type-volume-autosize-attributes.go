@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeAutosizeAttributesType is a structure to represent a volume-autosize-attributes ZAPI object
@@ -41,7 +42,11 @@ func (o VolumeAutosizeAttributesType) String() string {
 
 // GrowThresholdPercent is a 'getter' method
 func (o *VolumeAutosizeAttributesType) GrowThresholdPercent() int {
-	r := *o.GrowThresholdPercentPtr
+	var r int
+	if o.GrowThresholdPercentPtr == nil {
+		return r
+	}
+	r = *o.GrowThresholdPercentPtr
 	return r
 }
 
@@ -53,7 +58,11 @@ func (o *VolumeAutosizeAttributesType) SetGrowThresholdPercent(newValue int) *Vo
 
 // IsEnabled is a 'getter' method
 func (o *VolumeAutosizeAttributesType) IsEnabled() bool {
-	r := *o.IsEnabledPtr
+	var r bool
+	if o.IsEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsEnabledPtr
 	return r
 }
 
@@ -65,7 +74,11 @@ func (o *VolumeAutosizeAttributesType) SetIsEnabled(newValue bool) *VolumeAutosi
 
 // MaximumSize is a 'getter' method
 func (o *VolumeAutosizeAttributesType) MaximumSize() int {
-	r := *o.MaximumSizePtr
+	var r int
+	if o.MaximumSizePtr == nil {
+		return r
+	}
+	r = *o.MaximumSizePtr
 	return r
 }
 
@@ -77,7 +90,11 @@ func (o *VolumeAutosizeAttributesType) SetMaximumSize(newValue int) *VolumeAutos
 
 // MinimumSize is a 'getter' method
 func (o *VolumeAutosizeAttributesType) MinimumSize() int {
-	r := *o.MinimumSizePtr
+	var r int
+	if o.MinimumSizePtr == nil {
+		return r
+	}
+	r = *o.MinimumSizePtr
 	return r
 }
 
@@ -89,7 +106,11 @@ func (o *VolumeAutosizeAttributesType) SetMinimumSize(newValue int) *VolumeAutos
 
 // Mode is a 'getter' method
 func (o *VolumeAutosizeAttributesType) Mode() string {
-	r := *o.ModePtr
+	var r string
+	if o.ModePtr == nil {
+		return r
+	}
+	r = *o.ModePtr
 	return r
 }
 
@@ -101,7 +122,11 @@ func (o *VolumeAutosizeAttributesType) SetMode(newValue string) *VolumeAutosizeA
 
 // Reset is a 'getter' method
 func (o *VolumeAutosizeAttributesType) Reset() bool {
-	r := *o.ResetPtr
+	var r bool
+	if o.ResetPtr == nil {
+		return r
+	}
+	r = *o.ResetPtr
 	return r
 }
 
@@ -113,7 +138,11 @@ func (o *VolumeAutosizeAttributesType) SetReset(newValue bool) *VolumeAutosizeAt
 
 // ShrinkThresholdPercent is a 'getter' method
 func (o *VolumeAutosizeAttributesType) ShrinkThresholdPercent() int {
-	r := *o.ShrinkThresholdPercentPtr
+	var r int
+	if o.ShrinkThresholdPercentPtr == nil {
+		return r
+	}
+	r = *o.ShrinkThresholdPercentPtr
 	return r
 }
 

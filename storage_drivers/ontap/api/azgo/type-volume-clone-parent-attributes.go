@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeCloneParentAttributesType is a structure to represent a volume-clone-parent-attributes ZAPI object
@@ -41,7 +42,11 @@ func (o VolumeCloneParentAttributesType) String() string {
 
 // Dsid is a 'getter' method
 func (o *VolumeCloneParentAttributesType) Dsid() int {
-	r := *o.DsidPtr
+	var r int
+	if o.DsidPtr == nil {
+		return r
+	}
+	r = *o.DsidPtr
 	return r
 }
 
@@ -53,7 +58,11 @@ func (o *VolumeCloneParentAttributesType) SetDsid(newValue int) *VolumeClonePare
 
 // Msid is a 'getter' method
 func (o *VolumeCloneParentAttributesType) Msid() int {
-	r := *o.MsidPtr
+	var r int
+	if o.MsidPtr == nil {
+		return r
+	}
+	r = *o.MsidPtr
 	return r
 }
 
@@ -65,7 +74,11 @@ func (o *VolumeCloneParentAttributesType) SetMsid(newValue int) *VolumeClonePare
 
 // Name is a 'getter' method
 func (o *VolumeCloneParentAttributesType) Name() VolumeNameType {
-	r := *o.NamePtr
+	var r VolumeNameType
+	if o.NamePtr == nil {
+		return r
+	}
+	r = *o.NamePtr
 	return r
 }
 
@@ -77,7 +90,11 @@ func (o *VolumeCloneParentAttributesType) SetName(newValue VolumeNameType) *Volu
 
 // SnapshotId is a 'getter' method
 func (o *VolumeCloneParentAttributesType) SnapshotId() int {
-	r := *o.SnapshotIdPtr
+	var r int
+	if o.SnapshotIdPtr == nil {
+		return r
+	}
+	r = *o.SnapshotIdPtr
 	return r
 }
 
@@ -89,7 +106,11 @@ func (o *VolumeCloneParentAttributesType) SetSnapshotId(newValue int) *VolumeClo
 
 // SnapshotName is a 'getter' method
 func (o *VolumeCloneParentAttributesType) SnapshotName() string {
-	r := *o.SnapshotNamePtr
+	var r string
+	if o.SnapshotNamePtr == nil {
+		return r
+	}
+	r = *o.SnapshotNamePtr
 	return r
 }
 
@@ -101,7 +122,11 @@ func (o *VolumeCloneParentAttributesType) SetSnapshotName(newValue string) *Volu
 
 // Uuid is a 'getter' method
 func (o *VolumeCloneParentAttributesType) Uuid() UuidType {
-	r := *o.UuidPtr
+	var r UuidType
+	if o.UuidPtr == nil {
+		return r
+	}
+	r = *o.UuidPtr
 	return r
 }
 
@@ -113,7 +138,11 @@ func (o *VolumeCloneParentAttributesType) SetUuid(newValue UuidType) *VolumeClon
 
 // VserverName is a 'getter' method
 func (o *VolumeCloneParentAttributesType) VserverName() VserverNameType {
-	r := *o.VserverNamePtr
+	var r VserverNameType
+	if o.VserverNamePtr == nil {
+		return r
+	}
+	r = *o.VserverNamePtr
 	return r
 }
 

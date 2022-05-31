@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunResizeRequest is a structure to represent a lun-resize Request ZAPI object
@@ -108,7 +109,11 @@ func (o *LunResizeRequest) executeWithoutIteration(zr *ZapiRunner) (*LunResizeRe
 
 // Force is a 'getter' method
 func (o *LunResizeRequest) Force() bool {
-	r := *o.ForcePtr
+	var r bool
+	if o.ForcePtr == nil {
+		return r
+	}
+	r = *o.ForcePtr
 	return r
 }
 
@@ -120,7 +125,11 @@ func (o *LunResizeRequest) SetForce(newValue bool) *LunResizeRequest {
 
 // Path is a 'getter' method
 func (o *LunResizeRequest) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 
@@ -132,7 +141,11 @@ func (o *LunResizeRequest) SetPath(newValue string) *LunResizeRequest {
 
 // Size is a 'getter' method
 func (o *LunResizeRequest) Size() int {
-	r := *o.SizePtr
+	var r int
+	if o.SizePtr == nil {
+		return r
+	}
+	r = *o.SizePtr
 	return r
 }
 
@@ -144,7 +157,11 @@ func (o *LunResizeRequest) SetSize(newValue int) *LunResizeRequest {
 
 // ActualSize is a 'getter' method
 func (o *LunResizeResponseResult) ActualSize() int {
-	r := *o.ActualSizePtr
+	var r int
+	if o.ActualSizePtr == nil {
+		return r
+	}
+	r = *o.ActualSizePtr
 	return r
 }
 

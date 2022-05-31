@@ -825,10 +825,12 @@ func getISCSIDataLIFsForReportingNodes(
 
 	reportingNodeNames := make(map[string]struct{})
 	if lunMapGetResponse.Result.AttributesListPtr != nil {
-		for _, lunMapInfo := range lunMapGetResponse.Result.AttributesListPtr {
-			for _, reportingNode := range lunMapInfo.ReportingNodes() {
-				Logc(ctx).WithField("reportingNode", reportingNode).Debug("Reporting node found.")
-				reportingNodeNames[reportingNode] = struct{}{}
+		for _, lunMapInfo := range lunMapGetResponse.Result.AttributesListPtr.LunMapInfo() {
+			if lunMapInfo.ReportingNodesPtr != nil {
+				for _, reportingNode := range lunMapInfo.ReportingNodesPtr.NodeName() {
+					Logc(ctx).WithField("reportingNode", reportingNode).Debug("Reporting node found.")
+					reportingNodeNames[reportingNode] = struct{}{}
+				}
 			}
 		}
 	}

@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeCreateAsyncRequest is a structure to represent a volume-create-async Request ZAPI object
@@ -186,7 +187,11 @@ func (o *VolumeCreateAsyncRequestAggrList) SetAggrName(newValue []AggrNameType) 
 
 // AggrList is a 'getter' method
 func (o *VolumeCreateAsyncRequest) AggrList() VolumeCreateAsyncRequestAggrList {
-	r := *o.AggrListPtr
+	var r VolumeCreateAsyncRequestAggrList
+	if o.AggrListPtr == nil {
+		return r
+	}
+	r = *o.AggrListPtr
 	return r
 }
 
@@ -198,7 +203,11 @@ func (o *VolumeCreateAsyncRequest) SetAggrList(newValue VolumeCreateAsyncRequest
 
 // AggrListMultiplier is a 'getter' method
 func (o *VolumeCreateAsyncRequest) AggrListMultiplier() int {
-	r := *o.AggrListMultiplierPtr
+	var r int
+	if o.AggrListMultiplierPtr == nil {
+		return r
+	}
+	r = *o.AggrListMultiplierPtr
 	return r
 }
 
@@ -210,7 +219,11 @@ func (o *VolumeCreateAsyncRequest) SetAggrListMultiplier(newValue int) *VolumeCr
 
 // AutoProvisionAs is a 'getter' method
 func (o *VolumeCreateAsyncRequest) AutoProvisionAs() string {
-	r := *o.AutoProvisionAsPtr
+	var r string
+	if o.AutoProvisionAsPtr == nil {
+		return r
+	}
+	r = *o.AutoProvisionAsPtr
 	return r
 }
 
@@ -222,7 +235,11 @@ func (o *VolumeCreateAsyncRequest) SetAutoProvisionAs(newValue string) *VolumeCr
 
 // CacheRetentionPriority is a 'getter' method
 func (o *VolumeCreateAsyncRequest) CacheRetentionPriority() string {
-	r := *o.CacheRetentionPriorityPtr
+	var r string
+	if o.CacheRetentionPriorityPtr == nil {
+		return r
+	}
+	r = *o.CacheRetentionPriorityPtr
 	return r
 }
 
@@ -234,7 +251,11 @@ func (o *VolumeCreateAsyncRequest) SetCacheRetentionPriority(newValue string) *V
 
 // CachingPolicy is a 'getter' method
 func (o *VolumeCreateAsyncRequest) CachingPolicy() string {
-	r := *o.CachingPolicyPtr
+	var r string
+	if o.CachingPolicyPtr == nil {
+		return r
+	}
+	r = *o.CachingPolicyPtr
 	return r
 }
 
@@ -246,7 +267,11 @@ func (o *VolumeCreateAsyncRequest) SetCachingPolicy(newValue string) *VolumeCrea
 
 // ContainingAggrName is a 'getter' method
 func (o *VolumeCreateAsyncRequest) ContainingAggrName() string {
-	r := *o.ContainingAggrNamePtr
+	var r string
+	if o.ContainingAggrNamePtr == nil {
+		return r
+	}
+	r = *o.ContainingAggrNamePtr
 	return r
 }
 
@@ -283,7 +308,11 @@ func (o *VolumeCreateAsyncRequestDataAggrList) SetAggrName(newValue []AggrNameTy
 
 // DataAggrList is a 'getter' method
 func (o *VolumeCreateAsyncRequest) DataAggrList() VolumeCreateAsyncRequestDataAggrList {
-	r := *o.DataAggrListPtr
+	var r VolumeCreateAsyncRequestDataAggrList
+	if o.DataAggrListPtr == nil {
+		return r
+	}
+	r = *o.DataAggrListPtr
 	return r
 }
 
@@ -295,7 +324,11 @@ func (o *VolumeCreateAsyncRequest) SetDataAggrList(newValue VolumeCreateAsyncReq
 
 // EfficiencyPolicy is a 'getter' method
 func (o *VolumeCreateAsyncRequest) EfficiencyPolicy() string {
-	r := *o.EfficiencyPolicyPtr
+	var r string
+	if o.EfficiencyPolicyPtr == nil {
+		return r
+	}
+	r = *o.EfficiencyPolicyPtr
 	return r
 }
 
@@ -307,7 +340,11 @@ func (o *VolumeCreateAsyncRequest) SetEfficiencyPolicy(newValue string) *VolumeC
 
 // EnableObjectStore is a 'getter' method
 func (o *VolumeCreateAsyncRequest) EnableObjectStore() bool {
-	r := *o.EnableObjectStorePtr
+	var r bool
+	if o.EnableObjectStorePtr == nil {
+		return r
+	}
+	r = *o.EnableObjectStorePtr
 	return r
 }
 
@@ -319,7 +356,11 @@ func (o *VolumeCreateAsyncRequest) SetEnableObjectStore(newValue bool) *VolumeCr
 
 // EnableSnapdiff is a 'getter' method
 func (o *VolumeCreateAsyncRequest) EnableSnapdiff() bool {
-	r := *o.EnableSnapdiffPtr
+	var r bool
+	if o.EnableSnapdiffPtr == nil {
+		return r
+	}
+	r = *o.EnableSnapdiffPtr
 	return r
 }
 
@@ -331,7 +372,11 @@ func (o *VolumeCreateAsyncRequest) SetEnableSnapdiff(newValue bool) *VolumeCreat
 
 // Encrypt is a 'getter' method
 func (o *VolumeCreateAsyncRequest) Encrypt() bool {
-	r := *o.EncryptPtr
+	var r bool
+	if o.EncryptPtr == nil {
+		return r
+	}
+	r = *o.EncryptPtr
 	return r
 }
 
@@ -343,7 +388,11 @@ func (o *VolumeCreateAsyncRequest) SetEncrypt(newValue bool) *VolumeCreateAsyncR
 
 // ExcludedFromAutobalance is a 'getter' method
 func (o *VolumeCreateAsyncRequest) ExcludedFromAutobalance() bool {
-	r := *o.ExcludedFromAutobalancePtr
+	var r bool
+	if o.ExcludedFromAutobalancePtr == nil {
+		return r
+	}
+	r = *o.ExcludedFromAutobalancePtr
 	return r
 }
 
@@ -355,7 +404,11 @@ func (o *VolumeCreateAsyncRequest) SetExcludedFromAutobalance(newValue bool) *Vo
 
 // ExportPolicy is a 'getter' method
 func (o *VolumeCreateAsyncRequest) ExportPolicy() string {
-	r := *o.ExportPolicyPtr
+	var r string
+	if o.ExportPolicyPtr == nil {
+		return r
+	}
+	r = *o.ExportPolicyPtr
 	return r
 }
 
@@ -367,7 +420,11 @@ func (o *VolumeCreateAsyncRequest) SetExportPolicy(newValue string) *VolumeCreat
 
 // FlexcacheCachePolicy is a 'getter' method
 func (o *VolumeCreateAsyncRequest) FlexcacheCachePolicy() string {
-	r := *o.FlexcacheCachePolicyPtr
+	var r string
+	if o.FlexcacheCachePolicyPtr == nil {
+		return r
+	}
+	r = *o.FlexcacheCachePolicyPtr
 	return r
 }
 
@@ -379,7 +436,11 @@ func (o *VolumeCreateAsyncRequest) SetFlexcacheCachePolicy(newValue string) *Vol
 
 // FlexcacheFillPolicy is a 'getter' method
 func (o *VolumeCreateAsyncRequest) FlexcacheFillPolicy() string {
-	r := *o.FlexcacheFillPolicyPtr
+	var r string
+	if o.FlexcacheFillPolicyPtr == nil {
+		return r
+	}
+	r = *o.FlexcacheFillPolicyPtr
 	return r
 }
 
@@ -391,7 +452,11 @@ func (o *VolumeCreateAsyncRequest) SetFlexcacheFillPolicy(newValue string) *Volu
 
 // FlexcacheOriginVolumeName is a 'getter' method
 func (o *VolumeCreateAsyncRequest) FlexcacheOriginVolumeName() string {
-	r := *o.FlexcacheOriginVolumeNamePtr
+	var r string
+	if o.FlexcacheOriginVolumeNamePtr == nil {
+		return r
+	}
+	r = *o.FlexcacheOriginVolumeNamePtr
 	return r
 }
 
@@ -403,7 +468,11 @@ func (o *VolumeCreateAsyncRequest) SetFlexcacheOriginVolumeName(newValue string)
 
 // GroupId is a 'getter' method
 func (o *VolumeCreateAsyncRequest) GroupId() int {
-	r := *o.GroupIdPtr
+	var r int
+	if o.GroupIdPtr == nil {
+		return r
+	}
+	r = *o.GroupIdPtr
 	return r
 }
 
@@ -415,7 +484,11 @@ func (o *VolumeCreateAsyncRequest) SetGroupId(newValue int) *VolumeCreateAsyncRe
 
 // IsJunctionActive is a 'getter' method
 func (o *VolumeCreateAsyncRequest) IsJunctionActive() bool {
-	r := *o.IsJunctionActivePtr
+	var r bool
+	if o.IsJunctionActivePtr == nil {
+		return r
+	}
+	r = *o.IsJunctionActivePtr
 	return r
 }
 
@@ -427,7 +500,11 @@ func (o *VolumeCreateAsyncRequest) SetIsJunctionActive(newValue bool) *VolumeCre
 
 // IsManagedByService is a 'getter' method
 func (o *VolumeCreateAsyncRequest) IsManagedByService() bool {
-	r := *o.IsManagedByServicePtr
+	var r bool
+	if o.IsManagedByServicePtr == nil {
+		return r
+	}
+	r = *o.IsManagedByServicePtr
 	return r
 }
 
@@ -439,7 +516,11 @@ func (o *VolumeCreateAsyncRequest) SetIsManagedByService(newValue bool) *VolumeC
 
 // IsNvfailEnabled is a 'getter' method
 func (o *VolumeCreateAsyncRequest) IsNvfailEnabled() bool {
-	r := *o.IsNvfailEnabledPtr
+	var r bool
+	if o.IsNvfailEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsNvfailEnabledPtr
 	return r
 }
 
@@ -451,7 +532,11 @@ func (o *VolumeCreateAsyncRequest) SetIsNvfailEnabled(newValue bool) *VolumeCrea
 
 // IsVserverRoot is a 'getter' method
 func (o *VolumeCreateAsyncRequest) IsVserverRoot() bool {
-	r := *o.IsVserverRootPtr
+	var r bool
+	if o.IsVserverRootPtr == nil {
+		return r
+	}
+	r = *o.IsVserverRootPtr
 	return r
 }
 
@@ -463,7 +548,11 @@ func (o *VolumeCreateAsyncRequest) SetIsVserverRoot(newValue bool) *VolumeCreate
 
 // JunctionPath is a 'getter' method
 func (o *VolumeCreateAsyncRequest) JunctionPath() string {
-	r := *o.JunctionPathPtr
+	var r string
+	if o.JunctionPathPtr == nil {
+		return r
+	}
+	r = *o.JunctionPathPtr
 	return r
 }
 
@@ -475,7 +564,11 @@ func (o *VolumeCreateAsyncRequest) SetJunctionPath(newValue string) *VolumeCreat
 
 // LanguageCode is a 'getter' method
 func (o *VolumeCreateAsyncRequest) LanguageCode() string {
-	r := *o.LanguageCodePtr
+	var r string
+	if o.LanguageCodePtr == nil {
+		return r
+	}
+	r = *o.LanguageCodePtr
 	return r
 }
 
@@ -487,7 +580,11 @@ func (o *VolumeCreateAsyncRequest) SetLanguageCode(newValue string) *VolumeCreat
 
 // MaxConstituentSize is a 'getter' method
 func (o *VolumeCreateAsyncRequest) MaxConstituentSize() int {
-	r := *o.MaxConstituentSizePtr
+	var r int
+	if o.MaxConstituentSizePtr == nil {
+		return r
+	}
+	r = *o.MaxConstituentSizePtr
 	return r
 }
 
@@ -499,7 +596,11 @@ func (o *VolumeCreateAsyncRequest) SetMaxConstituentSize(newValue int) *VolumeCr
 
 // MaxDataConstituentSize is a 'getter' method
 func (o *VolumeCreateAsyncRequest) MaxDataConstituentSize() int {
-	r := *o.MaxDataConstituentSizePtr
+	var r int
+	if o.MaxDataConstituentSizePtr == nil {
+		return r
+	}
+	r = *o.MaxDataConstituentSizePtr
 	return r
 }
 
@@ -511,7 +612,11 @@ func (o *VolumeCreateAsyncRequest) SetMaxDataConstituentSize(newValue int) *Volu
 
 // MaxDirSize is a 'getter' method
 func (o *VolumeCreateAsyncRequest) MaxDirSize() int {
-	r := *o.MaxDirSizePtr
+	var r int
+	if o.MaxDirSizePtr == nil {
+		return r
+	}
+	r = *o.MaxDirSizePtr
 	return r
 }
 
@@ -523,7 +628,11 @@ func (o *VolumeCreateAsyncRequest) SetMaxDirSize(newValue int) *VolumeCreateAsyn
 
 // MaxNamespaceConstituentSize is a 'getter' method
 func (o *VolumeCreateAsyncRequest) MaxNamespaceConstituentSize() int {
-	r := *o.MaxNamespaceConstituentSizePtr
+	var r int
+	if o.MaxNamespaceConstituentSizePtr == nil {
+		return r
+	}
+	r = *o.MaxNamespaceConstituentSizePtr
 	return r
 }
 
@@ -535,7 +644,11 @@ func (o *VolumeCreateAsyncRequest) SetMaxNamespaceConstituentSize(newValue int) 
 
 // NamespaceAggregate is a 'getter' method
 func (o *VolumeCreateAsyncRequest) NamespaceAggregate() string {
-	r := *o.NamespaceAggregatePtr
+	var r string
+	if o.NamespaceAggregatePtr == nil {
+		return r
+	}
+	r = *o.NamespaceAggregatePtr
 	return r
 }
 
@@ -572,7 +685,11 @@ func (o *VolumeCreateAsyncRequestNamespaceMirrorAggrList) SetAggrName(newValue [
 
 // NamespaceMirrorAggrList is a 'getter' method
 func (o *VolumeCreateAsyncRequest) NamespaceMirrorAggrList() VolumeCreateAsyncRequestNamespaceMirrorAggrList {
-	r := *o.NamespaceMirrorAggrListPtr
+	var r VolumeCreateAsyncRequestNamespaceMirrorAggrList
+	if o.NamespaceMirrorAggrListPtr == nil {
+		return r
+	}
+	r = *o.NamespaceMirrorAggrListPtr
 	return r
 }
 
@@ -584,7 +701,11 @@ func (o *VolumeCreateAsyncRequest) SetNamespaceMirrorAggrList(newValue VolumeCre
 
 // ObjectWriteSyncPeriod is a 'getter' method
 func (o *VolumeCreateAsyncRequest) ObjectWriteSyncPeriod() int {
-	r := *o.ObjectWriteSyncPeriodPtr
+	var r int
+	if o.ObjectWriteSyncPeriodPtr == nil {
+		return r
+	}
+	r = *o.ObjectWriteSyncPeriodPtr
 	return r
 }
 
@@ -621,7 +742,11 @@ func (o *VolumeCreateAsyncRequestOlsAggrList) SetAggrName(newValue []AggrNameTyp
 
 // OlsAggrList is a 'getter' method
 func (o *VolumeCreateAsyncRequest) OlsAggrList() VolumeCreateAsyncRequestOlsAggrList {
-	r := *o.OlsAggrListPtr
+	var r VolumeCreateAsyncRequestOlsAggrList
+	if o.OlsAggrListPtr == nil {
+		return r
+	}
+	r = *o.OlsAggrListPtr
 	return r
 }
 
@@ -633,7 +758,11 @@ func (o *VolumeCreateAsyncRequest) SetOlsAggrList(newValue VolumeCreateAsyncRequ
 
 // OlsConstituentCount is a 'getter' method
 func (o *VolumeCreateAsyncRequest) OlsConstituentCount() int {
-	r := *o.OlsConstituentCountPtr
+	var r int
+	if o.OlsConstituentCountPtr == nil {
+		return r
+	}
+	r = *o.OlsConstituentCountPtr
 	return r
 }
 
@@ -645,7 +774,11 @@ func (o *VolumeCreateAsyncRequest) SetOlsConstituentCount(newValue int) *VolumeC
 
 // OlsConstituentSize is a 'getter' method
 func (o *VolumeCreateAsyncRequest) OlsConstituentSize() int {
-	r := *o.OlsConstituentSizePtr
+	var r int
+	if o.OlsConstituentSizePtr == nil {
+		return r
+	}
+	r = *o.OlsConstituentSizePtr
 	return r
 }
 
@@ -657,7 +790,11 @@ func (o *VolumeCreateAsyncRequest) SetOlsConstituentSize(newValue int) *VolumeCr
 
 // PercentageSnapshotReserve is a 'getter' method
 func (o *VolumeCreateAsyncRequest) PercentageSnapshotReserve() int {
-	r := *o.PercentageSnapshotReservePtr
+	var r int
+	if o.PercentageSnapshotReservePtr == nil {
+		return r
+	}
+	r = *o.PercentageSnapshotReservePtr
 	return r
 }
 
@@ -669,7 +806,11 @@ func (o *VolumeCreateAsyncRequest) SetPercentageSnapshotReserve(newValue int) *V
 
 // QosAdaptivePolicyGroupName is a 'getter' method
 func (o *VolumeCreateAsyncRequest) QosAdaptivePolicyGroupName() string {
-	r := *o.QosAdaptivePolicyGroupNamePtr
+	var r string
+	if o.QosAdaptivePolicyGroupNamePtr == nil {
+		return r
+	}
+	r = *o.QosAdaptivePolicyGroupNamePtr
 	return r
 }
 
@@ -681,7 +822,11 @@ func (o *VolumeCreateAsyncRequest) SetQosAdaptivePolicyGroupName(newValue string
 
 // QosPolicyGroupName is a 'getter' method
 func (o *VolumeCreateAsyncRequest) QosPolicyGroupName() string {
-	r := *o.QosPolicyGroupNamePtr
+	var r string
+	if o.QosPolicyGroupNamePtr == nil {
+		return r
+	}
+	r = *o.QosPolicyGroupNamePtr
 	return r
 }
 
@@ -693,7 +838,11 @@ func (o *VolumeCreateAsyncRequest) SetQosPolicyGroupName(newValue string) *Volum
 
 // Size is a 'getter' method
 func (o *VolumeCreateAsyncRequest) Size() int {
-	r := *o.SizePtr
+	var r int
+	if o.SizePtr == nil {
+		return r
+	}
+	r = *o.SizePtr
 	return r
 }
 
@@ -705,7 +854,11 @@ func (o *VolumeCreateAsyncRequest) SetSize(newValue int) *VolumeCreateAsyncReque
 
 // SnapshotPolicy is a 'getter' method
 func (o *VolumeCreateAsyncRequest) SnapshotPolicy() string {
-	r := *o.SnapshotPolicyPtr
+	var r string
+	if o.SnapshotPolicyPtr == nil {
+		return r
+	}
+	r = *o.SnapshotPolicyPtr
 	return r
 }
 
@@ -717,7 +870,11 @@ func (o *VolumeCreateAsyncRequest) SetSnapshotPolicy(newValue string) *VolumeCre
 
 // SpaceGuarantee is a 'getter' method
 func (o *VolumeCreateAsyncRequest) SpaceGuarantee() string {
-	r := *o.SpaceGuaranteePtr
+	var r string
+	if o.SpaceGuaranteePtr == nil {
+		return r
+	}
+	r = *o.SpaceGuaranteePtr
 	return r
 }
 
@@ -729,7 +886,11 @@ func (o *VolumeCreateAsyncRequest) SetSpaceGuarantee(newValue string) *VolumeCre
 
 // SpaceReserve is a 'getter' method
 func (o *VolumeCreateAsyncRequest) SpaceReserve() string {
-	r := *o.SpaceReservePtr
+	var r string
+	if o.SpaceReservePtr == nil {
+		return r
+	}
+	r = *o.SpaceReservePtr
 	return r
 }
 
@@ -741,7 +902,11 @@ func (o *VolumeCreateAsyncRequest) SetSpaceReserve(newValue string) *VolumeCreat
 
 // SpaceSlo is a 'getter' method
 func (o *VolumeCreateAsyncRequest) SpaceSlo() string {
-	r := *o.SpaceSloPtr
+	var r string
+	if o.SpaceSloPtr == nil {
+		return r
+	}
+	r = *o.SpaceSloPtr
 	return r
 }
 
@@ -753,7 +918,11 @@ func (o *VolumeCreateAsyncRequest) SetSpaceSlo(newValue string) *VolumeCreateAsy
 
 // StorageService is a 'getter' method
 func (o *VolumeCreateAsyncRequest) StorageService() string {
-	r := *o.StorageServicePtr
+	var r string
+	if o.StorageServicePtr == nil {
+		return r
+	}
+	r = *o.StorageServicePtr
 	return r
 }
 
@@ -765,7 +934,11 @@ func (o *VolumeCreateAsyncRequest) SetStorageService(newValue string) *VolumeCre
 
 // TieringPolicy is a 'getter' method
 func (o *VolumeCreateAsyncRequest) TieringPolicy() string {
-	r := *o.TieringPolicyPtr
+	var r string
+	if o.TieringPolicyPtr == nil {
+		return r
+	}
+	r = *o.TieringPolicyPtr
 	return r
 }
 
@@ -777,7 +950,11 @@ func (o *VolumeCreateAsyncRequest) SetTieringPolicy(newValue string) *VolumeCrea
 
 // UnixPermissions is a 'getter' method
 func (o *VolumeCreateAsyncRequest) UnixPermissions() string {
-	r := *o.UnixPermissionsPtr
+	var r string
+	if o.UnixPermissionsPtr == nil {
+		return r
+	}
+	r = *o.UnixPermissionsPtr
 	return r
 }
 
@@ -789,7 +966,11 @@ func (o *VolumeCreateAsyncRequest) SetUnixPermissions(newValue string) *VolumeCr
 
 // UserId is a 'getter' method
 func (o *VolumeCreateAsyncRequest) UserId() int {
-	r := *o.UserIdPtr
+	var r int
+	if o.UserIdPtr == nil {
+		return r
+	}
+	r = *o.UserIdPtr
 	return r
 }
 
@@ -801,7 +982,11 @@ func (o *VolumeCreateAsyncRequest) SetUserId(newValue int) *VolumeCreateAsyncReq
 
 // VmAlignSector is a 'getter' method
 func (o *VolumeCreateAsyncRequest) VmAlignSector() int {
-	r := *o.VmAlignSectorPtr
+	var r int
+	if o.VmAlignSectorPtr == nil {
+		return r
+	}
+	r = *o.VmAlignSectorPtr
 	return r
 }
 
@@ -813,7 +998,11 @@ func (o *VolumeCreateAsyncRequest) SetVmAlignSector(newValue int) *VolumeCreateA
 
 // VmAlignSuffix is a 'getter' method
 func (o *VolumeCreateAsyncRequest) VmAlignSuffix() string {
-	r := *o.VmAlignSuffixPtr
+	var r string
+	if o.VmAlignSuffixPtr == nil {
+		return r
+	}
+	r = *o.VmAlignSuffixPtr
 	return r
 }
 
@@ -825,7 +1014,11 @@ func (o *VolumeCreateAsyncRequest) SetVmAlignSuffix(newValue string) *VolumeCrea
 
 // VolumeComment is a 'getter' method
 func (o *VolumeCreateAsyncRequest) VolumeComment() string {
-	r := *o.VolumeCommentPtr
+	var r string
+	if o.VolumeCommentPtr == nil {
+		return r
+	}
+	r = *o.VolumeCommentPtr
 	return r
 }
 
@@ -837,7 +1030,11 @@ func (o *VolumeCreateAsyncRequest) SetVolumeComment(newValue string) *VolumeCrea
 
 // VolumeName is a 'getter' method
 func (o *VolumeCreateAsyncRequest) VolumeName() string {
-	r := *o.VolumeNamePtr
+	var r string
+	if o.VolumeNamePtr == nil {
+		return r
+	}
+	r = *o.VolumeNamePtr
 	return r
 }
 
@@ -849,7 +1046,11 @@ func (o *VolumeCreateAsyncRequest) SetVolumeName(newValue string) *VolumeCreateA
 
 // VolumeSecurityStyle is a 'getter' method
 func (o *VolumeCreateAsyncRequest) VolumeSecurityStyle() string {
-	r := *o.VolumeSecurityStylePtr
+	var r string
+	if o.VolumeSecurityStylePtr == nil {
+		return r
+	}
+	r = *o.VolumeSecurityStylePtr
 	return r
 }
 
@@ -861,7 +1062,11 @@ func (o *VolumeCreateAsyncRequest) SetVolumeSecurityStyle(newValue string) *Volu
 
 // VolumeState is a 'getter' method
 func (o *VolumeCreateAsyncRequest) VolumeState() string {
-	r := *o.VolumeStatePtr
+	var r string
+	if o.VolumeStatePtr == nil {
+		return r
+	}
+	r = *o.VolumeStatePtr
 	return r
 }
 
@@ -873,7 +1078,11 @@ func (o *VolumeCreateAsyncRequest) SetVolumeState(newValue string) *VolumeCreate
 
 // VolumeType is a 'getter' method
 func (o *VolumeCreateAsyncRequest) VolumeType() string {
-	r := *o.VolumeTypePtr
+	var r string
+	if o.VolumeTypePtr == nil {
+		return r
+	}
+	r = *o.VolumeTypePtr
 	return r
 }
 
@@ -885,7 +1094,11 @@ func (o *VolumeCreateAsyncRequest) SetVolumeType(newValue string) *VolumeCreateA
 
 // VserverDrProtection is a 'getter' method
 func (o *VolumeCreateAsyncRequest) VserverDrProtection() string {
-	r := *o.VserverDrProtectionPtr
+	var r string
+	if o.VserverDrProtectionPtr == nil {
+		return r
+	}
+	r = *o.VserverDrProtectionPtr
 	return r
 }
 
@@ -897,7 +1110,11 @@ func (o *VolumeCreateAsyncRequest) SetVserverDrProtection(newValue string) *Volu
 
 // ResultErrorCode is a 'getter' method
 func (o *VolumeCreateAsyncResponseResult) ResultErrorCode() int {
-	r := *o.ResultErrorCodePtr
+	var r int
+	if o.ResultErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorCodePtr
 	return r
 }
 
@@ -909,7 +1126,11 @@ func (o *VolumeCreateAsyncResponseResult) SetResultErrorCode(newValue int) *Volu
 
 // ResultErrorMessage is a 'getter' method
 func (o *VolumeCreateAsyncResponseResult) ResultErrorMessage() string {
-	r := *o.ResultErrorMessagePtr
+	var r string
+	if o.ResultErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorMessagePtr
 	return r
 }
 
@@ -921,7 +1142,11 @@ func (o *VolumeCreateAsyncResponseResult) SetResultErrorMessage(newValue string)
 
 // ResultJobid is a 'getter' method
 func (o *VolumeCreateAsyncResponseResult) ResultJobid() int {
-	r := *o.ResultJobidPtr
+	var r int
+	if o.ResultJobidPtr == nil {
+		return r
+	}
+	r = *o.ResultJobidPtr
 	return r
 }
 
@@ -933,7 +1158,11 @@ func (o *VolumeCreateAsyncResponseResult) SetResultJobid(newValue int) *VolumeCr
 
 // ResultStatus is a 'getter' method
 func (o *VolumeCreateAsyncResponseResult) ResultStatus() string {
-	r := *o.ResultStatusPtr
+	var r string
+	if o.ResultStatusPtr == nil {
+		return r
+	}
+	r = *o.ResultStatusPtr
 	return r
 }
 

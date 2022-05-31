@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunMoveRequest is a structure to represent a lun-move Request ZAPI object
@@ -106,7 +107,11 @@ func (o *LunMoveRequest) executeWithoutIteration(zr *ZapiRunner) (*LunMoveRespon
 
 // NewPath is a 'getter' method
 func (o *LunMoveRequest) NewPath() string {
-	r := *o.NewPathPtr
+	var r string
+	if o.NewPathPtr == nil {
+		return r
+	}
+	r = *o.NewPathPtr
 	return r
 }
 
@@ -118,7 +123,11 @@ func (o *LunMoveRequest) SetNewPath(newValue string) *LunMoveRequest {
 
 // Path is a 'getter' method
 func (o *LunMoveRequest) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 

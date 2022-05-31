@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // QuotaListEntriesIterRequest is a structure to represent a quota-list-entries-iter Request ZAPI object
@@ -178,7 +179,11 @@ func (o QuotaListEntriesIterRequestDesiredAttributes) String() string {
 
 // QuotaEntry is a 'getter' method
 func (o *QuotaListEntriesIterRequestDesiredAttributes) QuotaEntry() QuotaEntryType {
-	r := *o.QuotaEntryPtr
+	var r QuotaEntryType
+	if o.QuotaEntryPtr == nil {
+		return r
+	}
+	r = *o.QuotaEntryPtr
 	return r
 }
 
@@ -190,7 +195,11 @@ func (o *QuotaListEntriesIterRequestDesiredAttributes) SetQuotaEntry(newValue Qu
 
 // DesiredAttributes is a 'getter' method
 func (o *QuotaListEntriesIterRequest) DesiredAttributes() QuotaListEntriesIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r QuotaListEntriesIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -202,7 +211,11 @@ func (o *QuotaListEntriesIterRequest) SetDesiredAttributes(newValue QuotaListEnt
 
 // MaxRecords is a 'getter' method
 func (o *QuotaListEntriesIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -225,7 +238,11 @@ func (o QuotaListEntriesIterRequestQuery) String() string {
 
 // QuotaEntry is a 'getter' method
 func (o *QuotaListEntriesIterRequestQuery) QuotaEntry() QuotaEntryType {
-	r := *o.QuotaEntryPtr
+	var r QuotaEntryType
+	if o.QuotaEntryPtr == nil {
+		return r
+	}
+	r = *o.QuotaEntryPtr
 	return r
 }
 
@@ -237,7 +254,11 @@ func (o *QuotaListEntriesIterRequestQuery) SetQuotaEntry(newValue QuotaEntryType
 
 // Query is a 'getter' method
 func (o *QuotaListEntriesIterRequest) Query() QuotaListEntriesIterRequestQuery {
-	r := *o.QueryPtr
+	var r QuotaListEntriesIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -249,7 +270,11 @@ func (o *QuotaListEntriesIterRequest) SetQuery(newValue QuotaListEntriesIterRequ
 
 // Tag is a 'getter' method
 func (o *QuotaListEntriesIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -300,7 +325,11 @@ func (o *QuotaListEntriesIterResponseResultAttributesList) setValues(newValue []
 
 // AttributesList is a 'getter' method
 func (o *QuotaListEntriesIterResponseResult) AttributesList() QuotaListEntriesIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r QuotaListEntriesIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -312,7 +341,11 @@ func (o *QuotaListEntriesIterResponseResult) SetAttributesList(newValue QuotaLis
 
 // NextTag is a 'getter' method
 func (o *QuotaListEntriesIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -324,7 +357,11 @@ func (o *QuotaListEntriesIterResponseResult) SetNextTag(newValue string) *QuotaL
 
 // NumRecords is a 'getter' method
 func (o *QuotaListEntriesIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

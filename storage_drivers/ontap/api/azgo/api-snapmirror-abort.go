@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorAbortRequest is a structure to represent a snapmirror-abort Request ZAPI object
@@ -13,11 +14,9 @@ type SnapmirrorAbortRequest struct {
 	XMLName                xml.Name `xml:"snapmirror-abort"`
 	CheckOnlyPtr           *bool    `xml:"check-only"`
 	ClearCheckpointPtr     *bool    `xml:"clear-checkpoint"`
-	DestinationClusterPtr  *string  `xml:"destination-cluster"`
 	DestinationLocationPtr *string  `xml:"destination-location"`
 	DestinationVolumePtr   *string  `xml:"destination-volume"`
 	DestinationVserverPtr  *string  `xml:"destination-vserver"`
-	SourceClusterPtr       *string  `xml:"source-cluster"`
 	SourceLocationPtr      *string  `xml:"source-location"`
 	SourceVolumePtr        *string  `xml:"source-volume"`
 	SourceVserverPtr       *string  `xml:"source-vserver"`
@@ -115,7 +114,11 @@ func (o *SnapmirrorAbortRequest) executeWithoutIteration(zr *ZapiRunner) (*Snapm
 
 // CheckOnly is a 'getter' method
 func (o *SnapmirrorAbortRequest) CheckOnly() bool {
-	r := *o.CheckOnlyPtr
+	var r bool
+	if o.CheckOnlyPtr == nil {
+		return r
+	}
+	r = *o.CheckOnlyPtr
 	return r
 }
 
@@ -127,7 +130,11 @@ func (o *SnapmirrorAbortRequest) SetCheckOnly(newValue bool) *SnapmirrorAbortReq
 
 // ClearCheckpoint is a 'getter' method
 func (o *SnapmirrorAbortRequest) ClearCheckpoint() bool {
-	r := *o.ClearCheckpointPtr
+	var r bool
+	if o.ClearCheckpointPtr == nil {
+		return r
+	}
+	r = *o.ClearCheckpointPtr
 	return r
 }
 
@@ -137,21 +144,13 @@ func (o *SnapmirrorAbortRequest) SetClearCheckpoint(newValue bool) *SnapmirrorAb
 	return o
 }
 
-// DestinationCluster is a 'getter' method
-func (o *SnapmirrorAbortRequest) DestinationCluster() string {
-	r := *o.DestinationClusterPtr
-	return r
-}
-
-// SetDestinationCluster is a fluent style 'setter' method that can be chained
-func (o *SnapmirrorAbortRequest) SetDestinationCluster(newValue string) *SnapmirrorAbortRequest {
-	o.DestinationClusterPtr = &newValue
-	return o
-}
-
 // DestinationLocation is a 'getter' method
 func (o *SnapmirrorAbortRequest) DestinationLocation() string {
-	r := *o.DestinationLocationPtr
+	var r string
+	if o.DestinationLocationPtr == nil {
+		return r
+	}
+	r = *o.DestinationLocationPtr
 	return r
 }
 
@@ -163,7 +162,11 @@ func (o *SnapmirrorAbortRequest) SetDestinationLocation(newValue string) *Snapmi
 
 // DestinationVolume is a 'getter' method
 func (o *SnapmirrorAbortRequest) DestinationVolume() string {
-	r := *o.DestinationVolumePtr
+	var r string
+	if o.DestinationVolumePtr == nil {
+		return r
+	}
+	r = *o.DestinationVolumePtr
 	return r
 }
 
@@ -175,7 +178,11 @@ func (o *SnapmirrorAbortRequest) SetDestinationVolume(newValue string) *Snapmirr
 
 // DestinationVserver is a 'getter' method
 func (o *SnapmirrorAbortRequest) DestinationVserver() string {
-	r := *o.DestinationVserverPtr
+	var r string
+	if o.DestinationVserverPtr == nil {
+		return r
+	}
+	r = *o.DestinationVserverPtr
 	return r
 }
 
@@ -185,21 +192,13 @@ func (o *SnapmirrorAbortRequest) SetDestinationVserver(newValue string) *Snapmir
 	return o
 }
 
-// SourceCluster is a 'getter' method
-func (o *SnapmirrorAbortRequest) SourceCluster() string {
-	r := *o.SourceClusterPtr
-	return r
-}
-
-// SetSourceCluster is a fluent style 'setter' method that can be chained
-func (o *SnapmirrorAbortRequest) SetSourceCluster(newValue string) *SnapmirrorAbortRequest {
-	o.SourceClusterPtr = &newValue
-	return o
-}
-
 // SourceLocation is a 'getter' method
 func (o *SnapmirrorAbortRequest) SourceLocation() string {
-	r := *o.SourceLocationPtr
+	var r string
+	if o.SourceLocationPtr == nil {
+		return r
+	}
+	r = *o.SourceLocationPtr
 	return r
 }
 
@@ -211,7 +210,11 @@ func (o *SnapmirrorAbortRequest) SetSourceLocation(newValue string) *SnapmirrorA
 
 // SourceVolume is a 'getter' method
 func (o *SnapmirrorAbortRequest) SourceVolume() string {
-	r := *o.SourceVolumePtr
+	var r string
+	if o.SourceVolumePtr == nil {
+		return r
+	}
+	r = *o.SourceVolumePtr
 	return r
 }
 
@@ -223,7 +226,11 @@ func (o *SnapmirrorAbortRequest) SetSourceVolume(newValue string) *SnapmirrorAbo
 
 // SourceVserver is a 'getter' method
 func (o *SnapmirrorAbortRequest) SourceVserver() string {
-	r := *o.SourceVserverPtr
+	var r string
+	if o.SourceVserverPtr == nil {
+		return r
+	}
+	r = *o.SourceVserverPtr
 	return r
 }
 
@@ -235,7 +242,11 @@ func (o *SnapmirrorAbortRequest) SetSourceVserver(newValue string) *SnapmirrorAb
 
 // ResultOperationId is a 'getter' method
 func (o *SnapmirrorAbortResponseResult) ResultOperationId() string {
-	r := *o.ResultOperationIdPtr
+	var r string
+	if o.ResultOperationIdPtr == nil {
+		return r
+	}
+	r = *o.ResultOperationIdPtr
 	return r
 }
 

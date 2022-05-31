@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiSecurityEntryInfoType is a structure to represent a iscsi-security-entry-info ZAPI object
@@ -42,7 +43,11 @@ func (o IscsiSecurityEntryInfoType) String() string {
 
 // AuthChapPolicy is a 'getter' method
 func (o *IscsiSecurityEntryInfoType) AuthChapPolicy() string {
-	r := *o.AuthChapPolicyPtr
+	var r string
+	if o.AuthChapPolicyPtr == nil {
+		return r
+	}
+	r = *o.AuthChapPolicyPtr
 	return r
 }
 
@@ -54,7 +59,11 @@ func (o *IscsiSecurityEntryInfoType) SetAuthChapPolicy(newValue string) *IscsiSe
 
 // AuthType is a 'getter' method
 func (o *IscsiSecurityEntryInfoType) AuthType() string {
-	r := *o.AuthTypePtr
+	var r string
+	if o.AuthTypePtr == nil {
+		return r
+	}
+	r = *o.AuthTypePtr
 	return r
 }
 
@@ -66,7 +75,11 @@ func (o *IscsiSecurityEntryInfoType) SetAuthType(newValue string) *IscsiSecurity
 
 // Initiator is a 'getter' method
 func (o *IscsiSecurityEntryInfoType) Initiator() string {
-	r := *o.InitiatorPtr
+	var r string
+	if o.InitiatorPtr == nil {
+		return r
+	}
+	r = *o.InitiatorPtr
 	return r
 }
 
@@ -98,7 +111,11 @@ func (o *IscsiSecurityEntryInfoTypeInitiatorAddressRanges) SetIpRangeOrMask(newV
 
 // InitiatorAddressRanges is a 'getter' method
 func (o *IscsiSecurityEntryInfoType) InitiatorAddressRanges() IscsiSecurityEntryInfoTypeInitiatorAddressRanges {
-	r := *o.InitiatorAddressRangesPtr
+	var r IscsiSecurityEntryInfoTypeInitiatorAddressRanges
+	if o.InitiatorAddressRangesPtr == nil {
+		return r
+	}
+	r = *o.InitiatorAddressRangesPtr
 	return r
 }
 
@@ -110,7 +127,11 @@ func (o *IscsiSecurityEntryInfoType) SetInitiatorAddressRanges(newValue IscsiSec
 
 // OutboundUserName is a 'getter' method
 func (o *IscsiSecurityEntryInfoType) OutboundUserName() string {
-	r := *o.OutboundUserNamePtr
+	var r string
+	if o.OutboundUserNamePtr == nil {
+		return r
+	}
+	r = *o.OutboundUserNamePtr
 	return r
 }
 
@@ -122,7 +143,11 @@ func (o *IscsiSecurityEntryInfoType) SetOutboundUserName(newValue string) *Iscsi
 
 // UserName is a 'getter' method
 func (o *IscsiSecurityEntryInfoType) UserName() string {
-	r := *o.UserNamePtr
+	var r string
+	if o.UserNamePtr == nil {
+		return r
+	}
+	r = *o.UserNamePtr
 	return r
 }
 
@@ -134,7 +159,11 @@ func (o *IscsiSecurityEntryInfoType) SetUserName(newValue string) *IscsiSecurity
 
 // Vserver is a 'getter' method
 func (o *IscsiSecurityEntryInfoType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

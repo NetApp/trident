@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SystemGetVersionRequest is a structure to represent a system-get-version Request ZAPI object
@@ -109,7 +110,11 @@ func (o *SystemGetVersionRequest) executeWithoutIteration(zr *ZapiRunner) (*Syst
 
 // BuildTimestamp is a 'getter' method
 func (o *SystemGetVersionResponseResult) BuildTimestamp() int {
-	r := *o.BuildTimestampPtr
+	var r int
+	if o.BuildTimestampPtr == nil {
+		return r
+	}
+	r = *o.BuildTimestampPtr
 	return r
 }
 
@@ -121,7 +126,11 @@ func (o *SystemGetVersionResponseResult) SetBuildTimestamp(newValue int) *System
 
 // IsClustered is a 'getter' method
 func (o *SystemGetVersionResponseResult) IsClustered() bool {
-	r := *o.IsClusteredPtr
+	var r bool
+	if o.IsClusteredPtr == nil {
+		return r
+	}
+	r = *o.IsClusteredPtr
 	return r
 }
 
@@ -172,7 +181,11 @@ func (o *SystemGetVersionResponseResultNodeVersionDetails) setValues(newValue []
 
 // NodeVersionDetails is a 'getter' method
 func (o *SystemGetVersionResponseResult) NodeVersionDetails() SystemGetVersionResponseResultNodeVersionDetails {
-	r := *o.NodeVersionDetailsPtr
+	var r SystemGetVersionResponseResultNodeVersionDetails
+	if o.NodeVersionDetailsPtr == nil {
+		return r
+	}
+	r = *o.NodeVersionDetailsPtr
 	return r
 }
 
@@ -184,7 +197,11 @@ func (o *SystemGetVersionResponseResult) SetNodeVersionDetails(newValue SystemGe
 
 // Version is a 'getter' method
 func (o *SystemGetVersionResponseResult) Version() string {
-	r := *o.VersionPtr
+	var r string
+	if o.VersionPtr == nil {
+		return r
+	}
+	r = *o.VersionPtr
 	return r
 }
 
@@ -207,7 +224,11 @@ func (o SystemGetVersionResponseResultVersionTuple) String() string {
 
 // SystemVersionTuple is a 'getter' method
 func (o *SystemGetVersionResponseResultVersionTuple) SystemVersionTuple() SystemVersionTupleType {
-	r := *o.SystemVersionTuplePtr
+	var r SystemVersionTupleType
+	if o.SystemVersionTuplePtr == nil {
+		return r
+	}
+	r = *o.SystemVersionTuplePtr
 	return r
 }
 
@@ -219,7 +240,11 @@ func (o *SystemGetVersionResponseResultVersionTuple) SetSystemVersionTuple(newVa
 
 // values is a 'getter' method
 func (o *SystemGetVersionResponseResultVersionTuple) values() SystemVersionTupleType {
-	r := *o.SystemVersionTuplePtr
+	var r SystemVersionTupleType
+	if o.SystemVersionTuplePtr == nil {
+		return r
+	}
+	r = *o.SystemVersionTuplePtr
 	return r
 }
 
@@ -231,7 +256,11 @@ func (o *SystemGetVersionResponseResultVersionTuple) setValues(newValue SystemVe
 
 // VersionTuple is a 'getter' method
 func (o *SystemGetVersionResponseResult) VersionTuple() SystemGetVersionResponseResultVersionTuple {
-	r := *o.VersionTuplePtr
+	var r SystemGetVersionResponseResultVersionTuple
+	if o.VersionTuplePtr == nil {
+		return r
+	}
+	r = *o.VersionTuplePtr
 	return r
 }
 

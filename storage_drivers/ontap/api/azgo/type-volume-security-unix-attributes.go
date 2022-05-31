@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeSecurityUnixAttributesType is a structure to represent a volume-security-unix-attributes ZAPI object
@@ -37,7 +38,11 @@ func (o VolumeSecurityUnixAttributesType) String() string {
 
 // GroupId is a 'getter' method
 func (o *VolumeSecurityUnixAttributesType) GroupId() int {
-	r := *o.GroupIdPtr
+	var r int
+	if o.GroupIdPtr == nil {
+		return r
+	}
+	r = *o.GroupIdPtr
 	return r
 }
 
@@ -49,7 +54,11 @@ func (o *VolumeSecurityUnixAttributesType) SetGroupId(newValue int) *VolumeSecur
 
 // Permissions is a 'getter' method
 func (o *VolumeSecurityUnixAttributesType) Permissions() string {
-	r := *o.PermissionsPtr
+	var r string
+	if o.PermissionsPtr == nil {
+		return r
+	}
+	r = *o.PermissionsPtr
 	return r
 }
 
@@ -61,7 +70,11 @@ func (o *VolumeSecurityUnixAttributesType) SetPermissions(newValue string) *Volu
 
 // UserId is a 'getter' method
 func (o *VolumeSecurityUnixAttributesType) UserId() int {
-	r := *o.UserIdPtr
+	var r int
+	if o.UserIdPtr == nil {
+		return r
+	}
+	r = *o.UserIdPtr
 	return r
 }
 

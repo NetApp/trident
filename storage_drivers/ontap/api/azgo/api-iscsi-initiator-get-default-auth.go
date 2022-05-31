@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiInitiatorGetDefaultAuthRequest is a structure to represent a iscsi-initiator-get-default-auth Request ZAPI object
@@ -108,7 +109,11 @@ func (o *IscsiInitiatorGetDefaultAuthRequest) executeWithoutIteration(zr *ZapiRu
 
 // AuthChapPolicy is a 'getter' method
 func (o *IscsiInitiatorGetDefaultAuthResponseResult) AuthChapPolicy() string {
-	r := *o.AuthChapPolicyPtr
+	var r string
+	if o.AuthChapPolicyPtr == nil {
+		return r
+	}
+	r = *o.AuthChapPolicyPtr
 	return r
 }
 
@@ -120,7 +125,11 @@ func (o *IscsiInitiatorGetDefaultAuthResponseResult) SetAuthChapPolicy(newValue 
 
 // AuthType is a 'getter' method
 func (o *IscsiInitiatorGetDefaultAuthResponseResult) AuthType() string {
-	r := *o.AuthTypePtr
+	var r string
+	if o.AuthTypePtr == nil {
+		return r
+	}
+	r = *o.AuthTypePtr
 	return r
 }
 
@@ -132,7 +141,11 @@ func (o *IscsiInitiatorGetDefaultAuthResponseResult) SetAuthType(newValue string
 
 // OutboundUserName is a 'getter' method
 func (o *IscsiInitiatorGetDefaultAuthResponseResult) OutboundUserName() string {
-	r := *o.OutboundUserNamePtr
+	var r string
+	if o.OutboundUserNamePtr == nil {
+		return r
+	}
+	r = *o.OutboundUserNamePtr
 	return r
 }
 
@@ -144,7 +157,11 @@ func (o *IscsiInitiatorGetDefaultAuthResponseResult) SetOutboundUserName(newValu
 
 // UserName is a 'getter' method
 func (o *IscsiInitiatorGetDefaultAuthResponseResult) UserName() string {
-	r := *o.UserNamePtr
+	var r string
+	if o.UserNamePtr == nil {
+		return r
+	}
+	r = *o.UserNamePtr
 	return r
 }
 

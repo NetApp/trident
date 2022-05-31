@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorPolicyRuleInfoType is a structure to represent a snapmirror-policy-rule-info ZAPI object
@@ -40,13 +41,11 @@ func (o SnapmirrorPolicyRuleInfoType) String() string {
 
 // Keep is a 'getter' method
 func (o *SnapmirrorPolicyRuleInfoType) Keep() string {
-
 	var r string
 	if o.KeepPtr == nil {
 		return r
 	}
 	r = *o.KeepPtr
-
 	return r
 }
 
@@ -58,13 +57,11 @@ func (o *SnapmirrorPolicyRuleInfoType) SetKeep(newValue string) *SnapmirrorPolic
 
 // Prefix is a 'getter' method
 func (o *SnapmirrorPolicyRuleInfoType) Prefix() string {
-
 	var r string
 	if o.PrefixPtr == nil {
 		return r
 	}
 	r = *o.PrefixPtr
-
 	return r
 }
 
@@ -76,13 +73,11 @@ func (o *SnapmirrorPolicyRuleInfoType) SetPrefix(newValue string) *SnapmirrorPol
 
 // Preserve is a 'getter' method
 func (o *SnapmirrorPolicyRuleInfoType) Preserve() bool {
-
 	var r bool
 	if o.PreservePtr == nil {
 		return r
 	}
 	r = *o.PreservePtr
-
 	return r
 }
 
@@ -94,13 +89,11 @@ func (o *SnapmirrorPolicyRuleInfoType) SetPreserve(newValue bool) *SnapmirrorPol
 
 // Schedule is a 'getter' method
 func (o *SnapmirrorPolicyRuleInfoType) Schedule() string {
-
 	var r string
 	if o.SchedulePtr == nil {
 		return r
 	}
 	r = *o.SchedulePtr
-
 	return r
 }
 
@@ -112,13 +105,11 @@ func (o *SnapmirrorPolicyRuleInfoType) SetSchedule(newValue string) *SnapmirrorP
 
 // SnapmirrorLabel is a 'getter' method
 func (o *SnapmirrorPolicyRuleInfoType) SnapmirrorLabel() string {
-
 	var r string
 	if o.SnapmirrorLabelPtr == nil {
 		return r
 	}
 	r = *o.SnapmirrorLabelPtr
-
 	return r
 }
 
@@ -130,13 +121,11 @@ func (o *SnapmirrorPolicyRuleInfoType) SetSnapmirrorLabel(newValue string) *Snap
 
 // Warn is a 'getter' method
 func (o *SnapmirrorPolicyRuleInfoType) Warn() int {
-
 	var r int
 	if o.WarnPtr == nil {
 		return r
 	}
 	r = *o.WarnPtr
-
 	return r
 }
 

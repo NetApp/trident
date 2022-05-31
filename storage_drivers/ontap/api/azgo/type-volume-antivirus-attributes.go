@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeAntivirusAttributesType is a structure to represent a volume-antivirus-attributes ZAPI object
@@ -35,7 +36,11 @@ func (o VolumeAntivirusAttributesType) String() string {
 
 // OnAccessPolicy is a 'getter' method
 func (o *VolumeAntivirusAttributesType) OnAccessPolicy() string {
-	r := *o.OnAccessPolicyPtr
+	var r string
+	if o.OnAccessPolicyPtr == nil {
+		return r
+	}
+	r = *o.OnAccessPolicyPtr
 	return r
 }
 

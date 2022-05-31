@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunGetSerialNumberRequest is a structure to represent a lun-get-serial-number Request ZAPI object
@@ -106,7 +107,11 @@ func (o *LunGetSerialNumberRequest) executeWithoutIteration(zr *ZapiRunner) (*Lu
 
 // Path is a 'getter' method
 func (o *LunGetSerialNumberRequest) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 
@@ -118,7 +123,11 @@ func (o *LunGetSerialNumberRequest) SetPath(newValue string) *LunGetSerialNumber
 
 // SerialNumber is a 'getter' method
 func (o *LunGetSerialNumberResponseResult) SerialNumber() string {
-	r := *o.SerialNumberPtr
+	var r string
+	if o.SerialNumberPtr == nil {
+		return r
+	}
+	r = *o.SerialNumberPtr
 	return r
 }
 

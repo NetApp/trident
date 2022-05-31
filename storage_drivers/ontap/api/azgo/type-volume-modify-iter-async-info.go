@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeModifyIterAsyncInfoType is a structure to represent a volume-modify-iter-async-info ZAPI object
@@ -40,7 +41,11 @@ func (o VolumeModifyIterAsyncInfoType) String() string {
 
 // ErrorCode is a 'getter' method
 func (o *VolumeModifyIterAsyncInfoType) ErrorCode() int {
-	r := *o.ErrorCodePtr
+	var r int
+	if o.ErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ErrorCodePtr
 	return r
 }
 
@@ -52,7 +57,11 @@ func (o *VolumeModifyIterAsyncInfoType) SetErrorCode(newValue int) *VolumeModify
 
 // ErrorMessage is a 'getter' method
 func (o *VolumeModifyIterAsyncInfoType) ErrorMessage() string {
-	r := *o.ErrorMessagePtr
+	var r string
+	if o.ErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ErrorMessagePtr
 	return r
 }
 
@@ -64,7 +73,11 @@ func (o *VolumeModifyIterAsyncInfoType) SetErrorMessage(newValue string) *Volume
 
 // Jobid is a 'getter' method
 func (o *VolumeModifyIterAsyncInfoType) Jobid() int {
-	r := *o.JobidPtr
+	var r int
+	if o.JobidPtr == nil {
+		return r
+	}
+	r = *o.JobidPtr
 	return r
 }
 
@@ -76,7 +89,11 @@ func (o *VolumeModifyIterAsyncInfoType) SetJobid(newValue int) *VolumeModifyIter
 
 // Status is a 'getter' method
 func (o *VolumeModifyIterAsyncInfoType) Status() string {
-	r := *o.StatusPtr
+	var r string
+	if o.StatusPtr == nil {
+		return r
+	}
+	r = *o.StatusPtr
 	return r
 }
 
@@ -94,7 +111,11 @@ type VolumeModifyIterAsyncInfoTypeVolumeKey struct {
 
 // VolumeAttributes is a 'getter' method
 func (o *VolumeModifyIterAsyncInfoTypeVolumeKey) VolumeAttributes() VolumeAttributesType {
-	r := *o.VolumeAttributesPtr
+	var r VolumeAttributesType
+	if o.VolumeAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeAttributesPtr
 	return r
 }
 
@@ -106,7 +127,11 @@ func (o *VolumeModifyIterAsyncInfoTypeVolumeKey) SetVolumeAttributes(newValue Vo
 
 // VolumeKey is a 'getter' method
 func (o *VolumeModifyIterAsyncInfoType) VolumeKey() VolumeModifyIterAsyncInfoTypeVolumeKey {
-	r := *o.VolumeKeyPtr
+	var r VolumeModifyIterAsyncInfoTypeVolumeKey
+	if o.VolumeKeyPtr == nil {
+		return r
+	}
+	r = *o.VolumeKeyPtr
 	return r
 }
 

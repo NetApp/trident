@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // JobScheduleInfoType is a structure to represent a job-schedule-info ZAPI object
@@ -38,13 +39,11 @@ func (o JobScheduleInfoType) String() string {
 
 // JobScheduleCluster is a 'getter' method
 func (o *JobScheduleInfoType) JobScheduleCluster() ClusterNameType {
-
 	var r ClusterNameType
 	if o.JobScheduleClusterPtr == nil {
 		return r
 	}
 	r = *o.JobScheduleClusterPtr
-
 	return r
 }
 
@@ -56,13 +55,11 @@ func (o *JobScheduleInfoType) SetJobScheduleCluster(newValue ClusterNameType) *J
 
 // JobScheduleDescription is a 'getter' method
 func (o *JobScheduleInfoType) JobScheduleDescription() string {
-
 	var r string
 	if o.JobScheduleDescriptionPtr == nil {
 		return r
 	}
 	r = *o.JobScheduleDescriptionPtr
-
 	return r
 }
 
@@ -74,13 +71,11 @@ func (o *JobScheduleInfoType) SetJobScheduleDescription(newValue string) *JobSch
 
 // JobScheduleName is a 'getter' method
 func (o *JobScheduleInfoType) JobScheduleName() string {
-
 	var r string
 	if o.JobScheduleNamePtr == nil {
 		return r
 	}
 	r = *o.JobScheduleNamePtr
-
 	return r
 }
 
@@ -92,13 +87,11 @@ func (o *JobScheduleInfoType) SetJobScheduleName(newValue string) *JobScheduleIn
 
 // JobScheduleType is a 'getter' method
 func (o *JobScheduleInfoType) JobScheduleType() ScheduleTypeType {
-
 	var r ScheduleTypeType
 	if o.JobScheduleTypePtr == nil {
 		return r
 	}
 	r = *o.JobScheduleTypePtr
-
 	return r
 }
 

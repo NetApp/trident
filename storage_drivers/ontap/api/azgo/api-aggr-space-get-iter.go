@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // AggrSpaceGetIterRequest is a structure to represent a aggr-space-get-iter Request ZAPI object
@@ -178,7 +179,11 @@ func (o AggrSpaceGetIterRequestDesiredAttributes) String() string {
 
 // SpaceInformation is a 'getter' method
 func (o *AggrSpaceGetIterRequestDesiredAttributes) SpaceInformation() SpaceInformationType {
-	r := *o.SpaceInformationPtr
+	var r SpaceInformationType
+	if o.SpaceInformationPtr == nil {
+		return r
+	}
+	r = *o.SpaceInformationPtr
 	return r
 }
 
@@ -190,7 +195,11 @@ func (o *AggrSpaceGetIterRequestDesiredAttributes) SetSpaceInformation(newValue 
 
 // DesiredAttributes is a 'getter' method
 func (o *AggrSpaceGetIterRequest) DesiredAttributes() AggrSpaceGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r AggrSpaceGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -202,7 +211,11 @@ func (o *AggrSpaceGetIterRequest) SetDesiredAttributes(newValue AggrSpaceGetIter
 
 // MaxRecords is a 'getter' method
 func (o *AggrSpaceGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -225,7 +238,11 @@ func (o AggrSpaceGetIterRequestQuery) String() string {
 
 // SpaceInformation is a 'getter' method
 func (o *AggrSpaceGetIterRequestQuery) SpaceInformation() SpaceInformationType {
-	r := *o.SpaceInformationPtr
+	var r SpaceInformationType
+	if o.SpaceInformationPtr == nil {
+		return r
+	}
+	r = *o.SpaceInformationPtr
 	return r
 }
 
@@ -237,7 +254,11 @@ func (o *AggrSpaceGetIterRequestQuery) SetSpaceInformation(newValue SpaceInforma
 
 // Query is a 'getter' method
 func (o *AggrSpaceGetIterRequest) Query() AggrSpaceGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r AggrSpaceGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -249,7 +270,11 @@ func (o *AggrSpaceGetIterRequest) SetQuery(newValue AggrSpaceGetIterRequestQuery
 
 // Tag is a 'getter' method
 func (o *AggrSpaceGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -300,7 +325,11 @@ func (o *AggrSpaceGetIterResponseResultAttributesList) setValues(newValue []Spac
 
 // AttributesList is a 'getter' method
 func (o *AggrSpaceGetIterResponseResult) AttributesList() AggrSpaceGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r AggrSpaceGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -312,7 +341,11 @@ func (o *AggrSpaceGetIterResponseResult) SetAttributesList(newValue AggrSpaceGet
 
 // NextTag is a 'getter' method
 func (o *AggrSpaceGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -324,7 +357,11 @@ func (o *AggrSpaceGetIterResponseResult) SetNextTag(newValue string) *AggrSpaceG
 
 // NumRecords is a 'getter' method
 func (o *AggrSpaceGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

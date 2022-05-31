@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeQosAttributesType is a structure to represent a volume-qos-attributes ZAPI object
@@ -34,26 +35,34 @@ func (o VolumeQosAttributesType) String() string {
 	return ToString(reflect.ValueOf(o))
 }
 
-// PolicyGroupName is a 'getter' method
-func (o *VolumeQosAttributesType) PolicyGroupName() string {
-	r := *o.PolicyGroupNamePtr
-	return r
-}
-
-// SetPolicyGroupName is a fluent style 'setter' method that can be chained
-func (o *VolumeQosAttributesType) SetPolicyGroupName(newValue string) *VolumeQosAttributesType {
-	o.PolicyGroupNamePtr = &newValue
-	return o
-}
-
 // AdaptivePolicyGroupName is a 'getter' method
 func (o *VolumeQosAttributesType) AdaptivePolicyGroupName() string {
-	r := *o.AdaptivePolicyGroupNamePtr
+	var r string
+	if o.AdaptivePolicyGroupNamePtr == nil {
+		return r
+	}
+	r = *o.AdaptivePolicyGroupNamePtr
 	return r
 }
 
 // SetAdaptivePolicyGroupName is a fluent style 'setter' method that can be chained
 func (o *VolumeQosAttributesType) SetAdaptivePolicyGroupName(newValue string) *VolumeQosAttributesType {
 	o.AdaptivePolicyGroupNamePtr = &newValue
+	return o
+}
+
+// PolicyGroupName is a 'getter' method
+func (o *VolumeQosAttributesType) PolicyGroupName() string {
+	var r string
+	if o.PolicyGroupNamePtr == nil {
+		return r
+	}
+	r = *o.PolicyGroupNamePtr
+	return r
+}
+
+// SetPolicyGroupName is a fluent style 'setter' method that can be chained
+func (o *VolumeQosAttributesType) SetPolicyGroupName(newValue string) *VolumeQosAttributesType {
+	o.PolicyGroupNamePtr = &newValue
 	return o
 }

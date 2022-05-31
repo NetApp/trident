@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeSnapshotAutodeleteAttributesType is a structure to represent a volume-snapshot-autodelete-attributes ZAPI object
@@ -42,7 +43,11 @@ func (o VolumeSnapshotAutodeleteAttributesType) String() string {
 
 // Commitment is a 'getter' method
 func (o *VolumeSnapshotAutodeleteAttributesType) Commitment() string {
-	r := *o.CommitmentPtr
+	var r string
+	if o.CommitmentPtr == nil {
+		return r
+	}
+	r = *o.CommitmentPtr
 	return r
 }
 
@@ -54,7 +59,11 @@ func (o *VolumeSnapshotAutodeleteAttributesType) SetCommitment(newValue string) 
 
 // DeferDelete is a 'getter' method
 func (o *VolumeSnapshotAutodeleteAttributesType) DeferDelete() string {
-	r := *o.DeferDeletePtr
+	var r string
+	if o.DeferDeletePtr == nil {
+		return r
+	}
+	r = *o.DeferDeletePtr
 	return r
 }
 
@@ -66,7 +75,11 @@ func (o *VolumeSnapshotAutodeleteAttributesType) SetDeferDelete(newValue string)
 
 // DeleteOrder is a 'getter' method
 func (o *VolumeSnapshotAutodeleteAttributesType) DeleteOrder() string {
-	r := *o.DeleteOrderPtr
+	var r string
+	if o.DeleteOrderPtr == nil {
+		return r
+	}
+	r = *o.DeleteOrderPtr
 	return r
 }
 
@@ -78,7 +91,11 @@ func (o *VolumeSnapshotAutodeleteAttributesType) SetDeleteOrder(newValue string)
 
 // DestroyList is a 'getter' method
 func (o *VolumeSnapshotAutodeleteAttributesType) DestroyList() string {
-	r := *o.DestroyListPtr
+	var r string
+	if o.DestroyListPtr == nil {
+		return r
+	}
+	r = *o.DestroyListPtr
 	return r
 }
 
@@ -90,7 +107,11 @@ func (o *VolumeSnapshotAutodeleteAttributesType) SetDestroyList(newValue string)
 
 // IsAutodeleteEnabled is a 'getter' method
 func (o *VolumeSnapshotAutodeleteAttributesType) IsAutodeleteEnabled() bool {
-	r := *o.IsAutodeleteEnabledPtr
+	var r bool
+	if o.IsAutodeleteEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsAutodeleteEnabledPtr
 	return r
 }
 
@@ -102,7 +123,11 @@ func (o *VolumeSnapshotAutodeleteAttributesType) SetIsAutodeleteEnabled(newValue
 
 // Prefix is a 'getter' method
 func (o *VolumeSnapshotAutodeleteAttributesType) Prefix() string {
-	r := *o.PrefixPtr
+	var r string
+	if o.PrefixPtr == nil {
+		return r
+	}
+	r = *o.PrefixPtr
 	return r
 }
 
@@ -114,7 +139,11 @@ func (o *VolumeSnapshotAutodeleteAttributesType) SetPrefix(newValue string) *Vol
 
 // TargetFreeSpace is a 'getter' method
 func (o *VolumeSnapshotAutodeleteAttributesType) TargetFreeSpace() int {
-	r := *o.TargetFreeSpacePtr
+	var r int
+	if o.TargetFreeSpacePtr == nil {
+		return r
+	}
+	r = *o.TargetFreeSpacePtr
 	return r
 }
 
@@ -126,7 +155,11 @@ func (o *VolumeSnapshotAutodeleteAttributesType) SetTargetFreeSpace(newValue int
 
 // Trigger is a 'getter' method
 func (o *VolumeSnapshotAutodeleteAttributesType) Trigger() string {
-	r := *o.TriggerPtr
+	var r string
+	if o.TriggerPtr == nil {
+		return r
+	}
+	r = *o.TriggerPtr
 	return r
 }
 

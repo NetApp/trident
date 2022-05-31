@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // QtreeListIterRequest is a structure to represent a qtree-list-iter Request ZAPI object
@@ -178,7 +179,11 @@ func (o QtreeListIterRequestDesiredAttributes) String() string {
 
 // QtreeInfo is a 'getter' method
 func (o *QtreeListIterRequestDesiredAttributes) QtreeInfo() QtreeInfoType {
-	r := *o.QtreeInfoPtr
+	var r QtreeInfoType
+	if o.QtreeInfoPtr == nil {
+		return r
+	}
+	r = *o.QtreeInfoPtr
 	return r
 }
 
@@ -190,7 +195,11 @@ func (o *QtreeListIterRequestDesiredAttributes) SetQtreeInfo(newValue QtreeInfoT
 
 // DesiredAttributes is a 'getter' method
 func (o *QtreeListIterRequest) DesiredAttributes() QtreeListIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r QtreeListIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -202,7 +211,11 @@ func (o *QtreeListIterRequest) SetDesiredAttributes(newValue QtreeListIterReques
 
 // MaxRecords is a 'getter' method
 func (o *QtreeListIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -225,7 +238,11 @@ func (o QtreeListIterRequestQuery) String() string {
 
 // QtreeInfo is a 'getter' method
 func (o *QtreeListIterRequestQuery) QtreeInfo() QtreeInfoType {
-	r := *o.QtreeInfoPtr
+	var r QtreeInfoType
+	if o.QtreeInfoPtr == nil {
+		return r
+	}
+	r = *o.QtreeInfoPtr
 	return r
 }
 
@@ -237,7 +254,11 @@ func (o *QtreeListIterRequestQuery) SetQtreeInfo(newValue QtreeInfoType) *QtreeL
 
 // Query is a 'getter' method
 func (o *QtreeListIterRequest) Query() QtreeListIterRequestQuery {
-	r := *o.QueryPtr
+	var r QtreeListIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -249,7 +270,11 @@ func (o *QtreeListIterRequest) SetQuery(newValue QtreeListIterRequestQuery) *Qtr
 
 // Tag is a 'getter' method
 func (o *QtreeListIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -300,7 +325,11 @@ func (o *QtreeListIterResponseResultAttributesList) setValues(newValue []QtreeIn
 
 // AttributesList is a 'getter' method
 func (o *QtreeListIterResponseResult) AttributesList() QtreeListIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r QtreeListIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -312,7 +341,11 @@ func (o *QtreeListIterResponseResult) SetAttributesList(newValue QtreeListIterRe
 
 // NextTag is a 'getter' method
 func (o *QtreeListIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -324,7 +357,11 @@ func (o *QtreeListIterResponseResult) SetNextTag(newValue string) *QtreeListIter
 
 // NumRecords is a 'getter' method
 func (o *QtreeListIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

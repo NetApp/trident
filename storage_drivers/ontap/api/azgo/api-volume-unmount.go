@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeUnmountRequest is a structure to represent a volume-unmount Request ZAPI object
@@ -106,7 +107,11 @@ func (o *VolumeUnmountRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeU
 
 // Force is a 'getter' method
 func (o *VolumeUnmountRequest) Force() bool {
-	r := *o.ForcePtr
+	var r bool
+	if o.ForcePtr == nil {
+		return r
+	}
+	r = *o.ForcePtr
 	return r
 }
 
@@ -118,7 +123,11 @@ func (o *VolumeUnmountRequest) SetForce(newValue bool) *VolumeUnmountRequest {
 
 // VolumeName is a 'getter' method
 func (o *VolumeUnmountRequest) VolumeName() string {
-	r := *o.VolumeNamePtr
+	var r string
+	if o.VolumeNamePtr == nil {
+		return r
+	}
+	r = *o.VolumeNamePtr
 	return r
 }
 

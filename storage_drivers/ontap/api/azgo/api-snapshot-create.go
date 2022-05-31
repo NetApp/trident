@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapshotCreateRequest is a structure to represent a snapshot-create Request ZAPI object
@@ -109,7 +110,11 @@ func (o *SnapshotCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*Snapsh
 
 // Async is a 'getter' method
 func (o *SnapshotCreateRequest) Async() bool {
-	r := *o.AsyncPtr
+	var r bool
+	if o.AsyncPtr == nil {
+		return r
+	}
+	r = *o.AsyncPtr
 	return r
 }
 
@@ -121,7 +126,11 @@ func (o *SnapshotCreateRequest) SetAsync(newValue bool) *SnapshotCreateRequest {
 
 // Comment is a 'getter' method
 func (o *SnapshotCreateRequest) Comment() string {
-	r := *o.CommentPtr
+	var r string
+	if o.CommentPtr == nil {
+		return r
+	}
+	r = *o.CommentPtr
 	return r
 }
 
@@ -133,7 +142,11 @@ func (o *SnapshotCreateRequest) SetComment(newValue string) *SnapshotCreateReque
 
 // SnapmirrorLabel is a 'getter' method
 func (o *SnapshotCreateRequest) SnapmirrorLabel() string {
-	r := *o.SnapmirrorLabelPtr
+	var r string
+	if o.SnapmirrorLabelPtr == nil {
+		return r
+	}
+	r = *o.SnapmirrorLabelPtr
 	return r
 }
 
@@ -145,7 +158,11 @@ func (o *SnapshotCreateRequest) SetSnapmirrorLabel(newValue string) *SnapshotCre
 
 // Snapshot is a 'getter' method
 func (o *SnapshotCreateRequest) Snapshot() string {
-	r := *o.SnapshotPtr
+	var r string
+	if o.SnapshotPtr == nil {
+		return r
+	}
+	r = *o.SnapshotPtr
 	return r
 }
 
@@ -157,7 +174,11 @@ func (o *SnapshotCreateRequest) SetSnapshot(newValue string) *SnapshotCreateRequ
 
 // Volume is a 'getter' method
 func (o *SnapshotCreateRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 

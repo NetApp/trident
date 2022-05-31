@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SpaceInformationType is a structure to represent a space-information ZAPI object
@@ -60,7 +61,11 @@ func (o SpaceInformationType) String() string {
 
 // Aggregate is a 'getter' method
 func (o *SpaceInformationType) Aggregate() string {
-	r := *o.AggregatePtr
+	var r string
+	if o.AggregatePtr == nil {
+		return r
+	}
+	r = *o.AggregatePtr
 	return r
 }
 
@@ -72,7 +77,11 @@ func (o *SpaceInformationType) SetAggregate(newValue string) *SpaceInformationTy
 
 // AggregateMetadata is a 'getter' method
 func (o *SpaceInformationType) AggregateMetadata() int {
-	r := *o.AggregateMetadataPtr
+	var r int
+	if o.AggregateMetadataPtr == nil {
+		return r
+	}
+	r = *o.AggregateMetadataPtr
 	return r
 }
 
@@ -84,7 +93,11 @@ func (o *SpaceInformationType) SetAggregateMetadata(newValue int) *SpaceInformat
 
 // AggregateMetadataPercent is a 'getter' method
 func (o *SpaceInformationType) AggregateMetadataPercent() int {
-	r := *o.AggregateMetadataPercentPtr
+	var r int
+	if o.AggregateMetadataPercentPtr == nil {
+		return r
+	}
+	r = *o.AggregateMetadataPercentPtr
 	return r
 }
 
@@ -96,7 +109,11 @@ func (o *SpaceInformationType) SetAggregateMetadataPercent(newValue int) *SpaceI
 
 // AggregateSize is a 'getter' method
 func (o *SpaceInformationType) AggregateSize() int {
-	r := *o.AggregateSizePtr
+	var r int
+	if o.AggregateSizePtr == nil {
+		return r
+	}
+	r = *o.AggregateSizePtr
 	return r
 }
 
@@ -108,7 +125,11 @@ func (o *SpaceInformationType) SetAggregateSize(newValue int) *SpaceInformationT
 
 // ObjectStoreMetadata is a 'getter' method
 func (o *SpaceInformationType) ObjectStoreMetadata() int {
-	r := *o.ObjectStoreMetadataPtr
+	var r int
+	if o.ObjectStoreMetadataPtr == nil {
+		return r
+	}
+	r = *o.ObjectStoreMetadataPtr
 	return r
 }
 
@@ -120,7 +141,11 @@ func (o *SpaceInformationType) SetObjectStoreMetadata(newValue int) *SpaceInform
 
 // ObjectStoreMetadataPercent is a 'getter' method
 func (o *SpaceInformationType) ObjectStoreMetadataPercent() int {
-	r := *o.ObjectStoreMetadataPercentPtr
+	var r int
+	if o.ObjectStoreMetadataPercentPtr == nil {
+		return r
+	}
+	r = *o.ObjectStoreMetadataPercentPtr
 	return r
 }
 
@@ -132,7 +157,11 @@ func (o *SpaceInformationType) SetObjectStoreMetadataPercent(newValue int) *Spac
 
 // ObjectStorePhysicalUsed is a 'getter' method
 func (o *SpaceInformationType) ObjectStorePhysicalUsed() int {
-	r := *o.ObjectStorePhysicalUsedPtr
+	var r int
+	if o.ObjectStorePhysicalUsedPtr == nil {
+		return r
+	}
+	r = *o.ObjectStorePhysicalUsedPtr
 	return r
 }
 
@@ -144,7 +173,11 @@ func (o *SpaceInformationType) SetObjectStorePhysicalUsed(newValue int) *SpaceIn
 
 // ObjectStorePhysicalUsedPercent is a 'getter' method
 func (o *SpaceInformationType) ObjectStorePhysicalUsedPercent() int {
-	r := *o.ObjectStorePhysicalUsedPercentPtr
+	var r int
+	if o.ObjectStorePhysicalUsedPercentPtr == nil {
+		return r
+	}
+	r = *o.ObjectStorePhysicalUsedPercentPtr
 	return r
 }
 
@@ -156,7 +189,11 @@ func (o *SpaceInformationType) SetObjectStorePhysicalUsedPercent(newValue int) *
 
 // ObjectStoreReferencedCapacity is a 'getter' method
 func (o *SpaceInformationType) ObjectStoreReferencedCapacity() int {
-	r := *o.ObjectStoreReferencedCapacityPtr
+	var r int
+	if o.ObjectStoreReferencedCapacityPtr == nil {
+		return r
+	}
+	r = *o.ObjectStoreReferencedCapacityPtr
 	return r
 }
 
@@ -168,7 +205,11 @@ func (o *SpaceInformationType) SetObjectStoreReferencedCapacity(newValue int) *S
 
 // ObjectStoreReferencedCapacityPercent is a 'getter' method
 func (o *SpaceInformationType) ObjectStoreReferencedCapacityPercent() int {
-	r := *o.ObjectStoreReferencedCapacityPercentPtr
+	var r int
+	if o.ObjectStoreReferencedCapacityPercentPtr == nil {
+		return r
+	}
+	r = *o.ObjectStoreReferencedCapacityPercentPtr
 	return r
 }
 
@@ -180,7 +221,11 @@ func (o *SpaceInformationType) SetObjectStoreReferencedCapacityPercent(newValue 
 
 // ObjectStoreSisSpaceSaved is a 'getter' method
 func (o *SpaceInformationType) ObjectStoreSisSpaceSaved() int {
-	r := *o.ObjectStoreSisSpaceSavedPtr
+	var r int
+	if o.ObjectStoreSisSpaceSavedPtr == nil {
+		return r
+	}
+	r = *o.ObjectStoreSisSpaceSavedPtr
 	return r
 }
 
@@ -192,7 +237,11 @@ func (o *SpaceInformationType) SetObjectStoreSisSpaceSaved(newValue int) *SpaceI
 
 // ObjectStoreSisSpaceSavedPercent is a 'getter' method
 func (o *SpaceInformationType) ObjectStoreSisSpaceSavedPercent() int {
-	r := *o.ObjectStoreSisSpaceSavedPercentPtr
+	var r int
+	if o.ObjectStoreSisSpaceSavedPercentPtr == nil {
+		return r
+	}
+	r = *o.ObjectStoreSisSpaceSavedPercentPtr
 	return r
 }
 
@@ -204,7 +253,11 @@ func (o *SpaceInformationType) SetObjectStoreSisSpaceSavedPercent(newValue int) 
 
 // ObjectStoreSize is a 'getter' method
 func (o *SpaceInformationType) ObjectStoreSize() int {
-	r := *o.ObjectStoreSizePtr
+	var r int
+	if o.ObjectStoreSizePtr == nil {
+		return r
+	}
+	r = *o.ObjectStoreSizePtr
 	return r
 }
 
@@ -216,7 +269,11 @@ func (o *SpaceInformationType) SetObjectStoreSize(newValue int) *SpaceInformatio
 
 // ObjectStoreUnreclaimedSpace is a 'getter' method
 func (o *SpaceInformationType) ObjectStoreUnreclaimedSpace() int {
-	r := *o.ObjectStoreUnreclaimedSpacePtr
+	var r int
+	if o.ObjectStoreUnreclaimedSpacePtr == nil {
+		return r
+	}
+	r = *o.ObjectStoreUnreclaimedSpacePtr
 	return r
 }
 
@@ -228,7 +285,11 @@ func (o *SpaceInformationType) SetObjectStoreUnreclaimedSpace(newValue int) *Spa
 
 // ObjectStoreUnreclaimedSpacePercent is a 'getter' method
 func (o *SpaceInformationType) ObjectStoreUnreclaimedSpacePercent() int {
-	r := *o.ObjectStoreUnreclaimedSpacePercentPtr
+	var r int
+	if o.ObjectStoreUnreclaimedSpacePercentPtr == nil {
+		return r
+	}
+	r = *o.ObjectStoreUnreclaimedSpacePercentPtr
 	return r
 }
 
@@ -240,7 +301,11 @@ func (o *SpaceInformationType) SetObjectStoreUnreclaimedSpacePercent(newValue in
 
 // PercentSnapshotSpace is a 'getter' method
 func (o *SpaceInformationType) PercentSnapshotSpace() int {
-	r := *o.PercentSnapshotSpacePtr
+	var r int
+	if o.PercentSnapshotSpacePtr == nil {
+		return r
+	}
+	r = *o.PercentSnapshotSpacePtr
 	return r
 }
 
@@ -252,7 +317,11 @@ func (o *SpaceInformationType) SetPercentSnapshotSpace(newValue int) *SpaceInfor
 
 // PhysicalUsed is a 'getter' method
 func (o *SpaceInformationType) PhysicalUsed() int {
-	r := *o.PhysicalUsedPtr
+	var r int
+	if o.PhysicalUsedPtr == nil {
+		return r
+	}
+	r = *o.PhysicalUsedPtr
 	return r
 }
 
@@ -264,7 +333,11 @@ func (o *SpaceInformationType) SetPhysicalUsed(newValue int) *SpaceInformationTy
 
 // PhysicalUsedPercent is a 'getter' method
 func (o *SpaceInformationType) PhysicalUsedPercent() int {
-	r := *o.PhysicalUsedPercentPtr
+	var r int
+	if o.PhysicalUsedPercentPtr == nil {
+		return r
+	}
+	r = *o.PhysicalUsedPercentPtr
 	return r
 }
 
@@ -276,7 +349,11 @@ func (o *SpaceInformationType) SetPhysicalUsedPercent(newValue int) *SpaceInform
 
 // SnapSizeTotal is a 'getter' method
 func (o *SpaceInformationType) SnapSizeTotal() int {
-	r := *o.SnapSizeTotalPtr
+	var r int
+	if o.SnapSizeTotalPtr == nil {
+		return r
+	}
+	r = *o.SnapSizeTotalPtr
 	return r
 }
 
@@ -288,7 +365,11 @@ func (o *SpaceInformationType) SetSnapSizeTotal(newValue int) *SpaceInformationT
 
 // SnapshotReserveUnusable is a 'getter' method
 func (o *SpaceInformationType) SnapshotReserveUnusable() int {
-	r := *o.SnapshotReserveUnusablePtr
+	var r int
+	if o.SnapshotReserveUnusablePtr == nil {
+		return r
+	}
+	r = *o.SnapshotReserveUnusablePtr
 	return r
 }
 
@@ -300,7 +381,11 @@ func (o *SpaceInformationType) SetSnapshotReserveUnusable(newValue int) *SpaceIn
 
 // SnapshotReserveUnusablePercent is a 'getter' method
 func (o *SpaceInformationType) SnapshotReserveUnusablePercent() int {
-	r := *o.SnapshotReserveUnusablePercentPtr
+	var r int
+	if o.SnapshotReserveUnusablePercentPtr == nil {
+		return r
+	}
+	r = *o.SnapshotReserveUnusablePercentPtr
 	return r
 }
 
@@ -312,7 +397,11 @@ func (o *SpaceInformationType) SetSnapshotReserveUnusablePercent(newValue int) *
 
 // TierName is a 'getter' method
 func (o *SpaceInformationType) TierName() string {
-	r := *o.TierNamePtr
+	var r string
+	if o.TierNamePtr == nil {
+		return r
+	}
+	r = *o.TierNamePtr
 	return r
 }
 
@@ -324,7 +413,11 @@ func (o *SpaceInformationType) SetTierName(newValue string) *SpaceInformationTyp
 
 // UsedIncludingSnapshotReserve is a 'getter' method
 func (o *SpaceInformationType) UsedIncludingSnapshotReserve() int {
-	r := *o.UsedIncludingSnapshotReservePtr
+	var r int
+	if o.UsedIncludingSnapshotReservePtr == nil {
+		return r
+	}
+	r = *o.UsedIncludingSnapshotReservePtr
 	return r
 }
 
@@ -336,7 +429,11 @@ func (o *SpaceInformationType) SetUsedIncludingSnapshotReserve(newValue int) *Sp
 
 // UsedIncludingSnapshotReservePercent is a 'getter' method
 func (o *SpaceInformationType) UsedIncludingSnapshotReservePercent() int {
-	r := *o.UsedIncludingSnapshotReservePercentPtr
+	var r int
+	if o.UsedIncludingSnapshotReservePercentPtr == nil {
+		return r
+	}
+	r = *o.UsedIncludingSnapshotReservePercentPtr
 	return r
 }
 
@@ -348,7 +445,11 @@ func (o *SpaceInformationType) SetUsedIncludingSnapshotReservePercent(newValue i
 
 // VolumeFootprints is a 'getter' method
 func (o *SpaceInformationType) VolumeFootprints() int {
-	r := *o.VolumeFootprintsPtr
+	var r int
+	if o.VolumeFootprintsPtr == nil {
+		return r
+	}
+	r = *o.VolumeFootprintsPtr
 	return r
 }
 
@@ -360,7 +461,11 @@ func (o *SpaceInformationType) SetVolumeFootprints(newValue int) *SpaceInformati
 
 // VolumeFootprintsPercent is a 'getter' method
 func (o *SpaceInformationType) VolumeFootprintsPercent() int {
-	r := *o.VolumeFootprintsPercentPtr
+	var r int
+	if o.VolumeFootprintsPercentPtr == nil {
+		return r
+	}
+	r = *o.VolumeFootprintsPercentPtr
 	return r
 }
 

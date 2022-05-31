@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // QuotaOffRequest is a structure to represent a quota-off Request ZAPI object
@@ -109,7 +110,11 @@ func (o *QuotaOffRequest) executeWithoutIteration(zr *ZapiRunner) (*QuotaOffResp
 
 // Volume is a 'getter' method
 func (o *QuotaOffRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -121,7 +126,11 @@ func (o *QuotaOffRequest) SetVolume(newValue string) *QuotaOffRequest {
 
 // ResultErrorCode is a 'getter' method
 func (o *QuotaOffResponseResult) ResultErrorCode() int {
-	r := *o.ResultErrorCodePtr
+	var r int
+	if o.ResultErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorCodePtr
 	return r
 }
 
@@ -133,7 +142,11 @@ func (o *QuotaOffResponseResult) SetResultErrorCode(newValue int) *QuotaOffRespo
 
 // ResultErrorMessage is a 'getter' method
 func (o *QuotaOffResponseResult) ResultErrorMessage() string {
-	r := *o.ResultErrorMessagePtr
+	var r string
+	if o.ResultErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorMessagePtr
 	return r
 }
 
@@ -145,7 +158,11 @@ func (o *QuotaOffResponseResult) SetResultErrorMessage(newValue string) *QuotaOf
 
 // ResultJobid is a 'getter' method
 func (o *QuotaOffResponseResult) ResultJobid() int {
-	r := *o.ResultJobidPtr
+	var r int
+	if o.ResultJobidPtr == nil {
+		return r
+	}
+	r = *o.ResultJobidPtr
 	return r
 }
 
@@ -157,7 +174,11 @@ func (o *QuotaOffResponseResult) SetResultJobid(newValue int) *QuotaOffResponseR
 
 // ResultStatus is a 'getter' method
 func (o *QuotaOffResponseResult) ResultStatus() string {
-	r := *o.ResultStatusPtr
+	var r string
+	if o.ResultStatusPtr == nil {
+		return r
+	}
+	r = *o.ResultStatusPtr
 	return r
 }
 

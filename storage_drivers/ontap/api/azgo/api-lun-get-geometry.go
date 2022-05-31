@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunGetGeometryRequest is a structure to represent a lun-get-geometry Request ZAPI object
@@ -111,7 +112,11 @@ func (o *LunGetGeometryRequest) executeWithoutIteration(zr *ZapiRunner) (*LunGet
 
 // Path is a 'getter' method
 func (o *LunGetGeometryRequest) Path() string {
-	r := *o.PathPtr
+	var r string
+	if o.PathPtr == nil {
+		return r
+	}
+	r = *o.PathPtr
 	return r
 }
 
@@ -123,7 +128,11 @@ func (o *LunGetGeometryRequest) SetPath(newValue string) *LunGetGeometryRequest 
 
 // BytesPerSector is a 'getter' method
 func (o *LunGetGeometryResponseResult) BytesPerSector() int {
-	r := *o.BytesPerSectorPtr
+	var r int
+	if o.BytesPerSectorPtr == nil {
+		return r
+	}
+	r = *o.BytesPerSectorPtr
 	return r
 }
 
@@ -135,7 +144,11 @@ func (o *LunGetGeometryResponseResult) SetBytesPerSector(newValue int) *LunGetGe
 
 // Cylinders is a 'getter' method
 func (o *LunGetGeometryResponseResult) Cylinders() int {
-	r := *o.CylindersPtr
+	var r int
+	if o.CylindersPtr == nil {
+		return r
+	}
+	r = *o.CylindersPtr
 	return r
 }
 
@@ -147,7 +160,11 @@ func (o *LunGetGeometryResponseResult) SetCylinders(newValue int) *LunGetGeometr
 
 // MaxResizeSize is a 'getter' method
 func (o *LunGetGeometryResponseResult) MaxResizeSize() int {
-	r := *o.MaxResizeSizePtr
+	var r int
+	if o.MaxResizeSizePtr == nil {
+		return r
+	}
+	r = *o.MaxResizeSizePtr
 	return r
 }
 
@@ -159,7 +176,11 @@ func (o *LunGetGeometryResponseResult) SetMaxResizeSize(newValue int) *LunGetGeo
 
 // SectorsPerTrack is a 'getter' method
 func (o *LunGetGeometryResponseResult) SectorsPerTrack() int {
-	r := *o.SectorsPerTrackPtr
+	var r int
+	if o.SectorsPerTrackPtr == nil {
+		return r
+	}
+	r = *o.SectorsPerTrackPtr
 	return r
 }
 
@@ -171,7 +192,11 @@ func (o *LunGetGeometryResponseResult) SetSectorsPerTrack(newValue int) *LunGetG
 
 // Size is a 'getter' method
 func (o *LunGetGeometryResponseResult) Size() int {
-	r := *o.SizePtr
+	var r int
+	if o.SizePtr == nil {
+		return r
+	}
+	r = *o.SizePtr
 	return r
 }
 
@@ -183,7 +208,11 @@ func (o *LunGetGeometryResponseResult) SetSize(newValue int) *LunGetGeometryResp
 
 // TracksPerCylinder is a 'getter' method
 func (o *LunGetGeometryResponseResult) TracksPerCylinder() int {
-	r := *o.TracksPerCylinderPtr
+	var r int
+	if o.TracksPerCylinderPtr == nil {
+		return r
+	}
+	r = *o.TracksPerCylinderPtr
 	return r
 }
 

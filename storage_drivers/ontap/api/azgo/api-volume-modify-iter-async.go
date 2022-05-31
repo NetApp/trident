@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeModifyIterAsyncRequest is a structure to represent a volume-modify-iter-async Request ZAPI object
@@ -128,7 +129,11 @@ func (o VolumeModifyIterAsyncRequestAttributes) String() string {
 
 // VolumeAttributes is a 'getter' method
 func (o *VolumeModifyIterAsyncRequestAttributes) VolumeAttributes() VolumeAttributesType {
-	r := *o.VolumeAttributesPtr
+	var r VolumeAttributesType
+	if o.VolumeAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeAttributesPtr
 	return r
 }
 
@@ -140,7 +145,11 @@ func (o *VolumeModifyIterAsyncRequestAttributes) SetVolumeAttributes(newValue Vo
 
 // Attributes is a 'getter' method
 func (o *VolumeModifyIterAsyncRequest) Attributes() VolumeModifyIterAsyncRequestAttributes {
-	r := *o.AttributesPtr
+	var r VolumeModifyIterAsyncRequestAttributes
+	if o.AttributesPtr == nil {
+		return r
+	}
+	r = *o.AttributesPtr
 	return r
 }
 
@@ -152,7 +161,11 @@ func (o *VolumeModifyIterAsyncRequest) SetAttributes(newValue VolumeModifyIterAs
 
 // ContinueOnFailure is a 'getter' method
 func (o *VolumeModifyIterAsyncRequest) ContinueOnFailure() bool {
-	r := *o.ContinueOnFailurePtr
+	var r bool
+	if o.ContinueOnFailurePtr == nil {
+		return r
+	}
+	r = *o.ContinueOnFailurePtr
 	return r
 }
 
@@ -164,7 +177,11 @@ func (o *VolumeModifyIterAsyncRequest) SetContinueOnFailure(newValue bool) *Volu
 
 // MaxFailureCount is a 'getter' method
 func (o *VolumeModifyIterAsyncRequest) MaxFailureCount() int {
-	r := *o.MaxFailureCountPtr
+	var r int
+	if o.MaxFailureCountPtr == nil {
+		return r
+	}
+	r = *o.MaxFailureCountPtr
 	return r
 }
 
@@ -176,7 +193,11 @@ func (o *VolumeModifyIterAsyncRequest) SetMaxFailureCount(newValue int) *VolumeM
 
 // MaxRecords is a 'getter' method
 func (o *VolumeModifyIterAsyncRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -199,7 +220,11 @@ func (o VolumeModifyIterAsyncRequestQuery) String() string {
 
 // VolumeAttributes is a 'getter' method
 func (o *VolumeModifyIterAsyncRequestQuery) VolumeAttributes() VolumeAttributesType {
-	r := *o.VolumeAttributesPtr
+	var r VolumeAttributesType
+	if o.VolumeAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeAttributesPtr
 	return r
 }
 
@@ -211,7 +236,11 @@ func (o *VolumeModifyIterAsyncRequestQuery) SetVolumeAttributes(newValue VolumeA
 
 // Query is a 'getter' method
 func (o *VolumeModifyIterAsyncRequest) Query() VolumeModifyIterAsyncRequestQuery {
-	r := *o.QueryPtr
+	var r VolumeModifyIterAsyncRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -223,7 +252,11 @@ func (o *VolumeModifyIterAsyncRequest) SetQuery(newValue VolumeModifyIterAsyncRe
 
 // ReturnFailureList is a 'getter' method
 func (o *VolumeModifyIterAsyncRequest) ReturnFailureList() bool {
-	r := *o.ReturnFailureListPtr
+	var r bool
+	if o.ReturnFailureListPtr == nil {
+		return r
+	}
+	r = *o.ReturnFailureListPtr
 	return r
 }
 
@@ -235,7 +268,11 @@ func (o *VolumeModifyIterAsyncRequest) SetReturnFailureList(newValue bool) *Volu
 
 // ReturnSuccessList is a 'getter' method
 func (o *VolumeModifyIterAsyncRequest) ReturnSuccessList() bool {
-	r := *o.ReturnSuccessListPtr
+	var r bool
+	if o.ReturnSuccessListPtr == nil {
+		return r
+	}
+	r = *o.ReturnSuccessListPtr
 	return r
 }
 
@@ -247,7 +284,11 @@ func (o *VolumeModifyIterAsyncRequest) SetReturnSuccessList(newValue bool) *Volu
 
 // Tag is a 'getter' method
 func (o *VolumeModifyIterAsyncRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -298,7 +339,11 @@ func (o *VolumeModifyIterAsyncResponseResultFailureList) setValues(newValue []Vo
 
 // FailureList is a 'getter' method
 func (o *VolumeModifyIterAsyncResponseResult) FailureList() VolumeModifyIterAsyncResponseResultFailureList {
-	r := *o.FailureListPtr
+	var r VolumeModifyIterAsyncResponseResultFailureList
+	if o.FailureListPtr == nil {
+		return r
+	}
+	r = *o.FailureListPtr
 	return r
 }
 
@@ -310,7 +355,11 @@ func (o *VolumeModifyIterAsyncResponseResult) SetFailureList(newValue VolumeModi
 
 // NextTag is a 'getter' method
 func (o *VolumeModifyIterAsyncResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -322,7 +371,11 @@ func (o *VolumeModifyIterAsyncResponseResult) SetNextTag(newValue string) *Volum
 
 // NumFailed is a 'getter' method
 func (o *VolumeModifyIterAsyncResponseResult) NumFailed() int {
-	r := *o.NumFailedPtr
+	var r int
+	if o.NumFailedPtr == nil {
+		return r
+	}
+	r = *o.NumFailedPtr
 	return r
 }
 
@@ -334,7 +387,11 @@ func (o *VolumeModifyIterAsyncResponseResult) SetNumFailed(newValue int) *Volume
 
 // NumSucceeded is a 'getter' method
 func (o *VolumeModifyIterAsyncResponseResult) NumSucceeded() int {
-	r := *o.NumSucceededPtr
+	var r int
+	if o.NumSucceededPtr == nil {
+		return r
+	}
+	r = *o.NumSucceededPtr
 	return r
 }
 
@@ -385,7 +442,11 @@ func (o *VolumeModifyIterAsyncResponseResultSuccessList) setValues(newValue []Vo
 
 // SuccessList is a 'getter' method
 func (o *VolumeModifyIterAsyncResponseResult) SuccessList() VolumeModifyIterAsyncResponseResultSuccessList {
-	r := *o.SuccessListPtr
+	var r VolumeModifyIterAsyncResponseResultSuccessList
+	if o.SuccessListPtr == nil {
+		return r
+	}
+	r = *o.SuccessListPtr
 	return r
 }
 

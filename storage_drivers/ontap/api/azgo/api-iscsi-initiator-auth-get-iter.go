@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiInitiatorAuthGetIterRequest is a structure to represent a iscsi-initiator-auth-get-iter Request ZAPI object
@@ -178,7 +179,11 @@ func (o IscsiInitiatorAuthGetIterRequestDesiredAttributes) String() string {
 
 // IscsiSecurityEntryInfo is a 'getter' method
 func (o *IscsiInitiatorAuthGetIterRequestDesiredAttributes) IscsiSecurityEntryInfo() IscsiSecurityEntryInfoType {
-	r := *o.IscsiSecurityEntryInfoPtr
+	var r IscsiSecurityEntryInfoType
+	if o.IscsiSecurityEntryInfoPtr == nil {
+		return r
+	}
+	r = *o.IscsiSecurityEntryInfoPtr
 	return r
 }
 
@@ -190,7 +195,11 @@ func (o *IscsiInitiatorAuthGetIterRequestDesiredAttributes) SetIscsiSecurityEntr
 
 // DesiredAttributes is a 'getter' method
 func (o *IscsiInitiatorAuthGetIterRequest) DesiredAttributes() IscsiInitiatorAuthGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r IscsiInitiatorAuthGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -202,7 +211,11 @@ func (o *IscsiInitiatorAuthGetIterRequest) SetDesiredAttributes(newValue IscsiIn
 
 // MaxRecords is a 'getter' method
 func (o *IscsiInitiatorAuthGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -225,7 +238,11 @@ func (o IscsiInitiatorAuthGetIterRequestQuery) String() string {
 
 // IscsiSecurityEntryInfo is a 'getter' method
 func (o *IscsiInitiatorAuthGetIterRequestQuery) IscsiSecurityEntryInfo() IscsiSecurityEntryInfoType {
-	r := *o.IscsiSecurityEntryInfoPtr
+	var r IscsiSecurityEntryInfoType
+	if o.IscsiSecurityEntryInfoPtr == nil {
+		return r
+	}
+	r = *o.IscsiSecurityEntryInfoPtr
 	return r
 }
 
@@ -237,7 +254,11 @@ func (o *IscsiInitiatorAuthGetIterRequestQuery) SetIscsiSecurityEntryInfo(newVal
 
 // Query is a 'getter' method
 func (o *IscsiInitiatorAuthGetIterRequest) Query() IscsiInitiatorAuthGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r IscsiInitiatorAuthGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -249,7 +270,11 @@ func (o *IscsiInitiatorAuthGetIterRequest) SetQuery(newValue IscsiInitiatorAuthG
 
 // Tag is a 'getter' method
 func (o *IscsiInitiatorAuthGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -300,7 +325,11 @@ func (o *IscsiInitiatorAuthGetIterResponseResultAttributesList) setValues(newVal
 
 // AttributesList is a 'getter' method
 func (o *IscsiInitiatorAuthGetIterResponseResult) AttributesList() IscsiInitiatorAuthGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r IscsiInitiatorAuthGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -312,7 +341,11 @@ func (o *IscsiInitiatorAuthGetIterResponseResult) SetAttributesList(newValue Isc
 
 // NextTag is a 'getter' method
 func (o *IscsiInitiatorAuthGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -324,7 +357,11 @@ func (o *IscsiInitiatorAuthGetIterResponseResult) SetNextTag(newValue string) *I
 
 // NumRecords is a 'getter' method
 func (o *IscsiInitiatorAuthGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

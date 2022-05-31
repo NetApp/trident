@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapshotGetIterRequest is a structure to represent a snapshot-get-iter Request ZAPI object
@@ -179,7 +180,11 @@ func (o SnapshotGetIterRequestDesiredAttributes) String() string {
 
 // SnapshotInfo is a 'getter' method
 func (o *SnapshotGetIterRequestDesiredAttributes) SnapshotInfo() SnapshotInfoType {
-	r := *o.SnapshotInfoPtr
+	var r SnapshotInfoType
+	if o.SnapshotInfoPtr == nil {
+		return r
+	}
+	r = *o.SnapshotInfoPtr
 	return r
 }
 
@@ -191,7 +196,11 @@ func (o *SnapshotGetIterRequestDesiredAttributes) SetSnapshotInfo(newValue Snaps
 
 // DesiredAttributes is a 'getter' method
 func (o *SnapshotGetIterRequest) DesiredAttributes() SnapshotGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r SnapshotGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -203,7 +212,11 @@ func (o *SnapshotGetIterRequest) SetDesiredAttributes(newValue SnapshotGetIterRe
 
 // MaxRecords is a 'getter' method
 func (o *SnapshotGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -226,7 +239,11 @@ func (o SnapshotGetIterRequestQuery) String() string {
 
 // SnapshotInfo is a 'getter' method
 func (o *SnapshotGetIterRequestQuery) SnapshotInfo() SnapshotInfoType {
-	r := *o.SnapshotInfoPtr
+	var r SnapshotInfoType
+	if o.SnapshotInfoPtr == nil {
+		return r
+	}
+	r = *o.SnapshotInfoPtr
 	return r
 }
 
@@ -238,7 +255,11 @@ func (o *SnapshotGetIterRequestQuery) SetSnapshotInfo(newValue SnapshotInfoType)
 
 // Query is a 'getter' method
 func (o *SnapshotGetIterRequest) Query() SnapshotGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r SnapshotGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -250,7 +271,11 @@ func (o *SnapshotGetIterRequest) SetQuery(newValue SnapshotGetIterRequestQuery) 
 
 // Tag is a 'getter' method
 func (o *SnapshotGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -301,7 +326,11 @@ func (o *SnapshotGetIterResponseResultAttributesList) setValues(newValue []Snaps
 
 // AttributesList is a 'getter' method
 func (o *SnapshotGetIterResponseResult) AttributesList() SnapshotGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r SnapshotGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -313,7 +342,11 @@ func (o *SnapshotGetIterResponseResult) SetAttributesList(newValue SnapshotGetIt
 
 // NextTag is a 'getter' method
 func (o *SnapshotGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -325,7 +358,11 @@ func (o *SnapshotGetIterResponseResult) SetNextTag(newValue string) *SnapshotGet
 
 // NumRecords is a 'getter' method
 func (o *SnapshotGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 
@@ -376,7 +413,11 @@ func (o *SnapshotGetIterResponseResultVolumeErrors) setValues(newValue []VolumeE
 
 // VolumeErrors is a 'getter' method
 func (o *SnapshotGetIterResponseResult) VolumeErrors() SnapshotGetIterResponseResultVolumeErrors {
-	r := *o.VolumeErrorsPtr
+	var r SnapshotGetIterResponseResultVolumeErrors
+	if o.VolumeErrorsPtr == nil {
+		return r
+	}
+	r = *o.VolumeErrorsPtr
 	return r
 }
 

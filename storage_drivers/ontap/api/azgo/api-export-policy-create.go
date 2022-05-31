@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // ExportPolicyCreateRequest is a structure to represent a export-policy-create Request ZAPI object
@@ -107,7 +108,11 @@ func (o *ExportPolicyCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*Ex
 
 // PolicyName is a 'getter' method
 func (o *ExportPolicyCreateRequest) PolicyName() ExportPolicyNameType {
-	r := *o.PolicyNamePtr
+	var r ExportPolicyNameType
+	if o.PolicyNamePtr == nil {
+		return r
+	}
+	r = *o.PolicyNamePtr
 	return r
 }
 
@@ -119,7 +124,11 @@ func (o *ExportPolicyCreateRequest) SetPolicyName(newValue ExportPolicyNameType)
 
 // ReturnRecord is a 'getter' method
 func (o *ExportPolicyCreateRequest) ReturnRecord() bool {
-	r := *o.ReturnRecordPtr
+	var r bool
+	if o.ReturnRecordPtr == nil {
+		return r
+	}
+	r = *o.ReturnRecordPtr
 	return r
 }
 
@@ -142,7 +151,11 @@ func (o ExportPolicyCreateResponseResultResult) String() string {
 
 // ExportPolicyInfo is a 'getter' method
 func (o *ExportPolicyCreateResponseResultResult) ExportPolicyInfo() ExportPolicyInfoType {
-	r := *o.ExportPolicyInfoPtr
+	var r ExportPolicyInfoType
+	if o.ExportPolicyInfoPtr == nil {
+		return r
+	}
+	r = *o.ExportPolicyInfoPtr
 	return r
 }
 
@@ -154,7 +167,11 @@ func (o *ExportPolicyCreateResponseResultResult) SetExportPolicyInfo(newValue Ex
 
 // values is a 'getter' method
 func (o *ExportPolicyCreateResponseResultResult) values() ExportPolicyInfoType {
-	r := *o.ExportPolicyInfoPtr
+	var r ExportPolicyInfoType
+	if o.ExportPolicyInfoPtr == nil {
+		return r
+	}
+	r = *o.ExportPolicyInfoPtr
 	return r
 }
 
@@ -166,7 +183,11 @@ func (o *ExportPolicyCreateResponseResultResult) setValues(newValue ExportPolicy
 
 // Result is a 'getter' method
 func (o *ExportPolicyCreateResponseResult) Result() ExportPolicyCreateResponseResultResult {
-	r := *o.ResultPtr
+	var r ExportPolicyCreateResponseResultResult
+	if o.ResultPtr == nil {
+		return r
+	}
+	r = *o.ResultPtr
 	return r
 }
 

@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IgroupAddRequest is a structure to represent a igroup-add Request ZAPI object
@@ -107,7 +108,11 @@ func (o *IgroupAddRequest) executeWithoutIteration(zr *ZapiRunner) (*IgroupAddRe
 
 // Force is a 'getter' method
 func (o *IgroupAddRequest) Force() bool {
-	r := *o.ForcePtr
+	var r bool
+	if o.ForcePtr == nil {
+		return r
+	}
+	r = *o.ForcePtr
 	return r
 }
 
@@ -119,7 +124,11 @@ func (o *IgroupAddRequest) SetForce(newValue bool) *IgroupAddRequest {
 
 // Initiator is a 'getter' method
 func (o *IgroupAddRequest) Initiator() string {
-	r := *o.InitiatorPtr
+	var r string
+	if o.InitiatorPtr == nil {
+		return r
+	}
+	r = *o.InitiatorPtr
 	return r
 }
 
@@ -131,7 +140,11 @@ func (o *IgroupAddRequest) SetInitiator(newValue string) *IgroupAddRequest {
 
 // InitiatorGroupName is a 'getter' method
 func (o *IgroupAddRequest) InitiatorGroupName() string {
-	r := *o.InitiatorGroupNamePtr
+	var r string
+	if o.InitiatorGroupNamePtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupNamePtr
 	return r
 }
 

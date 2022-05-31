@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // NodeDetailsInfoType is a structure to represent a node-details-info ZAPI object
@@ -19,11 +20,14 @@ type NodeDetailsInfoType struct {
 	EnvFailedPowerSupplyMessagePtr *string                            `xml:"env-failed-power-supply-message"`
 	EnvOverTemperaturePtr          *bool                              `xml:"env-over-temperature"`
 	IsAllFlashOptimizedPtr         *bool                              `xml:"is-all-flash-optimized"`
+	IsAllFlashSelectOptimizedPtr   *bool                              `xml:"is-all-flash-select-optimized"`
+	IsCapacityOptimizedPtr         *bool                              `xml:"is-capacity-optimized"`
 	IsCloudOptimizedPtr            *bool                              `xml:"is-cloud-optimized"`
 	IsDiffSvcsPtr                  *bool                              `xml:"is-diff-svcs"`
 	IsEpsilonNodePtr               *bool                              `xml:"is-epsilon-node"`
 	IsNodeClusterEligiblePtr       *bool                              `xml:"is-node-cluster-eligible"`
 	IsNodeHealthyPtr               *bool                              `xml:"is-node-healthy"`
+	IsPerfOptimizedPtr             *bool                              `xml:"is-perf-optimized"`
 	MaximumAggregateSizePtr        *SizeType                          `xml:"maximum-aggregate-size"`
 	MaximumNumberOfVolumesPtr      *int                               `xml:"maximum-number-of-volumes"`
 	MaximumVolumeSizePtr           *SizeType                          `xml:"maximum-volume-size"`
@@ -41,6 +45,7 @@ type NodeDetailsInfoType struct {
 	NodeVendorPtr                  *string                            `xml:"node-vendor"`
 	NvramBatteryStatusPtr          *NvramBatteryStatusEnumType        `xml:"nvram-battery-status"`
 	ProductVersionPtr              *string                            `xml:"product-version"`
+	Sas2Sas3MixedStackSupportPtr   *Sas2Sas3MixedStackSupportType     `xml:"sas2-sas3-mixed-stack-support"`
 	VmSystemDisksPtr               *VmSystemDisksType                 `xml:"vm-system-disks"`
 	VmhostInfoPtr                  *VmhostInfoType                    `xml:"vmhost-info"`
 }
@@ -66,7 +71,11 @@ func (o NodeDetailsInfoType) String() string {
 
 // CpuBusytime is a 'getter' method
 func (o *NodeDetailsInfoType) CpuBusytime() int {
-	r := *o.CpuBusytimePtr
+	var r int
+	if o.CpuBusytimePtr == nil {
+		return r
+	}
+	r = *o.CpuBusytimePtr
 	return r
 }
 
@@ -78,7 +87,11 @@ func (o *NodeDetailsInfoType) SetCpuBusytime(newValue int) *NodeDetailsInfoType 
 
 // CpuFirmwareRelease is a 'getter' method
 func (o *NodeDetailsInfoType) CpuFirmwareRelease() string {
-	r := *o.CpuFirmwareReleasePtr
+	var r string
+	if o.CpuFirmwareReleasePtr == nil {
+		return r
+	}
+	r = *o.CpuFirmwareReleasePtr
 	return r
 }
 
@@ -90,7 +103,11 @@ func (o *NodeDetailsInfoType) SetCpuFirmwareRelease(newValue string) *NodeDetail
 
 // EnvFailedFanCount is a 'getter' method
 func (o *NodeDetailsInfoType) EnvFailedFanCount() int {
-	r := *o.EnvFailedFanCountPtr
+	var r int
+	if o.EnvFailedFanCountPtr == nil {
+		return r
+	}
+	r = *o.EnvFailedFanCountPtr
 	return r
 }
 
@@ -102,7 +119,11 @@ func (o *NodeDetailsInfoType) SetEnvFailedFanCount(newValue int) *NodeDetailsInf
 
 // EnvFailedFanMessage is a 'getter' method
 func (o *NodeDetailsInfoType) EnvFailedFanMessage() string {
-	r := *o.EnvFailedFanMessagePtr
+	var r string
+	if o.EnvFailedFanMessagePtr == nil {
+		return r
+	}
+	r = *o.EnvFailedFanMessagePtr
 	return r
 }
 
@@ -114,7 +135,11 @@ func (o *NodeDetailsInfoType) SetEnvFailedFanMessage(newValue string) *NodeDetai
 
 // EnvFailedPowerSupplyCount is a 'getter' method
 func (o *NodeDetailsInfoType) EnvFailedPowerSupplyCount() int {
-	r := *o.EnvFailedPowerSupplyCountPtr
+	var r int
+	if o.EnvFailedPowerSupplyCountPtr == nil {
+		return r
+	}
+	r = *o.EnvFailedPowerSupplyCountPtr
 	return r
 }
 
@@ -126,7 +151,11 @@ func (o *NodeDetailsInfoType) SetEnvFailedPowerSupplyCount(newValue int) *NodeDe
 
 // EnvFailedPowerSupplyMessage is a 'getter' method
 func (o *NodeDetailsInfoType) EnvFailedPowerSupplyMessage() string {
-	r := *o.EnvFailedPowerSupplyMessagePtr
+	var r string
+	if o.EnvFailedPowerSupplyMessagePtr == nil {
+		return r
+	}
+	r = *o.EnvFailedPowerSupplyMessagePtr
 	return r
 }
 
@@ -138,7 +167,11 @@ func (o *NodeDetailsInfoType) SetEnvFailedPowerSupplyMessage(newValue string) *N
 
 // EnvOverTemperature is a 'getter' method
 func (o *NodeDetailsInfoType) EnvOverTemperature() bool {
-	r := *o.EnvOverTemperaturePtr
+	var r bool
+	if o.EnvOverTemperaturePtr == nil {
+		return r
+	}
+	r = *o.EnvOverTemperaturePtr
 	return r
 }
 
@@ -150,7 +183,11 @@ func (o *NodeDetailsInfoType) SetEnvOverTemperature(newValue bool) *NodeDetailsI
 
 // IsAllFlashOptimized is a 'getter' method
 func (o *NodeDetailsInfoType) IsAllFlashOptimized() bool {
-	r := *o.IsAllFlashOptimizedPtr
+	var r bool
+	if o.IsAllFlashOptimizedPtr == nil {
+		return r
+	}
+	r = *o.IsAllFlashOptimizedPtr
 	return r
 }
 
@@ -160,9 +197,45 @@ func (o *NodeDetailsInfoType) SetIsAllFlashOptimized(newValue bool) *NodeDetails
 	return o
 }
 
+// IsAllFlashSelectOptimized is a 'getter' method
+func (o *NodeDetailsInfoType) IsAllFlashSelectOptimized() bool {
+	var r bool
+	if o.IsAllFlashSelectOptimizedPtr == nil {
+		return r
+	}
+	r = *o.IsAllFlashSelectOptimizedPtr
+	return r
+}
+
+// SetIsAllFlashSelectOptimized is a fluent style 'setter' method that can be chained
+func (o *NodeDetailsInfoType) SetIsAllFlashSelectOptimized(newValue bool) *NodeDetailsInfoType {
+	o.IsAllFlashSelectOptimizedPtr = &newValue
+	return o
+}
+
+// IsCapacityOptimized is a 'getter' method
+func (o *NodeDetailsInfoType) IsCapacityOptimized() bool {
+	var r bool
+	if o.IsCapacityOptimizedPtr == nil {
+		return r
+	}
+	r = *o.IsCapacityOptimizedPtr
+	return r
+}
+
+// SetIsCapacityOptimized is a fluent style 'setter' method that can be chained
+func (o *NodeDetailsInfoType) SetIsCapacityOptimized(newValue bool) *NodeDetailsInfoType {
+	o.IsCapacityOptimizedPtr = &newValue
+	return o
+}
+
 // IsCloudOptimized is a 'getter' method
 func (o *NodeDetailsInfoType) IsCloudOptimized() bool {
-	r := *o.IsCloudOptimizedPtr
+	var r bool
+	if o.IsCloudOptimizedPtr == nil {
+		return r
+	}
+	r = *o.IsCloudOptimizedPtr
 	return r
 }
 
@@ -174,7 +247,11 @@ func (o *NodeDetailsInfoType) SetIsCloudOptimized(newValue bool) *NodeDetailsInf
 
 // IsDiffSvcs is a 'getter' method
 func (o *NodeDetailsInfoType) IsDiffSvcs() bool {
-	r := *o.IsDiffSvcsPtr
+	var r bool
+	if o.IsDiffSvcsPtr == nil {
+		return r
+	}
+	r = *o.IsDiffSvcsPtr
 	return r
 }
 
@@ -186,7 +263,11 @@ func (o *NodeDetailsInfoType) SetIsDiffSvcs(newValue bool) *NodeDetailsInfoType 
 
 // IsEpsilonNode is a 'getter' method
 func (o *NodeDetailsInfoType) IsEpsilonNode() bool {
-	r := *o.IsEpsilonNodePtr
+	var r bool
+	if o.IsEpsilonNodePtr == nil {
+		return r
+	}
+	r = *o.IsEpsilonNodePtr
 	return r
 }
 
@@ -198,7 +279,11 @@ func (o *NodeDetailsInfoType) SetIsEpsilonNode(newValue bool) *NodeDetailsInfoTy
 
 // IsNodeClusterEligible is a 'getter' method
 func (o *NodeDetailsInfoType) IsNodeClusterEligible() bool {
-	r := *o.IsNodeClusterEligiblePtr
+	var r bool
+	if o.IsNodeClusterEligiblePtr == nil {
+		return r
+	}
+	r = *o.IsNodeClusterEligiblePtr
 	return r
 }
 
@@ -210,7 +295,11 @@ func (o *NodeDetailsInfoType) SetIsNodeClusterEligible(newValue bool) *NodeDetai
 
 // IsNodeHealthy is a 'getter' method
 func (o *NodeDetailsInfoType) IsNodeHealthy() bool {
-	r := *o.IsNodeHealthyPtr
+	var r bool
+	if o.IsNodeHealthyPtr == nil {
+		return r
+	}
+	r = *o.IsNodeHealthyPtr
 	return r
 }
 
@@ -220,9 +309,29 @@ func (o *NodeDetailsInfoType) SetIsNodeHealthy(newValue bool) *NodeDetailsInfoTy
 	return o
 }
 
+// IsPerfOptimized is a 'getter' method
+func (o *NodeDetailsInfoType) IsPerfOptimized() bool {
+	var r bool
+	if o.IsPerfOptimizedPtr == nil {
+		return r
+	}
+	r = *o.IsPerfOptimizedPtr
+	return r
+}
+
+// SetIsPerfOptimized is a fluent style 'setter' method that can be chained
+func (o *NodeDetailsInfoType) SetIsPerfOptimized(newValue bool) *NodeDetailsInfoType {
+	o.IsPerfOptimizedPtr = &newValue
+	return o
+}
+
 // MaximumAggregateSize is a 'getter' method
 func (o *NodeDetailsInfoType) MaximumAggregateSize() SizeType {
-	r := *o.MaximumAggregateSizePtr
+	var r SizeType
+	if o.MaximumAggregateSizePtr == nil {
+		return r
+	}
+	r = *o.MaximumAggregateSizePtr
 	return r
 }
 
@@ -234,7 +343,11 @@ func (o *NodeDetailsInfoType) SetMaximumAggregateSize(newValue SizeType) *NodeDe
 
 // MaximumNumberOfVolumes is a 'getter' method
 func (o *NodeDetailsInfoType) MaximumNumberOfVolumes() int {
-	r := *o.MaximumNumberOfVolumesPtr
+	var r int
+	if o.MaximumNumberOfVolumesPtr == nil {
+		return r
+	}
+	r = *o.MaximumNumberOfVolumesPtr
 	return r
 }
 
@@ -246,7 +359,11 @@ func (o *NodeDetailsInfoType) SetMaximumNumberOfVolumes(newValue int) *NodeDetai
 
 // MaximumVolumeSize is a 'getter' method
 func (o *NodeDetailsInfoType) MaximumVolumeSize() SizeType {
-	r := *o.MaximumVolumeSizePtr
+	var r SizeType
+	if o.MaximumVolumeSizePtr == nil {
+		return r
+	}
+	r = *o.MaximumVolumeSizePtr
 	return r
 }
 
@@ -258,7 +375,11 @@ func (o *NodeDetailsInfoType) SetMaximumVolumeSize(newValue SizeType) *NodeDetai
 
 // Node is a 'getter' method
 func (o *NodeDetailsInfoType) Node() NodeNameType {
-	r := *o.NodePtr
+	var r NodeNameType
+	if o.NodePtr == nil {
+		return r
+	}
+	r = *o.NodePtr
 	return r
 }
 
@@ -270,7 +391,11 @@ func (o *NodeDetailsInfoType) SetNode(newValue NodeNameType) *NodeDetailsInfoTyp
 
 // NodeAssetTag is a 'getter' method
 func (o *NodeDetailsInfoType) NodeAssetTag() string {
-	r := *o.NodeAssetTagPtr
+	var r string
+	if o.NodeAssetTagPtr == nil {
+		return r
+	}
+	r = *o.NodeAssetTagPtr
 	return r
 }
 
@@ -282,7 +407,11 @@ func (o *NodeDetailsInfoType) SetNodeAssetTag(newValue string) *NodeDetailsInfoT
 
 // NodeLocation is a 'getter' method
 func (o *NodeDetailsInfoType) NodeLocation() string {
-	r := *o.NodeLocationPtr
+	var r string
+	if o.NodeLocationPtr == nil {
+		return r
+	}
+	r = *o.NodeLocationPtr
 	return r
 }
 
@@ -294,7 +423,11 @@ func (o *NodeDetailsInfoType) SetNodeLocation(newValue string) *NodeDetailsInfoT
 
 // NodeModel is a 'getter' method
 func (o *NodeDetailsInfoType) NodeModel() string {
-	r := *o.NodeModelPtr
+	var r string
+	if o.NodeModelPtr == nil {
+		return r
+	}
+	r = *o.NodeModelPtr
 	return r
 }
 
@@ -306,7 +439,11 @@ func (o *NodeDetailsInfoType) SetNodeModel(newValue string) *NodeDetailsInfoType
 
 // NodeNvramId is a 'getter' method
 func (o *NodeDetailsInfoType) NodeNvramId() int {
-	r := *o.NodeNvramIdPtr
+	var r int
+	if o.NodeNvramIdPtr == nil {
+		return r
+	}
+	r = *o.NodeNvramIdPtr
 	return r
 }
 
@@ -318,7 +455,11 @@ func (o *NodeDetailsInfoType) SetNodeNvramId(newValue int) *NodeDetailsInfoType 
 
 // NodeOwner is a 'getter' method
 func (o *NodeDetailsInfoType) NodeOwner() string {
-	r := *o.NodeOwnerPtr
+	var r string
+	if o.NodeOwnerPtr == nil {
+		return r
+	}
+	r = *o.NodeOwnerPtr
 	return r
 }
 
@@ -330,7 +471,11 @@ func (o *NodeDetailsInfoType) SetNodeOwner(newValue string) *NodeDetailsInfoType
 
 // NodeSerialNumber is a 'getter' method
 func (o *NodeDetailsInfoType) NodeSerialNumber() string {
-	r := *o.NodeSerialNumberPtr
+	var r string
+	if o.NodeSerialNumberPtr == nil {
+		return r
+	}
+	r = *o.NodeSerialNumberPtr
 	return r
 }
 
@@ -342,7 +487,11 @@ func (o *NodeDetailsInfoType) SetNodeSerialNumber(newValue string) *NodeDetailsI
 
 // NodeStorageConfiguration is a 'getter' method
 func (o *NodeDetailsInfoType) NodeStorageConfiguration() StorageConfigurationStateEnumType {
-	r := *o.NodeStorageConfigurationPtr
+	var r StorageConfigurationStateEnumType
+	if o.NodeStorageConfigurationPtr == nil {
+		return r
+	}
+	r = *o.NodeStorageConfigurationPtr
 	return r
 }
 
@@ -354,7 +503,11 @@ func (o *NodeDetailsInfoType) SetNodeStorageConfiguration(newValue StorageConfig
 
 // NodeSystemId is a 'getter' method
 func (o *NodeDetailsInfoType) NodeSystemId() string {
-	r := *o.NodeSystemIdPtr
+	var r string
+	if o.NodeSystemIdPtr == nil {
+		return r
+	}
+	r = *o.NodeSystemIdPtr
 	return r
 }
 
@@ -366,7 +519,11 @@ func (o *NodeDetailsInfoType) SetNodeSystemId(newValue string) *NodeDetailsInfoT
 
 // NodeUptime is a 'getter' method
 func (o *NodeDetailsInfoType) NodeUptime() int {
-	r := *o.NodeUptimePtr
+	var r int
+	if o.NodeUptimePtr == nil {
+		return r
+	}
+	r = *o.NodeUptimePtr
 	return r
 }
 
@@ -378,7 +535,11 @@ func (o *NodeDetailsInfoType) SetNodeUptime(newValue int) *NodeDetailsInfoType {
 
 // NodeUuid is a 'getter' method
 func (o *NodeDetailsInfoType) NodeUuid() string {
-	r := *o.NodeUuidPtr
+	var r string
+	if o.NodeUuidPtr == nil {
+		return r
+	}
+	r = *o.NodeUuidPtr
 	return r
 }
 
@@ -390,7 +551,11 @@ func (o *NodeDetailsInfoType) SetNodeUuid(newValue string) *NodeDetailsInfoType 
 
 // NodeVendor is a 'getter' method
 func (o *NodeDetailsInfoType) NodeVendor() string {
-	r := *o.NodeVendorPtr
+	var r string
+	if o.NodeVendorPtr == nil {
+		return r
+	}
+	r = *o.NodeVendorPtr
 	return r
 }
 
@@ -402,7 +567,11 @@ func (o *NodeDetailsInfoType) SetNodeVendor(newValue string) *NodeDetailsInfoTyp
 
 // NvramBatteryStatus is a 'getter' method
 func (o *NodeDetailsInfoType) NvramBatteryStatus() NvramBatteryStatusEnumType {
-	r := *o.NvramBatteryStatusPtr
+	var r NvramBatteryStatusEnumType
+	if o.NvramBatteryStatusPtr == nil {
+		return r
+	}
+	r = *o.NvramBatteryStatusPtr
 	return r
 }
 
@@ -414,7 +583,11 @@ func (o *NodeDetailsInfoType) SetNvramBatteryStatus(newValue NvramBatteryStatusE
 
 // ProductVersion is a 'getter' method
 func (o *NodeDetailsInfoType) ProductVersion() string {
-	r := *o.ProductVersionPtr
+	var r string
+	if o.ProductVersionPtr == nil {
+		return r
+	}
+	r = *o.ProductVersionPtr
 	return r
 }
 
@@ -424,9 +597,29 @@ func (o *NodeDetailsInfoType) SetProductVersion(newValue string) *NodeDetailsInf
 	return o
 }
 
+// Sas2Sas3MixedStackSupport is a 'getter' method
+func (o *NodeDetailsInfoType) Sas2Sas3MixedStackSupport() Sas2Sas3MixedStackSupportType {
+	var r Sas2Sas3MixedStackSupportType
+	if o.Sas2Sas3MixedStackSupportPtr == nil {
+		return r
+	}
+	r = *o.Sas2Sas3MixedStackSupportPtr
+	return r
+}
+
+// SetSas2Sas3MixedStackSupport is a fluent style 'setter' method that can be chained
+func (o *NodeDetailsInfoType) SetSas2Sas3MixedStackSupport(newValue Sas2Sas3MixedStackSupportType) *NodeDetailsInfoType {
+	o.Sas2Sas3MixedStackSupportPtr = &newValue
+	return o
+}
+
 // VmSystemDisks is a 'getter' method
 func (o *NodeDetailsInfoType) VmSystemDisks() VmSystemDisksType {
-	r := *o.VmSystemDisksPtr
+	var r VmSystemDisksType
+	if o.VmSystemDisksPtr == nil {
+		return r
+	}
+	r = *o.VmSystemDisksPtr
 	return r
 }
 
@@ -438,7 +631,11 @@ func (o *NodeDetailsInfoType) SetVmSystemDisks(newValue VmSystemDisksType) *Node
 
 // VmhostInfo is a 'getter' method
 func (o *NodeDetailsInfoType) VmhostInfo() VmhostInfoType {
-	r := *o.VmhostInfoPtr
+	var r VmhostInfoType
+	if o.VmhostInfoPtr == nil {
+		return r
+	}
+	r = *o.VmhostInfoPtr
 	return r
 }
 

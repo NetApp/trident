@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumePerformanceAttributesType is a structure to represent a volume-performance-attributes ZAPI object
@@ -41,7 +42,11 @@ func (o VolumePerformanceAttributesType) String() string {
 
 // ExtentEnabled is a 'getter' method
 func (o *VolumePerformanceAttributesType) ExtentEnabled() string {
-	r := *o.ExtentEnabledPtr
+	var r string
+	if o.ExtentEnabledPtr == nil {
+		return r
+	}
+	r = *o.ExtentEnabledPtr
 	return r
 }
 
@@ -53,7 +58,11 @@ func (o *VolumePerformanceAttributesType) SetExtentEnabled(newValue string) *Vol
 
 // FcDelegsEnabled is a 'getter' method
 func (o *VolumePerformanceAttributesType) FcDelegsEnabled() bool {
-	r := *o.FcDelegsEnabledPtr
+	var r bool
+	if o.FcDelegsEnabledPtr == nil {
+		return r
+	}
+	r = *o.FcDelegsEnabledPtr
 	return r
 }
 
@@ -65,7 +74,11 @@ func (o *VolumePerformanceAttributesType) SetFcDelegsEnabled(newValue bool) *Vol
 
 // IsAtimeUpdateEnabled is a 'getter' method
 func (o *VolumePerformanceAttributesType) IsAtimeUpdateEnabled() bool {
-	r := *o.IsAtimeUpdateEnabledPtr
+	var r bool
+	if o.IsAtimeUpdateEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsAtimeUpdateEnabledPtr
 	return r
 }
 
@@ -77,7 +90,11 @@ func (o *VolumePerformanceAttributesType) SetIsAtimeUpdateEnabled(newValue bool)
 
 // MaxWriteAllocBlocks is a 'getter' method
 func (o *VolumePerformanceAttributesType) MaxWriteAllocBlocks() int {
-	r := *o.MaxWriteAllocBlocksPtr
+	var r int
+	if o.MaxWriteAllocBlocksPtr == nil {
+		return r
+	}
+	r = *o.MaxWriteAllocBlocksPtr
 	return r
 }
 
@@ -89,7 +106,11 @@ func (o *VolumePerformanceAttributesType) SetMaxWriteAllocBlocks(newValue int) *
 
 // MinimalReadAhead is a 'getter' method
 func (o *VolumePerformanceAttributesType) MinimalReadAhead() bool {
-	r := *o.MinimalReadAheadPtr
+	var r bool
+	if o.MinimalReadAheadPtr == nil {
+		return r
+	}
+	r = *o.MinimalReadAheadPtr
 	return r
 }
 
@@ -101,7 +122,11 @@ func (o *VolumePerformanceAttributesType) SetMinimalReadAhead(newValue bool) *Vo
 
 // ReadRealloc is a 'getter' method
 func (o *VolumePerformanceAttributesType) ReadRealloc() string {
-	r := *o.ReadReallocPtr
+	var r string
+	if o.ReadReallocPtr == nil {
+		return r
+	}
+	r = *o.ReadReallocPtr
 	return r
 }
 
@@ -113,7 +138,11 @@ func (o *VolumePerformanceAttributesType) SetReadRealloc(newValue string) *Volum
 
 // SingleInstanceDataLogging is a 'getter' method
 func (o *VolumePerformanceAttributesType) SingleInstanceDataLogging() string {
-	r := *o.SingleInstanceDataLoggingPtr
+	var r string
+	if o.SingleInstanceDataLoggingPtr == nil {
+		return r
+	}
+	r = *o.SingleInstanceDataLoggingPtr
 	return r
 }
 

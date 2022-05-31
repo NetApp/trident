@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiNodeGetNameRequest is a structure to represent a iscsi-node-get-name Request ZAPI object
@@ -105,7 +106,11 @@ func (o *IscsiNodeGetNameRequest) executeWithoutIteration(zr *ZapiRunner) (*Iscs
 
 // NodeName is a 'getter' method
 func (o *IscsiNodeGetNameResponseResult) NodeName() string {
-	r := *o.NodeNamePtr
+	var r string
+	if o.NodeNamePtr == nil {
+		return r
+	}
+	r = *o.NodeNamePtr
 	return r
 }
 

@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeSnaplockAttributesType is a structure to represent a volume-snaplock-attributes ZAPI object
@@ -35,7 +36,11 @@ func (o VolumeSnaplockAttributesType) String() string {
 
 // SnaplockType is a 'getter' method
 func (o *VolumeSnaplockAttributesType) SnaplockType() SnaplocktypeType {
-	r := *o.SnaplockTypePtr
+	var r SnaplocktypeType
+	if o.SnaplockTypePtr == nil {
+		return r
+	}
+	r = *o.SnaplockTypePtr
 	return r
 }
 

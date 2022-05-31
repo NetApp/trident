@@ -1,12 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // ExportPolicyGetRequest is a structure to represent a export-policy-get Request ZAPI object
@@ -119,7 +119,11 @@ func (o ExportPolicyGetRequestDesiredAttributes) String() string {
 
 // ExportPolicyInfo is a 'getter' method
 func (o *ExportPolicyGetRequestDesiredAttributes) ExportPolicyInfo() ExportPolicyInfoType {
-	r := *o.ExportPolicyInfoPtr
+	var r ExportPolicyInfoType
+	if o.ExportPolicyInfoPtr == nil {
+		return r
+	}
+	r = *o.ExportPolicyInfoPtr
 	return r
 }
 
@@ -131,7 +135,11 @@ func (o *ExportPolicyGetRequestDesiredAttributes) SetExportPolicyInfo(newValue E
 
 // DesiredAttributes is a 'getter' method
 func (o *ExportPolicyGetRequest) DesiredAttributes() ExportPolicyGetRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r ExportPolicyGetRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -143,7 +151,11 @@ func (o *ExportPolicyGetRequest) SetDesiredAttributes(newValue ExportPolicyGetRe
 
 // PolicyName is a 'getter' method
 func (o *ExportPolicyGetRequest) PolicyName() ExportPolicyNameType {
-	r := *o.PolicyNamePtr
+	var r ExportPolicyNameType
+	if o.PolicyNamePtr == nil {
+		return r
+	}
+	r = *o.PolicyNamePtr
 	return r
 }
 
@@ -166,7 +178,11 @@ func (o ExportPolicyGetResponseResultAttributes) String() string {
 
 // ExportPolicyInfo is a 'getter' method
 func (o *ExportPolicyGetResponseResultAttributes) ExportPolicyInfo() ExportPolicyInfoType {
-	r := *o.ExportPolicyInfoPtr
+	var r ExportPolicyInfoType
+	if o.ExportPolicyInfoPtr == nil {
+		return r
+	}
+	r = *o.ExportPolicyInfoPtr
 	return r
 }
 
@@ -178,7 +194,11 @@ func (o *ExportPolicyGetResponseResultAttributes) SetExportPolicyInfo(newValue E
 
 // values is a 'getter' method
 func (o *ExportPolicyGetResponseResultAttributes) values() ExportPolicyInfoType {
-	r := *o.ExportPolicyInfoPtr
+	var r ExportPolicyInfoType
+	if o.ExportPolicyInfoPtr == nil {
+		return r
+	}
+	r = *o.ExportPolicyInfoPtr
 	return r
 }
 
@@ -190,7 +210,11 @@ func (o *ExportPolicyGetResponseResultAttributes) setValues(newValue ExportPolic
 
 // Attributes is a 'getter' method
 func (o *ExportPolicyGetResponseResult) Attributes() ExportPolicyGetResponseResultAttributes {
-	r := *o.AttributesPtr
+	var r ExportPolicyGetResponseResultAttributes
+	if o.AttributesPtr == nil {
+		return r
+	}
+	r = *o.AttributesPtr
 	return r
 }
 

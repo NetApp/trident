@@ -1,17 +1,19 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeStateAttributesType is a structure to represent a volume-state-attributes ZAPI object
 type VolumeStateAttributesType struct {
 	XMLName                       xml.Name                         `xml:"volume-state-attributes"`
 	BecomeNodeRootAfterRebootPtr  *bool                            `xml:"become-node-root-after-reboot"`
+	ConstituentCountPtr           *int                             `xml:"constituent-count"`
 	ForceNvfailOnDrPtr            *bool                            `xml:"force-nvfail-on-dr"`
 	IgnoreInconsistentPtr         *bool                            `xml:"ignore-inconsistent"`
 	InNvfailedStatePtr            *bool                            `xml:"in-nvfailed-state"`
@@ -29,9 +31,13 @@ type VolumeStateAttributesType struct {
 	IsProtocolAccessFencedPtr     *bool                            `xml:"is-protocol-access-fenced"`
 	IsQuiescedInMemoryPtr         *bool                            `xml:"is-quiesced-in-memory"`
 	IsQuiescedOnDiskPtr           *bool                            `xml:"is-quiesced-on-disk"`
+	IsSmbcFailoverCapablePtr      *bool                            `xml:"is-smbc-failover-capable"`
+	IsSmbcMasterPtr               *bool                            `xml:"is-smbc-master"`
 	IsUnrecoverablePtr            *bool                            `xml:"is-unrecoverable"`
 	IsVolumeInCutoverPtr          *bool                            `xml:"is-volume-in-cutover"`
 	IsVserverRootPtr              *bool                            `xml:"is-vserver-root"`
+	ProtocolAccessFencedByPtr     *string                          `xml:"protocol-access-fenced-by"`
+	SmbcConsensusPtr              *string                          `xml:"smbc-consensus"`
 	StatePtr                      *string                          `xml:"state"`
 	StatusPtr                     *VolumeStateAttributesTypeStatus `xml:"status"`
 	// work in progress
@@ -58,7 +64,11 @@ func (o VolumeStateAttributesType) String() string {
 
 // BecomeNodeRootAfterReboot is a 'getter' method
 func (o *VolumeStateAttributesType) BecomeNodeRootAfterReboot() bool {
-	r := *o.BecomeNodeRootAfterRebootPtr
+	var r bool
+	if o.BecomeNodeRootAfterRebootPtr == nil {
+		return r
+	}
+	r = *o.BecomeNodeRootAfterRebootPtr
 	return r
 }
 
@@ -68,9 +78,29 @@ func (o *VolumeStateAttributesType) SetBecomeNodeRootAfterReboot(newValue bool) 
 	return o
 }
 
+// ConstituentCount is a 'getter' method
+func (o *VolumeStateAttributesType) ConstituentCount() int {
+	var r int
+	if o.ConstituentCountPtr == nil {
+		return r
+	}
+	r = *o.ConstituentCountPtr
+	return r
+}
+
+// SetConstituentCount is a fluent style 'setter' method that can be chained
+func (o *VolumeStateAttributesType) SetConstituentCount(newValue int) *VolumeStateAttributesType {
+	o.ConstituentCountPtr = &newValue
+	return o
+}
+
 // ForceNvfailOnDr is a 'getter' method
 func (o *VolumeStateAttributesType) ForceNvfailOnDr() bool {
-	r := *o.ForceNvfailOnDrPtr
+	var r bool
+	if o.ForceNvfailOnDrPtr == nil {
+		return r
+	}
+	r = *o.ForceNvfailOnDrPtr
 	return r
 }
 
@@ -82,7 +112,11 @@ func (o *VolumeStateAttributesType) SetForceNvfailOnDr(newValue bool) *VolumeSta
 
 // IgnoreInconsistent is a 'getter' method
 func (o *VolumeStateAttributesType) IgnoreInconsistent() bool {
-	r := *o.IgnoreInconsistentPtr
+	var r bool
+	if o.IgnoreInconsistentPtr == nil {
+		return r
+	}
+	r = *o.IgnoreInconsistentPtr
 	return r
 }
 
@@ -94,7 +128,11 @@ func (o *VolumeStateAttributesType) SetIgnoreInconsistent(newValue bool) *Volume
 
 // InNvfailedState is a 'getter' method
 func (o *VolumeStateAttributesType) InNvfailedState() bool {
-	r := *o.InNvfailedStatePtr
+	var r bool
+	if o.InNvfailedStatePtr == nil {
+		return r
+	}
+	r = *o.InNvfailedStatePtr
 	return r
 }
 
@@ -106,7 +144,11 @@ func (o *VolumeStateAttributesType) SetInNvfailedState(newValue bool) *VolumeSta
 
 // IsClusterVolume is a 'getter' method
 func (o *VolumeStateAttributesType) IsClusterVolume() bool {
-	r := *o.IsClusterVolumePtr
+	var r bool
+	if o.IsClusterVolumePtr == nil {
+		return r
+	}
+	r = *o.IsClusterVolumePtr
 	return r
 }
 
@@ -118,7 +160,11 @@ func (o *VolumeStateAttributesType) SetIsClusterVolume(newValue bool) *VolumeSta
 
 // IsConstituent is a 'getter' method
 func (o *VolumeStateAttributesType) IsConstituent() bool {
-	r := *o.IsConstituentPtr
+	var r bool
+	if o.IsConstituentPtr == nil {
+		return r
+	}
+	r = *o.IsConstituentPtr
 	return r
 }
 
@@ -130,7 +176,11 @@ func (o *VolumeStateAttributesType) SetIsConstituent(newValue bool) *VolumeState
 
 // IsFlexgroup is a 'getter' method
 func (o *VolumeStateAttributesType) IsFlexgroup() bool {
-	r := *o.IsFlexgroupPtr
+	var r bool
+	if o.IsFlexgroupPtr == nil {
+		return r
+	}
+	r = *o.IsFlexgroupPtr
 	return r
 }
 
@@ -142,7 +192,11 @@ func (o *VolumeStateAttributesType) SetIsFlexgroup(newValue bool) *VolumeStateAt
 
 // IsFlexgroupQtreeEnabled is a 'getter' method
 func (o *VolumeStateAttributesType) IsFlexgroupQtreeEnabled() bool {
-	r := *o.IsFlexgroupQtreeEnabledPtr
+	var r bool
+	if o.IsFlexgroupQtreeEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsFlexgroupQtreeEnabledPtr
 	return r
 }
 
@@ -154,7 +208,11 @@ func (o *VolumeStateAttributesType) SetIsFlexgroupQtreeEnabled(newValue bool) *V
 
 // IsInconsistent is a 'getter' method
 func (o *VolumeStateAttributesType) IsInconsistent() bool {
-	r := *o.IsInconsistentPtr
+	var r bool
+	if o.IsInconsistentPtr == nil {
+		return r
+	}
+	r = *o.IsInconsistentPtr
 	return r
 }
 
@@ -166,7 +224,11 @@ func (o *VolumeStateAttributesType) SetIsInconsistent(newValue bool) *VolumeStat
 
 // IsInvalid is a 'getter' method
 func (o *VolumeStateAttributesType) IsInvalid() bool {
-	r := *o.IsInvalidPtr
+	var r bool
+	if o.IsInvalidPtr == nil {
+		return r
+	}
+	r = *o.IsInvalidPtr
 	return r
 }
 
@@ -178,7 +240,11 @@ func (o *VolumeStateAttributesType) SetIsInvalid(newValue bool) *VolumeStateAttr
 
 // IsJunctionActive is a 'getter' method
 func (o *VolumeStateAttributesType) IsJunctionActive() bool {
-	r := *o.IsJunctionActivePtr
+	var r bool
+	if o.IsJunctionActivePtr == nil {
+		return r
+	}
+	r = *o.IsJunctionActivePtr
 	return r
 }
 
@@ -190,7 +256,11 @@ func (o *VolumeStateAttributesType) SetIsJunctionActive(newValue bool) *VolumeSt
 
 // IsMoveDestinationInCutover is a 'getter' method
 func (o *VolumeStateAttributesType) IsMoveDestinationInCutover() bool {
-	r := *o.IsMoveDestinationInCutoverPtr
+	var r bool
+	if o.IsMoveDestinationInCutoverPtr == nil {
+		return r
+	}
+	r = *o.IsMoveDestinationInCutoverPtr
 	return r
 }
 
@@ -202,7 +272,11 @@ func (o *VolumeStateAttributesType) SetIsMoveDestinationInCutover(newValue bool)
 
 // IsMoving is a 'getter' method
 func (o *VolumeStateAttributesType) IsMoving() bool {
-	r := *o.IsMovingPtr
+	var r bool
+	if o.IsMovingPtr == nil {
+		return r
+	}
+	r = *o.IsMovingPtr
 	return r
 }
 
@@ -214,7 +288,11 @@ func (o *VolumeStateAttributesType) SetIsMoving(newValue bool) *VolumeStateAttri
 
 // IsNodeRoot is a 'getter' method
 func (o *VolumeStateAttributesType) IsNodeRoot() bool {
-	r := *o.IsNodeRootPtr
+	var r bool
+	if o.IsNodeRootPtr == nil {
+		return r
+	}
+	r = *o.IsNodeRootPtr
 	return r
 }
 
@@ -226,7 +304,11 @@ func (o *VolumeStateAttributesType) SetIsNodeRoot(newValue bool) *VolumeStateAtt
 
 // IsNvfailEnabled is a 'getter' method
 func (o *VolumeStateAttributesType) IsNvfailEnabled() bool {
-	r := *o.IsNvfailEnabledPtr
+	var r bool
+	if o.IsNvfailEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsNvfailEnabledPtr
 	return r
 }
 
@@ -238,7 +320,11 @@ func (o *VolumeStateAttributesType) SetIsNvfailEnabled(newValue bool) *VolumeSta
 
 // IsProtocolAccessFenced is a 'getter' method
 func (o *VolumeStateAttributesType) IsProtocolAccessFenced() bool {
-	r := *o.IsProtocolAccessFencedPtr
+	var r bool
+	if o.IsProtocolAccessFencedPtr == nil {
+		return r
+	}
+	r = *o.IsProtocolAccessFencedPtr
 	return r
 }
 
@@ -250,7 +336,11 @@ func (o *VolumeStateAttributesType) SetIsProtocolAccessFenced(newValue bool) *Vo
 
 // IsQuiescedInMemory is a 'getter' method
 func (o *VolumeStateAttributesType) IsQuiescedInMemory() bool {
-	r := *o.IsQuiescedInMemoryPtr
+	var r bool
+	if o.IsQuiescedInMemoryPtr == nil {
+		return r
+	}
+	r = *o.IsQuiescedInMemoryPtr
 	return r
 }
 
@@ -262,7 +352,11 @@ func (o *VolumeStateAttributesType) SetIsQuiescedInMemory(newValue bool) *Volume
 
 // IsQuiescedOnDisk is a 'getter' method
 func (o *VolumeStateAttributesType) IsQuiescedOnDisk() bool {
-	r := *o.IsQuiescedOnDiskPtr
+	var r bool
+	if o.IsQuiescedOnDiskPtr == nil {
+		return r
+	}
+	r = *o.IsQuiescedOnDiskPtr
 	return r
 }
 
@@ -272,9 +366,45 @@ func (o *VolumeStateAttributesType) SetIsQuiescedOnDisk(newValue bool) *VolumeSt
 	return o
 }
 
+// IsSmbcFailoverCapable is a 'getter' method
+func (o *VolumeStateAttributesType) IsSmbcFailoverCapable() bool {
+	var r bool
+	if o.IsSmbcFailoverCapablePtr == nil {
+		return r
+	}
+	r = *o.IsSmbcFailoverCapablePtr
+	return r
+}
+
+// SetIsSmbcFailoverCapable is a fluent style 'setter' method that can be chained
+func (o *VolumeStateAttributesType) SetIsSmbcFailoverCapable(newValue bool) *VolumeStateAttributesType {
+	o.IsSmbcFailoverCapablePtr = &newValue
+	return o
+}
+
+// IsSmbcMaster is a 'getter' method
+func (o *VolumeStateAttributesType) IsSmbcMaster() bool {
+	var r bool
+	if o.IsSmbcMasterPtr == nil {
+		return r
+	}
+	r = *o.IsSmbcMasterPtr
+	return r
+}
+
+// SetIsSmbcMaster is a fluent style 'setter' method that can be chained
+func (o *VolumeStateAttributesType) SetIsSmbcMaster(newValue bool) *VolumeStateAttributesType {
+	o.IsSmbcMasterPtr = &newValue
+	return o
+}
+
 // IsUnrecoverable is a 'getter' method
 func (o *VolumeStateAttributesType) IsUnrecoverable() bool {
-	r := *o.IsUnrecoverablePtr
+	var r bool
+	if o.IsUnrecoverablePtr == nil {
+		return r
+	}
+	r = *o.IsUnrecoverablePtr
 	return r
 }
 
@@ -286,7 +416,11 @@ func (o *VolumeStateAttributesType) SetIsUnrecoverable(newValue bool) *VolumeSta
 
 // IsVolumeInCutover is a 'getter' method
 func (o *VolumeStateAttributesType) IsVolumeInCutover() bool {
-	r := *o.IsVolumeInCutoverPtr
+	var r bool
+	if o.IsVolumeInCutoverPtr == nil {
+		return r
+	}
+	r = *o.IsVolumeInCutoverPtr
 	return r
 }
 
@@ -298,7 +432,11 @@ func (o *VolumeStateAttributesType) SetIsVolumeInCutover(newValue bool) *VolumeS
 
 // IsVserverRoot is a 'getter' method
 func (o *VolumeStateAttributesType) IsVserverRoot() bool {
-	r := *o.IsVserverRootPtr
+	var r bool
+	if o.IsVserverRootPtr == nil {
+		return r
+	}
+	r = *o.IsVserverRootPtr
 	return r
 }
 
@@ -308,9 +446,45 @@ func (o *VolumeStateAttributesType) SetIsVserverRoot(newValue bool) *VolumeState
 	return o
 }
 
+// ProtocolAccessFencedBy is a 'getter' method
+func (o *VolumeStateAttributesType) ProtocolAccessFencedBy() string {
+	var r string
+	if o.ProtocolAccessFencedByPtr == nil {
+		return r
+	}
+	r = *o.ProtocolAccessFencedByPtr
+	return r
+}
+
+// SetProtocolAccessFencedBy is a fluent style 'setter' method that can be chained
+func (o *VolumeStateAttributesType) SetProtocolAccessFencedBy(newValue string) *VolumeStateAttributesType {
+	o.ProtocolAccessFencedByPtr = &newValue
+	return o
+}
+
+// SmbcConsensus is a 'getter' method
+func (o *VolumeStateAttributesType) SmbcConsensus() string {
+	var r string
+	if o.SmbcConsensusPtr == nil {
+		return r
+	}
+	r = *o.SmbcConsensusPtr
+	return r
+}
+
+// SetSmbcConsensus is a fluent style 'setter' method that can be chained
+func (o *VolumeStateAttributesType) SetSmbcConsensus(newValue string) *VolumeStateAttributesType {
+	o.SmbcConsensusPtr = &newValue
+	return o
+}
+
 // State is a 'getter' method
 func (o *VolumeStateAttributesType) State() string {
-	r := *o.StatePtr
+	var r string
+	if o.StatePtr == nil {
+		return r
+	}
+	r = *o.StatePtr
 	return r
 }
 
@@ -342,7 +516,11 @@ func (o *VolumeStateAttributesTypeStatus) SetString(newValue []string) *VolumeSt
 
 // Status is a 'getter' method
 func (o *VolumeStateAttributesType) Status() VolumeStateAttributesTypeStatus {
-	r := *o.StatusPtr
+	var r VolumeStateAttributesTypeStatus
+	if o.StatusPtr == nil {
+		return r
+	}
+	r = *o.StatusPtr
 	return r
 }
 

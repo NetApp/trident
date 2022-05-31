@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeExportAttributesType is a structure to represent a volume-export-attributes ZAPI object
@@ -35,7 +36,11 @@ func (o VolumeExportAttributesType) String() string {
 
 // Policy is a 'getter' method
 func (o *VolumeExportAttributesType) Policy() string {
-	r := *o.PolicyPtr
+	var r string
+	if o.PolicyPtr == nil {
+		return r
+	}
+	r = *o.PolicyPtr
 	return r
 }
 

@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // BlockRangeType is a structure to represent a block-range ZAPI object
@@ -37,7 +38,11 @@ func (o BlockRangeType) String() string {
 
 // BlockCount is a 'getter' method
 func (o *BlockRangeType) BlockCount() int {
-	r := *o.BlockCountPtr
+	var r int
+	if o.BlockCountPtr == nil {
+		return r
+	}
+	r = *o.BlockCountPtr
 	return r
 }
 
@@ -49,7 +54,11 @@ func (o *BlockRangeType) SetBlockCount(newValue int) *BlockRangeType {
 
 // DestinationBlockNumber is a 'getter' method
 func (o *BlockRangeType) DestinationBlockNumber() int {
-	r := *o.DestinationBlockNumberPtr
+	var r int
+	if o.DestinationBlockNumberPtr == nil {
+		return r
+	}
+	r = *o.DestinationBlockNumberPtr
 	return r
 }
 
@@ -61,7 +70,11 @@ func (o *BlockRangeType) SetDestinationBlockNumber(newValue int) *BlockRangeType
 
 // SourceBlockNumber is a 'getter' method
 func (o *BlockRangeType) SourceBlockNumber() int {
-	r := *o.SourceBlockNumberPtr
+	var r int
+	if o.SourceBlockNumberPtr == nil {
+		return r
+	}
+	r = *o.SourceBlockNumberPtr
 	return r
 }
 

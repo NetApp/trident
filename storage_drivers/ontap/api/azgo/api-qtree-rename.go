@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // QtreeRenameRequest is a structure to represent a qtree-rename Request ZAPI object
@@ -106,7 +107,11 @@ func (o *QtreeRenameRequest) executeWithoutIteration(zr *ZapiRunner) (*QtreeRena
 
 // NewQtreeName is a 'getter' method
 func (o *QtreeRenameRequest) NewQtreeName() string {
-	r := *o.NewQtreeNamePtr
+	var r string
+	if o.NewQtreeNamePtr == nil {
+		return r
+	}
+	r = *o.NewQtreeNamePtr
 	return r
 }
 
@@ -118,7 +123,11 @@ func (o *QtreeRenameRequest) SetNewQtreeName(newValue string) *QtreeRenameReques
 
 // Qtree is a 'getter' method
 func (o *QtreeRenameRequest) Qtree() string {
-	r := *o.QtreePtr
+	var r string
+	if o.QtreePtr == nil {
+		return r
+	}
+	r = *o.QtreePtr
 	return r
 }
 

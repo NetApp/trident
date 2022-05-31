@@ -3,5 +3,5 @@
 
 package azgo
 
-// IpRangeOrMaskType is a structure to represent a ip-range-or-mask ZAPI object
-type IpRangeOrMaskType = string
+// EncryptiontypeType is a structure to represent a encryptiontype ZAPI object
+type EncryptiontypeType = string

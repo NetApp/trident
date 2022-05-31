@@ -1,21 +1,20 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorQuiesceRequest is a structure to represent a snapmirror-quiesce Request ZAPI object
 type SnapmirrorQuiesceRequest struct {
 	XMLName                xml.Name `xml:"snapmirror-quiesce"`
-	DestinationClusterPtr  *string  `xml:"destination-cluster"`
 	DestinationLocationPtr *string  `xml:"destination-location"`
 	DestinationVolumePtr   *string  `xml:"destination-volume"`
 	DestinationVserverPtr  *string  `xml:"destination-vserver"`
-	SourceClusterPtr       *string  `xml:"source-cluster"`
 	SourceLocationPtr      *string  `xml:"source-location"`
 	SourceVolumePtr        *string  `xml:"source-volume"`
 	SourceVserverPtr       *string  `xml:"source-vserver"`
@@ -111,21 +110,13 @@ func (o *SnapmirrorQuiesceRequest) executeWithoutIteration(zr *ZapiRunner) (*Sna
 	return result.(*SnapmirrorQuiesceResponse), err
 }
 
-// DestinationCluster is a 'getter' method
-func (o *SnapmirrorQuiesceRequest) DestinationCluster() string {
-	r := *o.DestinationClusterPtr
-	return r
-}
-
-// SetDestinationCluster is a fluent style 'setter' method that can be chained
-func (o *SnapmirrorQuiesceRequest) SetDestinationCluster(newValue string) *SnapmirrorQuiesceRequest {
-	o.DestinationClusterPtr = &newValue
-	return o
-}
-
 // DestinationLocation is a 'getter' method
 func (o *SnapmirrorQuiesceRequest) DestinationLocation() string {
-	r := *o.DestinationLocationPtr
+	var r string
+	if o.DestinationLocationPtr == nil {
+		return r
+	}
+	r = *o.DestinationLocationPtr
 	return r
 }
 
@@ -137,7 +128,11 @@ func (o *SnapmirrorQuiesceRequest) SetDestinationLocation(newValue string) *Snap
 
 // DestinationVolume is a 'getter' method
 func (o *SnapmirrorQuiesceRequest) DestinationVolume() string {
-	r := *o.DestinationVolumePtr
+	var r string
+	if o.DestinationVolumePtr == nil {
+		return r
+	}
+	r = *o.DestinationVolumePtr
 	return r
 }
 
@@ -149,7 +144,11 @@ func (o *SnapmirrorQuiesceRequest) SetDestinationVolume(newValue string) *Snapmi
 
 // DestinationVserver is a 'getter' method
 func (o *SnapmirrorQuiesceRequest) DestinationVserver() string {
-	r := *o.DestinationVserverPtr
+	var r string
+	if o.DestinationVserverPtr == nil {
+		return r
+	}
+	r = *o.DestinationVserverPtr
 	return r
 }
 
@@ -159,21 +158,13 @@ func (o *SnapmirrorQuiesceRequest) SetDestinationVserver(newValue string) *Snapm
 	return o
 }
 
-// SourceCluster is a 'getter' method
-func (o *SnapmirrorQuiesceRequest) SourceCluster() string {
-	r := *o.SourceClusterPtr
-	return r
-}
-
-// SetSourceCluster is a fluent style 'setter' method that can be chained
-func (o *SnapmirrorQuiesceRequest) SetSourceCluster(newValue string) *SnapmirrorQuiesceRequest {
-	o.SourceClusterPtr = &newValue
-	return o
-}
-
 // SourceLocation is a 'getter' method
 func (o *SnapmirrorQuiesceRequest) SourceLocation() string {
-	r := *o.SourceLocationPtr
+	var r string
+	if o.SourceLocationPtr == nil {
+		return r
+	}
+	r = *o.SourceLocationPtr
 	return r
 }
 
@@ -185,7 +176,11 @@ func (o *SnapmirrorQuiesceRequest) SetSourceLocation(newValue string) *Snapmirro
 
 // SourceVolume is a 'getter' method
 func (o *SnapmirrorQuiesceRequest) SourceVolume() string {
-	r := *o.SourceVolumePtr
+	var r string
+	if o.SourceVolumePtr == nil {
+		return r
+	}
+	r = *o.SourceVolumePtr
 	return r
 }
 
@@ -197,7 +192,11 @@ func (o *SnapmirrorQuiesceRequest) SetSourceVolume(newValue string) *SnapmirrorQ
 
 // SourceVserver is a 'getter' method
 func (o *SnapmirrorQuiesceRequest) SourceVserver() string {
-	r := *o.SourceVserverPtr
+	var r string
+	if o.SourceVserverPtr == nil {
+		return r
+	}
+	r = *o.SourceVserverPtr
 	return r
 }
 
@@ -209,7 +208,11 @@ func (o *SnapmirrorQuiesceRequest) SetSourceVserver(newValue string) *Snapmirror
 
 // ResultOperationId is a 'getter' method
 func (o *SnapmirrorQuiesceResponseResult) ResultOperationId() string {
-	r := *o.ResultOperationIdPtr
+	var r string
+	if o.ResultOperationIdPtr == nil {
+		return r
+	}
+	r = *o.ResultOperationIdPtr
 	return r
 }
 

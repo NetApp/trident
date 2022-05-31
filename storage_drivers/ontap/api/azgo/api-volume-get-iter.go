@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeGetIterRequest is a structure to represent a volume-get-iter Request ZAPI object
@@ -178,7 +179,11 @@ func (o VolumeGetIterRequestDesiredAttributes) String() string {
 
 // VolumeAttributes is a 'getter' method
 func (o *VolumeGetIterRequestDesiredAttributes) VolumeAttributes() VolumeAttributesType {
-	r := *o.VolumeAttributesPtr
+	var r VolumeAttributesType
+	if o.VolumeAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeAttributesPtr
 	return r
 }
 
@@ -190,7 +195,11 @@ func (o *VolumeGetIterRequestDesiredAttributes) SetVolumeAttributes(newValue Vol
 
 // DesiredAttributes is a 'getter' method
 func (o *VolumeGetIterRequest) DesiredAttributes() VolumeGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r VolumeGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -202,7 +211,11 @@ func (o *VolumeGetIterRequest) SetDesiredAttributes(newValue VolumeGetIterReques
 
 // MaxRecords is a 'getter' method
 func (o *VolumeGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -225,7 +238,11 @@ func (o VolumeGetIterRequestQuery) String() string {
 
 // VolumeAttributes is a 'getter' method
 func (o *VolumeGetIterRequestQuery) VolumeAttributes() VolumeAttributesType {
-	r := *o.VolumeAttributesPtr
+	var r VolumeAttributesType
+	if o.VolumeAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeAttributesPtr
 	return r
 }
 
@@ -237,7 +254,11 @@ func (o *VolumeGetIterRequestQuery) SetVolumeAttributes(newValue VolumeAttribute
 
 // Query is a 'getter' method
 func (o *VolumeGetIterRequest) Query() VolumeGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r VolumeGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -249,7 +270,11 @@ func (o *VolumeGetIterRequest) SetQuery(newValue VolumeGetIterRequestQuery) *Vol
 
 // Tag is a 'getter' method
 func (o *VolumeGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -300,7 +325,11 @@ func (o *VolumeGetIterResponseResultAttributesList) setValues(newValue []VolumeA
 
 // AttributesList is a 'getter' method
 func (o *VolumeGetIterResponseResult) AttributesList() VolumeGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r VolumeGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -312,7 +341,11 @@ func (o *VolumeGetIterResponseResult) SetAttributesList(newValue VolumeGetIterRe
 
 // NextTag is a 'getter' method
 func (o *VolumeGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -324,7 +357,11 @@ func (o *VolumeGetIterResponseResult) SetNextTag(newValue string) *VolumeGetIter
 
 // NumRecords is a 'getter' method
 func (o *VolumeGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

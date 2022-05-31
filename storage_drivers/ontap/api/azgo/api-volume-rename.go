@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeRenameRequest is a structure to represent a volume-rename Request ZAPI object
@@ -106,7 +107,11 @@ func (o *VolumeRenameRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeRe
 
 // NewVolumeName is a 'getter' method
 func (o *VolumeRenameRequest) NewVolumeName() string {
-	r := *o.NewVolumeNamePtr
+	var r string
+	if o.NewVolumeNamePtr == nil {
+		return r
+	}
+	r = *o.NewVolumeNamePtr
 	return r
 }
 
@@ -118,7 +123,11 @@ func (o *VolumeRenameRequest) SetNewVolumeName(newValue string) *VolumeRenameReq
 
 // Volume is a 'getter' method
 func (o *VolumeRenameRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 

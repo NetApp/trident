@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // InitiatorGroupListInfoType is a structure to represent a initiator-group-list-info ZAPI object
@@ -35,7 +36,11 @@ func (o InitiatorGroupListInfoType) String() string {
 
 // InitiatorGroupName is a 'getter' method
 func (o *InitiatorGroupListInfoType) InitiatorGroupName() string {
-	r := *o.InitiatorGroupNamePtr
+	var r string
+	if o.InitiatorGroupNamePtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupNamePtr
 	return r
 }
 

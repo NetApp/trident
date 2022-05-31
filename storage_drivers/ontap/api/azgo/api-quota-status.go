@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // QuotaStatusRequest is a structure to represent a quota-status Request ZAPI object
@@ -110,7 +111,11 @@ func (o *QuotaStatusRequest) executeWithoutIteration(zr *ZapiRunner) (*QuotaStat
 
 // Volume is a 'getter' method
 func (o *QuotaStatusRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -122,7 +127,11 @@ func (o *QuotaStatusRequest) SetVolume(newValue string) *QuotaStatusRequest {
 
 // PercentComplete is a 'getter' method
 func (o *QuotaStatusResponseResult) PercentComplete() int {
-	r := *o.PercentCompletePtr
+	var r int
+	if o.PercentCompletePtr == nil {
+		return r
+	}
+	r = *o.PercentCompletePtr
 	return r
 }
 
@@ -134,7 +143,11 @@ func (o *QuotaStatusResponseResult) SetPercentComplete(newValue int) *QuotaStatu
 
 // QuotaErrors is a 'getter' method
 func (o *QuotaStatusResponseResult) QuotaErrors() string {
-	r := *o.QuotaErrorsPtr
+	var r string
+	if o.QuotaErrorsPtr == nil {
+		return r
+	}
+	r = *o.QuotaErrorsPtr
 	return r
 }
 
@@ -146,7 +159,11 @@ func (o *QuotaStatusResponseResult) SetQuotaErrors(newValue string) *QuotaStatus
 
 // Reason is a 'getter' method
 func (o *QuotaStatusResponseResult) Reason() string {
-	r := *o.ReasonPtr
+	var r string
+	if o.ReasonPtr == nil {
+		return r
+	}
+	r = *o.ReasonPtr
 	return r
 }
 
@@ -158,7 +175,11 @@ func (o *QuotaStatusResponseResult) SetReason(newValue string) *QuotaStatusRespo
 
 // Status is a 'getter' method
 func (o *QuotaStatusResponseResult) Status() string {
-	r := *o.StatusPtr
+	var r string
+	if o.StatusPtr == nil {
+		return r
+	}
+	r = *o.StatusPtr
 	return r
 }
 
@@ -170,7 +191,11 @@ func (o *QuotaStatusResponseResult) SetStatus(newValue string) *QuotaStatusRespo
 
 // Substatus is a 'getter' method
 func (o *QuotaStatusResponseResult) Substatus() string {
-	r := *o.SubstatusPtr
+	var r string
+	if o.SubstatusPtr == nil {
+		return r
+	}
+	r = *o.SubstatusPtr
 	return r
 }
 

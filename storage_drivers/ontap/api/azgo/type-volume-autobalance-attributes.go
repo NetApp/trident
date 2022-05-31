@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeAutobalanceAttributesType is a structure to represent a volume-autobalance-attributes ZAPI object
@@ -35,7 +36,11 @@ func (o VolumeAutobalanceAttributesType) String() string {
 
 // IsAutobalanceEligible is a 'getter' method
 func (o *VolumeAutobalanceAttributesType) IsAutobalanceEligible() bool {
-	r := *o.IsAutobalanceEligiblePtr
+	var r bool
+	if o.IsAutobalanceEligiblePtr == nil {
+		return r
+	}
+	r = *o.IsAutobalanceEligiblePtr
 	return r
 }
 

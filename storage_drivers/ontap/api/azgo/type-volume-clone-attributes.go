@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeCloneAttributesType is a structure to represent a volume-clone-attributes ZAPI object
@@ -36,7 +37,11 @@ func (o VolumeCloneAttributesType) String() string {
 
 // CloneChildCount is a 'getter' method
 func (o *VolumeCloneAttributesType) CloneChildCount() int {
-	r := *o.CloneChildCountPtr
+	var r int
+	if o.CloneChildCountPtr == nil {
+		return r
+	}
+	r = *o.CloneChildCountPtr
 	return r
 }
 
@@ -48,7 +53,11 @@ func (o *VolumeCloneAttributesType) SetCloneChildCount(newValue int) *VolumeClon
 
 // VolumeCloneParentAttributes is a 'getter' method
 func (o *VolumeCloneAttributesType) VolumeCloneParentAttributes() VolumeCloneParentAttributesType {
-	r := *o.VolumeCloneParentAttributesPtr
+	var r VolumeCloneParentAttributesType
+	if o.VolumeCloneParentAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeCloneParentAttributesPtr
 	return r
 }
 

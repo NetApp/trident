@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VserverInfoType is a structure to represent a vserver-info ZAPI object
@@ -20,13 +21,16 @@ type VserverInfoType struct {
 	CommentPtr                 *string                             `xml:"comment"`
 	DisallowedProtocolsPtr     *VserverInfoTypeDisallowedProtocols `xml:"disallowed-protocols"`
 	// work in progress
-	IpspacePtr                  *string                           `xml:"ipspace"`
-	IsConfigLockedForChangesPtr *bool                             `xml:"is-config-locked-for-changes"`
-	IsRepositoryVserverPtr      *bool                             `xml:"is-repository-vserver"`
-	LanguagePtr                 *LanguageCodeType                 `xml:"language"`
-	LdapDomainPtr               *string                           `xml:"ldap-domain"`
-	MaxVolumesPtr               *string                           `xml:"max-volumes"`
-	NameMappingSwitchPtr        *VserverInfoTypeNameMappingSwitch `xml:"name-mapping-switch"`
+	IpspacePtr                   *string                           `xml:"ipspace"`
+	IsConfigLockedForChangesPtr  *bool                             `xml:"is-config-locked-for-changes"`
+	IsRepositoryVserverPtr       *bool                             `xml:"is-repository-vserver"`
+	IsSpaceEnforcementLogicalPtr *bool                             `xml:"is-space-enforcement-logical"`
+	IsSpaceReportingLogicalPtr   *bool                             `xml:"is-space-reporting-logical"`
+	IsVserverProtectedPtr        *bool                             `xml:"is-vserver-protected"`
+	LanguagePtr                  *LanguageCodeType                 `xml:"language"`
+	LdapDomainPtr                *string                           `xml:"ldap-domain"`
+	MaxVolumesPtr                *string                           `xml:"max-volumes"`
+	NameMappingSwitchPtr         *VserverInfoTypeNameMappingSwitch `xml:"name-mapping-switch"`
 	// work in progress
 	NameServerSwitchPtr *VserverInfoTypeNameServerSwitch `xml:"name-server-switch"`
 	// work in progress
@@ -90,7 +94,11 @@ func (o *VserverInfoTypeAggrList) SetAggrName(newValue []AggrNameType) *VserverI
 
 // AggrList is a 'getter' method
 func (o *VserverInfoType) AggrList() VserverInfoTypeAggrList {
-	r := *o.AggrListPtr
+	var r VserverInfoTypeAggrList
+	if o.AggrListPtr == nil {
+		return r
+	}
+	r = *o.AggrListPtr
 	return r
 }
 
@@ -122,7 +130,11 @@ func (o *VserverInfoTypeAllowedProtocols) SetProtocol(newValue []ProtocolType) *
 
 // AllowedProtocols is a 'getter' method
 func (o *VserverInfoType) AllowedProtocols() VserverInfoTypeAllowedProtocols {
-	r := *o.AllowedProtocolsPtr
+	var r VserverInfoTypeAllowedProtocols
+	if o.AllowedProtocolsPtr == nil {
+		return r
+	}
+	r = *o.AllowedProtocolsPtr
 	return r
 }
 
@@ -134,7 +146,11 @@ func (o *VserverInfoType) SetAllowedProtocols(newValue VserverInfoTypeAllowedPro
 
 // AntivirusOnAccessPolicy is a 'getter' method
 func (o *VserverInfoType) AntivirusOnAccessPolicy() AntivirusPolicyType {
-	r := *o.AntivirusOnAccessPolicyPtr
+	var r AntivirusPolicyType
+	if o.AntivirusOnAccessPolicyPtr == nil {
+		return r
+	}
+	r = *o.AntivirusOnAccessPolicyPtr
 	return r
 }
 
@@ -146,7 +162,11 @@ func (o *VserverInfoType) SetAntivirusOnAccessPolicy(newValue AntivirusPolicyTyp
 
 // CachingPolicy is a 'getter' method
 func (o *VserverInfoType) CachingPolicy() string {
-	r := *o.CachingPolicyPtr
+	var r string
+	if o.CachingPolicyPtr == nil {
+		return r
+	}
+	r = *o.CachingPolicyPtr
 	return r
 }
 
@@ -158,7 +178,11 @@ func (o *VserverInfoType) SetCachingPolicy(newValue string) *VserverInfoType {
 
 // Comment is a 'getter' method
 func (o *VserverInfoType) Comment() string {
-	r := *o.CommentPtr
+	var r string
+	if o.CommentPtr == nil {
+		return r
+	}
+	r = *o.CommentPtr
 	return r
 }
 
@@ -190,7 +214,11 @@ func (o *VserverInfoTypeDisallowedProtocols) SetProtocol(newValue []ProtocolType
 
 // DisallowedProtocols is a 'getter' method
 func (o *VserverInfoType) DisallowedProtocols() VserverInfoTypeDisallowedProtocols {
-	r := *o.DisallowedProtocolsPtr
+	var r VserverInfoTypeDisallowedProtocols
+	if o.DisallowedProtocolsPtr == nil {
+		return r
+	}
+	r = *o.DisallowedProtocolsPtr
 	return r
 }
 
@@ -202,7 +230,11 @@ func (o *VserverInfoType) SetDisallowedProtocols(newValue VserverInfoTypeDisallo
 
 // Ipspace is a 'getter' method
 func (o *VserverInfoType) Ipspace() string {
-	r := *o.IpspacePtr
+	var r string
+	if o.IpspacePtr == nil {
+		return r
+	}
+	r = *o.IpspacePtr
 	return r
 }
 
@@ -214,7 +246,11 @@ func (o *VserverInfoType) SetIpspace(newValue string) *VserverInfoType {
 
 // IsConfigLockedForChanges is a 'getter' method
 func (o *VserverInfoType) IsConfigLockedForChanges() bool {
-	r := *o.IsConfigLockedForChangesPtr
+	var r bool
+	if o.IsConfigLockedForChangesPtr == nil {
+		return r
+	}
+	r = *o.IsConfigLockedForChangesPtr
 	return r
 }
 
@@ -226,7 +262,11 @@ func (o *VserverInfoType) SetIsConfigLockedForChanges(newValue bool) *VserverInf
 
 // IsRepositoryVserver is a 'getter' method
 func (o *VserverInfoType) IsRepositoryVserver() bool {
-	r := *o.IsRepositoryVserverPtr
+	var r bool
+	if o.IsRepositoryVserverPtr == nil {
+		return r
+	}
+	r = *o.IsRepositoryVserverPtr
 	return r
 }
 
@@ -236,9 +276,61 @@ func (o *VserverInfoType) SetIsRepositoryVserver(newValue bool) *VserverInfoType
 	return o
 }
 
+// IsSpaceEnforcementLogical is a 'getter' method
+func (o *VserverInfoType) IsSpaceEnforcementLogical() bool {
+	var r bool
+	if o.IsSpaceEnforcementLogicalPtr == nil {
+		return r
+	}
+	r = *o.IsSpaceEnforcementLogicalPtr
+	return r
+}
+
+// SetIsSpaceEnforcementLogical is a fluent style 'setter' method that can be chained
+func (o *VserverInfoType) SetIsSpaceEnforcementLogical(newValue bool) *VserverInfoType {
+	o.IsSpaceEnforcementLogicalPtr = &newValue
+	return o
+}
+
+// IsSpaceReportingLogical is a 'getter' method
+func (o *VserverInfoType) IsSpaceReportingLogical() bool {
+	var r bool
+	if o.IsSpaceReportingLogicalPtr == nil {
+		return r
+	}
+	r = *o.IsSpaceReportingLogicalPtr
+	return r
+}
+
+// SetIsSpaceReportingLogical is a fluent style 'setter' method that can be chained
+func (o *VserverInfoType) SetIsSpaceReportingLogical(newValue bool) *VserverInfoType {
+	o.IsSpaceReportingLogicalPtr = &newValue
+	return o
+}
+
+// IsVserverProtected is a 'getter' method
+func (o *VserverInfoType) IsVserverProtected() bool {
+	var r bool
+	if o.IsVserverProtectedPtr == nil {
+		return r
+	}
+	r = *o.IsVserverProtectedPtr
+	return r
+}
+
+// SetIsVserverProtected is a fluent style 'setter' method that can be chained
+func (o *VserverInfoType) SetIsVserverProtected(newValue bool) *VserverInfoType {
+	o.IsVserverProtectedPtr = &newValue
+	return o
+}
+
 // Language is a 'getter' method
 func (o *VserverInfoType) Language() LanguageCodeType {
-	r := *o.LanguagePtr
+	var r LanguageCodeType
+	if o.LanguagePtr == nil {
+		return r
+	}
+	r = *o.LanguagePtr
 	return r
 }
 
@@ -250,7 +342,11 @@ func (o *VserverInfoType) SetLanguage(newValue LanguageCodeType) *VserverInfoTyp
 
 // LdapDomain is a 'getter' method
 func (o *VserverInfoType) LdapDomain() string {
-	r := *o.LdapDomainPtr
+	var r string
+	if o.LdapDomainPtr == nil {
+		return r
+	}
+	r = *o.LdapDomainPtr
 	return r
 }
 
@@ -262,7 +358,11 @@ func (o *VserverInfoType) SetLdapDomain(newValue string) *VserverInfoType {
 
 // MaxVolumes is a 'getter' method
 func (o *VserverInfoType) MaxVolumes() string {
-	r := *o.MaxVolumesPtr
+	var r string
+	if o.MaxVolumesPtr == nil {
+		return r
+	}
+	r = *o.MaxVolumesPtr
 	return r
 }
 
@@ -294,7 +394,11 @@ func (o *VserverInfoTypeNameMappingSwitch) SetNmswitch(newValue []NmswitchType) 
 
 // NameMappingSwitch is a 'getter' method
 func (o *VserverInfoType) NameMappingSwitch() VserverInfoTypeNameMappingSwitch {
-	r := *o.NameMappingSwitchPtr
+	var r VserverInfoTypeNameMappingSwitch
+	if o.NameMappingSwitchPtr == nil {
+		return r
+	}
+	r = *o.NameMappingSwitchPtr
 	return r
 }
 
@@ -326,7 +430,11 @@ func (o *VserverInfoTypeNameServerSwitch) SetNsswitch(newValue []NsswitchType) *
 
 // NameServerSwitch is a 'getter' method
 func (o *VserverInfoType) NameServerSwitch() VserverInfoTypeNameServerSwitch {
-	r := *o.NameServerSwitchPtr
+	var r VserverInfoTypeNameServerSwitch
+	if o.NameServerSwitchPtr == nil {
+		return r
+	}
+	r = *o.NameServerSwitchPtr
 	return r
 }
 
@@ -338,7 +446,11 @@ func (o *VserverInfoType) SetNameServerSwitch(newValue VserverInfoTypeNameServer
 
 // NisDomain is a 'getter' method
 func (o *VserverInfoType) NisDomain() NisDomainType {
-	r := *o.NisDomainPtr
+	var r NisDomainType
+	if o.NisDomainPtr == nil {
+		return r
+	}
+	r = *o.NisDomainPtr
 	return r
 }
 
@@ -350,7 +462,11 @@ func (o *VserverInfoType) SetNisDomain(newValue NisDomainType) *VserverInfoType 
 
 // OperationalState is a 'getter' method
 func (o *VserverInfoType) OperationalState() VsoperstateType {
-	r := *o.OperationalStatePtr
+	var r VsoperstateType
+	if o.OperationalStatePtr == nil {
+		return r
+	}
+	r = *o.OperationalStatePtr
 	return r
 }
 
@@ -362,7 +478,11 @@ func (o *VserverInfoType) SetOperationalState(newValue VsoperstateType) *Vserver
 
 // OperationalStateStoppedReason is a 'getter' method
 func (o *VserverInfoType) OperationalStateStoppedReason() VsopstopreasonType {
-	r := *o.OperationalStateStoppedReasonPtr
+	var r VsopstopreasonType
+	if o.OperationalStateStoppedReasonPtr == nil {
+		return r
+	}
+	r = *o.OperationalStateStoppedReasonPtr
 	return r
 }
 
@@ -374,7 +494,11 @@ func (o *VserverInfoType) SetOperationalStateStoppedReason(newValue Vsopstopreas
 
 // QosPolicyGroup is a 'getter' method
 func (o *VserverInfoType) QosPolicyGroup() string {
-	r := *o.QosPolicyGroupPtr
+	var r string
+	if o.QosPolicyGroupPtr == nil {
+		return r
+	}
+	r = *o.QosPolicyGroupPtr
 	return r
 }
 
@@ -386,7 +510,11 @@ func (o *VserverInfoType) SetQosPolicyGroup(newValue string) *VserverInfoType {
 
 // QuotaPolicy is a 'getter' method
 func (o *VserverInfoType) QuotaPolicy() string {
-	r := *o.QuotaPolicyPtr
+	var r string
+	if o.QuotaPolicyPtr == nil {
+		return r
+	}
+	r = *o.QuotaPolicyPtr
 	return r
 }
 
@@ -398,7 +526,11 @@ func (o *VserverInfoType) SetQuotaPolicy(newValue string) *VserverInfoType {
 
 // RootVolume is a 'getter' method
 func (o *VserverInfoType) RootVolume() VolumeNameType {
-	r := *o.RootVolumePtr
+	var r VolumeNameType
+	if o.RootVolumePtr == nil {
+		return r
+	}
+	r = *o.RootVolumePtr
 	return r
 }
 
@@ -410,7 +542,11 @@ func (o *VserverInfoType) SetRootVolume(newValue VolumeNameType) *VserverInfoTyp
 
 // RootVolumeAggregate is a 'getter' method
 func (o *VserverInfoType) RootVolumeAggregate() AggrNameType {
-	r := *o.RootVolumeAggregatePtr
+	var r AggrNameType
+	if o.RootVolumeAggregatePtr == nil {
+		return r
+	}
+	r = *o.RootVolumeAggregatePtr
 	return r
 }
 
@@ -422,7 +558,11 @@ func (o *VserverInfoType) SetRootVolumeAggregate(newValue AggrNameType) *Vserver
 
 // RootVolumeSecurityStyle is a 'getter' method
 func (o *VserverInfoType) RootVolumeSecurityStyle() SecurityStyleEnumType {
-	r := *o.RootVolumeSecurityStylePtr
+	var r SecurityStyleEnumType
+	if o.RootVolumeSecurityStylePtr == nil {
+		return r
+	}
+	r = *o.RootVolumeSecurityStylePtr
 	return r
 }
 
@@ -434,7 +574,11 @@ func (o *VserverInfoType) SetRootVolumeSecurityStyle(newValue SecurityStyleEnumT
 
 // SnapshotPolicy is a 'getter' method
 func (o *VserverInfoType) SnapshotPolicy() SnapshotPolicyType {
-	r := *o.SnapshotPolicyPtr
+	var r SnapshotPolicyType
+	if o.SnapshotPolicyPtr == nil {
+		return r
+	}
+	r = *o.SnapshotPolicyPtr
 	return r
 }
 
@@ -446,7 +590,11 @@ func (o *VserverInfoType) SetSnapshotPolicy(newValue SnapshotPolicyType) *Vserve
 
 // State is a 'getter' method
 func (o *VserverInfoType) State() VsadminstateType {
-	r := *o.StatePtr
+	var r VsadminstateType
+	if o.StatePtr == nil {
+		return r
+	}
+	r = *o.StatePtr
 	return r
 }
 
@@ -458,7 +606,11 @@ func (o *VserverInfoType) SetState(newValue VsadminstateType) *VserverInfoType {
 
 // Uuid is a 'getter' method
 func (o *VserverInfoType) Uuid() UuidType {
-	r := *o.UuidPtr
+	var r UuidType
+	if o.UuidPtr == nil {
+		return r
+	}
+	r = *o.UuidPtr
 	return r
 }
 
@@ -470,7 +622,11 @@ func (o *VserverInfoType) SetUuid(newValue UuidType) *VserverInfoType {
 
 // VolumeDeleteRetentionHours is a 'getter' method
 func (o *VserverInfoType) VolumeDeleteRetentionHours() int {
-	r := *o.VolumeDeleteRetentionHoursPtr
+	var r int
+	if o.VolumeDeleteRetentionHoursPtr == nil {
+		return r
+	}
+	r = *o.VolumeDeleteRetentionHoursPtr
 	return r
 }
 
@@ -502,7 +658,11 @@ func (o *VserverInfoTypeVserverAggrInfoList) SetVserverAggrInfo(newValue []Vserv
 
 // VserverAggrInfoList is a 'getter' method
 func (o *VserverInfoType) VserverAggrInfoList() VserverInfoTypeVserverAggrInfoList {
-	r := *o.VserverAggrInfoListPtr
+	var r VserverInfoTypeVserverAggrInfoList
+	if o.VserverAggrInfoListPtr == nil {
+		return r
+	}
+	r = *o.VserverAggrInfoListPtr
 	return r
 }
 
@@ -514,7 +674,11 @@ func (o *VserverInfoType) SetVserverAggrInfoList(newValue VserverInfoTypeVserver
 
 // VserverName is a 'getter' method
 func (o *VserverInfoType) VserverName() string {
-	r := *o.VserverNamePtr
+	var r string
+	if o.VserverNamePtr == nil {
+		return r
+	}
+	r = *o.VserverNamePtr
 	return r
 }
 
@@ -526,7 +690,11 @@ func (o *VserverInfoType) SetVserverName(newValue string) *VserverInfoType {
 
 // VserverSubtype is a 'getter' method
 func (o *VserverInfoType) VserverSubtype() string {
-	r := *o.VserverSubtypePtr
+	var r string
+	if o.VserverSubtypePtr == nil {
+		return r
+	}
+	r = *o.VserverSubtypePtr
 	return r
 }
 
@@ -538,7 +706,11 @@ func (o *VserverInfoType) SetVserverSubtype(newValue string) *VserverInfoType {
 
 // VserverType is a 'getter' method
 func (o *VserverInfoType) VserverType() string {
-	r := *o.VserverTypePtr
+	var r string
+	if o.VserverTypePtr == nil {
+		return r
+	}
+	r = *o.VserverTypePtr
 	return r
 }
 

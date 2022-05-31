@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapshotOwnerType is a structure to represent a snapshot-owner ZAPI object
@@ -35,7 +36,11 @@ func (o SnapshotOwnerType) String() string {
 
 // Owner is a 'getter' method
 func (o *SnapshotOwnerType) Owner() string {
-	r := *o.OwnerPtr
+	var r string
+	if o.OwnerPtr == nil {
+		return r
+	}
+	r = *o.OwnerPtr
 	return r
 }
 

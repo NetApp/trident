@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiInterfaceGetIterRequest is a structure to represent a iscsi-interface-get-iter Request ZAPI object
@@ -178,7 +179,11 @@ func (o IscsiInterfaceGetIterRequestDesiredAttributes) String() string {
 
 // IscsiInterfaceListEntryInfo is a 'getter' method
 func (o *IscsiInterfaceGetIterRequestDesiredAttributes) IscsiInterfaceListEntryInfo() IscsiInterfaceListEntryInfoType {
-	r := *o.IscsiInterfaceListEntryInfoPtr
+	var r IscsiInterfaceListEntryInfoType
+	if o.IscsiInterfaceListEntryInfoPtr == nil {
+		return r
+	}
+	r = *o.IscsiInterfaceListEntryInfoPtr
 	return r
 }
 
@@ -190,7 +195,11 @@ func (o *IscsiInterfaceGetIterRequestDesiredAttributes) SetIscsiInterfaceListEnt
 
 // DesiredAttributes is a 'getter' method
 func (o *IscsiInterfaceGetIterRequest) DesiredAttributes() IscsiInterfaceGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r IscsiInterfaceGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -202,7 +211,11 @@ func (o *IscsiInterfaceGetIterRequest) SetDesiredAttributes(newValue IscsiInterf
 
 // MaxRecords is a 'getter' method
 func (o *IscsiInterfaceGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -225,7 +238,11 @@ func (o IscsiInterfaceGetIterRequestQuery) String() string {
 
 // IscsiInterfaceListEntryInfo is a 'getter' method
 func (o *IscsiInterfaceGetIterRequestQuery) IscsiInterfaceListEntryInfo() IscsiInterfaceListEntryInfoType {
-	r := *o.IscsiInterfaceListEntryInfoPtr
+	var r IscsiInterfaceListEntryInfoType
+	if o.IscsiInterfaceListEntryInfoPtr == nil {
+		return r
+	}
+	r = *o.IscsiInterfaceListEntryInfoPtr
 	return r
 }
 
@@ -237,7 +254,11 @@ func (o *IscsiInterfaceGetIterRequestQuery) SetIscsiInterfaceListEntryInfo(newVa
 
 // Query is a 'getter' method
 func (o *IscsiInterfaceGetIterRequest) Query() IscsiInterfaceGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r IscsiInterfaceGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -249,7 +270,11 @@ func (o *IscsiInterfaceGetIterRequest) SetQuery(newValue IscsiInterfaceGetIterRe
 
 // Tag is a 'getter' method
 func (o *IscsiInterfaceGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -300,7 +325,11 @@ func (o *IscsiInterfaceGetIterResponseResultAttributesList) setValues(newValue [
 
 // AttributesList is a 'getter' method
 func (o *IscsiInterfaceGetIterResponseResult) AttributesList() IscsiInterfaceGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r IscsiInterfaceGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -312,7 +341,11 @@ func (o *IscsiInterfaceGetIterResponseResult) SetAttributesList(newValue IscsiIn
 
 // NextTag is a 'getter' method
 func (o *IscsiInterfaceGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -324,7 +357,11 @@ func (o *IscsiInterfaceGetIterResponseResult) SetNextTag(newValue string) *Iscsi
 
 // NumRecords is a 'getter' method
 func (o *IscsiInterfaceGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

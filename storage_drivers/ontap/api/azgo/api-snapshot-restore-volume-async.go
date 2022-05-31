@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapshotRestoreVolumeAsyncRequest is a structure to represent a snapshot-restore-volume-async Request ZAPI object
@@ -111,7 +112,11 @@ func (o *SnapshotRestoreVolumeAsyncRequest) executeWithoutIteration(zr *ZapiRunn
 
 // Snapshot is a 'getter' method
 func (o *SnapshotRestoreVolumeAsyncRequest) Snapshot() string {
-	r := *o.SnapshotPtr
+	var r string
+	if o.SnapshotPtr == nil {
+		return r
+	}
+	r = *o.SnapshotPtr
 	return r
 }
 
@@ -123,7 +128,11 @@ func (o *SnapshotRestoreVolumeAsyncRequest) SetSnapshot(newValue string) *Snapsh
 
 // SnapshotInstanceUuid is a 'getter' method
 func (o *SnapshotRestoreVolumeAsyncRequest) SnapshotInstanceUuid() UUIDType {
-	r := *o.SnapshotInstanceUuidPtr
+	var r UUIDType
+	if o.SnapshotInstanceUuidPtr == nil {
+		return r
+	}
+	r = *o.SnapshotInstanceUuidPtr
 	return r
 }
 
@@ -135,7 +144,11 @@ func (o *SnapshotRestoreVolumeAsyncRequest) SetSnapshotInstanceUuid(newValue UUI
 
 // Volume is a 'getter' method
 func (o *SnapshotRestoreVolumeAsyncRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -147,7 +160,11 @@ func (o *SnapshotRestoreVolumeAsyncRequest) SetVolume(newValue string) *Snapshot
 
 // ResultErrorCode is a 'getter' method
 func (o *SnapshotRestoreVolumeAsyncResponseResult) ResultErrorCode() int {
-	r := *o.ResultErrorCodePtr
+	var r int
+	if o.ResultErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorCodePtr
 	return r
 }
 
@@ -159,7 +176,11 @@ func (o *SnapshotRestoreVolumeAsyncResponseResult) SetResultErrorCode(newValue i
 
 // ResultErrorMessage is a 'getter' method
 func (o *SnapshotRestoreVolumeAsyncResponseResult) ResultErrorMessage() string {
-	r := *o.ResultErrorMessagePtr
+	var r string
+	if o.ResultErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorMessagePtr
 	return r
 }
 
@@ -171,7 +192,11 @@ func (o *SnapshotRestoreVolumeAsyncResponseResult) SetResultErrorMessage(newValu
 
 // ResultJobid is a 'getter' method
 func (o *SnapshotRestoreVolumeAsyncResponseResult) ResultJobid() int {
-	r := *o.ResultJobidPtr
+	var r int
+	if o.ResultJobidPtr == nil {
+		return r
+	}
+	r = *o.ResultJobidPtr
 	return r
 }
 
@@ -183,7 +208,11 @@ func (o *SnapshotRestoreVolumeAsyncResponseResult) SetResultJobid(newValue int) 
 
 // ResultStatus is a 'getter' method
 func (o *SnapshotRestoreVolumeAsyncResponseResult) ResultStatus() string {
-	r := *o.ResultStatusPtr
+	var r string
+	if o.ResultStatusPtr == nil {
+		return r
+	}
+	r = *o.ResultStatusPtr
 	return r
 }
 

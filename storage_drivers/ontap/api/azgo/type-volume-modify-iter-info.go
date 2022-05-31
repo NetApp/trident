@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeModifyIterInfoType is a structure to represent a volume-modify-iter-info ZAPI object
@@ -38,7 +39,11 @@ func (o VolumeModifyIterInfoType) String() string {
 
 // ErrorCode is a 'getter' method
 func (o *VolumeModifyIterInfoType) ErrorCode() int {
-	r := *o.ErrorCodePtr
+	var r int
+	if o.ErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ErrorCodePtr
 	return r
 }
 
@@ -50,7 +55,11 @@ func (o *VolumeModifyIterInfoType) SetErrorCode(newValue int) *VolumeModifyIterI
 
 // ErrorMessage is a 'getter' method
 func (o *VolumeModifyIterInfoType) ErrorMessage() string {
-	r := *o.ErrorMessagePtr
+	var r string
+	if o.ErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ErrorMessagePtr
 	return r
 }
 
@@ -68,7 +77,11 @@ type VolumeModifyIterInfoTypeVolumeKey struct {
 
 // VolumeAttributes is a 'getter' method
 func (o *VolumeModifyIterInfoTypeVolumeKey) VolumeAttributes() VolumeAttributesType {
-	r := *o.VolumeAttributesPtr
+	var r VolumeAttributesType
+	if o.VolumeAttributesPtr == nil {
+		return r
+	}
+	r = *o.VolumeAttributesPtr
 	return r
 }
 
@@ -80,7 +93,11 @@ func (o *VolumeModifyIterInfoTypeVolumeKey) SetVolumeAttributes(newValue VolumeA
 
 // VolumeKey is a 'getter' method
 func (o *VolumeModifyIterInfoType) VolumeKey() VolumeModifyIterInfoTypeVolumeKey {
-	r := *o.VolumeKeyPtr
+	var r VolumeModifyIterInfoTypeVolumeKey
+	if o.VolumeKeyPtr == nil {
+		return r
+	}
+	r = *o.VolumeKeyPtr
 	return r
 }
 

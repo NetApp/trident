@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // QtreeInfoType is a structure to represent a qtree-info ZAPI object
@@ -45,7 +46,11 @@ func (o QtreeInfoType) String() string {
 
 // ExportPolicy is a 'getter' method
 func (o *QtreeInfoType) ExportPolicy() string {
-	r := *o.ExportPolicyPtr
+	var r string
+	if o.ExportPolicyPtr == nil {
+		return r
+	}
+	r = *o.ExportPolicyPtr
 	return r
 }
 
@@ -57,7 +62,11 @@ func (o *QtreeInfoType) SetExportPolicy(newValue string) *QtreeInfoType {
 
 // Id is a 'getter' method
 func (o *QtreeInfoType) Id() int {
-	r := *o.IdPtr
+	var r int
+	if o.IdPtr == nil {
+		return r
+	}
+	r = *o.IdPtr
 	return r
 }
 
@@ -69,7 +78,11 @@ func (o *QtreeInfoType) SetId(newValue int) *QtreeInfoType {
 
 // IsExportPolicyInherited is a 'getter' method
 func (o *QtreeInfoType) IsExportPolicyInherited() bool {
-	r := *o.IsExportPolicyInheritedPtr
+	var r bool
+	if o.IsExportPolicyInheritedPtr == nil {
+		return r
+	}
+	r = *o.IsExportPolicyInheritedPtr
 	return r
 }
 
@@ -81,7 +94,11 @@ func (o *QtreeInfoType) SetIsExportPolicyInherited(newValue bool) *QtreeInfoType
 
 // Mode is a 'getter' method
 func (o *QtreeInfoType) Mode() string {
-	r := *o.ModePtr
+	var r string
+	if o.ModePtr == nil {
+		return r
+	}
+	r = *o.ModePtr
 	return r
 }
 
@@ -93,7 +110,11 @@ func (o *QtreeInfoType) SetMode(newValue string) *QtreeInfoType {
 
 // Oplocks is a 'getter' method
 func (o *QtreeInfoType) Oplocks() string {
-	r := *o.OplocksPtr
+	var r string
+	if o.OplocksPtr == nil {
+		return r
+	}
+	r = *o.OplocksPtr
 	return r
 }
 
@@ -105,11 +126,15 @@ func (o *QtreeInfoType) SetOplocks(newValue string) *QtreeInfoType {
 
 // QosPolicyGroup is a 'getter' method
 func (o *QtreeInfoType) QosPolicyGroup() string {
-	r := *o.QosPolicyGroupPtr
+	var r string
+	if o.QosPolicyGroupPtr == nil {
+		return r
+	}
+	r = *o.QosPolicyGroupPtr
 	return r
 }
 
-// SetQosPolicyGroup is a 'setter' method
+// SetQosPolicyGroup is a fluent style 'setter' method that can be chained
 func (o *QtreeInfoType) SetQosPolicyGroup(newValue string) *QtreeInfoType {
 	o.QosPolicyGroupPtr = &newValue
 	return o
@@ -117,7 +142,11 @@ func (o *QtreeInfoType) SetQosPolicyGroup(newValue string) *QtreeInfoType {
 
 // Qtree is a 'getter' method
 func (o *QtreeInfoType) Qtree() string {
-	r := *o.QtreePtr
+	var r string
+	if o.QtreePtr == nil {
+		return r
+	}
+	r = *o.QtreePtr
 	return r
 }
 
@@ -129,7 +158,11 @@ func (o *QtreeInfoType) SetQtree(newValue string) *QtreeInfoType {
 
 // SecurityStyle is a 'getter' method
 func (o *QtreeInfoType) SecurityStyle() string {
-	r := *o.SecurityStylePtr
+	var r string
+	if o.SecurityStylePtr == nil {
+		return r
+	}
+	r = *o.SecurityStylePtr
 	return r
 }
 
@@ -141,7 +174,11 @@ func (o *QtreeInfoType) SetSecurityStyle(newValue string) *QtreeInfoType {
 
 // Status is a 'getter' method
 func (o *QtreeInfoType) Status() string {
-	r := *o.StatusPtr
+	var r string
+	if o.StatusPtr == nil {
+		return r
+	}
+	r = *o.StatusPtr
 	return r
 }
 
@@ -153,7 +190,11 @@ func (o *QtreeInfoType) SetStatus(newValue string) *QtreeInfoType {
 
 // Volume is a 'getter' method
 func (o *QtreeInfoType) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -165,7 +206,11 @@ func (o *QtreeInfoType) SetVolume(newValue string) *QtreeInfoType {
 
 // Vserver is a 'getter' method
 func (o *QtreeInfoType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

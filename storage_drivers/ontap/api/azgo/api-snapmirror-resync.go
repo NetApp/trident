@@ -1,30 +1,32 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorResyncRequest is a structure to represent a snapmirror-resync Request ZAPI object
 type SnapmirrorResyncRequest struct {
-	XMLName                xml.Name `xml:"snapmirror-resync"`
-	DestinationClusterPtr  *string  `xml:"destination-cluster"`
-	DestinationLocationPtr *string  `xml:"destination-location"`
-	DestinationVolumePtr   *string  `xml:"destination-volume"`
-	DestinationVserverPtr  *string  `xml:"destination-vserver"`
-	IsAutoExpandEnabledPtr *bool    `xml:"is-auto-expand-enabled"`
-	MaxTransferRatePtr     *int     `xml:"max-transfer-rate"`
-	PreservePtr            *bool    `xml:"preserve"`
-	QuickResyncPtr         *bool    `xml:"quick-resync"`
-	SourceClusterPtr       *string  `xml:"source-cluster"`
-	SourceLocationPtr      *string  `xml:"source-location"`
-	SourceSnapshotPtr      *string  `xml:"source-snapshot"`
-	SourceVolumePtr        *string  `xml:"source-volume"`
-	SourceVserverPtr       *string  `xml:"source-vserver"`
-	TransferPriorityPtr    *string  `xml:"transfer-priority"`
+	XMLName                    xml.Name  `xml:"snapmirror-resync"`
+	DestinationEndpointUuidPtr *UuidType `xml:"destination-endpoint-uuid"`
+	DestinationLocationPtr     *string   `xml:"destination-location"`
+	DestinationVolumePtr       *string   `xml:"destination-volume"`
+	DestinationVserverPtr      *string   `xml:"destination-vserver"`
+	IsAdaptivePtr              *bool     `xml:"is-adaptive"`
+	IsCatalogEnabledPtr        *bool     `xml:"is-catalog-enabled"`
+	MaxTransferRatePtr         *int      `xml:"max-transfer-rate"`
+	PreservePtr                *bool     `xml:"preserve"`
+	QuickResyncPtr             *bool     `xml:"quick-resync"`
+	RemoveCatalogBaseOwnersPtr *bool     `xml:"remove-catalog-base-owners"`
+	SourceLocationPtr          *string   `xml:"source-location"`
+	SourceSnapshotPtr          *string   `xml:"source-snapshot"`
+	SourceVolumePtr            *string   `xml:"source-volume"`
+	SourceVserverPtr           *string   `xml:"source-vserver"`
+	TransferPriorityPtr        *string   `xml:"transfer-priority"`
 }
 
 // SnapmirrorResyncResponse is a structure to represent a snapmirror-resync Response ZAPI object
@@ -121,21 +123,29 @@ func (o *SnapmirrorResyncRequest) executeWithoutIteration(zr *ZapiRunner) (*Snap
 	return result.(*SnapmirrorResyncResponse), err
 }
 
-// DestinationCluster is a 'getter' method
-func (o *SnapmirrorResyncRequest) DestinationCluster() string {
-	r := *o.DestinationClusterPtr
+// DestinationEndpointUuid is a 'getter' method
+func (o *SnapmirrorResyncRequest) DestinationEndpointUuid() UuidType {
+	var r UuidType
+	if o.DestinationEndpointUuidPtr == nil {
+		return r
+	}
+	r = *o.DestinationEndpointUuidPtr
 	return r
 }
 
-// SetDestinationCluster is a fluent style 'setter' method that can be chained
-func (o *SnapmirrorResyncRequest) SetDestinationCluster(newValue string) *SnapmirrorResyncRequest {
-	o.DestinationClusterPtr = &newValue
+// SetDestinationEndpointUuid is a fluent style 'setter' method that can be chained
+func (o *SnapmirrorResyncRequest) SetDestinationEndpointUuid(newValue UuidType) *SnapmirrorResyncRequest {
+	o.DestinationEndpointUuidPtr = &newValue
 	return o
 }
 
 // DestinationLocation is a 'getter' method
 func (o *SnapmirrorResyncRequest) DestinationLocation() string {
-	r := *o.DestinationLocationPtr
+	var r string
+	if o.DestinationLocationPtr == nil {
+		return r
+	}
+	r = *o.DestinationLocationPtr
 	return r
 }
 
@@ -147,7 +157,11 @@ func (o *SnapmirrorResyncRequest) SetDestinationLocation(newValue string) *Snapm
 
 // DestinationVolume is a 'getter' method
 func (o *SnapmirrorResyncRequest) DestinationVolume() string {
-	r := *o.DestinationVolumePtr
+	var r string
+	if o.DestinationVolumePtr == nil {
+		return r
+	}
+	r = *o.DestinationVolumePtr
 	return r
 }
 
@@ -159,7 +173,11 @@ func (o *SnapmirrorResyncRequest) SetDestinationVolume(newValue string) *Snapmir
 
 // DestinationVserver is a 'getter' method
 func (o *SnapmirrorResyncRequest) DestinationVserver() string {
-	r := *o.DestinationVserverPtr
+	var r string
+	if o.DestinationVserverPtr == nil {
+		return r
+	}
+	r = *o.DestinationVserverPtr
 	return r
 }
 
@@ -169,21 +187,45 @@ func (o *SnapmirrorResyncRequest) SetDestinationVserver(newValue string) *Snapmi
 	return o
 }
 
-// IsAutoExpandEnabled is a 'getter' method
-func (o *SnapmirrorResyncRequest) IsAutoExpandEnabled() bool {
-	r := *o.IsAutoExpandEnabledPtr
+// IsAdaptive is a 'getter' method
+func (o *SnapmirrorResyncRequest) IsAdaptive() bool {
+	var r bool
+	if o.IsAdaptivePtr == nil {
+		return r
+	}
+	r = *o.IsAdaptivePtr
 	return r
 }
 
-// SetIsAutoExpandEnabled is a fluent style 'setter' method that can be chained
-func (o *SnapmirrorResyncRequest) SetIsAutoExpandEnabled(newValue bool) *SnapmirrorResyncRequest {
-	o.IsAutoExpandEnabledPtr = &newValue
+// SetIsAdaptive is a fluent style 'setter' method that can be chained
+func (o *SnapmirrorResyncRequest) SetIsAdaptive(newValue bool) *SnapmirrorResyncRequest {
+	o.IsAdaptivePtr = &newValue
+	return o
+}
+
+// IsCatalogEnabled is a 'getter' method
+func (o *SnapmirrorResyncRequest) IsCatalogEnabled() bool {
+	var r bool
+	if o.IsCatalogEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsCatalogEnabledPtr
+	return r
+}
+
+// SetIsCatalogEnabled is a fluent style 'setter' method that can be chained
+func (o *SnapmirrorResyncRequest) SetIsCatalogEnabled(newValue bool) *SnapmirrorResyncRequest {
+	o.IsCatalogEnabledPtr = &newValue
 	return o
 }
 
 // MaxTransferRate is a 'getter' method
 func (o *SnapmirrorResyncRequest) MaxTransferRate() int {
-	r := *o.MaxTransferRatePtr
+	var r int
+	if o.MaxTransferRatePtr == nil {
+		return r
+	}
+	r = *o.MaxTransferRatePtr
 	return r
 }
 
@@ -195,7 +237,11 @@ func (o *SnapmirrorResyncRequest) SetMaxTransferRate(newValue int) *SnapmirrorRe
 
 // Preserve is a 'getter' method
 func (o *SnapmirrorResyncRequest) Preserve() bool {
-	r := *o.PreservePtr
+	var r bool
+	if o.PreservePtr == nil {
+		return r
+	}
+	r = *o.PreservePtr
 	return r
 }
 
@@ -207,7 +253,11 @@ func (o *SnapmirrorResyncRequest) SetPreserve(newValue bool) *SnapmirrorResyncRe
 
 // QuickResync is a 'getter' method
 func (o *SnapmirrorResyncRequest) QuickResync() bool {
-	r := *o.QuickResyncPtr
+	var r bool
+	if o.QuickResyncPtr == nil {
+		return r
+	}
+	r = *o.QuickResyncPtr
 	return r
 }
 
@@ -217,21 +267,29 @@ func (o *SnapmirrorResyncRequest) SetQuickResync(newValue bool) *SnapmirrorResyn
 	return o
 }
 
-// SourceCluster is a 'getter' method
-func (o *SnapmirrorResyncRequest) SourceCluster() string {
-	r := *o.SourceClusterPtr
+// RemoveCatalogBaseOwners is a 'getter' method
+func (o *SnapmirrorResyncRequest) RemoveCatalogBaseOwners() bool {
+	var r bool
+	if o.RemoveCatalogBaseOwnersPtr == nil {
+		return r
+	}
+	r = *o.RemoveCatalogBaseOwnersPtr
 	return r
 }
 
-// SetSourceCluster is a fluent style 'setter' method that can be chained
-func (o *SnapmirrorResyncRequest) SetSourceCluster(newValue string) *SnapmirrorResyncRequest {
-	o.SourceClusterPtr = &newValue
+// SetRemoveCatalogBaseOwners is a fluent style 'setter' method that can be chained
+func (o *SnapmirrorResyncRequest) SetRemoveCatalogBaseOwners(newValue bool) *SnapmirrorResyncRequest {
+	o.RemoveCatalogBaseOwnersPtr = &newValue
 	return o
 }
 
 // SourceLocation is a 'getter' method
 func (o *SnapmirrorResyncRequest) SourceLocation() string {
-	r := *o.SourceLocationPtr
+	var r string
+	if o.SourceLocationPtr == nil {
+		return r
+	}
+	r = *o.SourceLocationPtr
 	return r
 }
 
@@ -243,7 +301,11 @@ func (o *SnapmirrorResyncRequest) SetSourceLocation(newValue string) *Snapmirror
 
 // SourceSnapshot is a 'getter' method
 func (o *SnapmirrorResyncRequest) SourceSnapshot() string {
-	r := *o.SourceSnapshotPtr
+	var r string
+	if o.SourceSnapshotPtr == nil {
+		return r
+	}
+	r = *o.SourceSnapshotPtr
 	return r
 }
 
@@ -255,7 +317,11 @@ func (o *SnapmirrorResyncRequest) SetSourceSnapshot(newValue string) *Snapmirror
 
 // SourceVolume is a 'getter' method
 func (o *SnapmirrorResyncRequest) SourceVolume() string {
-	r := *o.SourceVolumePtr
+	var r string
+	if o.SourceVolumePtr == nil {
+		return r
+	}
+	r = *o.SourceVolumePtr
 	return r
 }
 
@@ -267,7 +333,11 @@ func (o *SnapmirrorResyncRequest) SetSourceVolume(newValue string) *SnapmirrorRe
 
 // SourceVserver is a 'getter' method
 func (o *SnapmirrorResyncRequest) SourceVserver() string {
-	r := *o.SourceVserverPtr
+	var r string
+	if o.SourceVserverPtr == nil {
+		return r
+	}
+	r = *o.SourceVserverPtr
 	return r
 }
 
@@ -279,7 +349,11 @@ func (o *SnapmirrorResyncRequest) SetSourceVserver(newValue string) *SnapmirrorR
 
 // TransferPriority is a 'getter' method
 func (o *SnapmirrorResyncRequest) TransferPriority() string {
-	r := *o.TransferPriorityPtr
+	var r string
+	if o.TransferPriorityPtr == nil {
+		return r
+	}
+	r = *o.TransferPriorityPtr
 	return r
 }
 
@@ -291,7 +365,11 @@ func (o *SnapmirrorResyncRequest) SetTransferPriority(newValue string) *Snapmirr
 
 // ResultErrorCode is a 'getter' method
 func (o *SnapmirrorResyncResponseResult) ResultErrorCode() int {
-	r := *o.ResultErrorCodePtr
+	var r int
+	if o.ResultErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorCodePtr
 	return r
 }
 
@@ -303,7 +381,11 @@ func (o *SnapmirrorResyncResponseResult) SetResultErrorCode(newValue int) *Snapm
 
 // ResultErrorMessage is a 'getter' method
 func (o *SnapmirrorResyncResponseResult) ResultErrorMessage() string {
-	r := *o.ResultErrorMessagePtr
+	var r string
+	if o.ResultErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorMessagePtr
 	return r
 }
 
@@ -315,7 +397,11 @@ func (o *SnapmirrorResyncResponseResult) SetResultErrorMessage(newValue string) 
 
 // ResultJobid is a 'getter' method
 func (o *SnapmirrorResyncResponseResult) ResultJobid() int {
-	r := *o.ResultJobidPtr
+	var r int
+	if o.ResultJobidPtr == nil {
+		return r
+	}
+	r = *o.ResultJobidPtr
 	return r
 }
 
@@ -327,7 +413,11 @@ func (o *SnapmirrorResyncResponseResult) SetResultJobid(newValue int) *Snapmirro
 
 // ResultOperationId is a 'getter' method
 func (o *SnapmirrorResyncResponseResult) ResultOperationId() string {
-	r := *o.ResultOperationIdPtr
+	var r string
+	if o.ResultOperationIdPtr == nil {
+		return r
+	}
+	r = *o.ResultOperationIdPtr
 	return r
 }
 
@@ -339,7 +429,11 @@ func (o *SnapmirrorResyncResponseResult) SetResultOperationId(newValue string) *
 
 // ResultStatus is a 'getter' method
 func (o *SnapmirrorResyncResponseResult) ResultStatus() string {
-	r := *o.ResultStatusPtr
+	var r string
+	if o.ResultStatusPtr == nil {
+		return r
+	}
+	r = *o.ResultStatusPtr
 	return r
 }
 

@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapshotCreateAsyncRequest is a structure to represent a snapshot-create-async Request ZAPI object
@@ -111,7 +112,11 @@ func (o *SnapshotCreateAsyncRequest) executeWithoutIteration(zr *ZapiRunner) (*S
 
 // Comment is a 'getter' method
 func (o *SnapshotCreateAsyncRequest) Comment() string {
-	r := *o.CommentPtr
+	var r string
+	if o.CommentPtr == nil {
+		return r
+	}
+	r = *o.CommentPtr
 	return r
 }
 
@@ -123,7 +128,11 @@ func (o *SnapshotCreateAsyncRequest) SetComment(newValue string) *SnapshotCreate
 
 // Snapshot is a 'getter' method
 func (o *SnapshotCreateAsyncRequest) Snapshot() string {
-	r := *o.SnapshotPtr
+	var r string
+	if o.SnapshotPtr == nil {
+		return r
+	}
+	r = *o.SnapshotPtr
 	return r
 }
 
@@ -135,7 +144,11 @@ func (o *SnapshotCreateAsyncRequest) SetSnapshot(newValue string) *SnapshotCreat
 
 // Volume is a 'getter' method
 func (o *SnapshotCreateAsyncRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -147,7 +160,11 @@ func (o *SnapshotCreateAsyncRequest) SetVolume(newValue string) *SnapshotCreateA
 
 // ResultErrorCode is a 'getter' method
 func (o *SnapshotCreateAsyncResponseResult) ResultErrorCode() int {
-	r := *o.ResultErrorCodePtr
+	var r int
+	if o.ResultErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorCodePtr
 	return r
 }
 
@@ -159,7 +176,11 @@ func (o *SnapshotCreateAsyncResponseResult) SetResultErrorCode(newValue int) *Sn
 
 // ResultErrorMessage is a 'getter' method
 func (o *SnapshotCreateAsyncResponseResult) ResultErrorMessage() string {
-	r := *o.ResultErrorMessagePtr
+	var r string
+	if o.ResultErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorMessagePtr
 	return r
 }
 
@@ -171,7 +192,11 @@ func (o *SnapshotCreateAsyncResponseResult) SetResultErrorMessage(newValue strin
 
 // ResultJobid is a 'getter' method
 func (o *SnapshotCreateAsyncResponseResult) ResultJobid() int {
-	r := *o.ResultJobidPtr
+	var r int
+	if o.ResultJobidPtr == nil {
+		return r
+	}
+	r = *o.ResultJobidPtr
 	return r
 }
 
@@ -183,7 +208,11 @@ func (o *SnapshotCreateAsyncResponseResult) SetResultJobid(newValue int) *Snapsh
 
 // ResultStatus is a 'getter' method
 func (o *SnapshotCreateAsyncResponseResult) ResultStatus() string {
-	r := *o.ResultStatusPtr
+	var r string
+	if o.ResultStatusPtr == nil {
+		return r
+	}
+	r = *o.ResultStatusPtr
 	return r
 }
 

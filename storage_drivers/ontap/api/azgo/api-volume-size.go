@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeSizeRequest is a structure to represent a volume-size Request ZAPI object
@@ -110,7 +111,11 @@ func (o *VolumeSizeRequest) executeWithoutIteration(zr *ZapiRunner) (*VolumeSize
 
 // NewSize is a 'getter' method
 func (o *VolumeSizeRequest) NewSize() string {
-	r := *o.NewSizePtr
+	var r string
+	if o.NewSizePtr == nil {
+		return r
+	}
+	r = *o.NewSizePtr
 	return r
 }
 
@@ -122,7 +127,11 @@ func (o *VolumeSizeRequest) SetNewSize(newValue string) *VolumeSizeRequest {
 
 // Volume is a 'getter' method
 func (o *VolumeSizeRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -134,7 +143,11 @@ func (o *VolumeSizeRequest) SetVolume(newValue string) *VolumeSizeRequest {
 
 // IsFixedSizeFlexVolume is a 'getter' method
 func (o *VolumeSizeResponseResult) IsFixedSizeFlexVolume() bool {
-	r := *o.IsFixedSizeFlexVolumePtr
+	var r bool
+	if o.IsFixedSizeFlexVolumePtr == nil {
+		return r
+	}
+	r = *o.IsFixedSizeFlexVolumePtr
 	return r
 }
 
@@ -146,7 +159,11 @@ func (o *VolumeSizeResponseResult) SetIsFixedSizeFlexVolume(newValue bool) *Volu
 
 // IsReadonlyFlexVolume is a 'getter' method
 func (o *VolumeSizeResponseResult) IsReadonlyFlexVolume() bool {
-	r := *o.IsReadonlyFlexVolumePtr
+	var r bool
+	if o.IsReadonlyFlexVolumePtr == nil {
+		return r
+	}
+	r = *o.IsReadonlyFlexVolumePtr
 	return r
 }
 
@@ -158,7 +175,11 @@ func (o *VolumeSizeResponseResult) SetIsReadonlyFlexVolume(newValue bool) *Volum
 
 // IsReplicaFlexVolume is a 'getter' method
 func (o *VolumeSizeResponseResult) IsReplicaFlexVolume() bool {
-	r := *o.IsReplicaFlexVolumePtr
+	var r bool
+	if o.IsReplicaFlexVolumePtr == nil {
+		return r
+	}
+	r = *o.IsReplicaFlexVolumePtr
 	return r
 }
 
@@ -170,7 +191,11 @@ func (o *VolumeSizeResponseResult) SetIsReplicaFlexVolume(newValue bool) *Volume
 
 // VolumeSize is a 'getter' method
 func (o *VolumeSizeResponseResult) VolumeSize() string {
-	r := *o.VolumeSizePtr
+	var r string
+	if o.VolumeSizePtr == nil {
+		return r
+	}
+	r = *o.VolumeSizePtr
 	return r
 }
 

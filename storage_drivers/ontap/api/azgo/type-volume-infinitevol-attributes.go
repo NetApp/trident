@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeInfinitevolAttributesType is a structure to represent a volume-infinitevol-attributes ZAPI object
@@ -42,7 +43,11 @@ func (o VolumeInfinitevolAttributesType) String() string {
 
 // ConstituentRole is a 'getter' method
 func (o *VolumeInfinitevolAttributesType) ConstituentRole() ReposConstituentRoleType {
-	r := *o.ConstituentRolePtr
+	var r ReposConstituentRoleType
+	if o.ConstituentRolePtr == nil {
+		return r
+	}
+	r = *o.ConstituentRolePtr
 	return r
 }
 
@@ -54,7 +59,11 @@ func (o *VolumeInfinitevolAttributesType) SetConstituentRole(newValue ReposConst
 
 // EnableSnapdiff is a 'getter' method
 func (o *VolumeInfinitevolAttributesType) EnableSnapdiff() bool {
-	r := *o.EnableSnapdiffPtr
+	var r bool
+	if o.EnableSnapdiffPtr == nil {
+		return r
+	}
+	r = *o.EnableSnapdiffPtr
 	return r
 }
 
@@ -66,7 +75,11 @@ func (o *VolumeInfinitevolAttributesType) SetEnableSnapdiff(newValue bool) *Volu
 
 // IsManagedByService is a 'getter' method
 func (o *VolumeInfinitevolAttributesType) IsManagedByService() bool {
-	r := *o.IsManagedByServicePtr
+	var r bool
+	if o.IsManagedByServicePtr == nil {
+		return r
+	}
+	r = *o.IsManagedByServicePtr
 	return r
 }
 
@@ -78,7 +91,11 @@ func (o *VolumeInfinitevolAttributesType) SetIsManagedByService(newValue bool) *
 
 // MaxDataConstituentSize is a 'getter' method
 func (o *VolumeInfinitevolAttributesType) MaxDataConstituentSize() SizeType {
-	r := *o.MaxDataConstituentSizePtr
+	var r SizeType
+	if o.MaxDataConstituentSizePtr == nil {
+		return r
+	}
+	r = *o.MaxDataConstituentSizePtr
 	return r
 }
 
@@ -90,7 +107,11 @@ func (o *VolumeInfinitevolAttributesType) SetMaxDataConstituentSize(newValue Siz
 
 // MaxNamespaceConstituentSize is a 'getter' method
 func (o *VolumeInfinitevolAttributesType) MaxNamespaceConstituentSize() SizeType {
-	r := *o.MaxNamespaceConstituentSizePtr
+	var r SizeType
+	if o.MaxNamespaceConstituentSizePtr == nil {
+		return r
+	}
+	r = *o.MaxNamespaceConstituentSizePtr
 	return r
 }
 
@@ -122,7 +143,11 @@ func (o *VolumeInfinitevolAttributesTypeNamespaceMirrorAggrList) SetAggrName(new
 
 // NamespaceMirrorAggrList is a 'getter' method
 func (o *VolumeInfinitevolAttributesType) NamespaceMirrorAggrList() VolumeInfinitevolAttributesTypeNamespaceMirrorAggrList {
-	r := *o.NamespaceMirrorAggrListPtr
+	var r VolumeInfinitevolAttributesTypeNamespaceMirrorAggrList
+	if o.NamespaceMirrorAggrListPtr == nil {
+		return r
+	}
+	r = *o.NamespaceMirrorAggrListPtr
 	return r
 }
 
@@ -134,7 +159,11 @@ func (o *VolumeInfinitevolAttributesType) SetNamespaceMirrorAggrList(newValue Vo
 
 // StorageService is a 'getter' method
 func (o *VolumeInfinitevolAttributesType) StorageService() string {
-	r := *o.StorageServicePtr
+	var r string
+	if o.StorageServicePtr == nil {
+		return r
+	}
+	r = *o.StorageServicePtr
 	return r
 }
 

@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // ExportRuleGetIterRequest is a structure to represent a export-rule-get-iter Request ZAPI object
@@ -178,7 +179,11 @@ func (o ExportRuleGetIterRequestDesiredAttributes) String() string {
 
 // ExportRuleInfo is a 'getter' method
 func (o *ExportRuleGetIterRequestDesiredAttributes) ExportRuleInfo() ExportRuleInfoType {
-	r := *o.ExportRuleInfoPtr
+	var r ExportRuleInfoType
+	if o.ExportRuleInfoPtr == nil {
+		return r
+	}
+	r = *o.ExportRuleInfoPtr
 	return r
 }
 
@@ -190,7 +195,11 @@ func (o *ExportRuleGetIterRequestDesiredAttributes) SetExportRuleInfo(newValue E
 
 // DesiredAttributes is a 'getter' method
 func (o *ExportRuleGetIterRequest) DesiredAttributes() ExportRuleGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r ExportRuleGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -202,7 +211,11 @@ func (o *ExportRuleGetIterRequest) SetDesiredAttributes(newValue ExportRuleGetIt
 
 // MaxRecords is a 'getter' method
 func (o *ExportRuleGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -225,7 +238,11 @@ func (o ExportRuleGetIterRequestQuery) String() string {
 
 // ExportRuleInfo is a 'getter' method
 func (o *ExportRuleGetIterRequestQuery) ExportRuleInfo() ExportRuleInfoType {
-	r := *o.ExportRuleInfoPtr
+	var r ExportRuleInfoType
+	if o.ExportRuleInfoPtr == nil {
+		return r
+	}
+	r = *o.ExportRuleInfoPtr
 	return r
 }
 
@@ -237,7 +254,11 @@ func (o *ExportRuleGetIterRequestQuery) SetExportRuleInfo(newValue ExportRuleInf
 
 // Query is a 'getter' method
 func (o *ExportRuleGetIterRequest) Query() ExportRuleGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r ExportRuleGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -249,7 +270,11 @@ func (o *ExportRuleGetIterRequest) SetQuery(newValue ExportRuleGetIterRequestQue
 
 // Tag is a 'getter' method
 func (o *ExportRuleGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -300,7 +325,11 @@ func (o *ExportRuleGetIterResponseResultAttributesList) setValues(newValue []Exp
 
 // AttributesList is a 'getter' method
 func (o *ExportRuleGetIterResponseResult) AttributesList() ExportRuleGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r ExportRuleGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -312,7 +341,11 @@ func (o *ExportRuleGetIterResponseResult) SetAttributesList(newValue ExportRuleG
 
 // NextTag is a 'getter' method
 func (o *ExportRuleGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -324,7 +357,11 @@ func (o *ExportRuleGetIterResponseResult) SetNextTag(newValue string) *ExportRul
 
 // NumRecords is a 'getter' method
 func (o *ExportRuleGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

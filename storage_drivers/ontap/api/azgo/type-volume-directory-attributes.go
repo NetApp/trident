@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeDirectoryAttributesType is a structure to represent a volume-directory-attributes ZAPI object
@@ -37,7 +38,11 @@ func (o VolumeDirectoryAttributesType) String() string {
 
 // I2pEnabled is a 'getter' method
 func (o *VolumeDirectoryAttributesType) I2pEnabled() bool {
-	r := *o.I2pEnabledPtr
+	var r bool
+	if o.I2pEnabledPtr == nil {
+		return r
+	}
+	r = *o.I2pEnabledPtr
 	return r
 }
 
@@ -49,7 +54,11 @@ func (o *VolumeDirectoryAttributesType) SetI2pEnabled(newValue bool) *VolumeDire
 
 // MaxDirSize is a 'getter' method
 func (o *VolumeDirectoryAttributesType) MaxDirSize() int {
-	r := *o.MaxDirSizePtr
+	var r int
+	if o.MaxDirSizePtr == nil {
+		return r
+	}
+	r = *o.MaxDirSizePtr
 	return r
 }
 
@@ -61,7 +70,11 @@ func (o *VolumeDirectoryAttributesType) SetMaxDirSize(newValue int) *VolumeDirec
 
 // RootDirGen is a 'getter' method
 func (o *VolumeDirectoryAttributesType) RootDirGen() string {
-	r := *o.RootDirGenPtr
+	var r string
+	if o.RootDirGenPtr == nil {
+		return r
+	}
+	r = *o.RootDirGenPtr
 	return r
 }
 

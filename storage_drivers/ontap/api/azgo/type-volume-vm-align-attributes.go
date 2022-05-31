@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeVmAlignAttributesType is a structure to represent a volume-vm-align-attributes ZAPI object
@@ -36,7 +37,11 @@ func (o VolumeVmAlignAttributesType) String() string {
 
 // VmAlignSector is a 'getter' method
 func (o *VolumeVmAlignAttributesType) VmAlignSector() int {
-	r := *o.VmAlignSectorPtr
+	var r int
+	if o.VmAlignSectorPtr == nil {
+		return r
+	}
+	r = *o.VmAlignSectorPtr
 	return r
 }
 
@@ -48,7 +53,11 @@ func (o *VolumeVmAlignAttributesType) SetVmAlignSector(newValue int) *VolumeVmAl
 
 // VmAlignSuffix is a 'getter' method
 func (o *VolumeVmAlignAttributesType) VmAlignSuffix() string {
-	r := *o.VmAlignSuffixPtr
+	var r string
+	if o.VmAlignSuffixPtr == nil {
+		return r
+	}
+	r = *o.VmAlignSuffixPtr
 	return r
 }
 

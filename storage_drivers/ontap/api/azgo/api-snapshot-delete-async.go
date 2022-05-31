@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapshotDeleteAsyncRequest is a structure to represent a snapshot-delete-async Request ZAPI object
@@ -112,7 +113,11 @@ func (o *SnapshotDeleteAsyncRequest) executeWithoutIteration(zr *ZapiRunner) (*S
 
 // IgnoreOwners is a 'getter' method
 func (o *SnapshotDeleteAsyncRequest) IgnoreOwners() bool {
-	r := *o.IgnoreOwnersPtr
+	var r bool
+	if o.IgnoreOwnersPtr == nil {
+		return r
+	}
+	r = *o.IgnoreOwnersPtr
 	return r
 }
 
@@ -124,7 +129,11 @@ func (o *SnapshotDeleteAsyncRequest) SetIgnoreOwners(newValue bool) *SnapshotDel
 
 // Snapshot is a 'getter' method
 func (o *SnapshotDeleteAsyncRequest) Snapshot() string {
-	r := *o.SnapshotPtr
+	var r string
+	if o.SnapshotPtr == nil {
+		return r
+	}
+	r = *o.SnapshotPtr
 	return r
 }
 
@@ -136,7 +145,11 @@ func (o *SnapshotDeleteAsyncRequest) SetSnapshot(newValue string) *SnapshotDelet
 
 // SnapshotInstanceUuid is a 'getter' method
 func (o *SnapshotDeleteAsyncRequest) SnapshotInstanceUuid() UUIDType {
-	r := *o.SnapshotInstanceUuidPtr
+	var r UUIDType
+	if o.SnapshotInstanceUuidPtr == nil {
+		return r
+	}
+	r = *o.SnapshotInstanceUuidPtr
 	return r
 }
 
@@ -148,7 +161,11 @@ func (o *SnapshotDeleteAsyncRequest) SetSnapshotInstanceUuid(newValue UUIDType) 
 
 // Volume is a 'getter' method
 func (o *SnapshotDeleteAsyncRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -160,7 +177,11 @@ func (o *SnapshotDeleteAsyncRequest) SetVolume(newValue string) *SnapshotDeleteA
 
 // ResultErrorCode is a 'getter' method
 func (o *SnapshotDeleteAsyncResponseResult) ResultErrorCode() int {
-	r := *o.ResultErrorCodePtr
+	var r int
+	if o.ResultErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorCodePtr
 	return r
 }
 
@@ -172,7 +193,11 @@ func (o *SnapshotDeleteAsyncResponseResult) SetResultErrorCode(newValue int) *Sn
 
 // ResultErrorMessage is a 'getter' method
 func (o *SnapshotDeleteAsyncResponseResult) ResultErrorMessage() string {
-	r := *o.ResultErrorMessagePtr
+	var r string
+	if o.ResultErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorMessagePtr
 	return r
 }
 
@@ -184,7 +209,11 @@ func (o *SnapshotDeleteAsyncResponseResult) SetResultErrorMessage(newValue strin
 
 // ResultJobid is a 'getter' method
 func (o *SnapshotDeleteAsyncResponseResult) ResultJobid() int {
-	r := *o.ResultJobidPtr
+	var r int
+	if o.ResultJobidPtr == nil {
+		return r
+	}
+	r = *o.ResultJobidPtr
 	return r
 }
 
@@ -196,7 +225,11 @@ func (o *SnapshotDeleteAsyncResponseResult) SetResultJobid(newValue int) *Snapsh
 
 // ResultStatus is a 'getter' method
 func (o *SnapshotDeleteAsyncResponseResult) ResultStatus() string {
-	r := *o.ResultStatusPtr
+	var r string
+	if o.ResultStatusPtr == nil {
+		return r
+	}
+	r = *o.ResultStatusPtr
 	return r
 }
 

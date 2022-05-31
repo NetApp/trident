@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeCloneSplitStartRequest is a structure to represent a volume-clone-split-start Request ZAPI object
@@ -109,7 +110,11 @@ func (o *VolumeCloneSplitStartRequest) executeWithoutIteration(zr *ZapiRunner) (
 
 // Volume is a 'getter' method
 func (o *VolumeCloneSplitStartRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 
@@ -121,7 +126,11 @@ func (o *VolumeCloneSplitStartRequest) SetVolume(newValue string) *VolumeCloneSp
 
 // ResultErrorCode is a 'getter' method
 func (o *VolumeCloneSplitStartResponseResult) ResultErrorCode() int {
-	r := *o.ResultErrorCodePtr
+	var r int
+	if o.ResultErrorCodePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorCodePtr
 	return r
 }
 
@@ -133,7 +142,11 @@ func (o *VolumeCloneSplitStartResponseResult) SetResultErrorCode(newValue int) *
 
 // ResultErrorMessage is a 'getter' method
 func (o *VolumeCloneSplitStartResponseResult) ResultErrorMessage() string {
-	r := *o.ResultErrorMessagePtr
+	var r string
+	if o.ResultErrorMessagePtr == nil {
+		return r
+	}
+	r = *o.ResultErrorMessagePtr
 	return r
 }
 
@@ -145,7 +158,11 @@ func (o *VolumeCloneSplitStartResponseResult) SetResultErrorMessage(newValue str
 
 // ResultJobid is a 'getter' method
 func (o *VolumeCloneSplitStartResponseResult) ResultJobid() int {
-	r := *o.ResultJobidPtr
+	var r int
+	if o.ResultJobidPtr == nil {
+		return r
+	}
+	r = *o.ResultJobidPtr
 	return r
 }
 
@@ -157,7 +174,11 @@ func (o *VolumeCloneSplitStartResponseResult) SetResultJobid(newValue int) *Volu
 
 // ResultStatus is a 'getter' method
 func (o *VolumeCloneSplitStartResponseResult) ResultStatus() string {
-	r := *o.ResultStatusPtr
+	var r string
+	if o.ResultStatusPtr == nil {
+		return r
+	}
+	r = *o.ResultStatusPtr
 	return r
 }
 

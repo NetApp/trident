@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VserverGetRequest is a structure to represent a vserver-get Request ZAPI object
@@ -117,7 +118,11 @@ func (o VserverGetRequestDesiredAttributes) String() string {
 
 // VserverInfo is a 'getter' method
 func (o *VserverGetRequestDesiredAttributes) VserverInfo() VserverInfoType {
-	r := *o.VserverInfoPtr
+	var r VserverInfoType
+	if o.VserverInfoPtr == nil {
+		return r
+	}
+	r = *o.VserverInfoPtr
 	return r
 }
 
@@ -129,7 +134,11 @@ func (o *VserverGetRequestDesiredAttributes) SetVserverInfo(newValue VserverInfo
 
 // DesiredAttributes is a 'getter' method
 func (o *VserverGetRequest) DesiredAttributes() VserverGetRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r VserverGetRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -152,7 +161,11 @@ func (o VserverGetResponseResultAttributes) String() string {
 
 // VserverInfo is a 'getter' method
 func (o *VserverGetResponseResultAttributes) VserverInfo() VserverInfoType {
-	r := *o.VserverInfoPtr
+	var r VserverInfoType
+	if o.VserverInfoPtr == nil {
+		return r
+	}
+	r = *o.VserverInfoPtr
 	return r
 }
 
@@ -164,7 +177,11 @@ func (o *VserverGetResponseResultAttributes) SetVserverInfo(newValue VserverInfo
 
 // values is a 'getter' method
 func (o *VserverGetResponseResultAttributes) values() VserverInfoType {
-	r := *o.VserverInfoPtr
+	var r VserverInfoType
+	if o.VserverInfoPtr == nil {
+		return r
+	}
+	r = *o.VserverInfoPtr
 	return r
 }
 
@@ -176,7 +193,11 @@ func (o *VserverGetResponseResultAttributes) setValues(newValue VserverInfoType)
 
 // Attributes is a 'getter' method
 func (o *VserverGetResponseResult) Attributes() VserverGetResponseResultAttributes {
-	r := *o.AttributesPtr
+	var r VserverGetResponseResultAttributes
+	if o.AttributesPtr == nil {
+		return r
+	}
+	r = *o.AttributesPtr
 	return r
 }
 

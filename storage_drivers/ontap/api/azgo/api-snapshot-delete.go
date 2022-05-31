@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapshotDeleteRequest is a structure to represent a snapshot-delete Request ZAPI object
@@ -108,7 +109,11 @@ func (o *SnapshotDeleteRequest) executeWithoutIteration(zr *ZapiRunner) (*Snapsh
 
 // IgnoreOwners is a 'getter' method
 func (o *SnapshotDeleteRequest) IgnoreOwners() bool {
-	r := *o.IgnoreOwnersPtr
+	var r bool
+	if o.IgnoreOwnersPtr == nil {
+		return r
+	}
+	r = *o.IgnoreOwnersPtr
 	return r
 }
 
@@ -120,7 +125,11 @@ func (o *SnapshotDeleteRequest) SetIgnoreOwners(newValue bool) *SnapshotDeleteRe
 
 // Snapshot is a 'getter' method
 func (o *SnapshotDeleteRequest) Snapshot() string {
-	r := *o.SnapshotPtr
+	var r string
+	if o.SnapshotPtr == nil {
+		return r
+	}
+	r = *o.SnapshotPtr
 	return r
 }
 
@@ -132,7 +141,11 @@ func (o *SnapshotDeleteRequest) SetSnapshot(newValue string) *SnapshotDeleteRequ
 
 // SnapshotInstanceUuid is a 'getter' method
 func (o *SnapshotDeleteRequest) SnapshotInstanceUuid() UUIDType {
-	r := *o.SnapshotInstanceUuidPtr
+	var r UUIDType
+	if o.SnapshotInstanceUuidPtr == nil {
+		return r
+	}
+	r = *o.SnapshotInstanceUuidPtr
 	return r
 }
 
@@ -144,7 +157,11 @@ func (o *SnapshotDeleteRequest) SetSnapshotInstanceUuid(newValue UUIDType) *Snap
 
 // Volume is a 'getter' method
 func (o *SnapshotDeleteRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 

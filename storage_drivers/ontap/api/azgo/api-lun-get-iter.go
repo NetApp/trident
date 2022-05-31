@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // LunGetIterRequest is a structure to represent a lun-get-iter Request ZAPI object
@@ -179,7 +180,11 @@ func (o LunGetIterRequestDesiredAttributes) String() string {
 
 // LunInfo is a 'getter' method
 func (o *LunGetIterRequestDesiredAttributes) LunInfo() LunInfoType {
-	r := *o.LunInfoPtr
+	var r LunInfoType
+	if o.LunInfoPtr == nil {
+		return r
+	}
+	r = *o.LunInfoPtr
 	return r
 }
 
@@ -191,7 +196,11 @@ func (o *LunGetIterRequestDesiredAttributes) SetLunInfo(newValue LunInfoType) *L
 
 // DesiredAttributes is a 'getter' method
 func (o *LunGetIterRequest) DesiredAttributes() LunGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r LunGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -203,7 +212,11 @@ func (o *LunGetIterRequest) SetDesiredAttributes(newValue LunGetIterRequestDesir
 
 // MaxRecords is a 'getter' method
 func (o *LunGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -226,7 +239,11 @@ func (o LunGetIterRequestQuery) String() string {
 
 // LunInfo is a 'getter' method
 func (o *LunGetIterRequestQuery) LunInfo() LunInfoType {
-	r := *o.LunInfoPtr
+	var r LunInfoType
+	if o.LunInfoPtr == nil {
+		return r
+	}
+	r = *o.LunInfoPtr
 	return r
 }
 
@@ -238,7 +255,11 @@ func (o *LunGetIterRequestQuery) SetLunInfo(newValue LunInfoType) *LunGetIterReq
 
 // Query is a 'getter' method
 func (o *LunGetIterRequest) Query() LunGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r LunGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -250,7 +271,11 @@ func (o *LunGetIterRequest) SetQuery(newValue LunGetIterRequestQuery) *LunGetIte
 
 // Tag is a 'getter' method
 func (o *LunGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -301,7 +326,11 @@ func (o *LunGetIterResponseResultAttributesList) setValues(newValue []LunInfoTyp
 
 // AttributesList is a 'getter' method
 func (o *LunGetIterResponseResult) AttributesList() LunGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r LunGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -313,7 +342,11 @@ func (o *LunGetIterResponseResult) SetAttributesList(newValue LunGetIterResponse
 
 // NextTag is a 'getter' method
 func (o *LunGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -325,7 +358,11 @@ func (o *LunGetIterResponseResult) SetNextTag(newValue string) *LunGetIterRespon
 
 // NumRecords is a 'getter' method
 func (o *LunGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 
@@ -376,7 +413,11 @@ func (o *LunGetIterResponseResultVolumeErrors) setValues(newValue []VolumeErrorT
 
 // VolumeErrors is a 'getter' method
 func (o *LunGetIterResponseResult) VolumeErrors() LunGetIterResponseResultVolumeErrors {
-	r := *o.VolumeErrorsPtr
+	var r LunGetIterResponseResultVolumeErrors
+	if o.VolumeErrorsPtr == nil {
+		return r
+	}
+	r = *o.VolumeErrorsPtr
 	return r
 }
 

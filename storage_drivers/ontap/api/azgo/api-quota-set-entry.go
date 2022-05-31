@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // QuotaSetEntryRequest is a structure to represent a quota-set-entry Request ZAPI object
@@ -115,7 +116,11 @@ func (o *QuotaSetEntryRequest) executeWithoutIteration(zr *ZapiRunner) (*QuotaSe
 
 // DiskLimit is a 'getter' method
 func (o *QuotaSetEntryRequest) DiskLimit() string {
-	r := *o.DiskLimitPtr
+	var r string
+	if o.DiskLimitPtr == nil {
+		return r
+	}
+	r = *o.DiskLimitPtr
 	return r
 }
 
@@ -127,7 +132,11 @@ func (o *QuotaSetEntryRequest) SetDiskLimit(newValue string) *QuotaSetEntryReque
 
 // FileLimit is a 'getter' method
 func (o *QuotaSetEntryRequest) FileLimit() string {
-	r := *o.FileLimitPtr
+	var r string
+	if o.FileLimitPtr == nil {
+		return r
+	}
+	r = *o.FileLimitPtr
 	return r
 }
 
@@ -139,7 +148,11 @@ func (o *QuotaSetEntryRequest) SetFileLimit(newValue string) *QuotaSetEntryReque
 
 // PerformUserMapping is a 'getter' method
 func (o *QuotaSetEntryRequest) PerformUserMapping() bool {
-	r := *o.PerformUserMappingPtr
+	var r bool
+	if o.PerformUserMappingPtr == nil {
+		return r
+	}
+	r = *o.PerformUserMappingPtr
 	return r
 }
 
@@ -151,7 +164,11 @@ func (o *QuotaSetEntryRequest) SetPerformUserMapping(newValue bool) *QuotaSetEnt
 
 // Policy is a 'getter' method
 func (o *QuotaSetEntryRequest) Policy() string {
-	r := *o.PolicyPtr
+	var r string
+	if o.PolicyPtr == nil {
+		return r
+	}
+	r = *o.PolicyPtr
 	return r
 }
 
@@ -163,7 +180,11 @@ func (o *QuotaSetEntryRequest) SetPolicy(newValue string) *QuotaSetEntryRequest 
 
 // Qtree is a 'getter' method
 func (o *QuotaSetEntryRequest) Qtree() string {
-	r := *o.QtreePtr
+	var r string
+	if o.QtreePtr == nil {
+		return r
+	}
+	r = *o.QtreePtr
 	return r
 }
 
@@ -175,7 +196,11 @@ func (o *QuotaSetEntryRequest) SetQtree(newValue string) *QuotaSetEntryRequest {
 
 // QuotaTarget is a 'getter' method
 func (o *QuotaSetEntryRequest) QuotaTarget() string {
-	r := *o.QuotaTargetPtr
+	var r string
+	if o.QuotaTargetPtr == nil {
+		return r
+	}
+	r = *o.QuotaTargetPtr
 	return r
 }
 
@@ -187,7 +212,11 @@ func (o *QuotaSetEntryRequest) SetQuotaTarget(newValue string) *QuotaSetEntryReq
 
 // QuotaType is a 'getter' method
 func (o *QuotaSetEntryRequest) QuotaType() string {
-	r := *o.QuotaTypePtr
+	var r string
+	if o.QuotaTypePtr == nil {
+		return r
+	}
+	r = *o.QuotaTypePtr
 	return r
 }
 
@@ -199,7 +228,11 @@ func (o *QuotaSetEntryRequest) SetQuotaType(newValue string) *QuotaSetEntryReque
 
 // SoftDiskLimit is a 'getter' method
 func (o *QuotaSetEntryRequest) SoftDiskLimit() string {
-	r := *o.SoftDiskLimitPtr
+	var r string
+	if o.SoftDiskLimitPtr == nil {
+		return r
+	}
+	r = *o.SoftDiskLimitPtr
 	return r
 }
 
@@ -211,7 +244,11 @@ func (o *QuotaSetEntryRequest) SetSoftDiskLimit(newValue string) *QuotaSetEntryR
 
 // SoftFileLimit is a 'getter' method
 func (o *QuotaSetEntryRequest) SoftFileLimit() string {
-	r := *o.SoftFileLimitPtr
+	var r string
+	if o.SoftFileLimitPtr == nil {
+		return r
+	}
+	r = *o.SoftFileLimitPtr
 	return r
 }
 
@@ -223,7 +260,11 @@ func (o *QuotaSetEntryRequest) SetSoftFileLimit(newValue string) *QuotaSetEntryR
 
 // Threshold is a 'getter' method
 func (o *QuotaSetEntryRequest) Threshold() string {
-	r := *o.ThresholdPtr
+	var r string
+	if o.ThresholdPtr == nil {
+		return r
+	}
+	r = *o.ThresholdPtr
 	return r
 }
 
@@ -235,7 +276,11 @@ func (o *QuotaSetEntryRequest) SetThreshold(newValue string) *QuotaSetEntryReque
 
 // Volume is a 'getter' method
 func (o *QuotaSetEntryRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 

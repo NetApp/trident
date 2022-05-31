@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // CloneCreateRequest is a structure to represent a clone-create Request ZAPI object
@@ -26,8 +27,8 @@ type CloneCreateRequest struct {
 	IsVvolBackupPtr               *bool                          `xml:"is-vvol-backup"`
 	LunSerialNumberPtr            *string                        `xml:"lun-serial-number"`
 	NosplitEntryPtr               *bool                          `xml:"nosplit-entry"`
-	QosPolicyGroupNamePtr         *string                        `xml:"qos-policy-group-name"`
 	QosAdaptivePolicyGroupNamePtr *string                        `xml:"qos-adaptive-policy-group-name"`
+	QosPolicyGroupNamePtr         *string                        `xml:"qos-policy-group-name"`
 	SnapshotNamePtr               *string                        `xml:"snapshot-name"`
 	SourcePathPtr                 *string                        `xml:"source-path"`
 	SpaceReservePtr               *bool                          `xml:"space-reserve"`
@@ -126,7 +127,11 @@ func (o *CloneCreateRequest) executeWithoutIteration(zr *ZapiRunner) (*CloneCrea
 
 // Autodelete is a 'getter' method
 func (o *CloneCreateRequest) Autodelete() bool {
-	r := *o.AutodeletePtr
+	var r bool
+	if o.AutodeletePtr == nil {
+		return r
+	}
+	r = *o.AutodeletePtr
 	return r
 }
 
@@ -163,7 +168,11 @@ func (o *CloneCreateRequestBlockRanges) SetBlockRange(newValue []BlockRangeType)
 
 // BlockRanges is a 'getter' method
 func (o *CloneCreateRequest) BlockRanges() CloneCreateRequestBlockRanges {
-	r := *o.BlockRangesPtr
+	var r CloneCreateRequestBlockRanges
+	if o.BlockRangesPtr == nil {
+		return r
+	}
+	r = *o.BlockRangesPtr
 	return r
 }
 
@@ -175,7 +184,11 @@ func (o *CloneCreateRequest) SetBlockRanges(newValue CloneCreateRequestBlockRang
 
 // BypassLicenseCheck is a 'getter' method
 func (o *CloneCreateRequest) BypassLicenseCheck() bool {
-	r := *o.BypassLicenseCheckPtr
+	var r bool
+	if o.BypassLicenseCheckPtr == nil {
+		return r
+	}
+	r = *o.BypassLicenseCheckPtr
 	return r
 }
 
@@ -187,7 +200,11 @@ func (o *CloneCreateRequest) SetBypassLicenseCheck(newValue bool) *CloneCreateRe
 
 // BypassThrottle is a 'getter' method
 func (o *CloneCreateRequest) BypassThrottle() bool {
-	r := *o.BypassThrottlePtr
+	var r bool
+	if o.BypassThrottlePtr == nil {
+		return r
+	}
+	r = *o.BypassThrottlePtr
 	return r
 }
 
@@ -199,7 +216,11 @@ func (o *CloneCreateRequest) SetBypassThrottle(newValue bool) *CloneCreateReques
 
 // DestinationExists is a 'getter' method
 func (o *CloneCreateRequest) DestinationExists() bool {
-	r := *o.DestinationExistsPtr
+	var r bool
+	if o.DestinationExistsPtr == nil {
+		return r
+	}
+	r = *o.DestinationExistsPtr
 	return r
 }
 
@@ -211,7 +232,11 @@ func (o *CloneCreateRequest) SetDestinationExists(newValue bool) *CloneCreateReq
 
 // DestinationPath is a 'getter' method
 func (o *CloneCreateRequest) DestinationPath() string {
-	r := *o.DestinationPathPtr
+	var r string
+	if o.DestinationPathPtr == nil {
+		return r
+	}
+	r = *o.DestinationPathPtr
 	return r
 }
 
@@ -223,7 +248,11 @@ func (o *CloneCreateRequest) SetDestinationPath(newValue string) *CloneCreateReq
 
 // DestinationVolume is a 'getter' method
 func (o *CloneCreateRequest) DestinationVolume() string {
-	r := *o.DestinationVolumePtr
+	var r string
+	if o.DestinationVolumePtr == nil {
+		return r
+	}
+	r = *o.DestinationVolumePtr
 	return r
 }
 
@@ -235,7 +264,11 @@ func (o *CloneCreateRequest) SetDestinationVolume(newValue string) *CloneCreateR
 
 // FixedBlockCount is a 'getter' method
 func (o *CloneCreateRequest) FixedBlockCount() int {
-	r := *o.FixedBlockCountPtr
+	var r int
+	if o.FixedBlockCountPtr == nil {
+		return r
+	}
+	r = *o.FixedBlockCountPtr
 	return r
 }
 
@@ -247,7 +280,11 @@ func (o *CloneCreateRequest) SetFixedBlockCount(newValue int) *CloneCreateReques
 
 // IgnoreLocks is a 'getter' method
 func (o *CloneCreateRequest) IgnoreLocks() bool {
-	r := *o.IgnoreLocksPtr
+	var r bool
+	if o.IgnoreLocksPtr == nil {
+		return r
+	}
+	r = *o.IgnoreLocksPtr
 	return r
 }
 
@@ -259,7 +296,11 @@ func (o *CloneCreateRequest) SetIgnoreLocks(newValue bool) *CloneCreateRequest {
 
 // IgnoreStreams is a 'getter' method
 func (o *CloneCreateRequest) IgnoreStreams() bool {
-	r := *o.IgnoreStreamsPtr
+	var r bool
+	if o.IgnoreStreamsPtr == nil {
+		return r
+	}
+	r = *o.IgnoreStreamsPtr
 	return r
 }
 
@@ -271,7 +312,11 @@ func (o *CloneCreateRequest) SetIgnoreStreams(newValue bool) *CloneCreateRequest
 
 // IsBackup is a 'getter' method
 func (o *CloneCreateRequest) IsBackup() bool {
-	r := *o.IsBackupPtr
+	var r bool
+	if o.IsBackupPtr == nil {
+		return r
+	}
+	r = *o.IsBackupPtr
 	return r
 }
 
@@ -283,7 +328,11 @@ func (o *CloneCreateRequest) SetIsBackup(newValue bool) *CloneCreateRequest {
 
 // IsFixedBlockCount is a 'getter' method
 func (o *CloneCreateRequest) IsFixedBlockCount() bool {
-	r := *o.IsFixedBlockCountPtr
+	var r bool
+	if o.IsFixedBlockCountPtr == nil {
+		return r
+	}
+	r = *o.IsFixedBlockCountPtr
 	return r
 }
 
@@ -295,7 +344,11 @@ func (o *CloneCreateRequest) SetIsFixedBlockCount(newValue bool) *CloneCreateReq
 
 // IsVvolBackup is a 'getter' method
 func (o *CloneCreateRequest) IsVvolBackup() bool {
-	r := *o.IsVvolBackupPtr
+	var r bool
+	if o.IsVvolBackupPtr == nil {
+		return r
+	}
+	r = *o.IsVvolBackupPtr
 	return r
 }
 
@@ -307,7 +360,11 @@ func (o *CloneCreateRequest) SetIsVvolBackup(newValue bool) *CloneCreateRequest 
 
 // LunSerialNumber is a 'getter' method
 func (o *CloneCreateRequest) LunSerialNumber() string {
-	r := *o.LunSerialNumberPtr
+	var r string
+	if o.LunSerialNumberPtr == nil {
+		return r
+	}
+	r = *o.LunSerialNumberPtr
 	return r
 }
 
@@ -319,7 +376,11 @@ func (o *CloneCreateRequest) SetLunSerialNumber(newValue string) *CloneCreateReq
 
 // NosplitEntry is a 'getter' method
 func (o *CloneCreateRequest) NosplitEntry() bool {
-	r := *o.NosplitEntryPtr
+	var r bool
+	if o.NosplitEntryPtr == nil {
+		return r
+	}
+	r = *o.NosplitEntryPtr
 	return r
 }
 
@@ -329,21 +390,13 @@ func (o *CloneCreateRequest) SetNosplitEntry(newValue bool) *CloneCreateRequest 
 	return o
 }
 
-// QosPolicyGroupName is a 'getter' method
-func (o *CloneCreateRequest) QosPolicyGroupName() string {
-	r := *o.QosPolicyGroupNamePtr
-	return r
-}
-
-// SetQosPolicyGroupName is a fluent style 'setter' method that can be chained
-func (o *CloneCreateRequest) SetQosPolicyGroupName(newValue string) *CloneCreateRequest {
-	o.QosPolicyGroupNamePtr = &newValue
-	return o
-}
-
 // QosAdaptivePolicyGroupName is a 'getter' method
 func (o *CloneCreateRequest) QosAdaptivePolicyGroupName() string {
-	r := *o.QosAdaptivePolicyGroupNamePtr
+	var r string
+	if o.QosAdaptivePolicyGroupNamePtr == nil {
+		return r
+	}
+	r = *o.QosAdaptivePolicyGroupNamePtr
 	return r
 }
 
@@ -353,9 +406,29 @@ func (o *CloneCreateRequest) SetQosAdaptivePolicyGroupName(newValue string) *Clo
 	return o
 }
 
+// QosPolicyGroupName is a 'getter' method
+func (o *CloneCreateRequest) QosPolicyGroupName() string {
+	var r string
+	if o.QosPolicyGroupNamePtr == nil {
+		return r
+	}
+	r = *o.QosPolicyGroupNamePtr
+	return r
+}
+
+// SetQosPolicyGroupName is a fluent style 'setter' method that can be chained
+func (o *CloneCreateRequest) SetQosPolicyGroupName(newValue string) *CloneCreateRequest {
+	o.QosPolicyGroupNamePtr = &newValue
+	return o
+}
+
 // SnapshotName is a 'getter' method
 func (o *CloneCreateRequest) SnapshotName() string {
-	r := *o.SnapshotNamePtr
+	var r string
+	if o.SnapshotNamePtr == nil {
+		return r
+	}
+	r = *o.SnapshotNamePtr
 	return r
 }
 
@@ -367,7 +440,11 @@ func (o *CloneCreateRequest) SetSnapshotName(newValue string) *CloneCreateReques
 
 // SourcePath is a 'getter' method
 func (o *CloneCreateRequest) SourcePath() string {
-	r := *o.SourcePathPtr
+	var r string
+	if o.SourcePathPtr == nil {
+		return r
+	}
+	r = *o.SourcePathPtr
 	return r
 }
 
@@ -379,7 +456,11 @@ func (o *CloneCreateRequest) SetSourcePath(newValue string) *CloneCreateRequest 
 
 // SpaceReserve is a 'getter' method
 func (o *CloneCreateRequest) SpaceReserve() bool {
-	r := *o.SpaceReservePtr
+	var r bool
+	if o.SpaceReservePtr == nil {
+		return r
+	}
+	r = *o.SpaceReservePtr
 	return r
 }
 
@@ -391,7 +472,11 @@ func (o *CloneCreateRequest) SetSpaceReserve(newValue bool) *CloneCreateRequest 
 
 // TokenUuid is a 'getter' method
 func (o *CloneCreateRequest) TokenUuid() string {
-	r := *o.TokenUuidPtr
+	var r string
+	if o.TokenUuidPtr == nil {
+		return r
+	}
+	r = *o.TokenUuidPtr
 	return r
 }
 
@@ -403,7 +488,11 @@ func (o *CloneCreateRequest) SetTokenUuid(newValue string) *CloneCreateRequest {
 
 // Volume is a 'getter' method
 func (o *CloneCreateRequest) Volume() string {
-	r := *o.VolumePtr
+	var r string
+	if o.VolumePtr == nil {
+		return r
+	}
+	r = *o.VolumePtr
 	return r
 }
 

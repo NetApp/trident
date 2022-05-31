@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VolumeLanguageAttributesType is a structure to represent a volume-language-attributes ZAPI object
@@ -40,7 +41,11 @@ func (o VolumeLanguageAttributesType) String() string {
 
 // IsConvertUcodeEnabled is a 'getter' method
 func (o *VolumeLanguageAttributesType) IsConvertUcodeEnabled() bool {
-	r := *o.IsConvertUcodeEnabledPtr
+	var r bool
+	if o.IsConvertUcodeEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsConvertUcodeEnabledPtr
 	return r
 }
 
@@ -52,7 +57,11 @@ func (o *VolumeLanguageAttributesType) SetIsConvertUcodeEnabled(newValue bool) *
 
 // IsCreateUcodeEnabled is a 'getter' method
 func (o *VolumeLanguageAttributesType) IsCreateUcodeEnabled() bool {
-	r := *o.IsCreateUcodeEnabledPtr
+	var r bool
+	if o.IsCreateUcodeEnabledPtr == nil {
+		return r
+	}
+	r = *o.IsCreateUcodeEnabledPtr
 	return r
 }
 
@@ -64,7 +73,11 @@ func (o *VolumeLanguageAttributesType) SetIsCreateUcodeEnabled(newValue bool) *V
 
 // Language is a 'getter' method
 func (o *VolumeLanguageAttributesType) Language() string {
-	r := *o.LanguagePtr
+	var r string
+	if o.LanguagePtr == nil {
+		return r
+	}
+	r = *o.LanguagePtr
 	return r
 }
 
@@ -76,7 +89,11 @@ func (o *VolumeLanguageAttributesType) SetLanguage(newValue string) *VolumeLangu
 
 // LanguageCode is a 'getter' method
 func (o *VolumeLanguageAttributesType) LanguageCode() LanguageCodeType {
-	r := *o.LanguageCodePtr
+	var r LanguageCodeType
+	if o.LanguageCodePtr == nil {
+		return r
+	}
+	r = *o.LanguageCodePtr
 	return r
 }
 
@@ -88,7 +105,11 @@ func (o *VolumeLanguageAttributesType) SetLanguageCode(newValue LanguageCodeType
 
 // NfsCharacterSet is a 'getter' method
 func (o *VolumeLanguageAttributesType) NfsCharacterSet() string {
-	r := *o.NfsCharacterSetPtr
+	var r string
+	if o.NfsCharacterSetPtr == nil {
+		return r
+	}
+	r = *o.NfsCharacterSetPtr
 	return r
 }
 
@@ -100,7 +121,11 @@ func (o *VolumeLanguageAttributesType) SetNfsCharacterSet(newValue string) *Volu
 
 // OemCharacterSet is a 'getter' method
 func (o *VolumeLanguageAttributesType) OemCharacterSet() string {
-	r := *o.OemCharacterSetPtr
+	var r string
+	if o.OemCharacterSetPtr == nil {
+		return r
+	}
+	r = *o.OemCharacterSetPtr
 	return r
 }
 

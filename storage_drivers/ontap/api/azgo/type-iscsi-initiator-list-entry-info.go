@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiInitiatorListEntryInfoType is a structure to represent a iscsi-initiator-list-entry-info ZAPI object
@@ -43,7 +44,11 @@ func (o IscsiInitiatorListEntryInfoType) String() string {
 
 // InitiatorAliasname is a 'getter' method
 func (o *IscsiInitiatorListEntryInfoType) InitiatorAliasname() string {
-	r := *o.InitiatorAliasnamePtr
+	var r string
+	if o.InitiatorAliasnamePtr == nil {
+		return r
+	}
+	r = *o.InitiatorAliasnamePtr
 	return r
 }
 
@@ -75,7 +80,11 @@ func (o *IscsiInitiatorListEntryInfoTypeInitiatorGroupList) SetInitiatorGroupLis
 
 // InitiatorGroupList is a 'getter' method
 func (o *IscsiInitiatorListEntryInfoType) InitiatorGroupList() IscsiInitiatorListEntryInfoTypeInitiatorGroupList {
-	r := *o.InitiatorGroupListPtr
+	var r IscsiInitiatorListEntryInfoTypeInitiatorGroupList
+	if o.InitiatorGroupListPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupListPtr
 	return r
 }
 
@@ -87,7 +96,11 @@ func (o *IscsiInitiatorListEntryInfoType) SetInitiatorGroupList(newValue IscsiIn
 
 // InitiatorNodename is a 'getter' method
 func (o *IscsiInitiatorListEntryInfoType) InitiatorNodename() string {
-	r := *o.InitiatorNodenamePtr
+	var r string
+	if o.InitiatorNodenamePtr == nil {
+		return r
+	}
+	r = *o.InitiatorNodenamePtr
 	return r
 }
 
@@ -99,7 +112,11 @@ func (o *IscsiInitiatorListEntryInfoType) SetInitiatorNodename(newValue string) 
 
 // Isid is a 'getter' method
 func (o *IscsiInitiatorListEntryInfoType) Isid() string {
-	r := *o.IsidPtr
+	var r string
+	if o.IsidPtr == nil {
+		return r
+	}
+	r = *o.IsidPtr
 	return r
 }
 
@@ -111,7 +128,11 @@ func (o *IscsiInitiatorListEntryInfoType) SetIsid(newValue string) *IscsiInitiat
 
 // TargetSessionId is a 'getter' method
 func (o *IscsiInitiatorListEntryInfoType) TargetSessionId() int {
-	r := *o.TargetSessionIdPtr
+	var r int
+	if o.TargetSessionIdPtr == nil {
+		return r
+	}
+	r = *o.TargetSessionIdPtr
 	return r
 }
 
@@ -123,7 +144,11 @@ func (o *IscsiInitiatorListEntryInfoType) SetTargetSessionId(newValue int) *Iscs
 
 // TpgroupName is a 'getter' method
 func (o *IscsiInitiatorListEntryInfoType) TpgroupName() string {
-	r := *o.TpgroupNamePtr
+	var r string
+	if o.TpgroupNamePtr == nil {
+		return r
+	}
+	r = *o.TpgroupNamePtr
 	return r
 }
 
@@ -135,7 +160,11 @@ func (o *IscsiInitiatorListEntryInfoType) SetTpgroupName(newValue string) *Iscsi
 
 // TpgroupTag is a 'getter' method
 func (o *IscsiInitiatorListEntryInfoType) TpgroupTag() int {
-	r := *o.TpgroupTagPtr
+	var r int
+	if o.TpgroupTagPtr == nil {
+		return r
+	}
+	r = *o.TpgroupTagPtr
 	return r
 }
 
@@ -147,7 +176,11 @@ func (o *IscsiInitiatorListEntryInfoType) SetTpgroupTag(newValue int) *IscsiInit
 
 // Vserver is a 'getter' method
 func (o *IscsiInitiatorListEntryInfoType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

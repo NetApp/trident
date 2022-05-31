@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IscsiServiceInfoType is a structure to represent a iscsi-service-info ZAPI object
@@ -44,7 +45,11 @@ func (o IscsiServiceInfoType) String() string {
 
 // AliasName is a 'getter' method
 func (o *IscsiServiceInfoType) AliasName() string {
-	r := *o.AliasNamePtr
+	var r string
+	if o.AliasNamePtr == nil {
+		return r
+	}
+	r = *o.AliasNamePtr
 	return r
 }
 
@@ -56,7 +61,11 @@ func (o *IscsiServiceInfoType) SetAliasName(newValue string) *IscsiServiceInfoTy
 
 // IsAvailable is a 'getter' method
 func (o *IscsiServiceInfoType) IsAvailable() bool {
-	r := *o.IsAvailablePtr
+	var r bool
+	if o.IsAvailablePtr == nil {
+		return r
+	}
+	r = *o.IsAvailablePtr
 	return r
 }
 
@@ -68,7 +77,11 @@ func (o *IscsiServiceInfoType) SetIsAvailable(newValue bool) *IscsiServiceInfoTy
 
 // LoginTimeout is a 'getter' method
 func (o *IscsiServiceInfoType) LoginTimeout() int {
-	r := *o.LoginTimeoutPtr
+	var r int
+	if o.LoginTimeoutPtr == nil {
+		return r
+	}
+	r = *o.LoginTimeoutPtr
 	return r
 }
 
@@ -80,7 +93,11 @@ func (o *IscsiServiceInfoType) SetLoginTimeout(newValue int) *IscsiServiceInfoTy
 
 // MaxCmdsPerSession is a 'getter' method
 func (o *IscsiServiceInfoType) MaxCmdsPerSession() int {
-	r := *o.MaxCmdsPerSessionPtr
+	var r int
+	if o.MaxCmdsPerSessionPtr == nil {
+		return r
+	}
+	r = *o.MaxCmdsPerSessionPtr
 	return r
 }
 
@@ -92,7 +109,11 @@ func (o *IscsiServiceInfoType) SetMaxCmdsPerSession(newValue int) *IscsiServiceI
 
 // MaxConnPerSession is a 'getter' method
 func (o *IscsiServiceInfoType) MaxConnPerSession() int {
-	r := *o.MaxConnPerSessionPtr
+	var r int
+	if o.MaxConnPerSessionPtr == nil {
+		return r
+	}
+	r = *o.MaxConnPerSessionPtr
 	return r
 }
 
@@ -104,7 +125,11 @@ func (o *IscsiServiceInfoType) SetMaxConnPerSession(newValue int) *IscsiServiceI
 
 // MaxErrorRecoveryLevel is a 'getter' method
 func (o *IscsiServiceInfoType) MaxErrorRecoveryLevel() int {
-	r := *o.MaxErrorRecoveryLevelPtr
+	var r int
+	if o.MaxErrorRecoveryLevelPtr == nil {
+		return r
+	}
+	r = *o.MaxErrorRecoveryLevelPtr
 	return r
 }
 
@@ -116,7 +141,11 @@ func (o *IscsiServiceInfoType) SetMaxErrorRecoveryLevel(newValue int) *IscsiServ
 
 // NodeName is a 'getter' method
 func (o *IscsiServiceInfoType) NodeName() string {
-	r := *o.NodeNamePtr
+	var r string
+	if o.NodeNamePtr == nil {
+		return r
+	}
+	r = *o.NodeNamePtr
 	return r
 }
 
@@ -128,7 +157,11 @@ func (o *IscsiServiceInfoType) SetNodeName(newValue string) *IscsiServiceInfoTyp
 
 // RetainTimeout is a 'getter' method
 func (o *IscsiServiceInfoType) RetainTimeout() int {
-	r := *o.RetainTimeoutPtr
+	var r int
+	if o.RetainTimeoutPtr == nil {
+		return r
+	}
+	r = *o.RetainTimeoutPtr
 	return r
 }
 
@@ -140,7 +173,11 @@ func (o *IscsiServiceInfoType) SetRetainTimeout(newValue int) *IscsiServiceInfoT
 
 // TcpWindowSize is a 'getter' method
 func (o *IscsiServiceInfoType) TcpWindowSize() int {
-	r := *o.TcpWindowSizePtr
+	var r int
+	if o.TcpWindowSizePtr == nil {
+		return r
+	}
+	r = *o.TcpWindowSizePtr
 	return r
 }
 
@@ -152,7 +189,11 @@ func (o *IscsiServiceInfoType) SetTcpWindowSize(newValue int) *IscsiServiceInfoT
 
 // Vserver is a 'getter' method
 func (o *IscsiServiceInfoType) Vserver() string {
-	r := *o.VserverPtr
+	var r string
+	if o.VserverPtr == nil {
+		return r
+	}
+	r = *o.VserverPtr
 	return r
 }
 

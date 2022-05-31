@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IgroupGetIterRequest is a structure to represent a igroup-get-iter Request ZAPI object
@@ -178,7 +179,11 @@ func (o IgroupGetIterRequestDesiredAttributes) String() string {
 
 // InitiatorGroupInfo is a 'getter' method
 func (o *IgroupGetIterRequestDesiredAttributes) InitiatorGroupInfo() InitiatorGroupInfoType {
-	r := *o.InitiatorGroupInfoPtr
+	var r InitiatorGroupInfoType
+	if o.InitiatorGroupInfoPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupInfoPtr
 	return r
 }
 
@@ -190,7 +195,11 @@ func (o *IgroupGetIterRequestDesiredAttributes) SetInitiatorGroupInfo(newValue I
 
 // DesiredAttributes is a 'getter' method
 func (o *IgroupGetIterRequest) DesiredAttributes() IgroupGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r IgroupGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -202,7 +211,11 @@ func (o *IgroupGetIterRequest) SetDesiredAttributes(newValue IgroupGetIterReques
 
 // MaxRecords is a 'getter' method
 func (o *IgroupGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -225,7 +238,11 @@ func (o IgroupGetIterRequestQuery) String() string {
 
 // InitiatorGroupInfo is a 'getter' method
 func (o *IgroupGetIterRequestQuery) InitiatorGroupInfo() InitiatorGroupInfoType {
-	r := *o.InitiatorGroupInfoPtr
+	var r InitiatorGroupInfoType
+	if o.InitiatorGroupInfoPtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupInfoPtr
 	return r
 }
 
@@ -237,7 +254,11 @@ func (o *IgroupGetIterRequestQuery) SetInitiatorGroupInfo(newValue InitiatorGrou
 
 // Query is a 'getter' method
 func (o *IgroupGetIterRequest) Query() IgroupGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r IgroupGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -249,7 +270,11 @@ func (o *IgroupGetIterRequest) SetQuery(newValue IgroupGetIterRequestQuery) *Igr
 
 // Tag is a 'getter' method
 func (o *IgroupGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -300,7 +325,11 @@ func (o *IgroupGetIterResponseResultAttributesList) setValues(newValue []Initiat
 
 // AttributesList is a 'getter' method
 func (o *IgroupGetIterResponseResult) AttributesList() IgroupGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r IgroupGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -312,7 +341,11 @@ func (o *IgroupGetIterResponseResult) SetAttributesList(newValue IgroupGetIterRe
 
 // NextTag is a 'getter' method
 func (o *IgroupGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -324,7 +357,11 @@ func (o *IgroupGetIterResponseResult) SetNextTag(newValue string) *IgroupGetIter
 
 // NumRecords is a 'getter' method
 func (o *IgroupGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 

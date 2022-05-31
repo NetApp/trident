@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // VserverAggrInfoType is a structure to represent a vserver-aggr-info ZAPI object
@@ -37,7 +38,11 @@ func (o VserverAggrInfoType) String() string {
 
 // AggrAvailsize is a 'getter' method
 func (o *VserverAggrInfoType) AggrAvailsize() SizeType {
-	r := *o.AggrAvailsizePtr
+	var r SizeType
+	if o.AggrAvailsizePtr == nil {
+		return r
+	}
+	r = *o.AggrAvailsizePtr
 	return r
 }
 
@@ -49,7 +54,11 @@ func (o *VserverAggrInfoType) SetAggrAvailsize(newValue SizeType) *VserverAggrIn
 
 // AggrIsCftPrecommit is a 'getter' method
 func (o *VserverAggrInfoType) AggrIsCftPrecommit() bool {
-	r := *o.AggrIsCftPrecommitPtr
+	var r bool
+	if o.AggrIsCftPrecommitPtr == nil {
+		return r
+	}
+	r = *o.AggrIsCftPrecommitPtr
 	return r
 }
 
@@ -61,7 +70,11 @@ func (o *VserverAggrInfoType) SetAggrIsCftPrecommit(newValue bool) *VserverAggrI
 
 // AggrName is a 'getter' method
 func (o *VserverAggrInfoType) AggrName() AggrNameType {
-	r := *o.AggrNamePtr
+	var r AggrNameType
+	if o.AggrNamePtr == nil {
+		return r
+	}
+	r = *o.AggrNamePtr
 	return r
 }
 

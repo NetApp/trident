@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // EmsAutosupportLogRequest is a structure to represent a ems-autosupport-log Request ZAPI object
@@ -112,7 +113,11 @@ func (o *EmsAutosupportLogRequest) executeWithoutIteration(zr *ZapiRunner) (*Ems
 
 // AppVersion is a 'getter' method
 func (o *EmsAutosupportLogRequest) AppVersion() string {
-	r := *o.AppVersionPtr
+	var r string
+	if o.AppVersionPtr == nil {
+		return r
+	}
+	r = *o.AppVersionPtr
 	return r
 }
 
@@ -124,7 +129,11 @@ func (o *EmsAutosupportLogRequest) SetAppVersion(newValue string) *EmsAutosuppor
 
 // AutoSupport is a 'getter' method
 func (o *EmsAutosupportLogRequest) AutoSupport() bool {
-	r := *o.AutoSupportPtr
+	var r bool
+	if o.AutoSupportPtr == nil {
+		return r
+	}
+	r = *o.AutoSupportPtr
 	return r
 }
 
@@ -136,7 +145,11 @@ func (o *EmsAutosupportLogRequest) SetAutoSupport(newValue bool) *EmsAutosupport
 
 // Category is a 'getter' method
 func (o *EmsAutosupportLogRequest) Category() string {
-	r := *o.CategoryPtr
+	var r string
+	if o.CategoryPtr == nil {
+		return r
+	}
+	r = *o.CategoryPtr
 	return r
 }
 
@@ -148,7 +161,11 @@ func (o *EmsAutosupportLogRequest) SetCategory(newValue string) *EmsAutosupportL
 
 // ComputerName is a 'getter' method
 func (o *EmsAutosupportLogRequest) ComputerName() string {
-	r := *o.ComputerNamePtr
+	var r string
+	if o.ComputerNamePtr == nil {
+		return r
+	}
+	r = *o.ComputerNamePtr
 	return r
 }
 
@@ -160,7 +177,11 @@ func (o *EmsAutosupportLogRequest) SetComputerName(newValue string) *EmsAutosupp
 
 // EventDescription is a 'getter' method
 func (o *EmsAutosupportLogRequest) EventDescription() string {
-	r := *o.EventDescriptionPtr
+	var r string
+	if o.EventDescriptionPtr == nil {
+		return r
+	}
+	r = *o.EventDescriptionPtr
 	return r
 }
 
@@ -172,7 +193,11 @@ func (o *EmsAutosupportLogRequest) SetEventDescription(newValue string) *EmsAuto
 
 // EventId is a 'getter' method
 func (o *EmsAutosupportLogRequest) EventId() int {
-	r := *o.EventIdPtr
+	var r int
+	if o.EventIdPtr == nil {
+		return r
+	}
+	r = *o.EventIdPtr
 	return r
 }
 
@@ -184,7 +209,11 @@ func (o *EmsAutosupportLogRequest) SetEventId(newValue int) *EmsAutosupportLogRe
 
 // EventSource is a 'getter' method
 func (o *EmsAutosupportLogRequest) EventSource() string {
-	r := *o.EventSourcePtr
+	var r string
+	if o.EventSourcePtr == nil {
+		return r
+	}
+	r = *o.EventSourcePtr
 	return r
 }
 
@@ -196,7 +225,11 @@ func (o *EmsAutosupportLogRequest) SetEventSource(newValue string) *EmsAutosuppo
 
 // LogLevel is a 'getter' method
 func (o *EmsAutosupportLogRequest) LogLevel() int {
-	r := *o.LogLevelPtr
+	var r int
+	if o.LogLevelPtr == nil {
+		return r
+	}
+	r = *o.LogLevelPtr
 	return r
 }
 

@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // IgroupRemoveRequest is a structure to represent a igroup-remove Request ZAPI object
@@ -107,7 +108,11 @@ func (o *IgroupRemoveRequest) executeWithoutIteration(zr *ZapiRunner) (*IgroupRe
 
 // Force is a 'getter' method
 func (o *IgroupRemoveRequest) Force() bool {
-	r := *o.ForcePtr
+	var r bool
+	if o.ForcePtr == nil {
+		return r
+	}
+	r = *o.ForcePtr
 	return r
 }
 
@@ -119,7 +124,11 @@ func (o *IgroupRemoveRequest) SetForce(newValue bool) *IgroupRemoveRequest {
 
 // Initiator is a 'getter' method
 func (o *IgroupRemoveRequest) Initiator() string {
-	r := *o.InitiatorPtr
+	var r string
+	if o.InitiatorPtr == nil {
+		return r
+	}
+	r = *o.InitiatorPtr
 	return r
 }
 
@@ -131,7 +140,11 @@ func (o *IgroupRemoveRequest) SetInitiator(newValue string) *IgroupRemoveRequest
 
 // InitiatorGroupName is a 'getter' method
 func (o *IgroupRemoveRequest) InitiatorGroupName() string {
-	r := *o.InitiatorGroupNamePtr
+	var r string
+	if o.InitiatorGroupNamePtr == nil {
+		return r
+	}
+	r = *o.InitiatorGroupNamePtr
 	return r
 }
 

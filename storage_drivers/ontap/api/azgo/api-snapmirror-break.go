@@ -1,23 +1,22 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // SnapmirrorBreakRequest is a structure to represent a snapmirror-break Request ZAPI object
 type SnapmirrorBreakRequest struct {
 	XMLName                         xml.Name `xml:"snapmirror-break"`
-	DestinationClusterPtr           *string  `xml:"destination-cluster"`
 	DestinationLocationPtr          *string  `xml:"destination-location"`
 	DestinationVolumePtr            *string  `xml:"destination-volume"`
 	DestinationVserverPtr           *string  `xml:"destination-vserver"`
 	RecoverPtr                      *bool    `xml:"recover"`
 	RestoreDestinationToSnapshotPtr *string  `xml:"restore-destination-to-snapshot"`
-	SourceClusterPtr                *string  `xml:"source-cluster"`
 	SourceLocationPtr               *string  `xml:"source-location"`
 	SourceVolumePtr                 *string  `xml:"source-volume"`
 	SourceVserverPtr                *string  `xml:"source-vserver"`
@@ -113,21 +112,13 @@ func (o *SnapmirrorBreakRequest) executeWithoutIteration(zr *ZapiRunner) (*Snapm
 	return result.(*SnapmirrorBreakResponse), err
 }
 
-// DestinationCluster is a 'getter' method
-func (o *SnapmirrorBreakRequest) DestinationCluster() string {
-	r := *o.DestinationClusterPtr
-	return r
-}
-
-// SetDestinationCluster is a fluent style 'setter' method that can be chained
-func (o *SnapmirrorBreakRequest) SetDestinationCluster(newValue string) *SnapmirrorBreakRequest {
-	o.DestinationClusterPtr = &newValue
-	return o
-}
-
 // DestinationLocation is a 'getter' method
 func (o *SnapmirrorBreakRequest) DestinationLocation() string {
-	r := *o.DestinationLocationPtr
+	var r string
+	if o.DestinationLocationPtr == nil {
+		return r
+	}
+	r = *o.DestinationLocationPtr
 	return r
 }
 
@@ -139,7 +130,11 @@ func (o *SnapmirrorBreakRequest) SetDestinationLocation(newValue string) *Snapmi
 
 // DestinationVolume is a 'getter' method
 func (o *SnapmirrorBreakRequest) DestinationVolume() string {
-	r := *o.DestinationVolumePtr
+	var r string
+	if o.DestinationVolumePtr == nil {
+		return r
+	}
+	r = *o.DestinationVolumePtr
 	return r
 }
 
@@ -151,7 +146,11 @@ func (o *SnapmirrorBreakRequest) SetDestinationVolume(newValue string) *Snapmirr
 
 // DestinationVserver is a 'getter' method
 func (o *SnapmirrorBreakRequest) DestinationVserver() string {
-	r := *o.DestinationVserverPtr
+	var r string
+	if o.DestinationVserverPtr == nil {
+		return r
+	}
+	r = *o.DestinationVserverPtr
 	return r
 }
 
@@ -163,7 +162,11 @@ func (o *SnapmirrorBreakRequest) SetDestinationVserver(newValue string) *Snapmir
 
 // Recover is a 'getter' method
 func (o *SnapmirrorBreakRequest) Recover() bool {
-	r := *o.RecoverPtr
+	var r bool
+	if o.RecoverPtr == nil {
+		return r
+	}
+	r = *o.RecoverPtr
 	return r
 }
 
@@ -175,7 +178,11 @@ func (o *SnapmirrorBreakRequest) SetRecover(newValue bool) *SnapmirrorBreakReque
 
 // RestoreDestinationToSnapshot is a 'getter' method
 func (o *SnapmirrorBreakRequest) RestoreDestinationToSnapshot() string {
-	r := *o.RestoreDestinationToSnapshotPtr
+	var r string
+	if o.RestoreDestinationToSnapshotPtr == nil {
+		return r
+	}
+	r = *o.RestoreDestinationToSnapshotPtr
 	return r
 }
 
@@ -185,21 +192,13 @@ func (o *SnapmirrorBreakRequest) SetRestoreDestinationToSnapshot(newValue string
 	return o
 }
 
-// SourceCluster is a 'getter' method
-func (o *SnapmirrorBreakRequest) SourceCluster() string {
-	r := *o.SourceClusterPtr
-	return r
-}
-
-// SetSourceCluster is a fluent style 'setter' method that can be chained
-func (o *SnapmirrorBreakRequest) SetSourceCluster(newValue string) *SnapmirrorBreakRequest {
-	o.SourceClusterPtr = &newValue
-	return o
-}
-
 // SourceLocation is a 'getter' method
 func (o *SnapmirrorBreakRequest) SourceLocation() string {
-	r := *o.SourceLocationPtr
+	var r string
+	if o.SourceLocationPtr == nil {
+		return r
+	}
+	r = *o.SourceLocationPtr
 	return r
 }
 
@@ -211,7 +210,11 @@ func (o *SnapmirrorBreakRequest) SetSourceLocation(newValue string) *SnapmirrorB
 
 // SourceVolume is a 'getter' method
 func (o *SnapmirrorBreakRequest) SourceVolume() string {
-	r := *o.SourceVolumePtr
+	var r string
+	if o.SourceVolumePtr == nil {
+		return r
+	}
+	r = *o.SourceVolumePtr
 	return r
 }
 
@@ -223,7 +226,11 @@ func (o *SnapmirrorBreakRequest) SetSourceVolume(newValue string) *SnapmirrorBre
 
 // SourceVserver is a 'getter' method
 func (o *SnapmirrorBreakRequest) SourceVserver() string {
-	r := *o.SourceVserverPtr
+	var r string
+	if o.SourceVserverPtr == nil {
+		return r
+	}
+	r = *o.SourceVserverPtr
 	return r
 }
 
@@ -235,7 +242,11 @@ func (o *SnapmirrorBreakRequest) SetSourceVserver(newValue string) *SnapmirrorBr
 
 // ResultOperationId is a 'getter' method
 func (o *SnapmirrorBreakResponseResult) ResultOperationId() string {
-	r := *o.ResultOperationIdPtr
+	var r string
+	if o.ResultOperationIdPtr == nil {
+		return r
+	}
+	r = *o.ResultOperationIdPtr
 	return r
 }
 

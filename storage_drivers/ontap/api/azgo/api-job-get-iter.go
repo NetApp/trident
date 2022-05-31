@@ -1,11 +1,12 @@
 // Code generated automatically. DO NOT EDIT.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
 	"encoding/xml"
-	"reflect"
-
 	log "github.com/sirupsen/logrus"
+	"reflect"
 )
 
 // JobGetIterRequest is a structure to represent a job-get-iter Request ZAPI object
@@ -178,7 +179,11 @@ func (o JobGetIterRequestDesiredAttributes) String() string {
 
 // JobInfo is a 'getter' method
 func (o *JobGetIterRequestDesiredAttributes) JobInfo() JobInfoType {
-	r := *o.JobInfoPtr
+	var r JobInfoType
+	if o.JobInfoPtr == nil {
+		return r
+	}
+	r = *o.JobInfoPtr
 	return r
 }
 
@@ -190,7 +195,11 @@ func (o *JobGetIterRequestDesiredAttributes) SetJobInfo(newValue JobInfoType) *J
 
 // DesiredAttributes is a 'getter' method
 func (o *JobGetIterRequest) DesiredAttributes() JobGetIterRequestDesiredAttributes {
-	r := *o.DesiredAttributesPtr
+	var r JobGetIterRequestDesiredAttributes
+	if o.DesiredAttributesPtr == nil {
+		return r
+	}
+	r = *o.DesiredAttributesPtr
 	return r
 }
 
@@ -202,7 +211,11 @@ func (o *JobGetIterRequest) SetDesiredAttributes(newValue JobGetIterRequestDesir
 
 // MaxRecords is a 'getter' method
 func (o *JobGetIterRequest) MaxRecords() int {
-	r := *o.MaxRecordsPtr
+	var r int
+	if o.MaxRecordsPtr == nil {
+		return r
+	}
+	r = *o.MaxRecordsPtr
 	return r
 }
 
@@ -225,7 +238,11 @@ func (o JobGetIterRequestQuery) String() string {
 
 // JobInfo is a 'getter' method
 func (o *JobGetIterRequestQuery) JobInfo() JobInfoType {
-	r := *o.JobInfoPtr
+	var r JobInfoType
+	if o.JobInfoPtr == nil {
+		return r
+	}
+	r = *o.JobInfoPtr
 	return r
 }
 
@@ -237,7 +254,11 @@ func (o *JobGetIterRequestQuery) SetJobInfo(newValue JobInfoType) *JobGetIterReq
 
 // Query is a 'getter' method
 func (o *JobGetIterRequest) Query() JobGetIterRequestQuery {
-	r := *o.QueryPtr
+	var r JobGetIterRequestQuery
+	if o.QueryPtr == nil {
+		return r
+	}
+	r = *o.QueryPtr
 	return r
 }
 
@@ -249,7 +270,11 @@ func (o *JobGetIterRequest) SetQuery(newValue JobGetIterRequestQuery) *JobGetIte
 
 // Tag is a 'getter' method
 func (o *JobGetIterRequest) Tag() string {
-	r := *o.TagPtr
+	var r string
+	if o.TagPtr == nil {
+		return r
+	}
+	r = *o.TagPtr
 	return r
 }
 
@@ -300,7 +325,11 @@ func (o *JobGetIterResponseResultAttributesList) setValues(newValue []JobInfoTyp
 
 // AttributesList is a 'getter' method
 func (o *JobGetIterResponseResult) AttributesList() JobGetIterResponseResultAttributesList {
-	r := *o.AttributesListPtr
+	var r JobGetIterResponseResultAttributesList
+	if o.AttributesListPtr == nil {
+		return r
+	}
+	r = *o.AttributesListPtr
 	return r
 }
 
@@ -312,7 +341,11 @@ func (o *JobGetIterResponseResult) SetAttributesList(newValue JobGetIterResponse
 
 // NextTag is a 'getter' method
 func (o *JobGetIterResponseResult) NextTag() string {
-	r := *o.NextTagPtr
+	var r string
+	if o.NextTagPtr == nil {
+		return r
+	}
+	r = *o.NextTagPtr
 	return r
 }
 
@@ -324,7 +357,11 @@ func (o *JobGetIterResponseResult) SetNextTag(newValue string) *JobGetIterRespon
 
 // NumRecords is a 'getter' method
 func (o *JobGetIterResponseResult) NumRecords() int {
-	r := *o.NumRecordsPtr
+	var r int
+	if o.NumRecordsPtr == nil {
+		return r
+	}
+	r = *o.NumRecordsPtr
 	return r
 }
 
