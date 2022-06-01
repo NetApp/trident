@@ -5,6 +5,7 @@ package persistentstore
 import (
 	"io/ioutil"
 	"os"
+	"runtime"
 	"testing"
 	"time"
 
@@ -126,7 +127,12 @@ func newPassthroughClient() *PassthroughClient {
 }
 
 func TestPassthroughClient_NewPassthroughClientSingleFile(t *testing.T) {
-	configPath := "/tmp/fake_backend"
+	var configPath string
+	if runtime.GOOS == "windows" {
+		configPath = os.Getenv("TEMP") + "\\fake_backend"
+	} else {
+		configPath = "/tmp/fake_backend"
+	}
 	backendJSON, _ := getFakeBackend().ConstructPersistent(ctx()).MarshalConfig()
 	err := ioutil.WriteFile(configPath, []byte(backendJSON), 0o644)
 	if err != nil {
