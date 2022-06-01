@@ -2,6 +2,13 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
+## Changes since v22.04.0
+
+**Fixes:**
+
+- Fixed issue to handle boolean and number values for node selector when configuring Trident with Helm or the Trident Operator. (Issue [#700]
+  (https://github.com/NetApp/trident/issues/700))
+
 ## Changes since v22.01.0
 
 **Fixes:**

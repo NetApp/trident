@@ -231,7 +231,7 @@ func TestGetCSIDeploymentYAML_NodeSelectors(t *testing.T) {
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
-        foo: bar
+        foo: 'bar'
 `
 
 	yamlData := GetCSIDeploymentYAML(deploymentArgs)
@@ -239,7 +239,8 @@ func TestGetCSIDeploymentYAML_NodeSelectors(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
 	}
-	assert.Contains(t, yamlData, expectedNodeSelectorString, fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
+	assert.Contains(t, yamlData, expectedNodeSelectorString,
+		fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
 
 	// Defaults
 	deploymentArgs = &DeploymentYAMLArguments{}
@@ -254,7 +255,8 @@ func TestGetCSIDeploymentYAML_NodeSelectors(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
 	}
-	assert.Contains(t, yamlData, expectedNodeSelectorString, fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
+	assert.Contains(t, yamlData, expectedNodeSelectorString,
+		fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
 
 	// Defaults used when empty list specified
 	deploymentArgs = &DeploymentYAMLArguments{
@@ -271,7 +273,8 @@ func TestGetCSIDeploymentYAML_NodeSelectors(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
 	}
-	assert.Contains(t, yamlData, expectedNodeSelectorString, fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
+	assert.Contains(t, yamlData, expectedNodeSelectorString,
+		fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
 }
 
 func TestGetCSIDeploymentYAMLTolerations(t *testing.T) {
@@ -299,7 +302,8 @@ func TestGetCSIDeploymentYAMLTolerations(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
 	}
-	assert.Contains(t, yamlData, expectedTolerationString, fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
+	assert.Contains(t, yamlData, expectedTolerationString,
+		fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
 
 	// Test empty tolerations specified
 	deploymentArgs = &DeploymentYAMLArguments{Tolerations: []map[string]string{}}
@@ -319,8 +323,10 @@ func TestGetCSIDeploymentYAMLTolerations(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
 	}
-	assert.Contains(t, yamlData, expectedTolerationString, fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
-	assert.NotContains(t, yamlData, defaultTolerationString, fmt.Sprintf("expected default tolerations to not appear in final YAML: %s", yamlData))
+	assert.Contains(t, yamlData, expectedTolerationString,
+		fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
+	assert.NotContains(t, yamlData, defaultTolerationString,
+		fmt.Sprintf("expected default tolerations to not appear in final YAML: %s", yamlData))
 }
 
 func TestGetCSIDaemonSetYAML(t *testing.T) {
@@ -346,7 +352,7 @@ func TestGetCSIDaemonSetYAML_NodeSelectors(t *testing.T) {
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
-        foo: bar
+        foo: 'bar'
 `
 
 	yamlData := GetCSIDaemonSetYAML(daemonsetArgs)
@@ -354,7 +360,8 @@ func TestGetCSIDaemonSetYAML_NodeSelectors(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
 	}
-	assert.Contains(t, yamlData, expectedNodeSelectorString, fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
+	assert.Contains(t, yamlData, expectedNodeSelectorString,
+		fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
 
 	// Defaults
 	daemonsetArgs = &DaemonsetYAMLArguments{}
@@ -369,7 +376,8 @@ func TestGetCSIDaemonSetYAML_NodeSelectors(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
 	}
-	assert.Contains(t, yamlData, expectedNodeSelectorString, fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
+	assert.Contains(t, yamlData, expectedNodeSelectorString,
+		fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
 
 	// Defaults used when empty list specified
 	daemonsetArgs = &DaemonsetYAMLArguments{
@@ -386,7 +394,8 @@ func TestGetCSIDaemonSetYAML_NodeSelectors(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
 	}
-	assert.Contains(t, yamlData, expectedNodeSelectorString, fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
+	assert.Contains(t, yamlData, expectedNodeSelectorString,
+		fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
 }
 
 func TestGetCSIDaemonSetYAMLTolerations(t *testing.T) {
@@ -414,7 +423,8 @@ func TestGetCSIDaemonSetYAMLTolerations(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
 	}
-	assert.Contains(t, yamlData, expectedTolerationString, fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
+	assert.Contains(t, yamlData, expectedTolerationString,
+		fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
 
 	// Test default
 	daemonsetArgs = &DaemonsetYAMLArguments{}
@@ -431,7 +441,8 @@ func TestGetCSIDaemonSetYAMLTolerations(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
 	}
-	assert.Contains(t, yamlData, expectedTolerationString, fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
+	assert.Contains(t, yamlData, expectedTolerationString,
+		fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
 
 	// Test empty tolerations specified
 	daemonsetArgs = &DaemonsetYAMLArguments{Tolerations: []map[string]string{}}
@@ -451,6 +462,21 @@ func TestGetCSIDaemonSetYAMLTolerations(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected valid YAML, got %s", yamlData)
 	}
-	assert.Contains(t, yamlData, expectedTolerationString, fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
-	assert.NotContains(t, yamlData, defaultTolerationString, fmt.Sprintf("expected default tolerations to not appear in final YAML: %s", yamlData))
+	assert.Contains(t, yamlData, expectedTolerationString,
+		fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
+	assert.NotContains(t, yamlData, defaultTolerationString,
+		fmt.Sprintf("expected default tolerations to not appear in final YAML: %s", yamlData))
+}
+
+func TestConstructNodeSelector(t *testing.T) {
+	nodeSelMap := map[string]string{"worker": "true", "master": "20"}
+	expectedNodeSelString := []string{"worker: 'true'\nmaster: '20'\n", "master: '20'\nworker: 'true'\n"}
+	result := constructNodeSelector(nodeSelMap)
+	isResultExpected := false
+	for _, v := range expectedNodeSelString {
+		if v == result {
+			isResultExpected = true
+		}
+	}
+	assert.True(t, isResultExpected)
 }

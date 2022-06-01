@@ -2050,7 +2050,7 @@ func constructNodeSelector(nodeLabels map[string]string) string {
 
 	if nodeLabels != nil {
 		for key, value := range nodeLabels {
-			nodeSelector += fmt.Sprintf("%s: %s\n", key, value)
+			nodeSelector += fmt.Sprintf("%s: '%s'\n", key, value)
 		}
 	}
 
