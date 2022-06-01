@@ -1,5 +1,4 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
-// Note: File related to mount functionalities
 package utils
 
 import (

@@ -1,5 +1,4 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
-// File to implement common utilities .
 package utils
 
 import (

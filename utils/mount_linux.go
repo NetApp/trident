@@ -1,5 +1,4 @@
-// Copyright 2022 Netapp Inc. All Rights Reserved.
-// Note: File related to mount functionalities for linux flavor
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package utils
 

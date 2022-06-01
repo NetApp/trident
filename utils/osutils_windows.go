@@ -1,7 +1,7 @@
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 //go:build windows
 // +build windows
-
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package utils
 

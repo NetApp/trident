@@ -1,5 +1,4 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
-// NOTE: This file should only contain functions for handling the filesystem.
 
 package utils
 

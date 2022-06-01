@@ -1,4 +1,4 @@
-// Copyright 2022 Netapp Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 // This file should only contain functions for handling the filesystem for Linux flavor
 
