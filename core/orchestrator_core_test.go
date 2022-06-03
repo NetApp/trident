@@ -2862,7 +2862,11 @@ func TestListVolumePublications(t *testing.T) {
 	orchestrator.addVolumePublicationToCache(fakePub2)
 	orchestrator.addVolumePublicationToCache(fakePub3)
 
-	expectedPubs := []*utils.VolumePublication{fakePub, fakePub2, fakePub3}
+	expectedPubs := []*utils.VolumePublicationExternal{
+		fakePub.ConstructExternal(),
+		fakePub2.ConstructExternal(),
+		fakePub3.ConstructExternal(),
+	}
 	actualPubs, err := orchestrator.ListVolumePublications(context.Background())
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
 	assert.ElementsMatch(t, expectedPubs, actualPubs, "incorrect publication list returned")
@@ -2950,7 +2954,7 @@ func TestListVolumePublicationsForVolume(t *testing.T) {
 	orchestrator.addVolumePublicationToCache(fakePub2)
 	orchestrator.addVolumePublicationToCache(fakePub3)
 
-	expectedPubs := []*utils.VolumePublication{fakePub, fakePub3}
+	expectedPubs := []*utils.VolumePublicationExternal{fakePub.ConstructExternal(), fakePub3.ConstructExternal()}
 	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), fakePub.VolumeName)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
 	assert.ElementsMatch(t, expectedPubs, actualPubs, "incorrect publication list returned")
@@ -3048,7 +3052,7 @@ func TestListVolumePublicationsForNode(t *testing.T) {
 	orchestrator.addVolumePublicationToCache(fakePub2)
 	orchestrator.addVolumePublicationToCache(fakePub3)
 
-	expectedPubs := []*utils.VolumePublication{fakePub2}
+	expectedPubs := []*utils.VolumePublicationExternal{fakePub2.ConstructExternal()}
 	actualPubs, err := orchestrator.ListVolumePublicationsForNode(context.Background(), fakePub2.NodeName)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error listing volume publications: %v", err))
 	assert.ElementsMatch(t, expectedPubs, actualPubs, "incorrect publication list returned")

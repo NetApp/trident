@@ -992,6 +992,23 @@ func DeleteNode(w http.ResponseWriter, r *http.Request) {
 	DeleteGeneric(w, r, orchestrator.DeleteNode, "node")
 }
 
+type VolumePublicationsResponse struct {
+	VolumePublications []*utils.VolumePublicationExternal `json:"volumePublications"`
+	Error              string                             `json:"error,omitempty"`
+}
+
+func ListVolumePublicationsForNode(w http.ResponseWriter, r *http.Request) {
+	response := &VolumePublicationsResponse{}
+	GetGeneric(w, r, "node", response,
+		func(node string) int {
+			pubs, err := orchestrator.ListVolumePublicationsForNode(r.Context(), node)
+			response.VolumePublications = pubs
+			response.Error = err.Error()
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
 type GetSnapshotResponse struct {
 	Snapshot *storage.SnapshotExternal `json:"snapshot"`
 	Error    string                    `json:"error,omitempty"`

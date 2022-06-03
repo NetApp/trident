@@ -83,13 +83,13 @@ type Orchestrator interface {
 
 	AddVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
 	GetVolumePublication(ctx context.Context, volumeName, nodeName string) (*utils.VolumePublication, error)
-	ListVolumePublications(ctx context.Context) ([]*utils.VolumePublication, error)
+	ListVolumePublications(ctx context.Context) ([]*utils.VolumePublicationExternal, error)
 	ListVolumePublicationsForVolume(
 		ctx context.Context, volumeName string,
-	) (publications []*utils.VolumePublication, err error)
+	) (publications []*utils.VolumePublicationExternal, err error)
 	ListVolumePublicationsForNode(
 		ctx context.Context, nodeName string,
-	) (publications []*utils.VolumePublication, err error)
+	) (publications []*utils.VolumePublicationExternal, err error)
 	DeleteVolumePublication(ctx context.Context, volumeName, nodeName string) error
 
 	AddVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error

@@ -72,7 +72,30 @@ type VolumePublication struct {
 	ReadOnly   bool   `json:"readOnly"`
 	// The access mode values are defined by CSI
 	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
-	AccessMode int32 `json:"accessMode"`
+	AccessMode      int32 `json:"accessMode"`
+	NotSafeToDetach bool  `json:"notSafeToDetach"`
+}
+
+type VolumePublicationExternal struct {
+	Name       string `json:"name"`
+	NodeName   string `json:"node"`
+	VolumeName string `json:"volume"`
+	ReadOnly   bool   `json:"readOnly"`
+	// The access mode values are defined by CSI
+	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
+	AccessMode      int32 `json:"accessMode"`
+	NotSafeToDetach bool  `json:"notSafeToDetach"`
+}
+
+func (v *VolumePublication) ConstructExternal() *VolumePublicationExternal {
+	return &VolumePublicationExternal{
+		Name:            v.Name,
+		NodeName:        v.NodeName,
+		VolumeName:      v.VolumeName,
+		ReadOnly:        v.ReadOnly,
+		AccessMode:      v.AccessMode,
+		NotSafeToDetach: v.NotSafeToDetach,
+	}
 }
 
 type Node struct {

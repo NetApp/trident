@@ -729,10 +729,10 @@ func (mr *MockOrchestratorMockRecorder) ListStorageClasses(arg0 interface{}) *go
 }
 
 // ListVolumePublications mocks base method.
-func (m *MockOrchestrator) ListVolumePublications(arg0 context.Context) ([]*utils.VolumePublication, error) {
+func (m *MockOrchestrator) ListVolumePublications(arg0 context.Context) ([]*utils.VolumePublicationExternal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListVolumePublications", arg0)
-	ret0, _ := ret[0].([]*utils.VolumePublication)
+	ret0, _ := ret[0].([]*utils.VolumePublicationExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -744,10 +744,10 @@ func (mr *MockOrchestratorMockRecorder) ListVolumePublications(arg0 interface{})
 }
 
 // ListVolumePublicationsForNode mocks base method.
-func (m *MockOrchestrator) ListVolumePublicationsForNode(arg0 context.Context, arg1 string) ([]*utils.VolumePublication, error) {
+func (m *MockOrchestrator) ListVolumePublicationsForNode(arg0 context.Context, arg1 string) ([]*utils.VolumePublicationExternal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListVolumePublicationsForNode", arg0, arg1)
-	ret0, _ := ret[0].([]*utils.VolumePublication)
+	ret0, _ := ret[0].([]*utils.VolumePublicationExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -759,10 +759,10 @@ func (mr *MockOrchestratorMockRecorder) ListVolumePublicationsForNode(arg0, arg1
 }
 
 // ListVolumePublicationsForVolume mocks base method.
-func (m *MockOrchestrator) ListVolumePublicationsForVolume(arg0 context.Context, arg1 string) ([]*utils.VolumePublication, error) {
+func (m *MockOrchestrator) ListVolumePublicationsForVolume(arg0 context.Context, arg1 string) ([]*utils.VolumePublicationExternal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListVolumePublicationsForVolume", arg0, arg1)
-	ret0, _ := ret[0].([]*utils.VolumePublication)
+	ret0, _ := ret[0].([]*utils.VolumePublicationExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -152,6 +152,12 @@ var controllerRoutes = Routes{
 		DeleteNode,
 	},
 	Route{
+		"ListVolumePublicationsForNode",
+		"GET",
+		config.NodeURL + "/{node}/publications",
+		ListVolumePublicationsForNode,
+	},
+	Route{
 		"ListSnapshots",
 		"GET",
 		config.SnapshotURL,

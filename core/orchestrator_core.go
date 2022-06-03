@@ -4301,7 +4301,7 @@ func (o *TridentOrchestrator) GetVolumePublication(
 // ListVolumePublications returns a list of all volume publications
 func (o *TridentOrchestrator) ListVolumePublications(
 	context.Context,
-) (publications []*utils.VolumePublication, err error) {
+) (publications []*utils.VolumePublicationExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -4311,10 +4311,10 @@ func (o *TridentOrchestrator) ListVolumePublications(
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	publications = []*utils.VolumePublication{}
+	publications = []*utils.VolumePublicationExternal{}
 	for _, pubs := range o.volumePublications {
 		for _, pub := range pubs {
-			publications = append(publications, pub)
+			publications = append(publications, pub.ConstructExternal())
 		}
 	}
 	return publications, nil
@@ -4323,7 +4323,7 @@ func (o *TridentOrchestrator) ListVolumePublications(
 // ListVolumePublicationsForVolume returns a list of all volume publications for a given volume
 func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
 	ctx context.Context, volumeName string,
-) (publications []*utils.VolumePublication, err error) {
+) (publications []*utils.VolumePublicationExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -4333,7 +4333,11 @@ func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	publications = o.listVolumePublicationsForVolume(ctx, volumeName)
+	internalPubs := o.listVolumePublicationsForVolume(ctx, volumeName)
+	publications = make([]*utils.VolumePublicationExternal, 0, len(internalPubs))
+	for _, pub := range internalPubs {
+		publications = append(publications, pub.ConstructExternal())
+	}
 	return
 }
 
@@ -4350,7 +4354,11 @@ func (o *TridentOrchestrator) listVolumePublicationsForVolume(
 // ListVolumePublicationsForNode returns a list of all volume publications for a given node
 func (o *TridentOrchestrator) ListVolumePublicationsForNode(
 	ctx context.Context, nodeName string,
-) (publications []*utils.VolumePublication, err error) {
+) (publications []*utils.VolumePublicationExternal, err error) {
+	fields := log.Fields{"NodeName": nodeName}
+	Logc(ctx).WithFields(fields).Info(">>>>>> GetVolumePublications")
+	defer Logc(ctx).Info("<<<<<< GetVolumePublications")
+
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -4360,7 +4368,11 @@ func (o *TridentOrchestrator) ListVolumePublicationsForNode(
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	publications = o.listVolumePublicationsForNode(ctx, nodeName)
+	internalPubs := o.listVolumePublicationsForNode(ctx, nodeName)
+	publications = make([]*utils.VolumePublicationExternal, 0, len(internalPubs))
+	for _, pub := range internalPubs {
+		publications = append(publications, pub.ConstructExternal())
+	}
 	return
 }
 
