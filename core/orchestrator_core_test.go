@@ -2263,16 +2263,6 @@ func TestOrchestratorNotReady(t *testing.T) {
 		t.Errorf("Expected GetVolume to return an error.")
 	}
 
-	_, err = orchestrator.GetDriverTypeForVolume(ctx(), nil)
-	if !utils.IsNotReadyError(err) {
-		t.Errorf("Expected GetDriverTypeForVolume to return an error.")
-	}
-
-	_, err = orchestrator.GetVolumeType(ctx(), nil)
-	if !utils.IsNotReadyError(err) {
-		t.Errorf("Expected GetVolumeType to return an error.")
-	}
-
 	volumes, err = orchestrator.ListVolumes(ctx())
 	if volumes != nil || !utils.IsNotReadyError(err) {
 		t.Errorf("Expected ListVolumes to return an error.")

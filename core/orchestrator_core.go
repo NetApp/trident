@@ -2275,9 +2275,9 @@ func (o *TridentOrchestrator) LegacyImportVolume(
 
 	volExternal := volume.ConstructExternal()
 
-	driverType, err := o.getDriverTypeForVolume(volExternal.BackendUUID)
+	driverType, err := o.driverTypeForBackend(volExternal.BackendUUID)
 	if err != nil {
-		return nil, fmt.Errorf("unable to determine driver type from volume %v", volExternal)
+		return nil, fmt.Errorf("unable to determine driver type from volume %v; %v", volExternal, err)
 	}
 
 	Logc(ctx).WithFields(log.Fields{
@@ -2367,9 +2367,9 @@ func (o *TridentOrchestrator) ImportVolume(
 
 	volExternal := volume.ConstructExternal()
 
-	driverType, err := o.getDriverTypeForVolume(volExternal.Backend)
+	driverType, err := o.driverTypeForBackend(volExternal.BackendUUID)
 	if err != nil {
-		return nil, fmt.Errorf("unable to determine driver type from volume %v", volExternal)
+		return nil, fmt.Errorf("unable to determine driver type from volume %v; %v", volExternal, err)
 	}
 
 	Logc(ctx).WithFields(log.Fields{
@@ -2657,59 +2657,15 @@ func (o *TridentOrchestrator) getVolume(
 	return vol.ConstructExternal(), nil
 }
 
-func (o *TridentOrchestrator) GetDriverTypeForVolume(_ context.Context, vol *storage.VolumeExternal) (string, error) {
-	if o.bootstrapError != nil {
-		return config.UnknownDriver, o.bootstrapError
-	}
-
-	o.mutex.Lock()
-	defer o.mutex.Unlock()
-
-	return o.getDriverTypeForVolume(vol.BackendUUID)
-}
-
-// getDriverTypeForVolume does the necessary work to get the driver type.  It does
+// driverTypeForBackend does the necessary work to get the driver type.  It does
 // not construct a transaction, nor does it take locks; it assumes that the
 // caller will take care of both of these.  It also assumes that the backend
 // exists in memory.
-func (o *TridentOrchestrator) getDriverTypeForVolume(backendUUID string) (string, error) {
+func (o *TridentOrchestrator) driverTypeForBackend(backendUUID string) (string, error) {
 	if b, ok := o.backends[backendUUID]; ok {
-		return b.Driver().Name(), nil
+		return b.GetDriverName(), nil
 	}
-	return config.UnknownDriver, nil
-}
-
-func (o *TridentOrchestrator) GetVolumeType(
-	_ context.Context, vol *storage.VolumeExternal,
-) (volumeType config.VolumeType, err error) {
-	if o.bootstrapError != nil {
-		return config.UnknownVolumeType, o.bootstrapError
-	}
-
-	defer recordTiming("volume_get_type", &err)()
-
-	o.mutex.Lock()
-	defer o.mutex.Unlock()
-
-	// Since the caller has a valid VolumeExternal and we're disallowing
-	// backend deletion, we can assume that this will not hit a nil pointer.
-	driver := o.backends[vol.BackendUUID].GetDriverName()
-	switch {
-	case driver == drivers.OntapNASStorageDriverName:
-		volumeType = config.OntapNFS
-	case driver == drivers.OntapNASQtreeStorageDriverName:
-		volumeType = config.OntapNFS
-	case driver == drivers.OntapNASFlexGroupStorageDriverName:
-		volumeType = config.OntapNFS
-	case driver == drivers.OntapSANStorageDriverName:
-		volumeType = config.OntapISCSI
-	case driver == drivers.SolidfireSANStorageDriverName:
-		volumeType = config.SolidFireISCSI
-	default:
-		volumeType = config.UnknownVolumeType
-	}
-
-	return
+	return config.UnknownDriver, fmt.Errorf("unknown backend with UUID %s", backendUUID)
 }
 
 func (o *TridentOrchestrator) ListVolumes(context.Context) (volumes []*storage.VolumeExternal, err error) {

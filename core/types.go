@@ -7,7 +7,6 @@ package core
 import (
 	"context"
 
-	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -46,7 +45,6 @@ type Orchestrator interface {
 	GetVolumeByInternalName(volumeInternal string, ctx context.Context) (volume string,
 		err error)
 	GetVolumeExternal(ctx context.Context, volumeName, backendName string) (*storage.VolumeExternal, error)
-	GetVolumeType(ctx context.Context, vol *storage.VolumeExternal) (config.VolumeType, error)
 	LegacyImportVolume(
 		ctx context.Context, volumeConfig *storage.VolumeConfig, backendName string, notManaged bool,
 		createPVandPVC VolumeCallback,
@@ -58,6 +56,7 @@ type Orchestrator interface {
 	UnpublishVolume(ctx context.Context, volumeName, nodeName string) error
 	ResizeVolume(ctx context.Context, volumeName, newSize string) error
 	SetVolumeState(ctx context.Context, volumeName string, state storage.VolumeState) error
+	ReloadVolumes(ctx context.Context) error
 
 	CreateSnapshot(ctx context.Context, snapshotConfig *storage.SnapshotConfig) (*storage.SnapshotExternal, error)
 	GetSnapshot(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotExternal, error)
@@ -66,9 +65,6 @@ type Orchestrator interface {
 	ListSnapshotsForVolume(ctx context.Context, volumeName string) ([]*storage.SnapshotExternal, error)
 	ReadSnapshotsForVolume(ctx context.Context, volumeName string) ([]*storage.SnapshotExternal, error)
 	DeleteSnapshot(ctx context.Context, volumeName, snapshotName string) error
-
-	GetDriverTypeForVolume(ctx context.Context, vol *storage.VolumeExternal) (string, error)
-	ReloadVolumes(ctx context.Context) error
 
 	AddStorageClass(ctx context.Context, scConfig *storageclass.Config) (*storageclass.External, error)
 	DeleteStorageClass(ctx context.Context, scName string) error

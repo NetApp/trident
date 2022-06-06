@@ -46,8 +46,6 @@ func GetDriverConfigByName(driverName string) (DriverConfig, error) {
 		storageDriverConfig = &OntapStorageDriverConfig{}
 	case SolidfireSANStorageDriverName:
 		storageDriverConfig = &SolidfireStorageDriverConfig{}
-	case AWSNFSStorageDriverName:
-		storageDriverConfig = &AWSNFSStorageDriverConfig{}
 	case AzureNFSStorageDriverName:
 		fallthrough
 	case AzureNASBlockStorageDriverName:
@@ -360,104 +358,6 @@ func (d SolidfireStorageDriverConfig) CheckForCRDControllerForbiddenAttributes()
 }
 
 func (d SolidfireStorageDriverConfig) SpecOnlyValidation() error {
-	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
-		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
-	}
-
-	if !d.HasCredentials() {
-		return fmt.Errorf("input is missing the credentials field")
-	}
-
-	return nil
-}
-
-type AWSNFSStorageDriverConfig struct {
-	*CommonStorageDriverConfig
-	APIURL              string `json:"apiURL"`
-	APIKey              string `json:"apiKey"`
-	APIRegion           string `json:"apiRegion"`
-	SecretKey           string `json:"secretKey"`
-	ProxyURL            string `json:"proxyURL"`
-	NfsMountOptions     string `json:"nfsMountOptions"`
-	VolumeCreateTimeout string `json:"volumeCreateTimeout"`
-	AWSNFSStorageDriverPool
-	Storage []AWSNFSStorageDriverPool `json:"storage"`
-}
-
-type AWSNFSStorageDriverPool struct {
-	Labels                            map[string]string   `json:"labels"`
-	Region                            string              `json:"region"`
-	Zone                              string              `json:"zone"`
-	ServiceLevel                      string              `json:"serviceLevel"`
-	SupportedTopologies               []map[string]string `json:"supportedTopologies"`
-	AWSNFSStorageDriverConfigDefaults `json:"defaults"`
-}
-
-type AWSNFSStorageDriverConfigDefaults struct {
-	ExportRule      string `json:"exportRule"`
-	SnapshotDir     string `json:"snapshotDir"`
-	SnapshotReserve string `json:"snapshotReserve"`
-	CommonStorageDriverConfigDefaults
-}
-
-// Implement stringer interface for the AWSNFSStorageDriverConfig driver
-func (d AWSNFSStorageDriverConfig) String() string {
-	return utils.ToStringRedacted(&d, []string{"APIURL", "APIKey", "SecretKey"}, nil)
-}
-
-// Implement GoStringer interface for the AWSNFSStorageDriverConfig driver
-func (d AWSNFSStorageDriverConfig) GoString() string {
-	return d.String()
-}
-
-// InjectSecrets function replaces sensitive fields in the config with the field values in the map
-func (d *AWSNFSStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
-	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
-
-	var ok bool
-	if d.APIKey, ok = secretMap[strings.ToLower("APIKey")]; !ok {
-		return injectionError("APIKey")
-	}
-	if d.SecretKey, ok = secretMap[strings.ToLower("SecretKey")]; !ok {
-		return injectionError("SecretKey")
-	}
-
-	return nil
-}
-
-// ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
-// and returns the the map.
-func (d AWSNFSStorageDriverConfig) ExtractSecrets() map[string]string {
-	secretMap := make(map[string]string)
-
-	secretMap["APIKey"] = d.APIKey
-	secretMap["SecretKey"] = d.SecretKey
-
-	return secretMap
-}
-
-// HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
-// with secretName.
-func (d *AWSNFSStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
-	d.APIKey = secretName
-	d.SecretKey = secretName
-}
-
-// GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
-// replaces those fields with secretName and returns the the map.
-func (d *AWSNFSStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
-	secretMap := d.ExtractSecrets()
-	d.HideSensitiveWithSecretName(secretName)
-
-	return secretMap
-}
-
-// CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
-func (d AWSNFSStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
-	return checkMapContainsAttributes(d.ExtractSecrets())
-}
-
-func (d AWSNFSStorageDriverConfig) SpecOnlyValidation() error {
 	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
 		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
 	}

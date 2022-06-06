@@ -971,7 +971,6 @@ func (b *StorageBackend) ConstructExternal(ctx context.Context) *BackendExternal
 type PersistentStorageBackendConfig struct {
 	OntapConfig             *drivers.OntapStorageDriverConfig     `json:"ontap_config,omitempty"`
 	SolidfireConfig         *drivers.SolidfireStorageDriverConfig `json:"solidfire_config,omitempty"`
-	AWSConfig               *drivers.AWSNFSStorageDriverConfig    `json:"aws_config,omitempty"`
 	AzureConfig             *drivers.AzureNFSStorageDriverConfig  `json:"azure_config,omitempty"`
 	GCPConfig               *drivers.GCPNFSStorageDriverConfig    `json:"gcp_config,omitempty"`
 	AstraDSConfig           *drivers.AstraDSStorageDriverConfig   `json:"astrads_config,omitempty"`
@@ -986,8 +985,6 @@ func (psbc *PersistentStorageBackendConfig) GetDriverConfig() (drivers.DriverCon
 		driverConfig = psbc.OntapConfig
 	case psbc.SolidfireConfig != nil:
 		driverConfig = psbc.SolidfireConfig
-	case psbc.AWSConfig != nil:
-		driverConfig = psbc.AWSConfig
 	case psbc.AzureConfig != nil:
 		driverConfig = psbc.AzureConfig
 	case psbc.GCPConfig != nil:
@@ -1042,8 +1039,6 @@ func (p *BackendPersistent) MarshalConfig() (string, error) {
 		bytes, err = json.Marshal(p.Config.OntapConfig)
 	case p.Config.SolidfireConfig != nil:
 		bytes, err = json.Marshal(p.Config.SolidfireConfig)
-	case p.Config.AWSConfig != nil:
-		bytes, err = json.Marshal(p.Config.AWSConfig)
 	case p.Config.AzureConfig != nil:
 		bytes, err = json.Marshal(p.Config.AzureConfig)
 	case p.Config.GCPConfig != nil:

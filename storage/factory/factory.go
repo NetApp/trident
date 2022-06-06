@@ -15,7 +15,6 @@ import (
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/astrads"
-	"github.com/netapp/trident/storage_drivers/aws"
 	"github.com/netapp/trident/storage_drivers/azure"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/storage_drivers/gcp"
@@ -94,8 +93,6 @@ func NewStorageBackendForConfig(
 		storageDriver = &ontap.SANEconomyStorageDriver{}
 	case drivers.SolidfireSANStorageDriverName:
 		storageDriver = &solidfire.SANStorageDriver{}
-	case drivers.AWSNFSStorageDriverName:
-		storageDriver = &aws.NFSStorageDriver{}
 	case drivers.AzureNFSStorageDriverName:
 		storageDriver = &azure.NFSStorageDriver{}
 	case drivers.AzureNASBlockStorageDriverName:

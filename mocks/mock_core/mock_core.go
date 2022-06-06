@@ -9,7 +9,6 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	config "github.com/netapp/trident/config"
 	core "github.com/netapp/trident/core"
 	frontend "github.com/netapp/trident/frontend"
 	storage "github.com/netapp/trident/storage"
@@ -397,21 +396,6 @@ func (mr *MockOrchestratorMockRecorder) GetCHAP(arg0, arg1, arg2 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCHAP", reflect.TypeOf((*MockOrchestrator)(nil).GetCHAP), arg0, arg1, arg2)
 }
 
-// GetDriverTypeForVolume mocks base method.
-func (m *MockOrchestrator) GetDriverTypeForVolume(arg0 context.Context, arg1 *storage.VolumeExternal) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDriverTypeForVolume", arg0, arg1)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetDriverTypeForVolume indicates an expected call of GetDriverTypeForVolume.
-func (mr *MockOrchestratorMockRecorder) GetDriverTypeForVolume(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDriverTypeForVolume", reflect.TypeOf((*MockOrchestrator)(nil).GetDriverTypeForVolume), arg0, arg1)
-}
-
 // GetFrontend mocks base method.
 func (m *MockOrchestrator) GetFrontend(arg0 context.Context, arg1 string) (frontend.Plugin, error) {
 	m.ctrl.T.Helper()
@@ -591,21 +575,6 @@ func (m *MockOrchestrator) GetVolumeTransaction(arg0 context.Context, arg1 *stor
 func (mr *MockOrchestratorMockRecorder) GetVolumeTransaction(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeTransaction", reflect.TypeOf((*MockOrchestrator)(nil).GetVolumeTransaction), arg0, arg1)
-}
-
-// GetVolumeType mocks base method.
-func (m *MockOrchestrator) GetVolumeType(arg0 context.Context, arg1 *storage.VolumeExternal) (config.VolumeType, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeType", arg0, arg1)
-	ret0, _ := ret[0].(config.VolumeType)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetVolumeType indicates an expected call of GetVolumeType.
-func (mr *MockOrchestratorMockRecorder) GetVolumeType(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeType", reflect.TypeOf((*MockOrchestrator)(nil).GetVolumeType), arg0, arg1)
 }
 
 // ImportVolume mocks base method.
