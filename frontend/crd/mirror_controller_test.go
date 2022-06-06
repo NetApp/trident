@@ -4,6 +4,7 @@ package crd
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -14,6 +15,7 @@ import (
 
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/storage"
 )
 
 func TestUpdateMirrorRelationshipNoUpdateNeeded(t *testing.T) {
@@ -243,4 +245,127 @@ func TestValidateTMRUpdate_InvalidScheduleUpdate(t *testing.T) {
 	assert.Equal(t, netappv1.MirrorStateFailed, conditionCopy.MirrorState,
 		"Mirror state should be failed")
 	assert.Contains(t, conditionCopy.Message, errMessage, "Wrong error message")
+}
+
+func TestUpdateTMRConditionReplicationSettings(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	testingCache := NewTestingCache()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	ctx := context.Background()
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	crdClient := GetTestCrdClientset()
+	snapClient := GetTestSnapshotClientset()
+	addCrdTestReactors(crdClient, testingCache)
+
+	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+
+	cases := []struct {
+		initialPolicy    string
+		initialSchedule  string
+		returnedPolicy   string
+		returnedSchedule string
+		expectedPolicy   string
+		expectedSchedule string
+	}{
+		{
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+		},
+		{
+			"",
+			"",
+			"TestReplicationPolicy",
+			"TestReplicationSchedule",
+			"TestReplicationPolicy",
+			"TestReplicationSchedule",
+		},
+		{
+			"TestReplicationPolicy_Old",
+			"TestReplicationSchedule_Old",
+			"TestReplicationPolicy",
+			"TestReplicationSchedule",
+			"TestReplicationPolicy",
+			"TestReplicationSchedule",
+		},
+	}
+
+	for _, c := range cases {
+		condition := &netappv1.TridentMirrorRelationshipCondition{ReplicationPolicy: c.initialPolicy, ReplicationSchedule: c.initialSchedule}
+		volume := &storage.VolumeExternal{}
+
+		orchestrator.EXPECT().GetReplicationDetails(ctx, volume.BackendUUID, "", "").Return(c.returnedPolicy, c.returnedSchedule, nil).Times(1)
+
+		actualCondition := controller.updateTMRConditionReplicationSettings(ctx, condition, volume, "", "")
+
+		assert.Equal(t, c.expectedPolicy, actualCondition.ReplicationPolicy, "Replication Policy does not match")
+		assert.Equal(t, c.expectedSchedule, actualCondition.ReplicationSchedule, "Replication Schedule does not match")
+	}
+}
+
+func TestUpdateTMRConditionReplicationSettings_ErrorGettingDetails(t *testing.T) {
+	// Test updateTMRConditionReplicationSettings when the orchestrator fails to return relationship details
+	mockCtrl := gomock.NewController(t)
+	testingCache := NewTestingCache()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	ctx := context.Background()
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	crdClient := GetTestCrdClientset()
+	snapClient := GetTestSnapshotClientset()
+	addCrdTestReactors(crdClient, testingCache)
+
+	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+
+	cases := []struct {
+		initialPolicy    string
+		initialSchedule  string
+		returnedPolicy   string
+		returnedSchedule string
+		expectedPolicy   string
+		expectedSchedule string
+	}{
+		{
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+		},
+		{
+			"",
+			"",
+			"TestReplicationPolicy",
+			"TestReplicationSchedule",
+			"",
+			"",
+		},
+		{
+			"TestReplicationPolicy_Old",
+			"TestReplicationSchedule_Old",
+			"TestReplicationPolicy",
+			"TestReplicationSchedule",
+			"TestReplicationPolicy_Old",
+			"TestReplicationSchedule_Old",
+		},
+	}
+
+	for _, c := range cases {
+		condition := &netappv1.TridentMirrorRelationshipCondition{ReplicationPolicy: c.initialPolicy, ReplicationSchedule: c.initialSchedule}
+		volume := &storage.VolumeExternal{}
+
+		orchestrator.EXPECT().GetReplicationDetails(ctx, volume.BackendUUID, "", "").Return(c.returnedPolicy, c.returnedSchedule, fmt.Errorf("Fake error")).Times(1)
+
+		actualCondition := controller.updateTMRConditionReplicationSettings(ctx, condition, volume, "", "")
+
+		assert.Equal(t, c.expectedPolicy, actualCondition.ReplicationPolicy, "Replication Policy does not match")
+		assert.Equal(t, c.expectedSchedule, actualCondition.ReplicationSchedule, "Replication Schedule does not match")
+	}
 }

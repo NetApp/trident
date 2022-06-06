@@ -15,6 +15,7 @@ import (
 
 	. "github.com/netapp/trident/logger"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
 )
@@ -230,7 +231,8 @@ func (c *TridentCrdController) updateTMRStatus(
 
 // updateTMRCR updates the TridentMirrorRelationshipCR
 func (c *TridentCrdController) updateTMRCR(
-	ctx context.Context, tmr *netappv1.TridentMirrorRelationship,
+	ctx context.Context,
+	tmr *netappv1.TridentMirrorRelationship,
 ) (*netappv1.TridentMirrorRelationship, error) {
 	logFields := log.Fields{"TridentMirrorRelationship": tmr.Name}
 
@@ -403,7 +405,11 @@ func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem)
 }
 
 func (c *TridentCrdController) getCurrentMirrorState(
-	ctx context.Context, desiredMirrorState, backendUUID, localVolumeHandle, remoteVolumeHandle string,
+	ctx context.Context,
+	desiredMirrorState,
+	backendUUID,
+	localVolumeHandle,
+	remoteVolumeHandle string,
 ) (string, error) {
 	currentMirrorState, err := c.orchestrator.GetMirrorStatus(ctx, backendUUID, localVolumeHandle, remoteVolumeHandle)
 	if err != nil {
@@ -609,15 +615,6 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 				currentMirrorState, _ = c.getCurrentMirrorState(
 					ctx, desiredMirrorState, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
 				)
-
-				// Get the replication policy and schedule
-				policy, schedule, err := c.orchestrator.GetReplicationDetails(ctx, existingVolume.BackendUUID,
-					localVolumeHandle, remoteVolumeHandle)
-				if err != nil {
-					Logc(ctx).Debugf("Error getting replication details: %v", err)
-				}
-				statusCondition.ReplicationPolicy = policy
-				statusCondition.ReplicationSchedule = schedule
 			}
 		} else if desiredMirrorState == netappv1.MirrorStateReestablished &&
 			remoteVolumeHandle != "" &&
@@ -639,12 +636,6 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 				currentMirrorState, _ = c.getCurrentMirrorState(
 					ctx, desiredMirrorState, existingVolume.BackendUUID, localVolumeHandle, remoteVolumeHandle,
 				)
-
-				// Get the replication policy and schedule
-				policy, schedule, _ := c.orchestrator.GetReplicationDetails(ctx, existingVolume.BackendUUID,
-					localVolumeHandle, remoteVolumeHandle)
-				statusCondition.ReplicationPolicy = policy
-				statusCondition.ReplicationSchedule = schedule
 			}
 		} else if desiredMirrorState == netappv1.MirrorStatePromoted &&
 			currentMirrorState != netappv1.MirrorStatePromoted {
@@ -676,6 +667,8 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 
 	statusCondition.MirrorState = currentMirrorState
 
+	statusCondition = c.updateTMRConditionReplicationSettings(ctx, statusCondition, existingVolume, localVolumeHandle, remoteVolumeHandle)
+
 	if utils.IsUnsupportedError(err) {
 		statusCondition.MirrorState = netappv1.MirrorStateInvalid
 		statusCondition.Message = err.Error()
@@ -686,6 +679,27 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 
 	return updateTMRConditionLocalFields(
 		statusCondition, localVolumeHandle, localPVCName, volumeMapping.RemoteVolumeHandle)
+}
+
+func (c *TridentCrdController) updateTMRConditionReplicationSettings(
+	ctx context.Context,
+	statusCondition *netappv1.TridentMirrorRelationshipCondition,
+	volume *storage.VolumeExternal,
+	localVolumeHandle,
+	remoteVolumeHandle string,
+) *netappv1.TridentMirrorRelationshipCondition {
+	conditionCopy := statusCondition.DeepCopy()
+	// Get the replication policy and schedule
+	policy, schedule, err := c.orchestrator.GetReplicationDetails(ctx, volume.BackendUUID,
+		localVolumeHandle, remoteVolumeHandle)
+	if err != nil {
+		Logc(ctx).Debugf("Error getting replication details: %v", err)
+	} else {
+		conditionCopy.ReplicationPolicy = policy
+		conditionCopy.ReplicationSchedule = schedule
+	}
+
+	return conditionCopy
 }
 
 // validateTMRUpdate checks to see if there are changes in the replication policy or schedule and will return if the
