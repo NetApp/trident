@@ -144,6 +144,10 @@ const (
 
 	NamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 
+	// Pod Security Standards
+	PodSecurityStandardsEnforceLabel   = "pod-security.kubernetes.io/enforce"
+	PodSecurityStandardsEnforceProfile = "privileged"
+
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
 

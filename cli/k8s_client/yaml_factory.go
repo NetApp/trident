@@ -24,6 +24,8 @@ const namespaceYAMLTemplate = `---
 apiVersion: v1
 kind: Namespace
 metadata:
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
   name: {NAMESPACE}
 `
 

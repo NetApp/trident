@@ -114,6 +114,9 @@ type KubernetesClient interface {
 	PatchBetaCSIDriverByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	PatchCSIDriverByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	CheckNamespaceExists(namespace string) (bool, error)
+	PatchNamespaceLabels(namespace string, labels map[string]string) error
+	PatchNamespace(namespace string, patchBytes []byte, patchType types.PatchType) error
+	GetNamespace(namespace string) (*v1.Namespace, error)
 	CreateSecret(secret *v1.Secret) (*v1.Secret, error)
 	UpdateSecret(secret *v1.Secret) (*v1.Secret, error)
 	CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret, error)

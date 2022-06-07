@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -1863,13 +1864,48 @@ func (k *KubeClient) PatchCSIDriverByLabel(label string, patchBytes []byte, patc
 }
 
 func (k *KubeClient) CheckNamespaceExists(namespace string) (bool, error) {
-	if _, err := k.clientset.CoreV1().Namespaces().Get(ctx(), namespace, getOpts); err != nil {
+	if _, err := k.GetNamespace(namespace); err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 			return false, nil
 		}
 		return false, err
 	}
 	return true, nil
+}
+
+// PatchNamespaceLabels patches the namespace with provided labels
+func (k *KubeClient) PatchNamespaceLabels(namespace string, labels map[string]string) error {
+	patch, err := json.Marshal(map[string]interface{}{
+		"metadata": map[string]interface{}{
+			"labels": labels,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return k.PatchNamespace(namespace, patch, types.MergePatchType)
+}
+
+// PatchNamespace patches the namespace with matching name
+func (k *KubeClient) PatchNamespace(namespace string, patchBytes []byte, patchType types.PatchType) error {
+	ns, err := k.GetNamespace(namespace)
+	if err != nil {
+		return err
+	}
+
+	if _, err := k.clientset.CoreV1().Namespaces().Patch(ctx(), ns.Name, patchType, patchBytes, patchOpts); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"namespace": namespace,
+	}).Debug("Patched Kubernetes namespace")
+
+	return nil
+}
+
+func (k *KubeClient) GetNamespace(namespace string) (*v1.Namespace, error) {
+	return k.clientset.CoreV1().Namespaces().Get(ctx(), namespace, getOpts)
 }
 
 // CreateSecret creates a new Secret

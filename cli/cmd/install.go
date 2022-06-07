@@ -668,12 +668,14 @@ func installTrident() (returnError error) {
 	// All checks succeeded, so proceed with installation
 	log.WithField("namespace", TridentPodNamespace).Info("Starting Trident installation.")
 
-	// Create namespace if it doesn't exist
-	if !namespaceExists {
+	// Create or patch namespace
+	if namespaceExists {
+		returnError = patchNamespace()
+	} else {
 		returnError = createNamespace()
-		if returnError != nil {
-			return
-		}
+	}
+	if returnError != nil {
+		return
 	}
 
 	// Remove any RBAC objects from a previous Trident installation
@@ -1028,6 +1030,13 @@ func discoverLegacyEtcdData() (pvcExists, pvExists bool, returnError error) {
 	}
 
 	return
+}
+
+func patchNamespace() error {
+	labels := map[string]string{
+		tridentconfig.PodSecurityStandardsEnforceLabel: tridentconfig.PodSecurityStandardsEnforceProfile,
+	}
+	return client.PatchNamespaceLabels(TridentPodNamespace, labels)
 }
 
 func createNamespace() (returnError error) {

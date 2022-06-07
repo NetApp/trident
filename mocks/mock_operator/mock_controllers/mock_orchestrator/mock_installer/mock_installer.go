@@ -1672,6 +1672,21 @@ func (mr *MockExtendedK8sClientMockRecorder) GetDeploymentsByLabel(arg0, arg1 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeploymentsByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetDeploymentsByLabel), arg0, arg1)
 }
 
+// GetNamespace mocks base method.
+func (m *MockExtendedK8sClient) GetNamespace(arg0 string) (*v11.Namespace, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNamespace", arg0)
+	ret0, _ := ret[0].(*v11.Namespace)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNamespace indicates an expected call of GetNamespace.
+func (mr *MockExtendedK8sClientMockRecorder) GetNamespace(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespace", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetNamespace), arg0)
+}
+
 // GetOpenShiftSCCByName mocks base method.
 func (m *MockExtendedK8sClient) GetOpenShiftSCCByName(arg0, arg1 string) (bool, bool, []byte, error) {
 	m.ctrl.T.Helper()
@@ -2155,6 +2170,34 @@ func (m *MockExtendedK8sClient) PatchDeploymentByLabel(arg0 string, arg1 []byte,
 func (mr *MockExtendedK8sClientMockRecorder) PatchDeploymentByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDeploymentByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchDeploymentByLabel), arg0, arg1, arg2)
+}
+
+// PatchNamespace mocks base method.
+func (m *MockExtendedK8sClient) PatchNamespace(arg0 string, arg1 []byte, arg2 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchNamespace", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchNamespace indicates an expected call of PatchNamespace.
+func (mr *MockExtendedK8sClientMockRecorder) PatchNamespace(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchNamespace", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchNamespace), arg0, arg1, arg2)
+}
+
+// PatchNamespaceLabels mocks base method.
+func (m *MockExtendedK8sClient) PatchNamespaceLabels(arg0 string, arg1 map[string]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchNamespaceLabels", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchNamespaceLabels indicates an expected call of PatchNamespaceLabels.
+func (mr *MockExtendedK8sClientMockRecorder) PatchNamespaceLabels(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchNamespaceLabels", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchNamespaceLabels), arg0, arg1)
 }
 
 // PatchOpenShiftSCC mocks base method.

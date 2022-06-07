@@ -236,6 +236,7 @@ rules:
       - namespaces
     verbs:
       - create
+      - patch
   - apiGroups:
       - apps
     resources:

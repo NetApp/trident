@@ -436,7 +436,7 @@ func (i *Installer) InstallOrPatchTrident(
 	log.WithField("namespace", i.namespace).Info("Starting Trident installation.")
 
 	// Create namespace, if one does not exist
-	if returnError = i.createTridentInstallationNamespace(); returnError != nil {
+	if returnError = i.createOrPatchTridentInstallationNamespace(); returnError != nil {
 		return nil, "", returnError
 	}
 
@@ -762,7 +762,7 @@ func (i *Installer) createRBACObjects(
 	return
 }
 
-func (i *Installer) createTridentInstallationNamespace() error {
+func (i *Installer) createOrPatchTridentInstallationNamespace() error {
 	createNamespace := true
 
 	namespaceExists, returnError := i.client.CheckNamespaceExists(i.namespace)
@@ -786,6 +786,15 @@ func (i *Installer) createTridentInstallationNamespace() error {
 			return fmt.Errorf("failed to create Trident installation namespace %s; %v", i.namespace, err)
 		}
 		log.WithField("namespace", i.namespace).Info("Created Trident installation namespace.")
+	} else {
+		// Patch namespace
+		err := i.client.PatchNamespaceLabels(i.namespace, map[string]string{
+			commonconfig.PodSecurityStandardsEnforceLabel: commonconfig.PodSecurityStandardsEnforceProfile,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to patch Trident installation namespace %s; %v", i.namespace, err)
+		}
+		log.WithField("namespace", i.namespace).Info("Patched Trident installation namespace")
 	}
 
 	return nil
