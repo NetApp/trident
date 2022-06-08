@@ -270,7 +270,7 @@ autosupportProxy          The address/port of a proxy for sending Autosupport Te
 uninstall                 A flag used to uninstall Trident                                               'false'
 logFormat                 Trident logging format to be used [text,json]                                  "text"
 tridentImage              Trident image to install                                                       "netapp/trident:21.07"
-imageRegistry             Path to internal registry, of the format ``<registry FQDN>[:port][/subpath]``  "k8s.gcr.io/sig-storage"
+imageRegistry             Path to internal registry, of the format ``<registry FQDN>[:port][/subpath]``  "registry.k8s.io/sig-storage"
 kubeletDir                Path to the kubelet directory on the host                                      "/var/lib/kubelet"
 wipeout                   A list of resources to delete to perform a complete removal of Trident
 imagePullSecrets          Secrets to pull images from an internal registry

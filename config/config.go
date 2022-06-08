@@ -140,7 +140,7 @@ const (
 	KubernetesVersionMax = "v1.23"
 
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
-	KubernetesCSISidecarRegistry = "k8s.gcr.io/sig-storage"
+	KubernetesCSISidecarRegistry = "registry.k8s.io/sig-storage"
 
 	NamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 

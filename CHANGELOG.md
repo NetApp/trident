@@ -11,6 +11,8 @@
 
 **Enhancements**
 
+- Transition from k8s.gcr.io to registry.k8s.io as default registry for CSI images
+
 **Deprecations:**
 
 **Removals**

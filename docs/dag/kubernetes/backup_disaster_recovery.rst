@@ -30,7 +30,7 @@ The command ``etcdctl snapshot save`` enables us to take a point-in-time snapsho
     --network host \
     -v /etc/kubernetes/pki/etcd:/etc/kubernetes/pki/etcd \
     --env ETCDCTL_API=3 \
-    k8s.gcr.io/etcd-amd64:3.2.18 \
+    registry.k8s.io/etcd-amd64:3.2.18 \
     etcdctl --endpoints=https://127.0.0.1:2379 \
     --cacert=/etc/kubernetes/pki/etcd/ca.crt \
     --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \

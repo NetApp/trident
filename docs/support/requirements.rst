@@ -102,15 +102,15 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | netapp/trident-autosupport:21.01                            |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-provisioner:v2.1.1               |
+|                        | registry.k8s.io/sig-storage/csi-provisioner:v2.1.1               |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-attacher:v3.1.0                  |
+|                        | registry.k8s.io/sig-storage/csi-attacher:v3.1.0                  |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-resizer:v1.1.0                   |
+|                        | registry.k8s.io/sig-storage/csi-resizer:v1.1.0                   |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-snapshotter:v3.0.3               |
+|                        | registry.k8s.io/sig-storage/csi-snapshotter:v3.0.3               |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
+|                        | registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+
 | v1.18.0                | netapp/trident:21.07.0                                      |
 +------------------------+-------------------------------------------------------------+
@@ -118,15 +118,15 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | netapp/trident-autosupport:21.01                            |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-provisioner:v2.1.1               |
+|                        | registry.k8s.io/sig-storage/csi-provisioner:v2.1.1               |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-attacher:v3.1.0                  |
+|                        | registry.k8s.io/sig-storage/csi-attacher:v3.1.0                  |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-resizer:v1.1.0                   |
+|                        | registry.k8s.io/sig-storage/csi-resizer:v1.1.0                   |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-snapshotter:v3.0.3               |
+|                        | registry.k8s.io/sig-storage/csi-snapshotter:v3.0.3               |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
+|                        | registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+
 | v1.19.0                | netapp/trident:21.07.0                                      |
 +------------------------+-------------------------------------------------------------+
@@ -134,15 +134,15 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | netapp/trident-autosupport:21.01                            |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-provisioner:v2.1.1               |
+|                        | registry.k8s.io/sig-storage/csi-provisioner:v2.1.1               |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-attacher:v3.1.0                  |
+|                        | registry.k8s.io/sig-storage/csi-attacher:v3.1.0                  |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-resizer:v1.1.0                   |
+|                        | registry.k8s.io/sig-storage/csi-resizer:v1.1.0                   |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-snapshotter:v3.0.3               |
+|                        | registry.k8s.io/sig-storage/csi-snapshotter:v3.0.3               |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
+|                        | registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+
 | v1.20.0                | netapp/trident:21.07.0                                      |
 +------------------------+-------------------------------------------------------------+
@@ -150,15 +150,15 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | netapp/trident-autosupport:21.01                            |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-provisioner:v2.1.1               |
+|                        | registry.k8s.io/sig-storage/csi-provisioner:v2.1.1               |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-attacher:v3.1.0                  |
+|                        | registry.k8s.io/sig-storage/csi-attacher:v3.1.0                  |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-resizer:v1.1.0                   |
+|                        | registry.k8s.io/sig-storage/csi-resizer:v1.1.0                   |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-snapshotter:v4.1.1               |
+|                        | registry.k8s.io/sig-storage/csi-snapshotter:v4.1.1               |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
+|                        | registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+
 | v1.21.0                | netapp/trident:21.07.0                                      |
 +------------------------+-------------------------------------------------------------+
@@ -166,15 +166,15 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | netapp/trident-autosupport:21.01                            |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-provisioner:v2.1.1               |
+|                        | registry.k8s.io/sig-storage/csi-provisioner:v2.1.1               |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-attacher:v3.1.0                  |
+|                        | registry.k8s.io/sig-storage/csi-attacher:v3.1.0                  |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-resizer:v1.1.0                   |
+|                        | registry.k8s.io/sig-storage/csi-resizer:v1.1.0                   |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-snapshotter:v4.1.1               |
+|                        | registry.k8s.io/sig-storage/csi-snapshotter:v4.1.1               |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
+|                        | registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+
 | v1.22.0                | netapp/trident:21.07.0                                      |
 +------------------------+-------------------------------------------------------------+
@@ -182,21 +182,21 @@ Trident:
 +------------------------+-------------------------------------------------------------+
 |                        | netapp/trident-autosupport:21.01                            |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-provisioner:v2.1.1               |
+|                        | registry.k8s.io/sig-storage/csi-provisioner:v2.1.1               |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-attacher:v3.1.0                  |
+|                        | registry.k8s.io/sig-storage/csi-attacher:v3.1.0                  |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-resizer:v1.1.0                   |
+|                        | registry.k8s.io/sig-storage/csi-resizer:v1.1.0                   |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-snapshotter:v4.1.1               |
+|                        | registry.k8s.io/sig-storage/csi-snapshotter:v4.1.1               |
 +------------------------+-------------------------------------------------------------+
-|                        | k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
+|                        | registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.1.0     |
 +------------------------+-------------------------------------------------------------+
 
 
 .. Note::
 
-  On Kubernetes version 1.20 and later, use the validated ``k8s.gcr.io/sig-storage/csi-snapshotter:v3.x``
+  On Kubernetes version 1.20 and later, use the validated ``registry.k8s.io/sig-storage/csi-snapshotter:v3.x``
   image if only ``v1beta1`` version is serving ``volumesnapshots.snapshot.storage.k8s.io`` CRD. If the
   ``v1`` version is serving the CRD with/without the ``v1beta1`` version, use the validated
-  ``k8s.gcr.io/sig-storage/csi-snapshotter:v4.x`` image.
+  ``registry.k8s.io/sig-storage/csi-snapshotter:v4.x`` image.
