@@ -756,7 +756,7 @@ func installTrident() (returnError error) {
 		return fmt.Errorf("could not determine node topology; %v", err)
 	}
 
-	// Create the CSI Driver object if necessary (1.14+)
+	// Create the CSI Driver object
 	returnError = createK8SCSIDriver()
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create the Kubernetes CSI Driver object; %v", returnError)
@@ -1280,14 +1280,12 @@ func protectCustomResourceDefinitions() error {
 
 func createK8SCSIDriver() error {
 	// Delete the object in case it already exists and we need to update it
-	err := client.DeleteObjectByYAML(k8sclient.GetCSIDriverYAML(getCSIDriverName(), client.ServerVersion(),
-		nil, nil), true)
+	err := client.DeleteObjectByYAML(k8sclient.GetCSIDriverYAML(getCSIDriverName(), nil, nil), true)
 	if err != nil {
 		return fmt.Errorf("could not delete csidriver custom resource; %v", err)
 	}
 
-	err = client.CreateObjectByYAML(k8sclient.GetCSIDriverYAML(getCSIDriverName(), client.ServerVersion(),
-		nil, nil))
+	err = client.CreateObjectByYAML(k8sclient.GetCSIDriverYAML(getCSIDriverName(), nil, nil))
 	if err != nil {
 		return fmt.Errorf("could not create csidriver custom resource; %v", err)
 	}

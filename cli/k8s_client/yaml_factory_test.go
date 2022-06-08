@@ -124,7 +124,7 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 
 	imagePullSecrets := []string{"thisisasecret"}
 
-	version := utils.MustParseSemantic("1.17.0")
+	version := utils.MustParseSemantic("1.19.0")
 
 	deploymentArgs := &DeploymentYAMLArguments{
 		DeploymentName:          "trident-csi",
@@ -171,7 +171,7 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 
 	imagePullSecrets := []string{"thisisasecret"}
 
-	version := utils.MustParseSemantic("1.17.0")
+	version := utils.MustParseSemantic("1.19.0")
 
 	deploymentArgs := &DeploymentYAMLArguments{
 		DeploymentName:          "\ntrident-csi",
@@ -209,7 +209,7 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 }
 
 func TestGetCSIDeploymentYAML(t *testing.T) {
-	versions := []string{"1.17.0", "1.18.0", "1.19.1", "1.21.0"}
+	versions := []string{"1.19.0", "1.19.1", "1.21.0", "1.23.0"}
 
 	for _, versionString := range versions {
 		version := utils.MustParseSemantic(versionString)
@@ -330,7 +330,7 @@ func TestGetCSIDeploymentYAMLTolerations(t *testing.T) {
 }
 
 func TestGetCSIDaemonSetYAML(t *testing.T) {
-	versions := []string{"1.17.0", "1.18.0", "1.21.0"}
+	versions := []string{"1.19.0", "1.21.0", "1.23.0"}
 
 	for _, versionString := range versions {
 		version := utils.MustParseSemantic(versionString)

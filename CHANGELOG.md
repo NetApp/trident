@@ -15,6 +15,8 @@
 
 **Deprecations:**
 
+- **Kubernetes:** Updated minimum supported Kubernetes to 1.19.
+
 **Removals**
 
 - AWS CVS driver (deprecated since 22.04) has been removed.

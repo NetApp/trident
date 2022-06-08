@@ -17,7 +17,6 @@ import (
 	v1beta1 "k8s.io/api/policy/v1beta1"
 	v11 "k8s.io/api/rbac/v1"
 	v12 "k8s.io/api/storage/v1"
-	v1beta10 "k8s.io/api/storage/v1beta1"
 	v13 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	version "k8s.io/apimachinery/pkg/version"
@@ -86,22 +85,6 @@ func (m *MockKubernetesClient) CLI() string {
 func (mr *MockKubernetesClientMockRecorder) CLI() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CLI", reflect.TypeOf((*MockKubernetesClient)(nil).CLI))
-}
-
-// CheckBetaCSIDriverExistsByLabel mocks base method.
-func (m *MockKubernetesClient) CheckBetaCSIDriverExistsByLabel(arg0 string) (bool, string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckBetaCSIDriverExistsByLabel", arg0)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// CheckBetaCSIDriverExistsByLabel indicates an expected call of CheckBetaCSIDriverExistsByLabel.
-func (mr *MockKubernetesClientMockRecorder) CheckBetaCSIDriverExistsByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckBetaCSIDriverExistsByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).CheckBetaCSIDriverExistsByLabel), arg0)
 }
 
 // CheckCRDExists mocks base method.
@@ -470,34 +453,6 @@ func (m *MockKubernetesClient) CreateSecret(arg0 *v10.Secret) (*v10.Secret, erro
 func (mr *MockKubernetesClientMockRecorder) CreateSecret(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSecret", reflect.TypeOf((*MockKubernetesClient)(nil).CreateSecret), arg0)
-}
-
-// DeleteBetaCSIDriver mocks base method.
-func (m *MockKubernetesClient) DeleteBetaCSIDriver(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteBetaCSIDriver", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteBetaCSIDriver indicates an expected call of DeleteBetaCSIDriver.
-func (mr *MockKubernetesClientMockRecorder) DeleteBetaCSIDriver(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBetaCSIDriver", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteBetaCSIDriver), arg0)
-}
-
-// DeleteBetaCSIDriverByLabel mocks base method.
-func (m *MockKubernetesClient) DeleteBetaCSIDriverByLabel(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteBetaCSIDriverByLabel", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteBetaCSIDriverByLabel indicates an expected call of DeleteBetaCSIDriverByLabel.
-func (mr *MockKubernetesClientMockRecorder) DeleteBetaCSIDriverByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBetaCSIDriverByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteBetaCSIDriverByLabel), arg0)
 }
 
 // DeleteCRD mocks base method.
@@ -945,36 +900,6 @@ func (m *MockKubernetesClient) FollowPodLogs(arg0, arg1, arg2 string, arg3 k8scl
 func (mr *MockKubernetesClientMockRecorder) FollowPodLogs(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FollowPodLogs", reflect.TypeOf((*MockKubernetesClient)(nil).FollowPodLogs), arg0, arg1, arg2, arg3)
-}
-
-// GetBetaCSIDriverByLabel mocks base method.
-func (m *MockKubernetesClient) GetBetaCSIDriverByLabel(arg0 string) (*v1beta10.CSIDriver, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBetaCSIDriverByLabel", arg0)
-	ret0, _ := ret[0].(*v1beta10.CSIDriver)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetBetaCSIDriverByLabel indicates an expected call of GetBetaCSIDriverByLabel.
-func (mr *MockKubernetesClientMockRecorder) GetBetaCSIDriverByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBetaCSIDriverByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetBetaCSIDriverByLabel), arg0)
-}
-
-// GetBetaCSIDriversByLabel mocks base method.
-func (m *MockKubernetesClient) GetBetaCSIDriversByLabel(arg0 string) ([]v1beta10.CSIDriver, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBetaCSIDriversByLabel", arg0)
-	ret0, _ := ret[0].([]v1beta10.CSIDriver)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetBetaCSIDriversByLabel indicates an expected call of GetBetaCSIDriversByLabel.
-func (mr *MockKubernetesClientMockRecorder) GetBetaCSIDriversByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBetaCSIDriversByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetBetaCSIDriversByLabel), arg0)
 }
 
 // GetCRD mocks base method.
@@ -1515,20 +1440,6 @@ func (m *MockKubernetesClient) Namespace() string {
 func (mr *MockKubernetesClientMockRecorder) Namespace() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Namespace", reflect.TypeOf((*MockKubernetesClient)(nil).Namespace))
-}
-
-// PatchBetaCSIDriverByLabel mocks base method.
-func (m *MockKubernetesClient) PatchBetaCSIDriverByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PatchBetaCSIDriverByLabel", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchBetaCSIDriverByLabel indicates an expected call of PatchBetaCSIDriverByLabel.
-func (mr *MockKubernetesClientMockRecorder) PatchBetaCSIDriverByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchBetaCSIDriverByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).PatchBetaCSIDriverByLabel), arg0, arg1, arg2)
 }
 
 // PatchCSIDriverByLabel mocks base method.

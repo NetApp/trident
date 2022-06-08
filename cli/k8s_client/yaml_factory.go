@@ -1918,33 +1918,12 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentTransactionCRDYAMLv1 +
 	"\n---" + tridentSnapshotCRDYAMLv1 + "\n"
 
-func GetCSIDriverYAML(name string, version *utils.Version, labels, controllingCRDetails map[string]string) string {
-	// CSIDriver became GA in K8S 1.18
-	minimumV1Version := utils.MustParseSemantic("1.18.0")
-	useV1 := version.AtLeast(minimumV1Version)
-
-	var csiDriver string
-	if useV1 {
-		csiDriver = strings.ReplaceAll(CSIDriverYAMLv1, "{NAME}", name)
-	} else {
-		csiDriver = strings.ReplaceAll(CSIDriverYAMLv1beta1, "{NAME}", name)
-	}
-
+func GetCSIDriverYAML(name string, labels, controllingCRDetails map[string]string) string {
+	csiDriver := strings.ReplaceAll(CSIDriverYAMLv1, "{NAME}", name)
 	csiDriver = replaceMultilineYAMLTag(csiDriver, "LABELS", constructLabels(labels))
 	csiDriver = replaceMultilineYAMLTag(csiDriver, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 	return csiDriver
 }
-
-const CSIDriverYAMLv1beta1 = `
-apiVersion: storage.k8s.io/v1beta1
-kind: CSIDriver
-metadata:
-  name: {NAME}
-  {LABELS}
-  {OWNER_REF}
-spec:
-  attachRequired: true
-`
 
 const CSIDriverYAMLv1 = `
 apiVersion: storage.k8s.io/v1

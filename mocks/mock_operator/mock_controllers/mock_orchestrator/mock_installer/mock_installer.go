@@ -18,7 +18,6 @@ import (
 	v1beta1 "k8s.io/api/policy/v1beta1"
 	v12 "k8s.io/api/rbac/v1"
 	v13 "k8s.io/api/storage/v1"
-	v1beta10 "k8s.io/api/storage/v1beta1"
 	v14 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	version "k8s.io/apimachinery/pkg/version"
@@ -230,22 +229,6 @@ func (m *MockExtendedK8sClient) CLI() string {
 func (mr *MockExtendedK8sClientMockRecorder) CLI() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CLI", reflect.TypeOf((*MockExtendedK8sClient)(nil).CLI))
-}
-
-// CheckBetaCSIDriverExistsByLabel mocks base method.
-func (m *MockExtendedK8sClient) CheckBetaCSIDriverExistsByLabel(arg0 string) (bool, string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckBetaCSIDriverExistsByLabel", arg0)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// CheckBetaCSIDriverExistsByLabel indicates an expected call of CheckBetaCSIDriverExistsByLabel.
-func (mr *MockExtendedK8sClientMockRecorder) CheckBetaCSIDriverExistsByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckBetaCSIDriverExistsByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).CheckBetaCSIDriverExistsByLabel), arg0)
 }
 
 // CheckCRDExists mocks base method.
@@ -628,48 +611,6 @@ func (m *MockExtendedK8sClient) CreateSecret(arg0 *v11.Secret) (*v11.Secret, err
 func (mr *MockExtendedK8sClientMockRecorder) CreateSecret(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSecret", reflect.TypeOf((*MockExtendedK8sClient)(nil).CreateSecret), arg0)
-}
-
-// DeleteBetaCSIDriver mocks base method.
-func (m *MockExtendedK8sClient) DeleteBetaCSIDriver(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteBetaCSIDriver", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteBetaCSIDriver indicates an expected call of DeleteBetaCSIDriver.
-func (mr *MockExtendedK8sClientMockRecorder) DeleteBetaCSIDriver(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBetaCSIDriver", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteBetaCSIDriver), arg0)
-}
-
-// DeleteBetaCSIDriverByLabel mocks base method.
-func (m *MockExtendedK8sClient) DeleteBetaCSIDriverByLabel(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteBetaCSIDriverByLabel", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteBetaCSIDriverByLabel indicates an expected call of DeleteBetaCSIDriverByLabel.
-func (mr *MockExtendedK8sClientMockRecorder) DeleteBetaCSIDriverByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBetaCSIDriverByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteBetaCSIDriverByLabel), arg0)
-}
-
-// DeleteBetaCSIDriverCR mocks base method.
-func (m *MockExtendedK8sClient) DeleteBetaCSIDriverCR(arg0, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteBetaCSIDriverCR", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteBetaCSIDriverCR indicates an expected call of DeleteBetaCSIDriverCR.
-func (mr *MockExtendedK8sClientMockRecorder) DeleteBetaCSIDriverCR(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBetaCSIDriverCR", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteBetaCSIDriverCR), arg0, arg1)
 }
 
 // DeleteCRD mocks base method.
@@ -1314,53 +1255,6 @@ func (m *MockExtendedK8sClient) FollowPodLogs(arg0, arg1, arg2 string, arg3 k8sc
 func (mr *MockExtendedK8sClientMockRecorder) FollowPodLogs(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FollowPodLogs", reflect.TypeOf((*MockExtendedK8sClient)(nil).FollowPodLogs), arg0, arg1, arg2, arg3)
-}
-
-// GetBetaCSIDriverByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetBetaCSIDriverByLabel(arg0 string) (*v1beta10.CSIDriver, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBetaCSIDriverByLabel", arg0)
-	ret0, _ := ret[0].(*v1beta10.CSIDriver)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetBetaCSIDriverByLabel indicates an expected call of GetBetaCSIDriverByLabel.
-func (mr *MockExtendedK8sClientMockRecorder) GetBetaCSIDriverByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBetaCSIDriverByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetBetaCSIDriverByLabel), arg0)
-}
-
-// GetBetaCSIDriverInformation mocks base method.
-func (m *MockExtendedK8sClient) GetBetaCSIDriverInformation(arg0, arg1 string, arg2 bool) (*v1beta10.CSIDriver, []v1beta10.CSIDriver, bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBetaCSIDriverInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*v1beta10.CSIDriver)
-	ret1, _ := ret[1].([]v1beta10.CSIDriver)
-	ret2, _ := ret[2].(bool)
-	ret3, _ := ret[3].(error)
-	return ret0, ret1, ret2, ret3
-}
-
-// GetBetaCSIDriverInformation indicates an expected call of GetBetaCSIDriverInformation.
-func (mr *MockExtendedK8sClientMockRecorder) GetBetaCSIDriverInformation(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBetaCSIDriverInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetBetaCSIDriverInformation), arg0, arg1, arg2)
-}
-
-// GetBetaCSIDriversByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetBetaCSIDriversByLabel(arg0 string) ([]v1beta10.CSIDriver, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBetaCSIDriversByLabel", arg0)
-	ret0, _ := ret[0].([]v1beta10.CSIDriver)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetBetaCSIDriversByLabel indicates an expected call of GetBetaCSIDriversByLabel.
-func (mr *MockExtendedK8sClientMockRecorder) GetBetaCSIDriversByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBetaCSIDriversByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetBetaCSIDriversByLabel), arg0)
 }
 
 // GetCRD mocks base method.
@@ -2088,20 +1982,6 @@ func (mr *MockExtendedK8sClientMockRecorder) Namespace() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Namespace", reflect.TypeOf((*MockExtendedK8sClient)(nil).Namespace))
 }
 
-// PatchBetaCSIDriverByLabel mocks base method.
-func (m *MockExtendedK8sClient) PatchBetaCSIDriverByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PatchBetaCSIDriverByLabel", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchBetaCSIDriverByLabel indicates an expected call of PatchBetaCSIDriverByLabel.
-func (mr *MockExtendedK8sClientMockRecorder) PatchBetaCSIDriverByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchBetaCSIDriverByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchBetaCSIDriverByLabel), arg0, arg1, arg2)
-}
-
 // PatchCSIDriverByLabel mocks base method.
 func (m *MockExtendedK8sClient) PatchCSIDriverByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
 	m.ctrl.T.Helper()
@@ -2270,20 +2150,6 @@ func (mr *MockExtendedK8sClientMockRecorder) PatchServiceByLabel(arg0, arg1, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchServiceByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchServiceByLabel), arg0, arg1, arg2)
 }
 
-// PutBetaCSIDriver mocks base method.
-func (m *MockExtendedK8sClient) PutBetaCSIDriver(arg0 *v1beta10.CSIDriver, arg1 bool, arg2, arg3 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PutBetaCSIDriver", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PutBetaCSIDriver indicates an expected call of PutBetaCSIDriver.
-func (mr *MockExtendedK8sClientMockRecorder) PutBetaCSIDriver(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutBetaCSIDriver", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutBetaCSIDriver), arg0, arg1, arg2, arg3)
-}
-
 // PutCSIDriver mocks base method.
 func (m *MockExtendedK8sClient) PutCSIDriver(arg0 *v13.CSIDriver, arg1 bool, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
@@ -2437,20 +2303,6 @@ func (m *MockExtendedK8sClient) RemoveFinalizerFromCRD(arg0 string) error {
 func (mr *MockExtendedK8sClientMockRecorder) RemoveFinalizerFromCRD(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveFinalizerFromCRD", reflect.TypeOf((*MockExtendedK8sClient)(nil).RemoveFinalizerFromCRD), arg0)
-}
-
-// RemoveMultipleBetaCSIDriverCRs mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleBetaCSIDriverCRs(arg0 []v1beta10.CSIDriver) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveMultipleBetaCSIDriverCRs", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RemoveMultipleBetaCSIDriverCRs indicates an expected call of RemoveMultipleBetaCSIDriverCRs.
-func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleBetaCSIDriverCRs(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultipleBetaCSIDriverCRs", reflect.TypeOf((*MockExtendedK8sClient)(nil).RemoveMultipleBetaCSIDriverCRs), arg0)
 }
 
 // RemoveMultipleCSIDriverCRs mocks base method.

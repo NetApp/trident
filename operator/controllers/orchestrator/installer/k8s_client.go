@@ -6,20 +6,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	jsonpatch "github.com/evanphx/json-patch/v5"
 	"github.com/ghodss/yaml"
-	"k8s.io/apimachinery/pkg/types"
-
-	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	storagev1 "k8s.io/api/storage/v1"
-	storagev1beta1 "k8s.io/api/storage/v1beta1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
@@ -95,170 +92,6 @@ func (k *K8sClient) WaitForCRDEstablished(crdName string, timeout time.Duration)
 	}
 
 	log.WithField("CRD", crdName).Debug("CRD established.")
-	return nil
-}
-
-// GetBetaCSIDriverInformation gets the info on a CSI driver associated with Trident.
-func (k *K8sClient) GetBetaCSIDriverInformation(csiDriverName, appLabel string, shouldUpdate bool) (*storagev1beta1.CSIDriver,
-	[]storagev1beta1.CSIDriver, bool, error,
-) {
-	createCSIDriver := true
-	var currentBetaCSIDriver *storagev1beta1.CSIDriver
-	var unwantedCSIDrivers []storagev1beta1.CSIDriver
-
-	if csiDrivers, err := k.GetBetaCSIDriversByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of CSI driver custom resources by label.")
-		return nil, nil, true, fmt.Errorf("unable to get list of CSI driver custom resources by label")
-	} else if len(csiDrivers) == 0 {
-		log.Info("CSI driver custom resource not found.")
-
-		log.Debug("Deleting unlabeled Trident CSI Driver by name as it can cause issues during installation.")
-		if err = k.DeleteBetaCSIDriver(csiDriverName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident CSI driver custom resource.")
-			}
-		} else {
-			log.WithField("CSIDriver", csiDriverName).Info("Deleted Trident CSI driver custom resource; " +
-				"replacing it with a labeled Trident CSI driver custom resource.")
-		}
-
-	} else if shouldUpdate {
-		unwantedCSIDrivers = csiDrivers
-	} else {
-		// Rules:
-		// 1. If there is no CSI driver CR named csi.trident.netapp.io and one or many other CSI driver CRs
-		//    exist that matches the label then remove all the CSI driver CRs.
-		// 2. If there is a CSI driver CR named csi.trident.netapp.io and one or many other CSI driver CRs
-		//    exist that matches the label then remove all other CSI driver CRs.
-		for _, csiDriver := range csiDrivers {
-			if csiDriver.Name == csiDriverName {
-				// Found a CSIDriver named csi.trident.netapp.io
-				log.WithField("TridentCSIDriver", csiDriverName).Infof("A Trident CSI driver found by label.")
-
-				// allocate new memory for currentBetaCSIDriver to avoid unintentional reassignments due to reuse of the
-				// csiDriver variable across iterations
-				currentBetaCSIDriver = &storagev1beta1.CSIDriver{}
-				*currentBetaCSIDriver = csiDriver
-				createCSIDriver = false
-			} else {
-				log.WithField("CSIDriver", csiDriver.Name).Errorf("A CSI driver was found by label "+
-					"but does not meet name '%s' requirement, marking it for deletion.", csiDriverName)
-
-				unwantedCSIDrivers = append(unwantedCSIDrivers, csiDriver)
-			}
-		}
-	}
-
-	return currentBetaCSIDriver, unwantedCSIDrivers, createCSIDriver, nil
-}
-
-// PutBetaCSIDriver creates or updates a CSI Driver associated with Trident.
-func (k *K8sClient) PutBetaCSIDriver(currentCSIDriver *storagev1beta1.CSIDriver, createCSIDriver bool, newCSIDriverYAML, appLabel string) error {
-	// TODO (cknight): remove when 1.18 is our minimum version
-	csiK8sDriverName := getCSIDriverName()
-	logFields := log.Fields{
-		"CSIDriver": csiK8sDriverName,
-	}
-
-	if createCSIDriver {
-		log.WithFields(logFields).Debug("Creating CSI driver custom resource.")
-
-		if err := k.CreateObjectByYAML(newCSIDriverYAML); err != nil {
-			return fmt.Errorf("could not create CSI driver; %v", err)
-		}
-
-		log.Info("Created CSI driver custom resource.")
-	} else {
-		log.WithFields(logFields).Debug("Patching Trident CSI driver CR.")
-
-		// Identify the deltas
-		patchBytes, err := genericPatch(currentCSIDriver, []byte(newCSIDriverYAML))
-		if err != nil {
-			return fmt.Errorf("error in creating the two-way merge patch for current CSI driver %q: %v",
-				csiK8sDriverName, err)
-		}
-
-		// Apply the patch to the current CSI driver
-		patchType := types.MergePatchType
-		if err := k.PatchBetaCSIDriverByLabel(appLabel, patchBytes, patchType); err != nil {
-			return fmt.Errorf("could not patch CSI driver; %v", err)
-		}
-
-		log.Debug("Patched Trident CSI driver.")
-	}
-
-	return nil
-}
-
-// DeleteBetaCSIDriverCR deletes a CSI Driver associated with Trident.
-func (k *K8sClient) DeleteBetaCSIDriverCR(csiDriverName, appLabel string) error {
-	// TODO (cknight): remove when 1.18 is our minimum version
-
-	if csiDrivers, err := k.GetBetaCSIDriversByLabel(appLabel); err != nil {
-		log.WithField("label", appLabel).Errorf("Unable to get list of CSI driver CRs by label.")
-		return fmt.Errorf("unable to get list of CSI driver CRs by label")
-	} else if len(csiDrivers) == 0 {
-		log.WithFields(log.Fields{
-			"label": appLabel,
-			"error": err,
-		}).Warning("CSI driver CR not found.")
-
-		log.Debug("Deleting unlabeled Trident CSI Driver by name as it may have been created outside of the Trident" +
-			" Operator.")
-		if err = k.DeleteBetaCSIDriver(csiDriverName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
-				log.WithField("error", err).Warning("Could not delete Trident CSI driver custom resource.")
-			}
-		} else {
-			log.WithField("CSIDriver", csiDriverName).Info("Deleted unlabeled Trident CSI driver custom resource.")
-		}
-	} else {
-		if len(csiDrivers) == 1 {
-			log.WithFields(log.Fields{
-				"CSIDriver": csiDrivers[0].Name,
-				"namespace": csiDrivers[0].Namespace,
-			}).Info("Trident CSI driver CR found by label.")
-		} else {
-			log.WithField("label", appLabel).Warnf("Multiple CSI driver CRs found matching label; removing all.")
-		}
-
-		if err = k.RemoveMultipleBetaCSIDriverCRs(csiDrivers); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// RemoveMultipleBetaCSIDriverCRs removes a list of unwanted CSI drivers in a cluster.
-func (k *K8sClient) RemoveMultipleBetaCSIDriverCRs(unwantedCSIDriverCRs []storagev1beta1.CSIDriver) error {
-	// TODO (cknight): remove when 1.18 is our minimum version
-
-	var err error
-	var anyError bool
-	var undeletedCSIDriverCRs []string
-
-	if len(unwantedCSIDriverCRs) > 0 {
-		// Delete the CSI driver CRs
-		for _, CSIDriverCRToRemove := range unwantedCSIDriverCRs {
-			if err = k.DeleteBetaCSIDriver(CSIDriverCRToRemove.Name); err != nil {
-				log.WithFields(log.Fields{
-					"CSIDriver": CSIDriverCRToRemove.Name,
-					"error":     err,
-				}).Warning("Could not delete CSI driver CR.")
-
-				anyError = true
-				undeletedCSIDriverCRs = append(undeletedCSIDriverCRs, fmt.Sprintf("%v", CSIDriverCRToRemove.Name))
-			} else {
-				log.WithField("csiDriver", CSIDriverCRToRemove.Name).Infof("Deleted CSI driver.")
-			}
-		}
-	}
-
-	if anyError {
-		return fmt.Errorf("unable to delete CSI driver CR(s): %v", undeletedCSIDriverCRs)
-	}
-
 	return nil
 }
 

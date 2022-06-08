@@ -10,7 +10,6 @@ import (
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	storagev1 "k8s.io/api/storage/v1"
-	storagev1beta1 "k8s.io/api/storage/v1beta1"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	v15 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
@@ -36,12 +35,6 @@ type ExtendedK8sClient interface {
 	CreateCustomResourceDefinition(crdName, crdYAML string) error
 	WaitForCRDEstablished(crdName string, timeout time.Duration) error
 	DeleteCustomResourceDefinition(crdName, crdYAML string) error
-
-	GetBetaCSIDriverInformation(csiDriverName, appLabel string, shouldUpdate bool) (*storagev1beta1.CSIDriver,
-		[]storagev1beta1.CSIDriver, bool, error)
-	PutBetaCSIDriver(currentCSIDriver *storagev1beta1.CSIDriver, createCSIDriver bool, newCSIDriverYAML, appLabel string) error
-	DeleteBetaCSIDriverCR(csiDriverName, appLabel string) error
-	RemoveMultipleBetaCSIDriverCRs(unwantedCSIDriverCRs []storagev1beta1.CSIDriver) error
 
 	GetCSIDriverInformation(csiDriverName, appLabel string, shouldUpdate bool) (*storagev1.CSIDriver,
 		[]storagev1.CSIDriver, bool, error)

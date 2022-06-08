@@ -82,14 +82,8 @@ func (i *Installer) UninstallTrident() error {
 	}
 
 	csiDriverName := getCSIDriverName()
-	if i.client.ServerVersion().AtLeast(KubernetesVersionMinV1CSIDriver) {
-		if err := i.client.DeleteCSIDriverCR(csiDriverName, appLabel); err != nil {
-			return fmt.Errorf("could not delete Trident CSI driver custom resource; %v", err)
-		}
-	} else {
-		if err := i.client.DeleteBetaCSIDriverCR(csiDriverName, appLabel); err != nil {
-			return fmt.Errorf("could not delete Trident Beta CSI driver custom resource; %v", err)
-		}
+	if err := i.client.DeleteCSIDriverCR(csiDriverName, appLabel); err != nil {
+		return fmt.Errorf("could not delete Trident CSI driver custom resource; %v", err)
 	}
 
 	// Delete Trident RBAC objects

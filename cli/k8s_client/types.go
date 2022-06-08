@@ -12,7 +12,6 @@ import (
 	"k8s.io/api/policy/v1beta1"
 	v13 "k8s.io/api/rbac/v1"
 	storagev1 "k8s.io/api/storage/v1"
-	v1beta12 "k8s.io/api/storage/v1beta1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/version"
@@ -101,17 +100,11 @@ type KubernetesClient interface {
 	DeleteClusterRoleBindingByLabel(label string) error
 	DeleteClusterRoleBinding(name string) error
 	PatchClusterRoleBindingByLabel(label string, patchBytes []byte, patchType types.PatchType) error
-	GetBetaCSIDriverByLabel(label string) (*v1beta12.CSIDriver, error)
 	GetCSIDriverByLabel(label string) (*storagev1.CSIDriver, error)
-	GetBetaCSIDriversByLabel(label string) ([]v1beta12.CSIDriver, error)
 	GetCSIDriversByLabel(label string) ([]storagev1.CSIDriver, error)
-	CheckBetaCSIDriverExistsByLabel(label string) (bool, string, error)
 	CheckCSIDriverExistsByLabel(label string) (bool, string, error)
-	DeleteBetaCSIDriverByLabel(label string) error
 	DeleteCSIDriverByLabel(label string) error
-	DeleteBetaCSIDriver(name string) error
 	DeleteCSIDriver(name string) error
-	PatchBetaCSIDriverByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	PatchCSIDriverByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	CheckNamespaceExists(namespace string) (bool, error)
 	PatchNamespaceLabels(namespace string, labels map[string]string) error

@@ -97,9 +97,6 @@ var (
 		VolumeSnapshotClassCRDName,
 		VolumeSnapshotContentCRDName,
 	}
-
-	// TODO (cknight): remove when 1.18 is our minimum version
-	KubernetesVersionMinV1CSIDriver = utils.MustParseSemantic("1.18.0-0")
 )
 
 type Installer struct {
@@ -466,11 +463,7 @@ func (i *Installer) InstallOrPatchTrident(
 	}
 
 	// Create or update the CSI Driver object if necessary
-	if i.client.ServerVersion().AtLeast(KubernetesVersionMinV1CSIDriver) {
-		returnError = i.createOrPatchK8sCSIDriver(controllingCRDetails, labels, shouldUpdate)
-	} else {
-		returnError = i.createOrPatchK8sBetaCSIDriver(controllingCRDetails, labels, shouldUpdate)
-	}
+	returnError = i.createOrPatchK8sCSIDriver(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Kubernetes CSI Driver object; %v", returnError)
 		return nil, "", returnError
@@ -674,33 +667,6 @@ func (i *Installer) ensureCRDEstablished(crdName string) error {
 	return nil
 }
 
-func (i *Installer) createOrPatchK8sBetaCSIDriver(
-	controllingCRDetails, labels map[string]string, shouldUpdate bool,
-) error {
-	// TODO (cknight): remove when 1.18 is our minimum version
-
-	CSIDriverName := getCSIDriverName()
-
-	currentCSIDriver, unwantedCSIDrivers, createCSIDriver, err := i.client.GetBetaCSIDriverInformation(
-		CSIDriverName, appLabel, shouldUpdate)
-	if err != nil {
-		return fmt.Errorf("failed to get K8s (beta) CSI drivers; %v", err)
-	}
-
-	if err = i.client.RemoveMultipleBetaCSIDriverCRs(unwantedCSIDrivers); err != nil {
-		return fmt.Errorf("failed to remove unwanted K8s (beta) CSI drivers; %v", err)
-	}
-
-	newK8sCSIDriverYAML := k8sclient.GetCSIDriverYAML(CSIDriverName, i.client.ServerVersion(), labels,
-		controllingCRDetails)
-
-	err = i.client.PutBetaCSIDriver(currentCSIDriver, createCSIDriver, newK8sCSIDriverYAML, appLabel)
-	if err != nil {
-		return fmt.Errorf("failed to create or patch K8s (beta) CSI drivers; %v", err)
-	}
-	return nil
-}
-
 func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[string]string, shouldUpdate bool) error {
 	CSIDriverName := getCSIDriverName()
 
@@ -714,8 +680,7 @@ func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[s
 		return fmt.Errorf("failed to remove unwanted K8s CSI drivers; %v", err)
 	}
 
-	newK8sCSIDriverYAML := k8sclient.GetCSIDriverYAML(CSIDriverName, i.client.ServerVersion(), labels,
-		controllingCRDetails)
+	newK8sCSIDriverYAML := k8sclient.GetCSIDriverYAML(CSIDriverName, labels, controllingCRDetails)
 
 	err = i.client.PutCSIDriver(currentCSIDriver, createCSIDriver, newK8sCSIDriverYAML, appLabel)
 	if err != nil {
@@ -803,25 +768,25 @@ func (i *Installer) createOrPatchTridentInstallationNamespace() error {
 func (i *Installer) createOrPatchTridentServiceAccount(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) (bool, error) {
-	newServiceAccount := false
 	serviceAccountName := getServiceAccountName(true)
 
 	currentServiceAccount, unwantedServiceAccounts, serviceAccountSecretNames, createServiceAccount, err := i.client.GetServiceAccountInformation(serviceAccountName,
 		appLabel, i.namespace, shouldUpdate)
 	if err != nil {
-		return newServiceAccount, fmt.Errorf("failed to get Trident service accounts; %v", err)
+		return false, fmt.Errorf("failed to get Trident service accounts; %v", err)
 	}
 
 	if err = i.client.RemoveMultipleServiceAccounts(unwantedServiceAccounts); err != nil {
-		return newServiceAccount, fmt.Errorf("failed to remove unwanted service accounts; %v", err)
+		return false, fmt.Errorf("failed to remove unwanted service accounts; %v", err)
 	}
 
 	newServiceAccountYAML := k8sclient.GetServiceAccountYAML(serviceAccountName, serviceAccountSecretNames, labels,
 		controllingCRDetails)
 
-	if newServiceAccount, err = i.client.PutServiceAccount(currentServiceAccount, createServiceAccount,
-		newServiceAccountYAML, appLabel); err != nil {
-		return newServiceAccount, fmt.Errorf("failed to create or patch Trident service accounts; %v", err)
+	newServiceAccount, err := i.client.PutServiceAccount(currentServiceAccount, createServiceAccount,
+		newServiceAccountYAML, appLabel)
+	if err != nil {
+		return false, fmt.Errorf("failed to create or patch Trident service accounts; %v", err)
 	}
 
 	return newServiceAccount, nil
