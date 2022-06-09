@@ -1350,7 +1350,7 @@ func (c RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*stora
 	params.VolumeUUIDPathParameter = volumeUUID
 
 	params.SVMNameQueryParameter = ToStringPointer(c.config.SVM)
-	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"name", "create_time"})
 
 	result, err := c.api.Storage.SnapshotCollectionGet(params, c.authInfo)
 	// TODO refactor to remove duplication
