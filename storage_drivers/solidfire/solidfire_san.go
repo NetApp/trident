@@ -133,6 +133,9 @@ func (d *SANStorageDriver) Initialize(
 	config := &drivers.SolidfireStorageDriverConfig{}
 	config.CommonStorageDriverConfig = commonConfig
 
+	// Initialize the driver's CommonStorageDriverConfig
+	d.Config.CommonStorageDriverConfig = commonConfig
+
 	// Decode supplied configJSON string into SolidfireStorageDriverConfig object
 	err := json.Unmarshal([]byte(configJSON), &config)
 	if err != nil {

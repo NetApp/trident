@@ -75,6 +75,9 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Initialize")
 	}
 
+	// Initialize the driver's CommonStorageDriverConfig
+	d.Config.CommonStorageDriverConfig = commonConfig
+
 	// Parse the config
 	config, err := InitializeOntapConfig(ctx, driverContext, configJSON, commonConfig, backendSecret)
 	if err != nil {

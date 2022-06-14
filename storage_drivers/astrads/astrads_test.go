@@ -421,8 +421,10 @@ func TestInitialize_InvalidConfigJSON(t *testing.T) {
 		API: mockAPI,
 	}
 
+	driver.Config = drivers.AstraDSStorageDriverConfig{}
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
 
+	assert.NotNil(t, driver.Config.CommonStorageDriverConfig, "Driver Config not set")
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "not initialized")
 }

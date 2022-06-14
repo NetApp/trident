@@ -229,6 +229,9 @@ func (d *NASBlockStorageDriver) Initialize(
 
 	commonConfig.DriverContext = context
 
+	// Initialize the driver's CommonStorageDriverConfig
+	d.Config.CommonStorageDriverConfig = commonConfig
+
 	// Parse the config
 	config, err := d.initializeAzureConfig(ctx, configJSON, commonConfig, backendSecret)
 	if err != nil {

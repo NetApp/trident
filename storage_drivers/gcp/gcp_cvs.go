@@ -190,6 +190,9 @@ func (d *NFSStorageDriver) Initialize(
 	d.tokenRegexp = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]{0,79}$`)
 	d.csiRegexp = regexp.MustCompile(`^pvc-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 
+	// Initialize the driver's CommonStorageDriverConfig
+	d.Config.CommonStorageDriverConfig = commonConfig
+
 	// Parse the config
 	config, err := d.initializeGCPConfig(ctx, configJSON, commonConfig, backendSecret)
 	if err != nil {

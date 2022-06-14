@@ -144,6 +144,9 @@ func (d *StorageDriver) Initialize(
 
 	commonConfig.DriverContext = context
 
+	// Initialize the driver's CommonStorageDriverConfig
+	d.Config.CommonStorageDriverConfig = commonConfig
+
 	// Parse the config
 	config, err := d.initializeAstraDSConfig(ctx, configJSON, commonConfig, backendSecret)
 	if err != nil {
