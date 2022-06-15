@@ -368,6 +368,10 @@ func (c *InMemoryClient) AddVolumePublication(_ context.Context, vp *utils.Volum
 	return nil
 }
 
+func (c *InMemoryClient) UpdateVolumePublication(_ context.Context, vp *utils.VolumePublication) error {
+	return c.AddVolumePublication(context.TODO(), vp)
+}
+
 func (c *InMemoryClient) GetVolumePublication(_ context.Context, vpName string) (*utils.VolumePublication, error) {
 	ret, ok := c.volumePublications[vpName]
 	if !ok {

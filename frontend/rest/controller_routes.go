@@ -158,6 +158,12 @@ var controllerRoutes = Routes{
 		ListVolumePublicationsForNode,
 	},
 	Route{
+		"UpdateVolumePublication",
+		"POST",
+		config.NodeURL + "/{node}/{volume}",
+		UpdateVolumePublication,
+	},
+	Route{
 		"ListSnapshots",
 		"GET",
 		config.SnapshotURL,

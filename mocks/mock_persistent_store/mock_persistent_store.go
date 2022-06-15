@@ -727,6 +727,20 @@ func (mr *MockStoreClientMockRecorder) UpdateVolumePersistent(arg0, arg1 interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumePersistent", reflect.TypeOf((*MockStoreClient)(nil).UpdateVolumePersistent), arg0, arg1)
 }
 
+// UpdateVolumePublication mocks base method.
+func (m *MockStoreClient) UpdateVolumePublication(arg0 context.Context, arg1 *utils.VolumePublication) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVolumePublication", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVolumePublication indicates an expected call of UpdateVolumePublication.
+func (mr *MockStoreClientMockRecorder) UpdateVolumePublication(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumePublication", reflect.TypeOf((*MockStoreClient)(nil).UpdateVolumePublication), arg0, arg1)
+}
+
 // UpdateVolumeTransaction mocks base method.
 func (m *MockStoreClient) UpdateVolumeTransaction(arg0 context.Context, arg1 *storage.VolumeTransaction) error {
 	m.ctrl.T.Helper()

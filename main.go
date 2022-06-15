@@ -423,7 +423,7 @@ func main() {
 			log.Error(err)
 		}
 	}
-	if err = orchestrator.Bootstrap(); err != nil {
+	if err = orchestrator.Bootstrap(true); err != nil {
 		log.Error(err.Error())
 	}
 	for _, f := range postBootstrapFrontends {

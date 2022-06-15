@@ -440,6 +440,10 @@ func (c *PassthroughClient) AddVolumePublication(context.Context, *utils.VolumeP
 	return nil
 }
 
+func (c *PassthroughClient) UpdateVolumePublication(context.Context, *utils.VolumePublication) error {
+	return nil
+}
+
 func (c *PassthroughClient) GetVolumePublication(_ context.Context, vpName string) (*utils.VolumePublication, error) {
 	return nil, NewPersistentStoreError(KeyNotFoundErr, vpName)
 }

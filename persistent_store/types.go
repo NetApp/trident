@@ -77,6 +77,7 @@ type Client interface {
 	DeleteNode(ctx context.Context, n *utils.Node) error
 
 	AddVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
+	UpdateVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
 	GetVolumePublication(ctx context.Context, vpName string) (*utils.VolumePublication, error)
 	GetVolumePublications(ctx context.Context) ([]*utils.VolumePublication, error)
 	DeleteVolumePublication(ctx context.Context, vp *utils.VolumePublication) error

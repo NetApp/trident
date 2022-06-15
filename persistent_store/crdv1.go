@@ -1339,6 +1339,20 @@ func (k *CRDClientV1) AddVolumePublication(ctx context.Context, publication *uti
 	return nil
 }
 
+func (k *CRDClientV1) UpdateVolumePublication(ctx context.Context, publication *utils.VolumePublication) error {
+	newPublication, err := v1.NewTridentVolumePublication(publication)
+	if err != nil {
+		return err
+	}
+
+	_, err = k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Update(ctx, newPublication, updateOpts)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (k *CRDClientV1) GetVolumePublication(ctx context.Context, nName string) (*utils.VolumePublication, error) {
 	publication, err := k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Get(ctx, v1.NameFix(nName),
 		getOpts)

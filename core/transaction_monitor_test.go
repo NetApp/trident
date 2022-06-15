@@ -38,7 +38,7 @@ func waitForTransactionMontitorToStart(o *TridentOrchestrator) {
 func TestStartStop(t *testing.T) {
 	storeClient := persistentstore.NewInMemoryClient()
 	o := NewTridentOrchestrator(storeClient)
-	if err := o.Bootstrap(); err != nil {
+	if err := o.Bootstrap(true); err != nil {
 		log.Fatal("Failure occurred during bootstrapping: ", err)
 	}
 
@@ -259,7 +259,7 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 func setupOrchestratorAndBackend(t *testing.T) (*TridentOrchestrator, *persistentstore.InMemoryClient) {
 	storeClient := persistentstore.NewInMemoryClient()
 	o := NewTridentOrchestrator(storeClient)
-	if err := o.Bootstrap(); err != nil {
+	if err := o.Bootstrap(true); err != nil {
 		t.Errorf("Failure occurred during bootstrapping %v", err)
 	}
 	// Wait for bootstrap to complete

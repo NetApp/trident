@@ -278,7 +278,7 @@ func getOrchestrator(t *testing.T) *TridentOrchestrator {
 	storeClient = inMemoryClient
 
 	o := NewTridentOrchestrator(storeClient)
-	if err = o.Bootstrap(); err != nil {
+	if err = o.Bootstrap(false); err != nil {
 		t.Fatal("Failure occurred during bootstrapping: ", err)
 	}
 	return o
@@ -2742,6 +2742,108 @@ func TestAddVolumePublicationError(t *testing.T) {
 	assert.NotNilf(t, err, "add volume publication did not return an error")
 	assert.NotContains(t, orchestrator.volumePublications, fakePub.VolumeName,
 		"volume publication was added orchestrator's cache")
+}
+
+func TestUpdateVolumePublication(t *testing.T) {
+	type updateArgs struct {
+		TestDesc string
+		PubName  string
+		Node     string
+		Vol      string
+		Dirty    *bool
+		Expected bool
+	}
+
+	truth := true
+	untrue := false
+
+	node1 := "bar"
+	node2 := "foo"
+	node3 := "foo"
+	vol1 := "foo"
+	vol2 := "bar"
+	vol3 := "foo"
+
+	fakeName1 := utils.GenerateVolumePublishName(vol1, node1)
+	fakePub := &utils.VolumePublication{
+		Name:            fakeName1,
+		NodeName:        node1,
+		VolumeName:      vol1,
+		ReadOnly:        true,
+		AccessMode:      1,
+		NotSafeToDetach: true,
+	}
+
+	fakeName2 := utils.GenerateVolumePublishName(vol2, node2)
+	fakePub2 := &utils.VolumePublication{
+		Name:            fakeName2,
+		NodeName:        node2,
+		VolumeName:      vol2,
+		ReadOnly:        true,
+		AccessMode:      1,
+		NotSafeToDetach: false,
+	}
+
+	fakeName3 := utils.GenerateVolumePublishName(vol3, node3)
+	fakePub3 := &utils.VolumePublication{
+		Name:            fakeName3,
+		NodeName:        node3,
+		VolumeName:      vol3,
+		ReadOnly:        true,
+		AccessMode:      1,
+		NotSafeToDetach: false,
+	}
+
+	pubs := map[string]*utils.VolumePublication{
+		fakeName1: fakePub,
+		fakeName2: fakePub2,
+		fakeName3: fakePub3,
+	}
+
+	args := []updateArgs{
+		{"nil is no update", fakeName1, node1, vol1, nil, true},
+		{"true to false", fakeName1, node1, vol1, &untrue, false},
+		{"false to true", fakeName2, node2, vol2, &truth, true},
+		{"false stays false", fakeName3, node3, vol3, &untrue, false},
+	}
+
+	mockCtrl := gomock.NewController(t)
+	orchestrator := getOrchestrator(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	backendID := "foo"
+
+	for _, arg := range args {
+		t.Run(arg.TestDesc, func(t *testing.T) {
+			pub := pubs[arg.PubName]
+			vol := &storage.Volume{BackendUUID: backendID}
+			node := &utils.Node{Name: arg.Node}
+			nodes := []*utils.Node{}
+
+			mockBackend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, nodes).Return(nil).AnyTimes()
+
+			orchestrator.storeClient = mockStoreClient
+			orchestrator.backends[backendID] = mockBackend
+
+			orchestrator.volumes[arg.Vol] = vol
+			orchestrator.nodes[arg.Node] = node
+			err := orchestrator.addVolumePublication(context.Background(), pub)
+			assert.Nil(t, err, "add volume publication err was not nil")
+			err = orchestrator.updateVolumePublication(context.Background(), arg.Vol, arg.Node, arg.Dirty)
+			assert.Nil(t, err, "update volume publication did not return an error")
+			aPub, err := orchestrator.getVolumePublication(arg.Vol, arg.Node)
+			assert.Nil(t, err, "get volume publication error was not nil")
+			assert.Equal(t, arg.Expected, aPub.NotSafeToDetach, "value of updated field did not match the desired value")
+			err = orchestrator.deleteVolumePublication(context.Background(), arg.Vol, arg.Node)
+			assert.Nil(t, err, "delete volume publication did not return an error")
+		})
+	}
 }
 
 func TestGetVolumePublication(t *testing.T) {

@@ -14,7 +14,7 @@ import (
 )
 
 type Orchestrator interface {
-	Bootstrap() error
+	Bootstrap(monitorTransactions bool) error
 	AddFrontend(f frontend.Plugin)
 	GetFrontend(ctx context.Context, name string) (frontend.Plugin, error)
 	GetVersion(ctx context.Context) (string, error)
@@ -78,6 +78,7 @@ type Orchestrator interface {
 	PeriodicallyReconcileNodeAccessOnBackends()
 
 	AddVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
+	UpdateVolumePublication(ctx context.Context, nodeName, volumeName string, notSafeToDetach *bool) error
 	GetVolumePublication(ctx context.Context, volumeName, nodeName string) (*utils.VolumePublication, error)
 	ListVolumePublications(ctx context.Context) ([]*utils.VolumePublicationExternal, error)
 	ListVolumePublicationsForVolume(

@@ -70,17 +70,19 @@ func httpStatusCodeForDelete(err error) int {
 }
 
 func writeHTTPResponse(ctx context.Context, w http.ResponseWriter, response interface{}, httpStatusCode int) {
-	if _, err := json.Marshal(response); err != nil {
+	// we're already marshaling the json, so just use the resulting byte array later
+	b, err := json.Marshal(response)
+	if err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"response": response,
 			"error":    err,
 		}).Error("Failed to marshal HTTP response.")
 		w.WriteHeader(http.StatusInternalServerError)
-	} else {
-		w.WriteHeader(httpStatusCode)
+		return
 	}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	w.WriteHeader(httpStatusCode)
+	if _, err := w.Write(b); err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"response": response,
 			"error":    err,
@@ -92,27 +94,12 @@ func ListGeneric(
 	w http.ResponseWriter,
 	r *http.Request,
 	response listResponse,
-	lister func() int,
-) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	httpStatusCode := lister()
-
-	writeHTTPResponse(r.Context(), w, response, httpStatusCode)
-}
-
-func ListGenericOneArg(
-	w http.ResponseWriter,
-	r *http.Request,
-	varName string,
-	response listResponse,
-	lister func(string) int,
+	lister func(map[string]string) int,
 ) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	vars := mux.Vars(r)
-	target := vars[varName]
-	httpStatusCode := lister(target)
+	httpStatusCode := lister(vars)
 
 	writeHTTPResponse(r.Context(), w, response, httpStatusCode)
 }
@@ -120,45 +107,13 @@ func ListGenericOneArg(
 func GetGeneric(
 	w http.ResponseWriter,
 	r *http.Request,
-	varName string,
 	response interface{},
-	getter func(string) int,
+	getter func(map[string]string) int,
 ) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	vars := mux.Vars(r)
-	target := vars[varName]
-	httpStatusCode := getter(target)
-
-	writeHTTPResponse(r.Context(), w, response, httpStatusCode)
-}
-
-func GetGenericTwoArg(
-	w http.ResponseWriter,
-	r *http.Request,
-	varName1, varName2 string,
-	response interface{},
-	getter func(string, string) int,
-) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	vars := mux.Vars(r)
-	target1 := vars[varName1]
-	target2 := vars[varName2]
-	httpStatusCode := getter(target1, target2)
-
-	writeHTTPResponse(r.Context(), w, response, httpStatusCode)
-}
-
-func GetGenericNoArg(
-	w http.ResponseWriter,
-	r *http.Request,
-	response interface{},
-	getter func() int,
-) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	httpStatusCode := getter()
+	httpStatusCode := getter(vars)
 
 	writeHTTPResponse(r.Context(), w, response, httpStatusCode)
 }
@@ -208,9 +163,8 @@ func AddGeneric(
 func UpdateGeneric(
 	w http.ResponseWriter,
 	r *http.Request,
-	varName string,
 	response httpResponse,
-	updater func(string, []byte) int,
+	updater func(map[string]string, []byte) int,
 ) {
 	var err error
 	var httpStatusCode int
@@ -227,7 +181,6 @@ func UpdateGeneric(
 	}()
 
 	vars := mux.Vars(r)
-	target := vars[varName]
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, config.MaxRESTRequestSize))
 	if err != nil {
 		response.setError(err)
@@ -239,52 +192,22 @@ func UpdateGeneric(
 		httpStatusCode = httpStatusCodeForGetUpdateList(err)
 		return
 	}
-	httpStatusCode = updater(target, body)
+	httpStatusCode = updater(vars, body)
 }
 
 type DeleteResponse struct {
 	Error string `json:"error,omitempty"`
 }
 
-type deleteFunc func(ctx context.Context, name string) error
-
 func DeleteGeneric(
 	w http.ResponseWriter,
 	r *http.Request,
-	deleter deleteFunc,
-	varName string,
+	deleter func(ctx context.Context, vars map[string]string) error,
 ) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	response := DeleteResponse{}
 
-	vars := mux.Vars(r)
-	toDelete := vars[varName]
-
-	err := deleter(r.Context(), toDelete)
-	if err != nil {
-		response.Error = err.Error()
-	}
-	httpStatusCode := httpStatusCodeForDelete(err)
-
-	writeHTTPResponse(r.Context(), w, response, httpStatusCode)
-}
-
-type deleteFuncTwoArg func(ctx context.Context, arg1, arg2 string) error
-
-func DeleteGenericTwoArg(
-	w http.ResponseWriter,
-	r *http.Request,
-	deleter deleteFuncTwoArg,
-	varName1, varName2 string,
-) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	response := DeleteResponse{}
-
-	vars := mux.Vars(r)
-	toDelete1 := vars[varName1]
-	toDelete2 := vars[varName2]
-
-	err := deleter(r.Context(), toDelete1, toDelete2)
+	err := deleter(r.Context(), mux.Vars(r))
 	if err != nil {
 		response.Error = err.Error()
 	}
@@ -328,8 +251,8 @@ type GetVersionResponse struct {
 
 func GetVersion(w http.ResponseWriter, r *http.Request) {
 	response := &GetVersionResponse{}
-	GetGenericNoArg(w, r, response,
-		func() int {
+	GetGeneric(w, r, response,
+		func(map[string]string) int {
 			response.GoVersion = runtime.Version()
 			version, err := orchestrator.GetVersion(r.Context())
 			if err != nil {
@@ -386,9 +309,9 @@ func (r *UpdateBackendResponse) logFailure(ctx context.Context) {
 
 func UpdateBackend(w http.ResponseWriter, r *http.Request) {
 	response := &UpdateBackendResponse{}
-	UpdateGeneric(w, r, "backend", response,
-		func(backendName string, body []byte) int {
-			backend, err := orchestrator.UpdateBackend(r.Context(), backendName, string(body), "")
+	UpdateGeneric(w, r, response,
+		func(vars map[string]string, body []byte) int {
+			backend, err := orchestrator.UpdateBackend(r.Context(), vars["backend"], string(body), "")
 			if err != nil {
 				response.Error = err.Error()
 			}
@@ -402,15 +325,15 @@ func UpdateBackend(w http.ResponseWriter, r *http.Request) {
 
 func UpdateBackendState(w http.ResponseWriter, r *http.Request) {
 	response := &UpdateBackendResponse{}
-	UpdateGeneric(w, r, "backend", response,
-		func(backendName string, body []byte) int {
+	UpdateGeneric(w, r, response,
+		func(vars map[string]string, body []byte) int {
 			request := new(storage.UpdateBackendStateRequest)
 			err := json.Unmarshal(body, request)
 			if err != nil {
 				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
 				return httpStatusCodeForGetUpdateList(err)
 			}
-			backend, err := orchestrator.UpdateBackendState(r.Context(), backendName, request.State)
+			backend, err := orchestrator.UpdateBackendState(r.Context(), vars["backend"], request.State)
 			if err != nil {
 				response.Error = err.Error()
 			}
@@ -434,7 +357,7 @@ func (l *ListBackendsResponse) setList(payload []string) {
 func ListBackends(w http.ResponseWriter, r *http.Request) {
 	response := &ListBackendsResponse{}
 	ListGeneric(w, r, response,
-		func() int {
+		func(_ map[string]string) int {
 			backendNames := make([]string, 0)
 			backends, err := orchestrator.ListBackends(r.Context())
 			if err != nil {
@@ -465,8 +388,9 @@ func IsValidUUID(s string) bool {
 
 func GetBackend(w http.ResponseWriter, r *http.Request) {
 	response := &GetBackendResponse{}
-	GetGeneric(w, r, "backend", response,
-		func(backend string) int {
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			backend := vars["backend"]
 			var result *storage.BackendExternal
 			var err error
 			if IsValidUUID(backend) {
@@ -487,9 +411,9 @@ func GetBackend(w http.ResponseWriter, r *http.Request) {
 
 func GetBackendByBackendUUID(w http.ResponseWriter, r *http.Request) {
 	response := &GetBackendResponse{}
-	GetGeneric(w, r, "backendUUID", response,
-		func(backendUUID string) int {
-			backend, err := orchestrator.GetBackendByBackendUUID(r.Context(), backendUUID)
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			backend, err := orchestrator.GetBackendByBackendUUID(r.Context(), vars["backendUUID"])
 			if err != nil {
 				response.Error = err.Error()
 			} else {
@@ -504,7 +428,9 @@ func GetBackendByBackendUUID(w http.ResponseWriter, r *http.Request) {
 // not allow for full deletion of backends due to the potential for race
 // conditions and the additional bookkeeping that would be required.
 func DeleteBackend(w http.ResponseWriter, r *http.Request) {
-	DeleteGeneric(w, r, orchestrator.DeleteBackend, "backend")
+	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
+		return orchestrator.DeleteBackend(ctx, vars["backend"])
+	})
 }
 
 type AddVolumeResponse struct {
@@ -571,7 +497,7 @@ func (l *ListVolumesResponse) setList(payload []string) {
 func ListVolumes(w http.ResponseWriter, r *http.Request) {
 	response := &ListVolumesResponse{}
 	ListGeneric(w, r, response,
-		func() int {
+		func(map[string]string) int {
 			volumeNames := make([]string, 0)
 			volumes, err := orchestrator.ListVolumes(r.Context())
 			if err != nil {
@@ -595,9 +521,9 @@ type GetVolumeResponse struct {
 
 func GetVolume(w http.ResponseWriter, r *http.Request) {
 	response := &GetVolumeResponse{}
-	GetGeneric(w, r, "volume", response,
-		func(volName string) int {
-			volume, err := orchestrator.GetVolume(r.Context(), volName)
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			volume, err := orchestrator.GetVolume(r.Context(), vars["volume"])
 			if err != nil {
 				response.Error = err.Error()
 			} else {
@@ -609,7 +535,9 @@ func GetVolume(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteVolume(w http.ResponseWriter, r *http.Request) {
-	DeleteGeneric(w, r, orchestrator.DeleteVolume, "volume")
+	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
+		return orchestrator.DeleteVolume(ctx, vars["volume"])
+	})
 }
 
 type ImportVolumeResponse struct {
@@ -710,8 +638,8 @@ func (i *UpgradeVolumeResponse) logFailure(ctx context.Context) {
 
 func UpgradeVolume(w http.ResponseWriter, r *http.Request) {
 	response := &UpgradeVolumeResponse{}
-	UpdateGeneric(w, r, "volume", response,
-		func(volumeName string, body []byte) int {
+	UpdateGeneric(w, r, response,
+		func(_ map[string]string, body []byte) int {
 			upgradeVolumeRequest := new(storage.UpgradeVolumeRequest)
 			err := json.Unmarshal(body, upgradeVolumeRequest)
 			if err != nil {
@@ -810,7 +738,7 @@ func (l *ListStorageClassesResponse) setList(payload []string) {
 func ListStorageClasses(w http.ResponseWriter, r *http.Request) {
 	response := &ListStorageClassesResponse{}
 	ListGeneric(w, r, response,
-		func() int {
+		func(_ map[string]string) int {
 			storageClassNames := make([]string, 0)
 			storageClasses, err := orchestrator.ListStorageClasses(r.Context())
 			if err != nil {
@@ -834,9 +762,9 @@ type GetStorageClassResponse struct {
 
 func GetStorageClass(w http.ResponseWriter, r *http.Request) {
 	response := &GetStorageClassResponse{}
-	GetGeneric(w, r, "storageClass", response,
-		func(scName string) int {
-			storageClass, err := orchestrator.GetStorageClass(r.Context(), scName)
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			storageClass, err := orchestrator.GetStorageClass(r.Context(), vars["storageClass"])
 			if err != nil {
 				response.Error = err.Error()
 			} else {
@@ -848,7 +776,9 @@ func GetStorageClass(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteStorageClass(w http.ResponseWriter, r *http.Request) {
-	DeleteGeneric(w, r, orchestrator.DeleteStorageClass, "storageClass")
+	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
+		return orchestrator.DeleteStorageClass(ctx, vars["storageClass"])
+	})
 }
 
 type AddNodeResponse struct {
@@ -889,8 +819,8 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 		TopologyLabels: make(map[string]string),
 		Error:          "",
 	}
-	UpdateGeneric(w, r, "node", response,
-		func(name string, body []byte) int {
+	UpdateGeneric(w, r, response,
+		func(_ map[string]string, body []byte) int {
 			node := new(utils.Node)
 			err := json.Unmarshal(body, node)
 			if err != nil {
@@ -946,9 +876,9 @@ type GetNodeResponse struct {
 
 func GetNode(w http.ResponseWriter, r *http.Request) {
 	response := &GetNodeResponse{}
-	GetGeneric(w, r, "node", response,
-		func(nName string) int {
-			node, err := orchestrator.GetNode(r.Context(), nName)
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			node, err := orchestrator.GetNode(r.Context(), vars["node"])
 			if err != nil {
 				response.Error = err.Error()
 			} else {
@@ -971,7 +901,7 @@ func (l *ListNodesResponse) setList(payload []string) {
 func ListNodes(w http.ResponseWriter, r *http.Request) {
 	response := &ListNodesResponse{}
 	ListGeneric(w, r, response,
-		func() int {
+		func(_ map[string]string) int {
 			nodeNames := make([]string, 0)
 			nodes, err := orchestrator.ListNodes(r.Context())
 			if err != nil {
@@ -989,7 +919,9 @@ func ListNodes(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteNode(w http.ResponseWriter, r *http.Request) {
-	DeleteGeneric(w, r, orchestrator.DeleteNode, "node")
+	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
+		return orchestrator.DeleteNode(ctx, vars["node"])
+	})
 }
 
 type VolumePublicationsResponse struct {
@@ -997,13 +929,47 @@ type VolumePublicationsResponse struct {
 	Error              string                             `json:"error,omitempty"`
 }
 
+func (r *VolumePublicationsResponse) setError(err error) {
+	r.Error = err.Error()
+}
+
+func (r *VolumePublicationsResponse) isError() bool {
+	return r.Error != ""
+}
+
+func (r *VolumePublicationsResponse) logSuccess(ctx context.Context) {
+	Logc(ctx).WithFields(log.Fields{
+		"handler": "UpdateVolumePublication",
+	}).Info("Updated a volume publication.")
+}
+
+func (r *VolumePublicationsResponse) logFailure(ctx context.Context) {
+	Logc(ctx).WithFields(log.Fields{
+		"handler": "UpdateVolumePublication",
+	}).Error(r.Error)
+}
+
 func ListVolumePublicationsForNode(w http.ResponseWriter, r *http.Request) {
 	response := &VolumePublicationsResponse{}
-	GetGeneric(w, r, "node", response,
-		func(node string) int {
-			pubs, err := orchestrator.ListVolumePublicationsForNode(r.Context(), node)
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			pubs, err := orchestrator.ListVolumePublicationsForNode(r.Context(), vars["node"])
 			response.VolumePublications = pubs
 			response.Error = err.Error()
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+func UpdateVolumePublication(w http.ResponseWriter, r *http.Request) {
+	response := &VolumePublicationsResponse{}
+	UpdateGeneric(w, r, response,
+		func(vars map[string]string, _ []byte) int {
+			notSafeToDetach := vars["notSafeToDetach"] == "true"
+			err := orchestrator.UpdateVolumePublication(r.Context(), vars["volume"], vars["node"], &notSafeToDetach)
+			if err != nil {
+				response.Error = err.Error()
+			}
 			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
@@ -1016,9 +982,9 @@ type GetSnapshotResponse struct {
 
 func GetSnapshot(w http.ResponseWriter, r *http.Request) {
 	response := &GetSnapshotResponse{}
-	GetGenericTwoArg(w, r, "volume", "snapshot", response,
-		func(volumeName, snapshotName string) int {
-			snapshot, err := orchestrator.GetSnapshot(r.Context(), volumeName, snapshotName)
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			snapshot, err := orchestrator.GetSnapshot(r.Context(), vars["volume"], vars["snapshot"])
 			if err != nil {
 				response.Error = err.Error()
 			} else {
@@ -1041,7 +1007,7 @@ func (l *ListSnapshotsResponse) setList(payload []string) {
 func ListSnapshots(w http.ResponseWriter, r *http.Request) {
 	response := &ListSnapshotsResponse{}
 	ListGeneric(w, r, response,
-		func() int {
+		func(_ map[string]string) int {
 			snapshotIDs := make([]string, 0)
 			snapshots, err := orchestrator.ListSnapshots(r.Context())
 			if err != nil {
@@ -1060,10 +1026,10 @@ func ListSnapshots(w http.ResponseWriter, r *http.Request) {
 
 func ListSnapshotsForVolume(w http.ResponseWriter, r *http.Request) {
 	response := &ListSnapshotsResponse{}
-	ListGenericOneArg(w, r, "volume", response,
-		func(volumeName string) int {
+	ListGeneric(w, r, response,
+		func(vars map[string]string) int {
 			snapshotIDs := make([]string, 0)
-			snapshots, err := orchestrator.ListSnapshotsForVolume(r.Context(), volumeName)
+			snapshots, err := orchestrator.ListSnapshotsForVolume(r.Context(), vars["volume"])
 			if err != nil {
 				response.Error = err.Error()
 			} else if len(snapshots) > 0 {
@@ -1131,7 +1097,9 @@ func AddSnapshot(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteSnapshot(w http.ResponseWriter, r *http.Request) {
-	DeleteGenericTwoArg(w, r, orchestrator.DeleteSnapshot, "volume", "snapshot")
+	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
+		return orchestrator.DeleteSnapshot(r.Context(), vars["volume"], vars["snapshot"])
+	})
 }
 
 type GetCHAPResponse struct {
@@ -1141,9 +1109,9 @@ type GetCHAPResponse struct {
 
 func GetCHAP(w http.ResponseWriter, r *http.Request) {
 	response := &GetCHAPResponse{}
-	GetGenericTwoArg(w, r, "volume", "node", response,
-		func(volume, node string) int {
-			chapInfo, err := orchestrator.GetCHAP(r.Context(), volume, node)
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			chapInfo, err := orchestrator.GetCHAP(r.Context(), vars["volume"], vars["node"])
 			if err != nil {
 				response.Error = err.Error()
 			}

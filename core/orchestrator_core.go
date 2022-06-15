@@ -141,7 +141,7 @@ func (o *TridentOrchestrator) transformPersistentState(ctx context.Context) erro
 	return nil
 }
 
-func (o *TridentOrchestrator) Bootstrap() error {
+func (o *TridentOrchestrator) Bootstrap(monitorTransactions bool) error {
 	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal)
 	var err error
 
@@ -161,8 +161,10 @@ func (o *TridentOrchestrator) Bootstrap() error {
 		return o.bootstrapError
 	}
 
-	// Start transaction monitor
-	o.StartTransactionMonitor(ctx, txnMonitorPeriod, txnMonitorMaxAge)
+	if monitorTransactions {
+		// Start transaction monitor
+		o.StartTransactionMonitor(ctx, txnMonitorPeriod, txnMonitorMaxAge)
+	}
 
 	o.bootstrapped = true
 	o.bootstrapError = nil
@@ -2943,6 +2945,10 @@ func (o *TridentOrchestrator) UnpublishVolume(ctx context.Context, volumeName, n
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
+	return o.unpublishVolume(ctx, volumeName, nodeName)
+}
+
+func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, nodeName string) (err error) {
 	volume, ok := o.volumes[volumeName]
 	if !ok {
 		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
@@ -4224,11 +4230,59 @@ func (o *TridentOrchestrator) AddVolumePublication(
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
+	return o.addVolumePublication(ctx, publication)
+}
+
+func (o *TridentOrchestrator) addVolumePublication(
+	ctx context.Context, publication *utils.VolumePublication,
+) (err error) {
 	if err := o.storeClient.AddVolumePublication(ctx, publication); err != nil {
 		return err
 	}
 
 	o.addVolumePublicationToCache(publication)
+
+	return nil
+}
+
+// UpdateVolumePublication updates a volume publication on the specified node with the provided value
+func (o *TridentOrchestrator) UpdateVolumePublication(
+	ctx context.Context, volumeName, nodeName string, notSafeToDetach *bool,
+) (err error) {
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	defer recordTiming("vol_pub_update", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	return o.updateVolumePublication(ctx, volumeName, nodeName, notSafeToDetach)
+}
+
+func (o *TridentOrchestrator) updateVolumePublication(
+	ctx context.Context, volumeName, nodeName string, notSafeToDetach *bool,
+) error {
+	vPub, err := o.getVolumePublication(volumeName, nodeName)
+	if err != nil {
+		return err
+	}
+
+	if notSafeToDetach != nil {
+		vPub.NotSafeToDetach = *notSafeToDetach
+	}
+
+	if err := o.unpublishVolume(ctx, volumeName, nodeName); err != nil {
+		return err
+	}
+
+	if err := o.storeClient.UpdateVolumePublication(ctx, vPub); err != nil {
+		return err
+	}
+
+	o.addVolumePublicationToCache(vPub)
 
 	return nil
 }
@@ -4246,6 +4300,16 @@ func (o *TridentOrchestrator) GetVolumePublication(
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
+	volumePublication, err := o.getVolumePublication(volumeName, nodeName)
+	if err != nil {
+		return nil, err
+	}
+	return volumePublication, nil
+}
+
+func (o *TridentOrchestrator) getVolumePublication(
+	volumeName, nodeName string,
+) (*utils.VolumePublication, error) {
 	publication, found := o.volumePublications[volumeName][nodeName]
 	if !found {
 		return nil, utils.NotFoundError(fmt.Sprintf("volume publication %v was not found",
@@ -4356,10 +4420,13 @@ func (o *TridentOrchestrator) DeleteVolumePublication(ctx context.Context, volum
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
-	publication, found := o.volumePublications[volumeName][nodeName]
-	if !found {
-		return utils.NotFoundError(fmt.Sprintf("volume publication %s not found",
-			utils.GenerateVolumePublishName(volumeName, nodeName)))
+	return o.deleteVolumePublication(ctx, volumeName, nodeName)
+}
+
+func (o *TridentOrchestrator) deleteVolumePublication(ctx context.Context, volumeName, nodeName string) (err error) {
+	publication, err := o.getVolumePublication(volumeName, nodeName)
+	if err != nil {
+		return err
 	}
 	if err = o.storeClient.DeleteVolumePublication(ctx, publication); err != nil {
 		if !utils.IsNotFoundError(err) {

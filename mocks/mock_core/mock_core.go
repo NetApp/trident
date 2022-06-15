@@ -153,17 +153,17 @@ func (mr *MockOrchestratorMockRecorder) AttachVolume(arg0, arg1, arg2, arg3 inte
 }
 
 // Bootstrap mocks base method.
-func (m *MockOrchestrator) Bootstrap() error {
+func (m *MockOrchestrator) Bootstrap(arg0 bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Bootstrap")
+	ret := m.ctrl.Call(m, "Bootstrap", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Bootstrap indicates an expected call of Bootstrap.
-func (mr *MockOrchestratorMockRecorder) Bootstrap() *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) Bootstrap(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Bootstrap", reflect.TypeOf((*MockOrchestrator)(nil).Bootstrap))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Bootstrap", reflect.TypeOf((*MockOrchestrator)(nil).Bootstrap), arg0)
 }
 
 // CanBackendMirror mocks base method.
@@ -969,4 +969,18 @@ func (m *MockOrchestrator) UpdateBackendState(arg0 context.Context, arg1, arg2 s
 func (mr *MockOrchestratorMockRecorder) UpdateBackendState(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackendState", reflect.TypeOf((*MockOrchestrator)(nil).UpdateBackendState), arg0, arg1, arg2)
+}
+
+// UpdateVolumePublication mocks base method.
+func (m *MockOrchestrator) UpdateVolumePublication(arg0 context.Context, arg1, arg2 string, arg3 *bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVolumePublication", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVolumePublication indicates an expected call of UpdateVolumePublication.
+func (mr *MockOrchestratorMockRecorder) UpdateVolumePublication(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumePublication", reflect.TypeOf((*MockOrchestrator)(nil).UpdateVolumePublication), arg0, arg1, arg2, arg3)
 }
