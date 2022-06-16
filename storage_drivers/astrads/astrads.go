@@ -1334,7 +1334,7 @@ func (d *StorageDriver) grantNodeAccess(
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
 func (d *StorageDriver) Unpublish(
-	ctx context.Context, volConfig *storage.VolumeConfig, nodes []*utils.Node,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
 
@@ -1353,7 +1353,7 @@ func (d *StorageDriver) Unpublish(
 		return fmt.Errorf("could not find volume %s; %v", name, err)
 	}
 
-	if err = d.unpublishNFSShare(ctx, volConfig, nodes, volume); err != nil {
+	if err = d.unpublishNFSShare(ctx, volConfig, publishInfo.Nodes, volume); err != nil {
 		Logc(ctx).WithField("name", volume.Name).WithError(err).Error("Could not unpublish volume.")
 		return err
 	}

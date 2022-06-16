@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -28,6 +28,7 @@ type ClientConfig struct {
 }
 
 type Client interface {
+	GetTridentUUID(ctx context.Context) (string, error)
 	GetVersion(ctx context.Context) (*config.PersistentStateVersion, error)
 	SetVersion(ctx context.Context, version *config.PersistentStateVersion) error
 	GetConfig() *ClientConfig

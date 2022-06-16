@@ -1304,3 +1304,8 @@ func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.
 func (d StorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
 }
+
+func (d StorageDriver) EnablePublishEnforcement(ctx context.Context, volume *storage.Volume) error {
+	volume.Config.AccessInfo.PublishEnforcement = true
+	return nil
+}

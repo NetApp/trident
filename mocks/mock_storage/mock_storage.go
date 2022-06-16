@@ -208,6 +208,20 @@ func (mr *MockBackendMockRecorder) Driver() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Driver", reflect.TypeOf((*MockBackend)(nil).Driver))
 }
 
+// EnablePublishEnforcement mocks base method.
+func (m *MockBackend) EnablePublishEnforcement(arg0 context.Context, arg1 *storage.Volume) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnablePublishEnforcement", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnablePublishEnforcement indicates an expected call of EnablePublishEnforcement.
+func (mr *MockBackendMockRecorder) EnablePublishEnforcement(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnablePublishEnforcement", reflect.TypeOf((*MockBackend)(nil).EnablePublishEnforcement), arg0, arg1)
+}
+
 // GetChapInfo mocks base method.
 func (m *MockBackend) GetChapInfo(arg0 context.Context, arg1, arg2 string) (*utils.IscsiChapInfo, error) {
 	m.ctrl.T.Helper()
@@ -654,7 +668,7 @@ func (mr *MockBackendMockRecorder) Terminate(arg0 interface{}) *gomock.Call {
 }
 
 // UnpublishVolume mocks base method.
-func (m *MockBackend) UnpublishVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 []*utils.Node) error {
+func (m *MockBackend) UnpublishVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *utils.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UnpublishVolume", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

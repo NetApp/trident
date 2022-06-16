@@ -372,7 +372,7 @@ func cleanIgroupsAbstraction(ctx context.Context, client *api.Client, igroupName
 	}
 }
 
-// GetISCSITargetInfo returns the iSCSI node name and iSCSI interfaces using the provided client's SVM.
+// GetISCSITargetInfoAbstraction returns the iSCSI node name and iSCSI interfaces using the provided client's SVM.
 func GetISCSITargetInfoAbstraction(
 	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig,
 ) (iSCSINodeName string, iSCSIInterfaces []string, returnError error) {
@@ -398,7 +398,7 @@ func GetISCSITargetInfoAbstraction(
 	return
 }
 
-// PopulateOntapLunMapping helper function to fill in volConfig with its LUN mapping values.
+// PopulateOntapLunMappingAbstraction helper function to fill in volConfig with its LUN mapping values.
 // This function assumes that the list of data LIFs has not changed since driver initialization and volume creation
 func PopulateOntapLunMappingAbstraction(
 	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig,
@@ -430,7 +430,7 @@ func PopulateOntapLunMappingAbstraction(
 	volConfig.AccessInfo.IscsiPortals = filteredIPs[1:]
 	volConfig.AccessInfo.IscsiTargetIQN = targetIQN
 	volConfig.AccessInfo.IscsiLunNumber = int32(lunID)
-	volConfig.AccessInfo.IscsiIgroup = config.IgroupName
+	volConfig.AccessInfo.IscsiIgroup = igroupName
 	volConfig.AccessInfo.IscsiLunSerial = serial
 	Logc(ctx).WithFields(log.Fields{
 		"volume":          volConfig.Name,
@@ -443,7 +443,7 @@ func PopulateOntapLunMappingAbstraction(
 	return nil
 }
 
-// PublishLUN publishes the volume to the host specified in publishInfo from ontap-san or
+// PublishLUNAbstraction publishes the volume to the host specified in publishInfo from ontap-san or
 // ontap-san-economy. This method may or may not be running on the host where the volume will be
 // mounted, so it should limit itself to updating access rules, initiator groups, etc. that require
 // some host identity (but not locality) as well as storage controller API access.
@@ -571,6 +571,31 @@ func PublishLUNAbstraction(
 	return nil
 }
 
+// LunUnmapAllIgroups removes all maps from a given LUN
+func LunUnmapAllIgroups(ctx context.Context, clientAPI api.OntapAPI, lunPath string) error {
+	igroups, err := clientAPI.LunListIgroupsMapped(ctx, lunPath)
+	if err != nil {
+		msg := "error listing igroup mappings"
+		Logc(ctx).WithError(err).Errorf(msg)
+		return fmt.Errorf(msg)
+	}
+	errored := false
+	for _, igroup := range igroups {
+		err = clientAPI.LunUnmap(ctx, igroup, lunPath)
+		if err != nil {
+			errored = true
+			Logc(ctx).WithError(err).WithFields(log.Fields{
+				"LUN":    lunPath,
+				"igroup": igroup,
+			}).Warn("error unmapping LUN from igroup")
+		}
+	}
+	if errored {
+		return fmt.Errorf("error unmapping one or more LUN mappings")
+	}
+	return nil
+}
+
 // getISCSIDataLIFsForReportingNodes finds the data LIFs for the reporting nodes for the LUN.
 func getISCSIDataLIFsForReportingNodesAbstraction(
 	ctx context.Context, clientAPI api.OntapAPI, ips []string, lunPath, igroupName string,
@@ -606,7 +631,7 @@ func getISCSIDataLIFsForReportingNodesAbstraction(
 	return dataLIFs, nil
 }
 
-// ValidateBidrectionalChapCredentials validates the bidirectional CHAP settings
+// ValidateBidrectionalChapCredentialsAbstraction validates the bidirectional CHAP settings
 func ValidateBidrectionalChapCredentialsAbstraction(
 	defaultAuth api.IscsiInitiatorAuth,
 	config *drivers.OntapStorageDriverConfig,
@@ -684,22 +709,22 @@ func isDefaultAuthTypeOfTypeAbstraction(
 	return strings.EqualFold(response.AuthType, authType), nil
 }
 
-// IsDefaultAuthTypeNone returns true if the default initiator's auth-type field is set to the value "none"
+// IsDefaultAuthTypeNoneAbstraction returns true if the default initiator's auth-type field is set to the value "none"
 func IsDefaultAuthTypeNoneAbstraction(response api.IscsiInitiatorAuth) (bool, error) {
 	return isDefaultAuthTypeOfTypeAbstraction(response, "none")
 }
 
-// IsDefaultAuthTypeCHAP returns true if the default initiator's auth-type field is set to the value "CHAP"
+// IsDefaultAuthTypeCHAPAbstraction returns true if the default initiator's auth-type field is set to the value "CHAP"
 func IsDefaultAuthTypeCHAPAbstraction(response api.IscsiInitiatorAuth) (bool, error) {
 	return isDefaultAuthTypeOfTypeAbstraction(response, "CHAP")
 }
 
-// IsDefaultAuthTypeDeny returns true if the default initiator's auth-type field is set to the value "deny"
+// IsDefaultAuthTypeDenyAbstraction returns true if the default initiator's auth-type field is set to the value "deny"
 func IsDefaultAuthTypeDenyAbstraction(response api.IscsiInitiatorAuth) (bool, error) {
 	return isDefaultAuthTypeOfTypeAbstraction(response, "deny")
 }
 
-// InitializeSANDriver performs common ONTAP SAN driver initialization.
+// InitializeSANDriverAbstraction performs common ONTAP SAN driver initialization.
 func InitializeSANDriverAbstraction(
 	ctx context.Context, driverContext tridentconfig.DriverContext, clientAPI api.OntapAPI,
 	config *drivers.OntapStorageDriverConfig, validate func(context.Context) error, backendUUID string,
@@ -790,7 +815,7 @@ func ensureIGroupExistsAbstraction(ctx context.Context, clientAPI api.OntapAPI, 
 	return nil
 }
 
-// InitializeOntapDriver sets up the API client and performs all other initialization tasks
+// InitializeOntapDriverAbstraction sets up the API client and performs all other initialization tasks
 // that are common to all the ONTAP drivers.
 func InitializeOntapDriverAbstraction(
 	ctx context.Context, config *drivers.OntapStorageDriverConfig,
@@ -847,7 +872,7 @@ func InitializeOntapDriverAbstraction(
 	return client, nil
 }
 
-// InitializeOntapAPI returns an ontap.Client ZAPI or REST client.  If the SVM isn't specified in the config
+// InitializeOntapAPIAbstraction returns an ontap.Client ZAPI or REST client.  If the SVM isn't specified in the config
 // file, this method attempts to derive the one to use for ZAPI.
 func InitializeOntapAPIAbstraction(
 	ctx context.Context, config *drivers.OntapStorageDriverConfig,
@@ -884,7 +909,7 @@ func InitializeOntapAPIAbstraction(
 	return ontapAPI, nil
 }
 
-// ValidateSANDriver contains the validation logic shared between ontap-san and ontap-san-economy.
+// ValidateSANDriverAbstraction contains the validation logic shared between ontap-san and ontap-san-economy.
 func ValidateSANDriverAbstraction(
 	ctx context.Context, config *drivers.OntapStorageDriverConfig, ips []string,
 ) error {
@@ -1077,7 +1102,7 @@ func checkAggregateLimitsAbstraction(
 	return errors.New("could not find aggregate, cannot check aggregate provisioning limits for " + aggregate)
 }
 
-// EMSHeartbeat logs an ASUP message on a timer
+// EMSHeartbeatAbstraction logs an ASUP message on a timer
 // view them via filer::> event log show -severity NOTICE
 func EMSHeartbeatAbstraction(ctx context.Context, driver StorageDriverAbstraction) {
 	// log an informational message on a timer
@@ -1093,7 +1118,7 @@ func EMSHeartbeatAbstraction(ctx context.Context, driver StorageDriverAbstractio
 		hostname, string(message), 1, tridentconfig.OrchestratorName, 5)
 }
 
-// Create a volume clone
+// CreateOntapCloneAbstraction creates a volume clone
 func CreateOntapCloneAbstraction(
 	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI, useAsync bool, qosPolicyGroup api.QosPolicyGroup,
@@ -1357,7 +1382,7 @@ func RestoreSnapshotAbstraction(
 	return nil
 }
 
-// SplitVolumeFromBusySnapshot gets the list of volumes backed by a busy snapshot and starts
+// SplitVolumeFromBusySnapshotAbstraction gets the list of volumes backed by a busy snapshot and starts
 // a split operation on the first one (sorted by volume name).
 func SplitVolumeFromBusySnapshotAbstraction(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
@@ -1786,7 +1811,7 @@ func InitializeStoragePoolsCommonAbstraction(
 	return physicalPools, virtualPools, nil
 }
 
-// ValidateStoragePools makes sure that values are set for the fields, if value(s) were not specified
+// ValidateStoragePoolsAbstraction makes sure that values are set for the fields, if value(s) were not specified
 // for a field then a default should have been set in for that field in the initialize storage pools
 func ValidateStoragePoolsAbstraction(
 	ctx context.Context, physicalPools, virtualPools map[string]storage.Pool, d StorageDriverAbstraction,
@@ -2058,7 +2083,7 @@ func calculateOptimalSizeForFlexvolAbstraction(
 	return flexvolSizeBytes
 }
 
-// getSnapshotReserveFromOntap takes a volume name and retrieves the snapshot policy and snapshot reserve
+// getSnapshotReserveFromOntapAbstraction takes a volume name and retrieves the snapshot policy and snapshot reserve
 func getSnapshotReserveFromOntapAbstraction(
 	ctx context.Context, name string, GetVolumeInfo func(
 		ctx context.Context, volumeName string,

@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -88,9 +88,11 @@ type OntapAPI interface {
 	LunRename(ctx context.Context, lunPath, newLunPath string) error
 	LunMapInfo(ctx context.Context, initiatorGroupName, lunPath string) (int, error)
 	EnsureLunMapped(ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool) (int, error)
+	LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error
 	LunSize(ctx context.Context, lunPath string) (int, error)
 	LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error)
 	LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) ([]string, error)
+	LunListIgroupsMapped(ctx context.Context, lunPath string) ([]string, error)
 
 	IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiInitiatorAuth, error)
 	IscsiInitiatorSetDefaultAuth(
@@ -105,6 +107,7 @@ type OntapAPI interface {
 	EnsureIgroupAdded(ctx context.Context, initiatorGroupName, initiator string) error
 	IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error
 	IgroupGetByName(ctx context.Context, initiatorGroupName string) (map[string]bool, error)
+	IgroupListLUNsMapped(ctx context.Context, initiatorGroupName string) ([]string, error)
 
 	GetSVMAggregateAttributes(ctx context.Context) (map[string]string, error)
 	GetSVMAggregateNames(ctx context.Context) ([]string, error)

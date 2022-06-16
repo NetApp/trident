@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -42,6 +42,7 @@ func (in *TridentVersion) Apply(persistent *config.PersistentStateVersion) error
 	in.TridentVersion = config.OrchestratorVersion.String()
 	in.PersistentStoreVersion = persistent.PersistentStoreVersion
 	in.OrchestratorAPIVersion = persistent.OrchestratorAPIVersion
+	in.PublicationsSynced = persistent.PublicationsSynced
 
 	return nil
 }
@@ -52,6 +53,7 @@ func (in *TridentVersion) Persistent() (*config.PersistentStateVersion, error) {
 	persistent := &config.PersistentStateVersion{
 		PersistentStoreVersion: in.PersistentStoreVersion,
 		OrchestratorAPIVersion: in.OrchestratorAPIVersion,
+		PublicationsSynced:     in.PublicationsSynced,
 	}
 
 	return persistent, nil

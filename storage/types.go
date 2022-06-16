@@ -47,7 +47,7 @@ type Backend interface {
 	PublishVolume(
 		ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
 	) error
-	UnpublishVolume(ctx context.Context, volConfig *VolumeConfig, nodes []*utils.Node) error
+	UnpublishVolume(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
 	GetVolumeExternal(ctx context.Context, volumeName string) (*VolumeExternal, error)
 	ImportVolume(ctx context.Context, volConfig *VolumeConfig) (*Volume, error)
 	ResizeVolume(ctx context.Context, volConfig *VolumeConfig, newSize string) error
@@ -69,6 +69,11 @@ type Backend interface {
 	ConstructPersistent(ctx context.Context) *BackendPersistent
 	CanMirror() bool
 	ChapEnabled
+	PublishEnforceable
+}
+
+type PublishEnforceable interface {
+	EnablePublishEnforcement(ctx context.Context, volume *Volume) error
 }
 
 type ChapEnabled interface {

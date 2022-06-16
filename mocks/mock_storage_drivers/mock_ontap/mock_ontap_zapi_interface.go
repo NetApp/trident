@@ -964,6 +964,36 @@ func (mr *MockZapiClientInterfaceMockRecorder) LunMapListInfo(arg0 interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapListInfo", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapListInfo), arg0)
 }
 
+// LunMapsGetByIgroup mocks base method.
+func (m *MockZapiClientInterface) LunMapsGetByIgroup(arg0 string) (*azgo.LunMapGetIterResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunMapsGetByIgroup", arg0)
+	ret0, _ := ret[0].(*azgo.LunMapGetIterResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunMapsGetByIgroup indicates an expected call of LunMapsGetByIgroup.
+func (mr *MockZapiClientInterfaceMockRecorder) LunMapsGetByIgroup(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapsGetByIgroup", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapsGetByIgroup), arg0)
+}
+
+// LunMapsGetByLun mocks base method.
+func (m *MockZapiClientInterface) LunMapsGetByLun(arg0 string) (*azgo.LunMapGetIterResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunMapsGetByLun", arg0)
+	ret0, _ := ret[0].(*azgo.LunMapGetIterResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunMapsGetByLun indicates an expected call of LunMapsGetByLun.
+func (mr *MockZapiClientInterfaceMockRecorder) LunMapsGetByLun(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapsGetByLun", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapsGetByLun), arg0)
+}
+
 // LunOffline mocks base method.
 func (m *MockZapiClientInterface) LunOffline(arg0 string) (*azgo.LunOfflineResponse, error) {
 	m.ctrl.T.Helper()

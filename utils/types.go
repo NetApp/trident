@@ -6,7 +6,8 @@ type VolumeAccessInfo struct {
 	IscsiAccessInfo
 	NfsAccessInfo
 	NfsBlockAccessInfo
-	MountOptions string `json:"mountOptions,omitempty"`
+	MountOptions       string `json:"mountOptions,omitempty"`
+	PublishEnforcement bool   `json:"publishEnforcement,omitempty"`
 }
 
 type IscsiChapInfo struct {
@@ -58,6 +59,7 @@ type VolumePublishInfo struct {
 	DevicePath        string   `json:"devicePath,omitempty"`
 	Unmanaged         bool     `json:"unmanaged,omitempty"`
 	StagingMountpoint string   `json:"stagingMountpoint,omitempty"` // NOTE: Added in 22.04 release
+	TridentUUID       string   `json:"tridentUUID,omitempty"`       // NOTE: Added in 22.07 release
 	VolumeAccessInfo
 }
 

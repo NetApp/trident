@@ -227,6 +227,7 @@ func processDockerPluginArgs() error {
 
 func main() {
 	var err error
+	var txnMonitor bool
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	flag.Parse()
@@ -348,6 +349,7 @@ func main() {
 		var csiFrontend *csi.Plugin
 		switch *csiRole {
 		case csi.CSIController:
+			txnMonitor = true
 			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, *aesKey, orchestrator, &hybridPlugin)
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
@@ -355,6 +357,7 @@ func main() {
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
 		case csi.CSIAllInOne:
+			txnMonitor = true
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, *aesKey, orchestrator, &hybridPlugin, *csiUnsafeNodeDetach)
 		}
@@ -423,7 +426,7 @@ func main() {
 			log.Error(err)
 		}
 	}
-	if err = orchestrator.Bootstrap(true); err != nil {
+	if err = orchestrator.Bootstrap(txnMonitor); err != nil {
 		log.Error(err.Error())
 	}
 	for _, f := range postBootstrapFrontends {

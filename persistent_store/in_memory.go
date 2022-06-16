@@ -1,10 +1,12 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
 import (
 	"context"
 	"fmt"
+
+	"github.com/google/uuid"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
@@ -28,6 +30,7 @@ type InMemoryClient struct {
 	nodesAdded              int
 	snapshots               map[string]*storage.SnapshotPersistent
 	snapshotsAdded          int
+	uuid                    string
 }
 
 func NewInMemoryClient() *InMemoryClient {
@@ -42,6 +45,7 @@ func NewInMemoryClient() *InMemoryClient {
 		version: &config.PersistentStateVersion{
 			PersistentStoreVersion: "memory", OrchestratorAPIVersion: config.OrchestratorAPIVersion,
 		},
+		uuid: uuid.NewString(),
 	}
 }
 
@@ -61,6 +65,10 @@ func (c *InMemoryClient) Stop() error {
 
 func (c *InMemoryClient) GetConfig() *ClientConfig {
 	return &ClientConfig{}
+}
+
+func (c *InMemoryClient) GetTridentUUID(_ context.Context) (string, error) {
+	return c.uuid, nil
 }
 
 func (c *InMemoryClient) GetVersion(context.Context) (*config.PersistentStateVersion, error) {

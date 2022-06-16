@@ -1,3 +1,5 @@
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 // DO NOT EDIT: Auto generated using 'ifacemaker -f ontap_zapi.go -s Client -i ZapiClientInterface -p api > ontap_zapi_interface.go'
 
 package api
@@ -52,6 +54,10 @@ type ZapiClientInterface interface {
 	LunSetQosPolicyGroup(lunPath string, qosPolicyGroup QosPolicyGroup) (*azgo.LunSetQosPolicyGroupResponse, error)
 	// LunGetSerialNumber returns the serial# for a lun
 	LunGetSerialNumber(lunPath string) (*azgo.LunGetSerialNumberResponse, error)
+	// LunMapsGetByLun returns a list of LUN map details for a given LUN path
+	LunMapsGetByLun(lunPath string) (*azgo.LunMapGetIterResponse, error)
+	// LunMapsGetByIgroup returns a list of LUN map details for a given igroup
+	LunMapsGetByIgroup(initiatorGroupName string) (*azgo.LunMapGetIterResponse, error)
 	// LunMapGet returns a list of LUN map details
 	// equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
 	LunMapGet(initiatorGroupName, lunPath string) (*azgo.LunMapGetIterResponse, error)

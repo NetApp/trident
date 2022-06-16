@@ -12,6 +12,9 @@
 **Enhancements**
 
 - Transition from k8s.gcr.io to registry.k8s.io as default registry for CSI images
+- ONTAP-SAN volumes will now use per-node igroups and only map LUNs to igroups while actively published to those 
+  nodes to improve our security posture. Existing volumes will be opportunistically switched to the new igroup scheme 
+  when Trident determines it is safe to do so without impacting active workloads.
 
 **Deprecations:**
 

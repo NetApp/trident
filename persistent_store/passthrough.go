@@ -14,6 +14,7 @@ import (
 	"sync"
 
 	"github.com/ghodss/yaml"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netapp/trident/config"
@@ -28,6 +29,7 @@ type PassthroughClient struct {
 	liveBackends map[string]storage.Backend
 	bootBackends []*storage.BackendPersistent
 	version      *config.PersistentStateVersion
+	uuid         string
 }
 
 // NewPassthroughClient returns a client that satisfies the
@@ -63,6 +65,7 @@ func NewPassthroughClient(configPath string) (*PassthroughClient, error) {
 
 // initialize loads one or more driver config files from the specified config path
 func (c *PassthroughClient) initialize(ctx context.Context, configPath string) error {
+	c.uuid = uuid.NewString()
 	if configPath == "" {
 		return errors.New("passthrough store initialization failed, config path must be specified")
 	}
@@ -199,6 +202,10 @@ func (c *PassthroughClient) Stop() error {
 
 func (c *PassthroughClient) GetConfig() *ClientConfig {
 	return &ClientConfig{}
+}
+
+func (c *PassthroughClient) GetTridentUUID(_ context.Context) (string, error) {
+	return c.uuid, nil
 }
 
 func (c *PassthroughClient) GetVersion(context.Context) (*config.PersistentStateVersion, error) {

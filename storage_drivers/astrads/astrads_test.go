@@ -3143,7 +3143,7 @@ func TestPublishNFSShare_VolumeUpdateNeeded(t *testing.T) {
 
 func getStructsForUnpublish(
 	_ context.Context, _ *StorageDriver,
-) (*storage.VolumeConfig, *api.Volume, []*utils.Node, *api.ExportPolicy, *api.ExportPolicy) {
+) (*storage.VolumeConfig, *api.Volume, []*utils.Node, *api.ExportPolicy, *api.ExportPolicy, *utils.VolumePublishInfo) {
 	volConfig := &storage.VolumeConfig{
 		Version:      "1",
 		Name:         "testvol1",
@@ -3174,6 +3174,10 @@ func getStructsForUnpublish(
 		{
 			IPs: []string{"10.10.30.30"},
 		},
+	}
+
+	publishInfo := &utils.VolumePublishInfo{
+		Nodes: nodes,
 	}
 
 	oldPolicy := &api.ExportPolicy{
@@ -3224,7 +3228,7 @@ func getStructsForUnpublish(
 		AnonUser:  65534,
 	})
 
-	return volConfig, volume, nodes, oldPolicy, newPolicy
+	return volConfig, volume, nodes, oldPolicy, newPolicy, publishInfo
 }
 
 func TestUnpublish(t *testing.T) {
@@ -3232,11 +3236,11 @@ func TestUnpublish(t *testing.T) {
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
 
-	volConfig, volume, nodes, _, _ := getStructsForUnpublish(ctx, driver)
+	volConfig, volume, _, _, _, publishInfo := getStructsForUnpublish(ctx, driver)
 
 	mockAPI.EXPECT().Volume(ctx, volConfig.InternalName).Return(volume, nil).Times(1)
 
-	result := driver.Unpublish(ctx, volConfig, nodes)
+	result := driver.Unpublish(ctx, volConfig, publishInfo)
 
 	assert.Nil(t, result, "unpublish failed")
 }
@@ -3246,11 +3250,11 @@ func TestUnpublish_NotFound(t *testing.T) {
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
 
-	volConfig, _, nodes, _, _ := getStructsForUnpublish(ctx, driver)
+	volConfig, _, _, _, _, publishInfo := getStructsForUnpublish(ctx, driver)
 
 	mockAPI.EXPECT().Volume(ctx, volConfig.InternalName).Return(nil, errFailed).Times(1)
 
-	result := driver.Unpublish(ctx, volConfig, nodes)
+	result := driver.Unpublish(ctx, volConfig, publishInfo)
 
 	assert.NotNil(t, result, "unpublish did not fail")
 }
@@ -3261,12 +3265,12 @@ func TestUnpublish_UnpublishFailed(t *testing.T) {
 	driver.initializeStoragePools(ctx)
 	driver.Config.AutoExportPolicy = true
 
-	volConfig, volume, nodes, _, _ := getStructsForUnpublish(ctx, driver)
+	volConfig, volume, _, _, _, publishInfo := getStructsForUnpublish(ctx, driver)
 
 	mockAPI.EXPECT().Volume(ctx, volConfig.InternalName).Return(volume, nil).Times(1)
 	mockAPI.EXPECT().EnsureExportPolicyExists(ctx, volume.Name).Return(nil, errFailed).Times(1)
 
-	result := driver.Unpublish(ctx, volConfig, nodes)
+	result := driver.Unpublish(ctx, volConfig, publishInfo)
 
 	assert.NotNil(t, result, "unpublish did not fail")
 }
@@ -3277,7 +3281,7 @@ func TestUnpublishNFSShare_Unmanaged(t *testing.T) {
 	driver.initializeStoragePools(ctx)
 	driver.Config.AutoExportPolicy = true
 
-	volConfig, volume, nodes, _, _ := getStructsForUnpublish(ctx, driver)
+	volConfig, volume, nodes, _, _, _ := getStructsForUnpublish(ctx, driver)
 	volConfig.ImportNotManaged = true
 
 	result := driver.unpublishNFSShare(ctx, volConfig, nodes, volume)
@@ -3292,7 +3296,7 @@ func TestUnpublishNFSShare_ExportPolicyAlreadySet(t *testing.T) {
 	driver.Config.AutoExportPolicy = true
 	driver.Config.AutoExportCIDRs = []string{"10.10.10.0/24", "10.10.20.0/24"}
 
-	volConfig, volume, nodes, oldPolicy, newPolicy := getStructsForUnpublish(ctx, driver)
+	volConfig, volume, nodes, oldPolicy, newPolicy, _ := getStructsForUnpublish(ctx, driver)
 	oldPolicy.Name = volume.Name
 	newPolicy.Name = volume.Name
 	volume.ExportPolicy = volume.Name
@@ -3312,7 +3316,7 @@ func TestUnpublishNFSShare_SetExportPolicyAttributesFailed(t *testing.T) {
 	driver.Config.AutoExportPolicy = true
 	driver.Config.AutoExportCIDRs = []string{"10.10.10.0/24", "10.10.20.0/24"}
 
-	volConfig, volume, nodes, oldPolicy, newPolicy := getStructsForUnpublish(ctx, driver)
+	volConfig, volume, nodes, oldPolicy, newPolicy, _ := getStructsForUnpublish(ctx, driver)
 	oldPolicy.Name = volume.Name
 	newPolicy.Name = volume.Name
 	volume.ExportPolicy = volume.Name
@@ -3332,7 +3336,7 @@ func TestUnpublishNFSShare_SetVolumeAttributesFailed(t *testing.T) {
 	driver.Config.AutoExportPolicy = true
 	driver.Config.AutoExportCIDRs = []string{"10.10.10.0/24", "10.10.20.0/24"}
 
-	volConfig, volume, nodes, oldPolicy, newPolicy := getStructsForUnpublish(ctx, driver)
+	volConfig, volume, nodes, oldPolicy, newPolicy, _ := getStructsForUnpublish(ctx, driver)
 	oldPolicy.Name = volume.Name
 	newPolicy.Name = volume.Name
 	volume.ExportPolicy = ""
@@ -3353,7 +3357,7 @@ func TestUnpublishNFSShare_BadCIDR(t *testing.T) {
 	driver.Config.AutoExportPolicy = true
 	driver.Config.AutoExportCIDRs = []string{"10.10.10.0/33", "10.10.20.0/24"}
 
-	volConfig, volume, nodes, oldPolicy, newPolicy := getStructsForUnpublish(ctx, driver)
+	volConfig, volume, nodes, oldPolicy, newPolicy, _ := getStructsForUnpublish(ctx, driver)
 	oldPolicy.Name = volume.Name
 	newPolicy.Name = volume.Name
 	volume.ExportPolicy = ""
@@ -3372,7 +3376,7 @@ func TestUnpublishNFSShare_VolumeUpdateNeeded(t *testing.T) {
 	driver.Config.AutoExportPolicy = true
 	driver.Config.AutoExportCIDRs = []string{"10.10.10.0/24", "10.10.20.0/24"}
 
-	volConfig, volume, nodes, oldPolicy, newPolicy := getStructsForUnpublish(ctx, driver)
+	volConfig, volume, nodes, oldPolicy, newPolicy, _ := getStructsForUnpublish(ctx, driver)
 	oldPolicy.Name = volume.Name
 	newPolicy.Name = volume.Name
 	volume.ExportPolicy = ""

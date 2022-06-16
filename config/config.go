@@ -32,6 +32,7 @@ type Telemetry struct {
 type PersistentStateVersion struct {
 	PersistentStoreVersion string `json:"store_version"`
 	OrchestratorAPIVersion string `json:"orchestrator_api_version"`
+	PublicationsSynced     bool   `json:"publications_synced,omitempty"`
 }
 
 const (

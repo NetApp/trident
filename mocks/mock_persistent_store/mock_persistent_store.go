@@ -497,6 +497,21 @@ func (mr *MockStoreClientMockRecorder) GetStorageClasses(arg0 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStorageClasses", reflect.TypeOf((*MockStoreClient)(nil).GetStorageClasses), arg0)
 }
 
+// GetTridentUUID mocks base method.
+func (m *MockStoreClient) GetTridentUUID(arg0 context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTridentUUID", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTridentUUID indicates an expected call of GetTridentUUID.
+func (mr *MockStoreClientMockRecorder) GetTridentUUID(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTridentUUID", reflect.TypeOf((*MockStoreClient)(nil).GetTridentUUID), arg0)
+}
+
 // GetType mocks base method.
 func (m *MockStoreClient) GetType() persistentstore.StoreType {
 	m.ctrl.T.Helper()

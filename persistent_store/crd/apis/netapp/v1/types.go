@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -342,6 +342,9 @@ type TridentVersion struct {
 	PersistentStoreVersion string `json:"trident_store_version,omitempty"`
 	// OrchestratorAPIVersion is the Trident API version
 	OrchestratorAPIVersion string `json:"trident_api_version,omitempty"`
+	// PublicationsSynced indicates if Trident has done an initial syncing of the publication objects with the
+	// container orchestrator
+	PublicationsSynced bool `json:"publications_synced,omitempty"`
 }
 
 // TridentVersionList is a list of TridentVersion objects.

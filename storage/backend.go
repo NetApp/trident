@@ -72,7 +72,7 @@ type Driver interface {
 }
 
 type Unpublisher interface {
-	Unpublish(ctx context.Context, volConfig *VolumeConfig, nodes []*utils.Node) error
+	Unpublish(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
 }
 
 // Mirrorer provides a common interface for backends that support mirror replication
@@ -520,7 +520,7 @@ func (b *StorageBackend) PublishVolume(
 }
 
 func (b *StorageBackend) UnpublishVolume(
-	ctx context.Context, volConfig *VolumeConfig, nodes []*utils.Node,
+	ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
 	Logc(ctx).WithFields(log.Fields{
 		"backend":        b.name,
@@ -534,11 +534,13 @@ func (b *StorageBackend) UnpublishVolume(
 		return err
 	}
 
+	publishInfo.BackendUUID = b.backendUUID
+
 	// Call the driver if it supports Unpublish, otherwise just return success as there is nothing to do
 	if unpublisher, ok := b.driver.(Unpublisher); !ok {
 		return nil
 	} else {
-		return unpublisher.Unpublish(ctx, volConfig, nodes)
+		return unpublisher.Unpublish(ctx, volConfig, publishInfo)
 	}
 }
 
@@ -1215,4 +1217,12 @@ func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName s
 			"retrieving chap credentials is not supported on backends of type %v", b.driver.Name()))
 	}
 	return chapEnabledDriver.GetChapInfo(ctx, volumeName, nodeName)
+}
+
+func (b *StorageBackend) EnablePublishEnforcement(ctx context.Context, volume *Volume) error {
+	driver, ok := b.driver.(PublishEnforceable)
+	if ok {
+		return driver.EnablePublishEnforcement(ctx, volume)
+	}
+	return nil
 }

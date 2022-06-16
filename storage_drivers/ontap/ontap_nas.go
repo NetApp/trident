@@ -636,7 +636,10 @@ func (d *NASStorageDriver) Publish(
 	}
 
 	// Add fields needed by Attach
-	publishInfo.NfsPath = fmt.Sprintf("/%s", name)
+	// TODO (akerr) Figure out if this is the behavior we want or if we should be changing the junction path for
+	//  managed imports
+	// publishInfo.NfsPath = fmt.Sprintf("/%s", name)
+	publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
 	publishInfo.NfsServerIP = d.Config.DataLIF
 	publishInfo.FilesystemType = "nfs"
 	publishInfo.MountOptions = mountOptions

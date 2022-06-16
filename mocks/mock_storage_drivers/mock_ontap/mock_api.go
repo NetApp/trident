@@ -582,6 +582,21 @@ func (mr *MockOntapAPIMockRecorder) IgroupGetByName(arg0, arg1 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupGetByName", reflect.TypeOf((*MockOntapAPI)(nil).IgroupGetByName), arg0, arg1)
 }
 
+// IgroupListLUNsMapped mocks base method.
+func (m *MockOntapAPI) IgroupListLUNsMapped(arg0 context.Context, arg1 string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IgroupListLUNsMapped", arg0, arg1)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IgroupListLUNsMapped indicates an expected call of IgroupListLUNsMapped.
+func (mr *MockOntapAPIMockRecorder) IgroupListLUNsMapped(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupListLUNsMapped", reflect.TypeOf((*MockOntapAPI)(nil).IgroupListLUNsMapped), arg0, arg1)
+}
+
 // IgroupRemove mocks base method.
 func (m *MockOntapAPI) IgroupRemove(arg0 context.Context, arg1, arg2 string, arg3 bool) error {
 	m.ctrl.T.Helper()
@@ -758,6 +773,21 @@ func (mr *MockOntapAPIMockRecorder) LunList(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunList", reflect.TypeOf((*MockOntapAPI)(nil).LunList), arg0, arg1)
 }
 
+// LunListIgroupsMapped mocks base method.
+func (m *MockOntapAPI) LunListIgroupsMapped(arg0 context.Context, arg1 string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunListIgroupsMapped", arg0, arg1)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LunListIgroupsMapped indicates an expected call of LunListIgroupsMapped.
+func (mr *MockOntapAPIMockRecorder) LunListIgroupsMapped(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunListIgroupsMapped", reflect.TypeOf((*MockOntapAPI)(nil).LunListIgroupsMapped), arg0, arg1)
+}
+
 // LunMapGetReportingNodes mocks base method.
 func (m *MockOntapAPI) LunMapGetReportingNodes(arg0 context.Context, arg1, arg2 string) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -858,6 +888,20 @@ func (m *MockOntapAPI) LunSize(arg0 context.Context, arg1 string) (int, error) {
 func (mr *MockOntapAPIMockRecorder) LunSize(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSize", reflect.TypeOf((*MockOntapAPI)(nil).LunSize), arg0, arg1)
+}
+
+// LunUnmap mocks base method.
+func (m *MockOntapAPI) LunUnmap(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LunUnmap", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LunUnmap indicates an expected call of LunUnmap.
+func (mr *MockOntapAPIMockRecorder) LunUnmap(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunUnmap", reflect.TypeOf((*MockOntapAPI)(nil).LunUnmap), arg0, arg1, arg2)
 }
 
 // NetInterfaceGetDataLIFs mocks base method.

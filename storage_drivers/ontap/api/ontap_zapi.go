@@ -577,6 +577,34 @@ func (c Client) LunGetSerialNumber(lunPath string) (*azgo.LunGetSerialNumberResp
 	return response, err
 }
 
+// LunMapsGetByLun returns a list of LUN map details for a given LUN path
+// equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0
+func (c Client) LunMapsGetByLun(lunPath string) (*azgo.LunMapGetIterResponse, error) {
+	lunMapInfo := azgo.NewLunMapInfoType().
+		SetPath(lunPath)
+
+	query := azgo.LunMapGetIterRequestQuery{LunMapInfoPtr: lunMapInfo}
+
+	response, err := azgo.NewLunMapGetIterRequest().
+		SetQuery(query).
+		ExecuteUsing(c.zr)
+	return response, err
+}
+
+// LunMapsGetByIgroup returns a list of LUN map details for a given igroup
+// equivalent to filer::> lun mapping show -vserver iscsi_vs -igroup trident
+func (c Client) LunMapsGetByIgroup(initiatorGroupName string) (*azgo.LunMapGetIterResponse, error) {
+	lunMapInfo := azgo.NewLunMapInfoType().
+		SetInitiatorGroup(initiatorGroupName)
+
+	query := azgo.LunMapGetIterRequestQuery{LunMapInfoPtr: lunMapInfo}
+
+	response, err := azgo.NewLunMapGetIterRequest().
+		SetQuery(query).
+		ExecuteUsing(c.zr)
+	return response, err
+}
+
 // LunMapGet returns a list of LUN map details
 // equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
 func (c Client) LunMapGet(initiatorGroupName, lunPath string) (*azgo.LunMapGetIterResponse, error) {

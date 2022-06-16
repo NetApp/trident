@@ -515,6 +515,40 @@ func (d OntapAPIZAPI) LunSetSize(ctx context.Context, lunPath, newSize string) (
 	return d.api.LunResize(lunPath, int(sizeBytes))
 }
 
+// LunListIgroupsMapped returns a list of igroups the LUN is currently mapped to.
+func (d OntapAPIZAPI) LunListIgroupsMapped(ctx context.Context, lunPath string) ([]string, error) {
+	var results []string
+	lunMapGetResponse, err := d.api.LunMapsGetByLun(lunPath)
+	if err != nil {
+		msg := "error getting LUN maps"
+		Logc(ctx).WithError(err).Error(msg)
+		return nil, fmt.Errorf(msg)
+	}
+	attributesList := lunMapGetResponse.Result.AttributesList()
+	for _, lunMapInfo := range attributesList.LunMapInfo() {
+		results = append(results, lunMapInfo.InitiatorGroup())
+	}
+
+	return results, nil
+}
+
+// IgroupListLUNsMapped returns a list of LUNs currently mapped to the given Igroup.
+func (d OntapAPIZAPI) IgroupListLUNsMapped(ctx context.Context, initiatorGroupName string) ([]string, error) {
+	var results []string
+	lunMapGetResponse, err := d.api.LunMapsGetByIgroup(initiatorGroupName)
+	if err != nil {
+		msg := "error getting LUN maps"
+		Logc(ctx).WithError(err).Error(msg)
+		return nil, fmt.Errorf(msg)
+	}
+	attributesList := lunMapGetResponse.Result.AttributesList()
+	for _, lunMapInfo := range attributesList.LunMapInfo() {
+		results = append(results, lunMapInfo.Path())
+	}
+
+	return results, nil
+}
+
 func (d OntapAPIZAPI) LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) (
 	[]string, error,
 ) {
@@ -534,6 +568,17 @@ func (d OntapAPIZAPI) LunMapGetReportingNodes(ctx context.Context, initiatorGrou
 	}
 
 	return results, nil
+}
+
+func (d OntapAPIZAPI) LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error {
+	apiResponse, err := d.api.LunUnmap(initiatorGroupName, lunPath)
+	err = GetError(ctx, apiResponse, err)
+	if err != nil {
+		msg := "error unmapping LUN"
+		Logc(ctx).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+	return nil
 }
 
 func (d OntapAPIZAPI) IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiInitiatorAuth, error) {

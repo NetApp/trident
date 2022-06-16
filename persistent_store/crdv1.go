@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -68,6 +68,20 @@ func NewCRDClientV1(masterURL, kubeConfigPath string) (*CRDClientV1, error) {
 		},
 		namespace: clients.Namespace,
 	}, err
+}
+
+func (k *CRDClientV1) GetTridentUUID(ctx context.Context) (string, error) {
+	versionList, err := k.crdClient.TridentV1().TridentVersions(k.namespace).List(ctx, listOpts)
+	if err != nil {
+		if strings.Contains(err.Error(), "the server could not find the requested resource") {
+			return "", NewPersistentStoreError(KeyNotFoundErr, v1.PersistentStateVersionName)
+		}
+		return "", err
+	} else if versionList == nil || versionList.Items == nil || len(versionList.Items) == 0 {
+		return "", NewPersistentStoreError(KeyNotFoundErr, v1.PersistentStateVersionName)
+	}
+
+	return string(versionList.Items[0].ObjectMeta.GetUID()), nil
 }
 
 func (k *CRDClientV1) GetVersion(ctx context.Context) (*config.PersistentStateVersion, error) {

@@ -682,6 +682,10 @@ func PopulateOntapLunMapping(
 	return nil
 }
 
+func getNodeSpecificIgroupName(nodeName, tridentUUID string) string {
+	return fmt.Sprintf("%s-%s", nodeName, tridentUUID)
+}
+
 // PublishLUN publishes the volume to the host specified in publishInfo from ontap-san or
 // ontap-san-economy. This method may or may not be running on the host where the volume will be
 // mounted, so it should limit itself to updating access rules, initiator groups, etc. that require

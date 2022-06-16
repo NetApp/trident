@@ -113,7 +113,10 @@ func (d *SANStorageDriver) Initialize(
 	// clean up igroup for failed driver
 	if err != nil {
 		if d.Config.DriverContext == tridentconfig.ContextCSI {
-			d.API.IgroupDestroy(ctx, d.Config.IgroupName)
+			err := d.API.IgroupDestroy(ctx, d.Config.IgroupName)
+			if err != nil {
+				Logc(ctx).WithError(err).WithField("igroup", d.Config.IgroupName).Warn("Error deleting igroup.")
+			}
 		}
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
@@ -141,7 +144,10 @@ func (d *SANStorageDriver) Terminate(ctx context.Context, _ string) {
 
 	if d.Config.DriverContext == tridentconfig.ContextCSI {
 		// clean up igroup for terminated driver
-		d.API.IgroupDestroy(ctx, d.Config.IgroupName)
+		err := d.API.IgroupDestroy(ctx, d.Config.IgroupName)
+		if err != nil {
+			Logc(ctx).WithError(err).Warn("Error deleting igroup.")
+		}
 	}
 
 	if d.telemetry != nil {
@@ -693,7 +699,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		}
 
 		// Get the LUN ID
-		lunPath := fmt.Sprintf("/vol/%s/lun0", name)
+		lunPath := lunPath(name)
 		lunID, err = d.API.LunMapInfo(ctx, d.Config.IgroupName, lunPath)
 		if err != nil {
 			return fmt.Errorf("error reading LUN maps for volume %s: %v", name, err)
@@ -751,6 +757,11 @@ func (d *SANStorageDriver) Publish(
 
 	lunPath := lunPath(name)
 	igroupName := d.Config.IgroupName
+	// Use the node specific igroup if publish enforcement is enabled
+	if volConfig.AccessInfo.PublishEnforcement {
+		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+		err = ensureIGroupExistsAbstraction(ctx, d.GetAPI(), igroupName)
+	}
 
 	// Get target info
 	iSCSINodeName, _, err := GetISCSITargetInfoAbstraction(ctx, d.API, &d.Config)
@@ -762,7 +773,68 @@ func (d *SANStorageDriver) Publish(
 	if err != nil {
 		return fmt.Errorf("error publishing %s driver: %v", d.Name(), err)
 	}
+	// Fill in the volume config fields as well
+	volConfig.AccessInfo = publishInfo.VolumeAccessInfo
 
+	return nil
+}
+
+// Unpublish the volume from the host specified in publishInfo.  This method may or may not be running on the host
+// where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
+// that require some host identity (but not locality) as well as storage controller API access.
+func (d *SANStorageDriver) Unpublish(
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+) error {
+	name := volConfig.InternalName
+
+	if d.Config.DebugTraceFlags["method"] {
+		fields := log.Fields{
+			"Method": "Unpublish",
+			"Type":   "SANStorageDriver",
+			"name":   name,
+		}
+		Logc(ctx).WithFields(fields).Debug(">>>> Unpublish")
+		defer Logc(ctx).WithFields(fields).Debug("<<<< Unpublish")
+	}
+
+	if !volConfig.AccessInfo.PublishEnforcement {
+		// Nothing to do if publish enforcement is not enabled
+		return nil
+	}
+
+	// Unmap the LUN from the node's igroup
+	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+	lunPath := lunPath(name)
+	lunID, err := d.API.LunMapInfo(ctx, igroupName, lunPath)
+	if err != nil {
+		msg := fmt.Sprintf("error reading LUN maps for volume %s", name)
+		Logc(ctx).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+	if lunID >= 0 {
+		err := d.API.LunUnmap(ctx, igroupName, lunPath)
+		if err != nil {
+			msg := "error unmapping LUN"
+			Logc(ctx).WithError(err).Error(msg)
+			return fmt.Errorf(msg)
+		}
+	}
+
+	// Remove igroup if no LUNs are mapped to it anymore
+	luns, err := d.API.IgroupListLUNsMapped(ctx, igroupName)
+	if err != nil {
+		msg := fmt.Sprintf("error listing LUNs mapped to igroup %s", igroupName)
+		Logc(ctx).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+	if len(luns) == 0 {
+		err = d.API.IgroupDestroy(ctx, igroupName)
+		if err != nil {
+			msg := fmt.Sprintf("error deleting igroup %s", igroupName)
+			Logc(ctx).WithError(err).Error(msg)
+			return fmt.Errorf(msg)
+		}
+	}
 	return nil
 }
 
@@ -929,6 +1001,10 @@ func (d *SANStorageDriver) GetInternalVolumeName(_ context.Context, name string)
 }
 
 func (d *SANStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
+	if !volConfig.ImportNotManaged {
+		// All new ONTAP SAN volumes start with publish enforcement on, unless they're unmanaged imports
+		volConfig.AccessInfo.PublishEnforcement = true
+	}
 	createPrepareCommon(ctx, d, volConfig)
 }
 
@@ -955,6 +1031,10 @@ func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	volIsRW, err := isFlexvolRWAbstraction(ctx, d.GetAPI(), volConfig.InternalName)
 	if !volIsRW {
 		return err
+	}
+	// Don't map at create time if publish enforcement is enabled
+	if volConfig.AccessInfo.PublishEnforcement {
+		return nil
 	}
 	return d.mapOntapSANLun(ctx, volConfig)
 }
@@ -1023,7 +1103,7 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 	}
 
 	// Get all LUNs named 'lun0' in volumes matching the storage prefix
-	lunPathPattern := fmt.Sprintf("/vol/%v/lun0", *d.Config.StoragePrefix+"*")
+	lunPathPattern := lunPath(*d.Config.StoragePrefix + "*")
 	luns, err := d.API.LunList(ctx, lunPathPattern)
 	if err != nil {
 		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
@@ -1386,4 +1466,21 @@ func (d *SANStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*utils.I
 		IscsiTargetUsername:  d.Config.ChapTargetUsername,
 		IscsiTargetSecret:    d.Config.ChapTargetInitiatorSecret,
 	}, nil
+}
+
+func (d *SANStorageDriver) EnablePublishEnforcement(ctx context.Context, volume *storage.Volume) error {
+	// Do not enable publish enforcement on unmanaged imports
+	if volume.Config.ImportNotManaged {
+		return nil
+	}
+	err := LunUnmapAllIgroups(ctx, d.GetAPI(), lunPath(volume.Config.Name))
+	if err != nil {
+		msg := "error removing all mappings from LUN"
+		Logc(ctx).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+
+	volume.Config.AccessInfo.IscsiLunNumber = -1
+	volume.Config.AccessInfo.PublishEnforcement = true
+	return nil
 }

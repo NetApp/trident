@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -403,16 +403,17 @@ func (p *Plugin) ControllerPublishVolume(
 	}
 
 	publishInfo["mountOptions"] = volumePublishInfo.MountOptions
-	if volume.Config.Protocol == tridentconfig.File {
-		publishInfo["nfsServerIp"] = volume.Config.AccessInfo.NfsServerIP
-		publishInfo["nfsPath"] = volume.Config.AccessInfo.NfsPath
-	} else if volume.Config.Protocol == tridentconfig.Block {
+	switch volume.Config.Protocol {
+	case tridentconfig.File:
+		publishInfo["nfsServerIp"] = volumePublishInfo.NfsServerIP
+		publishInfo["nfsPath"] = volumePublishInfo.NfsPath
+	case tridentconfig.Block:
 		stashIscsiTargetPortals(publishInfo, volumePublishInfo)
-		publishInfo["iscsiTargetIqn"] = volume.Config.AccessInfo.IscsiTargetIQN
-		publishInfo["iscsiLunNumber"] = strconv.Itoa(int(volume.Config.AccessInfo.IscsiLunNumber))
-		publishInfo["iscsiInterface"] = volume.Config.AccessInfo.IscsiInterface
-		publishInfo["iscsiLunSerial"] = volume.Config.AccessInfo.IscsiLunSerial
-		publishInfo["iscsiIgroup"] = volume.Config.AccessInfo.IscsiIgroup
+		publishInfo["iscsiTargetIqn"] = volumePublishInfo.IscsiTargetIQN
+		publishInfo["iscsiLunNumber"] = strconv.Itoa(int(volumePublishInfo.IscsiLunNumber))
+		publishInfo["iscsiInterface"] = volumePublishInfo.IscsiInterface
+		publishInfo["iscsiLunSerial"] = volumePublishInfo.IscsiLunSerial
+		publishInfo["iscsiIgroup"] = volumePublishInfo.IscsiIgroup
 		// Encrypt and add CHAP credentials if they're needed
 		if volumePublishInfo.UseCHAP {
 			if p.aesKey != nil {
@@ -428,12 +429,12 @@ func (p *Plugin) ControllerPublishVolume(
 		publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 		publishInfo["useCHAP"] = strconv.FormatBool(volumePublishInfo.UseCHAP)
 		publishInfo["sharedTarget"] = strconv.FormatBool(volumePublishInfo.SharedTarget)
-	} else if volume.Config.Protocol == tridentconfig.BlockOnFile {
+	case tridentconfig.BlockOnFile:
 		publishInfo["subvolumeMountOptions"] = volumePublishInfo.SubvolumeMountOptions
-		publishInfo["nfsServerIp"] = volume.Config.AccessInfo.NfsServerIP
-		publishInfo["nfsPath"] = volume.Config.AccessInfo.NfsPath
-		publishInfo["nfsUniqueID"] = volume.Config.AccessInfo.NfsUniqueID
-		publishInfo["subvolumeName"] = volume.Config.AccessInfo.SubvolumeName
+		publishInfo["nfsServerIp"] = volumePublishInfo.NfsServerIP
+		publishInfo["nfsPath"] = volumePublishInfo.NfsPath
+		publishInfo["nfsUniqueID"] = volumePublishInfo.NfsUniqueID
+		publishInfo["subvolumeName"] = volumePublishInfo.SubvolumeName
 		publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 		publishInfo["backendUUID"] = volumePublishInfo.BackendUUID
 	}

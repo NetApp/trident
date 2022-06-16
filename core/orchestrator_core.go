@@ -73,22 +73,25 @@ func recordTransactionTiming(txn *storage.VolumeTransaction, err *error) {
 }
 
 type TridentOrchestrator struct {
-	backends             map[string]storage.Backend // key is UUID, not name
-	volumes              map[string]*storage.Volume
-	frontends            map[string]frontend.Plugin
-	mutex                *sync.Mutex
-	storageClasses       map[string]*storageclass.StorageClass
-	nodes                map[string]*utils.Node
-	volumePublications   map[string]map[string]*utils.VolumePublication
-	snapshots            map[string]*storage.Snapshot
-	storeClient          persistentstore.Client
-	bootstrapped         bool
-	bootstrapError       error
-	txnMonitorTicker     *time.Ticker
-	txnMonitorChannel    chan struct{}
-	txnMonitorStopped    bool
-	lastNodeRegistration time.Time
-	stopNodeAccessLoop   chan bool
+	backends                 map[string]storage.Backend // key is UUID, not name
+	volumes                  map[string]*storage.Volume
+	frontends                map[string]frontend.Plugin
+	mutex                    *sync.Mutex
+	storageClasses           map[string]*storageclass.StorageClass
+	nodes                    map[string]*utils.Node
+	volumePublications       map[string]map[string]*utils.VolumePublication
+	snapshots                map[string]*storage.Snapshot
+	storeClient              persistentstore.Client
+	bootstrapped             bool
+	bootstrapError           error
+	txnMonitorTicker         *time.Ticker
+	txnMonitorChannel        chan struct{}
+	txnMonitorStopped        bool
+	lastNodeRegistration     time.Time
+	lastVolumePublication    time.Time
+	volumePublicationsSynced bool
+	stopNodeAccessLoop       chan bool
+	uuid                     string
 }
 
 // NewTridentOrchestrator returns a storage orchestrator instance
@@ -115,6 +118,7 @@ func (o *TridentOrchestrator) transformPersistentState(ctx context.Context) erro
 		version = &config.PersistentStateVersion{
 			PersistentStoreVersion: string(persistentstore.CRDV1Store),
 			OrchestratorAPIVersion: config.OrchestratorAPIVersion,
+			PublicationsSynced:     o.volumePublicationsSynced,
 		}
 		Logc(ctx).WithFields(log.Fields{
 			"PersistentStoreVersion": version.PersistentStoreVersion,
@@ -151,6 +155,13 @@ func (o *TridentOrchestrator) Bootstrap(monitorTransactions bool) error {
 
 	// Transform persistent state, if necessary
 	if err = o.transformPersistentState(ctx); err != nil {
+		o.bootstrapError = utils.BootstrapError(err)
+		return o.bootstrapError
+	}
+
+	// Set UUID
+	o.uuid, err = o.storeClient.GetTridentUUID(ctx)
+	if err != nil {
 		o.bootstrapError = utils.BootstrapError(err)
 		return o.bootstrapError
 	}
@@ -2896,6 +2907,13 @@ func (o *TridentOrchestrator) PublishVolume(
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
+	err = o.publishVolume(ctx, volumeName, publishInfo)
+	return err
+}
+
+func (o *TridentOrchestrator) publishVolume(
+	ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo,
+) error {
 	volume, ok := o.volumes[volumeName]
 	if !ok {
 		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
@@ -2904,24 +2922,65 @@ func (o *TridentOrchestrator) PublishVolume(
 		return utils.VolumeDeletingError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
-	nodes := make([]*utils.Node, 0)
-	for _, node := range o.nodes {
-		nodes = append(nodes, node)
-	}
-	publishInfo.Nodes = nodes
+	publishInfo.TridentUUID = o.uuid
 	publishInfo.BackendUUID = volume.BackendUUID
 	backend, ok := o.backends[volume.BackendUUID]
 	if !ok {
 		// Not a not found error because this is not user input
 		return fmt.Errorf("backend %s not found", volume.BackendUUID)
 	}
+
+	// Check if we're confident our publication status is synced with the container orchestrator
+	if !o.volumePublicationsSynced {
+		err := o.updatePublicationSyncStatus(ctx)
+		if err != nil {
+			msg := "error updating volume publication sync status"
+			Logc(ctx).WithError(err).Error(msg)
+			return fmt.Errorf(msg)
+		}
+	}
+	// Enable publish enforcement if the volume is currently not published anywhere and isn't already enforced
+	if !volume.Config.AccessInfo.PublishEnforcement {
+		// Only enforce volume publication access if we're confident we're synced with the container orchestrator
+		if o.volumePublicationsSynced {
+			publications := o.listVolumePublicationsForVolume(ctx, volumeName)
+			// If there are no volume publications or the only publication is the current one, we can enable enforcement
+			var safeToEnable bool
+			switch len(publications) {
+			case 0:
+				safeToEnable = true
+			case 1:
+				if publications[0].VolumeName == volumeName {
+					safeToEnable = true
+				}
+			default:
+				safeToEnable = false
+			}
+			if safeToEnable {
+				err := backend.EnablePublishEnforcement(ctx, volume)
+				if err != nil {
+					Logc(ctx).WithError(err).Warnf("Error enabling volume publish enforcement for volume %s",
+						volumeName)
+				}
+			}
+		}
+	}
+
+	// Fill in what we already know
+	publishInfo.VolumeAccessInfo = volume.Config.AccessInfo
+
+	nodes := make([]*utils.Node, 0)
+	for _, node := range o.nodes {
+		nodes = append(nodes, node)
+	}
+	publishInfo.Nodes = nodes
 	if err := o.reconcileNodeAccessOnBackend(ctx, backend); err != nil {
 		err = fmt.Errorf("unable to update node access rules on backend %s; %v", backend.Name(), err)
 		Logc(ctx).Error(err)
 		return err
 	}
 
-	err = backend.PublishVolume(ctx, volume.Config, publishInfo)
+	err := backend.PublishVolume(ctx, volume.Config, publishInfo)
 	if err != nil {
 		return err
 	}
@@ -2932,6 +2991,34 @@ func (o *TridentOrchestrator) PublishVolume(
 		return err
 	}
 
+	o.lastVolumePublication = time.Now()
+
+	return nil
+}
+
+// updatePublicationSyncStatus checks if enough time has passed to assume our internal publication state has synced
+// with the container orchestrator.
+func (o *TridentOrchestrator) updatePublicationSyncStatus(ctx context.Context) error {
+	// If we have never published a volume or the time since the last publication is less than 2 minutes,
+	// do not mark as synced
+	if !o.lastVolumePublication.IsZero() && time.Since(o.lastVolumePublication) >= time.Minute*2 {
+		// update persistent flag to prevent us waiting in the future
+		version, err := o.storeClient.GetVersion(ctx)
+		if err != nil {
+			msg := "error getting Trident version object"
+			Logc(ctx).WithError(err).Error(msg)
+			return fmt.Errorf(msg)
+		}
+		version.PublicationsSynced = true
+		err = o.storeClient.SetVersion(ctx, version)
+		if err != nil {
+			msg := "error updating Trident version object"
+			Logc(ctx).WithError(err).Error(msg)
+			return fmt.Errorf(msg)
+		}
+		// update in-memory flag
+		o.volumePublicationsSynced = true
+	}
 	return nil
 }
 
@@ -2945,10 +3032,16 @@ func (o *TridentOrchestrator) UnpublishVolume(ctx context.Context, volumeName, n
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
-	return o.unpublishVolume(ctx, volumeName, nodeName)
+	err = o.unpublishVolume(ctx, volumeName, nodeName)
+	return err
 }
 
-func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, nodeName string) (err error) {
+func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, nodeName string) error {
+	publishInfo := &utils.VolumePublishInfo{
+		HostName:    nodeName,
+		TridentUUID: o.uuid,
+	}
+
 	volume, ok := o.volumes[volumeName]
 	if !ok {
 		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
@@ -2972,9 +3065,9 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 			nodeMap[pub.NodeName] = n
 		}
 	}
-	nodes := make([]*utils.Node, 0, len(nodeMap))
+
 	for _, n := range nodeMap {
-		nodes = append(nodes, n)
+		publishInfo.Nodes = append(publishInfo.Nodes, n)
 	}
 
 	backend, ok := o.backends[volume.BackendUUID]
@@ -2984,7 +3077,7 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 	}
 
 	// Unpublish the volume
-	if err = backend.UnpublishVolume(ctx, volume.Config, nodes); err != nil {
+	if err := backend.UnpublishVolume(ctx, volume.Config, publishInfo); err != nil {
 		return err
 	}
 

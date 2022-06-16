@@ -4,6 +4,7 @@ package ontap
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"testing"
 
@@ -515,6 +516,130 @@ func TestGetChapInfo(t *testing.T) {
 				t.Errorf("GetChapInfo(%v, %v, %v)", tt.args.in0, tt.args.in1, tt.args.in2)
 			}
 			assert.Equalf(t, tt.want, got, "GetChapInfo(%v, %v, %v)", tt.args.in0, tt.args.in1, tt.args.in2)
+		})
+	}
+}
+
+func TestOntapSanUnpublish(t *testing.T) {
+	ctx := context.Background()
+
+	type args struct {
+		publishEnforcement bool
+	}
+
+	tt := []struct {
+		name    string
+		args    args
+		mocks   func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath string)
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "LegacyVolume",
+			args: args{publishEnforcement: false},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath string) {
+				// We expect no API calls for this test
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "LastLunOnIgroup",
+			args: args{publishEnforcement: true},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath string) {
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(1, nil)
+				mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(nil)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return([]string{}, nil) // Return 0 LUNs
+				mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(nil)                    // iGroup should be deleted
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "NotLastLunOnIgroup",
+			args: args{publishEnforcement: true},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath string) {
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(1, nil)
+				mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(nil)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return([]string{"/vol/v/l"}, nil) // Return 1 LUN
+				// iGroup should not be deleted
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "LunAlreadyUnmapped",
+			args: args{publishEnforcement: true},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath string) {
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(-1, nil)          // -1 indicates not mapped
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return([]string{}, nil) // Return 0 LUNs
+				mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(nil)                    // iGroup should be deleted
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "LunMapInfoApiFailure",
+			args: args{publishEnforcement: true},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath string) {
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(-1, fmt.Errorf("some api error"))
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "LunUnmapApiFailure",
+			args: args{publishEnforcement: true},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath string) {
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(1, nil)
+				mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(fmt.Errorf("some api error"))
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "IgroupListLUNsMappedApiFailure",
+			args: args{publishEnforcement: true},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath string) {
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(1, nil)
+				mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(nil)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return([]string{}, fmt.Errorf("some api error"))
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "IgroupDestroyApiFailure",
+			args: args{publishEnforcement: true},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, igroupName, lunPath string) {
+				mockAPI.EXPECT().LunMapInfo(ctx, igroupName, lunPath).Return(1, nil)
+				mockAPI.EXPECT().LunUnmap(ctx, igroupName, lunPath).Return(nil)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, igroupName).Return([]string{}, nil)
+				mockAPI.EXPECT().IgroupDestroy(ctx, igroupName).Return(fmt.Errorf("some api error"))
+			},
+			wantErr: assert.Error,
+		},
+	}
+	for _, tr := range tt {
+		t.Run(tr.name, func(t *testing.T) {
+			volConfig := &storage.VolumeConfig{
+				InternalName: "foo",
+				AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
+			}
+
+			publishInfo := &utils.VolumePublishInfo{
+				HostName:         "bar",
+				TridentUUID:      "1234",
+				VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
+			}
+
+			igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+			lunPath := lunPath(volConfig.InternalName)
+
+			mockCtrl := gomock.NewController(t)
+			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+			d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+			d.API = mockAPI
+
+			tr.mocks(mockAPI, igroupName, lunPath)
+
+			err := d.Unpublish(ctx, volConfig, publishInfo)
+			if !tr.wantErr(t, err, "Unexpected Result") {
+				return
+			}
 		})
 	}
 }

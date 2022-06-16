@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -267,7 +268,7 @@ type storageClassTest struct {
 	expected []*tu.PoolMatch
 }
 
-func getOrchestrator(t *testing.T) *TridentOrchestrator {
+func getOrchestrator(t *testing.T, monitorTransactions bool) *TridentOrchestrator {
 	var (
 		storeClient persistentstore.Client
 		err         error
@@ -278,7 +279,7 @@ func getOrchestrator(t *testing.T) *TridentOrchestrator {
 	storeClient = inMemoryClient
 
 	o := NewTridentOrchestrator(storeClient)
-	if err = o.Bootstrap(false); err != nil {
+	if err = o.Bootstrap(monitorTransactions); err != nil {
 		t.Fatal("Failure occurred during bootstrapping: ", err)
 	}
 	return o
@@ -360,7 +361,7 @@ func validateStorageClass(
 // Consider breaking this up if it gets unwieldy, though.
 func TestAddStorageClassVolumes(t *testing.T) {
 	mockPools := tu.GetFakePools()
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 
 	errored := false
 	for _, c := range []struct {
@@ -823,7 +824,7 @@ func TestAddStorageClassVolumes(t *testing.T) {
 // tests around storage class deletion, etc.
 func TestCloneVolumes(t *testing.T) {
 	mockPools := tu.GetFakePools()
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 
 	errored := false
 	for _, c := range []struct {
@@ -1168,7 +1169,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		backendProtocol   = config.File
 	)
 	// Test setup
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	addBackendStorageClass(t, orchestrator, backendName, scName, backendProtocol)
 
 	orchestrator.mutex.Lock()
@@ -1413,7 +1414,7 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 	}
 
 	// Test that online gets set properly after bootstrapping.
-	newOrchestrator := getOrchestrator(t)
+	newOrchestrator := getOrchestrator(t, false)
 	// We need to lock the orchestrator mutex here because we call
 	// ConstructExternal on the original backend in the else if clause.
 	orchestrator.mutex.Lock()
@@ -1473,7 +1474,7 @@ func backendPasswordsInLogsHelper(t *testing.T, debugTraceFlags map[string]bool)
 	backendName := "passwordBackend"
 	backendProtocol := config.File
 
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 
 	fakeConfig, err := fakedriver.NewFakeStorageDriverConfigJSONWithDebugTraceFlags(
 		backendName, backendProtocol,
@@ -1526,7 +1527,7 @@ func TestEmptyBackendDeletion(t *testing.T) {
 		backendProtocol = config.File
 	)
 
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Note that we don't care about the storage class here, but it's easier
 	// to reuse functionality.
 	addBackendStorageClass(t, orchestrator, backendName, "none", backendProtocol)
@@ -1564,7 +1565,7 @@ func TestBootstrapSnapshotMissingVolume(t *testing.T) {
 		backendProtocol    = config.File
 	)
 
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	defer cleanup(t, orchestrator)
 	addBackendStorageClass(t, orchestrator, offlineBackendName, scName, backendProtocol)
 	_, err := orchestrator.AddVolume(
@@ -1595,7 +1596,7 @@ func TestBootstrapSnapshotMissingVolume(t *testing.T) {
 	}
 	orchestrator.mutex.Unlock()
 
-	newOrchestrator := getOrchestrator(t)
+	newOrchestrator := getOrchestrator(t, false)
 	bootstrappedSnapshot, err := newOrchestrator.GetSnapshot(ctx(), snapshotConfig.VolumeName, snapshotConfig.Name)
 	if err != nil {
 		t.Fatalf("error getting snapshot: %v", err)
@@ -1622,7 +1623,7 @@ func TestBootstrapSnapshotMissingBackend(t *testing.T) {
 		backendProtocol    = config.File
 	)
 
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	defer cleanup(t, orchestrator)
 	addBackendStorageClass(t, orchestrator, offlineBackendName, scName, backendProtocol)
 	_, err := orchestrator.AddVolume(
@@ -1653,7 +1654,7 @@ func TestBootstrapSnapshotMissingBackend(t *testing.T) {
 	}
 	orchestrator.mutex.Unlock()
 
-	newOrchestrator := getOrchestrator(t)
+	newOrchestrator := getOrchestrator(t, false)
 	bootstrappedSnapshot, err := newOrchestrator.GetSnapshot(ctx(), snapshotConfig.VolumeName, snapshotConfig.Name)
 	if err != nil {
 		t.Fatalf("error getting snapshot: %v", err)
@@ -1679,7 +1680,7 @@ func TestBootstrapVolumeMissingBackend(t *testing.T) {
 		backendProtocol    = config.File
 	)
 
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	defer cleanup(t, orchestrator)
 	addBackendStorageClass(t, orchestrator, offlineBackendName, scName, backendProtocol)
 	_, err := orchestrator.AddVolume(
@@ -1704,7 +1705,7 @@ func TestBootstrapVolumeMissingBackend(t *testing.T) {
 	}
 	orchestrator.mutex.Unlock()
 
-	newOrchestrator := getOrchestrator(t)
+	newOrchestrator := getOrchestrator(t, false)
 	bootstrappedVolume, err := newOrchestrator.GetVolume(ctx(), volumeName)
 	if err != nil {
 		t.Fatalf("error getting volume: %v", err)
@@ -1732,7 +1733,7 @@ func TestBackendCleanup(t *testing.T) {
 		backendProtocol    = config.File
 	)
 
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	addBackendStorageClass(t, orchestrator, offlineBackendName, scName, backendProtocol)
 	_, err := orchestrator.AddVolume(
 		ctx(), tu.GenerateVolumeConfig(
@@ -1764,7 +1765,7 @@ func TestBackendCleanup(t *testing.T) {
 	}
 	orchestrator.mutex.Unlock()
 
-	newOrchestrator := getOrchestrator(t)
+	newOrchestrator := getOrchestrator(t, false)
 	if bootstrappedBackend, _ := newOrchestrator.GetBackend(ctx(), offlineBackendName); bootstrappedBackend != nil {
 		t.Error("Empty offline backend not deleted during bootstrap.")
 	}
@@ -1779,7 +1780,7 @@ func TestLoadBackend(t *testing.T) {
 	)
 	// volumes must be nil in order to satisfy reflect.DeepEqual comparison. It isn't recommended to compare slices with deepEqual
 	var volumes []fake.Volume
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(
 		backendName,
 		config.File,
@@ -1815,7 +1816,7 @@ func TestLoadBackend(t *testing.T) {
 		t.Error("Newly loaded backend differs.")
 	}
 
-	newOrchestrator := getOrchestrator(t)
+	newOrchestrator := getOrchestrator(t, false)
 	if bootstrappedBackend, _ := newOrchestrator.GetBackend(ctx(), backendName); bootstrappedBackend == nil {
 		t.Error("Unable to find backend after bootstrapping.")
 	} else if !reflect.DeepEqual(bootstrappedBackend, originalBackend) {
@@ -1881,7 +1882,7 @@ func runRecoveryTests(
 		if err != nil {
 			t.Fatalf("%s: Unable to create volume transaction: %v", c.name, err)
 		}
-		newOrchestrator := getOrchestrator(t)
+		newOrchestrator := getOrchestrator(t, false)
 		newOrchestrator.mutex.Lock()
 		if _, ok := newOrchestrator.volumes[c.volumeConfig.Name]; ok {
 			t.Errorf("%s: volume still present in orchestrator.", c.name)
@@ -1925,7 +1926,7 @@ func TestAddVolumeRecovery(t *testing.T) {
 		fullVolumeName   = "addRecoveryVolumeFull"
 		txOnlyVolumeName = "addRecoveryVolumeTxOnly"
 	)
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	prepRecoveryTest(t, orchestrator, backendName, scName)
 	// It's easier to add the volume and then reinject the transaction begin
 	// afterwards
@@ -1955,7 +1956,7 @@ func TestAddVolumeWithTMRNonONTAPNAS(t *testing.T) {
 		scName         = "addRecoveryBackendSC"
 		fullVolumeName = "addRecoveryVolumeFull"
 	)
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	prepRecoveryTest(t, orchestrator, backendName, scName)
 	// It's easier to add the volume and then reinject the transaction begin
 	// afterwards
@@ -1979,7 +1980,7 @@ func TestDeleteVolumeRecovery(t *testing.T) {
 		fullVolumeName   = "deleteRecoveryVolumeFull"
 		txOnlyVolumeName = "deleteRecoveryVolumeTxOnly"
 	)
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	prepRecoveryTest(t, orchestrator, backendName, scName)
 
 	// For the full test, we delete everything but the ending transaction.
@@ -2037,7 +2038,7 @@ func runSnapshotRecoveryTests(
 		if err := orchestrator.storeClient.AddVolumeTransaction(ctx(), volTxn); err != nil {
 			t.Fatalf("%s: Unable to create volume transaction: %v", c.name, err)
 		}
-		newOrchestrator := getOrchestrator(t)
+		newOrchestrator := getOrchestrator(t, false)
 		newOrchestrator.mutex.Lock()
 		if _, ok := newOrchestrator.snapshots[c.snapshotConfig.ID()]; ok {
 			t.Errorf("%s: snapshot still present in orchestrator.", c.name)
@@ -2086,7 +2087,7 @@ func TestAddSnapshotRecovery(t *testing.T) {
 		fullSnapshotName   = "addSnapshotRecoverySnapshotFull"
 		txOnlySnapshotName = "addSnapshotRecoverySnapshotTxOnly"
 	)
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	prepRecoveryTest(t, orchestrator, backendName, scName)
 
 	// It's easier to add the volume/snapshot and then reinject the transaction again afterwards.
@@ -2125,7 +2126,7 @@ func TestDeleteSnapshotRecovery(t *testing.T) {
 		fullSnapshotName   = "deleteSnapshotRecoverySnapshotFull"
 		txOnlySnapshotName = "deleteSnapshotRecoverySnapshotTxOnly"
 	)
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	prepRecoveryTest(t, orchestrator, backendName, scName)
 
 	// For the full test, we delete everything and recreate the delete transaction.
@@ -2166,7 +2167,7 @@ func TestDeleteSnapshotRecovery(t *testing.T) {
 func TestStorageClassOnlyBootstrap(t *testing.T) {
 	const scName = "storageclass-only"
 
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	originalSC, err := orchestrator.AddStorageClass(
 		ctx(), &storageclass.Config{
 			Name: scName,
@@ -2180,7 +2181,7 @@ func TestStorageClassOnlyBootstrap(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to add storage class: ", err)
 	}
-	newOrchestrator := getOrchestrator(t)
+	newOrchestrator := getOrchestrator(t, false)
 	bootstrappedSC, err := newOrchestrator.GetStorageClass(ctx(), scName)
 	if bootstrappedSC == nil || err != nil {
 		t.Error("Unable to find storage class after bootstrapping.")
@@ -2196,7 +2197,7 @@ func TestFirstVolumeRecovery(t *testing.T) {
 		scName           = "firstRecoveryBackendSC"
 		txOnlyVolumeName = "firstRecoveryVolumeTxOnly"
 	)
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	prepRecoveryTest(t, orchestrator, backendName, scName)
 	txOnlyVolumeConfig := tu.GenerateVolumeConfig(txOnlyVolumeName, 50, scName, config.File)
 	// BEGIN actual test
@@ -2224,7 +2225,7 @@ func TestOrchestratorNotReady(t *testing.T) {
 		storageClasses []*storageclass.External
 	)
 
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	orchestrator.bootstrapped = false
 	orchestrator.bootstrapError = utils.NotReadyError()
 
@@ -2344,7 +2345,7 @@ func importVolumeSetup(
 	backendProtocol config.Protocol,
 ) (*TridentOrchestrator, *storage.VolumeConfig) {
 	// Object setup
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	addBackendStorageClass(t, orchestrator, backendName, scName, backendProtocol)
 
 	orchestrator.mutex.Lock()
@@ -2702,7 +2703,7 @@ func TestAddVolumePublication(t *testing.T) {
 	mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), fakePub).Return(nil)
 
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 
@@ -2734,7 +2735,7 @@ func TestAddVolumePublicationError(t *testing.T) {
 	mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), fakePub).Return(fmt.Errorf("fake error"))
 
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 
@@ -2808,7 +2809,7 @@ func TestUpdateVolumePublication(t *testing.T) {
 	}
 
 	mockCtrl := gomock.NewController(t)
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Create a mocked persistent store client
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 	mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -2824,9 +2825,8 @@ func TestUpdateVolumePublication(t *testing.T) {
 			pub := pubs[arg.PubName]
 			vol := &storage.Volume{BackendUUID: backendID}
 			node := &utils.Node{Name: arg.Node}
-			nodes := []*utils.Node{}
 
-			mockBackend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, nodes).Return(nil).AnyTimes()
+			mockBackend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, gomock.Any()).Return(nil).AnyTimes()
 
 			orchestrator.storeClient = mockStoreClient
 			orchestrator.backends[backendID] = mockBackend
@@ -2861,7 +2861,7 @@ func TestGetVolumePublication(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	orchestrator.addVolumePublicationToCache(fakePub)
@@ -2878,7 +2878,7 @@ func TestGetVolumePublicationNotFound(t *testing.T) {
 	// Set the store client behavior we don't care about for this testcase
 	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 
@@ -2903,7 +2903,7 @@ func TestGetVolumePublicationError(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	orchestrator.addVolumePublicationToCache(fakePub)
@@ -2946,7 +2946,7 @@ func TestListVolumePublications(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
@@ -2971,7 +2971,7 @@ func TestListVolumePublicationsNotFound(t *testing.T) {
 	// Set the store client behavior we don't care about for this testcase
 	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 
@@ -2995,7 +2995,7 @@ func TestListVolumePublicationsError(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
@@ -3038,7 +3038,7 @@ func TestListVolumePublicationsForVolume(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
@@ -3067,7 +3067,7 @@ func TestListVolumePublicationsForVolumeNotFound(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
@@ -3093,7 +3093,7 @@ func TestListVolumePublicationsForVolumeError(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
@@ -3136,7 +3136,7 @@ func TestListVolumePublicationsForNode(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
@@ -3165,7 +3165,7 @@ func TestListVolumePublicationsForNodeNotFound(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
@@ -3191,7 +3191,7 @@ func TestListVolumePublicationsForNodeError(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
@@ -3234,7 +3234,7 @@ func TestDeleteVolumePublication(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
@@ -3276,7 +3276,7 @@ func TestDeleteVolumePublicationNotFound(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
@@ -3303,7 +3303,7 @@ func TestDeleteVolumePublicationNotFoundPersistence(t *testing.T) {
 	}
 	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub).Return(utils.NotFoundError("not found"))
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
@@ -3331,7 +3331,7 @@ func TestDeleteVolumePublicationError(t *testing.T) {
 		AccessMode: 1,
 	}
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
@@ -3354,14 +3354,14 @@ func TestAddNode(t *testing.T) {
 		TopologyLabels: map[string]string{"topology.kubernetes.io/region": "Region1"},
 		Deleted:        false,
 	}
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	if err := orchestrator.AddNode(ctx(), node, nil); err != nil {
 		t.Errorf("adding node failed; %v", err)
 	}
 }
 
 func TestGetNode(t *testing.T) {
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	expectedNode := &utils.Node{
 		Name:           "testNode",
 		IQN:            "myIQN",
@@ -3392,7 +3392,7 @@ func TestGetNode(t *testing.T) {
 }
 
 func TestListNodes(t *testing.T) {
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	expectedNode1 := &utils.Node{
 		Name:    "testNode",
 		IQN:     "myIQN",
@@ -3445,7 +3445,7 @@ func unorderedNodeSlicesEqual(x, y []*utils.Node) bool {
 }
 
 func TestDeleteNode(t *testing.T) {
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	initialNode := &utils.Node{
 		Name:    "testNode",
 		IQN:     "myIQN",
@@ -3467,7 +3467,7 @@ func TestDeleteNode(t *testing.T) {
 
 func TestSnapshotVolumes(t *testing.T) {
 	mockPools := tu.GetFakePools()
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 
 	errored := false
 	for _, c := range []struct {
@@ -3671,7 +3671,7 @@ func TestSnapshotVolumes(t *testing.T) {
 }
 
 func TestGetProtocol(t *testing.T) {
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 
 	type accessVariables struct {
 		volumeMode config.VolumeMode
@@ -3761,7 +3761,7 @@ func TestGetBackend(t *testing.T) {
 	mockBackend.EXPECT().ConstructExternal(gomock.Any()).Return(expectedBackendExternal) // Return the expected object
 
 	// Create an instance of the orchestrator
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked backend to the orchestrator
 	orchestrator.backends[backendUUID] = mockBackend
 
@@ -3791,7 +3791,7 @@ func TestGetBackendByBackendUUID(t *testing.T) {
 	mockBackend.EXPECT().ConstructExternal(gomock.Any()).Times(1).Return(expectedBackendExternal)
 
 	// Create an instance of the orchestrator
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked backend to the orchestrator
 	orchestrator.backends[backendUUID] = mockBackend
 
@@ -3826,7 +3826,7 @@ func TestListBackends(t *testing.T) {
 	mockBackend2.EXPECT().ConstructExternal(gomock.Any()).Return(expectedBackendExternal2)
 
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked backends to the orchestrator
 	orchestrator.backends[expectedBackendExternal1.BackendUUID] = mockBackend1
 	orchestrator.backends[expectedBackendExternal2.BackendUUID] = mockBackend2
@@ -3869,7 +3869,7 @@ func TestDeleteBackend(t *testing.T) {
 	mockStoreClient.EXPECT().DeleteBackend(gomock.Any(), mockBackend).Return(nil)
 
 	// Create an instance of the orchestrator for this test
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
 	orchestrator.storeClient = mockStoreClient
 	orchestrator.backends[backendUUID] = mockBackend
@@ -3881,37 +3881,6 @@ func TestDeleteBackend(t *testing.T) {
 	assert.Nilf(t, err, "Error getting backend; %v", err)
 	_, ok := orchestrator.backends[backendUUID]
 	assert.False(t, ok, "Backend was not properly deleted")
-}
-
-func TestPublishVolume(t *testing.T) {
-	// Boilerplate mocking code
-	mockCtrl := gomock.NewController(t)
-
-	// Set fake values
-	backendUUID := "1234"
-
-	// Create mocked backend that returns the expected object
-	mockBackend := mockstorage.NewMockBackend(mockCtrl)
-	mockBackend.EXPECT().PublishVolume(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
-	// Create a mocked persistent store client
-	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-	// Set the store client behavior we don't care about for this testcase
-	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
-	mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Times(1).Return(nil)
-
-	// Create an instance of the orchestrator
-	orchestrator := getOrchestrator(t)
-	orchestrator.storeClient = mockStoreClient
-	// Add the mocked backend to the orchestrator
-	orchestrator.backends[backendUUID] = mockBackend
-	volConfig := tu.GenerateVolumeConfig("fake-volume", 1, "fast", config.File)
-	orchestrator.volumes["fake-volume"] = &storage.Volume{BackendUUID: backendUUID, Config: volConfig}
-
-	// Run the test
-	err := orchestrator.PublishVolume(ctx(), "fake-volume", &utils.VolumePublishInfo{})
-
-	// Verify the results
-	assert.Nilf(t, err, "Error publishing volume; %v", err)
 }
 
 func TestPublishVolumeFailedToUpdatePersistentStore(t *testing.T) {
@@ -3932,7 +3901,7 @@ func TestPublishVolumeFailedToUpdatePersistentStore(t *testing.T) {
 	mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Times(1).Return(expectedError)
 
 	// Create an instance of the orchestrator
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	orchestrator.storeClient = mockStoreClient
 	// Add the mocked backend to the orchestrator
 	orchestrator.backends[backendUUID] = mockBackend
@@ -3972,7 +3941,7 @@ func TestGetCHAP(t *testing.T) {
 	mockBackend := mockstorage.NewMockBackend(mockCtrl)
 	mockBackend.EXPECT().GetChapInfo(gomock.Any(), volumeName, nodeName).Return(expectedChapInfo, nil)
 	// Create an instance of the orchestrator
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked backend and fake volume to the orchestrator
 	orchestrator.backends[backendUUID] = mockBackend
 	orchestrator.volumes[volumeName] = volume
@@ -3998,11 +3967,641 @@ func TestGetCHAPFailure(t *testing.T) {
 	mockBackend := mockstorage.NewMockBackend(mockCtrl)
 	mockBackend.EXPECT().GetChapInfo(gomock.Any(), volumeName, nodeName).Return(nil, expectedError)
 	// Create an instance of the orchestrator
-	orchestrator := getOrchestrator(t)
+	orchestrator := getOrchestrator(t, false)
 	// Add the mocked backend and fake volume to the orchestrator
 	orchestrator.backends[backendUUID] = mockBackend
 	orchestrator.volumes[volumeName] = volume
 	actualChapInfo, actualErr := orchestrator.GetCHAP(ctx(), volumeName, nodeName)
 	assert.Nil(t, actualChapInfo, "Unexpected CHAP info")
 	assert.Equal(t, expectedError, actualErr, "Unexpected error")
+}
+
+func TestPublishVolume(t *testing.T) {
+	var (
+		backendUUID = "1234"
+		nodeName    = "foo"
+		volumeName  = "bar"
+		volume      = &storage.Volume{
+			BackendUUID: backendUUID,
+			Config:      &storage.VolumeConfig{AccessInfo: utils.VolumeAccessInfo{}},
+		}
+		node = &utils.Node{Deleted: false}
+	)
+	tt := []struct {
+		name              string
+		volumeName        string
+		volumes           map[string]*storage.Volume
+		nodes             map[string]*utils.Node
+		pubsSynced        bool
+		lastPub           time.Time
+		volumeEnforceable bool
+		mocks             func(mockBackend *mockstorage.MockBackend,
+			mockStoreClient *mockpersistentstore.MockStoreClient, volume *storage.Volume)
+		wantErr     assert.ErrorAssertionFunc
+		pubTime     assert.ValueAssertionFunc
+		pubEnforced assert.BoolAssertionFunc
+		synced      assert.BoolAssertionFunc
+	}{
+		{
+			name:              "LegacyVolumePubsNotSyncedNoPublicationsYet",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: false,
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
+			},
+			wantErr:     assert.NoError,
+			pubTime:     assert.IsIncreasing,
+			pubEnforced: assert.False,
+			synced:      assert.False,
+		},
+		{
+			name:              "LegacyVolumePubsNotSyncedTooSoon",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: false,
+			lastPub:           time.Now().Add(-time.Second), // Ensure that "some" time has passed
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
+			},
+			wantErr:     assert.NoError,
+			pubTime:     assert.IsIncreasing,
+			pubEnforced: assert.False,
+			synced:      assert.False,
+		},
+		{
+			name:              "LegacyVolumePubsNotSynced2MinutesPassed",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: false,
+			lastPub:           time.Now().Add(-time.Minute * 2),
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
+				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(nil)
+				mockBackend.EXPECT().EnablePublishEnforcement(ctx(), volume).DoAndReturn(
+					func(ctx context.Context, volume *storage.Volume) error {
+						volume.Config.AccessInfo.PublishEnforcement = true
+						return nil
+					})
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
+			},
+			wantErr:     assert.NoError,
+			pubTime:     assert.IsIncreasing,
+			pubEnforced: assert.True,
+			synced:      assert.True,
+		},
+		{
+			name:              "LegacyVolumePubsSynced",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        true,
+			volumeEnforceable: false,
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				mockBackend.EXPECT().EnablePublishEnforcement(ctx(), volume).DoAndReturn(
+					func(ctx context.Context, volume *storage.Volume) error {
+						volume.Config.AccessInfo.PublishEnforcement = true
+						return nil
+					})
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
+			},
+			wantErr:     assert.NoError,
+			pubTime:     assert.IsIncreasing,
+			pubEnforced: assert.True,
+			synced:      assert.True,
+		},
+		{
+			name:              "EnforcedVolumePubsNotSyncedNoPubsYet",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: true,
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
+			},
+			wantErr:     assert.NoError,
+			pubTime:     assert.IsIncreasing,
+			pubEnforced: assert.True,
+			synced:      assert.False,
+		},
+		{
+			name:              "EnforcedVolumePubsNotSyncedTooSoon",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: true,
+			lastPub:           time.Now().Add(-time.Second), // Ensure that "some" time has passed
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
+			},
+			wantErr:     assert.NoError,
+			pubTime:     assert.IsIncreasing,
+			pubEnforced: assert.True,
+			synced:      assert.False,
+		},
+		{
+			name:              "EnforcedVolumePubsNotSynced2MinutesPassed",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: true,
+			lastPub:           time.Now().Add(-time.Minute * 2),
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
+				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(nil)
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
+			},
+			wantErr:     assert.NoError,
+			pubTime:     assert.IsIncreasing,
+			pubEnforced: assert.True,
+			synced:      assert.True,
+		},
+		{
+			name:              "EnforcedVolumePubsSynced",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        true,
+			volumeEnforceable: true,
+			lastPub:           time.Now().Add(-time.Minute * 2),
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
+			},
+			wantErr:     assert.NoError,
+			pubTime:     assert.IsIncreasing,
+			pubEnforced: assert.True,
+			synced:      assert.True,
+		},
+		{
+			name:              "VolumeNotFound",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{},
+			pubsSynced:        false,
+			volumeEnforceable: false,
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+			},
+			wantErr:     assert.Error,
+			pubTime:     assert.IsNonIncreasing,
+			pubEnforced: assert.False,
+			synced:      assert.False,
+		},
+		{
+			name:              "VolumeIsDeleting",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: false,
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				volume.State = storage.VolumeStateDeleting
+			},
+			wantErr:     assert.Error,
+			pubTime:     assert.IsNonIncreasing,
+			pubEnforced: assert.False,
+			synced:      assert.False,
+		},
+		{
+			name:              "ErrorGettingVersion",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: false,
+			lastPub:           time.Now().Add(-time.Minute * 2),
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				mockStoreClient.EXPECT().GetVersion(ctx()).Return(nil, fmt.Errorf("some error"))
+			},
+			wantErr:     assert.Error,
+			pubTime:     assert.IsNonIncreasing,
+			pubEnforced: assert.False,
+			synced:      assert.False,
+		},
+		{
+			name:              "ErrorSettingVersion",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: false,
+			lastPub:           time.Now().Add(-time.Minute * 2),
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
+				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(fmt.Errorf("some error"))
+			},
+			wantErr:     assert.Error,
+			pubTime:     assert.IsNonIncreasing,
+			pubEnforced: assert.False,
+			synced:      assert.False,
+		},
+		{
+			name:              "ErrorEnablingEnforcement",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: false,
+			lastPub:           time.Now().Add(-time.Minute * 2),
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
+				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(nil)
+				mockBackend.EXPECT().EnablePublishEnforcement(ctx(), gomock.Any()).Return(fmt.Errorf("some error"))
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
+			},
+			wantErr:     assert.NoError,
+			pubTime:     assert.IsIncreasing,
+			pubEnforced: assert.False,
+			synced:      assert.True,
+		},
+		{
+			name:              "ErrorReconcilingNodeAccessEnforcement",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: false,
+			lastPub:           time.Now().Add(-time.Minute * 2),
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
+				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(nil)
+				mockBackend.EXPECT().EnablePublishEnforcement(ctx(), volume).DoAndReturn(
+					func(ctx context.Context, volume *storage.Volume) error {
+						volume.Config.AccessInfo.PublishEnforcement = true
+						return nil
+					})
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(fmt.Errorf("some error"))
+				mockBackend.EXPECT().Name().Return("").AnyTimes()
+			},
+			wantErr:     assert.Error,
+			pubTime:     assert.IsNonIncreasing,
+			pubEnforced: assert.True,
+			synced:      assert.True,
+		},
+		{
+			name:              "ErrorPublishingVolume",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: false,
+			lastPub:           time.Now().Add(-time.Minute * 2),
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
+				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(nil)
+				mockBackend.EXPECT().EnablePublishEnforcement(ctx(), volume).DoAndReturn(
+					func(ctx context.Context, volume *storage.Volume) error {
+						volume.Config.AccessInfo.PublishEnforcement = true
+						return nil
+					})
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("some error"))
+			},
+			wantErr:     assert.Error,
+			pubTime:     assert.IsNonIncreasing,
+			pubEnforced: assert.True,
+			synced:      assert.True,
+		},
+		{
+			name:              "ErrorUpdatingVolume",
+			volumeName:        volumeName,
+			volumes:           map[string]*storage.Volume{volumeName: volume},
+			nodes:             map[string]*utils.Node{nodeName: node},
+			pubsSynced:        false,
+			volumeEnforceable: false,
+			lastPub:           time.Now().Add(-time.Minute * 2),
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
+				volume *storage.Volume,
+			) {
+				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
+				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(nil)
+				mockBackend.EXPECT().EnablePublishEnforcement(ctx(), volume).DoAndReturn(
+					func(ctx context.Context, volume *storage.Volume) error {
+						volume.Config.AccessInfo.PublishEnforcement = true
+						return nil
+					})
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
+				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(fmt.Errorf("some error"))
+			},
+			wantErr:     assert.Error,
+			pubTime:     assert.IsNonIncreasing,
+			pubEnforced: assert.True,
+			synced:      assert.True,
+		},
+	}
+
+	for _, tr := range tt {
+		t.Run(tr.name, func(t *testing.T) {
+			config.CurrentDriverContext = config.ContextCSI
+			defer func() { config.CurrentDriverContext = "" }()
+			volume.State = storage.VolumeStateOnline
+			// Boilerplate mocking code
+			mockCtrl := gomock.NewController(t)
+
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+			// Create an instance of the orchestrator
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.volumes = tr.volumes
+			o.nodes = tr.nodes
+			o.volumePublicationsSynced = tr.pubsSynced
+			o.lastVolumePublication = tr.lastPub
+			volume.Config.AccessInfo.PublishEnforcement = tr.volumeEnforceable
+
+			tr.mocks(mockBackend, mockStoreClient, volume)
+
+			// Run the test
+			err := o.publishVolume(ctx(), tr.volumeName, &utils.VolumePublishInfo{})
+			if !tr.wantErr(t, err, "Unexpected Result") {
+				return
+			}
+			if !tr.pubTime(t, []int64{tr.lastPub.UnixNano(), o.lastVolumePublication.UnixNano()}) {
+				return
+			}
+			if !tr.pubEnforced(t, volume.Config.AccessInfo.PublishEnforcement) {
+				return
+			}
+			if !tr.synced(t, o.volumePublicationsSynced) {
+				return
+			}
+		})
+	}
+}
+
+func TestUnpublishVolume(t *testing.T) {
+	var (
+		backendUUID     = "1234"
+		nodeName        = "foo"
+		otherNodeName   = "fiz"
+		volumeName      = "bar"
+		otherVolumeName = "baz"
+		volume          = &storage.Volume{BackendUUID: backendUUID}
+		node            = &utils.Node{Deleted: false}
+		deletedNode     = &utils.Node{Deleted: true}
+		publication     = &utils.VolumePublication{
+			NodeName:   nodeName,
+			VolumeName: volumeName,
+		}
+		otherVolPublication = &utils.VolumePublication{
+			NodeName:   nodeName,
+			VolumeName: otherVolumeName,
+		}
+		otherNodePublication = &utils.VolumePublication{
+			NodeName:   otherNodeName,
+			VolumeName: volumeName,
+		}
+	)
+	tt := []struct {
+		name         string
+		volumeName   string
+		nodeName     string
+		volumes      map[string]*storage.Volume
+		nodes        map[string]*utils.Node
+		publications map[string]map[string]*utils.VolumePublication
+		mocks        func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient)
+		wantErr      assert.ErrorAssertionFunc
+	}{
+		{
+			name:         "NoOtherPublicationsNodeNotDeleted",
+			volumeName:   volumeName,
+			nodeName:     nodeName,
+			volumes:      map[string]*storage.Volume{volumeName: volume},
+			nodes:        map[string]*utils.Node{nodeName: node},
+			publications: map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name:         "NoOtherPublicationsNodeDeleted",
+			volumeName:   volumeName,
+			nodeName:     nodeName,
+			volumes:      map[string]*storage.Volume{volumeName: volume},
+			nodes:        map[string]*utils.Node{nodeName: deletedNode},
+			publications: map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().DeleteNode(ctx(), deletedNode).Return(nil)
+				mockBackend.EXPECT().InvalidateNodeAccess()
+				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), []*utils.Node{}).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name:       "OtherPublicationsNodeDeleted",
+			volumeName: volumeName,
+			nodeName:   nodeName,
+			volumes:    map[string]*storage.Volume{volumeName: volume},
+			nodes:      map[string]*utils.Node{nodeName: deletedNode},
+			publications: map[string]map[string]*utils.VolumePublication{
+				volumeName: {
+					nodeName: publication,
+				},
+				otherVolumeName: {
+					nodeName: otherVolPublication,
+				},
+			},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name:       "OtherPublicationsNodeNotDeleted",
+			volumeName: volumeName,
+			nodeName:   nodeName,
+			volumes:    map[string]*storage.Volume{volumeName: volume},
+			nodes:      map[string]*utils.Node{nodeName: node},
+			publications: map[string]map[string]*utils.VolumePublication{
+				volumeName: {
+					nodeName: publication,
+				},
+				otherVolumeName: {
+					nodeName: otherVolPublication,
+				},
+			},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name:       "OtherPublicationsDifferentNode",
+			volumeName: volumeName,
+			nodeName:   nodeName,
+			volumes:    map[string]*storage.Volume{volumeName: volume},
+			nodes: map[string]*utils.Node{
+				nodeName:      node,
+				otherNodeName: node,
+			},
+			publications: map[string]map[string]*utils.VolumePublication{
+				volumeName: {
+					nodeName:      publication,
+					otherNodeName: otherNodePublication,
+				},
+			},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name:       "OtherPublicationsDifferentNodeMissing",
+			volumeName: volumeName,
+			nodeName:   nodeName,
+			volumes:    map[string]*storage.Volume{volumeName: volume},
+			nodes:      map[string]*utils.Node{nodeName: node},
+			publications: map[string]map[string]*utils.VolumePublication{
+				volumeName: {
+					nodeName:      publication,
+					otherNodeName: otherNodePublication,
+				},
+			},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name:         "VolumeNotFound",
+			volumeName:   volumeName,
+			nodeName:     nodeName,
+			volumes:      map[string]*storage.Volume{},
+			nodes:        map[string]*utils.Node{nodeName: node},
+			publications: map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name:         "NodeNotFound",
+			volumeName:   volumeName,
+			nodeName:     nodeName,
+			volumes:      map[string]*storage.Volume{volumeName: volume},
+			nodes:        map[string]*utils.Node{},
+			publications: map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name:         "BackendNotFound",
+			volumeName:   volumeName,
+			nodeName:     nodeName,
+			volumes:      map[string]*storage.Volume{volumeName: {}},
+			nodes:        map[string]*utils.Node{nodeName: node},
+			publications: map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name:         "BackendUnpublishError",
+			volumeName:   volumeName,
+			nodeName:     nodeName,
+			volumes:      map[string]*storage.Volume{volumeName: volume},
+			nodes:        map[string]*utils.Node{nodeName: node},
+			publications: map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("some error"))
+			},
+			wantErr: assert.Error,
+		},
+	}
+
+	for _, tr := range tt {
+		t.Run(tr.name, func(t *testing.T) {
+			config.CurrentDriverContext = config.ContextCSI
+			defer func() { config.CurrentDriverContext = "" }()
+			mockCtrl := gomock.NewController(t)
+			// Create a fake backend with UUID
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+			// Create orchestrator with fake backend and initial values
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+
+			o.volumes = tr.volumes
+			o.nodes = tr.nodes
+			o.volumePublications = tr.publications
+
+			tr.mocks(mockBackend, mockStoreClient)
+
+			err := o.unpublishVolume(ctx(), tr.volumeName, tr.nodeName)
+			if !tr.wantErr(t, err, "Unexpected Result") {
+				return
+			}
+		})
+	}
 }

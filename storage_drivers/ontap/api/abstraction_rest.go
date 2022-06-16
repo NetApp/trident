@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -1649,14 +1649,68 @@ func (d OntapAPIREST) EnsureLunMapped(
 	return lunID, nil
 }
 
+func (d OntapAPIREST) LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error {
+	err := d.api.LunUnmap(ctx, initiatorGroupName, lunPath)
+	if err != nil {
+		msg := "error unmapping LUN"
+		Logc(ctx).WithError(err).Error(msg)
+		return fmt.Errorf(msg)
+	}
+	return nil
+}
+
+// LunListIgroupsMapped returns a list of igroups the LUN is currently mapped to.
+func (d OntapAPIREST) LunListIgroupsMapped(ctx context.Context, lunPath string) ([]string, error) {
+	var results []string
+	cliPassthroughResult, err := d.api.CliPassthroughLunMappingGet(ctx, "*", lunPath)
+	if err != nil {
+		return results, err
+	}
+	if cliPassthroughResult != nil {
+		for _, rawJson := range cliPassthroughResult.Records {
+
+			result := &LunMappingGetCliPassthroughResult{}
+			unmarshalErr := json.Unmarshal(rawJson, result)
+			if unmarshalErr != nil {
+				log.WithField("body", string(rawJson)).Warnf("Error unmarshaling response body. %v",
+					unmarshalErr.Error())
+				return nil, unmarshalErr
+			}
+			results = append(results, result.Igroup)
+		}
+	}
+	return results, err
+}
+
+// IgroupListLUNsMapped returns a list of igroups the LUN is currently mapped to.
+func (d OntapAPIREST) IgroupListLUNsMapped(ctx context.Context, initiatorGroupName string) ([]string, error) {
+	var results []string
+	cliPassthroughResult, err := d.api.CliPassthroughLunMappingGet(ctx, initiatorGroupName, "*")
+	if err != nil {
+		return results, err
+	}
+	if cliPassthroughResult != nil {
+		for _, rawJson := range cliPassthroughResult.Records {
+
+			result := &LunMappingGetCliPassthroughResult{}
+			unmarshalErr := json.Unmarshal(rawJson, result)
+			if unmarshalErr != nil {
+				log.WithField("body", string(rawJson)).Warnf("Error unmarshaling response body. %v",
+					unmarshalErr.Error())
+				return nil, unmarshalErr
+			}
+			results = append(results, result.Igroup)
+		}
+	}
+	return results, err
+}
+
 // LunMapGetReportingNodes returns a list of LUN map details
 // equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
 func (d OntapAPIREST) LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) (
 	[]string, error,
 ) {
 	cliPassthroughResult, err := d.api.CliPassthroughLunMappingGet(ctx, initiatorGroupName, lunPath)
-	fmt.Printf("cliPassthroughResult: %v \n", cliPassthroughResult)
-	fmt.Printf("err: %v \n", err)
 
 	var results []string
 	for _, rawJson := range cliPassthroughResult.Records {
