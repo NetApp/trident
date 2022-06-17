@@ -83,6 +83,7 @@ var (
 	KubernetesCLI       string
 	TridentPodName      string
 	TridentPodNamespace string
+	KubeConfigPath      string
 	ExitCode            int
 
 	Debug                bool
@@ -109,6 +110,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&Server, "server", "s", "", "Address/port of Trident REST interface (127.0.0.1 or [::1] only)")
 	RootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", "", "Output format. One of json|yaml|name|wide|ps (default)")
 	RootCmd.PersistentFlags().StringVarP(&TridentPodNamespace, "namespace", "n", "", "Namespace of Trident deployment")
+	RootCmd.PersistentFlags().StringVarP(&KubeConfigPath, "kubeconfig", "k", "", "Kubernetes config path")
 }
 
 func discoverOperatingMode(_ *cobra.Command) error {
@@ -497,8 +499,11 @@ func BaseAutosupportURL() string {
 
 func TunnelCommand(commandArgs []string) {
 	// Build tunnel command to exec command in container
-	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", config.ContainerTrident, "--"}
-
+	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", config.ContainerTrident}
+	if KubeConfigPath != "" {
+		execCommand = append(execCommand, "--kubeconfig", KubeConfigPath)
+	}
+	execCommand = append(execCommand, "--")
 	// Build CLI command
 	cliCommand := []string{"tridentctl"}
 	if Debug {
