@@ -92,7 +92,7 @@ tridentImage: ""
 # tridentImageTag allows overriding the tag of the image for Trident.
 tridentImageTag: ""
 
-# tridentEnableNodePrep attempts to automatically install required packages on nodes
+# (Deprecated) tridentEnableNodePrep attempts to automatically install required packages on nodes.
 tridentEnableNodePrep: false
 
 # (Deprecated) tridentSkipK8sVersionCheck allows overriding the k8s version limit for Trident.

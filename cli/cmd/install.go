@@ -149,7 +149,7 @@ func init() {
 	installCmd.Flags().BoolVar(&silenceAutosupport, "silence-autosupport", tridentconfig.BuildType != "stable",
 		"Don't send autosupport bundles to NetApp automatically.")
 	installCmd.Flags().BoolVar(&enableNodePrep, "enable-node-prep", false,
-		"*BETA* Attempt to automatically install required packages on nodes.")
+		"(Deprecated) Attempt to automatically install required packages on nodes.")
 
 	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName,
 		"The name of the legacy PVC used by Trident, will ensure this does not exist.")

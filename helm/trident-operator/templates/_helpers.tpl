@@ -154,14 +154,3 @@ Trident image
 {{- "" }}docker.io/netapp/trident:{{ .Values.tridentImageTag | default .Chart.AppVersion }}
 {{- end }}
 {{- end }}
-
-{{/*
-Trident EnableNodePrep
-*/}}
-{{- define "trident.enableNodePrep" -}}
-{{- if .Values.tridentEnableNodePrep | printf "%v" | eq "true" }}
-{{- "true" }}
-{{- else }}
-{{- "false" }}
-{{- end }}
-{{- end }}

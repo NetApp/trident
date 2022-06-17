@@ -22,7 +22,6 @@ spec:
   imagePullSecrets:
   {{- toYaml . | nindent 2 }}
   {{- end }}
-  enableNodePrep: {{ include "trident.enableNodePrep" $ }}
   {{- if .Values.tridentControllerPluginNodeSelector }}
   controllerPluginNodeSelector:
     {{- range $key, $value := .Values.tridentControllerPluginNodeSelector }}
