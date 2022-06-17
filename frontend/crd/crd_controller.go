@@ -276,7 +276,9 @@ func newTridentCrdControllerImpl(
 			// Do not handle any other update events other than backend deletion
 			// otherwise it may results in continuous reconcile loops.
 			ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
-			controller.removeFinalizers(ctx, newCrd, false)
+			if err := controller.removeFinalizers(ctx, newCrd, false); err != nil {
+				Logc(ctx).WithError(err).Error("Error removing finalizers")
+			}
 		},
 		DeleteFunc: controller.deleteTridentBackendEvent,
 	})
@@ -315,7 +317,9 @@ func newTridentCrdControllerImpl(
 		informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(oldCrd, newCrd interface{}) {
 				ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD)
-				controller.removeFinalizers(ctx, newCrd, false)
+				if err := controller.removeFinalizers(ctx, newCrd, false); err != nil {
+					Logc(ctx).WithError(err).Error("Error removing finalizers")
+				}
 			},
 		})
 	}

@@ -3,15 +3,24 @@
 package rest
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/netapp/trident/frontend/csi"
+	. "github.com/netapp/trident/logger"
 )
+
+// helper method to log HTTP write failures if an error is seen
+func logerr(n int, err error) {
+	if err != nil {
+		Logc(context.Background()).Errorf("HTTP response write failed: %v", err)
+	}
+}
 
 // Node endpoint for startup and liveness probe
 func NodeLivenessCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("ok"))
+	logerr(w.Write([]byte("ok")))
 }
 
 // Node endpoint for readiness probe
@@ -20,10 +29,10 @@ func NodeReadinessCheck(plugin *csi.Plugin) http.HandlerFunc {
 		isReady := plugin.IsReady()
 		if isReady {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("ready"))
+			logerr(w.Write([]byte("ready")))
 		} else {
 			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte("error: not ready"))
+			logerr(w.Write([]byte("error: not ready")))
 		}
 	}
 }

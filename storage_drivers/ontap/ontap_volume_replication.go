@@ -137,8 +137,10 @@ func reestablishMirror(
 	if !snapmirror.IsHealthy {
 		err = fmt.Errorf(snapmirror.UnhealthyReason)
 		Logc(ctx).WithError(err).Error("Error on snapmirror resync")
-		d.SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
-
+		deleteErr := d.SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName)
+		if err != nil {
+			Logc(ctx).WithError(deleteErr).Error("Error on snapmirror delete")
+		}
 		return err
 	}
 	return nil

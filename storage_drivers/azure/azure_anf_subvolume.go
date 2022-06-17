@@ -677,8 +677,15 @@ func (d *NASBlockStorageDriver) Create(
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {
-		defaultSize, _ := utils.ConvertSizeToBytes(storagePool.InternalAttributes()[Size])
-		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+		defaultSize, err := utils.ConvertSizeToBytes(storagePool.InternalAttributes()[Size])
+		if err != nil {
+			return fmt.Errorf("invalid size value '%s': %v", storagePool.InternalAttributes()[Size], err)
+		}
+
+		sizeBytes, err = strconv.ParseUint(defaultSize, 10, 64)
+		if err != nil {
+			return fmt.Errorf("invalid size value '%s': %v", defaultSize, err)
+		}
 	}
 	if checkMinVolumeSizeError := drivers.CheckMinVolumeSize(sizeBytes,
 		MinimumSubvolumeSizeBytes); checkMinVolumeSizeError != nil {

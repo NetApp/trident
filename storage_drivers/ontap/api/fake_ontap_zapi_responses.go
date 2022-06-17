@@ -564,10 +564,15 @@ func NewFakeUnstartedVserver(ctx context.Context, vserverAdminHost, vserverAggrN
 	mux.HandleFunc("/servlets/", func(w http.ResponseWriter, r *http.Request) {
 		response, err := getFakeResponse(ctx, r.Body, vserverAdminHost, port, vserverAggrName)
 		if err != nil {
-			w.Write([]byte(err.Error()))
+			if _, err := w.Write([]byte(err.Error())); err != nil {
+				Logc(ctx).WithError(err).Error("fake HTTP response write failure.")
+			}
 		}
 
-		w.Write(response)
+		_, err = w.Write(response)
+		if err != nil {
+			Logc(ctx).WithError(err).Error("fake HTTP response write failure.")
+		}
 	})
 	return server
 }

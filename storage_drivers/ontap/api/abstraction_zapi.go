@@ -2028,8 +2028,10 @@ func (d OntapAPIZAPI) SnapmirrorResync(
 			Logc(ctx).WithError(err).Error("Error on snapmirror resync")
 			// If we fail on the resync, we need to cleanup the snapmirror
 			// it will be recreated in a future TMR reconcile loop through this function
-			d.SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
-				remoteSVMName)
+			if delError := d.SnapmirrorDelete(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
+				remoteSVMName); delError != nil {
+				Logc(ctx).WithError(delError).Error("Error on snapmirror delete following a resync failure")
+			}
 			return err
 		}
 	}

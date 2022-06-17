@@ -16,12 +16,10 @@ import (
 func NewRouter(https bool) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range controllerRoutes {
-		var handler http.Handler
+		var handler http.Handler = route.HandlerFunc
 		if https {
 			handler = secureheader.Handler(handler)
 		}
-
-		handler = route.HandlerFunc
 		handler = Logger(handler, route.Name, log.DebugLevel)
 
 		router.
@@ -38,10 +36,8 @@ func NewRouter(https bool) *mux.Router {
 func NewNodeRouter(plugin *csi.Plugin) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range nodeRoutes(plugin) {
-		var handler http.Handler
+		var handler http.Handler = route.HandlerFunc
 		handler = secureheader.Handler(handler)
-
-		handler = route.HandlerFunc
 		handler = Logger(handler, route.Name, log.TraceLevel)
 
 		router.

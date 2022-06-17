@@ -328,10 +328,13 @@ func LogHTTPRequest(request *http.Request, requestBody []byte, redactBody bool) 
 	header := ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	footer := "--------------------------------------------------------------------------------"
 
-	requestURL, _ := url.Parse(request.URL.String())
-	requestURL.User = nil
-
 	ctx := request.Context()
+
+	requestURL, err := url.Parse(request.URL.String())
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Unable to parse URL '%s'", request.URL.String())
+	}
+	requestURL.User = nil
 
 	headers := make(map[string][]string)
 	for k, v := range request.Header {

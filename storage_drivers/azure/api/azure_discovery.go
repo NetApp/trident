@@ -66,7 +66,7 @@ func (c Client) RefreshAzureResources(ctx context.Context) error {
 	discoveryErr = multierr.Combine(discoveryErr, poolErrors)
 
 	Logc(ctx).Debugf("Discovering Azure preview features.")
-	_ = c.EnableAzureFeatures(ctx, FeatureUnixPermissions)
+	discoveryErr = multierr.Combine(discoveryErr, c.EnableAzureFeatures(ctx, FeatureUnixPermissions))
 
 	return discoveryErr
 }

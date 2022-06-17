@@ -10,6 +10,7 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
+	"go.uber.org/multierr"
 
 	. "github.com/netapp/trident/logger"
 )
@@ -150,7 +151,9 @@ func ExpandFilesystemOnNode(
 		if err != nil {
 			return 0, err
 		}
-		defer RemoveMountPoint(ctx, expansionMountPoint)
+		defer func() {
+			err = multierr.Append(err, RemoveMountPoint(ctx, expansionMountPoint))
+		}()
 	}
 
 	// Don't need to verify the filesystem type as the resize utilities will throw an error if the filesystem
@@ -167,7 +170,7 @@ func ExpandFilesystemOnNode(
 	if err != nil {
 		return 0, err
 	}
-	return size, nil
+	return size, err
 }
 
 func expandFilesystem(ctx context.Context, cmd, cmdArguments, tmpMountPoint string) (int64, error) {

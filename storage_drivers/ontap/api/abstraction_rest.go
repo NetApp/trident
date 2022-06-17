@@ -348,8 +348,10 @@ func (d OntapAPIREST) EmsAutosupportLog(
 	eventSource string,
 	logLevel int,
 ) {
-	d.api.EmsAutosupportLog(ctx, appVersion, autoSupport, category, computerName, eventDescription, eventID,
-		eventSource, logLevel)
+	if err := d.api.EmsAutosupportLog(ctx, appVersion, autoSupport, category, computerName, eventDescription, eventID,
+		eventSource, logLevel); err != nil {
+		Logc(ctx).WithError(err).Warn("Could not generate Autosupport message.")
+	}
 }
 
 func (d OntapAPIREST) FlexgroupExists(ctx context.Context, volumeName string) (bool, error) {

@@ -569,7 +569,9 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 	// Release any previous snapmirror relationship
 	if relationship.Spec.MirrorState == netappv1.MirrorStateReleased {
 		statusCondition.Message = "Releasing snapmirror metadata"
-		c.orchestrator.ReleaseMirror(ctx, existingVolume.BackendUUID, localVolumeHandle)
+		if err := c.orchestrator.ReleaseMirror(ctx, existingVolume.BackendUUID, localVolumeHandle); err != nil {
+			Logx(ctx).WithError(err).Error("Error releasing snapmirror")
+		}
 
 		return updateTMRConditionLocalFields(
 			statusCondition, localVolumeHandle, localPVCName, volumeMapping.RemoteVolumeHandle)
