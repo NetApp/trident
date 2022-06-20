@@ -80,7 +80,9 @@ func (o *SubvolumeHelper) GetSnapshotSuffix(volName string) string {
 func (o *SubvolumeHelper) GetSnapshotInternalName(volName, snapNameValue string) string {
 	snapName := strings.Replace(snapNameValue, snapshotNameSeparator, "-", -1)
 
-	name := fmt.Sprintf("%v-%v%v%v", *o.Config.StoragePrefix, snapName, snapshotNameSeparator, o.GetSnapshotSuffix(volName))
+	name := fmt.Sprintf("%v-%v%v%v", *o.Config.StoragePrefix, snapName, snapshotNameSeparator,
+		o.GetSnapshotSuffix(volName))
+
 	return name
 }
 
@@ -239,9 +241,7 @@ func (d *NASBlockStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	if err = d.populateConfigurationDefaults(ctx, &d.Config); err != nil {
-		return fmt.Errorf("could not populate configuration defaults; %v", err)
-	}
+	d.populateConfigurationDefaults(ctx, &d.Config)
 
 	// Should be called after ensuring a value for storage config is set
 	d.helper = NewFileHelper(d.Config, context)
@@ -308,7 +308,7 @@ func (d *NASBlockStorageDriver) Terminate(ctx context.Context, _ string) {
 // populateConfigurationDefaults fills in default values for configuration settings if not supplied in the config.
 func (d *NASBlockStorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.AzureNFSStorageDriverConfig,
-) error {
+) {
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "NASBlockStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> populateConfigurationDefaults")
@@ -336,11 +336,13 @@ func (d *NASBlockStorageDriver) populateConfigurationDefaults(
 		"LimitVolumeSize": config.LimitVolumeSize,
 	}).Debugf("Configuration defaults")
 
-	return nil
+	return
 }
 
 // initializeStoragePools defines the pools reported to Trident, whether physical or virtual.
-func (d *NASBlockStorageDriver) initializeStoragePools(ctx context.Context) (map[string]storage.Pool, map[string]storage.Pool, error) {
+func (d *NASBlockStorageDriver) initializeStoragePools(
+	ctx context.Context,
+) (map[string]storage.Pool, map[string]storage.Pool, error) {
 	physicalPools := make(map[string]storage.Pool)
 	virtualPools := make(map[string]storage.Pool)
 
@@ -618,7 +620,8 @@ func (d *NASBlockStorageDriver) validate(ctx context.Context) error {
 
 // Create a new subvolume.
 func (d *NASBlockStorageDriver) Create(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
+	ctx context.Context, volConfig *storage.VolumeConfig,
+	storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
 	creationToken := volConfig.InternalName
 
@@ -765,7 +768,8 @@ func (d *NASBlockStorageDriver) CreateClone(
 		}
 
 		// ID of the snapshot subvolume should have all the same attributes as the source volume except the name
-		sourceInternalID = api.CreateSubvolumeID(subscription, resourceGroup, netappAccount, cPoolName, volumeName, snapshotInternalName)
+		sourceInternalID = api.CreateSubvolumeID(subscription, resourceGroup, netappAccount, cPoolName, volumeName,
+			snapshotInternalName)
 	}
 
 	// Get the source subvolume
@@ -829,7 +833,9 @@ func (d *NASBlockStorageDriver) CreateClone(
 
 // Import finds an existing subvolume and makes it available for containers. If ImportNotManaged is false, the
 // subvolume is fully brought under Trident's management.
-func (d *NASBlockStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
+func (d *NASBlockStorageDriver) Import(
+	ctx context.Context, volConfig *storage.VolumeConfig, originalName string,
+) error {
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "Import",
@@ -1065,13 +1071,15 @@ func (d *NASBlockStorageDriver) Publish(
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
-func (d *NASBlockStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
+func (d *NASBlockStorageDriver) CanSnapshot(
+	_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig,
+) error {
 	return nil
 }
 
 // GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
-func (d *NASBlockStorageDriver) GetSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig,
-	volConfig *storage.VolumeConfig,
+func (d *NASBlockStorageDriver) GetSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 	snapName := snapConfig.Name
 	internalVolName := snapConfig.VolumeInternalName
@@ -1131,9 +1139,9 @@ func (d *NASBlockStorageDriver) GetSnapshot(ctx context.Context, snapConfig *sto
 }
 
 // GetSnapshots returns the list of snapshots associated with the specified subvolume
-func (d *NASBlockStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) (
-	[]*storage.Snapshot, error,
-) {
+func (d *NASBlockStorageDriver) GetSnapshots(
+	ctx context.Context, volConfig *storage.VolumeConfig,
+) ([]*storage.Snapshot, error) {
 	internalVolName := volConfig.InternalName
 	externalVolName := volConfig.Name
 	prefix := *d.Config.StoragePrefix
@@ -1155,8 +1163,10 @@ func (d *NASBlockStorageDriver) GetSnapshots(ctx context.Context, volConfig *sto
 	}
 
 	// Fetch list of all the subvolumes from parent volume of the above volConfig
-	subvolumes, err := d.SDK.Subvolumes(ctx, []string{api.CreateVolumeFullName(sourceSubvolume.ResourceGroup,
-		sourceSubvolume.NetAppAccount, sourceSubvolume.CapacityPool, sourceSubvolume.Volume)})
+	subvolumes, err := d.SDK.Subvolumes(ctx, []string{
+		api.CreateVolumeFullName(sourceSubvolume.ResourceGroup,
+			sourceSubvolume.NetAppAccount, sourceSubvolume.CapacityPool, sourceSubvolume.Volume),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -1202,8 +1212,8 @@ func (d *NASBlockStorageDriver) GetSnapshots(ctx context.Context, volConfig *sto
 // CreateSnapshot creates a snapshot for the given volume
 // NOTE: In ANF Subvolumes there is not concept of snapshots, therefore any new snapshot is another
 //       subvolume copy of the source subvolume.
-func (d *NASBlockStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig,
-	volConfig *storage.VolumeConfig,
+func (d *NASBlockStorageDriver) CreateSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 	snapName := snapConfig.Name
 	internalVolName := snapConfig.VolumeInternalName
@@ -1299,8 +1309,8 @@ func (d *NASBlockStorageDriver) CreateSnapshot(ctx context.Context, snapConfig *
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
-func (d *NASBlockStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig,
-	_ *storage.VolumeConfig,
+func (d *NASBlockStorageDriver) RestoreSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
 	snapName := snapConfig.Name
 	internalVolName := snapConfig.VolumeInternalName
@@ -1320,8 +1330,8 @@ func (d *NASBlockStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig 
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
-func (d *NASBlockStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig,
-	volConfig *storage.VolumeConfig,
+func (d *NASBlockStorageDriver) DeleteSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) error {
 	snapName := snapConfig.Name
 	internalVolName := snapConfig.VolumeInternalName
@@ -1422,7 +1432,8 @@ func (d *NASBlockStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 
 	// Make sure we're not shrinking the volume
 	if int64(sizeBytes) < subvolumeWithMetadata.Size {
-		return fmt.Errorf("requested size %d is less than existing subvolume size %d", sizeBytes, subvolumeWithMetadata.Size)
+		return fmt.Errorf("requested size %d is less than existing subvolume size %d", sizeBytes,
+			subvolumeWithMetadata.Size)
 	}
 
 	// Make sure the request isn't above the configured maximum volume size (if any)
@@ -1436,7 +1447,8 @@ func (d *NASBlockStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 	}
 
 	// Wait for resize operation to complete
-	_, err = d.SDK.WaitForSubvolumeState(ctx, subvolumeWithMetadata, api.StateAvailable, []string{api.StateError}, d.defaultTimeout())
+	_, err = d.SDK.WaitForSubvolumeState(ctx, subvolumeWithMetadata, api.StateAvailable, []string{api.StateError},
+		d.defaultTimeout())
 	if err != nil {
 		return fmt.Errorf("could not resize subvolume %s; %v", name, err)
 	}
@@ -1586,7 +1598,9 @@ func (d *NASBlockStorageDriver) GetVolumeExternal(ctx context.Context, name stri
 // container volumes managed by this driver.  It then writes a VolumeExternal
 // representation of each volume to the supplied channel, closing the channel
 // when finished.
-func (d *NASBlockStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channel chan *storage.VolumeExternalWrapper) {
+func (d *NASBlockStorageDriver) GetVolumeExternalWrappers(
+	ctx context.Context, channel chan *storage.VolumeExternalWrapper,
+) {
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "GetVolumeExternalWrappers", "Type": "NASBlockStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> GetVolumeExternalWrappers")

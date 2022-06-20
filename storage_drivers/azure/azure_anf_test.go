@@ -5,7 +5,6 @@ package azure
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -28,25 +27,6 @@ import (
 	"github.com/netapp/trident/storage_drivers/azure/api"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
-)
-
-const (
-	SubscriptionID = "1-subid-23456789876454321"
-	TenantID       = "1-tenantid-23456789876454321"
-	ClientID       = "1-clientid-23456789876454321"
-	ClientSecret   = "client-secret-23456789876454321"
-	Location       = "fake-location"
-	BackendUUID    = "deadbeef-03af-4394-ace4-e177cdbcaf28"
-	SnapshotUUID   = "deadbeef-5c0d-4afa-8cd8-afa3fba5665c"
-	VolumeSizeI64  = int64(107374182400)
-	VolumeSizeStr  = "107374182400"
-)
-
-var (
-	ctx                  = context.TODO()
-	errFailed            = errors.New("failed")
-	debugTraceFlags      = map[string]bool{"method": true, "api": true, "discovery": true}
-	DefaultVolumeSize, _ = strconv.ParseInt(defaultVolumeSizeStr, 10, 64)
 )
 
 func TestMain(m *testing.M) {
@@ -424,7 +404,8 @@ func TestInitialize_SDKInitError(t *testing.T) {
 
 	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(errFailed).Times(1)
 
-	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
+		BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -498,7 +479,8 @@ func TestInitialize_InvalidStoragePrefix(t *testing.T) {
 
 	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
 
-	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
+		BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -534,7 +516,8 @@ func TestInitialize_InvalidVolumeCreateTimeout(t *testing.T) {
 
 	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
 
-	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
+		BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -568,7 +551,8 @@ func TestInitialize_InvalidSDKTimeout(t *testing.T) {
 
 	_, driver := newMockANFDriver(t)
 
-	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
+		BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -602,7 +586,8 @@ func TestInitialize_InvalidMaxCacheAge(t *testing.T) {
 
 	_, driver := newMockANFDriver(t)
 
-	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
+		BackendUUID)
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
@@ -1069,7 +1054,8 @@ func TestCreate(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
+	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
@@ -1323,7 +1309,8 @@ func TestCreate_ZeroSize(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
+	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
@@ -1377,7 +1364,8 @@ func TestCreate_BelowANFMinimumSize(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
+	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
@@ -1479,7 +1467,8 @@ func TestCreate_DefaultMountOptions(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
+	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
@@ -1512,7 +1501,8 @@ func TestCreate_VolConfigMountOptions(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
+	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
@@ -1592,7 +1582,8 @@ func TestCreate_NoSubnet(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
+	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -1617,7 +1608,8 @@ func TestCreate_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(capacityPool).Times(1)
+	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
@@ -1753,7 +1745,8 @@ func TestCreateClone_NoSnapshot(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, createRequest, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolConfig, cloneVolConfig, createRequest, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
+		driver, storagePool)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
@@ -1783,7 +1776,8 @@ func TestCreateClone_Snapshot(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, createRequest, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolConfig, cloneVolConfig, createRequest, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
+		driver, storagePool)
 	cloneVolConfig.CloneSourceSnapshot = "snap1"
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -1898,7 +1892,8 @@ func TestCreateClone_VolumeExistsCheckFailed(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver,
+		storagePool)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
@@ -1921,7 +1916,8 @@ func TestCreateClone_VolumeExistsCreating(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver,
+		storagePool)
 	cloneFilesystem.ProvisioningState = api.StateCreating
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -1946,7 +1942,8 @@ func TestCreateClone_VolumeExists(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver,
+		storagePool)
 	cloneFilesystem.ProvisioningState = api.StateAvailable
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -1971,7 +1968,8 @@ func TestCreateClone_SnapshotNotFound(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver,
+		storagePool)
 	cloneVolConfig.CloneSourceSnapshot = "snap1"
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -1996,7 +1994,8 @@ func TestCreateClone_SnapshotNotAvailable(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
+		driver, storagePool)
 	cloneVolConfig.CloneSourceSnapshot = "snap1"
 	snapshot.ProvisioningState = api.StateError
 
@@ -2022,7 +2021,8 @@ func TestCreateClone_SnapshotCreateFailed(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver,
+		storagePool)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
@@ -2046,7 +2046,8 @@ func TestCreateClone_SnapshotWaitFailed(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
+		driver, storagePool)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
@@ -2072,7 +2073,8 @@ func TestCreateClone_SnapshotRefetchFailed(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
+		driver, storagePool)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
@@ -2104,7 +2106,8 @@ func TestCreateClone_InvalidLabel(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
+		driver, storagePool)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
@@ -2131,7 +2134,8 @@ func TestCreateClone_CreateFailed(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, createRequest, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolConfig, cloneVolConfig, createRequest, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
+		driver, storagePool)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
@@ -2207,7 +2211,8 @@ func TestImport_Managed(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
-	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels, &expectedUnixPermissions).Return(nil).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
+		&expectedUnixPermissions).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
 
@@ -2245,7 +2250,8 @@ func TestImport_ManagedWithLabels(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
-	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels, &expectedUnixPermissions).Return(nil).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
+		&expectedUnixPermissions).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
 
@@ -2401,7 +2407,8 @@ func TestImport_ModifyVolumeFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
-	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels, &expectedUnixPermissions).Return(errFailed).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
+		&expectedUnixPermissions).Return(errFailed).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -2432,7 +2439,8 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
-	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels, &expectedUnixPermissions).Return(nil).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
+		&expectedUnixPermissions).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return("", errFailed).Times(1)
 
@@ -3056,7 +3064,8 @@ func TestGetSnapshot_NonexistentSnapshot(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
-	mockAPI.EXPECT().SnapshotForVolume(ctx, filesystem, snapConfig.InternalName).Return(nil, utils.NotFoundError("not found")).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, filesystem, snapConfig.InternalName).Return(nil,
+		utils.NotFoundError("not found")).Times(1)
 
 	result, resultErr := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
@@ -3963,7 +3972,8 @@ func TestStoreConfig(t *testing.T) {
 
 	driver.StoreConfig(ctx, persistentConfig)
 
-	assert.Equal(t, json.RawMessage("{}"), driver.Config.CommonStorageDriverConfig.StoragePrefixRaw, "raw prefix mismatch")
+	assert.Equal(t, json.RawMessage("{}"), driver.Config.CommonStorageDriverConfig.StoragePrefixRaw,
+		"raw prefix mismatch")
 	assert.Equal(t, driver.Config, *persistentConfig.AzureConfig, "azure config mismatch")
 }
 
