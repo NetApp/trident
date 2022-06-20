@@ -73,6 +73,10 @@ func (i *Installer) UninstallTrident() error {
 		return fmt.Errorf("could not delete Trident daemonset; %v", err)
 	}
 
+	if err := i.client.DeleteTridentResourceQuota(nodeLabel); err != nil {
+		return fmt.Errorf("could not delete Trident resource quota; %v", err)
+	}
+
 	if err := i.client.DeleteTridentService(getServiceName(), appLabel, i.namespace); err != nil {
 		return fmt.Errorf("could not delete Trident service; %v", err)
 	}

@@ -735,6 +735,34 @@ func (mr *MockKubernetesClientMockRecorder) DeletePodSecurityPolicyByLabel(arg0 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodSecurityPolicyByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeletePodSecurityPolicyByLabel), arg0)
 }
 
+// DeleteResourceQuota mocks base method.
+func (m *MockKubernetesClient) DeleteResourceQuota(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteResourceQuota", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteResourceQuota indicates an expected call of DeleteResourceQuota.
+func (mr *MockKubernetesClientMockRecorder) DeleteResourceQuota(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteResourceQuota", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteResourceQuota), arg0)
+}
+
+// DeleteResourceQuotaByLabel mocks base method.
+func (m *MockKubernetesClient) DeleteResourceQuotaByLabel(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteResourceQuotaByLabel", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteResourceQuotaByLabel indicates an expected call of DeleteResourceQuotaByLabel.
+func (mr *MockKubernetesClientMockRecorder) DeleteResourceQuotaByLabel(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteResourceQuotaByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteResourceQuotaByLabel), arg0)
+}
+
 // DeleteSecret mocks base method.
 func (m *MockKubernetesClient) DeleteSecret(arg0, arg1 string) error {
 	m.ctrl.T.Helper()
@@ -1264,6 +1292,51 @@ func (mr *MockKubernetesClientMockRecorder) GetPodsByLabel(arg0, arg1 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodsByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetPodsByLabel), arg0, arg1)
 }
 
+// GetResourceQuota mocks base method.
+func (m *MockKubernetesClient) GetResourceQuota(arg0 string) (*v10.ResourceQuota, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetResourceQuota", arg0)
+	ret0, _ := ret[0].(*v10.ResourceQuota)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetResourceQuota indicates an expected call of GetResourceQuota.
+func (mr *MockKubernetesClientMockRecorder) GetResourceQuota(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceQuota", reflect.TypeOf((*MockKubernetesClient)(nil).GetResourceQuota), arg0)
+}
+
+// GetResourceQuotaByLabel mocks base method.
+func (m *MockKubernetesClient) GetResourceQuotaByLabel(arg0 string) (*v10.ResourceQuota, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetResourceQuotaByLabel", arg0)
+	ret0, _ := ret[0].(*v10.ResourceQuota)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetResourceQuotaByLabel indicates an expected call of GetResourceQuotaByLabel.
+func (mr *MockKubernetesClientMockRecorder) GetResourceQuotaByLabel(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceQuotaByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetResourceQuotaByLabel), arg0)
+}
+
+// GetResourceQuotasByLabel mocks base method.
+func (m *MockKubernetesClient) GetResourceQuotasByLabel(arg0 string) ([]v10.ResourceQuota, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetResourceQuotasByLabel", arg0)
+	ret0, _ := ret[0].([]v10.ResourceQuota)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetResourceQuotasByLabel indicates an expected call of GetResourceQuotasByLabel.
+func (mr *MockKubernetesClientMockRecorder) GetResourceQuotasByLabel(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceQuotasByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetResourceQuotasByLabel), arg0)
+}
+
 // GetSecret mocks base method.
 func (m *MockKubernetesClient) GetSecret(arg0 string) (*v10.Secret, error) {
 	m.ctrl.T.Helper()
@@ -1566,6 +1639,20 @@ func (m *MockKubernetesClient) PatchPodSecurityPolicyByLabel(arg0 string, arg1 [
 func (mr *MockKubernetesClientMockRecorder) PatchPodSecurityPolicyByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodSecurityPolicyByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).PatchPodSecurityPolicyByLabel), arg0, arg1, arg2)
+}
+
+// PatchResourceQuotaByLabel mocks base method.
+func (m *MockKubernetesClient) PatchResourceQuotaByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchResourceQuotaByLabel", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchResourceQuotaByLabel indicates an expected call of PatchResourceQuotaByLabel.
+func (mr *MockKubernetesClientMockRecorder) PatchResourceQuotaByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchResourceQuotaByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).PatchResourceQuotaByLabel), arg0, arg1, arg2)
 }
 
 // PatchSecretByLabel mocks base method.

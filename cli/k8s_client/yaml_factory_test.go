@@ -4,6 +4,7 @@ package k8sclient
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/ghodss/yaml"
@@ -21,6 +22,16 @@ const (
 	ImageName            = "trident-image"
 	AutosupportImageName = "trident-asup-images"
 	LogFormat            = "text"
+
+	TridentAppKey   = "app"
+	TridentAppValue = "csi.trident.netapp.io"
+	TridentAppLabel = TridentAppKey + "=" + TridentAppValue
+
+	CRAPIVersionKey = "apiVersion"
+	CRController    = "controller"
+	CRKind          = "kind"
+	CRName          = "name"
+	CRUID           = "uid"
 )
 
 var Secrets = []string{"thisisasecret1", "thisisasecret2"}
@@ -86,6 +97,7 @@ func TestYAMLFactory(t *testing.T) {
 		GetCSIDeploymentYAML(deploymentArgs),
 		GetCSIServiceYAML(Name, labels, ownerRef),
 		GetSecretYAML(Name, Namespace, labels, ownerRef, nil, nil),
+		GetResourceQuotaYAML(Name, Namespace, labels, nil),
 	}
 	for _, yamlData := range yamlsOutputs {
 		_, err := yaml.YAMLToJSON([]byte(yamlData))
@@ -479,4 +491,58 @@ func TestConstructNodeSelector(t *testing.T) {
 		}
 	}
 	assert.True(t, isResultExpected)
+}
+
+func TestGetResourceQuotaYAML(t *testing.T) {
+	// setup labels and controlling cr details for the test cases
+	appLabels := map[string]string{
+		TridentAppKey: TridentAppValue,
+	}
+
+	controllingCRDetails := map[string]string{
+		CRAPIVersionKey: "v1",
+		CRController:    "true",
+		CRKind:          "TridentOrchestrator",
+		CRName:          "trident",
+		CRUID:           "1ec3fba0-ed52-43a4-a7e3-3e9b227f0ead",
+	}
+
+	// create the labels and controllingCRDetails strings as they would exist in the YAML
+	appLabelString := constructLabels(appLabels)
+	controllingCRString := constructOwnerRef(controllingCRDetails)
+
+	// get the YAML
+	resourceQuotaYAML := GetResourceQuotaYAML(Name, Namespace, appLabels, controllingCRDetails)
+
+	// assert the appropriate substrings exist
+	assert.Equal(t, strings.Contains(resourceQuotaYAML, Name), true)
+	assert.Equal(t, strings.Contains(resourceQuotaYAML, Namespace), true)
+	assert.Equal(t, strings.ContainsAny(resourceQuotaYAML, appLabelString), true)
+	assert.Equal(t, strings.ContainsAny(resourceQuotaYAML, controllingCRString), true)
+
+	// setup different labels and controllingCRDetails without "trident" as "trident" is used for Name and Namespace
+	appLabels = map[string]string{
+		"key": "value",
+	}
+
+	controllingCRDetails = map[string]string{
+		CRAPIVersionKey: "v1",
+		CRController:    "true",
+		CRKind:          "torc",
+		CRName:          "torc",
+		CRUID:           "1ec3fba0-ed52-43a4-a7e3-3e9b227f0ead",
+	}
+
+	// create the labels and controllingCRDetails strings as they would exist in the YAML
+	appLabelString = constructLabels(appLabels)
+	controllingCRString = constructOwnerRef(controllingCRDetails)
+
+	// get the YAML
+	resourceQuotaYAML = GetResourceQuotaYAML("any", "default", appLabels, controllingCRDetails)
+
+	// assert ONLY the appropriate substrings exist
+	assert.Equal(t, strings.Contains(resourceQuotaYAML, Name), false)
+	assert.Equal(t, strings.Contains(resourceQuotaYAML, Namespace), false)
+	assert.Equal(t, strings.ContainsAny(resourceQuotaYAML, appLabelString), true)
+	assert.Equal(t, strings.ContainsAny(resourceQuotaYAML, controllingCRString), true)
 }

@@ -289,6 +289,38 @@ func uninstallTrident() error {
 		}
 	}
 
+	if resourceQuota, err := client.GetResourceQuotaByLabel(TridentNodeLabel); err != nil {
+		log.WithFields(log.Fields{
+			"label": TridentNodeLabel,
+			"error": err,
+		}).Warning("Trident resource quota not found by label.")
+	} else {
+
+		// ResourceQuota found by label; ensure there isn't a namespace clash
+		if TridentPodNamespace != resourceQuota.Namespace {
+			return fmt.Errorf("a Trident resource quota was found in namespace '%s', "+
+				"not in specified namespace '%s'", resourceQuota.Namespace, TridentPodNamespace)
+		}
+
+		log.WithFields(log.Fields{
+			"resourcequota": resourceQuota.Name,
+			"namespace":     resourceQuota.Namespace,
+		}).Debug("Trident resource quota found by label.")
+
+		// Delete the resource quota
+		if err = client.DeleteResourceQuotaByLabel(TridentNodeLabel); err != nil {
+			log.WithFields(log.Fields{
+				"resourcequota": resourceQuota.Name,
+				"namespace":     resourceQuota.Namespace,
+				"label":         TridentNodeLabel,
+				"error":         err,
+			}).Warning("Could not delete resource quota.")
+			anyErrors = true
+		} else {
+			log.Info("Deleted Trident resource quota.")
+		}
+	}
+
 	if secrets, err := client.GetSecretsByLabel(TridentCSILabel, false); err != nil {
 		log.WithFields(log.Fields{
 			"label": TridentCSILabel,

@@ -490,6 +490,13 @@ func (i *Installer) InstallOrPatchTrident(
 		return nil, "", returnError
 	}
 
+	// Create or update the Trident Resource Quota
+	returnError = i.createOrPatchTridentResourceQuota(controllingCRDetails, labels, shouldUpdate)
+	if returnError != nil {
+		returnError = fmt.Errorf("failed to create the Trident Resource Quota; %v", returnError)
+		return nil, "", returnError
+	}
+
 	// Create or update the Trident CSI deployment
 	returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
 	if returnError != nil {
@@ -1031,6 +1038,46 @@ func (i *Installer) createOrConsumeTridentEncryptionSecret(
 		if err = i.client.PutSecret(true, newSecretYAML, getEncryptionSecretName()); err != nil {
 			return fmt.Errorf("failed to create Trident encryption secret; %v", err)
 		}
+	}
+
+	return nil
+}
+
+// createOrPatchTridentResourceQuota creates a Trident Resource Quota or patches an existing one;
+// this should happen before the Trident Deployment and DaemonSet are created.
+func (i *Installer) createOrPatchTridentResourceQuota(
+	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+) error {
+	resourceQuotaName := getResourceQuotaName()
+	nodeLabel := TridentNodeLabel
+
+	currentResourceQuota, unwantedResourceQuotas, createResourceQuota, err := i.client.GetResourceQuotaInformation(
+		resourceQuotaName, nodeLabel, i.namespace)
+	if err != nil {
+		return fmt.Errorf("failed to get Trident resource quota information; %v", err)
+	}
+
+	// Create a new resource quota if there is a current resource quota, but it should be updated.
+	if currentResourceQuota != nil && shouldUpdate {
+		unwantedResourceQuotas = append(unwantedResourceQuotas, *currentResourceQuota)
+		createResourceQuota = true
+	}
+
+	if err = i.client.RemoveMultipleResourceQuotas(unwantedResourceQuotas); err != nil {
+		return fmt.Errorf("failed to remove unwanted Trident resource quotas; %v", err)
+	}
+
+	// copy all labels then replace the app label locally to avoid mutating the map of labels.
+	nodeLabels := make(map[string]string)
+	for k, v := range labels {
+		nodeLabels[k] = v
+	}
+	nodeLabels[appLabelKey] = TridentNodeLabelValue
+	newResourceQuotaYAML := k8sclient.GetResourceQuotaYAML(resourceQuotaName, i.namespace, nodeLabels, controllingCRDetails)
+
+	err = i.client.PutResourceQuota(currentResourceQuota, createResourceQuota, newResourceQuotaYAML, nodeLabel)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch Trident resource quota; %v", err)
 	}
 
 	return nil

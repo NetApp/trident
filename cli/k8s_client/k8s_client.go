@@ -1804,6 +1804,102 @@ func (k *KubeClient) GetNamespace(namespace string) (*v1.Namespace, error) {
 	return k.clientset.CoreV1().Namespaces().Get(ctx(), namespace, getOpts)
 }
 
+// GetResourceQuota returns a ResourceQuota by name.
+func (k *KubeClient) GetResourceQuota(name string) (*v1.ResourceQuota, error) {
+	var options metav1.GetOptions
+	return k.clientset.CoreV1().ResourceQuotas(k.namespace).Get(ctx(), name, options)
+}
+
+// GetResourceQuotaByLabel returns a ResourceQuota by label.
+func (k *KubeClient) GetResourceQuotaByLabel(label string) (*v1.ResourceQuota, error) {
+	resourceQuotas, err := k.GetResourceQuotasByLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(resourceQuotas) == 0 {
+		return nil, utils.NotFoundError(fmt.Sprintf("no resource quotas have the label %s", label))
+	} else if len(resourceQuotas) > 1 {
+		return nil, fmt.Errorf("multiple resource quotas have the label %s", label)
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"namespace": k.namespace,
+	}).Debug("Found resource quota by label.")
+
+	return &resourceQuotas[0], nil
+}
+
+// GetResourceQuotasByLabel returns all ResourceQuotas matching a given label.
+func (k *KubeClient) GetResourceQuotasByLabel(label string) ([]v1.ResourceQuota, error) {
+	listOptions, err := k.listOptionsFromLabel(label)
+	if err != nil {
+		return nil, err
+	}
+
+	resourceQuotas, err := k.clientset.CoreV1().ResourceQuotas(k.namespace).List(ctx(), listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceQuotas.Items, nil
+}
+
+// DeleteResourceQuota deletes a ResourceQuota by name.
+func (k *KubeClient) DeleteResourceQuota(name string) error {
+	if err := k.clientset.CoreV1().ResourceQuotas(k.namespace).Delete(ctx(), name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"resourcequota": name,
+		"namespace":     k.namespace,
+	}).Debug("Deleted resource quota by name.")
+
+	return nil
+}
+
+// DeleteResourceQuotaByLabel deletes a ResourceQuota by label.
+func (k *KubeClient) DeleteResourceQuotaByLabel(label string) error {
+	resourceQuota, err := k.GetResourceQuotaByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	if err = k.clientset.CoreV1().ResourceQuotas(k.namespace).Delete(ctx(), resourceQuota.Name, k.deleteOptions()); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"namespace": k.namespace,
+	}).Debug("Deleted resource quota by label.")
+
+	return nil
+}
+
+// PatchResourceQuotaByLabel patches a ResourceQuota object matching a given label in the client namespace.
+func (k *KubeClient) PatchResourceQuotaByLabel(label string, patchBytes []byte, patchType types.PatchType) error {
+	resourceQuota, err := k.GetResourceQuotaByLabel(label)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.CoreV1().ResourceQuotas(k.namespace).Patch(ctx(), resourceQuota.Name,
+		patchType, patchBytes, patchOpts); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":         label,
+		"resourcequota": resourceQuota.Name,
+		"namespace":     k.namespace,
+	}).Debug("Patched Trident resource quota.")
+
+	return nil
+}
+
 // CreateSecret creates a new Secret
 func (k *KubeClient) CreateSecret(secret *v1.Secret) (*v1.Secret, error) {
 	return k.clientset.CoreV1().Secrets(k.namespace).Create(ctx(), secret, createOpts)

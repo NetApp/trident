@@ -935,6 +935,34 @@ func (mr *MockExtendedK8sClientMockRecorder) DeletePodSecurityPolicyByLabel(arg0
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodSecurityPolicyByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeletePodSecurityPolicyByLabel), arg0)
 }
 
+// DeleteResourceQuota mocks base method.
+func (m *MockExtendedK8sClient) DeleteResourceQuota(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteResourceQuota", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteResourceQuota indicates an expected call of DeleteResourceQuota.
+func (mr *MockExtendedK8sClientMockRecorder) DeleteResourceQuota(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteResourceQuota", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteResourceQuota), arg0)
+}
+
+// DeleteResourceQuotaByLabel mocks base method.
+func (m *MockExtendedK8sClient) DeleteResourceQuotaByLabel(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteResourceQuotaByLabel", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteResourceQuotaByLabel indicates an expected call of DeleteResourceQuotaByLabel.
+func (mr *MockExtendedK8sClientMockRecorder) DeleteResourceQuotaByLabel(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteResourceQuotaByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteResourceQuotaByLabel), arg0)
+}
+
 // DeleteSecret mocks base method.
 func (m *MockExtendedK8sClient) DeleteSecret(arg0, arg1 string) error {
 	m.ctrl.T.Helper()
@@ -1143,6 +1171,20 @@ func (m *MockExtendedK8sClient) DeleteTridentPodSecurityPolicy(arg0, arg1 string
 func (mr *MockExtendedK8sClientMockRecorder) DeleteTridentPodSecurityPolicy(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTridentPodSecurityPolicy", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteTridentPodSecurityPolicy), arg0, arg1)
+}
+
+// DeleteTridentResourceQuota mocks base method.
+func (m *MockExtendedK8sClient) DeleteTridentResourceQuota(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTridentResourceQuota", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTridentResourceQuota indicates an expected call of DeleteTridentResourceQuota.
+func (mr *MockExtendedK8sClientMockRecorder) DeleteTridentResourceQuota(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTridentResourceQuota", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteTridentResourceQuota), arg0)
 }
 
 // DeleteTridentSecret mocks base method.
@@ -1735,6 +1777,68 @@ func (mr *MockExtendedK8sClientMockRecorder) GetPodsByLabel(arg0, arg1 interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodsByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetPodsByLabel), arg0, arg1)
 }
 
+// GetResourceQuota mocks base method.
+func (m *MockExtendedK8sClient) GetResourceQuota(arg0 string) (*v11.ResourceQuota, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetResourceQuota", arg0)
+	ret0, _ := ret[0].(*v11.ResourceQuota)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetResourceQuota indicates an expected call of GetResourceQuota.
+func (mr *MockExtendedK8sClientMockRecorder) GetResourceQuota(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceQuota", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetResourceQuota), arg0)
+}
+
+// GetResourceQuotaByLabel mocks base method.
+func (m *MockExtendedK8sClient) GetResourceQuotaByLabel(arg0 string) (*v11.ResourceQuota, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetResourceQuotaByLabel", arg0)
+	ret0, _ := ret[0].(*v11.ResourceQuota)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetResourceQuotaByLabel indicates an expected call of GetResourceQuotaByLabel.
+func (mr *MockExtendedK8sClientMockRecorder) GetResourceQuotaByLabel(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceQuotaByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetResourceQuotaByLabel), arg0)
+}
+
+// GetResourceQuotaInformation mocks base method.
+func (m *MockExtendedK8sClient) GetResourceQuotaInformation(arg0, arg1, arg2 string) (*v11.ResourceQuota, []v11.ResourceQuota, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetResourceQuotaInformation", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*v11.ResourceQuota)
+	ret1, _ := ret[1].([]v11.ResourceQuota)
+	ret2, _ := ret[2].(bool)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// GetResourceQuotaInformation indicates an expected call of GetResourceQuotaInformation.
+func (mr *MockExtendedK8sClientMockRecorder) GetResourceQuotaInformation(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceQuotaInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetResourceQuotaInformation), arg0, arg1, arg2)
+}
+
+// GetResourceQuotasByLabel mocks base method.
+func (m *MockExtendedK8sClient) GetResourceQuotasByLabel(arg0 string) ([]v11.ResourceQuota, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetResourceQuotasByLabel", arg0)
+	ret0, _ := ret[0].([]v11.ResourceQuota)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetResourceQuotasByLabel indicates an expected call of GetResourceQuotasByLabel.
+func (mr *MockExtendedK8sClientMockRecorder) GetResourceQuotasByLabel(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResourceQuotasByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetResourceQuotasByLabel), arg0)
+}
+
 // GetSecret mocks base method.
 func (m *MockExtendedK8sClient) GetSecret(arg0 string) (*v11.Secret, error) {
 	m.ctrl.T.Helper()
@@ -2108,6 +2212,20 @@ func (mr *MockExtendedK8sClientMockRecorder) PatchPodSecurityPolicyByLabel(arg0,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodSecurityPolicyByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchPodSecurityPolicyByLabel), arg0, arg1, arg2)
 }
 
+// PatchResourceQuotaByLabel mocks base method.
+func (m *MockExtendedK8sClient) PatchResourceQuotaByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchResourceQuotaByLabel", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchResourceQuotaByLabel indicates an expected call of PatchResourceQuotaByLabel.
+func (mr *MockExtendedK8sClientMockRecorder) PatchResourceQuotaByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchResourceQuotaByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchResourceQuotaByLabel), arg0, arg1, arg2)
+}
+
 // PatchSecretByLabel mocks base method.
 func (m *MockExtendedK8sClient) PatchSecretByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
 	m.ctrl.T.Helper()
@@ -2246,6 +2364,20 @@ func (m *MockExtendedK8sClient) PutPodSecurityPolicy(arg0 *v1beta1.PodSecurityPo
 func (mr *MockExtendedK8sClientMockRecorder) PutPodSecurityPolicy(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutPodSecurityPolicy", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutPodSecurityPolicy), arg0, arg1, arg2, arg3)
+}
+
+// PutResourceQuota mocks base method.
+func (m *MockExtendedK8sClient) PutResourceQuota(arg0 *v11.ResourceQuota, arg1 bool, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutResourceQuota", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PutResourceQuota indicates an expected call of PutResourceQuota.
+func (mr *MockExtendedK8sClientMockRecorder) PutResourceQuota(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutResourceQuota", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutResourceQuota), arg0, arg1, arg2, arg3)
 }
 
 // PutSecret mocks base method.
@@ -2401,6 +2533,20 @@ func (m *MockExtendedK8sClient) RemoveMultiplePods(arg0 []v11.Pod) error {
 func (mr *MockExtendedK8sClientMockRecorder) RemoveMultiplePods(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultiplePods", reflect.TypeOf((*MockExtendedK8sClient)(nil).RemoveMultiplePods), arg0)
+}
+
+// RemoveMultipleResourceQuotas mocks base method.
+func (m *MockExtendedK8sClient) RemoveMultipleResourceQuotas(arg0 []v11.ResourceQuota) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveMultipleResourceQuotas", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveMultipleResourceQuotas indicates an expected call of RemoveMultipleResourceQuotas.
+func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleResourceQuotas(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultipleResourceQuotas", reflect.TypeOf((*MockExtendedK8sClient)(nil).RemoveMultipleResourceQuotas), arg0)
 }
 
 // RemoveMultipleSecrets mocks base method.

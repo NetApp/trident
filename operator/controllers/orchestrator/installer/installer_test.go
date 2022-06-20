@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"testing"
 
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
@@ -82,4 +84,53 @@ func TestInstaller_createOrConsumeTridentEncryptionSecret(t *testing.T) {
 	mockK8sClient.EXPECT().PutSecret(true, gomock.Any(), encryptSecretName).Return(k8sClientError)
 	expectedErr = installer.createOrConsumeTridentEncryptionSecret(controllingCRDetails, labels, false)
 	assert.NotNil(t, expectedErr, "expected no nil error")
+}
+
+func TestInstaller_createOrPatchTridentResourceQuota(t *testing.T) {
+	mockK8sClient := newMockKubeClient(t)
+	installer := newTestInstaller(mockK8sClient)
+
+	// setup values for inputs and outputs of mocked functions.
+	controllingCRDetails := createTestControllingCRDetails()
+	labels := createTestLabels()
+	labels[appLabelKey] = TridentNodeLabelValue
+	resourceQuotaName := getResourceQuotaName()
+	nodeLabel := TridentNodeLabel
+	resourceQuota := &corev1.ResourceQuota{}
+	unwantedResourceQuotas := []corev1.ResourceQuota{
+		*resourceQuota,
+	}
+	emptyResourceQuotaList := make([]corev1.ResourceQuota, 0)
+
+	// K8s error at GetResourceQuotaInformation
+	mockK8sClient.EXPECT().GetResourceQuotaInformation(resourceQuotaName, nodeLabel, installer.namespace).Return(nil, nil, true, k8sClientError)
+	expectedErr := installer.createOrPatchTridentResourceQuota(controllingCRDetails, labels, false)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	// "shouldUpdate" is true; failure at RemoveMultipleResourceQuotas
+	mockK8sClient.EXPECT().GetResourceQuotaInformation(resourceQuotaName, nodeLabel, installer.namespace).Return(resourceQuota, emptyResourceQuotaList, false, nil)
+	mockK8sClient.EXPECT().RemoveMultipleResourceQuotas(unwantedResourceQuotas).Return(k8sClientError)
+	expectedErr = installer.createOrPatchTridentResourceQuota(controllingCRDetails, labels, true)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	// "shouldUpdate" is false; "createResourceQuota" is true
+	mockK8sClient.EXPECT().GetResourceQuotaInformation(resourceQuotaName, nodeLabel, installer.namespace).Return(resourceQuota, emptyResourceQuotaList, true, nil)
+	mockK8sClient.EXPECT().RemoveMultipleResourceQuotas(emptyResourceQuotaList).Return(nil)
+	mockK8sClient.EXPECT().PutResourceQuota(resourceQuota, true, gomock.Any(), nodeLabel).Return(k8sClientError)
+	expectedErr = installer.createOrPatchTridentResourceQuota(controllingCRDetails, labels, false)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	// "shouldUpdate" is false; "createResourceQuota" is false
+	mockK8sClient.EXPECT().GetResourceQuotaInformation(resourceQuotaName, nodeLabel, installer.namespace).Return(resourceQuota, emptyResourceQuotaList, false, nil)
+	mockK8sClient.EXPECT().RemoveMultipleResourceQuotas(emptyResourceQuotaList).Return(nil)
+	mockK8sClient.EXPECT().PutResourceQuota(resourceQuota, false, gomock.Any(), nodeLabel).Return(k8sClientError)
+	expectedErr = installer.createOrPatchTridentResourceQuota(controllingCRDetails, labels, false)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	// "shouldUpdate" is true; "createResourceQuota" is true
+	mockK8sClient.EXPECT().GetResourceQuotaInformation(resourceQuotaName, nodeLabel, installer.namespace).Return(resourceQuota, emptyResourceQuotaList, true, nil)
+	mockK8sClient.EXPECT().RemoveMultipleResourceQuotas(unwantedResourceQuotas).Return(nil)
+	mockK8sClient.EXPECT().PutResourceQuota(resourceQuota, true, gomock.Any(), nodeLabel).Return(nil)
+	expectedErr = installer.createOrPatchTridentResourceQuota(controllingCRDetails, labels, true)
+	assert.Nil(t, expectedErr, "expected nil error")
 }

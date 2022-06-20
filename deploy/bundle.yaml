@@ -80,6 +80,18 @@ rules:
   - apiGroups:
       - ""
     resources:
+      - resourcequotas
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - update
+      - patch
+  - apiGroups:
+      - ""
+    resources:
       - pods
     verbs:
       - get

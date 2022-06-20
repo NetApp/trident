@@ -3658,6 +3658,449 @@ func TestGetServiceInformation(t *testing.T) {
 	}
 }
 
+func TestGetResourceQuotaInformation(t *testing.T) {
+	// declare and initialize variables used throughout the test cases
+	var label, name, invalidName, namespace string
+	var validResourceQuota, invalidResourceQuota corev1.ResourceQuota
+	var unwantedResourceQuota, combinationResourceQuotas, emptyResourceQuotas []corev1.ResourceQuota
+
+	label = "trident-csi"
+	name = getResourceQuotaName()
+	namespace = "default"
+	invalidName = ""
+
+	validResourceQuota = corev1.ResourceQuota{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+	}
+	invalidResourceQuota = corev1.ResourceQuota{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      invalidName,
+			Namespace: namespace,
+		},
+	}
+	unwantedResourceQuota = []corev1.ResourceQuota{invalidResourceQuota, invalidResourceQuota}
+	combinationResourceQuotas = append([]corev1.ResourceQuota{validResourceQuota}, append(combinationResourceQuotas,
+		unwantedResourceQuota...)...)
+
+	// setup input and output test types for easy use
+	type input struct {
+		label        string
+		name         string
+		namespace    string
+		shouldUpdate bool
+	}
+
+	type output struct {
+		currentResourceQuota   *corev1.ResourceQuota
+		unwantedResourceQuotas []corev1.ResourceQuota
+		createResourceQuota    bool
+		err                    error
+	}
+
+	// setup values for the test table with input, expected output, and mocks
+	tests := map[string]struct {
+		input  input
+		output output
+		// args[0] = label (string), args[1] = name (string), args[2] = namespace (string), args[3] = shouldUpdate (bool)
+		mocks func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{})
+	}{
+		"expect to fail with k8s error": {
+			input: input{
+				label:        label,
+				name:         name,
+				namespace:    namespace,
+				shouldUpdate: true,
+			},
+			output: output{
+				currentResourceQuota:   nil,
+				unwantedResourceQuotas: nil,
+				createResourceQuota:    true,
+				err:                    fmt.Errorf("unable to get list of resource quotas"),
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// mock calls here
+				mockKubeClient.EXPECT().GetResourceQuotasByLabel(args[0]).Return(nil,
+					fmt.Errorf(""))
+			},
+		},
+		"expect to pass with no resource quotas found and no k8s error": {
+			input: input{
+				label:        label,
+				name:         invalidName,
+				namespace:    namespace,
+				shouldUpdate: false,
+			},
+			output: output{
+				currentResourceQuota:   nil,
+				unwantedResourceQuotas: nil,
+				createResourceQuota:    true,
+				err:                    nil,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// mock calls here
+				mockKubeClient.EXPECT().GetResourceQuotasByLabel(args[0]).Return(emptyResourceQuotas, nil)
+				// mockKubeClient.EXPECT().DeleteSecret(args[1], args[2]).Return(nil)
+			},
+		},
+		"expect to pass with a valid current resource quota found and no k8s error": {
+			input: input{
+				label:        label,
+				name:         name,
+				namespace:    namespace,
+				shouldUpdate: false,
+			},
+			output: output{
+				currentResourceQuota:   &validResourceQuota,
+				unwantedResourceQuotas: unwantedResourceQuota,
+				createResourceQuota:    false,
+				err:                    nil,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// mock calls here
+				mockKubeClient.EXPECT().GetResourceQuotasByLabel(args[0]).Return(combinationResourceQuotas, nil)
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(
+			name, func(t *testing.T) {
+				// setup mock controller and kube client
+				mockCtrl := gomock.NewController(t)
+				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
+
+				// extract the input variables from the test case definition
+				label, name, namespace, shouldUpdate := test.input.label, test.input.name,
+					test.input.namespace, test.input.shouldUpdate
+
+				// extract the output variables from the test case definition
+				expectedCurrentResourceQuota, expectedUnwantedResourceQuotas,
+					expectedCreateResourceQuota,
+					expectedErr := test.output.currentResourceQuota, test.output.unwantedResourceQuotas,
+					test.output.createResourceQuota, test.output.err
+
+				// mock out the k8s client calls needed to test this
+				// args[0] = label, args[1] = name, args[2] = namespace, args[3] = shouldUpdate
+				test.mocks(mockKubeClient, label, name, namespace, shouldUpdate)
+
+				extendedK8sClient := &K8sClient{mockKubeClient}
+				currentResourceQuota, unwantedResourceQuotas, createResourceQuota,
+					err := extendedK8sClient.GetResourceQuotaInformation(name, label, namespace)
+
+				assert.EqualValues(t, expectedCurrentResourceQuota, currentResourceQuota)
+				assert.EqualValues(t, expectedUnwantedResourceQuotas, unwantedResourceQuotas)
+				assert.Equal(t, len(expectedUnwantedResourceQuotas), len(unwantedResourceQuotas))
+				assert.Equal(t, expectedCreateResourceQuota, createResourceQuota)
+				assert.Equal(t, expectedErr, err)
+			},
+		)
+	}
+}
+
+func TestPutResourceQuota(t *testing.T) {
+	resourceQuotaName := getResourceQuotaName()
+	resourceQuota := &corev1.ResourceQuota{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: resourceQuotaName,
+		},
+	}
+	appLabel := TridentCSILabel
+	newResourceQuotaYAML := k8sclient.GetResourceQuotaYAML(
+		resourceQuotaName,
+		"trident",
+		make(map[string]string, 0),
+		make(map[string]string, 0),
+	)
+	k8sClientErr := fmt.Errorf("k8s client error")
+
+	// defining a custom input type makes testing different cases easier
+	type input struct {
+		currentResourceQuota *corev1.ResourceQuota
+		createResourceQuota  bool
+		newResourceQuotaYAML string
+		appLabel             string
+		patchBytes           []byte
+		patchType            types.PatchType
+	}
+
+	// setup values for the test table with input, expected output, and mocks
+	tests := map[string]struct {
+		input       input
+		errorExists bool
+		// args[0] = newResourceQuotaYAML, args[1] = appLabel, args[2] = patchBytes, args[3] = patchType
+		mocks func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{})
+	}{
+		"expect to pass when creating a Resource Quota and no k8s error occurs": {
+			input: input{
+				currentResourceQuota: nil,
+				createResourceQuota:  true,
+				newResourceQuotaYAML: newResourceQuotaYAML,
+				appLabel:             appLabel,
+			},
+			errorExists: false,
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// mock calls here
+				objectYAML := args[0].(string)
+				mockKubeClient.EXPECT().CreateObjectByYAML(objectYAML).Return(nil)
+			},
+		},
+		"expect to fail when creating a Resource Quota and a k8s error occurs": {
+			input: input{
+				currentResourceQuota: nil,
+				createResourceQuota:  true,
+				newResourceQuotaYAML: newResourceQuotaYAML,
+				appLabel:             appLabel,
+			},
+			errorExists: true,
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// mock calls here
+				objectYAML := args[0].(string)
+				mockKubeClient.EXPECT().CreateObjectByYAML(objectYAML).Return(k8sClientError)
+			},
+		},
+		"expect to pass when createResourceQuota is false": {
+			input: input{
+				currentResourceQuota: resourceQuota,
+				createResourceQuota:  false,
+				newResourceQuotaYAML: newResourceQuotaYAML,
+				appLabel:             appLabel,
+			},
+			errorExists: false,
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// no calls to mock here
+				// mock calls here
+				appLabel, _ := args[1].(string)
+				patchBytes, _ := args[2].([]byte)
+				patchType, _ := args[3].(types.PatchType)
+				patchBytesMatcher := &JSONMatcher{patchBytes}
+				mockKubeClient.EXPECT().PatchResourceQuotaByLabel(appLabel, patchBytesMatcher,
+					patchType).Return(nil)
+			},
+		},
+		"expect to fail when updating a ResourceQuota and a k8s error occurs": {
+			input: input{
+				currentResourceQuota: resourceQuota,
+				createResourceQuota:  false,
+				newResourceQuotaYAML: newResourceQuotaYAML,
+				appLabel:             appLabel,
+			},
+			errorExists: true,
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// mock calls here
+				appLabel, _ := args[1].(string)
+				patchBytes, _ := args[2].([]byte)
+				patchType, _ := args[3].(types.PatchType)
+				patchBytesMatcher := &JSONMatcher{patchBytes}
+				mockKubeClient.EXPECT().PatchResourceQuotaByLabel(appLabel, patchBytesMatcher,
+					patchType).Return(k8sClientErr)
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(
+			name, func(t *testing.T) {
+				var err error
+				var patchBytes []byte
+				var patchType types.PatchType
+
+				// setup mock controller and kube client
+				mockCtrl := gomock.NewController(t)
+				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
+
+				// extract the input variables from the test case definition
+				currentResourceQuota, createResourceQuota, newResourceQuotaYAML, appLabel := test.input.currentResourceQuota,
+					test.input.createResourceQuota, test.input.newResourceQuotaYAML, test.input.appLabel
+
+				if !createResourceQuota {
+					if patchBytes, err = genericPatch(currentResourceQuota, []byte(newResourceQuotaYAML)); err != nil {
+						t.Fatal(err)
+					}
+					patchType = types.MergePatchType
+				}
+
+				// extract the output err
+				expectedErr := test.errorExists
+
+				// mock out calls found in every test case
+				mockKubeClient.EXPECT().Namespace().AnyTimes()
+
+				// mock out the k8s client calls needed to test this
+				test.mocks(mockKubeClient, newResourceQuotaYAML, appLabel, patchBytes, patchType)
+				extendedK8sClient := &K8sClient{mockKubeClient}
+
+				// make the call
+				err = extendedK8sClient.PutResourceQuota(currentResourceQuota, createResourceQuota, newResourceQuotaYAML, appLabel)
+
+				assert.Equal(t, expectedErr, err != nil)
+			},
+		)
+	}
+}
+
+func TestDeleteTridentResourceQuota(t *testing.T) {
+	// arrange variables for the tests
+	var emptyResourceQuotaList, unwantedResourceQuotas []corev1.ResourceQuota
+	var undeletedResourceQuotas []string
+
+	getResourceQuotasErr := fmt.Errorf("unable to get list of resource quotas")
+	resourceQuotaName := getResourceQuotaName()
+	namespace := "namespace"
+	appLabel := "trident-csi"
+
+	unwantedResourceQuotas = []corev1.ResourceQuota{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      resourceQuotaName,
+				Namespace: namespace,
+			},
+		},
+	}
+
+	for _, resourceQuota := range unwantedResourceQuotas {
+		undeletedResourceQuotas = append(undeletedResourceQuotas, fmt.Sprintf("%v/%v", resourceQuota.Namespace,
+			resourceQuota.Name))
+	}
+
+	tests := map[string]struct {
+		input       string
+		errorExists bool
+		mocks       func(*mockK8sClient.MockKubernetesClient)
+	}{
+		"expect to fail when GetResourceQuotasByLabel fails": {
+			input:       appLabel,
+			errorExists: true,
+			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
+				mockK8sClient.EXPECT().GetResourceQuotasByLabel(appLabel).Return(nil, getResourceQuotasErr)
+			},
+		},
+		"expect to pass when GetResourceQuotasByLabel returns no resource quotas": {
+			input:       appLabel,
+			errorExists: false,
+			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
+				mockK8sClient.EXPECT().GetResourceQuotasByLabel(appLabel).Return(emptyResourceQuotaList, nil)
+			},
+		},
+		"expect to fail when GetResourceQuotasByLabel succeeds but RemoveMultipleResourceQuotas fails": {
+			input:       appLabel,
+			errorExists: true,
+			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
+				mockK8sClient.EXPECT().GetResourceQuotasByLabel(appLabel).Return(unwantedResourceQuotas, nil)
+				mockK8sClient.EXPECT().DeleteResourceQuota(resourceQuotaName).Return(fmt.Errorf("")).
+					MaxTimes(len(unwantedResourceQuotas))
+			},
+		},
+		"expect to pass when GetResourceQuotasByLabel succeeds and RemoveMultipleResourceQuotas succeeds": {
+			input:       appLabel,
+			errorExists: false,
+			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
+				mockK8sClient.EXPECT().GetResourceQuotasByLabel(appLabel).Return(unwantedResourceQuotas, nil)
+				mockK8sClient.EXPECT().DeleteResourceQuota(resourceQuotaName).Return(nil).
+					MaxTimes(len(unwantedResourceQuotas))
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(
+			name, func(t *testing.T) {
+				// setup mock controller and kube client
+				mockCtrl := gomock.NewController(t)
+				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
+
+				// mock out the k8s client calls needed to test this
+				test.mocks(mockKubeClient)
+				extendedK8sClient := &K8sClient{mockKubeClient}
+				err := extendedK8sClient.DeleteTridentResourceQuota(test.input)
+				assert.Equal(t, test.errorExists, err != nil)
+			},
+		)
+	}
+}
+
+func TestRemoveMultipleResourceQuotas(t *testing.T) {
+	// arrange variables for the tests
+	var emptyResourceQuotaList, unwantedResourceQuotas []corev1.ResourceQuota
+	var undeletedResourceQuotas []string
+
+	deleteDeploymentErr := fmt.Errorf("could not delete resource quota")
+	resourceQuotaName := getResourceQuotaName()
+	namespace := "namespace"
+
+	unwantedResourceQuotas = []corev1.ResourceQuota{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      resourceQuotaName,
+				Namespace: namespace,
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      resourceQuotaName,
+				Namespace: namespace,
+			},
+		},
+	}
+
+	for _, resourceQuota := range unwantedResourceQuotas {
+		undeletedResourceQuotas = append(undeletedResourceQuotas, fmt.Sprintf("%v/%v", resourceQuota.Namespace,
+			resourceQuota.Name))
+	}
+
+	tests := map[string]struct {
+		input       []corev1.ResourceQuota
+		errorExists bool
+		mocks       func(*mockK8sClient.MockKubernetesClient)
+	}{
+		"expect to pass with no resource quotas": {
+			input:       emptyResourceQuotaList,
+			errorExists: false,
+			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
+				// do nothing as the lower level k8s call will never execute
+			},
+		},
+		"expect to fail with k8s call error": {
+			input:       unwantedResourceQuotas,
+			errorExists: true,
+			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
+				mockK8sClient.EXPECT().DeleteResourceQuota(resourceQuotaName).
+					Return(deleteDeploymentErr).
+					MaxTimes(len(unwantedResourceQuotas))
+			},
+		},
+		"expect to pass with valid resource quotas": {
+			input:       unwantedResourceQuotas,
+			errorExists: false,
+			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
+				mockK8sClient.EXPECT().DeleteResourceQuota(resourceQuotaName).
+					Return(nil).
+					MaxTimes(len(unwantedResourceQuotas))
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(
+			name, func(t *testing.T) {
+				// setup mock controller and kube client
+				mockCtrl := gomock.NewController(t)
+				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
+
+				// mock out the k8s client calls needed to test this
+				test.mocks(mockKubeClient)
+				extendedK8sClient := &K8sClient{mockKubeClient}
+				err := extendedK8sClient.RemoveMultipleResourceQuotas(test.input)
+
+				// check if we expect an error to exist; don't expect an exact match from the error string.
+				assert.Equal(t, test.errorExists, err != nil)
+			},
+		)
+	}
+}
+
 func TestPutService(t *testing.T) {
 	serviceName := getServiceName()
 	service := &corev1.Service{

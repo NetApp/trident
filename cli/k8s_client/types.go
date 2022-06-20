@@ -121,6 +121,12 @@ type KubernetesClient interface {
 	DeleteSecretByLabel(label string) error
 	DeleteSecret(name, namespace string) error
 	PatchSecretByLabel(label string, patchBytes []byte, patchType types.PatchType) error
+	GetResourceQuota(label string) (*v1.ResourceQuota, error)
+	GetResourceQuotaByLabel(label string) (*v1.ResourceQuota, error)
+	GetResourceQuotasByLabel(label string) ([]v1.ResourceQuota, error)
+	DeleteResourceQuota(name string) error
+	DeleteResourceQuotaByLabel(label string) error
+	PatchResourceQuotaByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	CreateObjectByFile(filePath string) error
 	CreateObjectByYAML(yaml string) error
 	DeleteObjectByFile(filePath string, ignoreNotFound bool) error

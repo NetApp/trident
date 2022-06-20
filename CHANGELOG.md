@@ -15,6 +15,7 @@
 - ONTAP-SAN volumes will now use per-node igroups and only map LUNs to igroups while actively published to those 
   nodes to improve our security posture. Existing volumes will be opportunistically switched to the new igroup scheme 
   when Trident determines it is safe to do so without impacting active workloads.
+- Included a `ResourceQuota` with Trident installations to ensure Trident DaemonSet is scheduled when `PriorityClass` consumption is limited by default.
 
 **Deprecations:**
 

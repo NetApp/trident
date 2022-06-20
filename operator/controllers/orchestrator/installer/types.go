@@ -54,6 +54,11 @@ type ExtendedK8sClient interface {
 	DeleteTridentClusterRoleBinding(clusterRoleBindingName, appLabel string) error
 	RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings []rbacv1.ClusterRoleBinding) error
 
+	GetResourceQuotaInformation(resourceQuotaName, appLabel, namespace string) (*corev1.ResourceQuota, []corev1.ResourceQuota, bool, error)
+	PutResourceQuota(currentResourceQuota *corev1.ResourceQuota, createResourceQuota bool, newDeploymentYAML, appLabel string) error
+	DeleteTridentResourceQuota(nodeLabel string) error
+	RemoveMultipleResourceQuotas(unwantedResourceQuotas []corev1.ResourceQuota) error
+
 	GetDaemonSetInformation(daemonSetName, nodeLabel, namespace string) (*appsv1.DaemonSet, []appsv1.DaemonSet, bool,
 		error)
 	PutDaemonSet(currentDaemonSet *appsv1.DaemonSet, createDaemonSet bool, newDaemonSetYAML, nodeLabel string) error

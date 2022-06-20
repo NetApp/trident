@@ -118,6 +118,9 @@ rules:
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["resourcequotas"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["apiextensions.k8s.io"]
     resources: ["customresourcedefinitions"]
     verbs: ["get", "list", "watch"]
@@ -159,6 +162,9 @@ rules:
     verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: [""]
     resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["resourcequotas"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: [""]
     resources: ["pods"]
@@ -281,6 +287,30 @@ spec:
     protocol: TCP
     port: 9220
     targetPort: 8001
+`
+
+func GetResourceQuotaYAML(resourceQuotaName, namespace string, labels, controllingCRDetails map[string]string) string {
+	resourceQuotaYAML := strings.ReplaceAll(resourceQuotaYAMLTemplate, "{RESOURCEQUOTA_NAME}", resourceQuotaName)
+	resourceQuotaYAML = strings.ReplaceAll(resourceQuotaYAML, "{NAMESPACE}", namespace)
+	resourceQuotaYAML = replaceMultilineYAMLTag(resourceQuotaYAML, "LABELS", constructLabels(labels))
+	resourceQuotaYAML = replaceMultilineYAMLTag(resourceQuotaYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	return resourceQuotaYAML
+}
+
+const resourceQuotaYAMLTemplate = `---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: {RESOURCEQUOTA_NAME}
+  namespace: {NAMESPACE}
+  {LABELS}
+  {OWNER_REF}
+spec:
+  scopeSelector:
+    matchExpressions:
+    - operator : In
+      scopeName: PriorityClass
+      values: ["system-node-critical"]
 `
 
 func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {

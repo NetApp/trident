@@ -40,6 +40,10 @@ func getEncryptionSecretName() string {
 	return TridentEncryptionKeys
 }
 
+func getResourceQuotaName() string {
+	return TridentCSI
+}
+
 func getDeploymentName(csi bool) string {
 	if csi {
 		return TridentCSI

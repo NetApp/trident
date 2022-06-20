@@ -580,6 +580,163 @@ func (k *K8sClient) RemoveMultipleClusterRoleBindings(unwantedClusterRoleBinding
 	return nil
 }
 
+// GetResourceQuotaInformation identifies the Operator-based Trident resource quota information and any unwanted
+// resource quotas
+func (k *K8sClient) GetResourceQuotaInformation(
+	resourcequotaName, label, namespace string,
+) (*corev1.ResourceQuota, []corev1.ResourceQuota, bool, error) {
+	createResourceQuota := true
+	var currentResourceQuota *corev1.ResourceQuota
+	var unwantedResourceQuotas []corev1.ResourceQuota
+
+	if resourceQuotas, err := k.GetResourceQuotasByLabel(label); err != nil {
+		log.WithField("label", label).Errorf("Unable to get list of resource quotas by label.")
+		return nil, nil, true, fmt.Errorf("unable to get list of resource quotas")
+	} else if len(resourceQuotas) == 0 {
+		log.WithFields(log.Fields{
+			"label":     label,
+			"namespace": namespace,
+		}).Info("No Trident resource quotas found by label.")
+	} else {
+		// Rules:
+		// 1. If there are no resource quotas named trident/trident-csi in CR namespace and one or many other resource quotas
+		//    exist that matches the label then remove all the resource quotas.
+		// 2. If there is a resource quotas named trident/trident-csi in CR namespace and one or many other resource quotas
+		//    exist that matches the label then remove all other resource quotas.
+		for _, resourcequota := range resourceQuotas {
+			if resourcequota.Namespace == namespace && resourcequota.Name == resourcequotaName {
+				// Found a resourcequota named in the same namespace
+				log.WithFields(log.Fields{
+					"resourcequota": resourcequota.Name,
+					"namespace":     resourcequota.Namespace,
+				}).Info("A Trident resource quota was found by label.")
+
+				// allocate new memory for currentResourceQuota to avoid unintentional reassignments due to reuse of the
+				// resourcequota variable across iterations
+				currentResourceQuota = &corev1.ResourceQuota{}
+				*currentResourceQuota = resourcequota
+				createResourceQuota = false
+			} else {
+				log.WithFields(log.Fields{
+					"resourcequota":          resourcequota.Name,
+					"resourcequotaNamespace": resourcequota.Namespace,
+				}).Errorf("A resource quota was found by label which does not meet either name %s or namespace"+
+					" '%s' requirement, marking it for deletion.", resourcequotaName, namespace)
+
+				unwantedResourceQuotas = append(unwantedResourceQuotas, resourcequota)
+			}
+		}
+	}
+
+	return currentResourceQuota, unwantedResourceQuotas, createResourceQuota, nil
+}
+
+// PutResourceQuota will create a new Resource Quota or patch an existing one.
+func (k *K8sClient) PutResourceQuota(
+	currentResourceQuota *corev1.ResourceQuota, createResourceQuota bool, newResourceQuotaYAML, appLabel string,
+) error {
+	resourceQuotaName := getResourceQuotaName()
+	logFields := log.Fields{
+		"resourcequota": resourceQuotaName,
+		"namespace":     k.Namespace(),
+	}
+
+	if createResourceQuota {
+		log.WithFields(logFields).Debug("Creating Trident resource quota.")
+
+		if err := k.CreateObjectByYAML(newResourceQuotaYAML); err != nil {
+			return fmt.Errorf("could not create Trident resource quota; %v", err)
+		}
+
+		log.Info("Created Trident resource quota.")
+	} else {
+		log.WithFields(logFields).Debug("Patching Trident resource quota.")
+
+		// Identify the deltas
+		patchBytes, err := genericPatch(currentResourceQuota, []byte(newResourceQuotaYAML))
+		if err != nil {
+			return fmt.Errorf("error in creating the two-way merge patch for current resource quota %q: %v",
+				resourceQuotaName, err)
+		}
+
+		// Apply the patch to the current ResourceQuota
+		patchType := types.MergePatchType
+		if err = k.PatchResourceQuotaByLabel(appLabel, patchBytes, patchType); err != nil {
+			return fmt.Errorf("could not patch Trident resource quota; %v", err)
+		}
+
+		log.Debug("Patched Trident Resource Quota.")
+	}
+
+	return nil
+}
+
+// DeleteTridentResourceQuota deletes a Trident Resource Quota.
+func (k *K8sClient) DeleteTridentResourceQuota(nodeLabel string) error {
+	// Delete Trident resourceQuotas
+	if resourceQuotas, err := k.GetResourceQuotasByLabel(nodeLabel); err != nil {
+
+		log.WithField("label", nodeLabel).Errorf("Unable to get list of resource quotas by label.")
+		return fmt.Errorf("unable to get list of resource quotas")
+
+	} else if len(resourceQuotas) == 0 {
+		log.WithFields(log.Fields{
+			"label": nodeLabel,
+			"error": err,
+		}).Warning("Trident resource quota not found.")
+	} else {
+		if len(resourceQuotas) == 1 {
+			log.WithFields(log.Fields{
+				"resourcequota": resourceQuotas[0].Name,
+				"namespace":     resourceQuotas[0].Namespace,
+			}).Info("Trident resource quota found by label.")
+		} else {
+			log.WithField("label", nodeLabel).Warn("Multiple resource quotas found by matching label; removing all.")
+		}
+
+		if err = k.RemoveMultipleResourceQuotas(resourceQuotas); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// RemoveMultipleResourceQuotas removes a list of unwanted resource quotas in a namespace
+func (k *K8sClient) RemoveMultipleResourceQuotas(unwantedResourceQuotas []corev1.ResourceQuota) error {
+	var err error
+	var anyError bool
+	var undeletedResourceQuotas []string
+
+	if len(unwantedResourceQuotas) > 0 {
+		for _, unwantedResourceQuota := range unwantedResourceQuotas {
+			// Delete the resourcequota
+			if err = k.DeleteResourceQuota(unwantedResourceQuota.Name); err != nil {
+				log.WithFields(log.Fields{
+					"resourcequota": unwantedResourceQuota.Name,
+					"namespace":     unwantedResourceQuota.Namespace,
+					"error":         err,
+				}).Warning("Could not delete resource quota.")
+
+				anyError = true
+				undeletedResourceQuotas = append(undeletedResourceQuotas, fmt.Sprintf("%v/%v", unwantedResourceQuota.Namespace,
+					unwantedResourceQuota.Name))
+			} else {
+				log.WithFields(log.Fields{
+					"resourcequota": unwantedResourceQuota.Name,
+					"namespace":     unwantedResourceQuota.Namespace,
+				}).Info("Deleted Trident resource quota.")
+			}
+		}
+	}
+
+	if anyError {
+		return fmt.Errorf("unable to delete resource quota(s): %v", undeletedResourceQuotas)
+	}
+
+	return nil
+}
+
 // GetDaemonSetInformation identifies the Operator-based Trident daemonset information and any unwanted daemonsets
 func (k *K8sClient) GetDaemonSetInformation(daemonSetName, nodeLabel, namespace string) (*appsv1.DaemonSet,
 	[]appsv1.DaemonSet, bool, error,

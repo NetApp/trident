@@ -58,6 +58,7 @@ const (
 	PodSecurityPolicyFilename  = "trident-podsecuritypolicy.yaml"
 	ServiceAccountFilename     = "trident-serviceaccount.yaml"
 	ServiceFilename            = "trident-service.yaml"
+	ResourceQuotaFilename      = "trident-resourcequota.yaml"
 
 	TridentEncryptionKeys = "trident-encryption-keys"
 
@@ -109,6 +110,7 @@ var (
 	servicePath            string
 	daemonsetPath          string
 	podSecurityPolicyPath  string
+	resourceQuotaPath      string
 	setupYAMLPaths         []string
 
 	appLabel      string
@@ -392,10 +394,11 @@ func prepareYAMLFilePaths() error {
 	servicePath = path.Join(setupPath, ServiceFilename)
 	daemonsetPath = path.Join(setupPath, DaemonSetFilename)
 	podSecurityPolicyPath = path.Join(setupPath, PodSecurityPolicyFilename)
+	resourceQuotaPath = path.Join(setupPath, ResourceQuotaFilename)
 
 	setupYAMLPaths = []string{
 		namespacePath, serviceAccountPath, clusterRolePath, clusterRoleBindingPath, crdsPath,
-		deploymentPath, servicePath, daemonsetPath, podSecurityPolicyPath,
+		deploymentPath, servicePath, daemonsetPath, podSecurityPolicyPath, resourceQuotaPath,
 	}
 
 	return nil
@@ -454,6 +457,12 @@ func prepareYAMLFiles() error {
 	serviceYAML := k8sclient.GetCSIServiceYAML(getServiceName(), labels, nil)
 	if err = writeFile(servicePath, serviceYAML); err != nil {
 		return fmt.Errorf("could not write service YAML file; %v", err)
+	}
+
+	// daemonSetlabels are used because this object is used by the DaemonSet / Node Pods.
+	resourceQuotaYAML := k8sclient.GetResourceQuotaYAML(getResourceQuotaName(), TridentPodNamespace, daemonSetlabels, nil)
+	if err = writeFile(resourceQuotaPath, resourceQuotaYAML); err != nil {
+		return fmt.Errorf("could not write resource quota YAML file; %v", err)
 	}
 
 	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
@@ -745,6 +754,9 @@ func installTrident() (returnError error) {
 	labels := make(map[string]string)
 	labels[appLabelKey] = appLabelValue
 
+	nodeLabels := make(map[string]string)
+	nodeLabels[appLabelKey] = TridentNodeLabelValue
+
 	persistentObjectLabels := make(map[string]string)
 	persistentObjectLabels[appLabelKey] = appLabelValue
 	persistentObjectLabels[persistentObjectLabelKey] = persistentObjectLabelValue
@@ -838,6 +850,13 @@ func installTrident() (returnError error) {
 	}
 	log.WithFields(logFields).Info("Created Trident protocol secret.")
 
+	err = client.CreateObjectByYAML(k8sclient.GetResourceQuotaYAML(getResourceQuotaName(), TridentPodNamespace, nodeLabels, nil))
+	if err != nil {
+		returnError = fmt.Errorf("could not create Trident resource quota; %v", err)
+		return
+	}
+	log.WithFields(logFields).Info("Created Trident resource quota.")
+
 	// Create the deployment
 	if useYAML && fileExists(deploymentPath) {
 		returnError = validateTridentDeployment()
@@ -889,8 +908,6 @@ func installTrident() (returnError error) {
 		returnError = client.CreateObjectByFile(daemonsetPath)
 		logFields = log.Fields{"path": daemonsetPath}
 	} else {
-		daemonSetlabels := make(map[string]string)
-		daemonSetlabels[appLabelKey] = TridentNodeLabelValue
 		daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
 			DaemonsetName:        getDaemonSetName(),
 			TridentImage:         tridentImage,
@@ -899,7 +916,7 @@ func installTrident() (returnError error) {
 			LogFormat:            logFormat,
 			ProbePort:            strconv.FormatInt(probePort, 10),
 			ImagePullSecrets:     []string{},
-			Labels:               daemonSetlabels,
+			Labels:               nodeLabels,
 			ControllingCRDetails: nil,
 			Debug:                Debug,
 			Version:              client.ServerVersion(),
@@ -1853,6 +1870,10 @@ func getProtocolSecretName() string {
 
 func getEncryptionSecretName() string {
 	return TridentEncryptionKeys
+}
+
+func getResourceQuotaName() string {
+	return TridentCSI
 }
 
 func getDeploymentName(csi bool) string {
