@@ -1746,7 +1746,7 @@ func (c RestClient) IgroupDestroy(ctx context.Context, initiatorGroupName string
 		return err
 	}
 	if igroup == nil {
-		return fmt.Errorf("unexpected response from igroup lookup, igroup was nil")
+		return NotFoundError("igroup not found")
 	}
 	igroupUUID := igroup.UUID
 
@@ -2220,6 +2220,7 @@ func (d RestClient) LunMapInfo(
 	if initiatorGroupName != "" {
 		params.IgroupNameQueryParameter = &initiatorGroupName
 	}
+	params.FieldsQueryParameter = []string{"svm", "lun", "igroup", "logical-unit-number"}
 
 	return d.api.San.LunMapCollectionGet(params, d.authInfo)
 }

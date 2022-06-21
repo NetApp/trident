@@ -1877,7 +1877,15 @@ func (d OntapAPIREST) IgroupDestroy(ctx context.Context, initiatorGroupName stri
 		Logc(ctx).WithFields(fields).Debug(">>>> IgroupDestroy")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< IgroupDestroy")
 	}
-	return d.api.IgroupDestroy(ctx, initiatorGroupName)
+	err := d.api.IgroupDestroy(ctx, initiatorGroupName)
+	if err != nil {
+		if !IsNotFoundError(err) {
+			Logc(ctx).WithError(err).WithField("igroup", initiatorGroupName).Error("Unable to delete igroup")
+			return err
+		}
+		Logc(ctx).WithError(err).WithField("igroup", initiatorGroupName).Warn("Unable to delete igroup")
+	}
+	return nil
 }
 
 func (d OntapAPIREST) EnsureIgroupAdded(
