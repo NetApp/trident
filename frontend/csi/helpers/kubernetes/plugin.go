@@ -692,7 +692,8 @@ func (p *Plugin) updateStorageClass(_, newObj interface{}) {
 	case *k8sstoragev1.StorageClass:
 		p.processStorageClass(ctx, sc, eventUpdate)
 	default:
-		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v", newObj)
+		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v",
+			newObj)
 	}
 }
 
@@ -741,6 +742,18 @@ func (p *Plugin) processStorageClass(ctx context.Context, sc *k8sstoragev1.Stora
 	}
 }
 
+func removeSCParameterPrefix(key string) string {
+	if strings.HasPrefix(key, annPrefix) {
+		scParamKV := strings.SplitN(key, "/", 2)
+		if len(scParamKV) != 2 || scParamKV[0] == "" || scParamKV[1] == "" {
+			log.Errorf("the storage class parameter %s does not have the right format", key)
+			return key
+		}
+		key = scParamKV[1]
+	}
+	return key
+}
+
 // processAddedStorageClass informs the orchestrator of a new storage class.
 func (p *Plugin) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass) {
 	scConfig := new(storageclass.Config)
@@ -755,7 +768,8 @@ func (p *Plugin) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 			continue
 		}
 
-		switch k {
+		newKey := removeSCParameterPrefix(k)
+		switch newKey {
 
 		case storageattribute.RequiredStorage, storageattribute.AdditionalStoragePools:
 			// format:  additionalStoragePools: "backend1:pool1,pool2;backend2:pool1"
@@ -766,7 +780,7 @@ func (p *Plugin) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 					"provisioner": sc.Provisioner,
 					"parameters":  sc.Parameters,
 					"error":       err,
-				}).Errorf("K8S helper could not process the storage class parameter %s", k)
+				}).Errorf("K8S helper could not process the storage class parameter %s", newKey)
 			}
 			scConfig.AdditionalPools = additionalPools
 
@@ -779,7 +793,7 @@ func (p *Plugin) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 					"provisioner": sc.Provisioner,
 					"parameters":  sc.Parameters,
 					"error":       err,
-				}).Errorf("K8S helper could not process the storage class parameter %s", k)
+				}).Errorf("K8S helper could not process the storage class parameter %s", newKey)
 			}
 			scConfig.ExcludePools = excludeStoragePools
 
@@ -792,23 +806,23 @@ func (p *Plugin) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 					"provisioner": sc.Provisioner,
 					"parameters":  sc.Parameters,
 					"error":       err,
-				}).Errorf("K8S helper could not process the storage class parameter %s", k)
+				}).Errorf("K8S helper could not process the storage class parameter %s", newKey)
 			}
 			scConfig.Pools = pools
 
 		default:
 			// format:  attribute: "value"
-			req, err := storageattribute.CreateAttributeRequestFromAttributeValue(k, v)
+			req, err := storageattribute.CreateAttributeRequestFromAttributeValue(newKey, v)
 			if err != nil {
 				Logc(ctx).WithFields(log.Fields{
 					"name":        sc.Name,
 					"provisioner": sc.Provisioner,
 					"parameters":  sc.Parameters,
 					"error":       err,
-				}).Errorf("K8S helper could not process the storage class attribute %s", k)
+				}).Errorf("K8S helper could not process the storage class attribute %s", newKey)
 				return
 			}
-			scConfig.Attributes[k] = req
+			scConfig.Attributes[newKey] = req
 		}
 	}
 

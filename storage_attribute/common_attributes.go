@@ -10,7 +10,7 @@ const (
 	Snapshots   = "snapshots"
 	Clones      = "clones"
 	Encryption  = "encryption"
-	Replication = "trident.netapp.io/replication"
+	Replication = "replication"
 
 	// Constants for string list attributes
 	ProvisioningType = "provisioningType"
