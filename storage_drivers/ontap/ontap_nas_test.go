@@ -36,6 +36,15 @@ import (
 // via abstraction layer (ONTAPI interface)
 // //////////////////////////////////////////////////////////////////////////////////////////
 
+var (
+	ctx             = context.TODO()
+	debugTraceFlags = map[string]bool{"method": true, "api": true, "discovery": true}
+)
+
+const (
+	BackendUUID = "deadbeef-03af-4394-ace4-e177cdbcaf28"
+)
+
 func TestOntapNasStorageDriverConfigString(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
@@ -207,4 +216,112 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 		assert.Nil(t, err, "Error is not nil")
 		assert.Equal(t, c.virtualExpected, label, c.virtualErrorMessage)
 	}
+}
+
+func TestOntapNasStorageDriverInitialize_WithTwoAuthMethods(t *testing.T) {
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAdminPort := "0"
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+	ctx := context.TODO()
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "ontap-nas",
+		BackendName:       "myOntapNasBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-nas",
+		"managementLIF":     "1.1.1.1:10",
+		"svm":               "SVM1",
+		"aggregate":         "data",
+		"username":          "dummyuser",
+		"password":          "dummypassword",
+		"clientcertificate": "dummy-certificate",
+		"clientprivatekey":  "dummy-client-private-key"
+	}`
+	ontapNasDriver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
+		tridentconfig.DriverContext("CSI"), false)
+
+	result := ontapNasDriver.Initialize(ctx, tridentconfig.DriverContext("CSI"), configJSON, commonConfig, map[string]string{}, BackendUUID)
+
+	assert.Error(t, result, "driver initialization succeeded despite more than one authentication methods in config")
+	assert.Contains(t, result.Error(), "more than one authentication method", "expected error string not found")
+}
+
+func TestOntapNasStorageDriverInitialize_WithTwoAuthMethodsWithSecrets(t *testing.T) {
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAdminPort := "0"
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+	ctx := context.TODO()
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "ontap-nas",
+		BackendName:       "myOntapNasBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-nas",
+		"managementLIF":     "1.1.1.1:10",
+		"svm":               "SVM1",
+		"aggregate":         "data"
+	}`
+	secrets := map[string]string{
+		"username":          "dummyuser",
+		"password":          "dummypassword",
+		"clientprivatekey":  "dummy-client-private-key",
+		"clientcertificate": "dummy-certificate",
+	}
+	ontapNasDriver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
+		tridentconfig.DriverContext("CSI"), false)
+
+	result := ontapNasDriver.Initialize(ctx, tridentconfig.DriverContext("CSI"), configJSON, commonConfig, secrets,
+		BackendUUID)
+
+	assert.Error(t, result, "driver initialization succeeded despite more than one authentication methods in config")
+	assert.Contains(t, result.Error(), "more than one authentication method", "expected error string not found")
+}
+
+func TestOntapNasStorageDriverInitialize_WithTwoAuthMethodsWithConfigAndSecrets(t *testing.T) {
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAdminPort := "0"
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+	ctx := context.TODO()
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "ontap-nas",
+		BackendName:       "myOntapNasBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-nas",
+		"managementLIF":     "1.1.1.1:10",
+		"svm":               "SVM1",
+		"aggregate":         "data",
+		"username":          "dummyuser",
+		"password":          "dummypassword"
+	}`
+	secrets := map[string]string{
+		"clientprivatekey":  "dummy-client-private-key",
+		"clientcertificate": "dummy-certificate",
+	}
+	ontapNasDriver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
+		tridentconfig.DriverContext("CSI"), false)
+
+	result := ontapNasDriver.Initialize(ctx, tridentconfig.DriverContext("CSI"), configJSON, commonConfig, secrets,
+		BackendUUID)
+
+	assert.Error(t, result, "driver initialization succeeded despite more than one authentication methods in config")
+	assert.Contains(t, result.Error(), "more than one authentication method", "expected error string not found")
 }

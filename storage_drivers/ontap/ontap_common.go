@@ -193,6 +193,11 @@ func InitializeOntapConfig(
 			return nil, fmt.Errorf("could not inject backend secret; err: %v", err)
 		}
 	}
+	// Ensure only one authentication type is specified in the backend config
+	if config.ClientPrivateKey != "" && config.Username != "" {
+		return nil, fmt.Errorf("more than one authentication method (username/password and clientPrivateKey)" +
+			" present in backend config; please ensure only one authentication method is provided")
+	}
 
 	// Load default config parameters
 	err = PopulateConfigurationDefaults(ctx, config)

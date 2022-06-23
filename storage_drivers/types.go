@@ -153,14 +153,24 @@ func (d *OntapStorageDriverConfig) InjectSecrets(secretMap map[string]string) er
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
 
 	var ok bool
-	if d.ClientPrivateKey, ok = secretMap[strings.ToLower("ClientPrivateKey")]; !ok || d.
-		ClientPrivateKey == "" {
-		if d.Username, ok = secretMap[strings.ToLower("Username")]; !ok {
-			return injectionError("Username or ClientPrivateKey")
+	// Inject the credentials from the secretMap into the driver's config
+	if _, ok = secretMap[strings.ToLower("ClientPrivateKey")]; ok {
+		if d.ClientPrivateKey != "" {
+			log.Warn("clientPrivateKey is specified in both config and secret; overriding from secret.")
 		}
-		if d.Password, ok = secretMap[strings.ToLower("Password")]; !ok {
-			return injectionError("Password")
+		d.ClientPrivateKey = secretMap[strings.ToLower("ClientPrivateKey")]
+	}
+	if _, ok = secretMap[strings.ToLower("Username")]; ok {
+		if d.Username != "" {
+			log.Warn("Username is specified in both config and secret; overriding from secret.")
 		}
+		d.Username = secretMap[strings.ToLower("Username")]
+	}
+	if _, ok = secretMap[strings.ToLower("Password")]; ok {
+		if d.Password != "" {
+			log.Warn("Password is specified in both config and secret; overriding from secret.")
+		}
+		d.Password = secretMap[strings.ToLower("Password")]
 	}
 	// CHAP settings
 	if d.UseCHAP {
@@ -209,9 +219,13 @@ func (d *OntapStorageDriverConfig) ExtractSecrets() map[string]string {
 // HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
 // with secretName.
 func (d *OntapStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
-	d.ClientPrivateKey = secretName
-	d.Username = secretName
-	d.Password = secretName
+	if d.ClientPrivateKey != "" {
+		d.ClientPrivateKey = secretName
+	}
+	if d.Username != "" {
+		d.Username = secretName
+		d.Password = secretName
+	}
 
 	// CHAP settings
 	if d.UseCHAP {
