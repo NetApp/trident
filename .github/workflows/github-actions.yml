@@ -53,5 +53,22 @@ jobs:
             ~\AppData\Local\go-build
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
-      - run: go test ./...
+            ${{ runner.os }}-go-   
+      - name: Run the tests      
+        run: |
+          go test -v ./... -covermode=count -coverprofile=${{ runner.os }}-coverage.out
+      - if: runner.os != 'Windows'    
+        name: Prepare the artifact
+        run: | 
+          go tool cover -html=${{ runner.os }}-coverage.out -o ${{ runner.os }}-coverage.html
+      - name: Get run details
+        run: |
+          echo "PR_Title=${{ github.event.pull_request.title }}"
+          echo "Run_Number=${{ github.run_number }}"
+          echo "PR_Number=${{ github.event.pull_request.number }}"
+      - if: runner.os != 'Windows'    
+        name: Upload the artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: "coverage-report-${{ runner.os }}-${{ github.run_number }}.html"
+          path: ${{ runner.os }}-coverage.html    
