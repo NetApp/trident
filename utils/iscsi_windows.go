@@ -11,9 +11,7 @@ import (
 	. "github.com/netapp/trident/logger"
 )
 
-// File to contain iscsi protocol related functionalities for windows flavor
-
-// ISCSIActiveOnHost will return if the iscsi daemon is active on the given host
+// ISCSIActiveOnHost unused stub function
 func ISCSIActiveOnHost(ctx context.Context, host HostSystem) (bool, error) {
 	Logc(ctx).Debug(">>>> iscsi_windows.ISCSIActiveOnHost")
 	defer Logc(ctx).Debug("<<<< iscsi_windows.ISCSIActiveOnHost")

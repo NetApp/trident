@@ -17,12 +17,14 @@ import (
 // At compile time golang will type checks the entire code base. Since the CLI is part
 // of the Trident code base this file exists to handle windows specific code.
 
+// getIPAddresses unused stub function
 func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.getIPAddresses")
 	defer Logc(ctx).Debug("<<<< osutils_windows.getIPAddresses")
 	return nil, errors.New("getIPAddresses is not supported for windows")
 }
 
+// GetHostSystemInfo unused stub function
 func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.GetHostSystemInfo")
 	defer Logc(ctx).Debug("<<<< osutils_windows.GetHostSystemInfo")
@@ -30,6 +32,7 @@ func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 	return nil, UnsupportedError(msg)
 }
 
+// NFSActiveOnHost unused stub function
 func NFSActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.NFSActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_windows.NFSActiveOnHost")

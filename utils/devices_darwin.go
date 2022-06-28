@@ -12,12 +12,14 @@ import (
 	. "github.com/netapp/trident/logger"
 )
 
+// flushOneDevice unused stub function
 func flushOneDevice(ctx context.Context, devicePath string) error {
 	Logc(ctx).Debug(">>>> devices_darwin.flushOneDevice")
 	defer Logc(ctx).Debug("<<<< devices_darwin.flushOneDevice")
 	return errors.New("flushOneDevice is not supported for darwin")
 }
 
+// getISCSIDiskSize unused stub function
 func getISCSIDiskSize(ctx context.Context, _ string) (int64, error) {
 	Logc(ctx).Debug(">>>> devices_darwin.getISCSIDiskSize")
 	defer Logc(ctx).Debug("<<<< devices_darwin.getISCSIDiskSize")

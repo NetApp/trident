@@ -96,7 +96,7 @@ func AttachBlockOnFileVolume(
 			return "", "", err
 		}
 
-		existingFstype, err := getFSType(ctx, loopDevice.Name)
+		existingFstype, err := getDeviceFSType(ctx, loopDevice.Name)
 		if err != nil {
 			return "", "", err
 		}

@@ -94,7 +94,7 @@ func execCommand(ctx context.Context, name string, args ...string) ([]byte, erro
 
 	Logc(ctx).WithFields(log.Fields{
 		"command": name,
-		"output":  sanitizeString(string(out)),
+		"output":  sanitizeExecOutput(string(out)),
 		"error":   err,
 	}).Debug("<<<< osutils.execCommand.")
 
@@ -129,7 +129,7 @@ func execCommandRedacted(ctx context.Context, name string, args []string,
 
 	Logc(ctx).WithFields(log.Fields{
 		"command": name,
-		"output":  sanitizeString(string(out)),
+		"output":  sanitizeExecOutput(string(out)),
 		"error":   err,
 	}).Debug("<<<< osutils.execCommand.")
 
@@ -193,7 +193,7 @@ func execCommandWithTimeout(
 
 	if logOutput {
 		logFields.WithFields(log.Fields{
-			"output": sanitizeString(string(result.Output)),
+			"output": sanitizeExecOutput(string(result.Output)),
 		})
 	}
 
@@ -202,7 +202,7 @@ func execCommandWithTimeout(
 	return result.Output, result.Error
 }
 
-func sanitizeString(s string) string {
+func sanitizeExecOutput(s string) string {
 	// Strip xterm color & movement characters
 	s = xtermControlRegex.ReplaceAllString(s, "")
 	// Strip trailing newline

@@ -150,10 +150,10 @@ func isDeviceUnformatted(ctx context.Context, device string) (bool, error) {
 	return true, nil
 }
 
-// getFSType returns the filesystem for the supplied device.
-func getFSType(ctx context.Context, device string) (string, error) {
-	Logc(ctx).WithField("device", device).Debug(">>>> devices.getFSType")
-	defer Logc(ctx).Debug("<<<< devices.getFSType")
+// getDeviceFSType returns the filesystem for the supplied device.
+func getDeviceFSType(ctx context.Context, device string) (string, error) {
+	Logc(ctx).WithField("device", device).Debug(">>>> devices.getDeviceFSType")
+	defer Logc(ctx).Debug("<<<< devices.getDeviceFSType")
 
 	// blkid return status=2 both in case of an unformatted filesystem as well as for the case when it is
 	// unable to get the filesystem (e.g. IO error), therefore ensure device is available before calling blkid
@@ -761,8 +761,8 @@ func GetISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 	return devices, nil
 }
 
-// waitForMultipathDeviceForDevices accepts a list of sd* device names and waits until
-// a multipath device is present for at least one of those.  It returns the name of the
+// waitForMultipathDeviceForDevices accepts a list of sd* device names which are associated with same LUN
+// and waits until a multipath device is present for at least one of those.  It returns the name of the
 // multipath device, or an empty string if multipathd isn't running or there is only one path.
 func waitForMultipathDeviceForDevices(ctx context.Context, advertisedPortalCount int, devices []string) string {
 	fields := log.Fields{"devices": devices}
@@ -990,7 +990,7 @@ type ScsiDeviceInfo struct {
 }
 
 // getDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
-// called after calling waitForDeviceScanIfNeeded so that the device paths are known to exist.
+// called after calling waitForDeviceScan so that the device paths are known to exist.
 func getDeviceInfoForLUN(
 	ctx context.Context, lunID int, iSCSINodeName string, needFSType, isDetachCall bool,
 ) (*ScsiDeviceInfo, error) {
@@ -1045,7 +1045,7 @@ func getDeviceInfoForLUN(
 			return nil, err
 		}
 
-		fsType, err = getFSType(ctx, devicePath)
+		fsType, err = getDeviceFSType(ctx, devicePath)
 		if err != nil {
 			return nil, err
 		}
@@ -1113,6 +1113,9 @@ func getDeviceInfoForMountPath(ctx context.Context, mountpath string) (*ScsiDevi
 }
 
 // waitForMultipathDeviceForLUN
+// for the given LUN, this function waits for the associated multipath device to be present
+// first find the /dev/sd* devices assocaited with the LUN
+// Wait for the maultipath device dm-* for the /dev/sd* devices.
 func waitForMultipathDeviceForLUN(ctx context.Context, lunID, advertisedPortalCount int, iSCSINodeName string) error {
 	fields := log.Fields{
 		"lunID":         lunID,

@@ -917,8 +917,8 @@ func AppendToStringList(stringList, newItem, sep string) string {
 	return strings.Join(stringListItems, sep)
 }
 
-// getHostportIP returns just the IP address part of the given input IP address and strips any port information
-func getHostportIP(hostport string) string {
+// parseHostportIP returns just the IP address part of the given input IP address and strips any port information
+func parseHostportIP(hostport string) string {
 	ipAddress := ""
 	if IPv6Check(hostport) {
 		// this is an IPv6 address, remove port value and add square brackets around the IP address

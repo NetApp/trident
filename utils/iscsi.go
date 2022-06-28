@@ -24,7 +24,7 @@ import (
 
 const (
 	iSCSIErrNoObjsFound                 = 21
-	iSCSIDeviceDiscoveryTimeoutSecs     = 90
+	iSCSIDeviceDiscoveryTimeoutSecs     = 10
 	multipathDeviceDiscoveryTimeoutSecs = 90
 	temporaryMountDir                   = "/tmp_mnt"
 	volumeMountDir                      = "/vol_mnt"
@@ -44,15 +44,19 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 
 	var bkportal []string
 	var portalIps []string
+
+	// IscsiTargetPortal is one of the ports on the target and IscsiPortals
+	// are rest of the target ports for establishing iSCSI session.
+	// If the target has multiple portals, then there will be multiple iSCSI sessions.
 	bkportal = append(bkportal, ensureHostportFormatted(publishInfo.IscsiTargetPortal))
-	portalIps = append(portalIps, getHostportIP(publishInfo.IscsiTargetPortal))
+	portalIps = append(portalIps, parseHostportIP(publishInfo.IscsiTargetPortal))
 
 	for _, p := range publishInfo.IscsiPortals {
 		bkportal = append(bkportal, ensureHostportFormatted(p))
-		portalIps = append(portalIps, getHostportIP(p))
+		portalIps = append(portalIps, parseHostportIP(p))
 	}
 
-	advertisedPortalCount := 1 + len(publishInfo.IscsiPortals)
+	advertisedPortalCount := 1 + len(publishInfo.IscsiPortals) // "1 +" to account for IscsiTargetPortal
 
 	if publishInfo.IscsiInterface == "" {
 		publishInfo.IscsiInterface = "default"
@@ -112,10 +116,8 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		return err
 	}
 
-	// If LUN isn't present, scan the target and wait for the device(s) to appear
-	// if not attached need to scan
-	shouldScan := !IsAlreadyAttached(ctx, lunID, publishInfo.IscsiTargetIQN)
-	err = waitForDeviceScanIfNeeded(ctx, lunID, publishInfo.IscsiTargetIQN, shouldScan)
+	// Scan the target and wait for the device(s) to appear
+	err = waitForDeviceScan(ctx, lunID, publishInfo.IscsiTargetIQN)
 	if err != nil {
 		Logc(ctx).Errorf("Could not find iSCSI device: %+v", err)
 		return err
@@ -133,6 +135,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		return err
 	}
 
+	// Wait for multipath device i.e. /dev/dm-* for the given LUN
 	err = waitForMultipathDeviceForLUN(ctx, lunID, advertisedPortalCount, publishInfo.IscsiTargetIQN)
 	if err != nil {
 		return err
@@ -221,6 +224,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	return nil
 }
 
+// logInToPortals logs into the given list of portals using CHAP authentication
 func logInToPortals(
 	ctx context.Context, bkPortalsToLogin []string, publishInfo *VolumePublishInfo, loggedIn bool,
 ) bool {
@@ -326,15 +330,15 @@ func getDevicesForLUN(paths []string) ([]string, error) {
 	return devices, nil
 }
 
-// waitForDeviceScanIfNeeded scans all paths to a specific LUN and waits until all
+// waitForDeviceScan scans all paths to a specific LUN and waits until all
 // SCSI disk-by-path devices for that LUN are present on the host.
-func waitForDeviceScanIfNeeded(ctx context.Context, lunID int, iSCSINodeName string, shouldScan bool) error {
+func waitForDeviceScan(ctx context.Context, lunID int, iSCSINodeName string) error {
 	fields := log.Fields{
 		"lunID":         lunID,
 		"iSCSINodeName": iSCSINodeName,
 	}
-	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.waitForDeviceScanIfNeeded")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.waitForDeviceScanIfNeeded")
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.waitForDeviceScan")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.waitForDeviceScan")
 
 	hostSessionMap := GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
 	if len(hostSessionMap) == 0 {
@@ -347,10 +351,8 @@ func waitForDeviceScanIfNeeded(ctx context.Context, lunID int, iSCSINodeName str
 		hosts = append(hosts, hostNumber)
 	}
 
-	if shouldScan {
-		if err := iSCSIScanTargetLUN(ctx, lunID, hosts); err != nil {
-			Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
-		}
+	if err := iSCSIScanTargetLUN(ctx, lunID, hosts); err != nil {
+		Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
 	}
 
 	paths := getSysfsBlockDirsForLUN(lunID, hostSessionMap)
@@ -358,16 +360,26 @@ func waitForDeviceScanIfNeeded(ctx context.Context, lunID int, iSCSINodeName str
 	found := make([]string, 0)
 
 	checkAllDevicesExist := func() error {
-		found := make([]string, 0)
-		// Check if any paths present, and return nil (success) if so
+		allDevicesExist := true
+		found = make([]string, 0)
+		// Check if all paths present, and return nil (success) if so
 		for _, p := range paths {
 			dirname := p + "/block"
 			if !PathExists(dirname) {
-				return errors.New("device not present yet")
+				// Set flag to false as device is missing
+				allDevicesExist = false
+			} else {
+				found = append(found, dirname)
 			}
-			found = append(found, dirname)
 		}
-		return nil
+		if allDevicesExist {
+			// We have found all devices, return success
+			Logc(ctx).Debugf("All Paths found: %v", found)
+			return nil
+		} else {
+			// We have not found all devices, return error to retry again.
+			return errors.New("not all devices present yet")
+		}
 	}
 
 	devicesNotify := func(err error, duration time.Duration) {
@@ -378,45 +390,13 @@ func waitForDeviceScanIfNeeded(ctx context.Context, lunID int, iSCSINodeName str
 	deviceBackoff.InitialInterval = 1 * time.Second
 	deviceBackoff.Multiplier = 1.414 // approx sqrt(2)
 	deviceBackoff.RandomizationFactor = 0.1
-	deviceBackoff.MaxElapsedTime = 5 * time.Second
+	deviceBackoff.MaxElapsedTime = iSCSIDeviceDiscoveryTimeoutSecs * time.Second
 
-	if err := backoff.RetryNotify(checkAllDevicesExist, deviceBackoff, devicesNotify); err == nil {
-		Logc(ctx).Debugf("Paths found: %v", found)
-		return nil
-	}
+	if err := backoff.RetryNotify(checkAllDevicesExist, deviceBackoff, devicesNotify); err != nil && len(found) == 0 {
 
-	Logc(ctx).Debugf("Paths found so far: %v", found)
+		Logc(ctx).Warnf("Could not find any devices after %d seconds.", iSCSIDeviceDiscoveryTimeoutSecs)
 
-	checkAnyDeviceExists := func() error {
-		found := make([]string, 0)
-		// Check if any paths present, and return nil (success) if so
-		for _, p := range paths {
-			dirname := p + "/block"
-			if PathExists(dirname) {
-				found = append(found, dirname)
-			}
-		}
-		if 0 == len(found) {
-			return errors.New("no devices present yet")
-		}
-		return nil
-	}
-
-	devicesNotify = func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("No devices present yet, waiting.")
-	}
-
-	deviceBackoff = backoff.NewExponentialBackOff()
-	deviceBackoff.InitialInterval = 1 * time.Second
-	deviceBackoff.Multiplier = 1.414 // approx sqrt(2)
-	deviceBackoff.RandomizationFactor = 0.1
-	deviceBackoff.MaxElapsedTime = (iSCSIDeviceDiscoveryTimeoutSecs - 5) * time.Second
-
-	// Run the check/scan using an exponential backoff
-	if err := backoff.RetryNotify(checkAnyDeviceExists, deviceBackoff, devicesNotify); err != nil {
-		Logc(ctx).Warnf("Could not find all devices after %d seconds.", iSCSIDeviceDiscoveryTimeoutSecs)
-
-		// In the case of a failure, log info about what devices are present
+		// log info about current status of host when no devices are found
 		if _, err := execCommand(ctx, "ls", "-al", "/dev"); err != nil {
 			Logc(ctx).Warnf("Could not run ls -al /dev: %v", err)
 		}
@@ -435,7 +415,9 @@ func waitForDeviceScanIfNeeded(ctx context.Context, lunID int, iSCSINodeName str
 		if _, err := execCommand(ctx, "free"); err != nil {
 			Logc(ctx).Warnf("Could not run free: %v", err)
 		}
-		return err
+
+		return errors.New("no devices present yet")
+
 	}
 
 	Logc(ctx).Debugf("Paths found: %v", found)
@@ -447,6 +429,7 @@ func ISCSISupported(ctx context.Context) bool {
 	Logc(ctx).Debug(">>>> iscsi.ISCSISupported")
 	defer Logc(ctx).Debug("<<<< iscsi.ISCSISupported")
 
+	// run the iscsiadm command to show version to check if iscsiadm is installed
 	_, err := execIscsiadmCommand(ctx, "-V")
 	if err != nil {
 		Logc(ctx).Debug("iscsiadm tools not found on this host.")
@@ -685,8 +668,8 @@ func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]
 			// Portals (portalsNotLoggedIn) may/may not contain anything after ":", so instead of matching complete
 			// portal value (with e.Portal), check if e.Portal's IP address matches portal's IP address
 			matchFunc := func(main, val string) bool {
-				mainIpAddress := getHostportIP(main)
-				valIpAddress := getHostportIP(val)
+				mainIpAddress := parseHostportIP(main)
+				valIpAddress := parseHostportIP(val)
 
 				return mainIpAddress == valIpAddress
 			}
@@ -797,6 +780,7 @@ func IsAlreadyAttached(ctx context.Context, lunID int, targetIqn string) bool {
 		return false
 	}
 
+	// return true even if a single device exists
 	return 0 < len(devices)
 }
 
@@ -1027,6 +1011,7 @@ func multipathdIsRunning(ctx context.Context) bool {
 	Logc(ctx).Debug(">>>> iscsi.multipathdIsRunning")
 	defer Logc(ctx).Debug("<<<< iscsi.multipathdIsRunning")
 
+	// use pgrep to look for mulipathd in the list of running processes
 	out, err := execCommand(ctx, "pgrep", "multipathd")
 	if err == nil {
 		pid := strings.TrimSpace(string(out))
@@ -1099,6 +1084,7 @@ func getTargets(ctx context.Context, tp string) ([]string, error) {
 	return filterTargets(string(output), tp), nil
 }
 
+// updateDiscoveryDb update the iscsi discoverydb with the passed values
 func updateDiscoveryDb(ctx context.Context, tp, iface, key, value string) error {
 	Logc(ctx).WithFields(log.Fields{
 		"Key":       key,
@@ -1339,6 +1325,7 @@ func loginWithChap(
 	return nil
 }
 
+// EnsureISCSISessions this is to make sure that Trident establishes iSCSI sessions with the given list of portals
 func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIps []string) bool {
 	logFields := log.Fields{
 		"targetIQN":  targetIQN,
@@ -1370,6 +1357,8 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 		_ = configureISCSITarget(ctx, targetIQN, portalIp, "node.session.scan", "manual")
 
 		// Update replacement timeout
+		// time out is set to 5s against the default value of 120s so that the replacement path is chosen
+		// faster when the current path goes down in multipath case.
 		timeout_param := "node.session.timeo.replacement_timeout"
 		if err := configureISCSITarget(ctx, targetIQN, portalIp, timeout_param, "5"); err != nil {
 			Logc(ctx).WithFields(log.Fields{

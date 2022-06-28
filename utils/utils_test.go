@@ -1321,7 +1321,7 @@ func TestParseIPv4Valid(t *testing.T) {
 	}
 }
 
-func TestGetHostportIP(t *testing.T) {
+func TestParseHostportIP(t *testing.T) {
 	type IPAddresses struct {
 		InputIP  string
 		OutputIP string
@@ -1358,7 +1358,7 @@ func TestGetHostportIP(t *testing.T) {
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.InputIP, func(t *testing.T) {
-			assert.Equal(t, testCase.OutputIP, getHostportIP(testCase.InputIP), "IP mismatch")
+			assert.Equal(t, testCase.OutputIP, parseHostportIP(testCase.InputIP), "IP mismatch")
 		})
 	}
 }

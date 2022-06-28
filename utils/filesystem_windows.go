@@ -10,12 +10,14 @@ import (
 	. "github.com/netapp/trident/logger"
 )
 
+// GetFilesystemStats unused stub function
 func GetFilesystemStats(ctx context.Context, _ string) (int64, int64, int64, int64, int64, int64, error) {
 	Logc(ctx).Debug(">>>> filesystem_windows.GetFilesystemStats")
 	defer Logc(ctx).Debug("<<<< filesystem_windows.GetFilesystemStats")
 	return 0, 0, 0, 0, 0, 0, errors.New("GetFilesystemStats is not supported for windows")
 }
 
+// getFilesystemSize unused stub function
 func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
 	Logc(ctx).Debug(">>>> filesystem_windows.getFilesystemSize")
 	defer Logc(ctx).Debug("<<<< filesystem_windows.getFilesystemSize")

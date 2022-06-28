@@ -21,7 +21,7 @@ var (
 	execDelay       time.Duration
 )
 
-func TestSanitizeString(t *testing.T) {
+func TestSanitizeExecOutput(t *testing.T) {
 	tests := map[string]struct {
 		input  string
 		output string
@@ -37,7 +37,7 @@ func TestSanitizeString(t *testing.T) {
 	}
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			result := sanitizeString(test.input)
+			result := sanitizeExecOutput(test.input)
 			assert.True(t, test.output == result, fmt.Sprintf("Expected %v not %v", test.output, result))
 		})
 	}

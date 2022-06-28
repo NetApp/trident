@@ -14,12 +14,14 @@ import (
 // At compile time golang will type checks the entire code base. Since the CLI is part
 // of the Trident code base this file exists to handle darwin specific code.
 
+// getIPAddresses unused stub function
 func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.getIPAddresses")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.getIPAddresses")
 	return nil, errors.New("getIPAddresses is not supported for darwin")
 }
 
+// GetHostSystemInfo unused stub function
 func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.GetHostSystemInfo")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.GetHostSystemInfo")
@@ -27,6 +29,7 @@ func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 	return nil, UnsupportedError(msg)
 }
 
+// NFSActiveOnHost unused stub function
 func NFSActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.NFSActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.NFSActiveOnHost")
