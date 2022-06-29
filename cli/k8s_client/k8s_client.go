@@ -690,6 +690,25 @@ func (k *KubeClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*app
 	}
 }
 
+// GetDaemonSetByLabelAndName returns a daemonset object matching the specified label and name
+func (k *KubeClient) GetDaemonSetByLabelAndName(label, name string, allNamespaces bool) (*appsv1.DaemonSet,
+	error,
+) {
+	daemonsets, err := k.GetDaemonSetsByLabel(label, allNamespaces)
+	if err != nil {
+		return nil, err
+	}
+
+	var daemonset *appsv1.DaemonSet
+
+	for i := range daemonsets {
+		if daemonsets[i].Name == name {
+			daemonset = &daemonsets[i]
+		}
+	}
+	return daemonset, nil
+}
+
 // GetDaemonSetsByLabel returns all daemonset objects matching the specified label
 func (k *KubeClient) GetDaemonSetsByLabel(label string, allNamespaces bool) ([]appsv1.DaemonSet, error) {
 	listOptions, err := k.listOptionsFromLabel(label)
@@ -743,6 +762,28 @@ func (k *KubeClient) CheckDaemonSetExistsByLabel(label string, allNamespaces boo
 // in the namespace of the client.
 func (k *KubeClient) DeleteDaemonSetByLabel(label string) error {
 	daemonset, err := k.GetDaemonSetByLabel(label, false)
+	if err != nil {
+		return err
+	}
+
+	err = k.clientset.AppsV1().DaemonSets(k.namespace).Delete(ctx(), daemonset.Name, k.deleteOptions())
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"daemonset": daemonset.Name,
+		"namespace": k.namespace,
+	}).Debug("Deleted Kubernetes daemonset.")
+
+	return nil
+}
+
+// DeleteDaemonSetByLabelAndName deletes a daemonset object matching the specified label and name
+// in the namespace of the client.
+func (k *KubeClient) DeleteDaemonSetByLabelAndName(label, name string) error {
+	daemonset, err := k.GetDaemonSetByLabelAndName(label, name, false)
 	if err != nil {
 		return err
 	}
@@ -1417,7 +1458,8 @@ func (k *KubeClient) deleteServiceAccountForeground(name, namespace string) erro
 
 	log.WithFields(logFields).Trace("Waiting for Service Account to be deleted.")
 
-	if err := backoff.RetryNotify(checkServiceAccountExists, checkServiceAccountBackoff, checkServiceAccountNotify); err != nil {
+	if err := backoff.RetryNotify(checkServiceAccountExists, checkServiceAccountBackoff,
+		checkServiceAccountNotify); err != nil {
 		return fmt.Errorf("service account %s/%s was not deleted after %3.2f seconds",
 			namespace, name, k.timeout.Seconds())
 	}
@@ -1867,7 +1909,8 @@ func (k *KubeClient) DeleteResourceQuotaByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.CoreV1().ResourceQuotas(k.namespace).Delete(ctx(), resourceQuota.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.CoreV1().ResourceQuotas(k.namespace).Delete(ctx(), resourceQuota.Name,
+		k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1911,7 +1954,8 @@ func (k *KubeClient) UpdateSecret(secret *v1.Secret) (*v1.Secret, error) {
 }
 
 // CreateCHAPSecret creates a new Secret for iSCSI CHAP mutual authentication
-func (k *KubeClient) CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string,
+func (k *KubeClient) CreateCHAPSecret(
+	secretName, accountName, initiatorSecret, targetSecret string,
 ) (*v1.Secret, error) {
 	return k.CreateSecret(&v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -2715,7 +2759,8 @@ func (k *KubeClient) FollowPodLogs(pod, container, namespace string, logLineCall
 
 // addFinalizerToCRDObject is a helper function that updates the CRD object to include our Trident finalizer (
 // definitions are not namespaced)
-func (k *KubeClient) addFinalizerToCRDObject(crdName string, gvk *schema.GroupVersionKind,
+func (k *KubeClient) addFinalizerToCRDObject(
+	crdName string, gvk *schema.GroupVersionKind,
 	gvr *schema.GroupVersionResource, client dynamic.Interface,
 ) error {
 	var err error

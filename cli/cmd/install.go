@@ -53,6 +53,7 @@ const (
 	ClusterRoleFilename        = "trident-clusterrole.yaml"
 	CRDsFilename               = "trident-crds.yaml"
 	DaemonSetFilename          = "trident-daemonset.yaml"
+	WindowsDaemonSetFilename   = "trident-windows-daemonset.yaml"
 	DeploymentFilename         = "trident-deployment.yaml"
 	NamespaceFilename          = "trident-namespace.yaml"
 	PodSecurityPolicyFilename  = "trident-podsecuritypolicy.yaml"
@@ -63,6 +64,7 @@ const (
 	TridentEncryptionKeys = "trident-encryption-keys"
 
 	TridentCSI           = "trident-csi"
+	TridentCSIWindows    = "trident-csi-windows"
 	TridentLegacy        = "trident"
 	TridentMainContainer = "trident-main"
 
@@ -80,6 +82,7 @@ var (
 	silenceAutosupport      bool
 	enableNodePrep          bool
 	skipK8sVersionCheck     bool
+	windows                 bool
 	pvName                  string
 	pvcName                 string
 	tridentImage            string
@@ -109,6 +112,7 @@ var (
 	deploymentPath         string
 	servicePath            string
 	daemonsetPath          string
+	windowsDaemonSetPath   string
 	podSecurityPolicyPath  string
 	resourceQuotaPath      string
 	setupYAMLPaths         []string
@@ -142,6 +146,7 @@ func init() {
 	RootCmd.AddCommand(installCmd)
 	installCmd.Flags().BoolVar(&generateYAML, "generate-custom-yaml", false,
 		"Generate YAML files, but don't install anything.")
+	installCmd.Flags().BoolVar(&windows, "windows", false, "Install Trident on Windows worker nodes.")
 	installCmd.Flags().BoolVar(&useYAML, "use-custom-yaml", false,
 		"Use any existing YAML files that exist in setup directory.")
 	installCmd.Flags().BoolVar(&silent, "silent", false, "Disable most output during installation.")
@@ -190,6 +195,9 @@ func init() {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 	if err := installCmd.Flags().MarkHidden("autosupport-hostname"); err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, err)
+	}
+	if err := installCmd.Flags().MarkHidden("windows"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 	if err := installCmd.Flags().MarkDeprecated("enable-node-prep",
@@ -287,6 +295,22 @@ func discoverInstallationEnvironment() error {
 		return fmt.Errorf("could not initialize Kubernetes client; %v", err)
 	}
 
+	if windows {
+		// Check k8s version before creation of DaemonSet for Windows
+		err = tridentconfig.ValidateKubernetesVersion(tridentconfig.KubernetesVersionMinWindows, client.ServerVersion())
+		if err != nil {
+			windows = false
+			if utils.IsUnsupportedKubernetesVersionError(err) {
+				log.Errorf("Kubernetes version %s is an %v. "+
+					"Trident will not support creation of DaemonSet on windows nodes with an unsupported Kubernetes"+
+					" version.", client.ServerVersion().String(), err)
+				return err
+			} else {
+				return err
+			}
+		}
+	}
+
 	// Before the installation ensure K8s version is valid
 	err = tridentconfig.ValidateKubernetesVersion(tridentconfig.KubernetesVersionMin, client.ServerVersion())
 	if err != nil {
@@ -321,7 +345,7 @@ func discoverInstallationEnvironment() error {
 
 	log.WithFields(log.Fields{
 		"installationNamespace": TridentPodNamespace,
-		"kubernetesVersion":     client.ServerVersion().String(),
+		"KubernetesVersion":     client.ServerVersion().String(),
 	}).Debug("Validated installation environment.")
 
 	return nil
@@ -395,10 +419,11 @@ func prepareYAMLFilePaths() error {
 	daemonsetPath = path.Join(setupPath, DaemonSetFilename)
 	podSecurityPolicyPath = path.Join(setupPath, PodSecurityPolicyFilename)
 	resourceQuotaPath = path.Join(setupPath, ResourceQuotaFilename)
+	windowsDaemonSetPath = path.Join(setupPath, WindowsDaemonSetFilename)
 
 	setupYAMLPaths = []string{
 		namespacePath, serviceAccountPath, clusterRolePath, clusterRoleBindingPath, crdsPath,
-		deploymentPath, servicePath, daemonsetPath, podSecurityPolicyPath, resourceQuotaPath,
+		deploymentPath, servicePath, daemonsetPath, windowsDaemonSetPath, podSecurityPolicyPath, resourceQuotaPath,
 	}
 
 	return nil
@@ -460,7 +485,8 @@ func prepareYAMLFiles() error {
 	}
 
 	// daemonSetlabels are used because this object is used by the DaemonSet / Node Pods.
-	resourceQuotaYAML := k8sclient.GetResourceQuotaYAML(getResourceQuotaName(), TridentPodNamespace, daemonSetlabels, nil)
+	resourceQuotaYAML := k8sclient.GetResourceQuotaYAML(getResourceQuotaName(), TridentPodNamespace, daemonSetlabels,
+		nil)
 	if err = writeFile(resourceQuotaPath, resourceQuotaYAML); err != nil {
 		return fmt.Errorf("could not write resource quota YAML file; %v", err)
 	}
@@ -492,7 +518,7 @@ func prepareYAMLFiles() error {
 	}
 
 	daemonArgs := &k8sclient.DaemonsetYAMLArguments{
-		DaemonsetName:        getDaemonSetName(),
+		DaemonsetName:        getDaemonSetName(false),
 		TridentImage:         tridentImage,
 		ImageRegistry:        imageRegistry,
 		KubeletDir:           kubeletDir,
@@ -507,9 +533,29 @@ func prepareYAMLFiles() error {
 	}
 	daemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonArgs)
 	if err = writeFile(daemonsetPath, daemonSetYAML); err != nil {
-		return fmt.Errorf("could not write daemonset YAML file; %v", err)
+		return fmt.Errorf("could not write DaemonSet YAML file; %v", err)
 	}
 
+	if windows {
+		daemonArgs = &k8sclient.DaemonsetYAMLArguments{
+			DaemonsetName:        getDaemonSetName(true),
+			TridentImage:         tridentImage,
+			ImageRegistry:        imageRegistry,
+			KubeletDir:           kubeletDir,
+			LogFormat:            logFormat,
+			ProbePort:            strconv.FormatInt(probePort, 10),
+			ImagePullSecrets:     []string{},
+			Labels:               daemonSetlabels,
+			ControllingCRDetails: nil,
+			Debug:                Debug,
+			Version:              client.ServerVersion(),
+			HTTPRequestTimeout:   httpRequestTimeout.String(),
+		}
+		windowsDaemonSetYAML := k8sclient.GetCSIDaemonSetYAMLWindows(daemonArgs)
+		if err = writeFile(windowsDaemonSetPath, windowsDaemonSetYAML); err != nil {
+			return fmt.Errorf("could not write DaemonSet Windows YAML file; %v", err)
+		}
+	}
 	podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
 	if err = writeFile(podSecurityPolicyPath, podSecurityPolicyYAML); err != nil {
 		return fmt.Errorf("could not write pod security policy YAML file; %v", err)
@@ -602,8 +648,8 @@ func installTrident() (returnError error) {
 		if returnError != nil {
 			return
 		}
-		alphaSnapshotErrorString := "kubernetes snapshot beta feature is not backwards compatible; run `tridentctl" +
-			" obliviate alpha-snapshot-crd` to remove previous kubernetes snapshot CRDs, " +
+		alphaSnapshotErrorString := "Kubernetes snapshot beta feature is not backwards compatible; run `tridentctl" +
+			" obliviate alpha-snapshot-crd` to remove previous Kubernetes snapshot CRDs, " +
 			"then retry installation; for details, please refer to Trident’s online documentation"
 		if strings.Contains(strings.ToLower(crd.APIVersion), "alpha") {
 			returnError = fmt.Errorf(alphaSnapshotErrorString)
@@ -850,7 +896,8 @@ func installTrident() (returnError error) {
 	}
 	log.WithFields(logFields).Info("Created Trident protocol secret.")
 
-	err = client.CreateObjectByYAML(k8sclient.GetResourceQuotaYAML(getResourceQuotaName(), TridentPodNamespace, nodeLabels, nil))
+	err = client.CreateObjectByYAML(k8sclient.GetResourceQuotaYAML(getResourceQuotaName(), TridentPodNamespace,
+		nodeLabels, nil))
 	if err != nil {
 		returnError = fmt.Errorf("could not create Trident resource quota; %v", err)
 		return
@@ -898,25 +945,63 @@ func installTrident() (returnError error) {
 	}
 	log.WithFields(logFields).Info("Created Trident deployment.")
 
-	// Create the daemonset
+	// Create the DaemonSet
+	if windows {
+		if useYAML && fileExists(daemonsetPath) {
+			returnError = validateTridentDaemonSet()
+			if returnError != nil {
+				returnError = fmt.Errorf("please correct the DaemonSet YAML file; %v", returnError)
+				return
+			}
+			returnError = client.CreateObjectByFile(daemonsetPath)
+			logFields = log.Fields{"path": daemonsetPath}
+		} else {
+			daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
+				DaemonsetName:        getDaemonSetName(true),
+				TridentImage:         tridentImage,
+				ImageRegistry:        imageRegistry,
+				KubeletDir:           kubeletDir,
+				LogFormat:            logFormat,
+				ProbePort:            strconv.FormatInt(probePort, 10),
+				ImagePullSecrets:     []string{},
+				Labels:               nodeLabels,
+				ControllingCRDetails: nil,
+				Debug:                Debug,
+				Version:              client.ServerVersion(),
+				HTTPRequestTimeout:   httpRequestTimeout.String(),
+			}
+			returnError = client.CreateObjectByYAML(
+				k8sclient.GetCSIDaemonSetYAMLWindows(daemonSetArgs))
+			logFields = log.Fields{}
+
+			if returnError != nil {
+				returnError = fmt.Errorf("could not create Trident DaemonSet; %v", returnError)
+				return
+			}
+		}
+	}
+
+	// Create the DaemonSet
 	if useYAML && fileExists(daemonsetPath) {
 		returnError = validateTridentDaemonSet()
 		if returnError != nil {
-			returnError = fmt.Errorf("please correct the daemonset YAML file; %v", returnError)
+			returnError = fmt.Errorf("please correct the DaemonSet YAML file; %v", returnError)
 			return
 		}
 		returnError = client.CreateObjectByFile(daemonsetPath)
 		logFields = log.Fields{"path": daemonsetPath}
 	} else {
+		daemonSetlabels := make(map[string]string)
+		daemonSetlabels[appLabelKey] = TridentNodeLabelValue
 		daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
-			DaemonsetName:        getDaemonSetName(),
+			DaemonsetName:        getDaemonSetName(false),
 			TridentImage:         tridentImage,
 			ImageRegistry:        imageRegistry,
 			KubeletDir:           kubeletDir,
 			LogFormat:            logFormat,
 			ProbePort:            strconv.FormatInt(probePort, 10),
 			ImagePullSecrets:     []string{},
-			Labels:               nodeLabels,
+			Labels:               daemonSetlabels,
 			ControllingCRDetails: nil,
 			Debug:                Debug,
 			Version:              client.ServerVersion(),
@@ -927,10 +1012,11 @@ func installTrident() (returnError error) {
 		logFields = log.Fields{}
 	}
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create Trident daemonset; %v", returnError)
+		returnError = fmt.Errorf("could not create Trident DaemonSet; %v", returnError)
 		return
 	}
-	log.WithFields(logFields).Info("Created Trident daemonset.")
+
+	log.WithFields(logFields).Info("Created Trident DaemonSet.")
 
 	// Wait for Trident pod to be running
 	var tridentPod *v1.Pod
@@ -1524,20 +1610,20 @@ func validateTridentService() error {
 func validateTridentDaemonSet() error {
 	daemonset, err := readDaemonSetFromFile(daemonsetPath)
 	if err != nil {
-		return fmt.Errorf("could not load daemonset YAML file; %v", err)
+		return fmt.Errorf("could not load DaemonSet YAML file; %v", err)
 	}
 
-	// Check the daemonset label
+	// Check the DaemonSet label
 	labels := daemonset.Labels
 	if labels[TridentNodeLabelKey] != TridentNodeLabelValue {
-		return fmt.Errorf("the Trident daemonset must have the label \"%s: %s\"",
+		return fmt.Errorf("the Trident DaemonSet must have the label \"%s: %s\"",
 			TridentNodeLabelKey, TridentNodeLabelValue)
 	}
 
 	// Check the pod label
 	labels = daemonset.Spec.Template.Labels
 	if labels[TridentNodeLabelKey] != TridentNodeLabelValue {
-		return fmt.Errorf("the Trident daemonset's pod template must have the label \"%s: %s\"",
+		return fmt.Errorf("the Trident DaemonSet's pod template must have the label \"%s: %s\"",
 			TridentNodeLabelKey, TridentNodeLabelValue)
 	}
 
@@ -1548,7 +1634,7 @@ func validateTridentDaemonSet() error {
 		}
 	}
 	if tridentImage == "" {
-		return fmt.Errorf("the Trident daemonset must define the %s container", tridentconfig.ContainerTrident)
+		return fmt.Errorf("the Trident DaemonSet must define the %s container", tridentconfig.ContainerTrident)
 	}
 
 	return nil
@@ -1744,7 +1830,7 @@ func readServiceFromFile(filePath string) (*v1.Service, error) {
 	return &service, nil
 }
 
-// readDaemonSetFromFile parses and returns a daemonset object from a file.
+// readDaemonSetFromFile parses and returns a DaemonSet object from a file.
 func readDaemonSetFromFile(filePath string) (*appsv1.DaemonSet, error) {
 	var daemonset appsv1.DaemonSet
 
@@ -1884,8 +1970,12 @@ func getDeploymentName(csi bool) string {
 	}
 }
 
-func getDaemonSetName() string {
-	return TridentCSI
+func getDaemonSetName(windows bool) string {
+	if windows {
+		return TridentCSIWindows
+	} else {
+		return TridentCSI
+	}
 }
 
 func getCSIDriverName() string {

@@ -595,6 +595,20 @@ func (mr *MockKubernetesClientMockRecorder) DeleteDaemonSetByLabel(arg0 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDaemonSetByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteDaemonSetByLabel), arg0)
 }
 
+// DeleteDaemonSetByLabelAndName mocks base method.
+func (m *MockKubernetesClient) DeleteDaemonSetByLabelAndName(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteDaemonSetByLabelAndName", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDaemonSetByLabelAndName indicates an expected call of DeleteDaemonSetByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) DeleteDaemonSetByLabelAndName(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDaemonSetByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteDaemonSetByLabelAndName), arg0, arg1)
+}
+
 // DeleteDeployment mocks base method.
 func (m *MockKubernetesClient) DeleteDeployment(arg0, arg1 string, arg2 bool) error {
 	m.ctrl.T.Helper()
@@ -1093,6 +1107,21 @@ func (m *MockKubernetesClient) GetDaemonSetByLabel(arg0 string, arg1 bool) (*v1.
 func (mr *MockKubernetesClientMockRecorder) GetDaemonSetByLabel(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDaemonSetByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetDaemonSetByLabel), arg0, arg1)
+}
+
+// GetDaemonSetByLabelAndName mocks base method.
+func (m *MockKubernetesClient) GetDaemonSetByLabelAndName(arg0, arg1 string, arg2 bool) (*v1.DaemonSet, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDaemonSetByLabelAndName", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*v1.DaemonSet)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDaemonSetByLabelAndName indicates an expected call of GetDaemonSetByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) GetDaemonSetByLabelAndName(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDaemonSetByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).GetDaemonSetByLabelAndName), arg0, arg1, arg2)
 }
 
 // GetDaemonSetsByLabel mocks base method.

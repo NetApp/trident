@@ -736,6 +736,63 @@ spec:
           sizeLimit: 1Gi
 `
 
+func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
+	var debugLine, logLevel, daemonSetYAML string
+	var version int
+	if args.Debug {
+		debugLine = "- -debug"
+		logLevel = "8"
+	} else {
+		debugLine = "#- -debug"
+		logLevel = "2"
+	}
+
+	if args.Version != nil {
+		version, _ = strconv.Atoi(args.Version.MinorVersionString())
+	}
+
+	if version >= 20 {
+		daemonSetYAML = daemonSet120YAMLTemplateWindows
+	}
+
+	if args.ImageRegistry == "" {
+		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
+	}
+
+	if args.Labels == nil {
+		args.Labels = map[string]string{}
+	}
+	args.Labels[DefaultContainerLabelKey] = "trident-main"
+	tolerations := args.Tolerations
+	if args.Tolerations == nil {
+		// Default to tolerating everything
+		tolerations = []map[string]string{
+			{"effect": "NoExecute", "operator": "Exists"},
+			{"effect": "NoSchedule", "operator": "Exists"},
+		}
+	}
+
+	kubeletDir := strings.TrimRight(args.KubeletDir, "/")
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{TRIDENT_IMAGE}", args.TridentImage)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DAEMONSET_NAME}", args.DaemonsetName)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{KUBELET_DIR}", kubeletDir)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DEBUG}", debugLine)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_LEVEL}", logLevel)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{LOG_FORMAT}", args.LogFormat)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{PROBE_PORT}", args.ProbePort)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "IMAGE_PULL_SECRETS",
+		constructImagePullSecrets(args.ImagePullSecrets))
+
+	return daemonSetYAML
+}
+
 func GetCSIDaemonSetYAML(args *DaemonsetYAMLArguments) string {
 	var debugLine, logLevel string
 
@@ -1117,6 +1174,209 @@ spec:
               name: trident-csi
           - secret:
               name: trident-encryption-keys
+`
+
+const daemonSet120YAMLTemplateWindows = `---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {DAEMONSET_NAME}
+  {LABELS}
+spec:
+  selector:
+    matchLabels:
+      app: {LABEL_APP}
+  template:
+    metadata:
+      labels:
+        app: {LABEL_APP}
+    spec:
+      priorityClassName: system-node-critical
+      serviceAccount: trident-csi
+      containers:
+      - name: trident-main
+        image: {TRIDENT_IMAGE}
+        command:
+        - trident_orchestrator.exe
+        args:
+        - "--no_persistence"
+        - "--rest=false"
+        - "--csi_node_name=$(KUBE_NODE_NAME)"
+        - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--csi_role=node"
+        - "--log_format={LOG_FORMAT}"
+        - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
+        - "--https_rest"
+        - "--https_port={PROBE_PORT}"
+        {DEBUG}
+        # Windows requires named ports for it to actually bind
+        ports:
+          - containerPort: {PROBE_PORT}
+            name: healthz
+            protocol: TCP
+        startupProbe:
+          httpGet:
+            path: /liveness
+            scheme: HTTPS
+            port: healthz
+          failureThreshold: 5
+          timeoutSeconds: 3
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            scheme: HTTPS
+            port: healthz
+          failureThreshold: 3
+          timeoutSeconds: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            scheme: HTTPS
+            port: healthz
+          failureThreshold: 5
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 10
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CSI_ENDPOINT
+          value: unix:///csi/csi.sock
+        volumeMounts:
+        - name: trident-tracking-dir
+          mountPath: C:\var\lib\trident\tracking
+        - name: certs
+          mountPath: /certs
+          readOnly: true
+        - name: kubelet-dir
+          mountPath: "C:\\var\\lib\\kubelet"
+        - name: plugin-dir
+          mountPath: C:\csi
+        - name: csi-proxy-fs-pipe-v1
+          mountPath: \\.\pipe\csi-proxy-filesystem-v1
+        # This is needed for NodeGetVolumeStats
+        - name: csi-proxy-volume-pipe
+          mountPath: \\.\pipe\csi-proxy-volume-v1
+        - name: csi-proxy-smb-pipe-v1
+          mountPath: \\.\pipe\csi-proxy-smb-v1
+        # these paths are still included for compatibility, they're used
+        # only if the node has still the beta version of the CSI proxy
+        - name: csi-proxy-fs-pipe-v1beta1
+          mountPath: \\.\pipe\csi-proxy-filesystem-v1beta1
+        - name: csi-proxy-smb-pipe-v1beta1
+          mountPath: \\.\pipe\csi-proxy-smb-v1beta1
+        resources:
+        limits:
+          memory: 400Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+      - name: node-driver-registrar
+        image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.4.0
+        args:
+        - --v=2
+        - --csi-address=$(CSI_ENDPOINT)
+        - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
+        livenessProbe:
+        exec:
+          command:
+          - /csi-node-driver-registrar.exe
+          - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
+          - --mode=kubelet-registration-probe
+        initialDelaySeconds: 60
+        timeoutSeconds: 30
+        env:
+        - name: CSI_ENDPOINT
+          value: unix:///csi/csi.sock
+        - name: DRIVER_REG_SOCK_PATH
+          value: C:\\var\\lib\\kubelet\\plugins\\csi.trident.netapp.io\\csi.sock
+        - name: KUBE_NODE_NAME
+          valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+        volumeMounts:
+        - name: kubelet-dir
+          mountPath: "C:\\var\\lib\\kubelet"
+        - name: plugin-dir
+          mountPath: C:\csi
+        - name: registration-dir
+          mountPath: C:\registration
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 10m
+            memory: 20Mi
+      - name: liveness-probe
+        volumeMounts:
+          - mountPath: C:\csi
+            name: plugin-dir
+        image: k8s.gcr.io/sig-storage/livenessprobe:v2.5.0
+        args:
+          - --csi-address=$(CSI_ENDPOINT)
+          - --probe-timeout=3s
+          - --health-port=29643
+          - --v=2
+        env:
+          - name: CSI_ENDPOINT
+            value: unix://C:\\csi\\csi.sock
+        resources:
+          limits:
+            memory: 100Mi
+          requests:
+            cpu: 10m
+            memory: 40Mi
+      nodeSelector:
+        kubernetes.io/os: windows
+        kubernetes.io/arch: amd64
+        {NODE_SELECTOR}
+      volumes:
+        - name: trident-tracking-dir
+          hostPath:
+            path: C:\var\lib\trident\tracking
+            type: DirectoryOrCreate
+        - name: certs
+          projected:
+            sources:
+            - secret:
+                name: trident-csi
+            - secret:
+                name: trident-encryption-keys
+        - name: csi-proxy-volume-pipe
+          hostPath:
+            path: \\.\pipe\csi-proxy-volume-v1
+            type: ""
+        - name: csi-proxy-fs-pipe-v1
+          hostPath:
+            path: \\.\pipe\csi-proxy-filesystem-v1
+        - name: csi-proxy-smb-pipe-v1
+          hostPath:
+            path: \\.\pipe\csi-proxy-smb-v1
+        # these paths are still included for compatibility, they're used
+        # only if the node has still the beta version of the CSI proxy
+        - name: csi-proxy-fs-pipe-v1beta1
+          hostPath:
+            path: \\.\pipe\csi-proxy-filesystem-v1beta1
+        - name: csi-proxy-smb-pipe-v1beta1
+          hostPath:
+            path: \\.\pipe\csi-proxy-smb-v1beta1
+        - name: registration-dir
+          hostPath:
+            path: C:\var\lib\kubelet\plugins_registry\
+            type: Directory
+        - name: kubelet-dir
+          hostPath:
+            path: C:\var\lib\kubelet\
+            type: Directory
+        - name: plugin-dir
+          hostPath:
+            path: C:\var\lib\kubelet\plugins\csi.trident.netapp.io\
+            type: DirectoryOrCreate
 `
 
 func GetTridentVersionPodYAML(

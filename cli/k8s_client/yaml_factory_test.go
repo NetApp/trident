@@ -4,11 +4,18 @@ package k8sclient
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/ghodss/yaml"
+	scc "github.com/openshift/api/security/v1"
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/core/v1"
+	pspv1beta1 "k8s.io/api/policy/v1beta1"
+	csiv1 "k8s.io/api/storage/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils"
@@ -225,7 +232,7 @@ func TestGetCSIDeploymentYAML(t *testing.T) {
 
 	for _, versionString := range versions {
 		version := utils.MustParseSemantic(versionString)
-		deploymentArgs := &DeploymentYAMLArguments{Version: version}
+		deploymentArgs := &DeploymentYAMLArguments{Version: version, SnapshotCRDVersion: "v1"}
 
 		yamlData := GetCSIDeploymentYAML(deploymentArgs)
 		_, err := yaml.YAMLToJSON([]byte(yamlData))
@@ -347,6 +354,21 @@ func TestGetCSIDaemonSetYAML(t *testing.T) {
 	for _, versionString := range versions {
 		version := utils.MustParseSemantic(versionString)
 		daemonsetArgs := &DaemonsetYAMLArguments{Version: version}
+
+		yamlData := GetCSIDaemonSetYAML(daemonsetArgs)
+		_, err := yaml.YAMLToJSON([]byte(yamlData))
+		if err != nil {
+			t.Fatalf("expected valid YAML for version %s", versionString)
+		}
+	}
+}
+
+func TestGetCSIDaemonSetYAML_DebugIsTrue(t *testing.T) {
+	versions := []string{"1.17.0"}
+
+	for _, versionString := range versions {
+		version := utils.MustParseSemantic(versionString)
+		daemonsetArgs := &DaemonsetYAMLArguments{Version: version, Debug: true}
 
 		yamlData := GetCSIDaemonSetYAML(daemonsetArgs)
 		_, err := yaml.YAMLToJSON([]byte(yamlData))
@@ -480,6 +502,36 @@ func TestGetCSIDaemonSetYAMLTolerations(t *testing.T) {
 		fmt.Sprintf("expected default tolerations to not appear in final YAML: %s", yamlData))
 }
 
+func TestGetCSIDaemonSetYAMLWindows(t *testing.T) {
+	versions := []string{"1.19.0", "1.21.0", "1.23.0"}
+
+	for _, versionString := range versions {
+		version := utils.MustParseSemantic(versionString)
+		daemonsetArgs := &DaemonsetYAMLArguments{Version: version, Debug: true}
+
+		yamlData := GetCSIDaemonSetYAMLWindows(daemonsetArgs)
+		_, err := yaml.YAMLToJSON([]byte(yamlData))
+		if err != nil {
+			t.Fatalf("expected valid YAML for version %s", versionString)
+		}
+	}
+}
+
+func TestGetCSIDaemonSetYAMLWindows_DebugIsFalse(t *testing.T) {
+	versions := []string{"1.19.0", "1.21.0", "1.23.0"}
+
+	for _, versionString := range versions {
+		version := utils.MustParseSemantic(versionString)
+		daemonsetArgs := &DaemonsetYAMLArguments{Version: version, Debug: false}
+
+		yamlData := GetCSIDaemonSetYAMLWindows(daemonsetArgs)
+		_, err := yaml.YAMLToJSON([]byte(yamlData))
+		if err != nil {
+			t.Fatalf("expected valid YAML for version %s", versionString)
+		}
+	}
+}
+
 func TestConstructNodeSelector(t *testing.T) {
 	nodeSelMap := map[string]string{"worker": "true", "master": "20"}
 	expectedNodeSelString := []string{"worker: 'true'\nmaster: '20'\n", "master: '20'\nworker: 'true'\n"}
@@ -491,6 +543,2028 @@ func TestConstructNodeSelector(t *testing.T) {
 		}
 	}
 	assert.True(t, isResultExpected)
+}
+
+func TestGetNamespaceYAML(t *testing.T) {
+	expected := v1.Namespace{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Namespace",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "trident",
+			Labels: map[string]string{
+				"pod-security.kubernetes.io/enforce": "privileged",
+			},
+		},
+	}
+
+	var actual v1.Namespace
+	actualYAML := GetNamespaceYAML("trident")
+
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.Equal(t, "trident", actual.Name)
+}
+
+func TestGetTridentVersionPodYAML(t *testing.T) {
+	name := "trident-csi"
+	image := "trident-csi-image"
+	secrets := []string{"trident-csi-image-secret"}
+	labels := map[string]string{"app": "controller.csi.trident.netapp.io"}
+	crdDetails := map[string]string{"kind": "ReplicaSet"}
+
+	expected := v1.Pod{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Pod",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "trident-csi",
+			Labels: map[string]string{
+				"app": "controller.csi.trident.netapp.io",
+			},
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					Kind: "ReplicaSet",
+				},
+			},
+		},
+		Spec: v1.PodSpec{
+			DeprecatedServiceAccount: "service",
+			RestartPolicy:            "Never",
+			Containers: []v1.Container{
+				{
+					Name:            "trident-main",
+					ImagePullPolicy: "IfNotPresent",
+					Image:           "trident-csi-image",
+					Command:         []string{"tridentctl"},
+					Args:            []string{"pause"},
+				},
+			},
+			ImagePullSecrets: []v1.LocalObjectReference{
+				{
+					Name: "trident-csi-image-secret",
+				},
+			},
+			NodeSelector: map[string]string{
+				"beta.kubernetes.io/os":   "linux",
+				"beta.kubernetes.io/arch": "amd64",
+			},
+		},
+	}
+
+	var actual v1.Pod
+	actualYAML := GetTridentVersionPodYAML(name, image, "service", secrets, labels, crdDetails)
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetOpenShiftSCCYAML(t *testing.T) {
+	sccName := "trident-scc"
+	user := "trident-installer"
+	namespace := "trident"
+	labels := map[string]string{"app": "controller.csi.trident.netapp.io"}
+	crdDetails := map[string]string{"kind": "ReplicaSet"}
+
+	expected := scc.SecurityContextConstraints{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "SecurityContextConstraints",
+			APIVersion: "security.openshift.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{
+				"kubernetes.io/description": "trident-scc is a clone of the privileged built-in, " +
+					"and is meant just for use with trident.",
+			},
+			Name: "trident-scc",
+			Labels: map[string]string{
+				"app": "controller.csi.trident.netapp.io",
+			},
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					Kind: "ReplicaSet",
+				},
+			},
+		},
+		AllowHostDirVolumePlugin: true,
+		AllowHostIPC:             true,
+		AllowHostNetwork:         true,
+		AllowHostPID:             true,
+		AllowHostPorts:           true,
+		AllowPrivilegedContainer: true,
+		AllowedCapabilities:      []v1.Capability{"*"},
+		DefaultAddCapabilities:   []v1.Capability{},
+		FSGroup: scc.FSGroupStrategyOptions{
+			Type: "RunAsAny",
+		},
+		Groups:                   []string{},
+		Priority:                 nil,
+		ReadOnlyRootFilesystem:   false,
+		RequiredDropCapabilities: []v1.Capability{},
+		RunAsUser: scc.RunAsUserStrategyOptions{
+			Type: "RunAsAny",
+		},
+		SELinuxContext: scc.SELinuxContextStrategyOptions{
+			Type: "RunAsAny",
+		},
+		SeccompProfiles: []string{"*"},
+		SupplementalGroups: scc.SupplementalGroupsStrategyOptions{
+			Type: "RunAsAny",
+		},
+		Users:   []string{"system:serviceaccount:trident:trident-installer"},
+		Volumes: []scc.FSType{"*"},
+	}
+
+	var actual scc.SecurityContextConstraints
+
+	actualYAML := GetOpenShiftSCCYAML(sccName, user, namespace, labels, crdDetails)
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.AllowHostDirVolumePlugin, actual.AllowHostDirVolumePlugin))
+	assert.True(t, reflect.DeepEqual(expected.AllowHostIPC, actual.AllowHostIPC))
+	assert.True(t, reflect.DeepEqual(expected.AllowHostNetwork, actual.AllowHostNetwork))
+	assert.True(t, reflect.DeepEqual(expected.AllowHostPID, actual.AllowHostPID))
+	assert.True(t, reflect.DeepEqual(expected.AllowHostPorts, actual.AllowHostPorts))
+	assert.True(t, reflect.DeepEqual(expected.AllowPrivilegedContainer, actual.AllowPrivilegedContainer))
+	assert.True(t, reflect.DeepEqual(expected.AllowedCapabilities, actual.AllowedCapabilities))
+	assert.Empty(t, expected.DefaultAddCapabilities, actual.DefaultAddCapabilities)
+	assert.True(t, reflect.DeepEqual(expected.FSGroup, actual.FSGroup))
+	assert.True(t, reflect.DeepEqual(expected.Groups, actual.Groups))
+	assert.True(t, reflect.DeepEqual(expected.Priority, actual.Priority))
+	assert.True(t, reflect.DeepEqual(expected.ReadOnlyRootFilesystem, actual.ReadOnlyRootFilesystem))
+	assert.Empty(t, expected.RequiredDropCapabilities, actual.RequiredDropCapabilities)
+	assert.True(t, reflect.DeepEqual(expected.RunAsUser, actual.RunAsUser))
+	assert.True(t, reflect.DeepEqual(expected.SELinuxContext, actual.SELinuxContext))
+	assert.True(t, reflect.DeepEqual(expected.SeccompProfiles, actual.SeccompProfiles))
+	assert.True(t, reflect.DeepEqual(expected.SupplementalGroups, actual.SupplementalGroups))
+	assert.True(t, reflect.DeepEqual(expected.Users, actual.Users))
+	assert.True(t, reflect.DeepEqual(expected.Volumes, actual.Volumes))
+}
+
+func TestGetOpenShiftSCCYAML_UnprivilegedUser(t *testing.T) {
+	sccName := "trident-scc"
+	user := "root"
+	namespace := "trident"
+	labels := map[string]string{"app": "controller.trident.netapp.io"}
+	crdDetails := map[string]string{"kind": "ReplicaSet"}
+	priority := int32(10)
+
+	expected := scc.SecurityContextConstraints{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "SecurityContextConstraints",
+			APIVersion: "security.openshift.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{
+				"kubernetes.io/description": "trident-scc is a clone of the anyuid built-in, and is meant just for use with trident.",
+			},
+			Name: "trident-scc",
+			Labels: map[string]string{
+				"app": "controller.trident.netapp.io",
+			},
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					Kind: "ReplicaSet",
+				},
+			},
+		},
+		AllowHostDirVolumePlugin: false,
+		AllowHostIPC:             false,
+		AllowHostNetwork:         false,
+		AllowHostPID:             false,
+		AllowHostPorts:           false,
+		AllowPrivilegedContainer: false,
+		AllowedCapabilities:      []v1.Capability{},
+		DefaultAddCapabilities:   []v1.Capability{},
+		FSGroup: scc.FSGroupStrategyOptions{
+			Type: "RunAsAny",
+		},
+		Groups:                   []string{},
+		Priority:                 &priority,
+		ReadOnlyRootFilesystem:   false,
+		RequiredDropCapabilities: []v1.Capability{"MKNOD"},
+		RunAsUser: scc.RunAsUserStrategyOptions{
+			Type: "RunAsAny",
+		},
+		SELinuxContext: scc.SELinuxContextStrategyOptions{
+			Type: "MustRunAs",
+		},
+		SupplementalGroups: scc.SupplementalGroupsStrategyOptions{
+			Type: "RunAsAny",
+		},
+		Users:   []string{"system:serviceaccount:trident:root"},
+		Volumes: []scc.FSType{"configMap", "downwardAPI", "emptyDir", "persistentVolumeClaim", "projected", "secret"},
+	}
+
+	var actual scc.SecurityContextConstraints
+
+	actualYAML := GetOpenShiftSCCYAML(sccName, user, namespace, labels, crdDetails)
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.AllowHostDirVolumePlugin, actual.AllowHostDirVolumePlugin))
+	assert.True(t, reflect.DeepEqual(expected.AllowHostIPC, actual.AllowHostIPC))
+	assert.True(t, reflect.DeepEqual(expected.AllowHostNetwork, actual.AllowHostNetwork))
+	assert.True(t, reflect.DeepEqual(expected.AllowHostPID, actual.AllowHostPID))
+	assert.True(t, reflect.DeepEqual(expected.AllowHostPorts, actual.AllowHostPorts))
+	assert.True(t, reflect.DeepEqual(expected.AllowPrivilegedContainer, actual.AllowPrivilegedContainer))
+	assert.Empty(t, expected.AllowedCapabilities, actual.AllowedCapabilities)
+	assert.Empty(t, expected.DefaultAddCapabilities, actual.DefaultAddCapabilities)
+	assert.True(t, reflect.DeepEqual(expected.FSGroup, actual.FSGroup))
+	assert.True(t, reflect.DeepEqual(expected.Groups, actual.Groups))
+	assert.True(t, reflect.DeepEqual(expected.Priority, actual.Priority))
+	assert.True(t, reflect.DeepEqual(expected.ReadOnlyRootFilesystem, actual.ReadOnlyRootFilesystem))
+	assert.True(t, reflect.DeepEqual(expected.RequiredDropCapabilities, actual.RequiredDropCapabilities))
+	assert.True(t, reflect.DeepEqual(expected.RunAsUser, actual.RunAsUser))
+	assert.True(t, reflect.DeepEqual(expected.SELinuxContext, actual.SELinuxContext))
+	assert.True(t, reflect.DeepEqual(expected.SeccompProfiles, actual.SeccompProfiles))
+	assert.True(t, reflect.DeepEqual(expected.SupplementalGroups, actual.SupplementalGroups))
+	assert.True(t, reflect.DeepEqual(expected.Users, actual.Users))
+	assert.True(t, reflect.DeepEqual(expected.Volumes, actual.Volumes))
+}
+
+func TestGetOpenShiftSCCQueryYAML(t *testing.T) {
+	expected := scc.SecurityContextConstraints{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "SecurityContextConstraints",
+			APIVersion: "security.openshift.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "trident-scc",
+		},
+	}
+
+	var actual scc.SecurityContextConstraints
+	actualYAML := GetOpenShiftSCCQueryYAML("trident-scc")
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+}
+
+func TestGetSecretYAML(t *testing.T) {
+	secretName := "trident-csi-secret"
+	namespace := "trident"
+	labels := map[string]string{"app": "trident"}
+	crdDetails := map[string]string{"kind": "ReplicaSet"}
+	data := map[string]string{"caKey": "95AE119A6C3A07F56C4A"}
+	stringData := map[string]string{"key": "value"}
+
+	expected := v1.Secret{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Secret",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "trident-csi-secret",
+			Namespace: "trident",
+			Labels: map[string]string{
+				"app": "trident",
+			},
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					Kind: "ReplicaSet",
+				},
+			},
+		},
+		Data: map[string][]byte{
+			"caKey": []byte("95AE119A6C3A07F56C4A"),
+		},
+		StringData: map[string]string{
+			"key": "value",
+		},
+	}
+
+	var actual v1.Secret
+	actualYAML := GetSecretYAML(secretName, namespace, labels, crdDetails, data, stringData)
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.StringData, actual.StringData))
+}
+
+func TestGetCRDsYAML(t *testing.T) {
+	result := strings.Split(GetCRDsYAML(), "---")
+
+	preserveValue := true
+	minItems := int64(1)
+	maxItems := int64(1)
+
+	schema1 := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+	schema2 := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type: "object",
+			Properties: map[string]apiextensionsv1.JSONSchemaProps{
+				"spec": {
+					Type: "object",
+					Properties: map[string]apiextensionsv1.JSONSchemaProps{
+						"state": {
+							Type: "string",
+							Enum: []apiextensionsv1.JSON{
+								{[]byte("\"\"")},
+								{[]byte("\"promoted\"")},
+								{[]byte("\"established\"")},
+								{[]byte("\"reestablished\"")},
+							},
+						},
+						"replicationPolicy": {
+							Type: "string",
+						},
+						"replicationSchedule": {
+							Type: "string",
+						},
+						"volumeMappings": {
+							Items: &apiextensionsv1.JSONSchemaPropsOrArray{
+								Schema: &apiextensionsv1.JSONSchemaProps{
+									Type: "object",
+									Properties: map[string]apiextensionsv1.JSONSchemaProps{
+										"promotedSnapshotHandle": {
+											Type: "string",
+										},
+										"localPVCName": {
+											Type: "string",
+										},
+										"remoteVolumeHandle": {
+											Type: "string",
+										},
+									},
+									Required: []string{"localPVCName"},
+								},
+							},
+							MinItems: &minItems,
+							MaxItems: &maxItems,
+							Type:     "array",
+						},
+					},
+					Required: []string{"volumeMappings"},
+				},
+				"status": {
+					Type: "object",
+					Properties: map[string]apiextensionsv1.JSONSchemaProps{
+						"conditions": {
+							Type: "array",
+							Items: &apiextensionsv1.JSONSchemaPropsOrArray{
+								Schema: &apiextensionsv1.JSONSchemaProps{
+									Type: "object",
+									Properties: map[string]apiextensionsv1.JSONSchemaProps{
+										"lastTransitionTime": {
+											Type: "string",
+										},
+										"localPVCName": {
+											Type: "string",
+										},
+										"localVolumeHandle": {
+											Type: "string",
+										},
+										"remoteVolumeHandle": {
+											Type: "string",
+										},
+										"message": {
+											Type: "string",
+										},
+										"observedGeneration": {
+											Type: "integer",
+										},
+										"state": {
+											Type: "string",
+										},
+										"replicationPolicy": {
+											Type: "string",
+										},
+										"replicationSchedule": {
+											Type: "string",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	schema3 := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type: "object",
+			Properties: map[string]apiextensionsv1.JSONSchemaProps{
+				"spec": {
+					Type: "object",
+					Properties: map[string]apiextensionsv1.JSONSchemaProps{
+						"snapshotName": {
+							Type: "string",
+						},
+					},
+					Required: []string{"snapshotName"},
+				},
+				"status": {
+					Type: "object",
+					Properties: map[string]apiextensionsv1.JSONSchemaProps{
+						"lastTransitionTime": {
+							Type: "string",
+						},
+						"observedGeneration": {
+							Type: "integer",
+						},
+						"snapshotHandle": {
+							Type: "string",
+						},
+					},
+				},
+			},
+		},
+	}
+	schema4 := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type: "object",
+			Properties: map[string]apiextensionsv1.JSONSchemaProps{
+				"volumeID": {
+					Type: "string",
+				},
+				"nodeID": {
+					Type: "string",
+				},
+				"readOnly": {
+					Type: "boolean",
+				},
+				"accessMode": {
+					Type:   "integer",
+					Format: "int32",
+				},
+			},
+			Required: []string{"volumeID", "nodeID", "readOnly"},
+		},
+	}
+
+	expected1 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentversions.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentversions",
+				Singular:   "tridentversion",
+				Kind:       "TridentVersion",
+				ShortNames: []string{"tver", "tversion"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema1,
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Version",
+							Type:        "string",
+							Description: "The Trident version",
+							Priority:    int32(0),
+							JSONPath:    ".trident_version",
+						},
+					},
+				},
+			},
+		},
+	}
+	expected2 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentbackends.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentbackends",
+				Singular:   "tridentbackend",
+				Kind:       "TridentBackend",
+				ShortNames: []string{"tbe", "tbackend"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema1,
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Backend",
+							Type:        "string",
+							Description: "The backend name",
+							Priority:    int32(0),
+							JSONPath:    ".backendName",
+						},
+						{
+							Name:        "Backend UUID",
+							Type:        "string",
+							Description: "The backend UUID",
+							Priority:    int32(0),
+							JSONPath:    ".backendUUID",
+						},
+					},
+				},
+			},
+		},
+	}
+	expected3 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentbackendconfigs.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentbackendconfigs",
+				Singular:   "tridentbackendconfig",
+				Kind:       "TridentBackendConfig",
+				ShortNames: []string{"tbc", "tbconfig", "tbackendconfig"},
+				Categories: []string{"trident", "trident-internal", "trident-external"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema1,
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+						Scale:  nil,
+					},
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Backend Name",
+							Type:        "string",
+							Description: "The backend name",
+							Priority:    int32(0),
+							JSONPath:    ".status.backendInfo.backendName",
+						},
+						{
+							Name:        "Backend UUID",
+							Type:        "string",
+							Description: "The backend UUID",
+							Priority:    int32(0),
+							JSONPath:    ".status.backendInfo.backendUUID",
+						},
+						{
+							Name:        "Phase",
+							Type:        "string",
+							Description: "The backend config phase",
+							Priority:    int32(0),
+							JSONPath:    ".status.phase",
+						},
+						{
+							Name:        "Status",
+							Type:        "string",
+							Description: "The result of the last operation",
+							Priority:    int32(0),
+							JSONPath:    ".status.lastOperationStatus",
+						},
+						{
+							Name:        "Storage Driver",
+							Type:        "string",
+							Description: "The storage driver type",
+							Priority:    int32(1),
+							JSONPath:    ".spec.storageDriverName",
+						},
+						{
+							Name:        "Deletion Policy",
+							Type:        "string",
+							Description: "The deletion policy",
+							Priority:    int32(1),
+							JSONPath:    ".status.deletionPolicy",
+						},
+					},
+				},
+			},
+		},
+	}
+	expected4 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentmirrorrelationships.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentmirrorrelationships",
+				Singular:   "tridentmirrorrelationship",
+				Kind:       "TridentMirrorRelationship",
+				ShortNames: []string{"tmr", "tmrelationship", "tmirrorrelationship"},
+				Categories: []string{"trident", "trident-internal", "trident-external"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema2,
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+						Scale:  nil,
+					},
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Desired State",
+							Type:        "string",
+							Description: "The desired mirror state",
+							JSONPath:    ".spec.state",
+						},
+						{
+							Name:        "Local PVC",
+							Type:        "string",
+							Description: "Local PVCs for the mirror",
+							JSONPath:    ".spec.volumeMappings[*].localPVCName",
+						},
+						{
+							Name:        "Actual state",
+							Type:        "string",
+							Description: "Status",
+							JSONPath:    ".status.conditions[*].state",
+						},
+						{
+							Name:        "Message",
+							Type:        "string",
+							Description: "Status message",
+							JSONPath:    ".status.conditions[*].message",
+						},
+					},
+				},
+			},
+		},
+	}
+	expected5 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentsnapshotinfos.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentsnapshotinfos",
+				Singular:   "tridentsnapshotinfo",
+				Kind:       "TridentSnapshotInfo",
+				ShortNames: []string{"tsi", "tsinfo", "tsnapshotinfo"},
+				Categories: []string{"trident", "trident-internal", "trident-external"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema3,
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+						Scale:  nil,
+					},
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Snapshot Handle",
+							Type:        "string",
+							Description: "VolumeSnapshotContent Handle",
+							Priority:    int32(0),
+							JSONPath:    ".status.snapshotHandle",
+						},
+					},
+				},
+			},
+		},
+	}
+	expected6 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentstorageclasses.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentstorageclasses",
+				Singular:   "tridentstorageclass",
+				Kind:       "TridentStorageClass",
+				ShortNames: []string{"tsc", "tstorageclass"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema1,
+				},
+			},
+		},
+	}
+	expected7 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentvolumes.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentvolumes",
+				Singular:   "tridentvolume",
+				Kind:       "TridentVolume",
+				ShortNames: []string{"tvol", "tvolume"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:         "v1",
+					Served:       true,
+					Storage:      true,
+					Schema:       &schema1,
+					Subresources: nil,
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:     "Age",
+							Type:     "date",
+							Priority: int32(0),
+							JSONPath: ".metadata.creationTimestamp",
+						},
+						{
+							Name:        "Size",
+							Type:        "string",
+							Description: "The volume's size",
+							Priority:    int32(1),
+							JSONPath:    ".config.size",
+						},
+						{
+							Name:        "Storage Class",
+							Type:        "string",
+							Description: "The volume's storage class",
+							Priority:    int32(1),
+							JSONPath:    ".config.storageClass",
+						},
+						{
+							Name:        "State",
+							Type:        "string",
+							Description: "The volume's state",
+							Priority:    int32(1),
+							JSONPath:    ".state",
+						},
+						{
+							Name:        "Protocol",
+							Type:        "string",
+							Description: "The volume's protocol",
+							Priority:    int32(1),
+							JSONPath:    ".config.protocol",
+						},
+						{
+							Name:        "Backend UUID",
+							Type:        "string",
+							Description: "The volume's backend UUID",
+							Priority:    int32(1),
+							JSONPath:    ".backendUUID",
+						},
+						{
+							Name:        "Pool",
+							Type:        "string",
+							Description: "The volume's pool",
+							Priority:    int32(1),
+							JSONPath:    ".pool",
+						},
+					},
+				},
+			},
+		},
+	}
+	expected8 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentvolumepublications.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:   "tridentvolumepublications",
+				Singular: "tridentvolumepublication",
+				Kind:     "TridentVolumePublication",
+				ShortNames: []string{
+					"tvp",
+					"tvpub",
+					"tvpublication",
+					"tvolpub",
+					"tvolumepub",
+					"tvolpublication",
+					"tvolumepublication",
+				},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema4,
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Volume",
+							Type:        "string",
+							Description: "Volume ID",
+							Priority:    int32(0),
+							JSONPath:    ".volumeID",
+						},
+						{
+							Name:        "Node",
+							Type:        "string",
+							Description: "Node ID",
+							Priority:    int32(0),
+							JSONPath:    ".nodeID",
+						},
+					},
+				},
+			},
+		},
+	}
+	expected9 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentnodes.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentnodes",
+				Singular:   "tridentnode",
+				Kind:       "TridentNode",
+				ShortNames: []string{"tnode"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema1,
+				},
+			},
+		},
+	}
+	expected10 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridenttransactions.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridenttransactions",
+				Singular:   "tridenttransaction",
+				Kind:       "TridentTransaction",
+				ShortNames: []string{"ttx", "ttransaction"},
+				Categories: []string{"trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema1,
+				},
+			},
+		},
+	}
+	expected11 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentsnapshots.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentsnapshots",
+				Singular:   "tridentsnapshot",
+				Kind:       "TridentSnapshot",
+				ShortNames: []string{"tss", "tsnap", "tsnapshot"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema1,
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "State",
+							Type:        "string",
+							Description: "The snapshot's state",
+							Priority:    int32(1),
+							JSONPath:    ".state",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	var actual1 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[0]), &actual1), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected1.TypeMeta, actual1.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected1.ObjectMeta, actual1.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected1.Spec, actual1.Spec))
+
+	var actual2 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[1]), &actual2), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected2.TypeMeta, actual2.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected2.ObjectMeta, actual2.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected2.Spec, actual2.Spec))
+
+	var actual3 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[2]), &actual3), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected3.TypeMeta, actual3.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected3.ObjectMeta, actual3.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected3.Spec, actual3.Spec))
+
+	var actual4 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[3]), &actual4), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected4.TypeMeta, actual4.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected4.ObjectMeta, actual4.ObjectMeta))
+	assert.Equal(t, expected4.Spec, actual4.Spec)
+
+	var actual5 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[4]), &actual5), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected5.TypeMeta, actual5.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected5.ObjectMeta, actual5.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected5.Spec, actual5.Spec))
+
+	var actual6 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[5]), &actual6), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected6.TypeMeta, actual6.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected6.ObjectMeta, actual6.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected6.Spec, actual6.Spec))
+
+	var actual7 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[6]), &actual7), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected7.TypeMeta, actual7.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected7.ObjectMeta, actual7.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected7.Spec, actual7.Spec))
+
+	var actual8 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[7]), &actual8), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected8.TypeMeta, actual8.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected8.ObjectMeta, actual8.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected8.Spec, actual8.Spec))
+
+	var actual9 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[8]), &actual9), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected9.TypeMeta, actual9.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected9.ObjectMeta, actual9.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected9.Spec, actual9.Spec))
+
+	var actual10 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[9]), &actual10), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected10.TypeMeta, actual10.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected10.ObjectMeta, actual10.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected10.Spec, actual10.Spec))
+
+	var actual11 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[10]), &actual11), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected11.TypeMeta, actual11.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected11.ObjectMeta, actual11.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected11.Spec, actual11.Spec))
+}
+
+func TestGetVersionCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentversions.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentversions",
+				Singular:   "tridentversion",
+				Kind:       "TridentVersion",
+				ShortNames: []string{"tver", "tversion"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Version",
+							Type:        "string",
+							Description: "The Trident version",
+							Priority:    int32(0),
+							JSONPath:    ".trident_version",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	actualYAML := GetVersionCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetBackendCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentbackends.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentbackends",
+				Singular:   "tridentbackend",
+				Kind:       "TridentBackend",
+				ShortNames: []string{"tbe", "tbackend"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Backend",
+							Type:        "string",
+							Description: "The backend name",
+							Priority:    int32(0),
+							JSONPath:    ".backendName",
+						},
+						{
+							Name:        "Backend UUID",
+							Type:        "string",
+							Description: "The backend UUID",
+							Priority:    int32(0),
+							JSONPath:    ".backendUUID",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	actualYAML := GetBackendCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetBackendConfigCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentbackendconfigs.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentbackendconfigs",
+				Singular:   "tridentbackendconfig",
+				Kind:       "TridentBackendConfig",
+				ShortNames: []string{"tbc", "tbconfig", "tbackendconfig"},
+				Categories: []string{"trident", "trident-internal", "trident-external"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+						Scale:  nil,
+					},
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Backend Name",
+							Type:        "string",
+							Description: "The backend name",
+							Priority:    int32(0),
+							JSONPath:    ".status.backendInfo.backendName",
+						},
+						{
+							Name:        "Backend UUID",
+							Type:        "string",
+							Description: "The backend UUID",
+							Priority:    int32(0),
+							JSONPath:    ".status.backendInfo.backendUUID",
+						},
+						{
+							Name:        "Phase",
+							Type:        "string",
+							Description: "The backend config phase",
+							Priority:    int32(0),
+							JSONPath:    ".status.phase",
+						},
+						{
+							Name:        "Status",
+							Type:        "string",
+							Description: "The result of the last operation",
+							Priority:    int32(0),
+							JSONPath:    ".status.lastOperationStatus",
+						},
+						{
+							Name:        "Storage Driver",
+							Type:        "string",
+							Description: "The storage driver type",
+							Priority:    int32(1),
+							JSONPath:    ".spec.storageDriverName",
+						},
+						{
+							Name:        "Deletion Policy",
+							Type:        "string",
+							Description: "The deletion policy",
+							Priority:    int32(1),
+							JSONPath:    ".status.deletionPolicy",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	actualYAML := GetBackendConfigCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetMirrorRelationshipCRDYAML(t *testing.T) {
+	minItems := int64(1)
+	maxItems := int64(1)
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type: "object",
+			Properties: map[string]apiextensionsv1.JSONSchemaProps{
+				"spec": {
+					Type: "object",
+					Properties: map[string]apiextensionsv1.JSONSchemaProps{
+						"state": {
+							Type: "string",
+							Enum: []apiextensionsv1.JSON{
+								{[]byte("\"\"")},
+								{[]byte("\"promoted\"")},
+								{[]byte("\"established\"")},
+								{[]byte("\"reestablished\"")},
+							},
+						},
+						"replicationPolicy": {
+							Type: "string",
+						},
+						"replicationSchedule": {
+							Type: "string",
+						},
+						"volumeMappings": {
+							Items: &apiextensionsv1.JSONSchemaPropsOrArray{
+								Schema: &apiextensionsv1.JSONSchemaProps{
+									Type: "object",
+									Properties: map[string]apiextensionsv1.JSONSchemaProps{
+										"promotedSnapshotHandle": {
+											Type: "string",
+										},
+										"localPVCName": {
+											Type: "string",
+										},
+										"remoteVolumeHandle": {
+											Type: "string",
+										},
+									},
+									Required: []string{"localPVCName"},
+								},
+							},
+							MinItems: &minItems,
+							MaxItems: &maxItems,
+							Type:     "array",
+						},
+					},
+					Required: []string{"volumeMappings"},
+				},
+				"status": {
+					Type: "object",
+					Properties: map[string]apiextensionsv1.JSONSchemaProps{
+						"conditions": {
+							Type: "array",
+							Items: &apiextensionsv1.JSONSchemaPropsOrArray{
+								Schema: &apiextensionsv1.JSONSchemaProps{
+									Type: "object",
+									Properties: map[string]apiextensionsv1.JSONSchemaProps{
+										"lastTransitionTime": {
+											Type: "string",
+										},
+										"localPVCName": {
+											Type: "string",
+										},
+										"localVolumeHandle": {
+											Type: "string",
+										},
+										"remoteVolumeHandle": {
+											Type: "string",
+										},
+										"message": {
+											Type: "string",
+										},
+										"observedGeneration": {
+											Type: "integer",
+										},
+										"state": {
+											Type: "string",
+										},
+										"replicationPolicy": {
+											Type: "string",
+										},
+										"replicationSchedule": {
+											Type: "string",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentmirrorrelationships.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentmirrorrelationships",
+				Singular:   "tridentmirrorrelationship",
+				Kind:       "TridentMirrorRelationship",
+				ShortNames: []string{"tmr", "tmrelationship", "tmirrorrelationship"},
+				Categories: []string{"trident", "trident-internal", "trident-external"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+						Scale:  nil,
+					},
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Desired State",
+							Type:        "string",
+							Description: "The desired mirror state",
+							JSONPath:    ".spec.state",
+						},
+						{
+							Name:        "Local PVC",
+							Type:        "string",
+							Description: "Local PVCs for the mirror",
+							JSONPath:    ".spec.volumeMappings[*].localPVCName",
+						},
+						{
+							Name:        "Actual state",
+							Type:        "string",
+							Description: "Status",
+							JSONPath:    ".status.conditions[*].state",
+						},
+						{
+							Name:        "Message",
+							Type:        "string",
+							Description: "Status message",
+							JSONPath:    ".status.conditions[*].message",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	actualYAML := GetMirrorRelationshipCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.Equal(t, expected.Spec, actual.Spec)
+}
+
+func TestGetSnapshotInfoCRDYAML(t *testing.T) {
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type: "object",
+			Properties: map[string]apiextensionsv1.JSONSchemaProps{
+				"spec": {
+					Type: "object",
+					Properties: map[string]apiextensionsv1.JSONSchemaProps{
+						"snapshotName": {
+							Type: "string",
+						},
+					},
+					Required: []string{"snapshotName"},
+				},
+				"status": {
+					Type: "object",
+					Properties: map[string]apiextensionsv1.JSONSchemaProps{
+						"lastTransitionTime": {
+							Type: "string",
+						},
+						"observedGeneration": {
+							Type: "integer",
+						},
+						"snapshotHandle": {
+							Type: "string",
+						},
+					},
+				},
+			},
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentsnapshotinfos.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentsnapshotinfos",
+				Singular:   "tridentsnapshotinfo",
+				Kind:       "TridentSnapshotInfo",
+				ShortNames: []string{"tsi", "tsinfo", "tsnapshotinfo"},
+				Categories: []string{"trident", "trident-internal", "trident-external"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+						Scale:  nil,
+					},
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Snapshot Handle",
+							Type:        "string",
+							Description: "VolumeSnapshotContent Handle",
+							Priority:    int32(0),
+							JSONPath:    ".status.snapshotHandle",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	actualYAML := GetSnapshotInfoCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetStorageClassCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentstorageclasses.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentstorageclasses",
+				Singular:   "tridentstorageclass",
+				Kind:       "TridentStorageClass",
+				ShortNames: []string{"tsc", "tstorageclass"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+				},
+			},
+		},
+	}
+
+	actualYAML := GetStorageClassCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetVolumeCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentvolumes.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentvolumes",
+				Singular:   "tridentvolume",
+				Kind:       "TridentVolume",
+				ShortNames: []string{"tvol", "tvolume"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:         "v1",
+					Served:       true,
+					Storage:      true,
+					Schema:       &schema,
+					Subresources: nil,
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:     "Age",
+							Type:     "date",
+							Priority: int32(0),
+							JSONPath: ".metadata.creationTimestamp",
+						},
+						{
+							Name:        "Size",
+							Type:        "string",
+							Description: "The volume's size",
+							Priority:    int32(1),
+							JSONPath:    ".config.size",
+						},
+						{
+							Name:        "Storage Class",
+							Type:        "string",
+							Description: "The volume's storage class",
+							Priority:    int32(1),
+							JSONPath:    ".config.storageClass",
+						},
+						{
+							Name:        "State",
+							Type:        "string",
+							Description: "The volume's state",
+							Priority:    int32(1),
+							JSONPath:    ".state",
+						},
+						{
+							Name:        "Protocol",
+							Type:        "string",
+							Description: "The volume's protocol",
+							Priority:    int32(1),
+							JSONPath:    ".config.protocol",
+						},
+						{
+							Name:        "Backend UUID",
+							Type:        "string",
+							Description: "The volume's backend UUID",
+							Priority:    int32(1),
+							JSONPath:    ".backendUUID",
+						},
+						{
+							Name:        "Pool",
+							Type:        "string",
+							Description: "The volume's pool",
+							Priority:    int32(1),
+							JSONPath:    ".pool",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	actualYAML := GetVolumeCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetVolumePublicationCRDYAML(t *testing.T) {
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type: "object",
+			Properties: map[string]apiextensionsv1.JSONSchemaProps{
+				"volumeID": {
+					Type: "string",
+				},
+				"nodeID": {
+					Type: "string",
+				},
+				"readOnly": {
+					Type: "boolean",
+				},
+				"accessMode": {
+					Type:   "integer",
+					Format: "int32",
+				},
+			},
+			Required: []string{"volumeID", "nodeID", "readOnly"},
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentvolumepublications.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:   "tridentvolumepublications",
+				Singular: "tridentvolumepublication",
+				Kind:     "TridentVolumePublication",
+				ShortNames: []string{
+					"tvp",
+					"tvpub",
+					"tvpublication",
+					"tvolpub",
+					"tvolumepub",
+					"tvolpublication",
+					"tvolumepublication",
+				},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Volume",
+							Type:        "string",
+							Description: "Volume ID",
+							Priority:    int32(0),
+							JSONPath:    ".volumeID",
+						},
+						{
+							Name:        "Node",
+							Type:        "string",
+							Description: "Node ID",
+							Priority:    int32(0),
+							JSONPath:    ".nodeID",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	actualYAML := GetVolumePublicationCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetNodeCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentnodes.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentnodes",
+				Singular:   "tridentnode",
+				Kind:       "TridentNode",
+				ShortNames: []string{"tnode"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+				},
+			},
+		},
+	}
+
+	actualYAML := GetNodeCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetTransactionCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridenttransactions.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridenttransactions",
+				Singular:   "tridenttransaction",
+				Kind:       "TridentTransaction",
+				ShortNames: []string{"ttx", "ttransaction"},
+				Categories: []string{"trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+				},
+			},
+		},
+	}
+
+	actualYAML := GetTransactionCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetSnapshotCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentsnapshots.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentsnapshots",
+				Singular:   "tridentsnapshot",
+				Kind:       "TridentSnapshot",
+				ShortNames: []string{"tss", "tsnap", "tsnapshot"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "State",
+							Type:        "string",
+							Description: "The snapshot's state",
+							Priority:    int32(1),
+							JSONPath:    ".state",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	actualYAML := GetSnapshotCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetOrchestratorCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentorchestrators.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentorchestrators",
+				Singular:   "tridentorchestrator",
+				Kind:       "TridentOrchestrator",
+				ListKind:   "TridentOrchestratorList",
+				ShortNames: []string{"torc", "torchestrator"},
+			},
+			Scope: "Cluster",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+						Scale:  nil,
+					},
+				},
+			},
+		},
+	}
+
+	actualYAML := GetOrchestratorCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetCSIDriverYAML(t *testing.T) {
+	name := "csi.trident.netapp.io"
+	required := true
+	expected := csiv1.CSIDriver{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CSIDriver",
+			APIVersion: "storage.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "csi.trident.netapp.io",
+		},
+		Spec: csiv1.CSIDriverSpec{
+			AttachRequired: &required,
+		},
+	}
+
+	var actual csiv1.CSIDriver
+	actualYAML := GetCSIDriverYAML(name, nil, nil)
+
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.Equal(t, "csi.trident.netapp.io", actual.Name)
+}
+
+func TestGetPrivilegedPodSecurityPolicyYAML(t *testing.T) {
+	name := "tridentpods"
+	allow := true
+
+	expected := pspv1beta1.PodSecurityPolicy{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "PodSecurityPolicy",
+			APIVersion: "policy/v1beta1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentpods",
+		},
+		Spec: pspv1beta1.PodSecurityPolicySpec{
+			Privileged:               true,
+			AllowPrivilegeEscalation: &allow,
+			AllowedCapabilities:      []v1.Capability{"SYS_ADMIN"},
+			HostIPC:                  true,
+			HostPID:                  true,
+			HostNetwork:              true,
+			SELinux: pspv1beta1.SELinuxStrategyOptions{
+				Rule: "RunAsAny",
+			},
+			SupplementalGroups: pspv1beta1.SupplementalGroupsStrategyOptions{
+				Rule: "RunAsAny",
+			},
+			RunAsUser: pspv1beta1.RunAsUserStrategyOptions{
+				Rule: "RunAsAny",
+			},
+			FSGroup: pspv1beta1.FSGroupStrategyOptions{
+				Rule: "RunAsAny",
+			},
+			Volumes: []pspv1beta1.FSType{"*"},
+		},
+	}
+
+	var actual pspv1beta1.PodSecurityPolicy
+	actualYAML := GetPrivilegedPodSecurityPolicyYAML(name, nil, nil)
+
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.Equal(t, "tridentpods", actual.Name)
+}
+
+func TestGetUnprivilegedPodSecurityPolicyYAML(t *testing.T) {
+	name := "psp.flannel.unprivileged"
+
+	expected := pspv1beta1.PodSecurityPolicy{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "PodSecurityPolicy",
+			APIVersion: "policy/v1beta1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "psp.flannel.unprivileged",
+		},
+		Spec: pspv1beta1.PodSecurityPolicySpec{
+			Privileged: false,
+			SELinux: pspv1beta1.SELinuxStrategyOptions{
+				Rule: "RunAsAny",
+			},
+			SupplementalGroups: pspv1beta1.SupplementalGroupsStrategyOptions{
+				Rule: "RunAsAny",
+			},
+			RunAsUser: pspv1beta1.RunAsUserStrategyOptions{
+				Rule: "RunAsAny",
+			},
+			FSGroup: pspv1beta1.FSGroupStrategyOptions{
+				Rule: "RunAsAny",
+			},
+			Volumes: []pspv1beta1.FSType{"*"},
+		},
+	}
+
+	var actual pspv1beta1.PodSecurityPolicy
+	actualYAML := GetUnprivilegedPodSecurityPolicyYAML(name, nil, nil)
+
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.Equal(t, "psp.flannel.unprivileged", actual.Name)
 }
 
 func TestGetResourceQuotaYAML(t *testing.T) {

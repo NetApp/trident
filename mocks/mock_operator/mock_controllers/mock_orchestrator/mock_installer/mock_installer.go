@@ -781,6 +781,20 @@ func (mr *MockExtendedK8sClientMockRecorder) DeleteDaemonSetByLabel(arg0 interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDaemonSetByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteDaemonSetByLabel), arg0)
 }
 
+// DeleteDaemonSetByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) DeleteDaemonSetByLabelAndName(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteDaemonSetByLabelAndName", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDaemonSetByLabelAndName indicates an expected call of DeleteDaemonSetByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) DeleteDaemonSetByLabelAndName(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDaemonSetByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).DeleteDaemonSetByLabelAndName), arg0, arg1)
+}
+
 // DeleteDeployment mocks base method.
 func (m *MockExtendedK8sClient) DeleteDeployment(arg0, arg1 string, arg2 bool) error {
 	m.ctrl.T.Helper()
@@ -1527,6 +1541,21 @@ func (m *MockExtendedK8sClient) GetDaemonSetByLabel(arg0 string, arg1 bool) (*v1
 func (mr *MockExtendedK8sClientMockRecorder) GetDaemonSetByLabel(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDaemonSetByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetDaemonSetByLabel), arg0, arg1)
+}
+
+// GetDaemonSetByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) GetDaemonSetByLabelAndName(arg0, arg1 string, arg2 bool) (*v10.DaemonSet, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDaemonSetByLabelAndName", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*v10.DaemonSet)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDaemonSetByLabelAndName indicates an expected call of GetDaemonSetByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) GetDaemonSetByLabelAndName(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDaemonSetByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetDaemonSetByLabelAndName), arg0, arg1, arg2)
 }
 
 // GetDaemonSetInformation mocks base method.

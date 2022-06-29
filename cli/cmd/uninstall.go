@@ -221,39 +221,39 @@ func uninstallTrident() error {
 		}
 	}
 
-	// Next handle all the other common CSI components (daemonset, service).  Some/all of these may
+	// Next handle all the other common CSI components (DaemonSet(s), service).  Some/all of these may
 	// not be present if uninstalling legacy Trident or preview CSI Trident, in which case we log
 	// warnings only.
-
-	if daemonset, err := client.GetDaemonSetByLabel(TridentNodeLabel, true); err != nil {
+	if daemonsets, err := client.GetDaemonSetsByLabel(TridentNodeLabel, true); err != nil {
 		log.WithFields(log.Fields{
 			"label": TridentNodeLabel,
 			"error": err,
-		}).Warning("Trident daemonset not found.")
+		}).Warning("Trident DaemonSet(s) not found.")
 	} else {
+		for i := range daemonsets {
+			// Daemonset found by label, so ensure there isn't a namespace clash
+			if TridentPodNamespace != daemonsets[i].Namespace {
+				return fmt.Errorf("a Trident DaemonSet was found in namespace '%s', "+
+					"not in specified namespace '%s'", daemonsets[i].Namespace, TridentPodNamespace)
+			}
 
-		// Daemonset found by label, so ensure there isn't a namespace clash
-		if TridentPodNamespace != daemonset.Namespace {
-			return fmt.Errorf("a Trident daemonset was found in namespace '%s', "+
-				"not in specified namespace '%s'", daemonset.Namespace, TridentPodNamespace)
-		}
-
-		log.WithFields(log.Fields{
-			"daemonset": daemonset.Name,
-			"namespace": daemonset.Namespace,
-		}).Debug("Trident daemonset found by label.")
-
-		// Delete the daemonset
-		if err = client.DeleteDaemonSetByLabel(TridentNodeLabel); err != nil {
 			log.WithFields(log.Fields{
-				"daemonset": daemonset.Name,
-				"namespace": daemonset.Namespace,
-				"label":     TridentNodeLabel,
-				"error":     err,
-			}).Warning("Could not delete Trident daemonset.")
-			anyErrors = true
-		} else {
-			log.Info("Deleted Trident daemonset.")
+				"DaemonSet": daemonsets[i].Name,
+				"namespace": daemonsets[i].Namespace,
+			}).Debug("Trident DaemonSet found by label.")
+
+			// Delete the DaemonSet
+			if err = client.DeleteDaemonSetByLabelAndName(TridentNodeLabel, daemonsets[i].Name); err != nil {
+				log.WithFields(log.Fields{
+					"DaemonSet": daemonsets[i].Name,
+					"namespace": daemonsets[i].Namespace,
+					"label":     TridentNodeLabel,
+					"error":     err,
+				}).Warning("Could not delete Trident DaemonSet.")
+				anyErrors = true
+			} else {
+				log.Info("Deleted Trident DaemonSet.")
+			}
 		}
 	}
 

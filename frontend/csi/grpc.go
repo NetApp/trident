@@ -7,6 +7,7 @@ package csi
 import (
 	"net"
 	"os"
+	"runtime"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	log "github.com/sirupsen/logrus"
@@ -32,7 +33,9 @@ type nonBlockingGRPCServer struct {
 	server *grpc.Server
 }
 
-func (s *nonBlockingGRPCServer) Start(endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer) {
+func (s *nonBlockingGRPCServer) Start(
+	endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer,
+) {
 	go s.serve(endpoint, ids, cs, ns)
 }
 
@@ -44,14 +47,18 @@ func (s *nonBlockingGRPCServer) Stop() {
 	s.server.Stop()
 }
 
-func (s *nonBlockingGRPCServer) serve(endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer) {
+func (s *nonBlockingGRPCServer) serve(
+	endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer,
+) {
 	proto, addr, err := ParseEndpoint(endpoint)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	if proto == "unix" {
-		addr = "/" + addr
+		if runtime.GOOS != "windows" {
+			addr = "/" + addr
+		}
 		if err := os.Remove(addr); err != nil && !os.IsNotExist(err) {
 			log.Fatalf("Failed to remove %s, error: %s", addr, err.Error())
 		}

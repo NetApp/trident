@@ -48,10 +48,12 @@ type KubernetesClient interface {
 	DeleteStatefulSetByLabel(label string) error
 	DeleteStatefulSet(name, namespace string) error
 	GetDaemonSetByLabel(label string, allNamespaces bool) (*appsv1.DaemonSet, error)
+	GetDaemonSetByLabelAndName(label, name string, allNamespaces bool) (*appsv1.DaemonSet, error)
 	GetDaemonSetsByLabel(label string, allNamespaces bool) ([]appsv1.DaemonSet, error)
 	CheckDaemonSetExists(name, namespace string) (bool, error)
 	CheckDaemonSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeleteDaemonSetByLabel(label string) error
+	DeleteDaemonSetByLabelAndName(label, name string) error
 	DeleteDaemonSet(name, namespace string, foreground bool) error
 	PatchDaemonSetByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	GetConfigMapByLabel(label string, allNamespaces bool) (*v1.ConfigMap, error)
