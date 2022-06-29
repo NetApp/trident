@@ -286,7 +286,8 @@ func (s *StorageClass) GetAdditionalStoragePools() map[string][]string {
 	return s.config.AdditionalPools
 }
 
-func (s *StorageClass) GetStoragePoolsForProtocol(ctx context.Context, p config.Protocol, accessMode config.AccessMode,
+func (s *StorageClass) GetStoragePoolsForProtocol(
+	ctx context.Context, p config.Protocol, accessMode config.AccessMode,
 ) []storage.Pool {
 	ret := make([]storage.Pool, 0, len(s.pools))
 	// TODO:  Change this to work with indices of backends?
@@ -357,6 +358,47 @@ func FilterPoolsOnTopology(
 	return filteredPools
 }
 
+// FilterPoolsOnNasType returns pools filtered over nasType SMB. If not found returns the provided pool list as it is.
+func FilterPoolsOnNasType(
+	ctx context.Context, pools []storage.Pool, scAttributes map[string]storageattribute.Request,
+) []storage.Pool {
+	filteredPools := make([]storage.Pool, 0)
+	req := scAttributes[storageattribute.NASType]
+
+	// Return all pools if NAS type is not specified on the storage class
+	if req == nil {
+		Logc(ctx).Debug("nasType request is not present")
+		return pools
+	}
+	nasType, _ := req.Value().(string)
+	if nasType == "" {
+		Logc(ctx).Debug("nasType not found, hence no filtering done")
+		return pools
+	}
+
+	// Return no pools if we got an unsupported NAS type
+	nasType = strings.ToLower(nasType)
+	if nasType != storageattribute.SMB && nasType != storageattribute.NFS {
+		Logc(ctx).Debug("nasType does not have a valid input value, hence no pools found")
+		return filteredPools
+	}
+
+	// Filter out pools with non-matching NAS types
+	for _, pool := range pools {
+		nasTypeOffer := pool.Attributes()[storageattribute.NASType]
+		if nasTypeOffer == nil {
+			Logc(ctx).Debug("nasType offer is not present")
+			continue
+		}
+		if strings.ToLower(nasTypeOffer.ToString()) == nasType {
+			filteredPools = append(filteredPools, pool)
+		}
+	}
+
+	Logc(ctx).Debugf("Got %d pools filtered for nasType=%s", len(filteredPools), nasType)
+	return filteredPools
+}
+
 // SortPoolsByPreferredTopologies returns a list of pools ordered by the pools supportedTopologies field against
 // the provided list of preferredTopologies. If 2 or more pools can support a given preferredTopology, they are shuffled
 // randomly within that segment of the list, in order to prevent hotspots.
@@ -419,7 +461,13 @@ func (s *StorageClass) GetStoragePoolsForProtocolByBackend(
 	if len(pools) == 0 {
 		Logc(ctx).Info("no backend pools support any requisite topologies")
 	}
+	pools = FilterPoolsOnNasType(ctx, pools, s.GetAttributes())
+	if len(pools) == 0 {
+		Logc(ctx).Info("no backend pools found for given NASType")
+	}
 	pools = SortPoolsByPreferredTopologies(ctx, pools, preferredTopologies)
+
+	Logc(ctx).Debugf("Finally got %d storage pools", len(pools))
 
 	return pools
 }

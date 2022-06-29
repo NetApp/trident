@@ -412,6 +412,7 @@ type AzureNFSStorageDriverPool struct {
 	NetappAccounts                      []string            `json:"netappAccounts"`
 	CapacityPools                       []string            `json:"capacityPools"`
 	FilePoolVolumes                     []string            `json:"filePoolVolumes"`
+	NASType                             string              `json:"nasType"`
 	AzureNFSStorageDriverConfigDefaults `json:"defaults"`
 }
 

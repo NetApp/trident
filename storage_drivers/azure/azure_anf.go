@@ -298,6 +298,12 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
 		pool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
 		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
 
+		nasType := d.Config.NASType
+		if nasType == "" {
+			nasType = sa.NFS
+		}
+		pool.Attributes()[sa.NASType] = sa.NewStringOffer(nasType)
+
 		if d.Config.Region != "" {
 			pool.Attributes()[sa.Region] = sa.NewStringOffer(d.Config.Region)
 		}
@@ -399,6 +405,15 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
 			pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 			pool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
 			pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
+
+			nasType := d.Config.NASType
+			if vpool.NASType != "" {
+				nasType = vpool.NASType
+			}
+			if nasType == "" {
+				nasType = sa.NFS
+			}
+			pool.Attributes()[sa.NASType] = sa.NewStringOffer(nasType)
 
 			if region != "" {
 				pool.Attributes()[sa.Region] = sa.NewStringOffer(region)

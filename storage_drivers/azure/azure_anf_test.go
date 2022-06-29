@@ -439,7 +439,8 @@ func TestInitialize_InvalidConfigJSON(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 
 	driver.Config = drivers.AzureNFSStorageDriverConfig{}
-	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
+		BackendUUID)
 
 	assert.NotNil(t, driver.Config.CommonStorageDriverConfig, "Driver Config not set")
 	assert.Error(t, result, "initialize did not fail")
@@ -711,6 +712,7 @@ func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 			Region:              "region1",
 			Zone:                "zone1",
 			SupportedTopologies: supportedTopologies,
+			NASType:             "nfs",
 		},
 	}
 
@@ -728,6 +730,7 @@ func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 	pool.Attributes()[sa.Labels] = sa.NewLabelOffer(driver.Config.Labels)
 	pool.Attributes()[sa.Region] = sa.NewStringOffer("region1")
 	pool.Attributes()[sa.Zone] = sa.NewStringOffer("zone1")
+	pool.Attributes()[sa.NASType] = sa.NewStringOffer("nfs")
 
 	pool.InternalAttributes()[Size] = "1234567890"
 	pool.InternalAttributes()[UnixPermissions] = "0700"
@@ -793,6 +796,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 				Region:              "region2",
 				Zone:                "zone2",
 				SupportedTopologies: supportedTopologies,
+				NASType:             "nfs",
 			},
 			{
 				AzureNFSStorageDriverConfigDefaults: drivers.AzureNFSStorageDriverConfigDefaults{
@@ -823,6 +827,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	pool0.Attributes()[sa.Labels] = sa.NewLabelOffer(driver.Config.Labels)
 	pool0.Attributes()[sa.Region] = sa.NewStringOffer("region2")
 	pool0.Attributes()[sa.Zone] = sa.NewStringOffer("zone2")
+	pool0.Attributes()[sa.NASType] = sa.NewStringOffer("nfs")
 
 	pool0.InternalAttributes()[Size] = "123456789000"
 	pool0.InternalAttributes()[UnixPermissions] = "0700"
@@ -846,6 +851,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	pool1.Attributes()[sa.Labels] = sa.NewLabelOffer(driver.Config.Labels)
 	pool1.Attributes()[sa.Region] = sa.NewStringOffer("region1")
 	pool1.Attributes()[sa.Zone] = sa.NewStringOffer("zone1")
+	pool1.Attributes()[sa.NASType] = sa.NewStringOffer("nfs")
 
 	pool1.InternalAttributes()[Size] = "1234567890"
 	pool1.InternalAttributes()[UnixPermissions] = "0770"

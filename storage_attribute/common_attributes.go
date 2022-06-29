@@ -18,6 +18,7 @@ const (
 	Media            = "media"
 	Region           = "region"
 	Zone             = "zone"
+	NASType          = "nasType"
 
 	// Constants for label attributes
 	Labels   = "labels"
@@ -37,6 +38,10 @@ const (
 	// Values for provisioning type
 	Thick = "thick"
 	Thin  = "thin"
+
+	// Values for NAS protocol
+	NFS = "nfs"
+	SMB = "smb"
 
 	RequiredStorage        = "requiredStorage" // deprecated, use additionalStoragePools
 	StoragePools           = "storagePools"
@@ -61,4 +66,5 @@ var attrTypes = map[string]Type{
 	TestingAttribute: boolType,
 	NonexistentBool:  boolType,
 	Replication:      boolType,
+	NASType:          stringType,
 }
