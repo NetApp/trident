@@ -520,6 +520,7 @@ func (c Client) newFileSystemFromVolume(ctx context.Context, vol *netapp.Volume)
 		UnixPermissions:   DerefString(vol.VolumeProperties.UnixPermissions),
 		MountTargets:      c.getMountTargetsFromVolume(ctx, vol),
 		SubvolumesEnabled: c.getSubvolumesEnabledFromVolume(vol.EnableSubvolumes),
+		NetworkFeatures:   string(vol.NetworkFeatures),
 	}, nil
 }
 
@@ -874,6 +875,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 			ProtocolTypes:            &request.ProtocolTypes,
 			SubnetID:                 &request.SubnetID,
 			SnapshotDirectoryVisible: &request.SnapshotDirectory,
+			NetworkFeatures:          netapp.NetworkFeatures(request.NetworkFeatures),
 		},
 	}
 

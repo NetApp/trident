@@ -16,6 +16,7 @@
   nodes to improve our security posture. Existing volumes will be opportunistically switched to the new igroup scheme 
   when Trident determines it is safe to do so without impacting active workloads.
 - Included a `ResourceQuota` with Trident installations to ensure Trident DaemonSet is scheduled when `PriorityClass` consumption is limited by default.
+- Added support for Network Features to ANF driver. (Issue [#717] (https://github.com/NetApp/trident/issues/717))
 
 **Deprecations:**
 

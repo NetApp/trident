@@ -407,6 +407,7 @@ type AzureNFSStorageDriverPool struct {
 	ServiceLevel                        string              `json:"serviceLevel"`
 	VirtualNetwork                      string              `json:"virtualNetwork"`
 	Subnet                              string              `json:"subnet"`
+	NetworkFeatures                     string              `json:"networkFeatures"`
 	SupportedTopologies                 []map[string]string `json:"supportedTopologies"`
 	ResourceGroups                      []string            `json:"resourceGroups"`
 	NetappAccounts                      []string            `json:"netappAccounts"`

@@ -37,6 +37,7 @@ const (
 	defaultLimitVolumeSize = ""
 	defaultExportRule      = "0.0.0.0/0"
 	defaultVolumeSizeStr   = "107374182400"
+	defaultNetworkFeatures = "" // Leave empty, some regions may never support this
 
 	// Constants for internal pool attributes
 
@@ -46,6 +47,7 @@ const (
 	SnapshotDir     = "snapshotDir"
 	ExportRule      = "exportRule"
 	VirtualNetwork  = "virtualNetwork"
+	NetworkFeatures = "networkFeatures"
 	Subnet          = "subnet"
 	ResourceGroups  = "resourceGroups"
 	NetappAccounts  = "netappAccounts"
@@ -61,9 +63,9 @@ var (
 	supportedNFSVersions = []string{nfsVersion3, nfsVersion4, nfsVersion41}
 
 	storagePrefixRegex       = regexp.MustCompile(`^$|^[a-zA-Z][a-zA-Z-]*$`)
-	volumeNameRegex          = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-_]{0,63}$`)
-	volumeCreationTokenRegex = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]{0,79}$`)
-	csiRegex                 = regexp.MustCompile(`^pvc-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+	volumeNameRegex          = regexp.MustCompile(`^[a-zA-Z][a-zA-Z\d-_]{0,63}$`)
+	volumeCreationTokenRegex = regexp.MustCompile(`^[a-zA-Z][a-zA-Z\d-]{0,79}$`)
+	csiRegex                 = regexp.MustCompile(`^pvc-[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}$`)
 )
 
 // NFSStorageDriver is for storage provisioning using the Azure NetApp Files service.
@@ -266,6 +268,10 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 		config.ExportRule = defaultExportRule
 	}
 
+	if config.NetworkFeatures == "" {
+		config.NetworkFeatures = defaultNetworkFeatures
+	}
+
 	Logc(ctx).WithFields(log.Fields{
 		"StoragePrefix":   *config.StoragePrefix,
 		"Size":            config.Size,
@@ -313,10 +319,11 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
 
 		pool.InternalAttributes()[Size] = d.Config.Size
 		pool.InternalAttributes()[UnixPermissions] = d.Config.UnixPermissions
-		pool.InternalAttributes()[ServiceLevel] = strings.Title(d.Config.ServiceLevel)
+		pool.InternalAttributes()[ServiceLevel] = utils.Title(d.Config.ServiceLevel)
 		pool.InternalAttributes()[SnapshotDir] = d.Config.SnapshotDir
 		pool.InternalAttributes()[ExportRule] = d.Config.ExportRule
 		pool.InternalAttributes()[VirtualNetwork] = d.Config.VirtualNetwork
+		pool.InternalAttributes()[NetworkFeatures] = d.Config.NetworkFeatures
 		pool.InternalAttributes()[Subnet] = d.Config.Subnet
 		pool.InternalAttributes()[ResourceGroups] = strings.Join(d.Config.ResourceGroups, ",")
 		pool.InternalAttributes()[NetappAccounts] = strings.Join(d.Config.NetappAccounts, ",")
@@ -392,6 +399,11 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
 				vnet = vpool.VirtualNetwork
 			}
 
+			networkFeatures := d.Config.NetworkFeatures
+			if vpool.NetworkFeatures != "" {
+				networkFeatures = vpool.NetworkFeatures
+			}
+
 			subnet := d.Config.Subnet
 			if vpool.Subnet != "" {
 				subnet = vpool.Subnet
@@ -424,10 +436,11 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
 
 			pool.InternalAttributes()[Size] = size
 			pool.InternalAttributes()[UnixPermissions] = unixPermissions
-			pool.InternalAttributes()[ServiceLevel] = strings.Title(serviceLevel)
+			pool.InternalAttributes()[ServiceLevel] = utils.Title(serviceLevel)
 			pool.InternalAttributes()[SnapshotDir] = snapshotDir
 			pool.InternalAttributes()[ExportRule] = exportRule
 			pool.InternalAttributes()[VirtualNetwork] = vnet
+			pool.InternalAttributes()[NetworkFeatures] = networkFeatures
 			pool.InternalAttributes()[Subnet] = subnet
 			pool.InternalAttributes()[ResourceGroups] = strings.Join(resourceGroups, ",")
 			pool.InternalAttributes()[NetappAccounts] = strings.Join(netappAccounts, ",")
@@ -598,6 +611,14 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 		if _, err := pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxLabelLength); err != nil {
 			return fmt.Errorf("invalid value for label in pool %s; %v", poolName, err)
 		}
+
+		// Validate vnet features
+		switch pool.InternalAttributes()[NetworkFeatures] {
+		case "", api.NetworkFeaturesBasic, api.NetworkFeaturesStandard:
+			break
+		default:
+			return fmt.Errorf("invalid value for networkFeatures in pool %s", poolName)
+		}
 	}
 
 	return nil
@@ -699,7 +720,7 @@ func (d *NFSStorageDriver) Create(
 	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 
 	// Take service level from volume config first (handles Docker case), then from pool
-	serviceLevel := strings.Title(volConfig.ServiceLevel)
+	serviceLevel := utils.Title(volConfig.ServiceLevel)
 	if serviceLevel == "" {
 		serviceLevel = pool.InternalAttributes()[ServiceLevel]
 	}
@@ -772,6 +793,8 @@ func (d *NFSStorageDriver) Create(
 	}
 	labels[storage.ProvisioningLabelTag] = poolLabels
 
+	networkFeatures := pool.InternalAttributes()[NetworkFeatures]
+
 	// Find a capacity pool
 	cPool := d.SDK.RandomCapacityPoolForStoragePool(ctx, pool, serviceLevel)
 	if cPool == nil {
@@ -792,6 +815,7 @@ func (d *NFSStorageDriver) Create(
 		"snapshotDir":     snapshotDirBool,
 		"protocolTypes":   protocolTypes,
 		"exportPolicy":    fmt.Sprintf("%+v", exportPolicy),
+		"networkFeatures": networkFeatures,
 	}).Debug("Creating volume.")
 
 	createRequest := &api.FilesystemCreateRequest{
@@ -807,6 +831,7 @@ func (d *NFSStorageDriver) Create(
 		QuotaInBytes:      int64(sizeBytes),
 		SnapshotDirectory: snapshotDirBool,
 		UnixPermissions:   unixPermissions,
+		NetworkFeatures:   networkFeatures,
 	}
 
 	// Create the volume
@@ -965,6 +990,7 @@ func (d *NFSStorageDriver) CreateClone(
 		"sourceVolume":    sourceVolume.CreationToken,
 		"sourceSnapshot":  sourceSnapshot.Name,
 		"unixPermissions": sourceVolume.UnixPermissions,
+		"networkFeatures": sourceVolume.NetworkFeatures,
 	}).Debug("Cloning volume.")
 
 	createRequest := &api.FilesystemCreateRequest{
@@ -981,6 +1007,7 @@ func (d *NFSStorageDriver) CreateClone(
 		SnapshotDirectory: sourceVolume.SnapshotDirectory,
 		SnapshotID:        sourceSnapshot.SnapshotID,
 		UnixPermissions:   sourceVolume.UnixPermissions,
+		NetworkFeatures:   sourceVolume.NetworkFeatures,
 	}
 
 	// Clone the volume

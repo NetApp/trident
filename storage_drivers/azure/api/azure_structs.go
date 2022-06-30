@@ -27,6 +27,9 @@ const (
 	ServiceLevelUltra    = "Ultra"
 
 	FeatureUnixPermissions = "ANFUnixPermissions"
+
+	NetworkFeaturesBasic    = "Basic"
+	NetworkFeaturesStandard = "Standard"
 )
 
 // AzureResources is the toplevel cache for the set of things we discover about our Azure environment.
@@ -121,6 +124,7 @@ type FileSystem struct {
 	UnixPermissions   string
 	MountTargets      []MountTarget
 	SubvolumesEnabled bool
+	NetworkFeatures   string
 }
 
 // FilesystemCreateRequest embodies all the details of a volume to be created.
@@ -138,6 +142,7 @@ type FilesystemCreateRequest struct {
 	SnapshotDirectory bool
 	SnapshotID        string
 	UnixPermissions   string
+	NetworkFeatures   string
 }
 
 // ExportPolicy records details of a discovered Azure volume export policy.

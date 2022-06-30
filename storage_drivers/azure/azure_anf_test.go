@@ -400,9 +400,8 @@ func TestInitialize_SDKInitError(t *testing.T) {
 	    "subnet": "RG1/VN1/SN1"
     }`
 
-	mockAPI, driver := newMockANFDriver(t)
-
-	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(errFailed).Times(1)
+	_, driver := newMockANFDriver(t)
+	driver.SDK = nil
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
 		BackendUUID)
@@ -705,6 +704,7 @@ func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 			},
 			VirtualNetwork:      "VN1",
 			Subnet:              "SN1",
+			NetworkFeatures:     api.NetworkFeaturesStandard,
 			ResourceGroups:      []string{"RG1", "RG2"},
 			NetappAccounts:      []string{"NA1", "NA2"},
 			CapacityPools:       []string{"CP1", "CP2"},
@@ -739,6 +739,7 @@ func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 	pool.InternalAttributes()[ExportRule] = "1.1.1.1/32"
 	pool.InternalAttributes()[VirtualNetwork] = "VN1"
 	pool.InternalAttributes()[Subnet] = "SN1"
+	pool.InternalAttributes()[NetworkFeatures] = api.NetworkFeaturesStandard
 	pool.InternalAttributes()[ResourceGroups] = "RG1,RG2"
 	pool.InternalAttributes()[NetappAccounts] = "NA1,NA2"
 	pool.InternalAttributes()[CapacityPools] = "CP1,CP2"
@@ -789,6 +790,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 				},
 				VirtualNetwork:      "VN1",
 				Subnet:              "SN1",
+				NetworkFeatures:     api.NetworkFeaturesBasic,
 				ResourceGroups:      []string{"RG1", "RG2"},
 				NetappAccounts:      []string{"NA1", "NA2"},
 				CapacityPools:       []string{"CP1"},
@@ -805,6 +807,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 				},
 				VirtualNetwork:      "VN1",
 				Subnet:              "SN2",
+				NetworkFeatures:     "",
 				ResourceGroups:      []string{"RG1", "RG2"},
 				NetappAccounts:      []string{"NA1", "NA2"},
 				CapacityPools:       []string{"CP2"},
@@ -836,6 +839,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	pool0.InternalAttributes()[ExportRule] = "2.2.2.2/32"
 	pool0.InternalAttributes()[VirtualNetwork] = "VN1"
 	pool0.InternalAttributes()[Subnet] = "SN1"
+	pool0.InternalAttributes()[NetworkFeatures] = api.NetworkFeaturesBasic
 	pool0.InternalAttributes()[ResourceGroups] = "RG1,RG2"
 	pool0.InternalAttributes()[NetappAccounts] = "NA1,NA2"
 	pool0.InternalAttributes()[CapacityPools] = "CP1"
@@ -860,6 +864,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	pool1.InternalAttributes()[ExportRule] = "1.1.1.1/32"
 	pool1.InternalAttributes()[VirtualNetwork] = "VN1"
 	pool1.InternalAttributes()[Subnet] = "SN2"
+	pool1.InternalAttributes()[NetworkFeatures] = ""
 	pool1.InternalAttributes()[ResourceGroups] = "RG1,RG2"
 	pool1.InternalAttributes()[NetappAccounts] = "NA1,NA2"
 	pool1.InternalAttributes()[CapacityPools] = "CP2"
@@ -947,6 +952,17 @@ func TestValidate_InvalidLabel(t *testing.T) {
 		"key2": "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
 		"key3": "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
 	}
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	result := driver.validate(ctx)
+
+	assert.Error(t, result, "validate did not fail")
+}
+
+func TestValidate_InvalidNetworkFeatures(t *testing.T) {
+	_, driver := newMockANFDriver(t)
+	driver.Config.NetworkFeatures = "invalid"
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -1046,6 +1062,7 @@ func TestCreate(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -1055,7 +1072,9 @@ func TestCreate(t *testing.T) {
 
 	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreate(ctx, driver, storagePool)
 	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
 	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
@@ -1744,6 +1763,7 @@ func TestCreateClone_NoSnapshot(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesBasic
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -1753,6 +1773,9 @@ func TestCreateClone_NoSnapshot(t *testing.T) {
 
 	sourceVolConfig, cloneVolConfig, createRequest, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
 		driver, storagePool)
+	createRequest.NetworkFeatures = api.NetworkFeaturesBasic
+	sourceFilesystem.NetworkFeatures = api.NetworkFeaturesBasic
+	cloneFilesystem.NetworkFeatures = api.NetworkFeaturesBasic
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)

@@ -1,4 +1,5 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package utils
 
 import (
@@ -19,6 +20,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/multierr"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	. "github.com/netapp/trident/logger"
 )
@@ -965,4 +968,8 @@ func ConsistentRead(filename string, attempts int) ([]byte, error) {
 		oldContent = newContent
 	}
 	return nil, fmt.Errorf("could not get consistent content of %s after %d attempts", filename, attempts)
+}
+
+func Title(str string) string {
+	return cases.Title(language.Und, cases.NoLower).String(str)
 }

@@ -1409,3 +1409,22 @@ func TestEnsureHostportFormatted(t *testing.T) {
 		})
 	}
 }
+
+func TestTitle(t *testing.T) {
+	log.Debug("Running TestTitle...")
+
+	testCases := []struct {
+		Text           string
+		ExpectedResult string
+	}{
+		{"foo", "Foo"},
+		{"Foo", "Foo"},
+		{"foo bar", "Foo Bar"},
+		{"Foo bar", "Foo Bar"},
+	}
+
+	for _, testCase := range testCases {
+		result := Title(testCase.Text)
+		assert.Equal(t, testCase.ExpectedResult, result)
+	}
+}
