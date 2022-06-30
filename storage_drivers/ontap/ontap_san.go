@@ -1371,16 +1371,20 @@ func (d *SANStorageDriver) EstablishMirror(
 	// Validate replication policy, if it is invalid, use the backend policy
 	isAsync, err := validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
 	if err != nil {
-		Logc(ctx).Debugf("replication policy given in TMR %s is invalid, using policy %s from backend",
+		Logc(ctx).Debugf("Replication policy given in TMR %s is invalid, using policy %s from backend.",
 			replicationPolicy, d.GetConfig().ReplicationPolicy)
 		replicationPolicy = d.GetConfig().ReplicationPolicy
+		isAsync, err = validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
+		if err != nil {
+			Logc(ctx).Debugf("Replication policy %s in backend should be valid.", replicationPolicy)
+		}
 	}
 
 	// If replication policy is async type, validate the replication schedule from TMR or use backend schedule
 	if isAsync {
 		if replicationSchedule != "" {
 			if err := validateReplicationSchedule(ctx, replicationSchedule, d.API); err != nil {
-				Logc(ctx).Debugf("replication schedule given in TMR %s is invalid, using schedule %s from backend",
+				Logc(ctx).Debugf("Replication schedule given in TMR %s is invalid, using schedule %s from backend.",
 					replicationSchedule, d.GetConfig().ReplicationSchedule)
 				replicationSchedule = d.GetConfig().ReplicationSchedule
 			}
@@ -1407,16 +1411,20 @@ func (d *SANStorageDriver) ReestablishMirror(
 	// Validate replication policy, if it is invalid, use the backend policy
 	isAsync, err := validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
 	if err != nil {
-		Logc(ctx).Debugf("replication policy given in TMR %s is invalid, using policy %s from backend",
+		Logc(ctx).Debugf("Replication policy given in TMR %s is invalid, using policy %s from backend.",
 			replicationPolicy, d.GetConfig().ReplicationPolicy)
 		replicationPolicy = d.GetConfig().ReplicationPolicy
+		isAsync, err = validateReplicationPolicyAbstraction(ctx, replicationPolicy, d.API)
+		if err != nil {
+			Logc(ctx).Debugf("Replication policy %s in backend should be valid.", replicationPolicy)
+		}
 	}
 
 	// If replication policy is async type, validate the replication schedule from TMR or use backend schedule
 	if isAsync {
 		if replicationSchedule != "" {
 			if err := validateReplicationSchedule(ctx, replicationSchedule, d.API); err != nil {
-				Logc(ctx).Debugf("replication schedule given in TMR %s is invalid, using schedule %s from backend",
+				Logc(ctx).Debugf("Replication schedule given in TMR %s is invalid, using schedule %s from backend.",
 					replicationSchedule, d.GetConfig().ReplicationSchedule)
 				replicationSchedule = d.GetConfig().ReplicationSchedule
 			}
