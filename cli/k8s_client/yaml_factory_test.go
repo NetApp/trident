@@ -870,10 +870,18 @@ func TestGetCRDsYAML(t *testing.T) {
 						"state": {
 							Type: "string",
 							Enum: []apiextensionsv1.JSON{
-								{[]byte("\"\"")},
-								{[]byte("\"promoted\"")},
-								{[]byte("\"established\"")},
-								{[]byte("\"reestablished\"")},
+								{
+									Raw: []byte("\"\""),
+								},
+								{
+									Raw: []byte("\"promoted\""),
+								},
+								{
+									Raw: []byte("\"established\""),
+								},
+								{
+									Raw: []byte("\"reestablished\""),
+								},
 							},
 						},
 						"replicationPolicy": {
@@ -1804,10 +1812,18 @@ func TestGetMirrorRelationshipCRDYAML(t *testing.T) {
 						"state": {
 							Type: "string",
 							Enum: []apiextensionsv1.JSON{
-								{[]byte("\"\"")},
-								{[]byte("\"promoted\"")},
-								{[]byte("\"established\"")},
-								{[]byte("\"reestablished\"")},
+								{
+									Raw: []byte("\"\""),
+								},
+								{
+									Raw: []byte("\"promoted\""),
+								},
+								{
+									Raw: []byte("\"established\""),
+								},
+								{
+									Raw: []byte("\"reestablished\""),
+								},
 							},
 						},
 						"replicationPolicy": {

@@ -192,8 +192,8 @@ func (c *Clients) Clusters(ctx context.Context) ([]*Cluster, error) {
 
 	clusters := make([]*Cluster, 0)
 
-	for _, adscl := range astraDSClusters.Items {
-		clusters = append(clusters, c.getClusterFromAstraDSCluster(&adscl))
+	for idx := range astraDSClusters.Items {
+		clusters = append(clusters, c.getClusterFromAstraDSCluster(&astraDSClusters.Items[idx]))
 	}
 
 	return clusters, nil
@@ -310,8 +310,8 @@ func (c *Clients) Volumes(ctx context.Context) ([]*Volume, error) {
 
 	volumes := make([]*Volume, 0)
 
-	for _, adsvo := range astraDSVolumes.Items {
-		volumes = append(volumes, c.getVolumeFromAstraDSVolume(&adsvo))
+	for idx := range astraDSVolumes.Items {
+		volumes = append(volumes, c.getVolumeFromAstraDSVolume(&astraDSVolumes.Items[idx]))
 	}
 
 	return volumes, nil
@@ -1195,8 +1195,8 @@ func (c *Clients) Snapshots(ctx context.Context, volume *Volume) ([]*Snapshot, e
 
 	snapshots := make([]*Snapshot, 0)
 
-	for _, adsvs := range astraDSSnapshots.Items {
-		snapshots = append(snapshots, c.getSnapshotFromAstraDSSnapshot(&adsvs))
+	for idx := range astraDSSnapshots.Items {
+		snapshots = append(snapshots, c.getSnapshotFromAstraDSSnapshot(&astraDSSnapshots.Items[idx]))
 	}
 
 	return snapshots, nil
@@ -1512,8 +1512,8 @@ func (c *Clients) QosPolicies(ctx context.Context) ([]*QosPolicy, error) {
 
 	qosPolicies := make([]*QosPolicy, 0)
 
-	for _, adsqp := range astraDSQosPolicies.Items {
-		qosPolicies = append(qosPolicies, c.getQosPolicyFromAstraDSQosPolicy(&adsqp))
+	for idx := range astraDSQosPolicies.Items {
+		qosPolicies = append(qosPolicies, c.getQosPolicyFromAstraDSQosPolicy(&astraDSQosPolicies.Items[idx]))
 	}
 
 	return qosPolicies, nil

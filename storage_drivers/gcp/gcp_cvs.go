@@ -1482,7 +1482,8 @@ func (d *NFSStorageDriver) getBackup(
 		return nil, err
 	}
 
-	for _, backup := range *backups {
+	for idx := range *backups {
+		backup := &(*backups)[idx]
 		if backup.Name == internalSnapName {
 
 			created := backup.Created.UTC().Format(storage.SnapshotTimestampFormat)
@@ -1497,7 +1498,7 @@ func (d *NFSStorageDriver) getBackup(
 				Config:    snapConfig,
 				Created:   created,
 				SizeBytes: volume.QuotaInBytes,
-				State:     d.getSnapshotStateForBackup(&backup),
+				State:     d.getSnapshotStateForBackup(backup),
 			}, nil
 		}
 	}
@@ -1591,7 +1592,8 @@ func (d *NFSStorageDriver) getBackups(
 
 	snapshotList := make([]*storage.Snapshot, 0)
 
-	for _, backup := range *backups {
+	for idx := range *backups {
+		backup := &(*backups)[idx]
 
 		// Filter out backups in unavailable states
 		switch backup.LifeCycleState {
@@ -1609,7 +1611,7 @@ func (d *NFSStorageDriver) getBackups(
 			},
 			Created:   backup.Created.Format(storage.SnapshotTimestampFormat),
 			SizeBytes: volume.QuotaInBytes,
-			State:     d.getSnapshotStateForBackup(&backup),
+			State:     d.getSnapshotStateForBackup(backup),
 		})
 	}
 
@@ -2158,7 +2160,8 @@ func (d *NFSStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 	prefix := *d.Config.StoragePrefix
 
 	// Convert all volumes to VolumeExternal and write them to the channel
-	for _, volume := range *volumes {
+	for idx := range *volumes {
+		volume := &(*volumes)[idx]
 
 		// Filter out volumes in an unavailable state
 		switch volume.LifeCycleState {
@@ -2171,7 +2174,7 @@ func (d *NFSStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 			continue
 		}
 
-		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(&volume), Error: nil}
+		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(volume), Error: nil}
 	}
 }
 

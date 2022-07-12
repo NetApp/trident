@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -184,5 +183,5 @@ func (c *Client) shouldLogResponseBody(method string) bool {
 
 // NewReqID generates a random id for a request
 func NewReqID() int {
-	return rand.Intn(1000-1) + 1
+	return utils.GetRandomNumber(1000-1) + 1
 }

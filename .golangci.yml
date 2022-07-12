@@ -10,6 +10,9 @@ linters:
   enable:
     - gofumpt
     - goimports
+    - govet
+    - errcheck
+    - gosec
     # - lll
 
 issues:
@@ -53,3 +56,9 @@ linters-settings:
     # Tab width in spaces.
     # Default: 1
     tab-width: 4
+
+  gosec:
+    excludes:
+        # Exclude TLS client side erorrs for now, until Trident fully supports TLS1.3
+        - 'G402' # Look for bad TLS connection settings
+

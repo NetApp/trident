@@ -5,9 +5,9 @@ package utils
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -310,7 +310,10 @@ func GetV(opts map[string]string, keys, defaultValue string) string {
 func RandomString(strSize int) string {
 	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	bytes := make([]byte, strSize)
-	rand.Read(bytes)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		Logc(context.Background()).WithError(err).Error("Unable to generate random bytes")
+	}
 	for i, b := range bytes {
 		bytes[i] = chars[b%byte(len(chars))]
 	}

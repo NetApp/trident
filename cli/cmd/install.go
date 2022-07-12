@@ -570,7 +570,7 @@ func fileExists(filePath string) bool {
 }
 
 func writeFile(filePath, data string) error {
-	return ioutil.WriteFile(filePath, []byte(data), 0o644)
+	return ioutil.WriteFile(filePath, []byte(data), 0o600)
 }
 
 func ensureSetupDirExists() error {

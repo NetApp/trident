@@ -1549,6 +1549,7 @@ func GetSecretYAML(
 	return secretYAML
 }
 
+//nolint:gosec
 const secretYAMLTemplate = `
 apiVersion: v1
 kind: Secret

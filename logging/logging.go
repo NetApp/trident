@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"runtime"
 	"sort"
@@ -291,7 +290,7 @@ func (hook *FileHook) logfileNeedsRotation() bool {
 func (hook *FileHook) maybeDoLogfileRotation() error {
 	// Could use a counter or some other heuristic to decide when to do this, but it's
 	// more a less a wash to let rand() do it every 1/n times.
-	if rand.Intn(randomLogcheckInterval) == 0 {
+	if utils.GetRandomNumber(randomLogcheckInterval) == 0 {
 		return hook.doLogfileRotation()
 	}
 	return nil

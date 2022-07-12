@@ -1097,8 +1097,8 @@ func addBackend(
 	t *testing.T, orchestrator *TridentOrchestrator, backendName string, backendProtocol config.Protocol,
 ) {
 	volumes := []fake.Volume{
-		{"origVolume01", "primary", "primary", 1000000000},
-		{"origVolume02", "primary", "primary", 1000000000},
+		{Name: "origVolume01", RequestedPool: "primary", PhysicalPool: "primary", SizeBytes: 1000000000},
+		{Name: "origVolume02", RequestedPool: "primary", PhysicalPool: "primary", SizeBytes: 1000000000},
 	}
 	configJSON, err := fakedriver.NewFakeStorageDriverConfigJSON(
 		backendName,

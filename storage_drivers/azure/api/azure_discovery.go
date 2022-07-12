@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-10-01/netapp"
@@ -893,7 +892,7 @@ func (c Client) RandomCapacityPoolForStoragePool(
 		return nil
 	}
 
-	return filteredCapacityPools[rand.Intn(len(filteredCapacityPools))]
+	return filteredCapacityPools[utils.GetRandomNumber(len(filteredCapacityPools))]
 }
 
 // EnsureVolumeInValidCapacityPool checks whether the specified volume exists in any capacity pool that is
@@ -1004,5 +1003,5 @@ func (c Client) RandomSubnetForStoragePool(ctx context.Context, sPool storage.Po
 		return nil
 	}
 
-	return filteredSubnets[rand.Intn(len(filteredSubnets))]
+	return filteredSubnets[utils.GetRandomNumber(len(filteredSubnets))]
 }

@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -1478,7 +1477,7 @@ func (d *SANEconomyStorageDriver) getFlexvolForLUN(
 	case 1:
 		return volumes[0], nil
 	default:
-		return volumes[rand.Intn(len(volumes))], nil
+		return volumes[utils.GetRandomNumber(len(volumes))], nil
 	}
 }
 
@@ -1695,7 +1694,8 @@ func (d *SANEconomyStorageDriver) GetVolumeExternalWrappers(
 
 	// Convert all LUNs to VolumeExternal and write them to the channel
 	if lunsResponse.Result.AttributesListPtr != nil {
-		for _, lun := range lunsResponse.Result.AttributesListPtr.LunInfoPtr {
+		for idx := range lunsResponse.Result.AttributesListPtr.LunInfoPtr {
+			lun := &lunsResponse.Result.AttributesListPtr.LunInfoPtr[idx]
 			volume, ok := volumeMap[lun.Volume()]
 			if !ok {
 				Logc(ctx).WithField("path", lun.Path()).Warning("Flexvol not found for LUN.")
@@ -1708,7 +1708,7 @@ func (d *SANEconomyStorageDriver) GetVolumeExternalWrappers(
 				continue
 			}
 
-			channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(&lun, &volume), Error: nil}
+			channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(lun, &volume), Error: nil}
 		}
 	}
 }

@@ -755,7 +755,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	lunID, err := strconv.Atoi(req.PublishContext["iscsiLunNumber"])
+	lunID, err := strconv.ParseInt(req.PublishContext["iscsiLunNumber"], 10, 0)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

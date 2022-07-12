@@ -1121,15 +1121,15 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 
 	// Convert all LUNs to VolumeExternal and write them to the channel
 	if luns != nil {
-		for _, lun := range luns {
-
+		for idx := range luns {
+			lun := &luns[idx]
 			volume, ok := volumeMap[lun.VolumeName]
 			if !ok {
 				Logc(ctx).WithField("path", lun.Name).Warning("Flexvol not found for LUN.")
 				continue
 			}
 
-			channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(&lun, &volume), Error: nil}
+			channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(lun, &volume), Error: nil}
 		}
 	}
 }

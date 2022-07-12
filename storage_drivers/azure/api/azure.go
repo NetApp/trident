@@ -612,8 +612,8 @@ func (c Client) getVolumesFromPool(ctx context.Context, cPool *CapacityPool) (*[
 
 		volumes := volumeList.Values()
 
-		for _, v := range volumes {
-			filesystem, fsErr := c.newFileSystemFromVolume(ctx, &v)
+		for idx := range volumes {
+			filesystem, fsErr := c.newFileSystemFromVolume(ctx, &volumes[idx])
 			if fsErr != nil {
 				Logc(ctx).WithError(fsErr).Errorf("Internal error creating filesystem.")
 				return nil, fsErr
@@ -1153,8 +1153,8 @@ func (c Client) SnapshotsForVolume(ctx context.Context, filesystem *FileSystem) 
 
 	var snapshots []*Snapshot
 
-	for _, anfSnapshot := range *snapshotList.Value {
-
+	for idx := range *snapshotList.Value {
+		anfSnapshot := (*snapshotList.Value)[idx]
 		snapshot, snapErr := c.newSnapshotFromANFSnapshot(ctx, &anfSnapshot)
 		if snapErr != nil {
 			Logc(ctx).WithError(snapErr).Errorf("Internal error creating snapshot.")
@@ -1484,9 +1484,9 @@ func (c Client) SubvolumesForVolume(ctx context.Context, filesystem *FileSystem)
 
 		subvolumeInfos := subvolumeInfoList.Values()
 
-		for _, anfSubvolume := range subvolumeInfos {
+		for idx := range subvolumeInfos {
 
-			subvolume, subvolumeErr := c.newSubvolumeFromSubvolumeInfo(ctx, &anfSubvolume)
+			subvolume, subvolumeErr := c.newSubvolumeFromSubvolumeInfo(ctx, &subvolumeInfos[idx])
 			if subvolumeErr != nil {
 				Logc(ctx).WithError(subvolumeErr).Errorf("Internal error creating internal Subvolume object.")
 				return nil, subvolumeErr

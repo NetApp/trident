@@ -1846,7 +1846,10 @@ func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 	}
 
 	// Convert all volumes to VolumeExternal and write them to the channel
-	for externalName, volume := range volumes {
+	for externalName := range volumes {
+		// Instead of a traditional loop with key, value pair over range, we iterate over keys and get
+		// the value in a unique local variable 'volume', so that its address can be passed over to other methods
+		volume := volumes[externalName]
 		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(externalName, &volume), Error: nil}
 	}
 }

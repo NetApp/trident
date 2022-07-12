@@ -947,7 +947,7 @@ func (c *Controller) reconcileTridentNotPresent() error {
 	var tridentCR *netappv1.TridentOrchestrator
 	for _, cr := range tridentCRs {
 		if !cr.Spec.Uninstall {
-			tridentCR = &cr
+			tridentCR = cr
 			if cr.Spec.Namespace == c.Namespace {
 				break
 			}
@@ -1460,12 +1460,16 @@ func (c *Controller) createTridentOrchestratorCR(tridentCR *netappv1.TridentOrch
 }
 
 // getTridentOrchestratorCRsAll gets all the TridentOrchestrator CRs across all namespaces
-func (c *Controller) getTridentOrchestratorCRsAll() ([]netappv1.TridentOrchestrator, error) {
+func (c *Controller) getTridentOrchestratorCRsAll() ([]*netappv1.TridentOrchestrator, error) {
 	list, err := c.CRDClient.TridentV1().TridentOrchestrators().List(ctx(), listOpts)
 	if err != nil {
 		return nil, err
 	}
-	return list.Items, nil
+	plist := make([]*netappv1.TridentOrchestrator, len(list.Items))
+	for i := range list.Items {
+		plist[i] = &list.Items[i]
+	}
+	return plist, nil
 }
 
 // identifyControllingCRBasedOnStatus identified the controllingCR purely on status and independent of any deployment
@@ -1486,7 +1490,7 @@ func (c *Controller) identifyControllingCRBasedOnStatus() (bool, *netappv1.Tride
 			continue
 		}
 
-		return true, &cr, nil
+		return true, cr, nil
 	}
 
 	return false, nil, nil
@@ -1549,7 +1553,7 @@ func (c *Controller) updateAllCRs(message string) error {
 	var debugMessage string
 	for _, cr := range allCRs {
 		debugMessage = "Updating " + cr.Name + " TridentOrchestrator CR."
-		_, err = c.updateTorcEventAndStatus(&cr, debugMessage, message, string(AppStatusError), "", cr.Spec.Namespace,
+		_, err = c.updateTorcEventAndStatus(cr, debugMessage, message, string(AppStatusError), "", cr.Spec.Namespace,
 			corev1.EventTypeWarning, nil)
 	}
 
@@ -1572,7 +1576,7 @@ func (c *Controller) updateOtherCRs(controllingCRName string) error {
 			statusMessage := fmt.Sprintf("Trident is bound to another CR '%v'",
 				controllingCRName)
 
-			_, err = c.updateTorcEventAndStatus(&cr, debugMessage, statusMessage, string(AppStatusError), "",
+			_, err = c.updateTorcEventAndStatus(cr, debugMessage, statusMessage, string(AppStatusError), "",
 				cr.Spec.Namespace, corev1.EventTypeWarning, nil)
 		}
 	}
@@ -1824,14 +1828,14 @@ func (c *Controller) getCRDBasedCSIDeployments(crdName string) ([]appsv1.Deploym
 }
 
 // matchDeploymentControllingCR identified the controllingCR for an operator based deployment from the list of CRs
-func (c *Controller) matchDeploymentControllingCR(tridentCRs []netappv1.TridentOrchestrator,
+func (c *Controller) matchDeploymentControllingCR(tridentCRs []*netappv1.TridentOrchestrator,
 	operatorCSIDeployment appsv1.Deployment,
 ) (*netappv1.TridentOrchestrator, error) {
 	// Identify Trident CR that controls the deployment
 	var controllingCR *netappv1.TridentOrchestrator
 	for _, cr := range tridentCRs {
-		if metav1.IsControlledBy(&operatorCSIDeployment, &cr) {
-			controllingCR = &cr
+		if metav1.IsControlledBy(&operatorCSIDeployment, cr) {
+			controllingCR = cr
 			log.WithFields(log.Fields{
 				"name": cr.Name,
 			}).Info("Found CR that controls current Trident deployment.")

@@ -511,6 +511,8 @@ func fakeResponseObjectFactoryMethod(zapiRequestXMLTagName, vserverAdminHost, vs
 
 func findNextXMLStartElement(newReader io.Reader) (string, error) {
 	d := xml.NewDecoder(newReader)
+	var start xml.StartElement
+	var ok bool
 
 	for {
 		token, err := d.Token()
@@ -518,11 +520,11 @@ func findNextXMLStartElement(newReader io.Reader) (string, error) {
 			return "", err
 		}
 
-		if start, ok := token.(xml.StartElement); ok {
-			return start.Name.Local, nil
+		if start, ok = token.(xml.StartElement); ok {
+			break
 		}
 	}
-	return "", nil
+	return start.Name.Local, nil
 }
 
 func getFakeResponse(ctx context.Context, requestBody io.Reader, vserverAdminHost,

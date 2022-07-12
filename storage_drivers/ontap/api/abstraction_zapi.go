@@ -1087,8 +1087,8 @@ func (d OntapAPIZAPI) FlexgroupListByPrefix(ctx context.Context, prefix string) 
 
 	// Convert all volumes to VolumeExternal and write them to the channel
 	if volumesResponse.Result.AttributesListPtr != nil {
-		for _, volume := range volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr {
-			volumeInfo, err := VolumeInfoFromZapiAttrsHelper(&volume)
+		for idx := range volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr {
+			volumeInfo, err := VolumeInfoFromZapiAttrsHelper(&volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr[idx])
 			if err != nil {
 				return nil, err
 			}
@@ -1364,8 +1364,8 @@ func (d OntapAPIZAPI) VolumeListByPrefix(ctx context.Context, prefix string) (Vo
 
 	// Convert all volumes to VolumeExternal and write them to the channel
 	if volumesResponse.Result.AttributesListPtr != nil {
-		for _, volume := range volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr {
-			volumeInfo, err := VolumeInfoFromZapiAttrsHelper(&volume)
+		for idx := range volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr {
+			volumeInfo, err := VolumeInfoFromZapiAttrsHelper(&volumesResponse.Result.AttributesListPtr.VolumeAttributesPtr[idx])
 			if err != nil {
 				return nil, err
 			}
@@ -1387,8 +1387,8 @@ func (d OntapAPIZAPI) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume
 
 	volumes := Volumes{}
 	if response.Result.AttributesListPtr != nil {
-		for _, volume := range response.Result.AttributesListPtr.VolumeAttributesPtr {
-			volumeInfo, err := VolumeInfoFromZapiAttrsHelper(&volume)
+		for idx := range response.Result.AttributesListPtr.VolumeAttributesPtr {
+			volumeInfo, err := VolumeInfoFromZapiAttrsHelper(&response.Result.AttributesListPtr.VolumeAttributesPtr[idx])
 			if err != nil {
 				return nil, err
 			}

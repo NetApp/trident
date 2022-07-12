@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
 	"reflect"
 	"strconv"
 	"strings"
@@ -921,7 +920,7 @@ func (d *NASQtreeStorageDriver) getFlexvolForQtree(
 	case 1:
 		return eligibleVolumeNames[0], nil
 	default:
-		return eligibleVolumeNames[rand.Intn(len(eligibleVolumeNames))], nil
+		return eligibleVolumeNames[utils.GetRandomNumber(len(eligibleVolumeNames))], nil
 	}
 }
 

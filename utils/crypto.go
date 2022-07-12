@@ -4,11 +4,12 @@ package utils
 
 import (
 	"bytes"
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"crypto/rand"
+	cryptoRand "crypto/rand"
 	"crypto/sha256"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -19,7 +20,10 @@ import (
 	"io"
 	"math"
 	"math/big"
+	mathRand "math/rand"
 	"time"
+
+	. "github.com/netapp/trident/logger"
 )
 
 type CertInfo struct {
@@ -43,7 +47,7 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 	notAfter := notBefore.Add(time.Hour * 24 * 36525) // 100 years (365.25 days per year)
 
 	// Create CA key
-	caKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	caKey, err := ecdsa.GenerateKey(elliptic.P521(), cryptoRand.Reader)
 	if err != nil {
 		return nil, err
 	}
@@ -72,14 +76,14 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 		BasicConstraintsValid: true,
 	}
 
-	derBytes, err := x509.CreateCertificate(rand.Reader, &caCert, &caCert, &caKey.PublicKey, caKey)
+	derBytes, err := x509.CreateCertificate(cryptoRand.Reader, &caCert, &caCert, &caKey.PublicKey, caKey)
 	if err != nil {
 		return nil, err
 	}
 	certInfo.CACert = certToBase64String(derBytes)
 
 	// Create HTTPS server key
-	serverKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	serverKey, err := ecdsa.GenerateKey(elliptic.P521(), cryptoRand.Reader)
 	if err != nil {
 		return nil, err
 	}
@@ -109,14 +113,14 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 		DNSNames:       []string{serverCertName},
 	}
 
-	derBytes, err = x509.CreateCertificate(rand.Reader, &serverCert, &caCert, &serverKey.PublicKey, caKey)
+	derBytes, err = x509.CreateCertificate(cryptoRand.Reader, &serverCert, &caCert, &serverKey.PublicKey, caKey)
 	if err != nil {
 		return nil, err
 	}
 	certInfo.ServerCert = certToBase64String(derBytes)
 
 	// Create HTTPS client key
-	clientKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	clientKey, err := ecdsa.GenerateKey(elliptic.P521(), cryptoRand.Reader)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +149,7 @@ func MakeHTTPCertInfo(caCertName, serverCertName, clientCertName string) (*CertI
 		SubjectKeyId:   clientKeyId,
 	}
 
-	derBytes, err = x509.CreateCertificate(rand.Reader, &clientCert, &caCert, &clientKey.PublicKey, caKey)
+	derBytes, err = x509.CreateCertificate(cryptoRand.Reader, &clientCert, &caCert, &clientKey.PublicKey, caKey)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +170,7 @@ func makeSubject(cn string) pkix.Name {
 
 func makeSerial() (*big.Int, error) {
 	maxSerial := big.NewInt(math.MaxInt64)
-	serial, err := rand.Int(rand.Reader, maxSerial)
+	serial, err := cryptoRand.Int(cryptoRand.Reader, maxSerial)
 	if nil != err {
 		return nil, err
 	}
@@ -200,7 +204,7 @@ func bigIntHash(n *big.Int) ([]byte, error) {
 // GenerateAESKey generates a cryptographically random 32-byte key, returned as a base64-encoded string
 func GenerateAESKey() (string, error) {
 	key := make([]byte, 32)
-	_, err := rand.Read(key)
+	_, err := cryptoRand.Read(key)
 	return base64.StdEncoding.EncodeToString(key), err
 }
 
@@ -219,7 +223,7 @@ func EncryptStringWithAES(plainText string, key []byte) (string, error) {
 	// Create the encryptor
 	encryptedBytes := make([]byte, aes.BlockSize+len(paddedBytes))
 	iv := encryptedBytes[:aes.BlockSize]
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+	if _, err := io.ReadFull(cryptoRand.Reader, iv); err != nil {
 		return "", err
 	}
 	cfb := cipher.NewCFBEncrypter(block, iv)
@@ -285,4 +289,17 @@ func PKCS7Unpad(input []byte) ([]byte, error) {
 	}
 
 	return input[:(inputLength - paddingLength)], nil
+}
+
+// GetRandomNumber will generate a cryptographically secure random number in the range of [0, max)
+func GetRandomNumber(max int) int {
+	randomNo, err := cryptoRand.Int(cryptoRand.Reader, big.NewInt(int64(max)))
+	if err != nil {
+		Logc(context.Background()).WithError(err).Error("Unable to generate secure random number")
+		// fallback to math/rand if the crypto/rand secure random number generation fails
+		return mathRand.Intn(max) //nolint:gosec
+	}
+	// The type conversion converts the larger type int64 to int
+	// the function makes this assumption because the original input parameter is defined as int
+	return int(randomNo.Int64())
 }

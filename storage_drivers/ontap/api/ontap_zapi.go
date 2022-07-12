@@ -2814,9 +2814,9 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 	list := response.Result.AttributesList()
 	relationships := list.SnapmirrorDestinationInfo()
 
-	for _, relationship := range relationships {
+	for idx := range relationships {
 		requestQuery := azgo.SnapmirrorReleaseIterRequestQuery{
-			SnapmirrorDestinationInfoPtr: &relationship,
+			SnapmirrorDestinationInfoPtr: &relationships[idx],
 		}
 		releaseRequest := azgo.SnapmirrorReleaseIterRequest{QueryPtr: &requestQuery}
 		_, err = releaseRequest.ExecuteUsing(c.zr)
