@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	k8ssnapshots "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned"
+	k8ssnapshots "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned"
 	log "github.com/sirupsen/logrus"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"

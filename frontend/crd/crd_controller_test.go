@@ -11,7 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	fakesnapshots "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned/fake"
+	fakesnapshots "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned/fake"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

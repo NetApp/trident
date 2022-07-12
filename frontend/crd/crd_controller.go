@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"time"
 
-	k8ssnapshots "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned"
+	k8ssnapshots "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned"
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
