@@ -817,6 +817,8 @@ func (p *Plugin) nodeStageISCSIVolume(
 				// Bail out no matter what as we've now tried with updated credentials
 				return nil, status.Error(codes.Internal, err.Error())
 			}
+		} else {
+			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to stage volume: %v", err))
 		}
 	}
 
