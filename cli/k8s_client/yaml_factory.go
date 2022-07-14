@@ -1467,7 +1467,10 @@ supplementalGroups:
 users:
 - system:serviceaccount:{NAMESPACE}:{USER}
 volumes:
-- '*'
+- hostPath
+- downwardAPI
+- projected
+- emptyDir
 `
 
 const openShiftUnprivilegedSCCYAML = `
@@ -1505,12 +1508,10 @@ supplementalGroups:
 users:
 - system:serviceaccount:{NAMESPACE}:{USER}
 volumes:
-- configMap
-- downwardAPI
-- emptyDir
-- persistentVolumeClaim
-- projected
-- secret
+  - hostPath
+  - downwardAPI
+  - projected
+  - emptyDir
 `
 
 func GetOpenShiftSCCQueryYAML(scc string) string {
@@ -2258,7 +2259,9 @@ spec:
   fsGroup:
     rule: RunAsAny
   volumes:
-  - '*'
+  - hostPath
+  - projected
+  - emptyDir
 `
 
 func GetUnprivilegedPodSecurityPolicyYAML(pspName string, labels, controllingCRDetails map[string]string) string {
@@ -2286,7 +2289,9 @@ spec:
   fsGroup:
     rule: RunAsAny
   volumes:
-    - '*'
+  - hostPath
+  - projected
+  - emptyDir
 `
 
 func shiftTextRight(text string, count int) string {

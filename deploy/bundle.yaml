@@ -433,4 +433,4 @@ spec:
   supplementalGroups:
     rule: RunAsAny
   volumes:
-    - '*'
+    - projected

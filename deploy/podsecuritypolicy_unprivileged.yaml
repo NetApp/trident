@@ -15,4 +15,4 @@ spec:
   fsGroup:
     rule: RunAsAny
   volumes:
-    - '*'
+    - projected

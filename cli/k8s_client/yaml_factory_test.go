@@ -676,7 +676,7 @@ func TestGetOpenShiftSCCYAML(t *testing.T) {
 			Type: "RunAsAny",
 		},
 		Users:   []string{"system:serviceaccount:trident:trident-installer"},
-		Volumes: []scc.FSType{"*"},
+		Volumes: []scc.FSType{"hostPath", "downwardAPI", "projected", "emptyDir"},
 	}
 
 	var actual scc.SecurityContextConstraints
@@ -758,7 +758,7 @@ func TestGetOpenShiftSCCYAML_UnprivilegedUser(t *testing.T) {
 			Type: "RunAsAny",
 		},
 		Users:   []string{"system:serviceaccount:trident:root"},
-		Volumes: []scc.FSType{"configMap", "downwardAPI", "emptyDir", "persistentVolumeClaim", "projected", "secret"},
+		Volumes: []scc.FSType{"hostPath", "downwardAPI", "projected", "emptyDir"},
 	}
 
 	var actual scc.SecurityContextConstraints
@@ -2532,7 +2532,7 @@ func TestGetPrivilegedPodSecurityPolicyYAML(t *testing.T) {
 			FSGroup: pspv1beta1.FSGroupStrategyOptions{
 				Rule: "RunAsAny",
 			},
-			Volumes: []pspv1beta1.FSType{"*"},
+			Volumes: []pspv1beta1.FSType{"hostPath", " projected", "emptyDir"},
 		},
 	}
 
@@ -2570,7 +2570,7 @@ func TestGetUnprivilegedPodSecurityPolicyYAML(t *testing.T) {
 			FSGroup: pspv1beta1.FSGroupStrategyOptions{
 				Rule: "RunAsAny",
 			},
-			Volumes: []pspv1beta1.FSType{"*"},
+			Volumes: []pspv1beta1.FSType{"hostPath", " projected", "emptyDir"},
 		},
 	}
 
