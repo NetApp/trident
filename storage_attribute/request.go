@@ -23,6 +23,10 @@ func UnmarshalRequestMap(mapJSON json.RawMessage) (
 		return nil, fmt.Errorf("unable to unmarshal map: %v", err)
 	}
 	for name, stringVal := range tmp {
+
+		// In case of upgrade from 22.04, we remove the prefix from replication to support it in later versions
+		name = strings.TrimPrefix(name, "trident.netapp.io/")
+
 		ret[name], err = CreateAttributeRequestFromAttributeValue(name, stringVal)
 		if err != nil {
 			return nil, err
@@ -54,13 +58,15 @@ func CreateAttributeRequestFromAttributeValue(name, val string) (Request, error)
 	case boolType:
 		v, err := strconv.ParseBool(val)
 		if err != nil {
-			return nil, fmt.Errorf("storage attribute value (%s) doesn't match the specified type (%s); %v", val, valType, err)
+			return nil, fmt.Errorf("storage attribute value (%s) doesn't match the specified type (%s); %v", val,
+				valType, err)
 		}
 		req = NewBoolRequest(v)
 	case intType:
 		v, err := strconv.ParseInt(val, 10, 0)
 		if err != nil {
-			return nil, fmt.Errorf("storage attribute value (%s) doesn't match the specified type (%s); %v", val, valType, err)
+			return nil, fmt.Errorf("storage attribute value (%s) doesn't match the specified type (%s); %v", val,
+				valType, err)
 		}
 		req = NewIntRequest(int(v))
 	case stringType:
@@ -68,7 +74,8 @@ func CreateAttributeRequestFromAttributeValue(name, val string) (Request, error)
 	case labelType:
 		req, err = NewLabelRequest(val)
 		if err != nil {
-			return nil, fmt.Errorf("storage attribute value (%s) doesn't match the specified type (%s); %v", val, valType, err)
+			return nil, fmt.Errorf("storage attribute value (%s) doesn't match the specified type (%s); %v", val,
+				valType, err)
 		}
 	default:
 		return nil, fmt.Errorf("unrecognized type for a storage attribute request: %s", valType)

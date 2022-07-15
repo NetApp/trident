@@ -215,6 +215,34 @@ func TestUnmarshalRequest(t *testing.T) {
 	if !reflect.DeepEqual(requestMap, targetRequestMap) {
 		t.Errorf("Maps are unequal.\n Expected: %s\nGot: %s\n", requestMap, targetRequestMap)
 	}
+
+	// Test for replication with prefix. This is needed in case of upgrade from 22.04,
+	// we remove the prefix from replication to support it in later versions
+	requestMap2 := map[string]Request{
+		"trident.netapp.io/replication": &boolRequest{
+			Request: true,
+		},
+	}
+
+	data2, err := MarshalRequestMap(requestMap2)
+	if err != nil {
+		t.Fatal("Unable to marshal: ", err)
+	}
+
+	targetRequestMap2, err := UnmarshalRequestMap(data2)
+	if err != nil {
+		t.Fatal("Unable to unmarshal: ", err)
+	}
+
+	_, ok1 := targetRequestMap2["replication"]
+	_, ok2 := targetRequestMap2["trident.netapp.io/replication"]
+
+	assert.True(t, ok1)
+	assert.False(t, ok2)
+
+	// Adding coverage for default case
+	attrTypes["temp"] = "float32"
+	_, _ = CreateAttributeRequestFromAttributeValue("temp", "")
 }
 
 func TestNewBoolOfferFromOffers(t *testing.T) {
