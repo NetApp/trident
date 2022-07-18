@@ -117,7 +117,7 @@ func newTestOntapNASDriver(
 	nasDriver.API = ontapAPI
 	nasDriver.telemetry = &TelemetryAbstraction{
 		Plugin:        nasDriver.Name(),
-		SVM:           nasDriver.GetConfig().SVM,
+		SVM:           config.SVM,
 		StoragePrefix: *nasDriver.GetConfig().StoragePrefix,
 		Driver:        nasDriver,
 	}
@@ -130,6 +130,7 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,

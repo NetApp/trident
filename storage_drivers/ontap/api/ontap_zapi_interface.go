@@ -18,6 +18,7 @@ type ZapiClientInterface interface {
 	ClientConfig() ClientConfig
 	SetSVMUUID(svmUUID string)
 	SVMUUID() string
+	SVMName() string
 	// GetClonedZapiRunner returns a clone of the ZapiRunner configured on this driver.
 	GetClonedZapiRunner() *azgo.ZapiRunner
 	// GetNontunneledZapiRunner returns a clone of the ZapiRunner configured on this driver with the SVM field cleared so ZAPI calls

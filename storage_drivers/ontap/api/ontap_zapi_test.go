@@ -12,11 +12,11 @@ import (
 )
 
 func TestGetError(t *testing.T) {
-	e := GetError(context.Background(), nil, nil)
+	e := azgo.GetError(context.Background(), nil, nil)
 
-	assert.Equal(t, "failed", e.(ZapiError).Status(), "Strings not equal")
+	assert.Equal(t, "failed", e.(azgo.ZapiError).Status(), "Strings not equal")
 
-	assert.Equal(t, azgo.EINTERNALERROR, e.(ZapiError).Code(), "Strings not equal")
+	assert.Equal(t, azgo.EINTERNALERROR, e.(azgo.ZapiError).Code(), "Strings not equal")
 
-	assert.Equal(t, "unexpected nil ZAPI result", e.(ZapiError).Reason(), "Strings not equal")
+	assert.Equal(t, "unexpected nil ZAPI result", e.(azgo.ZapiError).Reason(), "Strings not equal")
 }

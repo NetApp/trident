@@ -209,7 +209,7 @@ func (d *NASStorageDriver) Create(
 
 	// If volume shall be mirrored, check that the SVM is peered with the other side
 	if volConfig.PeerVolumeHandle != "" {
-		if err = checkSVMPeeredAbstraction(ctx, volConfig, d.GetConfig().SVM, d.API); err != nil {
+		if err = checkSVMPeeredAbstraction(ctx, volConfig, d.API.SVMName(), d.API); err != nil {
 			return err
 		}
 	}
@@ -500,7 +500,7 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 
 	// If flexvol has been a snapmirror destination
-	if err := d.API.SnapmirrorDeleteViaDestination(name, d.Config.SVM); err != nil {
+	if err := d.API.SnapmirrorDeleteViaDestination(name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}
@@ -931,7 +931,7 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateFollowup")
 	}
 
-	volConfig.MirrorHandle = d.Config.SVM + ":" + volConfig.InternalName
+	volConfig.MirrorHandle = d.API.SVMName() + ":" + volConfig.InternalName
 	volConfig.AccessInfo.NfsServerIP = d.Config.DataLIF
 	volConfig.AccessInfo.MountOptions = strings.TrimPrefix(d.Config.NfsMountOptions, "-o ")
 	volConfig.FileSystem = ""
@@ -987,7 +987,7 @@ func (d *NASStorageDriver) GetVolumeExternal(
 		return nil, err
 	}
 
-	return getVolumeExternalCommon(*volume, *d.Config.StoragePrefix, d.Config.SVM), nil
+	return getVolumeExternalCommon(*volume, *d.Config.StoragePrefix, d.API.SVMName()), nil
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about
@@ -1010,8 +1010,8 @@ func (d *NASStorageDriver) GetVolumeExternalWrappers(
 	// Convert all volumes to VolumeExternal and write them to the channel
 	for _, volume := range volumes {
 		channel <- &storage.VolumeExternalWrapper{
-			Volume: getVolumeExternalCommon(*volume, *d.Config.StoragePrefix,
-				d.Config.SVM), Error: nil,
+			Volume: getVolumeExternalCommon(*volume, *d.Config.StoragePrefix, d.API.SVMName()),
+			Error:  nil,
 		}
 	}
 }

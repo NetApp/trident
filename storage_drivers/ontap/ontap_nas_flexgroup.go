@@ -136,13 +136,13 @@ func (d *NASFlexGroupStorageDriver) Terminate(ctx context.Context, backendUUID s
 func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) error {
 	config := d.GetConfig()
 
-	vserverAggrs, err := d.vserverAggregates(ctx, config.SVM)
+	vserverAggrs, err := d.vserverAggregates(ctx, d.API.SVMName())
 	if err != nil {
 		return err
 	}
 
 	Logc(ctx).WithFields(log.Fields{
-		"svm":        config.SVM,
+		"svm":        d.API.SVMName(),
 		"aggregates": vserverAggrs,
 	}).Debug("Read aggregates assigned to SVM.")
 
@@ -155,7 +155,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 
 	// Define physical pools
 	// For a FlexGroup all aggregates that belong to the SVM represent the storage pool.
-	pool := storage.NewStoragePool(nil, config.SVM)
+	pool := storage.NewStoragePool(nil, d.API.SVMName())
 
 	// Update pool with attributes set by default for this backend
 	// We do not set internal attributes with these values as this
@@ -1324,7 +1324,7 @@ func (d *NASFlexGroupStorageDriver) GetVolumeExternal(ctx context.Context, name 
 		return nil, err
 	}
 
-	return getVolumeExternalCommon(*flexgroup, *d.Config.StoragePrefix, d.Config.SVM), nil
+	return getVolumeExternalCommon(*flexgroup, *d.Config.StoragePrefix, d.API.SVMName()), nil
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about
@@ -1347,8 +1347,8 @@ func (d *NASFlexGroupStorageDriver) GetVolumeExternalWrappers(
 	// Convert all volumes to VolumeExternal and write them to the channel
 	for _, volume := range volumes {
 		channel <- &storage.VolumeExternalWrapper{
-			Volume: getVolumeExternalCommon(*volume, *d.Config.StoragePrefix,
-				d.Config.SVM), Error: nil,
+			Volume: getVolumeExternalCommon(*volume, *d.Config.StoragePrefix, d.API.SVMName()),
+			Error:  nil,
 		}
 	}
 }

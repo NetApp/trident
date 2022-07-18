@@ -8,6 +8,8 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+
 	. "github.com/netapp/trident/logger"
 )
 
@@ -42,6 +44,7 @@ const (
 
 type OntapAPI interface {
 	APIVersion(context.Context) (string, error)
+	SVMName() string
 
 	EmsAutosupportLog(
 		ctx context.Context, driverName, appVersion string, autoSupport bool, category string,
@@ -278,7 +281,7 @@ func GetErrorAbstraction(ctx context.Context, response *APIResponse, errorIn err
 	defer func() {
 		if r := recover(); r != nil {
 			Logc(ctx).Errorf("Panic in ontap#GetErrorAbstraction. %v\nStack Trace: %v", response, string(debug.Stack()))
-			errorOut = ZapiError{}
+			errorOut = azgo.ZapiError{}
 		}
 	}()
 

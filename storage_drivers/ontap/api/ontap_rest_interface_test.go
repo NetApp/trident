@@ -13,6 +13,6 @@ func TestRestClientInterface(t *testing.T) {
 	iface := reflect.TypeOf((*RestClientInterface)(nil)).Elem()
 
 	// validate restClient implements the RestClientInterface
-	restClient, _ := NewRestClient(ctx, ClientConfig{})
+	restClient, _ := NewRestClient(ctx, ClientConfig{}, "")
 	assert.True(t, reflect.TypeOf(restClient).Implements(iface))
 }

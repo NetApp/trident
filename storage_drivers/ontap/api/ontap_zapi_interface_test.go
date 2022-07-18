@@ -13,6 +13,6 @@ func TestZapiClientInterface(t *testing.T) {
 	iface := reflect.TypeOf((*ZapiClientInterface)(nil)).Elem()
 
 	// validate zapiClient implements the ZapiClientInterface
-	zapiClient := NewClient(ClientConfig{})
+	zapiClient := NewClient(ClientConfig{}, "")
 	assert.True(t, reflect.TypeOf(zapiClient).Implements(iface))
 }

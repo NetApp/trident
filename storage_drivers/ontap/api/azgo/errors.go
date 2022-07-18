@@ -31,6 +31,7 @@ const (
 	EDUPLICATEENTRY                    = "13130"
 	EAGGRDOESNOTEXIST                  = "14420"
 	EOBJECTNOTFOUND                    = "15661"
+	EVSERVERNOTFOUND                   = "15698"
 	EDEST_ISNOT_DP_VOLUME              = "17114"
 	ENOTRANSFERINPROGRESS              = "17130"
 	ETRANSFERINPROGRESS                = "17131"

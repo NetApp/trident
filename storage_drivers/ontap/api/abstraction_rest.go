@@ -105,6 +105,10 @@ func NewOntapAPIRESTFromRestClientInterface(restClient RestClientInterface) (Ont
 	return result, nil
 }
 
+func (d OntapAPIREST) SVMName() string {
+	return d.api.SVMName()
+}
+
 func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 	// Make sure we're using a valid ONTAP version
 	ontapVersion, err := d.APIVersion(ctx)
@@ -1070,9 +1074,9 @@ func (d OntapAPIREST) VolumeSnapshotCreate(ctx context.Context, snapshotName, so
 }
 
 // pollVolumeExistence polls for the volume, with backoff retry logic
-func (c OntapAPIREST) pollVolumeExistence(ctx context.Context, volumeName string) error {
+func (d OntapAPIREST) pollVolumeExistence(ctx context.Context, volumeName string) error {
 	checkVolumeStatus := func() error {
-		volume, err := c.VolumeInfo(ctx, volumeName)
+		volume, err := d.VolumeInfo(ctx, volumeName)
 		if err != nil {
 			return err
 		}

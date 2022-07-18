@@ -226,7 +226,11 @@ func (d *SANEconomyStorageDriver) Name() string {
 func (d *SANEconomyStorageDriver) BackendName() string {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
-		return CleanBackendName("ontapsaneco_" + d.ips[0])
+		lif0 := "noLIFs"
+		if len(d.ips) > 0 {
+			lif0 = d.ips[0]
+		}
+		return CleanBackendName("ontapsaneco_" + lif0)
 	} else {
 		return d.Config.BackendName
 	}
@@ -270,7 +274,7 @@ func (d *SANEconomyStorageDriver) Initialize(
 	}
 
 	if len(d.ips) == 0 {
-		return fmt.Errorf("no iSCSI data LIFs found on SVM %s", config.SVM)
+		return fmt.Errorf("no iSCSI data LIFs found on SVM %s", d.API.SVMName())
 	} else {
 		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 	}
@@ -560,8 +564,8 @@ func (d *SANEconomyStorageDriver) Create(
 		lunCreateResponse, err := d.API.LunCreate(
 			lunPath, int(sizeBytes), osType, qosPolicyGroup, false, spaceAllocation,
 		)
-		if err = api.GetError(ctx, lunCreateResponse, err); err != nil {
-			if zerr, ok := err.(api.ZapiError); ok && zerr.Code() == azgo.EVDISK_ERROR_TOO_MANY_LUNS {
+		if err = azgo.GetError(ctx, lunCreateResponse, err); err != nil {
+			if zerr, ok := err.(azgo.ZapiError); ok && zerr.Code() == azgo.EVDISK_ERROR_TOO_MANY_LUNS {
 				// The originally chosen flexvol has hit the ONTAP hard limit of LUNs per flexvol.
 				// This limit is model dependent therefore we must handle the error after-the-fact.
 				// Add the full flexvol to the ignored list and find/create a new one
@@ -594,7 +598,7 @@ func (d *SANEconomyStorageDriver) Create(
 
 		// Save the fstype in a LUN attribute so we know what to do in Attach
 		attrResponse, err := d.API.LunSetAttribute(lunPath, LUNAttributeFSType, fstype)
-		if err = api.GetError(ctx, attrResponse, err); err != nil {
+		if err = azgo.GetError(ctx, attrResponse, err); err != nil {
 
 			errMessage := fmt.Sprintf(
 				"ONTAP-SAN-ECONOMY pool %s/%s; error saving file system type for LUN %s/%s: %v",
@@ -625,7 +629,7 @@ func (d *SANEconomyStorageDriver) Create(
 
 		// Save the context
 		attrResponse, err = d.API.LunSetAttribute(lunPath, "context", string(d.Config.DriverContext))
-		if err = api.GetError(ctx, attrResponse, err); err != nil {
+		if err = azgo.GetError(ctx, attrResponse, err); err != nil {
 			Logc(ctx).WithField("name", name).Warning("Failed to save the driver context attribute for new volume.")
 		}
 
@@ -750,7 +754,7 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 	if err != nil {
 		return fmt.Errorf("error creating clone: %v", err)
 	}
-	if zerr := api.NewZapiError(cloneResponse); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(cloneResponse); !zerr.IsPassed() {
 		if zerr.Code() == azgo.EOBJECTNOTFOUND {
 			return fmt.Errorf("snapshot %s does not exist in volume %s", snapshot, source)
 		} else if zerr.IsFailedToLoadJobError() {
@@ -898,7 +902,7 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 	}
 
 	destroyResponse, err := d.API.LunDestroy(lunPath)
-	if err = api.GetError(ctx, destroyResponse, err); err != nil {
+	if err = azgo.GetError(ctx, destroyResponse, err); err != nil {
 		Logc(ctx).Errorf("Error LUN delete failed: %v", err)
 		return deleteError
 	}
@@ -929,7 +933,7 @@ func (d *SANEconomyStorageDriver) DeleteBucketIfEmpty(ctx context.Context, bucke
 		if err != nil {
 			return fmt.Errorf("error destroying volume %v: %v", bucketVol, err)
 		}
-		if zerr := api.NewZapiError(volDestroyResponse); !zerr.IsPassed() {
+		if zerr := azgo.NewZapiError(volDestroyResponse); !zerr.IsPassed() {
 			if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
 				Logc(ctx).WithField("volume", bucketVol).Warn("Volume already deleted.")
 			} else {
@@ -1101,7 +1105,7 @@ func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
 	snapPathPattern := d.helper.GetSnapPathPatternForVolume(externalVolumeName)
 
 	snapListResponse, err := d.API.LunGetAll(snapPathPattern)
-	if err = api.GetError(ctx, snapListResponse, err); err != nil {
+	if err = azgo.GetError(ctx, snapListResponse, err); err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
 
@@ -1276,7 +1280,7 @@ func (d *SANEconomyStorageDriver) DeleteSnapshot(
 	}
 
 	destroyResponse, err := d.API.LunDestroy(snapPath)
-	if err = api.GetError(ctx, destroyResponse, err); err != nil {
+	if err = azgo.GetError(ctx, destroyResponse, err); err != nil {
 		Logc(ctx).Errorf("Snap-LUN delete failed: %v", err)
 		return fmt.Errorf("error deleting snapshot: %v", err)
 	}
@@ -1394,14 +1398,14 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 		tieringPolicy, "", api.QosPolicyGroup{}, encrypt, snapshotReserveInt, false,
 	)
 
-	if err = api.GetError(ctx, volCreateResponse, err); err != nil {
+	if err = azgo.GetError(ctx, volCreateResponse, err); err != nil {
 		return "", fmt.Errorf("error creating volume: %v", err)
 	}
 
 	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 	if !enableSnapshotDir {
 		snapDirResponse, err := d.API.VolumeDisableSnapshotDirectoryAccess(flexvol)
-		if err = api.GetError(ctx, snapDirResponse, err); err != nil {
+		if err = azgo.GetError(ctx, snapDirResponse, err); err != nil {
 			return "", fmt.Errorf("error disabling snapshot directory access: %v", err)
 		}
 	}
@@ -1422,7 +1426,7 @@ func (d *SANEconomyStorageDriver) getFlexvolForLUN(
 	volListResponse, err := d.API.VolumeListByAttrs(d.FlexvolNamePrefix(), aggregate, spaceReserve, snapshotPolicy,
 		tieringPolicy, enableSnapshotDir, encrypt, -1)
 
-	if err = api.GetError(ctx, volListResponse, err); err != nil {
+	if err = azgo.GetError(ctx, volListResponse, err); err != nil {
 		return "", fmt.Errorf("error enumerating Flexvols: %v", err)
 	}
 
@@ -1662,7 +1666,7 @@ func (d *SANEconomyStorageDriver) GetVolumeExternalWrappers(
 
 	// Get all volumes matching the storage prefix
 	volumesResponse, err := d.API.VolumeGetAll(d.FlexvolNamePrefix())
-	if err = api.GetError(ctx, volumesResponse, err); err != nil {
+	if err = azgo.GetError(ctx, volumesResponse, err); err != nil {
 		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
 		return
 	}
@@ -1678,7 +1682,7 @@ func (d *SANEconomyStorageDriver) GetVolumeExternalWrappers(
 	// Get all LUNs in volumes matching the storage prefix
 	lunPathPattern := fmt.Sprintf("/vol/%v/*", d.flexvolNamePrefix+"*")
 	lunsResponse, err := d.API.LunGetAll(lunPathPattern)
-	if err = api.GetError(ctx, lunsResponse, err); err != nil {
+	if err = azgo.GetError(ctx, lunsResponse, err); err != nil {
 		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
 		return
 	}
@@ -1924,14 +1928,14 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 
 	// Resize FlexVol
 	response, err := d.API.VolumeSetSize(bucketVol, strconv.FormatUint(flexvolSize, 10))
-	if err = api.GetError(ctx, response, err); err != nil {
+	if err = azgo.GetError(ctx, response, err); err != nil {
 		Logc(ctx).WithField("error", err).Error("Volume resize failed.")
 		return fmt.Errorf("volume resize failed")
 	}
 
 	// Resize LUN
 	returnSize, err := d.API.LunResize(lunPath, int(sizeBytes))
-	if err = api.GetError(ctx, response, err); err != nil {
+	if err = azgo.GetError(ctx, response, err); err != nil {
 		Logc(ctx).WithField("error", err).Error("LUN resize failed.")
 		return fmt.Errorf("volume resize failed")
 	}
@@ -1979,14 +1983,14 @@ func (d *SANEconomyStorageDriver) resizeFlexvol(ctx context.Context, flexvol str
 		// Lacking the optimal size, just grow the Flexvol to contain the new LUN
 		size := strconv.FormatUint(sizeBytes, 10)
 		resizeResponse, err := d.API.VolumeSetSize(flexvol, "+"+size)
-		if err = api.GetError(ctx, resizeResponse, err); err != nil {
+		if err = azgo.GetError(ctx, resizeResponse, err); err != nil {
 			return fmt.Errorf("flexvol resize failed: %v", err)
 		}
 	} else {
 		// Got optimal size, so just set the Flexvol to that value
 		flexvolSizeStr := strconv.FormatUint(flexvolSizeBytes, 10)
 		resizeResponse, err := d.API.VolumeSetSize(flexvol, flexvolSizeStr)
-		if err = api.GetError(ctx, resizeResponse, err); err != nil {
+		if err = azgo.GetError(ctx, resizeResponse, err); err != nil {
 			return fmt.Errorf("flexvol resize failed: %v", err)
 		}
 	}

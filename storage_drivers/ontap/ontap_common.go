@@ -211,7 +211,7 @@ func InitializeOntapConfig(
 func NewOntapTelemetry(ctx context.Context, d StorageDriver) *Telemetry {
 	t := &Telemetry{
 		Plugin:        d.Name(),
-		SVM:           d.GetConfig().SVM,
+		SVM:           d.GetAPI().SVMName(),
 		StoragePrefix: *d.GetConfig().StoragePrefix,
 		Driver:        d,
 		done:          make(chan struct{}),
@@ -301,7 +301,7 @@ func (t Telemetry) GoString() string {
 
 func deleteExportPolicy(ctx context.Context, policy string, clientAPI *api.Client) error {
 	response, err := clientAPI.ExportPolicyDestroy(policy)
-	if err = api.GetError(ctx, response, err); err != nil {
+	if err = azgo.GetError(ctx, response, err); err != nil {
 		err = fmt.Errorf("error deleting export policy: %v", err)
 	}
 	return err
@@ -310,7 +310,7 @@ func deleteExportPolicy(ctx context.Context, policy string, clientAPI *api.Clien
 func createExportRule(ctx context.Context, desiredPolicyRule, policyName string, clientAPI *api.Client) error {
 	ruleResponse, err := clientAPI.ExportRuleCreate(policyName, desiredPolicyRule,
 		[]string{"nfs"}, []string{"any"}, []string{"any"}, []string{"any"})
-	if err = api.GetError(ctx, ruleResponse, err); err != nil {
+	if err = azgo.GetError(ctx, ruleResponse, err); err != nil {
 		err = fmt.Errorf("error creating export rule: %v", err)
 		Logc(ctx).WithFields(log.Fields{
 			"ExportPolicy": policyName,
@@ -322,7 +322,7 @@ func createExportRule(ctx context.Context, desiredPolicyRule, policyName string,
 
 func deleteExportRule(ctx context.Context, ruleIndex int, policyName string, clientAPI *api.Client) error {
 	ruleDestroyResponse, err := clientAPI.ExportRuleDestroy(policyName, ruleIndex)
-	if err = api.GetError(ctx, ruleDestroyResponse, err); err != nil {
+	if err = azgo.GetError(ctx, ruleDestroyResponse, err); err != nil {
 		err = fmt.Errorf("error deleting export rule on policy %s at index %d; %v", policyName, ruleIndex, err)
 		Logc(ctx).WithFields(log.Fields{
 			"ExportPolicy": policyName,
@@ -339,7 +339,7 @@ func isExportPolicyExists(ctx context.Context, policyName string, clientAPI *api
 		Logc(ctx).WithField("exportPolicy", policyName).Error(err)
 		return false, err
 	}
-	if zerr := api.NewZapiError(policyGetResponse); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(policyGetResponse); !zerr.IsPassed() {
 		if zerr.Code() == azgo.EOBJECTNOTFOUND {
 			Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy not found.")
 			return false, nil
@@ -357,7 +357,7 @@ func ensureExportPolicyExists(ctx context.Context, policyName string, clientAPI 
 	if err != nil {
 		err = fmt.Errorf("error creating export policy %s: %v", policyName, err)
 	}
-	if zerr := api.NewZapiError(policyCreateResponse); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(policyCreateResponse); !zerr.IsPassed() {
 		if zerr.Code() == azgo.EDUPLICATEENTRY {
 			Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy already exists.")
 		} else {
@@ -394,7 +394,7 @@ func publishFlexVolShare(
 	// Update volume to use the correct export policy
 	policyName := getExportPolicyName(publishInfo.BackendUUID)
 	volumeModifyResponse, err := clientAPI.VolumeModifyExportPolicy(volumeName, policyName)
-	if err = api.GetError(ctx, volumeModifyResponse, err); err != nil {
+	if err = azgo.GetError(ctx, volumeModifyResponse, err); err != nil {
 		err = fmt.Errorf("error updating export policy on volume %s: %v", volumeName, err)
 		Logc(ctx).Error(err)
 		return err
@@ -471,7 +471,7 @@ func reconcileExportPolicyRules(
 	ctx context.Context, policyName string, desiredPolicyRules []string, clientAPI *api.Client,
 ) error {
 	ruleListResponse, err := clientAPI.ExportRuleGetIterRequest(policyName)
-	if err = api.GetError(ctx, ruleListResponse, err); err != nil {
+	if err = azgo.GetError(ctx, ruleListResponse, err); err != nil {
 		return fmt.Errorf("error listing export policy rules: %v", err)
 	}
 	rulesToRemove := make(map[string]int)
@@ -535,8 +535,8 @@ func reconcileSANNodeAccess(ctx context.Context, clientAPI *api.Client, igroupNa
 		} else {
 			// IQN isn't mapped and should be; add it
 			response, err := clientAPI.IgroupAdd(igroupName, iqn)
-			err = api.GetError(ctx, response, err)
-			zerr, zerrOK := err.(api.ZapiError)
+			err = azgo.GetError(ctx, response, err)
+			zerr, zerrOK := err.(azgo.ZapiError)
 			if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
 				Logc(ctx).WithFields(log.Fields{
 					"IQN":    iqn,
@@ -551,8 +551,8 @@ func reconcileSANNodeAccess(ctx context.Context, clientAPI *api.Client, igroupNa
 	// mappedIQNs is now a list of mapped IQNs that we have no nodes for; remove them
 	for iqn := range mappedIQNs {
 		response, err := clientAPI.IgroupRemove(igroupName, iqn, true)
-		err = api.GetError(ctx, response, err)
-		zerr, zerrOK := err.(api.ZapiError)
+		err = azgo.GetError(ctx, response, err)
+		zerr, zerrOK := err.(azgo.ZapiError)
 		if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NODE_NOT_IN_INITGROUP) {
 			Logc(ctx).WithFields(log.Fields{
 				"IQN":    iqn,
@@ -568,8 +568,8 @@ func reconcileSANNodeAccess(ctx context.Context, clientAPI *api.Client, igroupNa
 
 func cleanIgroups(ctx context.Context, client *api.Client, igroupName string) {
 	response, err := client.IgroupDestroy(igroupName)
-	err = api.GetError(ctx, response, err)
-	zerr, zerrOK := err.(api.ZapiError)
+	err = azgo.GetError(ctx, response, err)
+	zerr, zerrOK := err.(azgo.ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_INITGROUP) {
 		Logc(ctx).WithField("igroup", igroupName).Debug("No such initiator group (igroup).")
 	} else if zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_MAPS_EXIST {
@@ -610,7 +610,7 @@ func GetISCSITargetInfo(
 		}
 	}
 	if len(iSCSIInterfaces) == 0 {
-		returnError = fmt.Errorf("SVM %s has no active iSCSI interfaces", config.SVM)
+		returnError = fmt.Errorf("SVM %s has no active iSCSI interfaces", clientAPI.SVMName())
 		return
 	}
 
@@ -640,7 +640,7 @@ func PopulateOntapLunMapping(
 	}
 	if response.Result.AttributesListPtr != nil {
 		for _, serviceInfo := range response.Result.AttributesListPtr.IscsiServiceInfoPtr {
-			if serviceInfo.Vserver() == config.SVM {
+			if serviceInfo.Vserver() == clientAPI.SVMName() {
 				targetIQN = serviceInfo.NodeName()
 				Logc(ctx).WithFields(log.Fields{
 					"volume":    volConfig.Name,
@@ -737,7 +737,7 @@ func PublishLUN(
 	// Get the fstype
 	fstype := drivers.DefaultFileSystemType
 	attrResponse, err := clientAPI.LunGetAttribute(lunPath, LUNAttributeFSType)
-	if err = api.GetError(ctx, attrResponse, err); err != nil {
+	if err = azgo.GetError(ctx, attrResponse, err); err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"LUN":    lunPath,
 			"fstype": fstype,
@@ -767,8 +767,8 @@ func PublishLUN(
 		if iqn != "" {
 			// Add IQN to igroup
 			igroupAddResponse, err := clientAPI.IgroupAdd(igroupName, iqn)
-			err = api.GetError(ctx, igroupAddResponse, err)
-			zerr, zerrOK := err.(api.ZapiError)
+			err = azgo.GetError(ctx, igroupAddResponse, err)
+			zerr, zerrOK := err.(azgo.ZapiError)
 			if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_HAS_NODE) {
 				Logc(ctx).WithFields(
 					log.Fields{
@@ -1024,7 +1024,7 @@ func InitializeSANDriver(
 		"err":                    err,
 	}).Debug("IscsiInitiatorGetDefaultAuth result")
 
-	if zerr := api.NewZapiError(getDefaultAuthResponse); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(getDefaultAuthResponse); !zerr.IsPassed() {
 		return fmt.Errorf("error checking default initiator's auth type: %v", zerr)
 	}
 
@@ -1043,12 +1043,12 @@ func InitializeSANDriver(
 		Logc(ctx).Debug("Using CHAP credentials")
 
 		if isDefaultAuthTypeNone {
-			lunsResponse, lunsResponseErr := clientAPI.LunGetAllForVserver(config.SVM)
+			lunsResponse, lunsResponseErr := clientAPI.LunGetAllForVserver(clientAPI.SVMName())
 			if lunsResponseErr != nil {
 				return lunsResponseErr
 			}
-			if lunsResponseErr = api.GetError(ctx, lunsResponse, lunsResponseErr); lunsResponseErr != nil {
-				return fmt.Errorf("error enumerating LUNs for SVM %v: %v", config.SVM, lunsResponseErr)
+			if lunsResponseErr = azgo.GetError(ctx, lunsResponse, lunsResponseErr); lunsResponseErr != nil {
+				return fmt.Errorf("error enumerating LUNs for SVM %v: %v", clientAPI.SVMName(), lunsResponseErr)
 			}
 
 			if lunsResponse.Result.AttributesListPtr != nil &&
@@ -1056,7 +1056,7 @@ func InitializeSANDriver(
 				if len(lunsResponse.Result.AttributesListPtr.LunInfoPtr) > 0 {
 					return fmt.Errorf(
 						"will not enable CHAP for SVM %v; %v exisiting LUNs would lose access",
-						config.SVM, len(lunsResponse.Result.AttributesListPtr.LunInfoPtr))
+						clientAPI.SVMName(), len(lunsResponse.Result.AttributesListPtr.LunInfoPtr))
 				}
 			}
 		}
@@ -1067,7 +1067,7 @@ func InitializeSANDriver(
 		if err != nil {
 			return fmt.Errorf("error setting CHAP credentials: %v", err)
 		}
-		if zerr := api.NewZapiError(setDefaultAuthResponse); !zerr.IsPassed() {
+		if zerr := azgo.NewZapiError(setDefaultAuthResponse); !zerr.IsPassed() {
 			return fmt.Errorf("error setting CHAP credentials: %v", zerr)
 		}
 		config.ChapUsername = chapCredentials.ChapUsername
@@ -1097,7 +1097,7 @@ func ensureIGroupExists(clientAPI *api.Client, igroupName string) error {
 	if err != nil {
 		return fmt.Errorf("error creating igroup: %v", err)
 	}
-	if zerr := api.NewZapiError(igroupResponse); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(igroupResponse); !zerr.IsPassed() {
 		// Handle case where the igroup already exists
 		if zerr.Code() != azgo.EVDISK_ERROR_INITGROUP_EXISTS {
 			return fmt.Errorf("error creating igroup %v: %v", igroupName, zerr)
@@ -1177,7 +1177,6 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 
 	client := api.NewClient(api.ClientConfig{
 		ManagementLIF:        config.ManagementLIF,
-		SVM:                  config.SVM,
 		Username:             config.Username,
 		Password:             config.Password,
 		ClientCertificate:    config.ClientCertificate,
@@ -1185,48 +1184,89 @@ func InitializeOntapAPI(ctx context.Context, config *drivers.OntapStorageDriverC
 		TrustedCACertificate: config.TrustedCACertificate,
 		DriverContext:        config.DriverContext,
 		DebugTraceFlags:      config.DebugTraceFlags,
-	})
+	}, config.SVM)
+
 	if config.SVM != "" {
 
 		vserverResponse, err := client.VserverGetRequest()
-		if err = api.GetError(ctx, vserverResponse, err); err != nil {
+		if err = azgo.GetError(ctx, vserverResponse, err); err != nil {
 			return nil, fmt.Errorf("error reading SVM details: %v", err)
 		}
 
-		client.SetSVMUUID(vserverResponse.Result.AttributesPtr.VserverInfoPtr.Uuid())
+		// Update everything to use our derived SVM
+		config.SVM = vserverResponse.Result.AttributesPtr.VserverInfoPtr.VserverName()
+		svmUUID := vserverResponse.Result.AttributesPtr.VserverInfoPtr.Uuid()
 
-		Logc(ctx).WithField("SVM", config.SVM).Debug("Using specified SVM.")
-		return client, nil
+		// Detect MCC
+		var svmSubtype string
+		if vserverResponse.Result.AttributesPtr.VserverInfoPtr.VserverSubtypePtr != nil {
+			svmSubtype = vserverResponse.Result.AttributesPtr.VserverInfoPtr.VserverSubtype()
+		}
+		mcc := svmSubtype == api.SVMSubtypeSyncSource || svmSubtype == api.SVMSubtypeSyncDestination
+
+		// Create a new client based on the SVM we discovered
+		client = api.NewClient(api.ClientConfig{
+			ManagementLIF:        config.ManagementLIF,
+			Username:             config.Username,
+			Password:             config.Password,
+			ClientCertificate:    config.ClientCertificate,
+			ClientPrivateKey:     config.ClientPrivateKey,
+			TrustedCACertificate: config.TrustedCACertificate,
+			DriverContext:        config.DriverContext,
+			DebugTraceFlags:      config.DebugTraceFlags,
+		}, config.SVM)
+		client.SetSVMUUID(svmUUID)
+		client.SetSVMMCC(mcc)
+
+		Logc(ctx).WithFields(log.Fields{
+			"SVM":  config.SVM,
+			"UUID": client.SVMUUID(),
+			"MCC":  client.SVMMCC(),
+		}).Debug("Using specified SVM.")
+
+	} else {
+
+		// Use VserverGetIterRequest to populate config.SVM if it wasn't specified and we can derive it
+		vserverResponse, err := client.VserverGetIterRequest()
+		if err = azgo.GetError(ctx, vserverResponse, err); err != nil {
+			return nil, fmt.Errorf("error enumerating SVMs: %v", err)
+		}
+
+		if vserverResponse.Result.NumRecords() != 1 {
+			return nil, errors.New("cannot derive SVM to use; please specify SVM in config file")
+		}
+
+		// Update everything to use our derived SVM
+		config.SVM = vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].VserverName()
+		svmUUID := vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].Uuid()
+
+		// Detect MCC
+		var svmSubtype string
+		if vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].VserverSubtypePtr != nil {
+			svmSubtype = vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].VserverSubtype()
+		}
+		mcc := svmSubtype == api.SVMSubtypeSyncSource || svmSubtype == api.SVMSubtypeSyncDestination
+
+		client = api.NewClient(api.ClientConfig{
+			ManagementLIF:        config.ManagementLIF,
+			Username:             config.Username,
+			Password:             config.Password,
+			ClientCertificate:    config.ClientCertificate,
+			ClientPrivateKey:     config.ClientPrivateKey,
+			TrustedCACertificate: config.TrustedCACertificate,
+			DriverContext:        config.DriverContext,
+			DebugTraceFlags:      config.DebugTraceFlags,
+		}, config.SVM)
+		client.SetSVMUUID(svmUUID)
+		client.SetSVMMCC(mcc)
+
+		Logc(ctx).WithFields(log.Fields{
+			"SVM":  config.SVM,
+			"UUID": client.SVMUUID(),
+			"MCC":  client.SVMMCC(),
+		}).Debug("Using derived SVM.")
 	}
 
-	// Use VserverGetIterRequest to populate config.SVM if it wasn't specified and we can derive it
-	vserverResponse, err := client.VserverGetIterRequest()
-	if err = api.GetError(ctx, vserverResponse, err); err != nil {
-		return nil, fmt.Errorf("error enumerating SVMs: %v", err)
-	}
-
-	if vserverResponse.Result.NumRecords() != 1 {
-		return nil, errors.New("cannot derive SVM to use; please specify SVM in config file")
-	}
-
-	// Update everything to use our derived SVM
-	config.SVM = vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].VserverName()
-	svmUUID := vserverResponse.Result.AttributesListPtr.VserverInfoPtr[0].Uuid()
-
-	client = api.NewClient(api.ClientConfig{
-		ManagementLIF:        config.ManagementLIF,
-		SVM:                  config.SVM,
-		Username:             config.Username,
-		Password:             config.Password,
-		ClientCertificate:    config.ClientCertificate,
-		ClientPrivateKey:     config.ClientPrivateKey,
-		TrustedCACertificate: config.TrustedCACertificate,
-		DriverContext:        config.DriverContext,
-		DebugTraceFlags:      config.DebugTraceFlags,
-	})
-	client.SetSVMUUID(svmUUID)
-
-	Logc(ctx).WithField("SVM", config.SVM).Debug("Using SVM.")
 	return client, nil
 }
 
@@ -1292,7 +1332,7 @@ func ValidateNASDriver(ctx context.Context, api *api.Client, config *drivers.Ont
 	}
 
 	if len(dataLIFs) == 0 {
-		return fmt.Errorf("no NAS data LIFs found on SVM %s", config.SVM)
+		return fmt.Errorf("no NAS data LIFs found on SVM %s", api.SVMName())
 	} else {
 		Logc(ctx).WithField("dataLIFs", dataLIFs).Debug("Found NAS LIFs.")
 	}
@@ -1748,7 +1788,7 @@ func EMSHeartbeat(ctx context.Context, driver StorageDriver) {
 		strconv.Itoa(drivers.ConfigVersion), false, "heartbeat", hostname, string(message), 1,
 		tridentconfig.OrchestratorName, 5)
 
-	if err = api.GetError(ctx, emsResponse, err); err != nil {
+	if err = azgo.GetError(ctx, emsResponse, err); err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"driver": driver.Name(),
 			"error":  err,
@@ -1823,7 +1863,7 @@ func CreateOntapClone(
 	if snapshot == "" {
 		snapshot = time.Now().UTC().Format(storage.SnapshotNameFormat)
 		snapResponse, err := client.SnapshotCreate(snapshot, source)
-		if err = api.GetError(ctx, snapResponse, err); err != nil {
+		if err = azgo.GetError(ctx, snapResponse, err); err != nil {
 			return fmt.Errorf("error creating snapshot: %v", err)
 		}
 	}
@@ -1831,7 +1871,7 @@ func CreateOntapClone(
 	// Create the clone based on a snapshot
 	if useAsync {
 		cloneResponse, err := client.VolumeCloneCreateAsync(name, source, snapshot)
-		if err = api.GetError(ctx, cloneResponse, err); err != nil {
+		if err = azgo.GetError(ctx, cloneResponse, err); err != nil {
 			return fmt.Errorf("error creating clone: %v", err)
 		}
 		err = client.WaitForAsyncResponse(ctx, cloneResponse, maxFlexGroupCloneWait)
@@ -1843,13 +1883,13 @@ func CreateOntapClone(
 		if err != nil {
 			return fmt.Errorf("error creating clone: %v", err)
 		}
-		if zerr := api.NewZapiError(cloneResponse); !zerr.IsPassed() {
+		if zerr := azgo.NewZapiError(cloneResponse); !zerr.IsPassed() {
 			return handleCreateOntapCloneErr(ctx, zerr, client, snapshot, source, name)
 		}
 	}
 
 	modifyCommentResponse, err := client.VolumeSetComment(ctx, name, labels)
-	if err = api.GetError(ctx, modifyCommentResponse, err); err != nil {
+	if err = azgo.GetError(ctx, modifyCommentResponse, err); err != nil {
 		Logc(ctx).WithField("name", name).Errorf("Modifying comment failed: %v", err)
 		return fmt.Errorf("volume %s modify failed: %v", name, err)
 	}
@@ -1857,7 +1897,7 @@ func CreateOntapClone(
 	if config.StorageDriverName == drivers.OntapNASStorageDriverName {
 		// Mount the new volume
 		mountResponse, err := client.VolumeMount(name, "/"+name)
-		if err = api.GetError(ctx, mountResponse, err); err != nil {
+		if err = azgo.GetError(ctx, mountResponse, err); err != nil {
 			return fmt.Errorf("error mounting volume to junction: %v", err)
 		}
 	}
@@ -1865,7 +1905,7 @@ func CreateOntapClone(
 	// Set the QoS Policy if necessary
 	if qosPolicyGroup.Kind != api.InvalidQosPolicyGroupKind {
 		qosResponse, err := client.VolumeSetQosPolicyGroupName(name, qosPolicyGroup)
-		if err = api.GetError(ctx, qosResponse, err); err != nil {
+		if err = azgo.GetError(ctx, qosResponse, err); err != nil {
 			return fmt.Errorf("error setting QoS policy: %v", err)
 		}
 	}
@@ -1873,7 +1913,7 @@ func CreateOntapClone(
 	// Split the clone if requested
 	if split {
 		splitResponse, err := client.VolumeCloneSplitStart(name)
-		if err = api.GetError(ctx, splitResponse, err); err != nil {
+		if err = azgo.GetError(ctx, splitResponse, err); err != nil {
 			return fmt.Errorf("error splitting clone: %v", err)
 		}
 	}
@@ -1882,7 +1922,7 @@ func CreateOntapClone(
 }
 
 func handleCreateOntapCloneErr(
-	ctx context.Context, zerr api.ZapiError, client *api.Client, snapshot, source, name string,
+	ctx context.Context, zerr azgo.ZapiError, client *api.Client, snapshot, source, name string,
 ) error {
 	if zerr.Code() == azgo.EOBJECTNOTFOUND {
 		return fmt.Errorf("snapshot %s does not exist in volume %s", snapshot, source)
@@ -1929,7 +1969,7 @@ func GetSnapshot(
 	}
 
 	snapListResponse, err := client.SnapshotList(internalVolName)
-	if err = api.GetError(ctx, snapListResponse, err); err != nil {
+	if err = azgo.GetError(ctx, snapListResponse, err); err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
 
@@ -1979,7 +2019,7 @@ func GetSnapshots(
 	}
 
 	snapListResponse, err := client.SnapshotList(internalVolName)
-	if err = api.GetError(ctx, snapListResponse, err); err != nil {
+	if err = azgo.GetError(ctx, snapListResponse, err); err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
 
@@ -2048,13 +2088,13 @@ func CreateSnapshot(
 	}
 
 	snapResponse, err := client.SnapshotCreate(internalSnapName, internalVolName)
-	if err = api.GetError(ctx, snapResponse, err); err != nil {
+	if err = azgo.GetError(ctx, snapResponse, err); err != nil {
 		return nil, fmt.Errorf("could not create snapshot: %v", err)
 	}
 
 	// Fetching list of snapshots to get snapshot access time
 	snapListResponse, err := client.SnapshotList(internalVolName)
-	if err = api.GetError(ctx, snapListResponse, err); err != nil {
+	if err = azgo.GetError(ctx, snapListResponse, err); err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
 	if snapListResponse.Result.AttributesListPtr != nil {
@@ -2098,7 +2138,7 @@ func RestoreSnapshot(
 
 	snapResponse, err := client.SnapshotRestoreVolume(internalSnapName, internalVolName)
 
-	if err = api.GetError(ctx, snapResponse, err); err != nil {
+	if err = azgo.GetError(ctx, snapResponse, err); err != nil {
 		return fmt.Errorf("error restoring snapshot: %v", err)
 	}
 
@@ -2133,7 +2173,7 @@ func DeleteSnapshot(
 	if err != nil {
 		return fmt.Errorf("error deleting snapshot: %v", err)
 	}
-	if zerr := api.NewZapiError(snapResponse); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(snapResponse); !zerr.IsPassed() {
 		if zerr.Code() == azgo.ESNAPSHOTBUSY {
 			// Start a split here before returning the error so a subsequent delete attempt may succeed.
 			_ = SplitVolumeFromBusySnapshot(ctx, snapConfig, config, client)
@@ -2182,7 +2222,7 @@ func SplitVolumeFromBusySnapshot(
 	sort.Strings(childVolumes)
 
 	splitResponse, err := client.VolumeCloneSplitStart(childVolumes[0])
-	if err = api.GetError(ctx, splitResponse, err); err != nil {
+	if err = azgo.GetError(ctx, splitResponse, err); err != nil {
 		Logc(ctx).WithFields(log.Fields{
 			"snapshotName":     internalSnapName,
 			"parentVolumeName": internalVolName,
@@ -2254,12 +2294,12 @@ func discoverBackendAggrNamesCommon(ctx context.Context, d StorageDriver) ([]str
 		return nil, err
 	}
 	if len(vserverAggrs) == 0 {
-		err = fmt.Errorf("SVM %s has no assigned aggregates", config.SVM)
+		err = fmt.Errorf("SVM %s has no assigned aggregates", client.SVMName())
 		return nil, err
 	}
 
 	Logc(ctx).WithFields(log.Fields{
-		"svm":   config.SVM,
+		"svm":   client.SVMName(),
 		"pools": vserverAggrs,
 	}).Debug("Read storage pools assigned to SVM.")
 
@@ -2282,7 +2322,7 @@ func discoverBackendAggrNamesCommon(ctx context.Context, d StorageDriver) ([]str
 	// Make sure the configured aggregate is available to the SVM
 	if config.Aggregate != "" && (len(aggrNames) == 0) {
 		err = fmt.Errorf("the assigned aggregates for SVM %s do not include the configured aggregate %s",
-			config.SVM, config.Aggregate)
+			client.SVMName(), config.Aggregate)
 		return nil, err
 	}
 
@@ -2307,7 +2347,7 @@ func getVserverAggrAttributes(
 		return
 	}
 
-	if zerr := api.NewZapiError(result.Result); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(result.Result); !zerr.IsPassed() {
 		err = zerr
 		return
 	}
@@ -2380,7 +2420,7 @@ func InitializeStoragePoolsCommon(
 	// Update physical pool attributes map with aggregate info (i.e. MediaType)
 	aggrErr := getVserverAggrAttributes(ctx, d, &physicalStoragePoolAttributes)
 
-	if zerr, ok := aggrErr.(api.ZapiError); ok && zerr.IsScopeError() {
+	if zerr, ok := aggrErr.(azgo.ZapiError); ok && zerr.IsScopeError() {
 		Logc(ctx).WithFields(log.Fields{
 			"username": config.Username,
 		}).Warn("User has insufficient privileges to obtain aggregate info. " +
@@ -3001,7 +3041,7 @@ func UnmountAndOfflineVolumeAbstraction(ctx context.Context, API *api.Client, na
 		return true, fmt.Errorf("error unmounting Volume %v: %v", name, err)
 	}
 
-	if zerr := api.NewZapiError(umountResp); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(umountResp); !zerr.IsPassed() {
 		if zerr.Code() == azgo.EOBJECTNOTFOUND {
 			Logc(ctx).WithField("volume", name).Warn("Volume does not exist.")
 			return false, nil
@@ -3016,7 +3056,7 @@ func UnmountAndOfflineVolumeAbstraction(ctx context.Context, API *api.Client, na
 		return true, fmt.Errorf("error taking Volume %v offline: %v", name, offErr)
 	}
 
-	if zerr := api.NewZapiError(offlineResp); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(offlineResp); !zerr.IsPassed() {
 		if zerr.Code() == azgo.EVOLUMEOFFLINE {
 			Logc(ctx).WithField("volume", name).Warn("Volume already offline.")
 		} else if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {

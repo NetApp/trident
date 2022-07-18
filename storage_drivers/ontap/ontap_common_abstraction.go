@@ -74,7 +74,7 @@ type NASDriverAbstraction interface {
 func NewOntapTelemetryAbstraction(ctx context.Context, d StorageDriverAbstraction) *TelemetryAbstraction {
 	t := &TelemetryAbstraction{
 		Plugin:        d.Name(),
-		SVM:           d.GetConfig().SVM,
+		SVM:           d.GetAPI().SVMName(),
 		StoragePrefix: *d.GetConfig().StoragePrefix,
 		Driver:        d,
 		done:          make(chan struct{}),
@@ -358,8 +358,8 @@ func reconcileSANNodeAccessAbstraction(
 
 func cleanIgroupsAbstraction(ctx context.Context, client *api.Client, igroupName string) {
 	response, err := client.IgroupDestroy(igroupName)
-	err = api.GetError(ctx, response, err)
-	zerr, zerrOK := err.(api.ZapiError)
+	err = azgo.GetError(ctx, response, err)
+	zerr, zerrOK := err.(azgo.ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_INITGROUP) {
 		Logc(ctx).WithField("igroup", igroupName).Debug("No such initiator group (igroup).")
 	} else if zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_MAPS_EXIST {
@@ -384,14 +384,14 @@ func GetISCSITargetInfoAbstraction(
 	}
 
 	// Get the SVM iSCSI interface with enabled IQNs
-	iscsiInterfaces, err := clientAPI.IscsiInterfaceGet(ctx, config.SVM)
+	iscsiInterfaces, err := clientAPI.IscsiInterfaceGet(ctx, clientAPI.SVMName())
 	if err != nil {
 		returnError = fmt.Errorf("could not get SVM iSCSI node name: %v", err)
 		return
 	}
 	// Get the IQN
 	if iscsiInterfaces == nil {
-		returnError = fmt.Errorf("SVM %s has no active iSCSI interfaces", config.SVM)
+		returnError = fmt.Errorf("SVM %s has no active iSCSI interfaces", clientAPI.SVMName())
 		return
 	}
 
@@ -775,15 +775,15 @@ func InitializeSANDriverAbstraction(
 		Logc(ctx).Debug("Using CHAP credentials")
 
 		if isDefaultAuthTypeNone {
-			lunsResponse, lunsResponseErr := clientAPI.LunList(ctx, fmt.Sprintf("svm=%s", config.SVM))
+			lunsResponse, lunsResponseErr := clientAPI.LunList(ctx, fmt.Sprintf("svm=%s", clientAPI.SVMName()))
 			if lunsResponseErr != nil {
-				return fmt.Errorf("error enumerating LUNs for SVM %v: %v", config.SVM, lunsResponseErr)
+				return fmt.Errorf("error enumerating LUNs for SVM %v: %v", clientAPI.SVMName(), lunsResponseErr)
 			}
 
 			if len(lunsResponse) > 0 {
 				return fmt.Errorf(
 					"will not enable CHAP for SVM %v; %v exisiting LUNs would lose access",
-					config.SVM, len(lunsResponse))
+					clientAPI.SVMName(), len(lunsResponse))
 			}
 		}
 
@@ -905,7 +905,7 @@ func InitializeOntapAPIAbstraction(
 		return nil, fmt.Errorf("error creating ONTAP API client: %v", err)
 	}
 
-	Logc(ctx).WithField("SVM", config.SVM).Debug("Using SVM.")
+	Logc(ctx).WithField("SVM", ontapAPI.SVMName()).Debug("Using SVM.")
 	return ontapAPI, nil
 }
 
@@ -973,7 +973,7 @@ func ValidateNASDriverAbstraction(
 	}
 
 	if len(dataLIFs) == 0 {
-		return fmt.Errorf("no NAS data LIFs found on SVM %s", config.SVM)
+		return fmt.Errorf("no NAS data LIFs found on SVM %s", api.SVMName())
 	} else {
 		Logc(ctx).WithField("dataLIFs", dataLIFs).Debug("Found NAS LIFs.")
 	}
@@ -1490,12 +1490,12 @@ func discoverBackendAggrNamesCommonAbstraction(ctx context.Context, d StorageDri
 		return nil, err
 	}
 	if len(vserverAggrs) == 0 {
-		err = fmt.Errorf("SVM %s has no assigned aggregates", config.SVM)
+		err = fmt.Errorf("SVM %s has no assigned aggregates", client.SVMName())
 		return nil, err
 	}
 
 	Logc(ctx).WithFields(log.Fields{
-		"svm":   config.SVM,
+		"svm":   client.SVMName(),
 		"pools": vserverAggrs,
 	}).Debug("Read storage pools assigned to SVM.")
 
@@ -1518,7 +1518,7 @@ func discoverBackendAggrNamesCommonAbstraction(ctx context.Context, d StorageDri
 	// Make sure the configured aggregate is available to the SVM
 	if config.Aggregate != "" && (len(aggrNames) == 0) {
 		err = fmt.Errorf("the assigned aggregates for SVM %s do not include the configured aggregate %s",
-			config.SVM, config.Aggregate)
+			client.SVMName(), config.Aggregate)
 		return nil, err
 	}
 
@@ -1590,7 +1590,7 @@ func InitializeStoragePoolsCommonAbstraction(
 	// Update physical pool attributes map with aggregate info (i.e. MediaType)
 	aggrErr := getVserverAggrAttributesAbstraction(ctx, d, &physicalStoragePoolAttributes)
 
-	if zerr, ok := aggrErr.(api.ZapiError); ok && zerr.IsScopeError() {
+	if zerr, ok := aggrErr.(azgo.ZapiError); ok && zerr.IsScopeError() {
 		Logc(ctx).WithFields(log.Fields{
 			"username": config.Username,
 		}).Warn("User has insufficient privileges to obtain aggregate info. " +

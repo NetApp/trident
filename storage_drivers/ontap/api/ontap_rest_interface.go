@@ -2,6 +2,8 @@
 
 package api
 
+//go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_ontap/mock_ontap_rest_interface.go github.com/netapp/trident/storage_drivers/ontap/api RestClientInterface
+
 import (
 	"context"
 
@@ -19,7 +21,8 @@ type RestClientInterface interface {
 	ClientConfig() ClientConfig
 	SetSVMUUID(svmUUID string)
 	SVMUUID() string
-	SetConfigSVMName(svmName string)
+	SetSVMName(svmName string)
+	SVMName() string
 	// SupportsFeature returns true if the Ontap version supports the supplied feature
 	SupportsFeature(ctx context.Context, feature Feature) bool
 	// VolumeList returns the names of all Flexvols whose names match the supplied pattern

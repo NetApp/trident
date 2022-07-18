@@ -4,6 +4,7 @@ package azgo
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
@@ -13,6 +14,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -20,6 +22,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
+	. "github.com/netapp/trident/logger"
 	utils "github.com/netapp/trident/utils"
 )
 
@@ -190,11 +193,41 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
 func (o *ZapiRunner) ExecuteUsing(z ZAPIRequest, requestType string, v interface{}) (interface{}, error) {
-	return o.ExecuteWithoutIteration(z, requestType, v)
+	// Copy the v interface, in case we need a clean version for a retry
+	var vCopy interface{}
+	if reflect.TypeOf(v).Kind() == reflect.Ptr {
+		vCopy = reflect.New(reflect.ValueOf(v).Elem().Type()).Interface()
+	} else {
+		vCopy = reflect.New(reflect.TypeOf(v)).Elem().Interface()
+	}
+
+	// Try API call as-is first
+	response, err := o.executeWithoutIteration(z, requestType, v)
+	if err != nil {
+		// Always return an error if the call itself failed
+		return response, err
+	}
+
+	// Check for non-existent SVM error in case this is MetroCluster
+	zapiError := NewZapiError(response)
+	if !zapiError.IsVserverNotFoundError() {
+		// This is some other error, or the call succeeded, so return what we got
+		return response, err
+	}
+
+	// The call failed for a non-existent SVM, so retry with MCC alternate name.
+	// Modifying the SVM name in the ZapiRunner prevents retries until the MCC switches again.
+	if strings.HasSuffix(o.SVM, "-mc") {
+		o.SVM = strings.TrimSuffix(o.SVM, "-mc")
+	} else {
+		o.SVM += "-mc"
+	}
+
+	return o.executeWithoutIteration(z, requestType, vCopy)
 }
 
-// ExecuteWithoutIteration does not attempt to perform any nextTag style iteration
-func (o *ZapiRunner) ExecuteWithoutIteration(z ZAPIRequest, requestType string, v interface{}) (interface{}, error) {
+// executeWithoutIteration does not attempt to perform any nextTag style iteration
+func (o *ZapiRunner) executeWithoutIteration(z ZAPIRequest, requestType string, v interface{}) (interface{}, error) {
 	if o.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "ExecuteUsing", "Type": requestType}
 		log.WithFields(fields).Debug(">>>> ExecuteUsing")
@@ -299,4 +332,217 @@ func ValidateZAPIResponse(response *http.Response) (*http.Response, error) {
 		Request:       response.Request,
 		Header:        response.Header,
 	}, nil
+}
+
+// NewZapiError accepts the Response value from any AZGO call, extracts the status, reason, and errno values,
+// and returns a ZapiError.  The interface passed in may either be a Response object, or the always-embedded
+// Result object where the error info exists.
+func NewZapiError(zapiResult interface{}) (err ZapiError) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = ZapiError{}
+		}
+	}()
+
+	if zapiResult != nil {
+		val := NewZapiResultValue(zapiResult)
+		if reflect.TypeOf(zapiResult).Kind() == reflect.Ptr {
+			val = reflect.Indirect(val)
+		}
+
+		err = ZapiError{
+			val.FieldByName("ResultStatusAttr").String(),
+			val.FieldByName("ResultReasonAttr").String(),
+			val.FieldByName("ResultErrnoAttr").String(),
+		}
+	} else {
+		err = ZapiError{}
+		err.code = EINTERNALERROR
+		err.reason = "unexpected nil ZAPI result"
+		err.status = "failed"
+	}
+
+	return err
+}
+
+// NewZapiAsyncResult accepts the Response value from any AZGO Async Request, extracts the status, jobId, and
+// errorCode values and returns a ZapiAsyncResult.
+func NewZapiAsyncResult(ctx context.Context, zapiResult interface{}) (result ZapiAsyncResult, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = ZapiError{}
+		}
+	}()
+
+	var jobId int64
+	var status string
+	var errorCode int64
+
+	val := NewZapiResultValue(zapiResult)
+	if reflect.TypeOf(zapiResult).Kind() == reflect.Ptr {
+		val = reflect.Indirect(val)
+	}
+
+	switch obj := zapiResult.(type) {
+	case VolumeModifyIterAsyncResponse:
+		Logc(ctx).Debugf("NewZapiAsyncResult - processing VolumeModifyIterAsyncResponse: %v", obj)
+		// Handle ZAPI result for response object that contains a list of one item with the needed job information.
+		volModifyResult, ok := val.Interface().(VolumeModifyIterAsyncResponseResult)
+		if !ok {
+			return ZapiAsyncResult{}, utils.TypeAssertionError("val.Interface().(azgo.VolumeModifyIterAsyncResponseResult)")
+		}
+		if volModifyResult.NumSucceededPtr != nil && *volModifyResult.NumSucceededPtr > 0 {
+			if volModifyResult.SuccessListPtr != nil && volModifyResult.SuccessListPtr.VolumeModifyIterAsyncInfoPtr != nil {
+				volInfoType := volModifyResult.SuccessListPtr.VolumeModifyIterAsyncInfoPtr[0]
+				if volInfoType.JobidPtr != nil {
+					jobId = int64(*volInfoType.JobidPtr)
+				}
+				if volInfoType.StatusPtr != nil {
+					status = *volInfoType.StatusPtr
+				}
+				if volInfoType.ErrorCodePtr != nil {
+					errorCode = int64(*volInfoType.ErrorCodePtr)
+				}
+			}
+		}
+	default:
+		if s := val.FieldByName("ResultStatusPtr"); !s.IsNil() {
+			status = s.Elem().String()
+		}
+		if j := val.FieldByName("ResultJobidPtr"); !j.IsNil() {
+			jobId = j.Elem().Int()
+		}
+		if e := val.FieldByName("ResultErrorCodePtr"); !e.IsNil() {
+			errorCode = e.Elem().Int()
+		}
+	}
+
+	result = ZapiAsyncResult{
+		int(jobId),
+		status,
+		int(errorCode),
+	}
+
+	return result, err
+}
+
+// NewZapiResultValue obtains the Result from an AZGO Response object and returns the Result
+func NewZapiResultValue(zapiResult interface{}) reflect.Value {
+	// A ZAPI Result struct works as-is, but a ZAPI Response struct must have its
+	// embedded Result struct extracted via reflection.
+	val := reflect.ValueOf(zapiResult)
+	if reflect.TypeOf(zapiResult).Kind() == reflect.Ptr {
+		val = reflect.Indirect(val)
+	}
+	if testResult := val.FieldByName("Result"); testResult.IsValid() {
+		zapiResult = testResult.Interface()
+		val = reflect.ValueOf(zapiResult)
+	}
+	return val
+}
+
+// ZapiAsyncResult encapsulates the status, reason, and errno values from a ZAPI invocation, and it provides
+// helper methods for detecting common error conditions.
+type ZapiAsyncResult struct {
+	jobId     int
+	status    string
+	errorCode int
+}
+
+func (z ZapiAsyncResult) JobId() int {
+	return z.jobId
+}
+
+func (z ZapiAsyncResult) Status() string {
+	return z.status
+}
+
+func (z ZapiAsyncResult) ErrorCode() int {
+	return z.errorCode
+}
+
+// ZapiError encapsulates the status, reason, and errno values from a ZAPI invocation, and it provides helper
+// methods for detecting common error conditions.
+type ZapiError struct {
+	status string
+	reason string
+	code   string
+}
+
+func (e ZapiError) IsPassed() bool {
+	return e.status == "passed"
+}
+
+func (e ZapiError) Error() string {
+	if e.IsPassed() {
+		return "API status: passed"
+	}
+	return fmt.Sprintf("API status: %s, Reason: %s, Code: %s", e.status, e.reason, e.code)
+}
+
+func (e ZapiError) IsVserverNotFoundError() bool {
+	return e.code == EVSERVERNOTFOUND
+}
+
+func (e ZapiError) IsPrivilegeError() bool {
+	return e.code == EAPIPRIVILEGE
+}
+
+func (e ZapiError) IsScopeError() bool {
+	return e.code == EAPIPRIVILEGE || e.code == EAPINOTFOUND
+}
+
+func (e ZapiError) IsFailedToLoadJobError() bool {
+	return e.code == EINTERNALERROR && strings.Contains(e.reason, "Failed to load job")
+}
+
+func (e ZapiError) Status() string {
+	return e.status
+}
+
+func (e ZapiError) Reason() string {
+	return e.reason
+}
+
+func (e ZapiError) Code() string {
+	return e.code
+}
+
+// GetError accepts both an error and the Response value from an AZGO invocation.
+// If error is non-nil, it is returned as is.  Otherwise, the Response value is
+// probed for an error returned by ZAPI; if one is found, a ZapiError error object
+// is returned.  If no failures are detected, the method returns nil.  The interface
+// passed in may either be a Response object, or the always-embedded Result object
+// where the error info exists.
+func GetError(ctx context.Context, zapiResult interface{}, errorIn error) (errorOut error) {
+	defer func() {
+		if r := recover(); r != nil {
+			Logc(ctx).Errorf("Panic in ontap#GetError. %v\nStack Trace: %v", zapiResult, string(debug.Stack()))
+			errorOut = ZapiError{}
+		}
+	}()
+
+	// A ZAPI Result struct works as-is, but a ZAPI Response struct must have its
+	// embedded Result struct extracted via reflection.
+	if zapiResult != nil {
+		val := reflect.ValueOf(zapiResult)
+		if reflect.TypeOf(zapiResult).Kind() == reflect.Ptr {
+			val = reflect.Indirect(val)
+			if val.IsValid() {
+				if testResult := val.FieldByName("Result"); testResult.IsValid() {
+					zapiResult = testResult.Interface()
+				}
+			}
+		}
+	}
+
+	errorOut = nil
+
+	if errorIn != nil {
+		errorOut = errorIn
+	} else if zerr := NewZapiError(zapiResult); !zerr.IsPassed() {
+		errorOut = zerr
+	}
+
+	return
 }

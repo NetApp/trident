@@ -1430,6 +1430,20 @@ func (mr *MockZapiClientInterfaceMockRecorder) SVMGetAggregateNames() *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SVMGetAggregateNames", reflect.TypeOf((*MockZapiClientInterface)(nil).SVMGetAggregateNames))
 }
 
+// SVMName mocks base method.
+func (m *MockZapiClientInterface) SVMName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SVMName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// SVMName indicates an expected call of SVMName.
+func (mr *MockZapiClientInterfaceMockRecorder) SVMName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SVMName", reflect.TypeOf((*MockZapiClientInterface)(nil).SVMName))
+}
+
 // SVMUUID mocks base method.
 func (m *MockZapiClientInterface) SVMUUID() string {
 	m.ctrl.T.Helper()

@@ -58,7 +58,11 @@ func (d SANStorageDriver) Name() string {
 func (d *SANStorageDriver) BackendName() string {
 	if d.Config.BackendName == "" {
 		// Use the old naming scheme if no name is specified
-		return CleanBackendName("ontapsan_" + d.ips[0])
+		lif0 := "noLIFs"
+		if len(d.ips) > 0 {
+			lif0 = d.ips[0]
+		}
+		return CleanBackendName("ontapsan_" + lif0)
 	} else {
 		return d.Config.BackendName
 	}
@@ -97,7 +101,7 @@ func (d *SANStorageDriver) Initialize(
 	}
 
 	if len(d.ips) == 0 {
-		return fmt.Errorf("no iSCSI data LIFs found on SVM %s", config.SVM)
+		return fmt.Errorf("no iSCSI data LIFs found on SVM %s", d.API.SVMName())
 	} else {
 		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 	}
@@ -215,7 +219,7 @@ func (d *SANStorageDriver) Create(
 
 	// If volume shall be mirrored, check that the SVM is peered with the other side
 	if volConfig.PeerVolumeHandle != "" {
-		if err = checkSVMPeeredAbstraction(ctx, volConfig, d.GetConfig().SVM, d.API); err != nil {
+		if err = checkSVMPeeredAbstraction(ctx, volConfig, d.API.SVMName(), d.API); err != nil {
 			return err
 		}
 	}
@@ -713,7 +717,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 
 	// If flexvol has been a snapmirror destination
-	if err := d.API.SnapmirrorDeleteViaDestination(name, d.Config.SVM); err != nil {
+	if err := d.API.SnapmirrorDeleteViaDestination(name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}
@@ -1025,7 +1029,7 @@ func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 		return nil
 	}
 
-	volConfig.MirrorHandle = d.Config.SVM + ":" + volConfig.InternalName
+	volConfig.MirrorHandle = d.API.SVMName() + ":" + volConfig.InternalName
 
 	// Check if the volume is RW and don't map the lun if not RW
 	volIsRW, err := isFlexvolRWAbstraction(ctx, d.GetAPI(), volConfig.InternalName)

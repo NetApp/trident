@@ -1167,6 +1167,20 @@ func (mr *MockOntapAPIMockRecorder) QuotaStatus(arg0, arg1 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaStatus", reflect.TypeOf((*MockOntapAPI)(nil).QuotaStatus), arg0, arg1)
 }
 
+// SVMName mocks base method.
+func (m *MockOntapAPI) SVMName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SVMName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// SVMName indicates an expected call of SVMName.
+func (mr *MockOntapAPIMockRecorder) SVMName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SVMName", reflect.TypeOf((*MockOntapAPI)(nil).SVMName))
+}
+
 // SnapmirrorAbort mocks base method.
 func (m *MockOntapAPI) SnapmirrorAbort(arg0 context.Context, arg1, arg2, arg3, arg4 string) error {
 	m.ctrl.T.Helper()

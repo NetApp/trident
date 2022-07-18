@@ -48,7 +48,7 @@ func newTestOntapNASFGDriver() *NASFlexGroupStorageDriver {
 	nasfgDriver.API = ontapAPI
 	nasfgDriver.telemetry = &TelemetryAbstraction{
 		Plugin:        nasfgDriver.Name(),
-		SVM:           nasfgDriver.GetConfig().SVM,
+		SVM:           config.SVM,
 		StoragePrefix: *nasfgDriver.GetConfig().StoragePrefix,
 		Driver:        nasfgDriver,
 		done:          make(chan struct{}),

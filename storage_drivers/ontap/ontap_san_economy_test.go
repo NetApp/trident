@@ -189,7 +189,6 @@ func newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrNam
 	// ClientConfig holds the configuration data for Client objects
 	clientConfig := api.ClientConfig{
 		ManagementLIF:           config.ManagementLIF,
-		SVM:                     "SVM1",
 		Username:                "client_username",
 		Password:                "client_password",
 		DriverContext:           tridentconfig.ContextCSI,
@@ -197,10 +196,10 @@ func newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrNam
 		DebugTraceFlags:         config.CommonStorageDriverConfig.DebugTraceFlags,
 	}
 
-	sanEcoDriver.API = api.NewClient(clientConfig)
+	sanEcoDriver.API = api.NewClient(clientConfig, "SVM1")
 	sanEcoDriver.telemetry = &Telemetry{
 		Plugin:        sanEcoDriver.Name(),
-		SVM:           sanEcoDriver.GetConfig().SVM,
+		SVM:           sanEcoDriver.API.SVMName(),
 		StoragePrefix: *sanEcoDriver.GetConfig().StoragePrefix,
 		Driver:        sanEcoDriver,
 		done:          make(chan struct{}),

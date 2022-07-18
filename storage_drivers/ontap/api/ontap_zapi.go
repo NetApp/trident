@@ -7,8 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
-	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -37,6 +35,9 @@ const (
 
 	// errors
 	ESNAPSHOTBUSY_REST = "1638555"
+
+	SVMSubtypeSyncSource      = "sync_source"
+	SVMSubtypeSyncDestination = "sync_destination"
 )
 
 var (
@@ -48,7 +49,6 @@ var (
 // ClientConfig holds the configuration data for Client objects
 type ClientConfig struct {
 	ManagementLIF           string
-	SVM                     string
 	Username                string
 	Password                string
 	ClientPrivateKey        string
@@ -65,10 +65,11 @@ type Client struct {
 	zr      *azgo.ZapiRunner
 	m       *sync.Mutex
 	svmUUID string
+	svmMCC  bool
 }
 
 // NewClient is a factory method for creating a new instance
-func NewClient(config ClientConfig) *Client {
+func NewClient(config ClientConfig, SVM string) *Client {
 	// When running in Docker context we want to request MAX number of records from ZAPI for Volume, LUNs and Qtrees
 	config.ContextBasedZapiRecords = DefaultZapiRecords
 	if config.DriverContext == tridentconfig.ContextDocker {
@@ -79,7 +80,7 @@ func NewClient(config ClientConfig) *Client {
 		config: config,
 		zr: &azgo.ZapiRunner{
 			ManagementLIF:        config.ManagementLIF,
-			SVM:                  config.SVM,
+			SVM:                  SVM,
 			Username:             config.Username,
 			Password:             config.Password,
 			ClientPrivateKey:     config.ClientPrivateKey,
@@ -105,6 +106,18 @@ func (c *Client) SVMUUID() string {
 	return c.svmUUID
 }
 
+func (c *Client) SetSVMMCC(mcc bool) {
+	c.svmMCC = mcc
+}
+
+func (c *Client) SVMMCC() bool {
+	return c.svmMCC
+}
+
+func (c *Client) SVMName() string {
+	return c.zr.SVM
+}
+
 // GetClonedZapiRunner returns a clone of the ZapiRunner configured on this driver.
 func (c Client) GetClonedZapiRunner() *azgo.ZapiRunner {
 	clone := new(azgo.ZapiRunner)
@@ -120,202 +133,6 @@ func (c Client) GetNontunneledZapiRunner() *azgo.ZapiRunner {
 	*clone = *c.zr
 	clone.SVM = ""
 	return clone
-}
-
-// NewZapiError accepts the Response value from any AZGO call, extracts the status, reason, and errno values,
-// and returns a ZapiError.  The interface passed in may either be a Response object, or the always-embedded
-// Result object where the error info exists.
-func NewZapiError(zapiResult interface{}) (err ZapiError) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = ZapiError{}
-		}
-	}()
-
-	if zapiResult != nil {
-		val := NewZapiResultValue(zapiResult)
-		if reflect.TypeOf(zapiResult).Kind() == reflect.Ptr {
-			val = reflect.Indirect(val)
-		}
-
-		err = ZapiError{
-			val.FieldByName("ResultStatusAttr").String(),
-			val.FieldByName("ResultReasonAttr").String(),
-			val.FieldByName("ResultErrnoAttr").String(),
-		}
-	} else {
-		err = ZapiError{}
-		err.code = azgo.EINTERNALERROR
-		err.reason = "unexpected nil ZAPI result"
-		err.status = "failed"
-	}
-
-	return err
-}
-
-// NewZapiAsyncResult accepts the Response value from any AZGO Async Request, extracts the status, jobId, and
-// errorCode values and returns a ZapiAsyncResult.
-func NewZapiAsyncResult(ctx context.Context, zapiResult interface{}) (result ZapiAsyncResult, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = ZapiError{}
-		}
-	}()
-
-	var jobId int64
-	var status string
-	var errorCode int64
-
-	val := NewZapiResultValue(zapiResult)
-	if reflect.TypeOf(zapiResult).Kind() == reflect.Ptr {
-		val = reflect.Indirect(val)
-	}
-
-	switch obj := zapiResult.(type) {
-	case azgo.VolumeModifyIterAsyncResponse:
-		Logc(ctx).Debugf("NewZapiAsyncResult - processing VolumeModifyIterAsyncResponse: %v", obj)
-		// Handle ZAPI result for response object that contains a list of one item with the needed job information.
-		volModifyResult, ok := val.Interface().(azgo.VolumeModifyIterAsyncResponseResult)
-		if !ok {
-			return ZapiAsyncResult{}, utils.TypeAssertionError("val.Interface().(azgo.VolumeModifyIterAsyncResponseResult)")
-		}
-		if volModifyResult.NumSucceededPtr != nil && *volModifyResult.NumSucceededPtr > 0 {
-			if volModifyResult.SuccessListPtr != nil && volModifyResult.SuccessListPtr.VolumeModifyIterAsyncInfoPtr != nil {
-				volInfoType := volModifyResult.SuccessListPtr.VolumeModifyIterAsyncInfoPtr[0]
-				if volInfoType.JobidPtr != nil {
-					jobId = int64(*volInfoType.JobidPtr)
-				}
-				if volInfoType.StatusPtr != nil {
-					status = *volInfoType.StatusPtr
-				}
-				if volInfoType.ErrorCodePtr != nil {
-					errorCode = int64(*volInfoType.ErrorCodePtr)
-				}
-			}
-		}
-	default:
-		if s := val.FieldByName("ResultStatusPtr"); !s.IsNil() {
-			status = s.Elem().String()
-		}
-		if j := val.FieldByName("ResultJobidPtr"); !j.IsNil() {
-			jobId = j.Elem().Int()
-		}
-		if e := val.FieldByName("ResultErrorCodePtr"); !e.IsNil() {
-			errorCode = e.Elem().Int()
-		}
-	}
-
-	result = ZapiAsyncResult{
-		int(jobId),
-		status,
-		int(errorCode),
-	}
-
-	return result, err
-}
-
-// NewZapiResultValue obtains the Result from an AZGO Response object and returns the Result
-func NewZapiResultValue(zapiResult interface{}) reflect.Value {
-	// A ZAPI Result struct works as-is, but a ZAPI Response struct must have its
-	// embedded Result struct extracted via reflection.
-	val := reflect.ValueOf(zapiResult)
-	if reflect.TypeOf(zapiResult).Kind() == reflect.Ptr {
-		val = reflect.Indirect(val)
-	}
-	if testResult := val.FieldByName("Result"); testResult.IsValid() {
-		zapiResult = testResult.Interface()
-		val = reflect.ValueOf(zapiResult)
-	}
-	return val
-}
-
-// ZapiAsyncResult encap
-type ZapiAsyncResult struct {
-	jobId     int
-	status    string
-	errorCode int
-}
-
-// ZapiError encapsulates the status, reason, and errno values from a ZAPI invocation, and it provides helper methods for detecting
-// common error conditions.
-type ZapiError struct {
-	status string
-	reason string
-	code   string
-}
-
-func (e ZapiError) IsPassed() bool {
-	return e.status == "passed"
-}
-
-func (e ZapiError) Error() string {
-	if e.IsPassed() {
-		return "API status: passed"
-	}
-	return fmt.Sprintf("API status: %s, Reason: %s, Code: %s", e.status, e.reason, e.code)
-}
-
-func (e ZapiError) IsPrivilegeError() bool {
-	return e.code == azgo.EAPIPRIVILEGE
-}
-
-func (e ZapiError) IsScopeError() bool {
-	return e.code == azgo.EAPIPRIVILEGE || e.code == azgo.EAPINOTFOUND
-}
-
-func (e ZapiError) IsFailedToLoadJobError() bool {
-	return e.code == azgo.EINTERNALERROR && strings.Contains(e.reason, "Failed to load job")
-}
-
-func (e ZapiError) Status() string {
-	return e.status
-}
-
-func (e ZapiError) Reason() string {
-	return e.reason
-}
-
-func (e ZapiError) Code() string {
-	return e.code
-}
-
-// GetError accepts both an error and the Response value from an AZGO invocation.
-// If error is non-nil, it is returned as is.  Otherwise, the Response value is
-// probed for an error returned by ZAPI; if one is found, a ZapiError error object
-// is returned.  If no failures are detected, the method returns nil.  The interface
-// passed in may either be a Response object, or the always-embedded Result object
-// where the error info exists.
-func GetError(ctx context.Context, zapiResult interface{}, errorIn error) (errorOut error) {
-	defer func() {
-		if r := recover(); r != nil {
-			Logc(ctx).Errorf("Panic in ontap#GetError. %v\nStack Trace: %v", zapiResult, string(debug.Stack()))
-			errorOut = ZapiError{}
-		}
-	}()
-
-	// A ZAPI Result struct works as-is, but a ZAPI Response struct must have its
-	// embedded Result struct extracted via reflection.
-	if zapiResult != nil {
-		val := reflect.ValueOf(zapiResult)
-		if reflect.TypeOf(zapiResult).Kind() == reflect.Ptr {
-			val = reflect.Indirect(val)
-			if val.IsValid() {
-				if testResult := val.FieldByName("Result"); testResult.IsValid() {
-					zapiResult = testResult.Interface()
-				}
-			}
-		}
-	}
-
-	errorOut = nil
-
-	if errorIn != nil {
-		errorOut = errorIn
-	} else if zerr := NewZapiError(zapiResult); !zerr.IsPassed() {
-		errorOut = zerr
-	}
-
-	return
 }
 
 type QosPolicyGroupKindType int
@@ -833,11 +650,11 @@ func (c Client) LunResize(path string, sizeBytes int) (uint64, error) {
 		return errSize, err
 	}
 
-	if zerr := NewZapiError(response); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(response); !zerr.IsPassed() {
 		return errSize, zerr
 	}
 
-	result := NewZapiResultValue(response)
+	result := azgo.NewZapiResultValue(response)
 	if sizePtr := result.FieldByName("ActualSizePtr"); !sizePtr.IsNil() {
 		size := sizePtr.Elem().Int()
 		if size < 0 {
@@ -903,7 +720,7 @@ func (c Client) LunCount(ctx context.Context, volume string) (int, error) {
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(c.zr)
-	if err = GetError(ctx, response, err); err != nil {
+	if err = azgo.GetError(ctx, response, err); err != nil {
 		return 0, err
 	}
 
@@ -1003,7 +820,7 @@ func (c Client) FlexGroupCreate(
 	}
 
 	response, err := request.ExecuteUsing(c.zr)
-	if zerr := GetError(ctx, *response, err); zerr != nil {
+	if zerr := azgo.GetError(ctx, *response, err); zerr != nil {
 		return response, zerr
 	}
 
@@ -1023,7 +840,7 @@ func (c Client) FlexGroupDestroy(
 		SetVolumeName(name).
 		ExecuteUsing(c.zr)
 
-	if zerr := NewZapiError(*response); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(*response); !zerr.IsPassed() {
 		// It's not an error if the volume no longer exists
 		if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
 			Logc(ctx).WithField("volume", name).Warn("FlexGroup already deleted.")
@@ -1031,7 +848,7 @@ func (c Client) FlexGroupDestroy(
 		}
 	}
 
-	if gerr := GetError(ctx, response, err); gerr != nil {
+	if gerr := azgo.GetError(ctx, response, err); gerr != nil {
 		return response, gerr
 	}
 
@@ -1049,7 +866,7 @@ func (c Client) FlexGroupExists(ctx context.Context, name string) (bool, error) 
 		SetVolumeName(name).
 		ExecuteUsing(c.zr)
 
-	if zerr := NewZapiError(response); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(response); !zerr.IsPassed() {
 		switch zerr.Code() {
 		case azgo.EOBJECTNOTFOUND, azgo.EVOLUMEDOESNOTEXIST:
 			return false, nil
@@ -1058,7 +875,7 @@ func (c Client) FlexGroupExists(ctx context.Context, name string) (bool, error) 
 		}
 	}
 
-	if gerr := GetError(ctx, response, err); gerr != nil {
+	if gerr := azgo.GetError(ctx, response, err); gerr != nil {
 		return false, gerr
 	}
 
@@ -1106,7 +923,7 @@ func (c Client) FlexGroupSetSize(ctx context.Context, name, newSize string) (*az
 		SetNewSize(newSize).
 		ExecuteUsing(c.zr)
 
-	if zerr := GetError(ctx, *response, err); zerr != nil {
+	if zerr := azgo.GetError(ctx, *response, err); zerr != nil {
 		return response, zerr
 	}
 
@@ -1138,7 +955,7 @@ func (c Client) FlexGroupVolumeDisableSnapshotDirectoryAccess(
 		SetAttributes(*volattr).
 		ExecuteUsing(c.zr)
 
-	if zerr := GetError(ctx, response, err); zerr != nil {
+	if zerr := azgo.GetError(ctx, response, err); zerr != nil {
 		return response, zerr
 	}
 
@@ -1169,7 +986,7 @@ func (c Client) FlexGroupModifyUnixPermissions(
 		SetAttributes(*volAttr).
 		ExecuteUsing(c.zr)
 
-	if zerr := GetError(ctx, response, err); zerr != nil {
+	if zerr := azgo.GetError(ctx, response, err); zerr != nil {
 		return response, zerr
 	}
 
@@ -1200,7 +1017,7 @@ func (c Client) FlexGroupSetComment(
 		SetAttributes(*volattr).
 		ExecuteUsing(c.zr)
 
-	if zerr := GetError(ctx, response, err); zerr != nil {
+	if zerr := azgo.GetError(ctx, response, err); zerr != nil {
 		return response, zerr
 	}
 
@@ -1231,20 +1048,20 @@ func (c Client) FlexGroupGetAll(prefix string) (*azgo.VolumeGetIterResponse, err
 
 // WaitForAsyncResponse handles waiting for an AsyncResponse to return successfully or return an error.
 func (c Client) WaitForAsyncResponse(ctx context.Context, zapiResult interface{}, maxWaitTime time.Duration) error {
-	asyncResult, err := NewZapiAsyncResult(ctx, zapiResult)
+	asyncResult, err := azgo.NewZapiAsyncResult(ctx, zapiResult)
 	if err != nil {
 		return err
 	}
 
 	// Possible values: "succeeded", "in_progress", "failed". Returns nil if succeeded
-	if asyncResult.status == "in_progress" {
+	if asyncResult.Status() == "in_progress" {
 		// handle zapi response
-		jobId := int(asyncResult.jobId)
+		jobId := int(asyncResult.JobId())
 		if asyncResponseError := c.checkForJobCompletion(ctx, jobId, maxWaitTime); asyncResponseError != nil {
 			return asyncResponseError
 		}
-	} else if asyncResult.status == "failed" {
-		return fmt.Errorf("result status is failed with errorCode %d", asyncResult.errorCode)
+	} else if asyncResult.Status() == "failed" {
+		return fmt.Errorf("result status is failed with errorCode %d", asyncResult.ErrorCode())
 	}
 
 	return nil
@@ -1518,7 +1335,7 @@ func (c Client) VolumeExists(ctx context.Context, name string) (bool, error) {
 		return false, err
 	}
 
-	if zerr := NewZapiError(response); !zerr.IsPassed() {
+	if zerr := azgo.NewZapiError(response); !zerr.IsPassed() {
 		switch zerr.Code() {
 		case azgo.EOBJECTNOTFOUND, azgo.EVOLUMEDOESNOTEXIST:
 			return false, nil
@@ -1805,7 +1622,7 @@ func (c Client) VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, s
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(c.zr)
 
-	if err = GetError(ctx, response, err); err != nil {
+	if err = azgo.GetError(ctx, response, err); err != nil {
 		return nil, fmt.Errorf("error enumerating volumes backed by snapshot: %v", err)
 	}
 
@@ -1937,7 +1754,7 @@ func (c Client) QtreeCount(ctx context.Context, volume string) (int, error) {
 		SetDesiredAttributes(*desiredAttributes).
 		ExecuteUsing(c.zr)
 
-	if err = GetError(ctx, response, err); err != nil {
+	if err = azgo.GetError(ctx, response, err); err != nil {
 		return 0, err
 	}
 
@@ -1970,7 +1787,7 @@ func (c Client) QtreeExists(ctx context.Context, name, volumePrefix string) (boo
 		ExecuteUsing(c.zr)
 
 	// Ensure the API call succeeded
-	if err = GetError(ctx, response, err); err != nil {
+	if err = azgo.GetError(ctx, response, err); err != nil {
 		return false, "", err
 	}
 
@@ -2373,13 +2190,13 @@ func (c Client) VserverGetRequest() (*azgo.VserverGetResponse, error) {
 	return response, err
 }
 
-// VserverGetAggregateNames returns an array of names of the aggregates assigned to the configured vserver.
+// SVMGetAggregateNames returns an array of names of the aggregates assigned to the configured vserver.
 // The vserver-get-iter API works with either cluster or vserver scope, so the ZAPI runner may or may not
 // be configured for tunneling; using the query parameter ensures we address only the configured vserver.
 func (c Client) SVMGetAggregateNames() ([]string, error) {
 	// Get just the SVM of interest
 	query := &azgo.VserverGetIterRequestQuery{}
-	info := azgo.NewVserverInfoType().SetVserverName(c.config.SVM)
+	info := azgo.NewVserverInfoType().SetVserverName(c.SVMName())
 	query.SetVserverInfo(*info)
 
 	response, err := azgo.NewVserverGetIterRequest().
@@ -2390,7 +2207,7 @@ func (c Client) SVMGetAggregateNames() ([]string, error) {
 		return nil, err
 	}
 	if response.Result.NumRecords() != 1 {
-		return nil, fmt.Errorf("could not find SVM %s", c.config.SVM)
+		return nil, fmt.Errorf("could not find SVM %s", c.SVMName())
 	}
 
 	// Get the aggregates assigned to the SVM
@@ -2446,7 +2263,7 @@ func (c Client) getAggregateSize(ctx context.Context, aggregateName string) (int
 	aggregateSizeTotal := NumericalValueNotSet
 
 	responseAggrSpace, err := c.AggrSpaceGetIterRequest(aggregateName)
-	if err = GetError(ctx, responseAggrSpace, err); err != nil {
+	if err = azgo.GetError(ctx, responseAggrSpace, err); err != nil {
 		return NumericalValueNotSet, fmt.Errorf("error getting size for aggregate %v: %v", aggregateName, err)
 	}
 
@@ -2511,7 +2328,7 @@ func (c Client) AggregateCommitment(ctx context.Context, aggregate string) (*Agg
 	if err != nil {
 		return nil, err
 	}
-	if err = GetError(ctx, response, err); err != nil {
+	if err = azgo.GetError(ctx, response, err); err != nil {
 		return nil, fmt.Errorf("error enumerating Flexvols: %v", err)
 	}
 
@@ -2538,7 +2355,7 @@ func (c Client) AggregateCommitment(ctx context.Context, aggregate string) (*Agg
 			if lunsResponseErr != nil {
 				return nil, lunsResponseErr
 			}
-			if lunsResponseErr = GetError(ctx, lunsResponse, lunsResponseErr); lunsResponseErr != nil {
+			if lunsResponseErr = azgo.GetError(ctx, lunsResponse, lunsResponseErr); lunsResponseErr != nil {
 				return nil, fmt.Errorf("error enumerating LUNs for volume %v: %v", volName, lunsResponseErr)
 			}
 
@@ -2615,7 +2432,7 @@ func (c Client) GetPeeredVservers(ctx context.Context) ([]string, error) {
 
 	query := &azgo.VserverPeerGetIterRequestQuery{}
 	info := azgo.VserverPeerInfoType{}
-	info.SetVserver(c.config.SVM)
+	info.SetVserver(c.SVMName())
 	query.SetVserverPeerInfo(info)
 
 	response, err := azgo.NewVserverPeerGetIterRequest().
@@ -2641,7 +2458,7 @@ func (c Client) IsVserverDRDestination(ctx context.Context) (bool, error) {
 	if err != nil {
 		return isSVMDRDestination, err
 	}
-	if err = GetError(ctx, response, err); err != nil {
+	if err = azgo.GetError(ctx, response, err); err != nil {
 		return isSVMDRDestination, fmt.Errorf("error getting snapmirror info: %v", err)
 	}
 
@@ -2669,7 +2486,7 @@ func (c Client) IsVserverDRSource(ctx context.Context) (bool, error) {
 	if err != nil {
 		return isSVMDRSource, err
 	}
-	if err = GetError(ctx, response, err); err != nil {
+	if err = azgo.GetError(ctx, response, err); err != nil {
 		return isSVMDRSource, fmt.Errorf("error getting snapmirror destination info: %v", err)
 	}
 
@@ -2700,7 +2517,7 @@ func (c Client) SnapmirrorGet(
 ) (*azgo.SnapmirrorGetResponse, error) {
 	query := azgo.NewSnapmirrorGetRequest()
 	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(localSVMName)
+	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
 
@@ -2712,7 +2529,7 @@ func (c Client) SnapmirrorCreate(
 ) (*azgo.SnapmirrorCreateResponse, error) {
 	query := azgo.NewSnapmirrorCreateRequest()
 	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(localSVMName)
+	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
 
@@ -2731,7 +2548,7 @@ func (c Client) SnapmirrorInitialize(
 ) (*azgo.SnapmirrorInitializeResponse, error) {
 	query := azgo.NewSnapmirrorInitializeRequest()
 	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(localSVMName)
+	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
 
@@ -2743,7 +2560,7 @@ func (c Client) SnapmirrorResync(
 ) (*azgo.SnapmirrorResyncResponse, error) {
 	query := azgo.NewSnapmirrorResyncRequest()
 	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(localSVMName)
+	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
 
@@ -2760,7 +2577,7 @@ func (c Client) SnapmirrorBreak(
 ) (*azgo.SnapmirrorBreakResponse, error) {
 	query := azgo.NewSnapmirrorBreakRequest()
 	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(localSVMName)
+	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
 
@@ -2776,7 +2593,7 @@ func (c Client) SnapmirrorQuiesce(
 ) (*azgo.SnapmirrorQuiesceResponse, error) {
 	query := azgo.NewSnapmirrorQuiesceRequest()
 	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(localSVMName)
+	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
 
@@ -2788,7 +2605,7 @@ func (c Client) SnapmirrorAbort(
 ) (*azgo.SnapmirrorAbortResponse, error) {
 	query := azgo.NewSnapmirrorAbortRequest()
 	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(localSVMName)
+	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
 
@@ -2833,7 +2650,7 @@ func (c Client) SnapmirrorDeleteViaDestination(
 ) (*azgo.SnapmirrorDestroyResponse, error) {
 	query := azgo.NewSnapmirrorDestroyRequest()
 	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(localSVMName)
+	query.SetDestinationVserver(c.SVMName())
 
 	return query.ExecuteUsing(c.zr)
 }
@@ -2844,7 +2661,7 @@ func (c Client) SnapmirrorDelete(
 ) (*azgo.SnapmirrorDestroyResponse, error) {
 	query := azgo.NewSnapmirrorDestroyRequest()
 	query.SetDestinationVolume(localFlexvolName)
-	query.SetDestinationVserver(localSVMName)
+	query.SetDestinationVserver(c.SVMName())
 	query.SetSourceVolume(remoteFlexvolName)
 	query.SetSourceVserver(remoteSVMName)
 
@@ -2860,7 +2677,7 @@ func (c Client) IsVserverDRCapable(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if err = GetError(ctx, response, err); err != nil {
+	if err = azgo.GetError(ctx, response, err); err != nil {
 		return false, fmt.Errorf("error getting peer info: %v", err)
 	}
 
@@ -2868,7 +2685,7 @@ func (c Client) IsVserverDRCapable(ctx context.Context) (bool, error) {
 	if response.Result.AttributesListPtr != nil {
 		for _, peerInfo := range response.Result.AttributesListPtr.VserverPeerInfo() {
 			peeredVserver := peerInfo.Vserver()
-			if peeredVserver == c.config.SVM {
+			if peeredVserver == c.SVMName() {
 				peerFound = true
 			}
 		}
@@ -2879,7 +2696,7 @@ func (c Client) IsVserverDRCapable(ctx context.Context) (bool, error) {
 
 func (c Client) SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error) {
 	result, err := azgo.NewSnapmirrorPolicyGetIterRequest().ExecuteUsing(c.zr)
-	if err = GetError(ctx, result, err); err != nil {
+	if err = azgo.GetError(ctx, result, err); err != nil {
 		return false, fmt.Errorf("error listing snapmirror policies: %v", err)
 	}
 
@@ -2905,7 +2722,7 @@ func (c Client) SnapmirrorPolicyGet(
 	query.SetSnapmirrorPolicyInfo(*desiredPolicy)
 
 	result, err := azgo.NewSnapmirrorPolicyGetIterRequest().SetQuery(*query).ExecuteUsing(c.zr)
-	if err = GetError(ctx, result, err); err != nil {
+	if err = azgo.GetError(ctx, result, err); err != nil {
 		return nil, fmt.Errorf("error listing snapmirror policies: %v", err)
 	}
 
@@ -2930,7 +2747,7 @@ func (c Client) JobScheduleExists(ctx context.Context, jobName string) (bool, er
 	query.SetJobScheduleInfo(*jobScheduleInfo)
 
 	result, err := azgo.NewJobScheduleGetIterRequest().SetQuery(*query).ExecuteUsing(c.zr)
-	if err = GetError(ctx, result, err); err != nil {
+	if err = azgo.GetError(ctx, result, err); err != nil {
 		return false, fmt.Errorf("error getting snapmirror policy %s: %v", jobName, err)
 	}
 
@@ -2968,7 +2785,7 @@ func (c Client) NetInterfaceGet() (*azgo.NetInterfaceGetIterResponse, error) {
 
 func (c Client) NetInterfaceGetDataLIFsNode(ctx context.Context, ip string) (string, error) {
 	lifResponse, err := c.NetInterfaceGet()
-	if err = GetError(ctx, lifResponse, err); err != nil {
+	if err = azgo.GetError(ctx, lifResponse, err); err != nil {
 		return "", fmt.Errorf("error checking network interfaces: %v", err)
 	}
 	var nodeName string
@@ -2992,7 +2809,7 @@ func (c Client) NetInterfaceGetDataLIFsNode(ctx context.Context, ip string) (str
 
 func (c Client) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
 	lifResponse, err := c.NetInterfaceGet()
-	if err = GetError(ctx, lifResponse, err); err != nil {
+	if err = azgo.GetError(ctx, lifResponse, err); err != nil {
 		return nil, fmt.Errorf("error checking network interfaces: %v", err)
 	}
 
@@ -3026,7 +2843,7 @@ func (c Client) SystemGetVersion() (*azgo.SystemGetVersionResponse, error) {
 func (c Client) SystemGetOntapiVersion(ctx context.Context) (string, error) {
 	if c.zr.OntapiVersion == "" {
 		result, err := azgo.NewSystemGetOntapiVersionRequest().ExecuteUsing(c.zr)
-		if err = GetError(ctx, result, err); err != nil {
+		if err = azgo.GetError(ctx, result, err); err != nil {
 			return "", fmt.Errorf("could not read ONTAPI version: %v", err)
 		}
 
@@ -3059,7 +2876,7 @@ func (c Client) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
 		"err":               err,
 	}).Debug("NodeListSerialNumbers")
 
-	if err = GetError(ctx, response, err); err != nil {
+	if err = azgo.GetError(ctx, response, err); err != nil {
 		return serialNumbers, err
 	}
 

@@ -29,6 +29,8 @@ func TestOntapSanStorageDriverConfigString(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
 	ontapSanDrivers := []SANStorageDriver{
 		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, true, mockAPI),
 		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, mockAPI),
@@ -109,7 +111,7 @@ func newTestOntapSANDriver(
 	sanDriver.API = ontapAPI
 	sanDriver.telemetry = &TelemetryAbstraction{
 		Plugin:        sanDriver.Name(),
-		SVM:           sanDriver.GetConfig().SVM,
+		SVM:           ontapAPI.SVMName(),
 		StoragePrefix: *sanDriver.GetConfig().StoragePrefix,
 		Driver:        sanDriver,
 	}
@@ -404,6 +406,8 @@ func TestOntapSanVolumeCreate(t *testing.T) {
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	expectLunAndVolumeCreateSequence(ctx, mockAPI)
 
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
 	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
 	d.API = mockAPI
 
@@ -630,6 +634,8 @@ func TestOntapSanUnpublish(t *testing.T) {
 
 			mockCtrl := gomock.NewController(t)
 			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 			d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
 			d.API = mockAPI

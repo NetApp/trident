@@ -78,6 +78,7 @@ type RestClient struct {
 	authInfo     runtime.ClientAuthInfoWriter
 	OntapVersion string
 	svmUUID      string
+	svmName      string
 }
 
 func (c RestClient) ClientConfig() ClientConfig {
@@ -92,12 +93,16 @@ func (c *RestClient) SVMUUID() string {
 	return c.svmUUID
 }
 
-func (c *RestClient) SetConfigSVMName(svmName string) {
-	c.config.SVM = svmName
+func (c *RestClient) SetSVMName(svmName string) {
+	c.svmName = svmName
+}
+
+func (c *RestClient) SVMName() string {
+	return c.svmName
 }
 
 // NewRestClient is a factory method for creating a new instance
-func NewRestClient(ctx context.Context, config ClientConfig) (*RestClient, error) {
+func NewRestClient(ctx context.Context, config ClientConfig, SVM string) (*RestClient, error) {
 	var cert tls.Certificate
 	caCertPool := x509.NewCertPool()
 	skipVerify := true
@@ -134,7 +139,8 @@ func NewRestClient(ctx context.Context, config ClientConfig) (*RestClient, error
 	}
 
 	result := &RestClient{
-		config: config,
+		config:  config,
+		svmName: SVM,
 	}
 
 	result.tr = &http.Transport{
@@ -210,7 +216,7 @@ func EnsureSVMWithRest(
 		// Use our derived SVM
 		derivedSVM := result.Payload.Records[0]
 		ontapConfig.SVM = derivedSVM.Name
-		restClient.SetConfigSVMName(derivedSVM.Name)
+		restClient.SetSVMName(derivedSVM.Name)
 		svmUUID := derivedSVM.UUID
 		restClient.SetSVMUUID(svmUUID)
 
@@ -230,14 +236,13 @@ func NewRestClientFromOntapConfig(
 ) (OntapAPI, error) {
 	restClient, err := NewRestClient(ctx, ClientConfig{
 		ManagementLIF:        ontapConfig.ManagementLIF,
-		SVM:                  ontapConfig.SVM,
 		Username:             ontapConfig.Username,
 		Password:             ontapConfig.Password,
 		ClientPrivateKey:     ontapConfig.ClientPrivateKey,
 		ClientCertificate:    ontapConfig.ClientCertificate,
 		TrustedCACertificate: ontapConfig.TrustedCACertificate,
 		DebugTraceFlags:      ontapConfig.DebugTraceFlags,
-	})
+	}, ontapConfig.SVM)
 	if err != nil {
 		return nil, fmt.Errorf("could not instantiate REST client; %s", err.Error())
 	}
@@ -455,7 +460,7 @@ func (c RestClient) getAllVolumesByPatternStyleAndState(
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SVMNameQueryParameter = &c.config.SVM
+	params.SVMNameQueryParameter = &c.svmName
 	params.SetNameQueryParameter(ToStringPointer(pattern))
 	if state != "" {
 		params.SetStateQueryParameter(ToStringPointer(state))
@@ -1039,7 +1044,7 @@ func (c RestClient) createCloneNAS(
 		Name:  cloneName,
 		Clone: cloneInfo,
 	}
-	volumeInfo.Svm = &models.VolumeSvm{Name: c.config.SVM}
+	volumeInfo.Svm = &models.VolumeSvm{Name: c.svmName}
 
 	params.SetInfo(volumeInfo)
 
@@ -1054,7 +1059,7 @@ func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volu
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	params.SVMNameQueryParameter = &c.config.SVM
+	params.SVMNameQueryParameter = &c.svmName
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	params.SetCloneParentVolumeNameQueryParameter(ToStringPointer(volumeName))
@@ -1121,7 +1126,7 @@ func (c RestClient) createVolumeByStyle(
 			},
 		}
 	}
-	volumeInfo.Svm = &models.VolumeSvm{Name: c.config.SVM}
+	volumeInfo.Svm = &models.VolumeSvm{Name: c.svmName}
 
 	if encrypt {
 		volumeInfo.Encryption = &models.VolumeEncryption{Enabled: true}
@@ -1321,7 +1326,7 @@ func (c RestClient) SnapshotCreate(
 		Name: snapshotName,
 	}
 
-	snapshotInfo.Svm = &models.SnapshotSvm{Name: c.config.SVM}
+	snapshotInfo.Svm = &models.SnapshotSvm{Name: c.svmName}
 
 	params.SetInfo(snapshotInfo)
 
@@ -1349,7 +1354,7 @@ func (c RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*stora
 
 	params.VolumeUUIDPathParameter = volumeUUID
 
-	params.SVMNameQueryParameter = ToStringPointer(c.config.SVM)
+	params.SVMNameQueryParameter = ToStringPointer(c.svmName)
 	params.SetFieldsQueryParameter([]string{"name", "create_time"})
 
 	result, err := c.api.Storage.SnapshotCollectionGet(params, c.authInfo)
@@ -1400,7 +1405,7 @@ func (c RestClient) SnapshotListByName(ctx context.Context, volumeUUID, snapshot
 	params.VolumeUUIDPathParameter = volumeUUID
 	params.NameQueryParameter = ToStringPointer(snapshotName)
 
-	params.SVMNameQueryParameter = ToStringPointer(c.config.SVM)
+	params.SVMNameQueryParameter = ToStringPointer(c.svmName)
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	return c.api.Storage.SnapshotCollectionGet(params, c.authInfo)
@@ -1507,21 +1512,21 @@ func (c RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourc
 
 // IscsiInitiatorGetDefaultAuth returns the authorization details for the default initiator
 // equivalent to filer::> vserver iscsi security show -vserver SVM -initiator-name default
-func (d RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.IscsiCredentialsCollectionGetOK, error) {
-	params := san.NewIscsiCredentialsCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+func (c RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.IscsiCredentialsCollectionGetOK, error) {
+	params := san.NewIscsiCredentialsCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
-	params.HTTPClient = d.httpClient
+	params.HTTPClient = c.httpClient
 	params.ReturnRecordsQueryParameter = ToBoolPointer(true)
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SVMNameQueryParameter = ToStringPointer(d.config.SVM)
+	params.SVMNameQueryParameter = ToStringPointer(c.svmName)
 	params.InitiatorQueryParameter = ToStringPointer("default") // TODO use a constant?
 
 	// TODO Limit the returned data to only the disk limit
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
-	result, err := d.api.San.IscsiCredentialsCollectionGet(params, d.authInfo)
+	result, err := c.api.San.IscsiCredentialsCollectionGet(params, c.authInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -1533,19 +1538,19 @@ func (d RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.Iscs
 }
 
 // IscsiInterfaceGet returns information about the vserver's  iSCSI interfaces
-func (d RestClient) IscsiInterfaceGet(ctx context.Context, svm string) (*san.IscsiServiceCollectionGetOK,
+func (c RestClient) IscsiInterfaceGet(ctx context.Context, svm string) (*san.IscsiServiceCollectionGetOK,
 	error,
 ) {
-	params := san.NewIscsiServiceCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params := san.NewIscsiServiceCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
-	params.HTTPClient = d.httpClient
+	params.HTTPClient = c.httpClient
 	params.ReturnRecordsQueryParameter = ToBoolPointer(true)
 	params.SVMNameQueryParameter = &svm
 
 	// TODO Limit the returned data to only the disk limit
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
-	result, err := d.api.San.IscsiServiceCollectionGet(params, d.authInfo)
+	result, err := c.api.San.IscsiServiceCollectionGet(params, c.authInfo)
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -1560,11 +1565,11 @@ func (d RestClient) IscsiInterfaceGet(ctx context.Context, svm string) (*san.Isc
 // IscsiInitiatorSetDefaultAuth sets the authorization details for the default initiator
 // equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
 //                           -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
-func (d RestClient) IscsiInitiatorSetDefaultAuth(
+func (c RestClient) IscsiInitiatorSetDefaultAuth(
 	ctx context.Context, authType, userName, passphrase,
 	outbountUserName, outboundPassphrase string,
 ) error {
-	getDefaultAuthResponse, err := d.IscsiInitiatorGetDefaultAuth(ctx)
+	getDefaultAuthResponse, err := c.IscsiInitiatorGetDefaultAuth(ctx)
 	if err != nil {
 		return err
 	}
@@ -1575,9 +1580,9 @@ func (d RestClient) IscsiInitiatorSetDefaultAuth(
 		return fmt.Errorf("should only be one default iscsi initiator")
 	}
 
-	params := san.NewIscsiCredentialsModifyParamsWithTimeout(d.httpClient.Timeout)
+	params := san.NewIscsiCredentialsModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
-	params.HTTPClient = d.httpClient
+	params.HTTPClient = c.httpClient
 
 	outboundInfo := &models.IscsiCredentialsChapOutbound{}
 	if outbountUserName != "" && outboundPassphrase != "" {
@@ -1600,32 +1605,32 @@ func (d RestClient) IscsiInitiatorSetDefaultAuth(
 
 	params.SetInfo(authInfo)
 
-	_, err = d.api.San.IscsiCredentialsModify(params, d.authInfo)
+	_, err = c.api.San.IscsiCredentialsModify(params, c.authInfo)
 
 	return err
 }
 
 // IscsiNodeGetName returns information about the vserver's iSCSI node name
-func (d RestClient) IscsiNodeGetName(ctx context.Context) (*san.IscsiServiceGetOK,
+func (c RestClient) IscsiNodeGetName(ctx context.Context) (*san.IscsiServiceGetOK,
 	error,
 ) {
-	svm, err := d.SvmGetByName(ctx, d.config.SVM)
+	svm, err := c.SvmGetByName(ctx, c.svmName)
 	if err != nil {
 		return nil, err
 	}
 	if svm == nil {
-		return nil, fmt.Errorf("could not find SVM %s", d.config.SVM)
+		return nil, fmt.Errorf("could not find SVM %s", c.svmName)
 	}
 
-	params := san.NewIscsiServiceGetParamsWithTimeout(d.httpClient.Timeout)
+	params := san.NewIscsiServiceGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
-	params.HTTPClient = d.httpClient
+	params.HTTPClient = c.httpClient
 	params.SVMUUIDPathParameter = svm.UUID
 
 	// TODO Limit the returned data to only the disk limit
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
-	result, err := d.api.San.IscsiServiceGet(params, d.authInfo)
+	result, err := c.api.San.IscsiServiceGet(params, c.authInfo)
 	// TODO refactor to remove duplication
 	if err != nil {
 		return nil, err
@@ -1655,7 +1660,7 @@ func (c RestClient) IgroupCreate(ctx context.Context, initiatorGroupName, initia
 		OsType:   osType,
 	}
 
-	igroupInfo.Svm = &models.IgroupSvm{Name: c.config.SVM}
+	igroupInfo.Svm = &models.IgroupSvm{Name: c.svmName}
 
 	params.SetInfo(igroupInfo)
 
@@ -1776,7 +1781,7 @@ func (c RestClient) IgroupList(ctx context.Context, pattern string) (*san.Igroup
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	params.SVMNameQueryParameter = &c.config.SVM
+	params.SVMNameQueryParameter = &c.svmName
 	params.SetNameQueryParameter(ToStringPointer(pattern))
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
@@ -1900,7 +1905,7 @@ func (c RestClient) LunCreate(
 			Name: qosPolicyGroup.Name,
 		},
 	}
-	lunInfo.Svm = &models.LunSvm{Name: c.config.SVM}
+	lunInfo.Svm = &models.LunSvm{Name: c.svmName}
 
 	params.SetInfo(lunInfo)
 
@@ -1945,7 +1950,7 @@ func (c RestClient) LunList(ctx context.Context, pattern string) (*san.LunCollec
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	params.SVMNameQueryParameter = &c.config.SVM
+	params.SVMNameQueryParameter = &c.svmName
 	params.SetNameQueryParameter(ToStringPointer(pattern))
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
@@ -2010,11 +2015,11 @@ func (c RestClient) LunDelete(
 // TODO: Change this for LUN Attributes when available
 // LunGetComment gets the comment for a given LUN.
 // This is in place of the fstype and context attributes from ZAPI
-func (d RestClient) LunGetComment(
+func (c RestClient) LunGetComment(
 	ctx context.Context,
 	lunPath string,
 ) (string, error) {
-	lun, err := d.LunGetByName(ctx, lunPath)
+	lun, err := c.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return "", err
 	}
@@ -2030,11 +2035,11 @@ func (d RestClient) LunGetComment(
 
 // LunSetComment sets the comment for a given LUN.
 // This is in place of the fstype and context attributes from ZAPI
-func (d RestClient) LunSetComment(
+func (c RestClient) LunSetComment(
 	ctx context.Context,
 	lunPath, comment string,
 ) error {
-	lun, err := d.LunGetByName(ctx, lunPath)
+	lun, err := c.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return err
 	}
@@ -2044,9 +2049,9 @@ func (d RestClient) LunSetComment(
 
 	uuid := lun.UUID
 
-	params := san.NewLunModifyParamsWithTimeout(d.httpClient.Timeout)
+	params := san.NewLunModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
-	params.HTTPClient = d.httpClient
+	params.HTTPClient = c.httpClient
 	params.UUIDPathParameter = uuid
 
 	lunInfo := &models.Lun{
@@ -2055,7 +2060,7 @@ func (d RestClient) LunSetComment(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, err := d.api.San.LunModify(params, d.authInfo)
+	lunModifyOK, err := c.api.San.LunModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -2067,11 +2072,11 @@ func (d RestClient) LunSetComment(
 }
 
 // LunGetAttribute gets an attribute by name for a given LUN.
-func (d RestClient) LunGetAttribute(
+func (c RestClient) LunGetAttribute(
 	ctx context.Context,
 	lunPath, attributeName string,
 ) (string, error) {
-	lun, err := d.LunGetByName(ctx, lunPath)
+	lun, err := c.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return "", err
 	}
@@ -2094,11 +2099,11 @@ func (d RestClient) LunGetAttribute(
 }
 
 // LunSetAttributes sets the attribute to the provided value for a given LUN.
-func (d RestClient) LunSetAttribute(
+func (c RestClient) LunSetAttribute(
 	ctx context.Context,
 	lunPath, attributeName, attributeValue string,
 ) error {
-	lun, err := d.LunGetByName(ctx, lunPath)
+	lun, err := c.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return err
 	}
@@ -2108,9 +2113,9 @@ func (d RestClient) LunSetAttribute(
 
 	uuid := lun.UUID
 
-	params := san.NewLunAttributeModifyParamsWithTimeout(d.httpClient.Timeout)
+	params := san.NewLunAttributeModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
-	params.HTTPClient = d.httpClient
+	params.HTTPClient = c.httpClient
 	params.LunUUIDPathParameter = uuid
 	params.NamePathParameter = attributeName
 
@@ -2120,7 +2125,7 @@ func (d RestClient) LunSetAttribute(
 	}
 	params.Info = attrInfo
 
-	lunModifyOK, err := d.api.San.LunAttributeModify(params, d.authInfo)
+	lunModifyOK, err := c.api.San.LunAttributeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -2132,11 +2137,11 @@ func (d RestClient) LunSetAttribute(
 }
 
 // LunSetComment sets the comment for a given LUN.
-func (d RestClient) LunSetQosPolicyGroup(
+func (c RestClient) LunSetQosPolicyGroup(
 	ctx context.Context,
 	lunPath, qosPolicyGroup string,
 ) error {
-	lun, err := d.LunGetByName(ctx, lunPath)
+	lun, err := c.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return err
 	}
@@ -2146,9 +2151,9 @@ func (d RestClient) LunSetQosPolicyGroup(
 
 	uuid := lun.UUID
 
-	params := san.NewLunModifyParamsWithTimeout(d.httpClient.Timeout)
+	params := san.NewLunModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
-	params.HTTPClient = d.httpClient
+	params.HTTPClient = c.httpClient
 	params.UUIDPathParameter = uuid
 
 	qosPolicy := &models.LunQosPolicy{
@@ -2160,7 +2165,7 @@ func (d RestClient) LunSetQosPolicyGroup(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, err := d.api.San.LunModify(params, d.authInfo)
+	lunModifyOK, err := c.api.San.LunModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -2172,11 +2177,11 @@ func (d RestClient) LunSetQosPolicyGroup(
 }
 
 // LunRename changes the name of a LUN
-func (d RestClient) LunRename(
+func (c RestClient) LunRename(
 	ctx context.Context,
 	lunPath, newLunPath string,
 ) error {
-	lun, err := d.LunGetByName(ctx, lunPath)
+	lun, err := c.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return err
 	}
@@ -2186,9 +2191,9 @@ func (d RestClient) LunRename(
 
 	uuid := lun.UUID
 
-	params := san.NewLunModifyParamsWithTimeout(d.httpClient.Timeout)
+	params := san.NewLunModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
-	params.HTTPClient = d.httpClient
+	params.HTTPClient = c.httpClient
 	params.UUIDPathParameter = uuid
 
 	lunInfo := &models.Lun{
@@ -2197,7 +2202,7 @@ func (d RestClient) LunRename(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, err := d.api.San.LunModify(params, d.authInfo)
+	lunModifyOK, err := c.api.San.LunModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -2209,29 +2214,29 @@ func (d RestClient) LunRename(
 }
 
 // LunMapInfo gets the LUN maping information for the specified LUN
-func (d RestClient) LunMapInfo(
+func (c RestClient) LunMapInfo(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
 ) (*san.LunMapCollectionGetOK, error) {
-	params := san.NewLunMapCollectionGetParamsWithTimeout(d.httpClient.Timeout)
+	params := san.NewLunMapCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
-	params.HTTPClient = d.httpClient
+	params.HTTPClient = c.httpClient
 	params.LunNameQueryParameter = &lunPath
 	if initiatorGroupName != "" {
 		params.IgroupNameQueryParameter = &initiatorGroupName
 	}
 	params.FieldsQueryParameter = []string{"svm", "lun", "igroup", "logical-unit-number"}
 
-	return d.api.San.LunMapCollectionGet(params, d.authInfo)
+	return c.api.San.LunMapCollectionGet(params, c.authInfo)
 }
 
 // LunUnmap deletes the lun mapping for the given LUN path and igroup
 // equivalent to filer::> lun mapping delete -vserver iscsi_vs -path /vol/v/lun0 -igroup group
-func (d RestClient) LunUnmap(
+func (c RestClient) LunUnmap(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
 ) error {
-	lunMapResponse, err := d.LunMapInfo(ctx, initiatorGroupName, lunPath)
+	lunMapResponse, err := c.LunMapInfo(ctx, initiatorGroupName, lunPath)
 	if err != nil {
 		return fmt.Errorf("problem reading maps for LUN %s: %v", lunPath, err)
 	} else if lunMapResponse.Payload == nil {
@@ -2239,7 +2244,7 @@ func (d RestClient) LunUnmap(
 	}
 	igroupUUID := lunMapResponse.Payload.Records[0].Igroup.UUID
 
-	lun, err := d.LunGetByName(ctx, lunPath)
+	lun, err := c.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return err
 	}
@@ -2248,13 +2253,13 @@ func (d RestClient) LunUnmap(
 	}
 	lunUUID := lun.UUID
 
-	params := san.NewLunMapDeleteParamsWithTimeout(d.httpClient.Timeout)
+	params := san.NewLunMapDeleteParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
-	params.HTTPClient = d.httpClient
+	params.HTTPClient = c.httpClient
 	params.IgroupUUIDPathParameter = igroupUUID
 	params.LunUUIDPathParameter = lunUUID
 
-	_, err = d.api.San.LunMapDelete(params, d.authInfo)
+	_, err = c.api.San.LunMapDelete(params, c.authInfo)
 	if err != nil {
 		return err
 	}
@@ -2263,12 +2268,12 @@ func (d RestClient) LunUnmap(
 
 // LunMap maps a LUN to an id in an initiator group
 // equivalent to filer::> lun map -vserver iscsi_vs -path /vol/v/lun1 -igroup docker -lun-id 0
-func (d RestClient) LunMap(
+func (c RestClient) LunMap(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
 	lunID int,
 ) (*san.LunMapCreateCreated, error) {
-	lun, err := d.LunGetByName(ctx, lunPath)
+	lun, err := c.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return nil, err
 	}
@@ -2277,9 +2282,9 @@ func (d RestClient) LunMap(
 	}
 	uuid := lun.UUID
 
-	params := san.NewLunMapCreateParamsWithTimeout(d.httpClient.Timeout)
+	params := san.NewLunMapCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
-	params.HTTPClient = d.httpClient
+	params.HTTPClient = c.httpClient
 	params.ReturnRecordsQueryParameter = ToBoolPointer(true)
 
 	igroupInfo := &models.LunMapIgroup{
@@ -2290,7 +2295,7 @@ func (d RestClient) LunMap(
 		UUID: uuid,
 	}
 	lunSVM := &models.LunMapSvm{
-		Name: d.config.SVM,
+		Name: c.svmName,
 	}
 	lunMapInfo := &models.LunMap{
 		Igroup: igroupInfo,
@@ -2302,7 +2307,7 @@ func (d RestClient) LunMap(
 	}
 	params.SetInfo(lunMapInfo)
 
-	result, err := d.api.San.LunMapCreate(params, d.authInfo)
+	result, err := c.api.San.LunMapCreate(params, c.authInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -2310,7 +2315,7 @@ func (d RestClient) LunMap(
 	return result, nil
 }
 
-func (d RestClient) CliPassthroughLunMappingGet(
+func (c RestClient) CliPassthroughLunMappingGet(
 	ctx context.Context,
 	initiatorGroupName, lunPath string,
 ) (*CliPassthroughResult, error) {
@@ -2320,8 +2325,8 @@ func (d RestClient) CliPassthroughLunMappingGet(
 
 	url := fmt.Sprintf(
 		`https://%v/api/private/cli/lun/mapping?vserver=%v&igroup=%v&path=%v&fields=%v`,
-		d.config.ManagementLIF,
-		d.config.SVM,
+		c.config.ManagementLIF,
+		c.svmName,
 		initiatorGroupName,
 		url.QueryEscape(lunPath), // lunPath
 		"vserver,path,volume,qtree,lun,igroup,reporting-nodes",
@@ -2331,12 +2336,12 @@ func (d RestClient) CliPassthroughLunMappingGet(
 
 	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
 	req.Header.Set("Content-Type", "application/json")
-	if d.config.Username != "" && d.config.Password != "" {
-		req.SetBasicAuth(d.config.Username, d.config.Password)
+	if c.config.Username != "" && c.config.Password != "" {
+		req.SetBasicAuth(c.config.Username, c.config.Password)
 	}
 
 	// certs will have been parsed and configured already, if needed, as part of the RestClient init
-	tr := d.tr
+	tr := c.tr
 
 	client := &http.Client{
 		Transport: tr,
@@ -2399,11 +2404,11 @@ type LunGeometryCliPassthroughResult struct {
 }
 
 // LunSize gets the size for a given LUN.
-func (d RestClient) LunSize(
+func (c RestClient) LunSize(
 	ctx context.Context,
 	lunPath string,
 ) (int, error) {
-	lun, err := d.LunGetByName(ctx, lunPath)
+	lun, err := c.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return 0, err
 	}
@@ -2416,11 +2421,11 @@ func (d RestClient) LunSize(
 }
 
 // LunSetSize sets the size for a given LUN.
-func (d RestClient) LunSetSize(
+func (c RestClient) LunSetSize(
 	ctx context.Context,
 	lunPath, newSize string,
 ) (uint64, error) {
-	lun, err := d.LunGetByName(ctx, lunPath)
+	lun, err := c.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return 0, err
 	}
@@ -2430,9 +2435,9 @@ func (d RestClient) LunSetSize(
 
 	uuid := lun.UUID
 
-	params := san.NewLunModifyParamsWithTimeout(d.httpClient.Timeout)
+	params := san.NewLunModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
-	params.HTTPClient = d.httpClient
+	params.HTTPClient = c.httpClient
 	params.UUIDPathParameter = uuid
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(newSize)
@@ -2446,7 +2451,7 @@ func (d RestClient) LunSetSize(
 
 	params.SetInfo(lunInfo)
 
-	lunModifyOK, err := d.api.San.LunModify(params, d.authInfo)
+	lunModifyOK, err := c.api.San.LunModify(params, c.authInfo)
 	if err != nil {
 		return 0, err
 	}
@@ -2467,7 +2472,7 @@ func (c RestClient) NetworkIPInterfacesList(ctx context.Context) (*networking.Ne
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	params.SVMNameQueryParameter = &c.config.SVM
+	params.SVMNameQueryParameter = &c.svmName
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	result, err := c.api.Networking.NetworkIPInterfacesGet(params, c.authInfo)
@@ -2518,7 +2523,7 @@ func (c RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string
 
 	params.ServicesQueryParameter = ToStringPointer(fmt.Sprintf("data_%v", protocol))
 
-	params.SVMNameQueryParameter = &c.config.SVM
+	params.SVMNameQueryParameter = &c.svmName
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
 	lifResponse, err := c.api.Networking.NetworkIPInterfacesGet(params, c.authInfo)
@@ -2860,12 +2865,12 @@ func (c RestClient) SvmGetByName(ctx context.Context, svmName string) (*models.S
 func (c RestClient) SVMGetAggregateNames(
 	ctx context.Context,
 ) ([]string, error) {
-	svm, err := c.SvmGetByName(ctx, c.config.SVM)
+	svm, err := c.SvmGetByName(ctx, c.svmName)
 	if err != nil {
 		return nil, err
 	}
 	if svm == nil {
-		return nil, fmt.Errorf("could not find SVM %s", c.config.SVM)
+		return nil, fmt.Errorf("could not find SVM %s", c.svmName)
 	}
 
 	aggrNames := make([]string, 0, 10)
@@ -3035,7 +3040,7 @@ func (c RestClient) CliPassthroughVolumePatch(
 	//   https://library.netapp.com/ecmdocs/ECMLP2858435/html/resources/cli.html
 
 	cmdRef := fmt.Sprintf(`https://%v/api/private/cli/volume?pretty=false&vserver=%v&volume=%v`,
-		c.config.ManagementLIF, c.config.SVM, volumeName)
+		c.config.ManagementLIF, c.svmName, volumeName)
 
 	jsonBytes := []byte(jsonString)
 	req, _ := http.NewRequest("PATCH", cmdRef, bytes.NewBuffer(jsonBytes))
@@ -3230,7 +3235,7 @@ func (c RestClient) CliPassthroughVolumeGet(ctx context.Context, volume *Volume)
 
 	// Create the base URL that will return all online flexvols
 	baseURL := fmt.Sprintf("https://%s", c.config.ManagementLIF)
-	cmdRef := fmt.Sprintf("/api/private/cli/volume?vserver=%s&state=online&volume-style-extended=flexvol", c.config.SVM)
+	cmdRef := fmt.Sprintf("/api/private/cli/volume?vserver=%s&state=online&volume-style-extended=flexvol", c.svmName)
 	if volume.Name != "" {
 		cmdRef += fmt.Sprintf("&volume=%s", volume.Name)
 	} else {
@@ -3369,7 +3374,7 @@ func (c RestClient) ExportPolicyCreate(ctx context.Context, policy string) (*nas
 	exportPolicyInfo := &models.ExportPolicy{
 		Name: policy,
 		Svm: &models.ExportPolicySvm{
-			Name: c.config.SVM,
+			Name: c.svmName,
 		},
 	}
 	params.SetInfo(exportPolicyInfo)
@@ -3394,7 +3399,7 @@ func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.
 
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
-	params.SVMNameQueryParameter = &c.config.SVM
+	params.SVMNameQueryParameter = &c.svmName
 
 	params.SetNameQueryParameter(ToStringPointer(pattern))
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
@@ -3750,7 +3755,7 @@ func (c RestClient) QtreeCreate(
 	qtreeInfo := &models.Qtree{
 		Name:   name,
 		Volume: &models.QtreeVolume{Name: volumeName},
-		Svm:    &models.QtreeSvm{Name: c.config.SVM},
+		Svm:    &models.QtreeSvm{Name: c.svmName},
 	}
 
 	// handle options
@@ -3873,7 +3878,7 @@ func (c RestClient) QtreeList(ctx context.Context, prefix, volumePrefix string) 
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SetSVMNameQueryParameter(ToStringPointer(c.config.SVM))
+	params.SetSVMNameQueryParameter(ToStringPointer(c.svmName))
 	params.SetNameQueryParameter(ToStringPointer(namePattern))         // Qtree name prefix
 	params.SetVolumeNameQueryParameter(ToStringPointer(volumePattern)) // Flexvol name prefix
 	params.SetFieldsQueryParameter([]string{"**"})                     // TODO trim these down to just what we need
@@ -3924,7 +3929,7 @@ func (c RestClient) QtreeGetByPath(ctx context.Context, path string) (*models.Qt
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SetSVMNameQueryParameter(ToStringPointer(c.config.SVM))
+	params.SetSVMNameQueryParameter(ToStringPointer(c.svmName))
 	params.SetPathQueryParameter(ToStringPointer(path))
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
 
@@ -3959,7 +3964,7 @@ func (c RestClient) QtreeGetByName(ctx context.Context, name, volumeName string)
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SVMNameQueryParameter = &c.config.SVM
+	params.SVMNameQueryParameter = &c.svmName
 	params.SetNameQueryParameter(ToStringPointer(name))
 	params.SetVolumeNameQueryParameter(ToStringPointer(volumeName))
 	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
@@ -3995,7 +4000,7 @@ func (c RestClient) QtreeCount(ctx context.Context, volumeName string) (int, err
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SetSVMNameQueryParameter(ToStringPointer(c.config.SVM))
+	params.SetSVMNameQueryParameter(ToStringPointer(c.svmName))
 	params.SetVolumeNameQueryParameter(ToStringPointer(volumeName)) // Flexvol name
 	params.SetFieldsQueryParameter([]string{"**"})                  // TODO trim these down to just what we need
 
@@ -4057,7 +4062,7 @@ func (c RestClient) QtreeExists(ctx context.Context, name, volumePrefix string) 
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SetSVMNameQueryParameter(ToStringPointer(c.config.SVM))
+	params.SetSVMNameQueryParameter(ToStringPointer(c.svmName))
 	params.SetNameQueryParameter(ToStringPointer(name))                // Qtree name
 	params.SetVolumeNameQueryParameter(ToStringPointer(volumePattern)) // Flexvol name prefix
 	params.SetFieldsQueryParameter([]string{"**"})                     // TODO trim these down to just what we need
@@ -4132,7 +4137,7 @@ func (c RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*m
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SetSVMNameQueryParameter(ToStringPointer(c.config.SVM))
+	params.SetSVMNameQueryParameter(ToStringPointer(c.svmName))
 	params.SetNameQueryParameter(ToStringPointer(name))          // qtree name
 	params.SetVolumeNameQueryParameter(ToStringPointer(pattern)) // Flexvol name prefix
 	params.SetFieldsQueryParameter([]string{"**"})               // TODO trim these down to just what we need
@@ -4174,7 +4179,7 @@ func (c RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*stor
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SVMNameQueryParameter = &c.config.SVM
+	params.SVMNameQueryParameter = &c.svmName
 	params.SetVolumeNameQueryParameter(ToStringPointer(pattern)) // Flexvol name prefix
 	params.SetFieldsQueryParameter([]string{"**"})               // TODO trim these down to just what we need
 
@@ -4353,7 +4358,7 @@ func (c RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, qu
 		Type: quotaType,
 	}
 
-	quotaRuleInfo.Svm = &models.QuotaRuleSvm{Name: c.config.SVM}
+	quotaRuleInfo.Svm = &models.QuotaRuleSvm{Name: c.svmName}
 	// handle options
 	if diskLimit != "" {
 		hardLimit, parseErr := strconv.ParseInt(diskLimit, 10, 64)
@@ -4394,7 +4399,7 @@ func (c RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, qu
 		Type: quotaType,
 	}
 
-	quotaRuleInfo.Svm = &models.QuotaRuleSvm{Name: c.config.SVM}
+	quotaRuleInfo.Svm = &models.QuotaRuleSvm{Name: c.svmName}
 
 	// handle options
 	if diskLimit != "" {
@@ -4433,7 +4438,7 @@ func (c RestClient) QuotaGetEntry(
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
 	params.SetTypeQueryParameter(ToStringPointer(quotaType))
-	params.SetSVMNameQueryParameter(ToStringPointer(c.config.SVM))
+	params.SetSVMNameQueryParameter(ToStringPointer(c.svmName))
 	params.SetQtreeNameQueryParameter(ToStringPointer(qtreeName))
 	params.SetVolumeNameQueryParameter(ToStringPointer(volumeName))
 
@@ -4500,7 +4505,7 @@ func (c RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*sto
 
 	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
 
-	params.SVMNameQueryParameter = &c.config.SVM
+	params.SVMNameQueryParameter = &c.svmName
 	params.VolumeNameQueryParameter = ToStringPointer(volumeName)
 	params.TypeQueryParameter = ToStringPointer("tree")
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
@@ -25,11 +26,11 @@ func TestPayload(t *testing.T) {
 	assert.Equal(t, "result was nil", err.Error(), "Strings not equal")
 
 	// pass an invalid object type (no Payload field on struct)
-	err = ValidatePayloadExists(ctx, ZapiError{})
+	err = ValidatePayloadExists(ctx, azgo.ZapiError{})
 	assert.Equal(t, "no payload field exists for type 'ZapiError'", err.Error(), "Strings not equal")
 
 	// pass an invalid pointer object type (no Payload field on struct)
-	err = ValidatePayloadExists(ctx, &ZapiError{})
+	err = ValidatePayloadExists(ctx, &azgo.ZapiError{})
 	assert.Equal(t, "no payload field exists for type '*ZapiError'", err.Error(), "Strings not equal")
 
 	// pass a nil pointer

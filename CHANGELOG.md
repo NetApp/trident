@@ -6,8 +6,7 @@
 
 **Fixes:**
 
-- Fixed issue to handle boolean and number values for node selector when configuring Trident with Helm or the Trident Operator. (Issue [#700]
-  (https://github.com/NetApp/trident/issues/700))
+- Fixed issue to handle boolean and number values for node selector when configuring Trident with Helm or the Trident Operator. (Issue [#700](https://github.com/NetApp/trident/issues/700))
 
 **Enhancements**
 
@@ -16,7 +15,8 @@
   nodes to improve our security posture. Existing volumes will be opportunistically switched to the new igroup scheme 
   when Trident determines it is safe to do so without impacting active workloads.
 - Included a `ResourceQuota` with Trident installations to ensure Trident DaemonSet is scheduled when `PriorityClass` consumption is limited by default.
-- Added support for Network Features to ANF driver. (Issue [#717] (https://github.com/NetApp/trident/issues/717))
+- Added support for Network Features to ANF driver. (Issue [#717](https://github.com/NetApp/trident/issues/717))
+- Added tech preview automatic MetroCluster switchover detection to ONTAP drivers. (Issue [#228](https://github.com/NetApp/trident/issues/228))
 
 **Deprecations:**
 
