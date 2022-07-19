@@ -2772,7 +2772,7 @@ func TestUpdateVolumePublication(t *testing.T) {
 		VolumeName:      vol1,
 		ReadOnly:        true,
 		AccessMode:      1,
-		NotSafeToDetach: true,
+		NotSafeToAttach: true,
 	}
 
 	fakeName2 := utils.GenerateVolumePublishName(vol2, node2)
@@ -2782,7 +2782,7 @@ func TestUpdateVolumePublication(t *testing.T) {
 		VolumeName:      vol2,
 		ReadOnly:        true,
 		AccessMode:      1,
-		NotSafeToDetach: false,
+		NotSafeToAttach: false,
 	}
 
 	fakeName3 := utils.GenerateVolumePublishName(vol3, node3)
@@ -2792,7 +2792,7 @@ func TestUpdateVolumePublication(t *testing.T) {
 		VolumeName:      vol3,
 		ReadOnly:        true,
 		AccessMode:      1,
-		NotSafeToDetach: false,
+		NotSafeToAttach: false,
 	}
 
 	pubs := map[string]*utils.VolumePublication{
@@ -2839,7 +2839,7 @@ func TestUpdateVolumePublication(t *testing.T) {
 			assert.Nil(t, err, "update volume publication did not return an error")
 			aPub, err := orchestrator.getVolumePublication(arg.Vol, arg.Node)
 			assert.Nil(t, err, "get volume publication error was not nil")
-			assert.Equal(t, arg.Expected, aPub.NotSafeToDetach, "value of updated field did not match the desired value")
+			assert.Equal(t, arg.Expected, aPub.NotSafeToAttach, "value of updated field did not match the desired value")
 			err = orchestrator.deleteVolumePublication(context.Background(), arg.Vol, arg.Node)
 			assert.Nil(t, err, "delete volume publication did not return an error")
 		})

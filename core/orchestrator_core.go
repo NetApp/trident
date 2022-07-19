@@ -4340,7 +4340,7 @@ func (o *TridentOrchestrator) addVolumePublication(
 
 // UpdateVolumePublication updates a volume publication on the specified node with the provided value
 func (o *TridentOrchestrator) UpdateVolumePublication(
-	ctx context.Context, volumeName, nodeName string, notSafeToDetach *bool,
+	ctx context.Context, volumeName, nodeName string, notSafeToAttach *bool,
 ) (err error) {
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -4352,19 +4352,19 @@ func (o *TridentOrchestrator) UpdateVolumePublication(
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
 
-	return o.updateVolumePublication(ctx, volumeName, nodeName, notSafeToDetach)
+	return o.updateVolumePublication(ctx, volumeName, nodeName, notSafeToAttach)
 }
 
 func (o *TridentOrchestrator) updateVolumePublication(
-	ctx context.Context, volumeName, nodeName string, notSafeToDetach *bool,
+	ctx context.Context, volumeName, nodeName string, notSafeToAttach *bool,
 ) error {
 	vPub, err := o.getVolumePublication(volumeName, nodeName)
 	if err != nil {
 		return err
 	}
 
-	if notSafeToDetach != nil {
-		vPub.NotSafeToDetach = *notSafeToDetach
+	if notSafeToAttach != nil {
+		vPub.NotSafeToAttach = *notSafeToAttach
 	}
 
 	if err := o.unpublishVolume(ctx, volumeName, nodeName); err != nil {

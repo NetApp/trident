@@ -78,7 +78,7 @@ type Orchestrator interface {
 	PeriodicallyReconcileNodeAccessOnBackends()
 
 	AddVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
-	UpdateVolumePublication(ctx context.Context, nodeName, volumeName string, notSafeToDetach *bool) error
+	UpdateVolumePublication(ctx context.Context, nodeName, volumeName string, notSafeToAttach *bool) error
 	GetVolumePublication(ctx context.Context, volumeName, nodeName string) (*utils.VolumePublication, error)
 	ListVolumePublications(ctx context.Context) ([]*utils.VolumePublicationExternal, error)
 	ListVolumePublicationsForVolume(

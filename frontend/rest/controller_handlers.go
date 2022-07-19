@@ -965,8 +965,8 @@ func UpdateVolumePublication(w http.ResponseWriter, r *http.Request) {
 	response := &VolumePublicationsResponse{}
 	UpdateGeneric(w, r, response,
 		func(vars map[string]string, _ []byte) int {
-			notSafeToDetach := vars["notSafeToDetach"] == "true"
-			err := orchestrator.UpdateVolumePublication(r.Context(), vars["volume"], vars["node"], &notSafeToDetach)
+			notSafeToAttach := vars["notSafeToAttach"] == "true"
+			err := orchestrator.UpdateVolumePublication(r.Context(), vars["volume"], vars["node"], &notSafeToAttach)
 			if err != nil {
 				response.Error = err.Error()
 			}
