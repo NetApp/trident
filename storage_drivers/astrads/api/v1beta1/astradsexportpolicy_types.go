@@ -14,42 +14,57 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Protocol is the IO protocol that this rule is configured to
 // +kubebuilder:validation:Pattern=`^(nfs4|nfs3)$`
 type Protocol string
 
+// RoRule is the rule defining read access <br>
+// `Any`: Always allow access to the exported data <br>
+// `Sys`: Allow access if authenticated by NFS AUTH_SYS <br>
+// `None`: clients with any security type are granted access as anonymous <br>
+// `Never`: Never allow access, regardless of incoming security type. <br>
 // +kubebuilder:validation:Pattern=`^(any|sys|none|never)$`
 type RoRule string
 
+// RwRule is the rule defining write access <br>
+// `Any`: Always allow access to the exported data <br>
+// `Sys`: Allow access if authenticated by NFS AUTH_SYS <br>
+// `None`: clients with any security type are granted access as anonymous <br>
+// `Never`: Never allow access, regardless of incoming security type. <br>
 // +kubebuilder:validation:Pattern=`^(any|sys|none|never)$`
 type RwRule string
 
+// SuperUser defines how to handle clients presenting with user ID 0 depending on their security type. <br>
+// `Any`: Always allow access to the exported data <br>
+// `Sys`: Allow access if authenticated by NFS AUTH_SYS <br>
+// `None`: clients with any security type are granted access as anonymous <br>
 // +kubebuilder:validation:Pattern=`^(any|sys|none)$`
 type SuperUser string
 
 type AstraDSExportPolicyRule struct {
-	// list of Client IP addresses
+	// Clients defines the list of client IP addresses that this rule will apply to
 	Clients []string `json:"clients"`
-	// list of access protocols
+	// Protocols defines the list of protocols that this rule will apply to
 	Protocols []Protocol `json:"protocols"`
 	// +kubebuilder:validation:Type=integer
 	// +kubebuilder:validation:Minimum= 1
 	// +kubebuilder:validation:Maximum=1024
-	// rule index number
+	// RuleIndex defines the rule index number/order
 	RuleIndex uint64 `json:"ruleIndex"`
-	// security styles for read-only client access
+	// RoRules defines the security styles for read-only client access
 	RoRules []RoRule `json:"roRules"`
-	// security styles for read-write client access
+	// RwRules defines the security styles for read-write client access
 	RwRules []RwRule `json:"rwRules"`
-	// security styles for root user access
+	// SuperUser defines the security styles for root user access
 	SuperUser []SuperUser `json:"superUser"`
-	// sets the uid for the anon user.
+	// AnonUser defines a UNIX user ID that the user credentials are mapped to
 	// +kubebuilder:validation:Type=integer
 	// +kubebuilder:validation:Minimum= 0
 	// +kubebuilder:validation:Maximum=4294967295
@@ -60,14 +75,19 @@ type AstraDSExportPolicyRules []AstraDSExportPolicyRule
 
 // AstraDSExportPolicySpec defines the desired state of AstraDSExportPolicy
 type AstraDSExportPolicySpec struct {
-	Rules   AstraDSExportPolicyRules `json:"rules"`
-	Cluster string                   `json:"cluster"`
+	// Rules defines the rules of an export policy
+	Rules AstraDSExportPolicyRules `json:"rules"`
+	// Cluster is the ADS cluster that this export policy is associated with
+	Cluster string `json:"cluster"`
 }
 
 // AstraDSExportPolicyStatus defines the observed state of AstraDSExportPolicy
 type AstraDSExportPolicyStatus struct {
-	RSID       uint64                        `json:"rsid,omitempty"`
-	Cluster    string                        `json:"cluster,omitempty"`
+	// RSID is the unique numerical identifier for this export policy
+	RSID uint64 `json:"rsid,omitempty"`
+	// Cluster is the ADS cluster that this export policy is associated with
+	Cluster string `json:"cluster,omitempty"`
+	// Conditions are the latest observations of the export policy's state
 	Conditions []NetAppExportPolicyCondition `json:"conditions,omitempty"`
 }
 
@@ -75,7 +95,9 @@ type AstraDSExportPolicyStatus struct {
 type NetAppExportPolicyConditionType string
 
 const (
+	// Deleted is a condition that represents the state of a delete operation
 	NetAppExportPolicyDeleted NetAppExportPolicyConditionType = "Deleted"
+	// Created is a condition that represents the state of a create operation
 	NetAppExportPolicyCreated NetAppExportPolicyConditionType = "Created"
 )
 
@@ -101,6 +123,7 @@ type NetAppExportPolicyCondition struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=adsep,categories={ads,all}
 // AstraDSExportPolicy is the Schema for the astradsexportpolicies API
 type AstraDSExportPolicy struct {

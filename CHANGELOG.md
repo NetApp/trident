@@ -21,6 +21,7 @@
 **Deprecations:**
 
 - **Kubernetes:** Updated minimum supported Kubernetes to 1.19.
+- Astra Data Store (ADS) driver updated to v1beta1 CRDs, so this version of Trident requires ADS 22.5.0 or later.
 
 **Removals**
 

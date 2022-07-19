@@ -231,11 +231,11 @@ func (s *Snapshot) GetReadyError() error {
 }
 
 type QosPolicy struct {
-	Name      string
-	Cluster   string
-	MinIOPS   int32
-	MaxIOPS   int32
-	BurstIOPS int32
+	Name         string
+	Cluster      string
+	PriorityBand string
+	MaxIOPS      int32
+	BurstIOPS    int32
 }
 
 // FormatCreationTime returns the RFC3339-formatted creation time for a snapshot

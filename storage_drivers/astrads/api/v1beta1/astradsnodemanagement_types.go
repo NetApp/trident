@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	"fmt"
@@ -86,11 +86,14 @@ type AstraDSNodeManagementStatus struct {
 	State string `json:"state,omitempty"`
 
 	JobUUID string `json:"jobUUID,omitempty"`
+
+	// NodeName string `json:"nodeName,omitempty"`
 }
 
 type ADSNodeManagementConditionType string
 
 const (
+	// NodeInMaintenance is a condition representing the current state of a node's maintenance mode
 	ADSNodeManagementConditionTypeNodeInMaintenance ADSNodeManagementConditionType = "NodeInMaintenance"
 )
 
@@ -113,17 +116,24 @@ type ADSNodeManagementCondition struct {
 type ADSNodeManagementConditionStatus string
 
 const (
-	ADSNodeManagementConditionTrue       ADSNodeManagementConditionStatus = "True"
-	ADSNodeManagementConditionFalse      ADSNodeManagementConditionStatus = "False"
-	ADSNodeManagementConditionPreparing  ADSNodeManagementConditionStatus = "PreparingForMaintenance"
+	// True is set when the node successfully placed in maintenance mode
+	ADSNodeManagementConditionTrue ADSNodeManagementConditionStatus = "True"
+	// False is set when the node successfully came out of maintenance
+	ADSNodeManagementConditionFalse ADSNodeManagementConditionStatus = "False"
+	// PreparingForMaintenance is set when the node is transitioning to maintenance
+	ADSNodeManagementConditionPreparing ADSNodeManagementConditionStatus = "PreparingForMaintenance"
+	// RecoveringFromMaintenance is set when the node is transitioning out of maintenance
 	ADSNodeManagementConditionRecovering ADSNodeManagementConditionStatus = "RecoveringFromMaintenance"
 	ADSNodeManagementConditionFailed     ADSNodeManagementConditionStatus = "Failed"
 )
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
+// +kubebuilder:printcolumn:name="Node Name",type="string",JSONPath=".spec.nodeName",description="The node maintenance mode name"
+// +kubebuilder:printcolumn:name="In Maintenance",type="boolean",JSONPath=".status.inMaintenance",description="Node is in maintenance or not"
+// +kubebuilder:printcolumn:name="State",type="string",JSONPath=".status.state",description="The state of node maintenance action"
 // +kubebuilder:printcolumn:name="Variant",type="string",JSONPath=".status.variant",description="The node maintenance mode variant"
-// +kubebuilder:printcolumn:name="State",type="string",JSONPath=".spec.state",description="The state of node maintenance action"
 // +kubebuilder:resource:shortName=adsnm,categories={ads,all}
 
 // AstraDSNodeManagement is the Schema for the astradsnodemanagements API

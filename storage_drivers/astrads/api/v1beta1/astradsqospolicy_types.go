@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,24 +22,26 @@ import (
 
 // AstraDSQosPolicySpec defines the desired state of AstraDSQosPolicy
 type AstraDSQosPolicySpec struct {
-	MinIOPS     int32  `json:"minIOPS"`
-	MaxIOPS     int32  `json:"maxIOPS"`
-	BurstIOPS   int32  `json:"burstIOPS"`
-	Description string `json:"description"`
-	Cluster     string `json:"cluster"`
+	// +kubebuilder:validation:Enum=High;Medium;Low
+	PriorityBand string `json:"priorityBand"`
+	MaxIOPS      *int32 `json:"maxIOPS,omitempty"`
+	BurstIOPS    *int32 `json:"burstIOPS,omitempty"`
+	Description  string `json:"description"`
+	Cluster      string `json:"cluster"`
 }
 
 // AstraDSQosPolicySpec defines the desired state of AstraDSQosPolicy
 type AstraDSQosPolicyStatus struct {
-	MinIOPS   int32  `json:"minIOPS"`
-	MaxIOPS   int32  `json:"maxIOPS"`
-	BurstIOPS int32  `json:"burstIOPS"`
-	Cluster   string `json:"cluster"`
-	Uuid      string `json:"uuid"`
+	PriorityBand string `json:"priorityBand"`
+	MaxIOPS      int32  `json:"maxIOPS,omitempty"`
+	BurstIOPS    int32  `json:"burstIOPS,omitempty"`
+	Cluster      string `json:"cluster"`
+	Uuid         string `json:"uuid"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=adsqp,categories={ads,all}
 
 // AstraDSQosPolicy is the Schema for the astradsqospolicies API

@@ -35,7 +35,7 @@ const (
 	provisioningAnnotationKey = "trident.netapp.io/provisioning"
 	telemetryAnnotationKey    = "trident.netapp.io/telemetry"
 
-	minimumAstraDSVersion  = "2021.10.0"
+	minimumAstraDSVersion  = "22.5.0-0"
 	minimumSnapshotReserve = 0
 	maximumSnapshotReserve = 90
 
@@ -434,7 +434,7 @@ func (d *StorageDriver) validate(ctx context.Context) error {
 			"version": d.cluster.Version,
 		}).WithError(err).Error("AstraDS cluster version is invalid.")
 	} else {
-		if !clusterVersion.AtLeast(utils.MustParseSemantic(minimumAstraDSVersion)) {
+		if clusterVersion.MajorVersion() == 2021 || !clusterVersion.AtLeast(utils.MustParseSemantic(minimumAstraDSVersion)) {
 			return fmt.Errorf("AstraDS cluster version is %s, at least %s is required",
 				clusterVersion.String(), minimumAstraDSVersion)
 		}

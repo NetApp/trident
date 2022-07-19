@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,16 +26,18 @@ type AstraDSNodeInfoSpec struct{}
 // AstraDSNodeInfoStatus defines the observed state of AstraDSNodeInfo
 type AstraDSNodeInfoStatus struct {
 	// Number of logical CPUs
-	CPUCount int64       `json:"cpuCount"`
-	Hostname string      `json:"hostName,omitempty"`
-	Drives   []DriveInfo `json:"drives"`
-	// Is the host a virtual machine
+	CPUCount int64 `json:"cpuCount"`
+	// Hostname is the hostname of the node
+	Hostname string `json:"hostName,omitempty"`
+	// Drives is a list of drive present on the node
+	Drives []DriveInfo `json:"drives"`
+	// IsVirtual is set to true when the host is a virtual machine
 	IsVirtual bool `json:"isVirtual,omitempty"`
-	// Memory capacity in bytes
+	// MemoryBytes is the node's RAM capacity in bytes
 	MemoryBytes int64 `json:"memoryBytes"`
-	// List of logical NICs present on the host
+	// Nics is a list of logical NICs present on the host
 	Nics []NicInfo `json:"nics,omitempty"`
-	// List of export addresses discovered on the host
+	// ExportAddresses is a list of export addresses discovered on the host
 	ExportAddresses []string `json:"exportAddresses,omitempty"`
 }
 
@@ -54,7 +56,7 @@ type DriveInfo struct {
 	Partitions []DrivePartition `json:"partitions,omitempty"`
 }
 
-// NIC defines a single network interface.
+// NicInfo defines a single network interface.
 type NicInfo struct {
 	Addresses []string `json:"addresses,omitempty"`
 	MTU       int      `json:"mtu"`
@@ -73,6 +75,7 @@ type DrivePartition struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=adsni,categories={ads,all}
 
 // AstraDSNodeInfo is the Schema for the astradsnodeinfoes API

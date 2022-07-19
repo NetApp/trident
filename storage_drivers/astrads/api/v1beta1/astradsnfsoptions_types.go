@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,9 +22,6 @@ import (
 
 // AstraDSNfsOptionSpec defines the desired state of AstraDSNfsOption
 type AstraDSNfsOptionSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	NfsAccess         bool   `json:"nfsAccess,omitempty"`
 	NfsV3Enable       bool   `json:"nfsV3Enable,omitempty"`
 	NfsV40Enable      bool   `json:"nfsV40Enable,omitempty"`
@@ -40,12 +37,11 @@ type AstraDSNfsOptionSpec struct {
 // AstraDSNfsOptionStatus defines the observed state of AstraDSNfsOption
 type AstraDSNfsOptionStatus struct {
 	Cluster string `json:"cluster"`
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=adsnf,categories={ads,all}
 // AstraDSNfsOption is the Schema for the astradsnfsoptions API
 type AstraDSNfsOption struct {

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	v1 "k8s.io/api/core/v1"
@@ -26,15 +26,19 @@ import (
 type AutoSupportSpec struct {
 	AutoSupportSetting `json:",inline"`
 
-	// Trigger is the trigger type of the AutoSupport instance.
+	// Trigger is the trigger type of the AutoSupport instance. <br> (___default:___ `manual`)
 	// +kubebuilder:validation:Enum=firetapEvent;coreEvent;k8sEvent;periodic;manual;userTrigger
 	// +kubebuilder:default:=manual
+	// +optional
 	Trigger AutoSupportTrigger `json:"trigger"`
 	// Name of the ADS Cluster.
 	Cluster string `json:"cluster"`
 	// Name of the ADS Node for Storage AutoSupport.
 	// +kubebuilder:validation:Optional
 	NodeName string `json:"nodeName"`
+	// Case Number associated with the ASUP.
+	// +kubebuilder:validation:Optional
+	CaseNumber int64 `json:"caseNumber"`
 }
 
 // AutoSupportSetting defines the fields required to collect AutoSupport bundle
@@ -54,7 +58,8 @@ type AutoSupportSetting struct {
 
 	// Priority is the priority set on the AutoSupport bundle to be sent to the backend.
 	// Priority is appended to the subject header of the AutoSupport bundle
-	// +kubebuilder:validation:Enum=notice;debug;warning;error
+	// (default: `notice`)
+	// +kubebuilder:validation:Enum=notice;debug;warning;error;emergency;alert;info
 	// +kubebuilder:default:=notice
 	Priority AutoSupportPriority `json:"priority,omitempty"`
 
@@ -122,16 +127,21 @@ const (
 // AutoSupportPriority is used to denote the priority that the collected support bundle would be associated within the bundle header
 type AutoSupportPriority string
 
-// AutoSupport priority associated with the bundle (default: notice)
-// PriNotice: Used to set the priority of the AutoSupport bundle sent to backend as "notice"
-// PriDebug: Used to set the priority of the AutoSupport bundle sent to backend as "debug"
-// PriWarning: Used to set the priority of the AutoSupport bundle sent to backend as "warning"
-// PriError: Used to set the priority of the AutoSupport bundle sent to backend as "error"
 const (
-	PriNotice  AutoSupportPriority = "notice"
-	PriDebug   AutoSupportPriority = "debug"
+	// PriNotice is used to set the priority of the AutoSupport bundle sent to backend as "notice"
+	PriNotice AutoSupportPriority = "notice"
+	// PriDebug is used to set the priority of the AutoSupport bundle sent to backend as "debug"
+	PriDebug AutoSupportPriority = "debug"
+	// PriWarning is used to set the priority of the AutoSupport bundle sent to backend as "warning"
 	PriWarning AutoSupportPriority = "warning"
-	PriError   AutoSupportPriority = "error"
+	// PriError is used to set the priority of the AutoSupport bundle sent to backend as "error"
+	PriError AutoSupportPriority = "error"
+	// PriEmergency is used to set the priority of the AutoSupport bundle sent to backend as "emergency"
+	PriEmergency AutoSupportPriority = "emergency"
+	// PriAlert is used to set the priority of the AutoSupport bundle sent to backend as "alert"
+	PriAlert AutoSupportPriority = "alert"
+	// PriInfo is used to set the priority of the AutoSupport bundle sent to backend as "info"
+	PriInfo AutoSupportPriority = "info"
 )
 
 // AutoSupportStatus defines the observed state of AutoSupport
@@ -152,6 +162,8 @@ type AutoSupportStatus struct {
 	// Condition is the latest observation of the AutoSupport state
 	Conditions []AutoSupportCondition `json:"conditions,omitempty"`
 	Cluster    string                 `json:"cluster,omitempty"`
+	// Case Number of Asup.
+	CaseNumber int64 `json:"caseNumber,omitempty"`
 }
 
 // AutoSupportCondition defines the condition information for an AutoSupport
@@ -199,6 +211,7 @@ const (
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:printcolumn:name="Sequence",type="string",JSONPath=".status.sequenceNumber",description="Sequence number of the AutoSupport"
 // +kubebuilder:printcolumn:name="Component",type="string",JSONPath=".spec.component.name",description="AutoSupport component associated with the event"
 // +kubebuilder:printcolumn:name="Event",type="string",JSONPath=".spec.component.event", description="Call home event for the AutoSupport"

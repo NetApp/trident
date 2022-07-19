@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	v1 "k8s.io/api/core/v1"
@@ -24,16 +24,21 @@ import (
 type AstraDSFailedDriveState string
 
 const (
-	AstraDSFailedDriveStateNew      = AstraDSFailedDriveState("New")
-	AstraDSFailedDriveStateReady    = AstraDSFailedDriveState("ReadyToReplace")
+	// New is a state that represents a new failed drive, that is still in use and not ready to replace yet
+	AstraDSFailedDriveStateNew = AstraDSFailedDriveState("New")
+	// ReadyToReplace is a state that represents a failed drive that is ready for replacement
+	AstraDSFailedDriveStateReady = AstraDSFailedDriveState("ReadyToReplace")
+	// InProgress is a state that represents a failed drive undergoing replacement
 	AstraDSFailedDriveStateProgress = AstraDSFailedDriveState("InProgress")
-	AstraDSFailedDriveStateDone     = AstraDSFailedDriveState("Replaced")
+	// Replaced is a state that represents a finished and resolved failed drive
+	AstraDSFailedDriveStateDone = AstraDSFailedDriveState("Replaced")
 )
 
 // AstraDSFailedDriveConditionType indicates the type of condition occurred on a volume
 type AstraDSFailedDriveConditionType string
 
 const (
+	// Done is a condition that represents if a failed drive replacement is done
 	AstraDSFailedDriveDone AstraDSFailedDriveConditionType = "Done"
 )
 
@@ -58,32 +63,49 @@ type AstraDSFailedDriveCondition struct {
 
 // AstraDSFailedDrivespec defines the desired state of AstraDSFailedDrive
 type AstraDSFailedDriveSpec struct {
-	ExecuteReplace bool   `json:"executeReplace"`
-	ReplaceWith    string `json:"replaceWith"`
+	// ExecuteReplace is set to true to start drive replacement
+	ExecuteReplace bool `json:"executeReplace"`
+	// ReplaceWith is the serial of the drive to replace the failed drive with
+	ReplaceWith string `json:"replaceWith"`
 }
 
 // AstraDSFailedDrivestatus defines the observed state of AstraDSFailedDrive
 type AstraDSFailedDriveStatus struct {
-	FailedDriveInfo FailedDriveInfo               `json:"failedDriveInfo"`
-	Cluster         string                        `json:"cluster"`
-	State           AstraDSFailedDriveState       `json:"state"`
-	Conditions      []AstraDSFailedDriveCondition `json:"conditions,omitempty"`
+	// FailedDriveInfo contains information about the current status of the drive that failed
+	FailedDriveInfo FailedDriveInfo `json:"failedDriveInfo"`
+	// Cluster is the current ADS cluster of the failed drive
+	Cluster string `json:"cluster"`
+	// State is the current state of the failed drive
+	State AstraDSFailedDriveState `json:"state"`
+	// Condition are the latest observation of the FailedDrive state
+	Conditions []AstraDSFailedDriveCondition `json:"conditions,omitempty"`
 }
 
+// FailedDriveInfo lists all of the attributes of the drive that has failed
 type FailedDriveInfo struct {
-	InUse         bool   `json:"inUse"`
-	Present       bool   `json:"present"`
-	Name          string `json:"name"`
-	FiretapUUID   string `json:"firetapUUID"`
-	Serial        string `json:"serial"`
-	Path          string `json:"path"`
+	// InUse defines if the failed drive is still being used for IO by the cluster and can't be removed yet
+	InUse bool `json:"inUse"`
+	// Present defines if the failed drive is still inserted into its respective node in the cluster
+	Present bool `json:"present"`
+	// Name is the failed drive's device name
+	Name string `json:"name"`
+	// FiretapUUID is the internal UUID of the failed drive
+	FiretapUUID string `json:"firetapUUID"`
+	// Serial is the serial number of the failed drive
+	Serial string `json:"serial"`
+	// Path is the "by-id" path of the failed drive
+	Path string `json:"path"`
+	// FailureReason is the reported reason this drive failed
 	FailureReason string `json:"failureReason"`
-	Node          string `json:"node"`
-	SizeBytes     int    `json:"sizeBytes"`
+	// Node is the node name of the node this drive exists on
+	Node string `json:"node"`
+	// SizeBytes is the size of the failed drive
+	SizeBytes int `json:"sizeBytes"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=adsfd,categories={ads,all}
 
 // AstraDSFailedDrive is the Schema for the astradsfaileddrives API

@@ -68,30 +68,30 @@ var (
 		Namespace: Namespace,
 		UUID:      ClusterUUID,
 		Status:    "created",
-		Version:   "2021.10.0",
+		Version:   "22.05.0-1234",
 	}
 
 	qosPolicies = []*api.QosPolicy{
 		{
-			Name:      "bronze",
-			Cluster:   Cluster,
-			MinIOPS:   1000,
-			MaxIOPS:   2000,
-			BurstIOPS: 3000,
+			Name:         "bronze",
+			Cluster:      Cluster,
+			PriorityBand: "low",
+			MaxIOPS:      2000,
+			BurstIOPS:    3000,
 		},
 		{
-			Name:      "silver",
-			Cluster:   Cluster,
-			MinIOPS:   2000,
-			MaxIOPS:   4000,
-			BurstIOPS: 6000,
+			Name:         "silver",
+			Cluster:      Cluster,
+			PriorityBand: "medium",
+			MaxIOPS:      4000,
+			BurstIOPS:    6000,
 		},
 		{
-			Name:      "gold",
-			Cluster:   Cluster,
-			MinIOPS:   4000,
-			MaxIOPS:   8000,
-			BurstIOPS: 12000,
+			Name:         "gold",
+			Cluster:      Cluster,
+			PriorityBand: "high",
+			MaxIOPS:      8000,
+			BurstIOPS:    12000,
 		},
 	}
 
@@ -141,7 +141,7 @@ func newTestAstraDSDriver(mockAPI api.AstraDS) *StorageDriver {
 		Namespace: Namespace,
 		UUID:      ClusterUUID,
 		Status:    "created",
-		Version:   "2021.10.0",
+		Version:   "22.05.0-1234",
 	}
 
 	return &StorageDriver{
@@ -427,6 +427,61 @@ func TestInitialize_InvalidConfigJSON(t *testing.T) {
 	assert.NotNil(t, driver.Config.CommonStorageDriverConfig, "Driver Config not set")
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "not initialized")
+}
+
+func TestInitialize_InvalidKubeconfig(t *testing.T) {
+	configJSON := `
+    {
+        "version": 1,
+        "storageDriverName": "astrads-nas",
+        "debugTraceFlags": {"method": true, "api": true},
+        "kubeconfig": "asdf%asdf^asdf",
+        "cluster": "fake-cluster",
+        "namespace": "fake-namespace",
+        "nfsMountOptions": "vers=4.1",
+        "autoExportPolicy": false,
+        "defaults": {
+            "exportPolicy": "fake-export-policy",
+            "size": "1G"
+        }
+    }`
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockAstraDS(mockCtrl)
+
+	driver := &StorageDriver{
+		API: mockAPI,
+	}
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
+
+	assert.Error(t, result, "initialize did not fail")
+	assert.False(t, driver.Initialized(), "initialized")
+}
+
+func TestInitialize_NoMockAPI(t *testing.T) {
+	configJSON := `
+    {
+        "version": 1,
+        "storageDriverName": "astrads-nas",
+        "debugTraceFlags": {"method": true, "api": true},
+        "kubeconfig": "ZmFrZS1rdWJlY29uZmln",
+        "cluster": "fake-cluster",
+        "namespace": "fake-namespace",
+        "nfsMountOptions": "vers=4.1",
+        "autoExportPolicy": false,
+        "defaults": {
+            "exportPolicy": "fake-export-policy",
+            "size": "1G"
+        }
+    }`
+
+	driver := &StorageDriver{}
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, BackendUUID)
+
+	assert.Error(t, result, "initialize did not fail")
+	assert.False(t, driver.Initialized(), "initialized")
 }
 
 func TestInitialize_NoNamespace(t *testing.T) {
@@ -938,16 +993,28 @@ func TestValidate_InvalidClusterVersion(t *testing.T) {
 	assert.NoError(t, result, "validate failed")
 }
 
-func TestValidate_UnsupportedClusterVersion(t *testing.T) {
+func TestValidate_UnsupportedClusterVersionAlpha(t *testing.T) {
 	_, driver := newMockAstraDSDriver(t)
-	driver.cluster.Version = "2021.1.0"
+	driver.cluster.Version = "2021.10.0"
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
 
 	result := driver.validate(ctx)
 
-	assert.Error(t, result, "validate failed")
+	assert.Error(t, result, "validate did not fail")
+}
+
+func TestValidate_UnsupportedClusterVersion(t *testing.T) {
+	_, driver := newMockAstraDSDriver(t)
+	driver.cluster.Version = "22.4.0"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+
+	result := driver.validate(ctx)
+
+	assert.Error(t, result, "validate did not fail")
 }
 
 func TestValidate_InvalidExportPolicyCIDR(t *testing.T) {
@@ -959,7 +1026,7 @@ func TestValidate_InvalidExportPolicyCIDR(t *testing.T) {
 
 	result := driver.validate(ctx)
 
-	assert.Error(t, result, "validate failed")
+	assert.Error(t, result, "validate did not fail")
 }
 
 func TestValidate_QosPolicyReadFailed(t *testing.T) {
@@ -972,7 +1039,7 @@ func TestValidate_QosPolicyReadFailed(t *testing.T) {
 
 	result := driver.validate(ctx)
 
-	assert.Error(t, result, "validate failed")
+	assert.Error(t, result, "validate did not fail")
 }
 
 func TestValidate_InvalidSnapshotDir(t *testing.T) {

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	v1 "k8s.io/api/core/v1"
@@ -25,8 +25,10 @@ import (
 type AstraDSVolumeSnapshotConditionType string
 
 const (
-	// Is the snapshot ready to be used / done
+	// AstraDSVolumeSnapshotReady is set to true when the snapshot ready to be used / done
 	AstraDSVolumeSnapshotReady AstraDSVolumeSnapshotConditionType = "Ready"
+	// AstraDSVolumeSnapshotDeleted is set to false if snapshot deletion is temporarily blocked
+	AstraDSVolumeSnapshotDeleted AstraDSVolumeSnapshotConditionType = "Deleted"
 )
 
 // AstraDSVolumeSnapshot contains the condition information for a AstraDSVolumeSnapshot
@@ -51,24 +53,36 @@ type AstraDSVolumeSnapshotCondition struct {
 
 // AstraDSVolumeSnapshotSpec defines the desired state of AstraDSVolumeSnapshot
 type AstraDSVolumeSnapshotSpec struct {
+	// VolumeName is the CR name of the AstraDSVolume to snapshot
 	VolumeName string `json:"volumeName"`
-	Cluster    string `json:"cluster"`
+	// Cluster is the cluster name of the ADS cluster to run the snapshot on
+	Cluster string `json:"cluster"`
 }
 
 // AstraDSVolumeSnapshotStatus defines the observed state of AstraDSVolumeSnapshot
 type AstraDSVolumeSnapshotStatus struct {
-	Conditions   []AstraDSVolumeSnapshotCondition `json:"conditions,omitempty"`
-	VolumeName   string                           `json:"volumeName,omitempty"`
-	CreationTime *metav1.Time                     `json:"creationTime,omitempty"`
-	RestoreSize  int64                            `json:"restoreSize,omitempty"`
-	VolumeUUID   string                           `json:"volumeUUID,omitempty"`
-	ReadyToUse   bool                             `json:"readyToUse,omitempty"`
-	Cluster      string                           `json:"cluster,omitempty"`
+	Conditions []AstraDSVolumeSnapshotCondition `json:"conditions,omitempty"`
+	// VolumeName is the CR name of the AstraDSVolume to snapshot
+	VolumeName string `json:"volumeName,omitempty"`
+	// CreationTime is the datetime that the AstraDSVolumeSnapshot was taken
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+	// RestoreSize is the size used to store the AstraDSVolumeSnapshot
+	// +kubebuilder:default:=0
+	RestoreSize int64 `json:"restoreSize,omitempty"`
+	// VolumeUUID is the UUID of the volume that this snapshot represents
+	VolumeUUID string `json:"volumeUUID,omitempty"`
+	// ReadyToUse is true when the AstraDSVolumeSnapshot can be used to restore or clone
+	// +kubebuilder:default:=false
+	ReadyToUse bool `json:"readyToUse,omitempty"`
+	// Cluster is the associated ADS cluster this AstraDSVolumeSnapshot belongs to
+	Cluster string `json:"cluster,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=adsvs,categories={ads,all}
+// +kubebuilder:printcolumn:name="ReadyToUse",type="boolean",JSONPath=".status.readyToUse", description="Status of snapshot"
 // AstraDSVolumeSnapshot is the Schema for the astradsvolumesnapshots API
 type AstraDSVolumeSnapshot struct {
 	metav1.TypeMeta   `json:",inline"`
