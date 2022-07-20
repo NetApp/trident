@@ -656,7 +656,6 @@ func TestGetOpenShiftSCCYAML(t *testing.T) {
 		AllowHostPID:             true,
 		AllowHostPorts:           true,
 		AllowPrivilegedContainer: true,
-		AllowedCapabilities:      []v1.Capability{"*"},
 		DefaultAddCapabilities:   []v1.Capability{},
 		FSGroup: scc.FSGroupStrategyOptions{
 			Type: "RunAsAny",
@@ -671,7 +670,6 @@ func TestGetOpenShiftSCCYAML(t *testing.T) {
 		SELinuxContext: scc.SELinuxContextStrategyOptions{
 			Type: "RunAsAny",
 		},
-		SeccompProfiles: []string{"*"},
 		SupplementalGroups: scc.SupplementalGroupsStrategyOptions{
 			Type: "RunAsAny",
 		},
@@ -2516,7 +2514,6 @@ func TestGetPrivilegedPodSecurityPolicyYAML(t *testing.T) {
 		Spec: pspv1beta1.PodSecurityPolicySpec{
 			Privileged:               true,
 			AllowPrivilegeEscalation: &allow,
-			AllowedCapabilities:      []v1.Capability{"SYS_ADMIN"},
 			HostIPC:                  true,
 			HostPID:                  true,
 			HostNetwork:              true,

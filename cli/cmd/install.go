@@ -1577,16 +1577,6 @@ func validateTridentPodSecurityPolicy() error {
 	if !spec.HostNetwork {
 		return fmt.Errorf("trident's pod security policy must allow hostNetwork")
 	}
-	found := false
-	for _, allowedCap := range spec.AllowedCapabilities {
-		if allowedCap == "SYS_ADMIN" {
-			found = true
-			break
-		}
-	}
-	if !found {
-		return fmt.Errorf("trident's pod security policy must allow SYS_ADMIN capability")
-	}
 
 	return nil
 }

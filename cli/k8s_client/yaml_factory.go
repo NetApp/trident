@@ -876,8 +876,6 @@ spec:
       - name: trident-main
         securityContext:
           privileged: true
-          capabilities:
-            add: ["SYS_ADMIN"]
           allowPrivilegeEscalation: true
         image: {TRIDENT_IMAGE}
         command:
@@ -1035,8 +1033,6 @@ spec:
       - name: trident-main
         securityContext:
           privileged: true
-          capabilities:
-            add: ["SYS_ADMIN"]
           allowPrivilegeEscalation: true
         image: {TRIDENT_IMAGE}
         command:
@@ -1445,8 +1441,6 @@ allowHostPID: true
 allowHostPorts: true
 allowPrivilegeEscalation: true
 allowPrivilegedContainer: true
-allowedCapabilities:
-- '*'
 allowedUnsafeSysctls:
 - '*'
 defaultAddCapabilities: null
@@ -1460,8 +1454,6 @@ runAsUser:
   type: RunAsAny
 seLinuxContext:
   type: RunAsAny
-seccompProfiles:
-- '*'
 supplementalGroups:
   type: RunAsAny
 users:
@@ -2245,8 +2237,6 @@ metadata:
 spec:
   privileged: true
   allowPrivilegeEscalation: true
-  allowedCapabilities:
-  - "SYS_ADMIN"
   hostIPC: true
   hostPID: true
   hostNetwork: true
