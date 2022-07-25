@@ -4,6 +4,7 @@ package kubernetes
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -257,6 +258,10 @@ func TestProcessAddedStorageClass(t *testing.T) {
 		{"trident.netapp.io/storagePools", "backend1:pool1,pool2;backend2:pool1"},
 		{"trident.netapp.io/additionalStoragePools", "backend1:pool1,pool2;backend2:pool1"},
 		{"trident.netapp.io/excludeStoragePools", "backend1:pool1,pool2;backend2:pool1"},
+		{"trident.netapp.io/nasType", "NFS"},
+		{"trident.netapp.io/nasType", "Nfs"},
+		{"trident.netapp.io/nasType", "nfS"},
+		{"trident.netapp.io/nasType", "nfs"},
 		// Valid attributes without prefix
 		{"media", "hdd"},
 		{"provisioningType", "thin"},
@@ -267,6 +272,10 @@ func TestProcessAddedStorageClass(t *testing.T) {
 		{"storagePools", "backend1:pool1,pool2;backend2:pool1"},
 		{"additionalStoragePools", "backend1:pool1,pool2;backend2:pool1"},
 		{"excludeStoragePools", "backend1:pool1,pool2;backend2:pool1"},
+		{"nasType", "SMB"},
+		{"nasType", "SMb"},
+		{"nasType", "sMb"},
+		{"nasType", "smb"},
 	}
 
 	for _, test := range tests {
@@ -289,6 +298,10 @@ func TestProcessAddedStorageClass(t *testing.T) {
 			if newKey == "storagePools" || newKey == "additionalStoragePools" || newKey == "excludeStoragePools" {
 				mapAttr, _ = storageattribute.CreateBackendStoragePoolsMapFromEncodedString(test.Value)
 			} else {
+				// This check is added as the expected value should always be in lowercase
+				if newKey == "nasType" {
+					test.Value = strings.ToLower(test.Value)
+				}
 				valueAttr, _ = storageattribute.CreateAttributeRequestFromAttributeValue(newKey, test.Value)
 			}
 

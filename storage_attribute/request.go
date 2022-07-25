@@ -50,6 +50,11 @@ func CreateAttributeRequestFromAttributeValue(name, val string) (Request, error)
 	var req Request
 	var err error
 
+	// To support NASType with case-insensitive value of NFS and SMB
+	if name == NASType {
+		val = strings.ToLower(val)
+	}
+
 	valType, ok := attrTypes[name]
 	if !ok {
 		return nil, fmt.Errorf("unrecognized storage attribute: %s", name)
