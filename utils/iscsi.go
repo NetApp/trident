@@ -24,6 +24,7 @@ import (
 
 const (
 	iSCSIErrNoObjsFound                 = 21
+	iSCSIErrLoginAuthFailed             = 24
 	iSCSIDeviceDiscoveryTimeoutSecs     = 10
 	multipathDeviceDiscoveryTimeoutSecs = 90
 	temporaryMountDir                   = "/tmp_mnt"
@@ -42,18 +43,15 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	var err error
 	lunID := int(publishInfo.IscsiLunNumber)
 
-	var bkportal []string
-	var portalIps []string
+	var portals []string
 
 	// IscsiTargetPortal is one of the ports on the target and IscsiPortals
 	// are rest of the target ports for establishing iSCSI session.
 	// If the target has multiple portals, then there will be multiple iSCSI sessions.
-	bkportal = append(bkportal, ensureHostportFormatted(publishInfo.IscsiTargetPortal))
-	portalIps = append(portalIps, parseHostportIP(publishInfo.IscsiTargetPortal))
+	portals = append(portals, ensureHostportFormatted(publishInfo.IscsiTargetPortal))
 
 	for _, p := range publishInfo.IscsiPortals {
-		bkportal = append(bkportal, ensureHostportFormatted(p))
-		portalIps = append(portalIps, parseHostportIP(p))
+		portals = append(portals, ensureHostportFormatted(p))
 	}
 
 	advertisedPortalCount := 1 + len(publishInfo.IscsiPortals) // "1 +" to account for IscsiTargetPortal
@@ -66,7 +64,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		"volume":         name,
 		"mountpoint":     mountpoint,
 		"lunID":          lunID,
-		"targetPortals":  bkportal,
+		"portals":        portals,
 		"targetIQN":      publishInfo.IscsiTargetIQN,
 		"iscsiInterface": publishInfo.IscsiInterface,
 		"fstype":         publishInfo.FilesystemType,
@@ -79,28 +77,15 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	}
 
 	// Ensure we are logged into correct portals
-	if publishInfo.UseCHAP {
-		bkPortalsToLogin, loggedIn, err := portalsToLogin(ctx, publishInfo.IscsiTargetIQN, bkportal)
-		if err != nil {
-			return err
-		}
+	pendingPortalsToLogin, loggedIn, err := portalsToLogin(ctx, publishInfo.IscsiTargetIQN, portals)
+	if err != nil {
+		return err
+	}
 
-		loggedIn = logInToPortals(ctx, bkPortalsToLogin, publishInfo, loggedIn)
+	newLogin, err := EnsureISCSISessions(ctx, publishInfo, pendingPortalsToLogin)
 
-		if !loggedIn {
-			return AuthError("iSCSI login failed using CHAP")
-		}
-	} else {
-		portalIpsToLogin, loggedIn, err := portalsIpsToLogin(ctx, publishInfo.IscsiTargetIQN, portalIps)
-		if err != nil {
-			return err
-		}
-
-		newLogin := EnsureISCSISessions(ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiInterface, portalIpsToLogin)
-
-		if !loggedIn && !newLogin {
-			return fmt.Errorf("iSCSI login failed")
-		}
+	if !loggedIn && !newLogin {
+		return err
 	}
 
 	// First attempt to fix invalid serials by rescanning them
@@ -222,32 +207,6 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	}
 
 	return nil
-}
-
-// logInToPortals logs into the given list of portals using CHAP authentication
-func logInToPortals(
-	ctx context.Context, bkPortalsToLogin []string, publishInfo *VolumePublishInfo, loggedIn bool,
-) bool {
-	for _, portal := range bkPortalsToLogin {
-		// Set scanning to manual
-		// Swallow this error, someone is running an old version of Debian/Ubuntu
-		_ = configureISCSITarget(ctx, publishInfo.IscsiTargetIQN, portal, "node.session.scan", "manual")
-
-		err := loginWithChap(ctx, publishInfo.IscsiTargetIQN, portal, publishInfo.IscsiUsername,
-			publishInfo.IscsiInitiatorSecret, publishInfo.IscsiTargetUsername, publishInfo.IscsiTargetSecret,
-			publishInfo.IscsiInterface)
-		if err != nil {
-			Logc(ctx).WithFields(log.Fields{
-				"err":    err,
-				"portal": portal,
-			}).Errorf("Failed to login to portal using CHAP.")
-
-			continue
-		}
-
-		loggedIn = true
-	}
-	return loggedIn
 }
 
 // GetInitiatorIqns returns parsed contents of /etc/iscsi/initiatorname.iscsi
@@ -641,13 +600,13 @@ func iSCSISessionExistsToTargetIQN(ctx context.Context, targetIQN string) (bool,
 	return false, nil
 }
 
-// portalsToLogin checks to see if session to for all the specified portals exist to the specified
+// portalsToLogin checks to see if session to for all the specified portals exist for the specified
 // target. If a session does not exist for a give portal it is added to list of portals that Trident
 // needs to login to.
 func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]string, bool, error) {
 	logFields := log.Fields{
-		"targetIQN": targetIQN,
-		"portals":   portals,
+		"targetIQN":  targetIQN,
+		"portals": portals,
 	}
 
 	Logc(ctx).WithFields(logFields).Debug(">>>> iscsi.portalsToLogin")
@@ -664,7 +623,6 @@ func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]
 
 	for _, e := range sessionInfo {
 		if e.TargetName == targetIQN {
-
 			// Portals (portalsNotLoggedIn) may/may not contain anything after ":", so instead of matching complete
 			// portal value (with e.Portal), check if e.Portal's IP address matches portal's IP address
 			matchFunc := func(main, val string) bool {
@@ -673,44 +631,12 @@ func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]
 
 				return mainIpAddress == valIpAddress
 			}
-
 			portalsNotLoggedIn = RemoveStringFromSliceConditionally(portalsNotLoggedIn, e.Portal, matchFunc)
 		}
 	}
 
 	loggedIn := len(portals) != len(portalsNotLoggedIn)
 	return portalsNotLoggedIn, loggedIn, nil
-}
-
-// portalsIpsToLogin checks to see if session to for all the specified portal IPs exist to the specified
-// target. If a session does not exist for a give portal IP it is added to list of portals IPs that Trident
-// needs to login to.
-func portalsIpsToLogin(ctx context.Context, targetIQN string, portalsIps []string) ([]string, bool, error) {
-	logFields := log.Fields{
-		"targetIQN":  targetIQN,
-		"portalsIps": portalsIps,
-	}
-
-	Logc(ctx).WithFields(logFields).Debug(">>>> iscsi.portalsIpsToLogin")
-	defer Logc(ctx).Debug("<<<< iscsi.portalsIpsToLogin")
-
-	portalIpsNotLoggedIn := make([]string, len(portalsIps))
-	copy(portalIpsNotLoggedIn, portalsIps)
-
-	sessionInfo, err := getISCSISessionInfo(ctx)
-	if err != nil {
-		Logc(ctx).WithField("error", err).Error("Problem checking iSCSI sessions.")
-		return portalIpsNotLoggedIn, false, err
-	}
-
-	for _, e := range sessionInfo {
-		if e.TargetName == targetIQN {
-			portalIpsNotLoggedIn = RemoveStringFromSlice(portalIpsNotLoggedIn, e.PortalIP)
-		}
-	}
-
-	loggedIn := len(portalsIps) != len(portalIpsNotLoggedIn)
-	return portalIpsNotLoggedIn, loggedIn, nil
 }
 
 // formatPortal returns the iSCSI portal string, appending a port number if one isn't
@@ -1211,7 +1137,7 @@ func ensureIscsiTarget(
 	return fmt.Errorf("target not discovered")
 }
 
-// loginISCSITarget logs in to an iSCSI target.
+// configureISCSITarget updates an iSCSI target configuration values.
 func configureISCSITarget(ctx context.Context, iqn, portal, name, value string) error {
 	Logc(ctx).WithFields(log.Fields{
 		"IQN":    iqn,
@@ -1230,16 +1156,63 @@ func configureISCSITarget(ctx context.Context, iqn, portal, name, value string) 
 }
 
 // loginISCSITarget logs in to an iSCSI target.
-func loginISCSITarget(ctx context.Context, iqn, portal string) error {
+func loginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, portal string) error {
 	Logc(ctx).WithFields(log.Fields{
-		"IQN":    iqn,
-		"Portal": portal,
+		"IQN":     publishInfo.IscsiTargetIQN,
+		"Portal":  portal,
+		"iface":   publishInfo.IscsiInterface,
+		"useCHAP": publishInfo.UseCHAP,
 	}).Debug(">>>> iscsi.loginISCSITarget")
 	defer Logc(ctx).Debug("<<<< iscsi.loginISCSITarget")
 
-	args := []string{"-m", "node", "-T", iqn, "-l", "-p", formatPortal(portal)}
+	args := []string{"-m", "node", "-T", publishInfo.IscsiTargetIQN, "-p", formatPortal(portal)}
 	listAllISCSIDevices(ctx)
-	if _, err := execIscsiadmCommandWithTimeout(ctx, 10, args...); err != nil {
+	if publishInfo.UseCHAP {
+		secretsToRedact := map[string]string{
+			"--value=" + publishInfo.IscsiUsername:        "--value=" + REDACTED,
+			"--value=" + publishInfo.IscsiInitiatorSecret: "--value=" + REDACTED,
+			"--value=" + publishInfo.IscsiTargetUsername:  "--value=" + REDACTED,
+			"--value=" + publishInfo.IscsiTargetSecret:    "--value=" + REDACTED,
+		}
+		authMethodArgs := append(args, []string{"--op=update", "--name", "node.session.auth.authmethod", "--value=CHAP"}...)
+		if _, err := execIscsiadmCommand(ctx, authMethodArgs...); err != nil {
+			Logc(ctx).Error("Error running iscsiadm set authmethod.")
+			return err
+		}
+
+		authUserArgs := append(args,
+			[]string{"--op=update", "--name", "node.session.auth.username", "--value=" + publishInfo.IscsiUsername}...)
+		if _, err := execIscsiadmCommandRedacted(ctx, authUserArgs, secretsToRedact); err != nil {
+			Logc(ctx).Error("Error running iscsiadm set authuser.")
+			return err
+		}
+
+		authPasswordArgs := append(args,
+			[]string{"--op=update", "--name", "node.session.auth.password", "--value=" + publishInfo.IscsiInitiatorSecret}...)
+		if _, err := execIscsiadmCommandRedacted(ctx, authPasswordArgs, secretsToRedact); err != nil {
+			Logc(ctx).Error("Error running iscsiadm set authpassword.")
+			return err
+		}
+
+		if publishInfo.IscsiTargetUsername != "" && publishInfo.IscsiTargetSecret != "" {
+			targetAuthUserArgs := append(args,
+				[]string{"--op=update", "--name", "node.session.auth.username_in", "--value=" + publishInfo.IscsiTargetUsername}...)
+			if _, err := execIscsiadmCommandRedacted(ctx, targetAuthUserArgs, secretsToRedact); err != nil {
+				Logc(ctx).Error("Error running iscsiadm set authuser_in.")
+				return err
+			}
+
+			targetAuthPasswordArgs := append(args,
+				[]string{"--op=update", "--name", "node.session.auth.password_in", "--value=" + publishInfo.IscsiTargetSecret}...)
+			if _, err := execIscsiadmCommandRedacted(ctx, targetAuthPasswordArgs, secretsToRedact); err != nil {
+				Logc(ctx).Error("Error running iscsiadm set authpassword_in.")
+				return err
+			}
+		}
+	}
+
+	loginArgs := append(args, []string{"--login"}...)
+	if _, err := execIscsiadmCommandWithTimeout(ctx, 10, loginArgs...); err != nil {
 		Logc(ctx).WithField("error", err).Error("Error logging in to iSCSI target.")
 		return err
 	}
@@ -1247,89 +1220,13 @@ func loginISCSITarget(ctx context.Context, iqn, portal string) error {
 	return nil
 }
 
-// loginWithChap will login to the iSCSI target with the supplied credentials.
-func loginWithChap(
-	ctx context.Context, tiqn, portal, username, password, targetUsername, targetInitiatorSecret, iface string,
-) error {
-	logFields := log.Fields{
-		"IQN":                   tiqn,
-		"portal":                portal,
-		"username":              REDACTED,
-		"password":              REDACTED,
-		"targetUsername":        REDACTED,
-		"targetInitiatorSecret": REDACTED,
-		"iface":                 iface,
-	}
-	Logc(ctx).WithFields(logFields).Debug(">>>> iscsi.loginWithChap")
-	defer Logc(ctx).Debug("<<<< iscsi.loginWithChap")
-
-	args := []string{"-m", "node", "-T", tiqn, "-p", formatPortal(portal)}
-
-	secretsToRedact := map[string]string{
-		"--value=" + username:              "--value=" + REDACTED,
-		"--value=" + password:              "--value=" + REDACTED,
-		"--value=" + targetUsername:        "--value=" + REDACTED,
-		"--value=" + targetInitiatorSecret: "--value=" + REDACTED,
-	}
-
-	listAllISCSIDevices(ctx)
-	if err := ensureIscsiTarget(ctx, formatPortal(portal), tiqn, username, password, targetUsername,
-		targetInitiatorSecret, iface); err != nil {
-		Logc(ctx).Error("Error running iscsiadm node create.")
-		return err
-	}
-
-	authMethodArgs := append(args, []string{"--op=update", "--name", "node.session.auth.authmethod", "--value=CHAP"}...)
-	if _, err := execIscsiadmCommand(ctx, authMethodArgs...); err != nil {
-		Logc(ctx).Error("Error running iscsiadm set authmethod.")
-		return err
-	}
-
-	authUserArgs := append(args,
-		[]string{"--op=update", "--name", "node.session.auth.username", "--value=" + username}...)
-	if _, err := execIscsiadmCommandRedacted(ctx, authUserArgs, secretsToRedact); err != nil {
-		Logc(ctx).Error("Error running iscsiadm set authuser.")
-		return err
-	}
-
-	authPasswordArgs := append(args,
-		[]string{"--op=update", "--name", "node.session.auth.password", "--value=" + password}...)
-	if _, err := execIscsiadmCommandRedacted(ctx, authPasswordArgs, secretsToRedact); err != nil {
-		Logc(ctx).Error("Error running iscsiadm set authpassword.")
-		return err
-	}
-
-	if targetUsername != "" && targetInitiatorSecret != "" {
-		targetAuthUserArgs := append(args,
-			[]string{"--op=update", "--name", "node.session.auth.username_in", "--value=" + targetUsername}...)
-		if _, err := execIscsiadmCommandRedacted(ctx, targetAuthUserArgs, secretsToRedact); err != nil {
-			Logc(ctx).Error("Error running iscsiadm set authuser_in.")
-			return err
-		}
-
-		targetAuthPasswordArgs := append(args,
-			[]string{"--op=update", "--name", "node.session.auth.password_in", "--value=" + targetInitiatorSecret}...)
-		if _, err := execIscsiadmCommandRedacted(ctx, targetAuthPasswordArgs, secretsToRedact); err != nil {
-			Logc(ctx).Error("Error running iscsiadm set authpassword_in.")
-			return err
-		}
-	}
-
-	loginArgs := append(args, []string{"--login"}...)
-	if _, err := execIscsiadmCommandWithTimeout(ctx, 10, loginArgs...); err != nil {
-		msg := "Error running iscsiadm login."
-		Logc(ctx).Error(msg)
-		return AuthError(msg)
-	}
-	listAllISCSIDevices(ctx)
-	return nil
-}
-
 // EnsureISCSISessions this is to make sure that Trident establishes iSCSI sessions with the given list of portals
-func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIps []string) bool {
+func EnsureISCSISessions(ctx context.Context, publishInfo *VolumePublishInfo, portals []string) (bool, error) {
 	logFields := log.Fields{
-		"targetIQN":  targetIQN,
-		"portalsIps": portalsIps,
+		"targetIQN":  publishInfo.IscsiTargetIQN,
+		"portalsIps": portals,
+		"iface":      publishInfo.IscsiInterface,
+		"useCHAP":    publishInfo.UseCHAP,
 	}
 
 	Logc(ctx).WithFields(logFields).Debug(">>>> iscsi.EnsureISCSISessions")
@@ -1337,16 +1234,19 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 
 	loggedInPortals := make([]string, 0)
 
-	for _, portalIp := range portalsIps {
+	loginFailedDueToChap := false
+
+	for _, portal := range portals {
 		listAllISCSIDevices(ctx)
 
-		formattedPortal := formatPortal(portalIp)
-		if err := ensureIscsiTarget(ctx, formattedPortal, targetIQN, "", "", "", "",
-			iface); nil != err {
+		formattedPortal := formatPortal(portal)
+		if err := ensureIscsiTarget(ctx, formattedPortal, publishInfo.IscsiTargetIQN, publishInfo.IscsiUsername,
+			publishInfo.IscsiInitiatorSecret, publishInfo.IscsiTargetUsername, publishInfo.IscsiTargetSecret,
+			publishInfo.IscsiInterface); nil != err {
 			Logc(ctx).WithFields(log.Fields{
 				"tp":        formattedPortal,
-				"targetIqn": targetIQN,
-				"iface":     iface,
+				"targetIqn": publishInfo.IscsiTargetIQN,
+				"iface":     publishInfo.IscsiInterface,
 				"err":       err,
 			}).Errorf("unable to ensure iSCSI target exists: %v", err)
 			continue
@@ -1354,16 +1254,15 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 
 		// Set scanning to manual
 		// Swallow this error, someone is running an old version of Debian/Ubuntu
-		_ = configureISCSITarget(ctx, targetIQN, portalIp, "node.session.scan", "manual")
+		_ = configureISCSITarget(ctx, publishInfo.IscsiTargetIQN, portal, "node.session.scan", "manual")
 
-		// Update replacement timeout
-		// time out is set to 5s against the default value of 120s so that the replacement path is chosen
-		// faster when the current path goes down in multipath case.
+		// replacement_timeout controls how long iSCSI layer should wait for a timed-out path/session to reestablish
+		// itself before failing any commands on it.
 		timeout_param := "node.session.timeo.replacement_timeout"
-		if err := configureISCSITarget(ctx, targetIQN, portalIp, timeout_param, "5"); err != nil {
+		if err := configureISCSITarget(ctx, publishInfo.IscsiTargetIQN, portal, timeout_param, "5"); err != nil {
 			Logc(ctx).WithFields(log.Fields{
-				"iqn":    targetIQN,
-				"portal": portalIp,
+				"iqn":    publishInfo.IscsiTargetIQN,
+				"portal": portal,
 				"name":   timeout_param,
 				"value":  "5",
 				"err":    err,
@@ -1372,41 +1271,60 @@ func EnsureISCSISessions(ctx context.Context, targetIQN, iface string, portalsIp
 		}
 
 		// Log in to target
-		if err := loginISCSITarget(ctx, targetIQN, portalIp); err != nil {
+		if err := loginISCSITarget(ctx, publishInfo, portal); err != nil {
 			Logc(ctx).WithFields(log.Fields{
 				"err":      err,
-				"portalIP": portalIp,
+				"portalIP": portal,
 			}).Error("Login to iSCSI target failed.")
+			if !loginFailedDueToChap {
+				exitErr, ok := err.(*exec.ExitError)
+				if ok && exitErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() == iSCSIErrLoginAuthFailed {
+					Logc(ctx).Debug("iSCSI login failed - authorization failed using CHAP")
+					loginFailedDueToChap = true
+				}
+			}
 			continue
 		}
 
-		loggedInPortals = append(loggedInPortals, portalIp)
+		loggedInPortals = append(loggedInPortals, portal)
 	}
 
 	var successfulLogin bool
 
-	for _, portalIp := range loggedInPortals {
+	for _, portalInfo := range loggedInPortals {
 		// Recheck to ensure a session is now open
-		sessionExists, err := iSCSISessionExists(ctx, portalIp)
+		sessionExists, err := iSCSISessionExists(ctx, parseHostportIP(portalInfo))
 		if err != nil {
 			Logc(ctx).WithFields(log.Fields{
 				"err":      err,
-				"portalIP": portalIp,
+				"portalIP": portalInfo,
 			}).Error("Could not recheck for iSCSI session.")
 			continue
 		}
 
 		if !sessionExists {
-			Logc(ctx).Errorf("Expected iSCSI session %v NOT found, please login to the iSCSI portal", portalIp)
+			Logc(ctx).Errorf("Expected iSCSI session %v NOT found, please login to the iSCSI portal", portalInfo)
 			continue
 		}
 
 		successfulLogin = true
 
-		Logc(ctx).WithField("portalIp", portalIp).Debug("Session established with iSCSI portal.")
+		Logc(ctx).WithField("portal", portalInfo).Debug("Session established with iSCSI portal.")
 	}
 
-	return successfulLogin
+	if successfulLogin {
+		return successfulLogin, nil
+	}
+
+	if publishInfo.UseCHAP && len(loggedInPortals) == 0 {
+		//login failed for all portals using CHAP, verify if any login failed due to authorization failure,
+		//return AuthError; NodeStageISCSIVolume() would handle appropriately
+		if loginFailedDueToChap {
+			return successfulLogin, AuthError("iSCSI login failed: CHAP authorization failure")
+		}
+	}
+
+	return successfulLogin, errors.New("iSCSI login failed")
 }
 
 func EnsureISCSISessionsWithPortalDiscovery(ctx context.Context, hostDataIPs []string) error {
@@ -1475,7 +1393,10 @@ func EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP strin
 					return fmt.Errorf("set replacement timeout failed: %v", err)
 				}
 				// Log in to target
-				err = loginISCSITarget(ctx, target.TargetName, target.PortalIP)
+				publishInfo := &VolumePublishInfo{}
+				publishInfo.UseCHAP = false
+				publishInfo.IscsiTargetIQN = target.TargetName
+				err = loginISCSITarget(ctx, publishInfo, target.PortalIP)
 				if err != nil {
 					return fmt.Errorf("login to iSCSI target failed: %v", err)
 				}
