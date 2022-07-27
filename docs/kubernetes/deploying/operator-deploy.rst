@@ -114,7 +114,7 @@ you have the necessary privileges to.
 
   # Can you launch a pod that uses an image from Docker Hub and can reach your
   # storage system over the pod network?
-  kubectl run -i --tty ping --image=busybox --restart=Never --rm -- \
+  kubectl run -i --tty ping --image=busybox --restart=Never --rm --privileged=true -- \
     ping <management IP>
 
 2: Download & setup the operator
