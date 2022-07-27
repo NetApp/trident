@@ -14,7 +14,9 @@ spec:
   logFormat: {{ include "trident.logFormat" $ }}
   probePort: {{ include "trident.probePort" $ }}
   tridentImage: {{ include "trident.image" $ }}
-  {{- if .Values.imageRegistry }}
+  {{- if .Values.orchestratorImageRegistry }}
+  imageRegistry: {{ .Values.orchestratorImageRegistry }}
+  {{- else if .Values.imageRegistry }}
   imageRegistry: {{ .Values.imageRegistry }}
   {{- end }}
   kubeletDir: {{ .Values.kubeletDir }}
