@@ -1,8 +1,0 @@
-########
-Concepts
-########
-
-.. toctree::
-   :glob:
-
-   *
