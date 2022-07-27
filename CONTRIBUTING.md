@@ -11,6 +11,8 @@ We appreciate that you want to take the time to contribute! Please follow these 
 4. Write up a brief proposal in the issue describing what your change would be and how it would work so that people can comment on it before you go through the effort of doing the work and submitting the PR.
 5. Please wait for feedback from someone on NetApp's Trident development team before writing any code. We don't really have an SLA for our feedback, but we will do our best to respond in a timely manner (at least to inform if you are on the right track and that you should proceed, or not).
 6. Sign and submit NetApp's Contributor License Agreement. You must sign and submit the [Corporate Contributor License Agreement (CCLA)](https://netapp.tap.thinksmart.com/prod/Portal/ShowWorkFlow/AnonymousEmbed/3d2f3aa5-9161-4970-997d-e482b0b033fa) in order to contribute.
+- For **Project Name**, select "Trident" from the dropdown. 
+- In **Project Website**, enter: https://github.com/NetApp/trident
 7. If you've made it this far, and have written code that solves the issue, achieves the design you provided, and takes into account whatever comments were provided, then feel free to create your pull request.
 
 Important: ***NetApp will NOT look at the PR or any of the code submitted in the PR if the CCLA is not on file with NetApp Legal.***
