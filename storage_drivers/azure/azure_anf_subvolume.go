@@ -42,12 +42,12 @@ var (
 )
 
 type SubvolumeHelper struct {
-	Config         drivers.AzureNFSStorageDriverConfig
+	Config         drivers.AzureNASStorageDriverConfig
 	Context        tridentconfig.DriverContext
 	SnapshotRegexp *regexp.Regexp
 }
 
-func NewFileHelper(config drivers.AzureNFSStorageDriverConfig, context tridentconfig.DriverContext) *SubvolumeHelper {
+func NewFileHelper(config drivers.AzureNASStorageDriverConfig, context tridentconfig.DriverContext) *SubvolumeHelper {
 	subvolumeHelper := SubvolumeHelper{}
 	subvolumeHelper.Config = config
 	subvolumeHelper.Context = context
@@ -123,7 +123,7 @@ func (o *SubvolumeHelper) IsValidSnapshotInternalName(snapshotInternalName strin
 // NASBlockStorageDriver is for storage provisioning using the Azure NetApp Files service.
 type NASBlockStorageDriver struct {
 	initialized         bool
-	Config              drivers.AzureNFSStorageDriverConfig
+	Config              drivers.AzureNASStorageDriverConfig
 	telemetry           *Telemetry
 	SDK                 api.Azure
 	helper              *SubvolumeHelper
@@ -307,7 +307,7 @@ func (d *NASBlockStorageDriver) Terminate(ctx context.Context, _ string) {
 
 // populateConfigurationDefaults fills in default values for configuration settings if not supplied in the config.
 func (d *NASBlockStorageDriver) populateConfigurationDefaults(
-	ctx context.Context, config *drivers.AzureNFSStorageDriverConfig,
+	ctx context.Context, config *drivers.AzureNASStorageDriverConfig,
 ) {
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "NASBlockStorageDriver"}
@@ -484,17 +484,17 @@ func (d *NASBlockStorageDriver) initializeStoragePools(
 func (d *NASBlockStorageDriver) initializeAzureConfig(
 	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 	backendSecret map[string]string,
-) (*drivers.AzureNFSStorageDriverConfig, error) {
+) (*drivers.AzureNASStorageDriverConfig, error) {
 	if commonConfig.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "initializeAzureConfig", "Type": "NASBlockStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> initializeAzureConfig")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< initializeAzureConfig")
 	}
 
-	config := &drivers.AzureNFSStorageDriverConfig{}
+	config := &drivers.AzureNASStorageDriverConfig{}
 	config.CommonStorageDriverConfig = commonConfig
 
-	// decode configJSON into AzureNFSStorageDriverConfig object
+	// decode configJSON into AzureNASStorageDriverConfig object
 	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
 		return nil, fmt.Errorf("could not decode JSON configuration; %v", err)
 	}
@@ -511,7 +511,7 @@ func (d *NASBlockStorageDriver) initializeAzureConfig(
 
 // initializeAzureSDKClient creates and initializes an Azure SDK client.
 func (d *NASBlockStorageDriver) initializeAzureSDKClient(
-	ctx context.Context, config *drivers.AzureNFSStorageDriverConfig,
+	ctx context.Context, config *drivers.AzureNASStorageDriverConfig,
 ) error {
 	if config.DebugTraceFlags["method"] {
 		fields := log.Fields{"Method": "initializeAzureSDKClient", "Type": "NASBlockStorageDriver"}
@@ -1572,7 +1572,7 @@ func (d *NASBlockStorageDriver) StoreConfig(_ context.Context, b *storage.Persis
 // GetExternalConfig returns a clone of this backend's config, sanitized for external consumption.
 func (d *NASBlockStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
-	var cloneConfig drivers.AzureNFSStorageDriverConfig
+	var cloneConfig drivers.AzureNASStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
 	cloneConfig.ClientSecret = utils.REDACTED // redact the Secret
 	cloneConfig.Credentials = map[string]string{

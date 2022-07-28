@@ -46,10 +46,10 @@ func GetDriverConfigByName(driverName string) (DriverConfig, error) {
 		storageDriverConfig = &OntapStorageDriverConfig{}
 	case SolidfireSANStorageDriverName:
 		storageDriverConfig = &SolidfireStorageDriverConfig{}
-	case AzureNFSStorageDriverName:
+	case AzureNASStorageDriverName:
 		fallthrough
 	case AzureNASBlockStorageDriverName:
-		storageDriverConfig = &AzureNFSStorageDriverConfig{}
+		storageDriverConfig = &AzureNASStorageDriverConfig{}
 	case GCPNFSStorageDriverName:
 		storageDriverConfig = &GCPNFSStorageDriverConfig{}
 	case AstraDSStorageDriverName:
@@ -383,7 +383,7 @@ func (d SolidfireStorageDriverConfig) SpecOnlyValidation() error {
 	return nil
 }
 
-type AzureNFSStorageDriverConfig struct {
+type AzureNASStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	SubscriptionID      string `json:"subscriptionID"`
 	TenantID            string `json:"tenantID"`
@@ -394,13 +394,13 @@ type AzureNFSStorageDriverConfig struct {
 	VolumeCreateTimeout string `json:"volumeCreateTimeout"`
 	SDKTimeout          string `json:"sdkTimeout"`
 	MaxCacheAge         string `json:"maxCacheAge"`
-	AzureNFSStorageDriverPool
-	Storage []AzureNFSStorageDriverPool `json:"storage"`
+	AzureNASStorageDriverPool
+	Storage []AzureNASStorageDriverPool `json:"storage"`
 }
 
-// AzureNFSStorageDriverPool is the virtual pool definition for the ANF driver.  Note that 'Region' and 'Zone'
+// AzureNASStorageDriverPool is the virtual pool definition for the ANF driver.  Note that 'Region' and 'Zone'
 // are internal specifiers, not related to Azure's 'Location' field.
-type AzureNFSStorageDriverPool struct {
+type AzureNASStorageDriverPool struct {
 	Labels                              map[string]string   `json:"labels"`
 	Region                              string              `json:"region"`
 	Zone                                string              `json:"zone"`
@@ -414,28 +414,28 @@ type AzureNFSStorageDriverPool struct {
 	CapacityPools                       []string            `json:"capacityPools"`
 	FilePoolVolumes                     []string            `json:"filePoolVolumes"`
 	NASType                             string              `json:"nasType"`
-	AzureNFSStorageDriverConfigDefaults `json:"defaults"`
+	AzureNASStorageDriverConfigDefaults `json:"defaults"`
 }
 
-type AzureNFSStorageDriverConfigDefaults struct {
+type AzureNASStorageDriverConfigDefaults struct {
 	ExportRule      string `json:"exportRule"`
 	SnapshotDir     string `json:"snapshotDir"`
 	UnixPermissions string `json:"unixPermissions"`
 	CommonStorageDriverConfigDefaults
 }
 
-// Implement stringer interface for the AzureNFSStorageDriverConfig driver
-func (d AzureNFSStorageDriverConfig) String() string {
+// Implement stringer interface for the AzureNASStorageDriverConfig driver
+func (d AzureNASStorageDriverConfig) String() string {
 	return utils.ToStringRedacted(&d, []string{"SubscriptionID", "TenantID", "ClientID", "ClientSecret"}, nil)
 }
 
-// Implement GoStringer interface for the AzureNFSStorageDriverConfig driver
-func (d AzureNFSStorageDriverConfig) GoString() string {
+// Implement GoStringer interface for the AzureNASStorageDriverConfig driver
+func (d AzureNASStorageDriverConfig) GoString() string {
 	return d.String()
 }
 
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
-func (d *AzureNFSStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
+func (d *AzureNASStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
 
 	var ok bool
@@ -451,7 +451,7 @@ func (d *AzureNFSStorageDriverConfig) InjectSecrets(secretMap map[string]string)
 
 // ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
 // and returns the the map.
-func (d *AzureNFSStorageDriverConfig) ExtractSecrets() map[string]string {
+func (d *AzureNASStorageDriverConfig) ExtractSecrets() map[string]string {
 	secretMap := make(map[string]string)
 
 	secretMap["ClientID"] = d.ClientID
@@ -462,14 +462,14 @@ func (d *AzureNFSStorageDriverConfig) ExtractSecrets() map[string]string {
 
 // HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
 // with secretName.
-func (d *AzureNFSStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
+func (d *AzureNASStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
 	d.ClientID = secretName
 	d.ClientSecret = secretName
 }
 
 // GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
 // replaces those fields with secretName and returns the the map.
-func (d *AzureNFSStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
+func (d *AzureNASStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
 	secretMap := d.ExtractSecrets()
 	d.HideSensitiveWithSecretName(secretName)
 
@@ -477,11 +477,11 @@ func (d *AzureNFSStorageDriverConfig) GetAndHideSensitive(secretName string) map
 }
 
 // CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
-func (d AzureNFSStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
+func (d AzureNASStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
 	return checkMapContainsAttributes(d.ExtractSecrets())
 }
 
-func (d AzureNFSStorageDriverConfig) SpecOnlyValidation() error {
+func (d AzureNASStorageDriverConfig) SpecOnlyValidation() error {
 	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
 		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
 	}

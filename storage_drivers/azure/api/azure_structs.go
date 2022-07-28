@@ -20,7 +20,7 @@ const (
 	ProtocolTypeNFSPrefix = "NFSv"
 	ProtocolTypeNFSv3     = ProtocolTypeNFSPrefix + "3"
 	ProtocolTypeNFSv41    = ProtocolTypeNFSPrefix + "4.1"
-	// ProtocolTypeCIFS = "CIFS"
+	ProtocolTypeCIFS      = "CIFS"
 
 	ServiceLevelStandard = "Standard"
 	ServiceLevelPremium  = "Premium"

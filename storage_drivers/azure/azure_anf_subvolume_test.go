@@ -24,7 +24,7 @@ import (
 func newTestANFSubvolumeDriver(mockAPI api.Azure) *NASBlockStorageDriver {
 	prefix := "trident-"
 
-	config := drivers.AzureNFSStorageDriverConfig{
+	config := drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: "azure-netapp-files-subvolume",
 			StoragePrefix:     &prefix,
@@ -47,7 +47,7 @@ func newTestANFSubvolumeDriver(mockAPI api.Azure) *NASBlockStorageDriver {
 }
 
 func newTestANFSubvolumeNewFileHelper(
-	config drivers.AzureNFSStorageDriverConfig, context tridentconfig.DriverContext,
+	config drivers.AzureNASStorageDriverConfig, context tridentconfig.DriverContext,
 ) *SubvolumeHelper {
 	return &SubvolumeHelper{
 		Config:         config,
@@ -67,7 +67,7 @@ func newMockANFSubvolumeDriver(t *testing.T) (*mockapi.MockAzure, *NASBlockStora
 func newMockANFSubvolumeHelper() *SubvolumeHelper {
 	prefix := "test-"
 
-	config := drivers.AzureNFSStorageDriverConfig{
+	config := drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: "azure-netapp-files-subvolume",
 			StoragePrefix:     &prefix,
@@ -670,7 +670,7 @@ func TestSubvolumeTerminate(t *testing.T) {
 }
 
 func getStructsForSubvolumeInitializeStoragePools() (
-	*drivers.CommonStorageDriverConfig, drivers.AzureNFSStorageDriverPool, []*api.FileSystem,
+	*drivers.CommonStorageDriverConfig, drivers.AzureNASStorageDriverPool, []*api.FileSystem,
 ) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -680,7 +680,7 @@ func getStructsForSubvolumeInitializeStoragePools() (
 		DebugTraceFlags:   debugTraceFlags,
 	}
 
-	azureNFSSDPool := drivers.AzureNFSStorageDriverPool{
+	azureNFSSDPool := drivers.AzureNASStorageDriverPool{
 		Labels:         map[string]string{"key1": "val1"},
 		Region:         "region1",
 		Zone:           "zone1",
@@ -697,7 +697,7 @@ func getStructsForSubvolumeInitializeStoragePools() (
 		NetappAccounts:  []string{"NA1", "NA2"},
 		CapacityPools:   []string{"RG1/NA1/CP1", "RG1/NA1/CP2"},
 		FilePoolVolumes: []string{"RG1/NA1/CP1/VOL-1"},
-		AzureNFSStorageDriverConfigDefaults: drivers.AzureNFSStorageDriverConfigDefaults{
+		AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
 			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 				Size: "1234567890",
 			},
@@ -748,10 +748,10 @@ func getStructsForSubvolumeInitializeStoragePools() (
 func TestSubvolumeInitializeStoragePools_ValidateFilePoolVolumesError(t *testing.T) {
 	commonConfig, azureNFSSDPool, _ := getStructsForSubvolumeInitializeStoragePools()
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
-		AzureNFSStorageDriverPool: azureNFSSDPool,
+		AzureNASStorageDriverPool: azureNFSSDPool,
 	}
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
@@ -767,10 +767,10 @@ func TestSubvolumeInitializeStoragePools_ValidateFilePoolVolumesError(t *testing
 func TestSubvolumeInitializeStoragePools_WithMultipleProtocols(t *testing.T) {
 	commonConfig, azureNFSSDPool, filesystems := getStructsForSubvolumeInitializeStoragePools()
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
-		AzureNFSStorageDriverPool: azureNFSSDPool,
+		AzureNASStorageDriverPool: azureNFSSDPool,
 	}
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
@@ -786,10 +786,10 @@ func TestSubvolumeInitializeStoragePools_WithMultipleProtocols(t *testing.T) {
 func TestSubvolumeInitializeStoragePools_UnSupportedNFSVersion(t *testing.T) {
 	commonConfig, azureNFSSDPool, _ := getStructsForSubvolumeInitializeStoragePools()
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=5",
-		AzureNFSStorageDriverPool: azureNFSSDPool,
+		AzureNASStorageDriverPool: azureNFSSDPool,
 	}
 
 	_, driver := newMockANFSubvolumeDriver(t)
@@ -804,11 +804,11 @@ func TestSubvolumeInitializeStoragePools_UnSupportedNFSVersion(t *testing.T) {
 func TestSubvolumeInitializeStoragePools_ValidateVirtualPoolInitialization(t *testing.T) {
 	commonConfig, azureNFSSDPool, _ := getStructsForSubvolumeInitializeStoragePools()
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		Location:                  "",
 		NfsMountOptions:           "nfsvers=4.1",
-		Storage: []drivers.AzureNFSStorageDriverPool{
+		Storage: []drivers.AzureNASStorageDriverPool{
 			azureNFSSDPool,
 		},
 	}
@@ -855,7 +855,7 @@ func TestSubvolumeValidate_StoragePrefix(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			config := &drivers.AzureNFSStorageDriverConfig{
+			config := &drivers.AzureNASStorageDriverConfig{
 				CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 					StoragePrefix: &test.StoragePrefix,
 				},
@@ -881,11 +881,11 @@ func TestSubvolumeValidate_MountOptionsError(t *testing.T) {
 	prefix := "test"
 	commonConfig.StoragePrefix = &prefix
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "ro",
-		AzureNFSStorageDriverPool: azureNFSSDPool,
-		Storage: []drivers.AzureNFSStorageDriverPool{
+		AzureNASStorageDriverPool: azureNFSSDPool,
+		Storage: []drivers.AzureNASStorageDriverPool{
 			azureNFSSDPool,
 		},
 	}
@@ -903,9 +903,9 @@ func TestSubvolumeValidate_InvalidVolumeSizeError(t *testing.T) {
 	prefix := "test"
 	commonConfig.StoragePrefix = &prefix
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
-		AzureNFSStorageDriverPool: azureNFSSDPool,
+		AzureNASStorageDriverPool: azureNFSSDPool,
 	}
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
@@ -924,7 +924,7 @@ func TestSubvolumeValidate_InvalidVolumeSizeError(t *testing.T) {
 }
 
 func getStructsForSubvolumeCreate() (
-	*drivers.AzureNFSStorageDriverConfig, []*api.FileSystem, *storage.VolumeConfig,
+	*drivers.AzureNASStorageDriverConfig, []*api.FileSystem, *storage.VolumeConfig,
 	*api.Subvolume, *api.SubvolumeCreateRequest,
 ) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -935,7 +935,7 @@ func getStructsForSubvolumeCreate() (
 		DebugTraceFlags:   debugTraceFlags,
 	}
 
-	azureNFSSDPool := drivers.AzureNFSStorageDriverPool{
+	azureNFSSDPool := drivers.AzureNASStorageDriverPool{
 		Labels:         map[string]string{"key1": "val1"},
 		Region:         "region1",
 		Zone:           "zone1",
@@ -952,7 +952,7 @@ func getStructsForSubvolumeCreate() (
 		NetappAccounts:  []string{"NA1", "NA2"},
 		CapacityPools:   []string{"RG1/NA1/CP1", "RG1/NA1/CP2"},
 		FilePoolVolumes: []string{"RG1/NA1/CP1/VOL-1"},
-		AzureNFSStorageDriverConfigDefaults: drivers.AzureNFSStorageDriverConfigDefaults{
+		AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
 			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 				Size: "20971520",
 			},
@@ -962,9 +962,9 @@ func getStructsForSubvolumeCreate() (
 		},
 	}
 
-	azureNFSStorage := []drivers.AzureNFSStorageDriverPool{azureNFSSDPool}
+	azureNFSStorage := []drivers.AzureNASStorageDriverPool{azureNFSSDPool}
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
 		Storage:                   azureNFSStorage,
@@ -1331,7 +1331,7 @@ func TestSubvolumeCreateVolume_Error(t *testing.T) {
 }
 
 func getStructsForSubvolumeCreateClone() (
-	*drivers.AzureNFSStorageDriverConfig, *storage.VolumeConfig, *storage.VolumeConfig,
+	*drivers.AzureNASStorageDriverConfig, *storage.VolumeConfig, *storage.VolumeConfig,
 	*api.Subvolume, *api.Subvolume, *api.SubvolumeCreateRequest,
 ) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -1342,7 +1342,7 @@ func getStructsForSubvolumeCreateClone() (
 		DebugTraceFlags:   debugTraceFlags,
 	}
 
-	azureNFSSDPool := drivers.AzureNFSStorageDriverPool{
+	azureNFSSDPool := drivers.AzureNASStorageDriverPool{
 		Labels:         map[string]string{"key1": "val1"},
 		Region:         "region1",
 		Zone:           "zone1",
@@ -1359,7 +1359,7 @@ func getStructsForSubvolumeCreateClone() (
 		NetappAccounts:  []string{"NA1", "NA2"},
 		CapacityPools:   []string{"RG1/NA1/CP1", "RG1/NA1/CP2"},
 		FilePoolVolumes: []string{"RG1/NA1/CP1/VOL-1"},
-		AzureNFSStorageDriverConfigDefaults: drivers.AzureNFSStorageDriverConfigDefaults{
+		AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
 			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 				Size: "20971520",
 			},
@@ -1369,9 +1369,9 @@ func getStructsForSubvolumeCreateClone() (
 		},
 	}
 
-	azureNFSStorage := []drivers.AzureNFSStorageDriverPool{azureNFSSDPool}
+	azureNFSStorage := []drivers.AzureNASStorageDriverPool{azureNFSSDPool}
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
 		Storage:                   azureNFSStorage,
@@ -1603,7 +1603,7 @@ func TestSubvolumeCreateClone_ErrorUnableToCreateSubvolume(t *testing.T) {
 }
 
 func getStructsForSubvolumeImport() (
-	*drivers.AzureNFSStorageDriverConfig, *storage.VolumeConfig, *api.Subvolume,
+	*drivers.AzureNASStorageDriverConfig, *storage.VolumeConfig, *api.Subvolume,
 ) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -1613,7 +1613,7 @@ func getStructsForSubvolumeImport() (
 		DebugTraceFlags:   debugTraceFlags,
 	}
 
-	azureNFSSDPool := drivers.AzureNFSStorageDriverPool{
+	azureNFSSDPool := drivers.AzureNASStorageDriverPool{
 		Labels:         map[string]string{"key1": "val1"},
 		Region:         "region1",
 		Zone:           "zone1",
@@ -1630,7 +1630,7 @@ func getStructsForSubvolumeImport() (
 		NetappAccounts:  []string{"NA1", "NA2"},
 		CapacityPools:   []string{"RG1/NA1/CP1", "RG1/NA1/CP2"},
 		FilePoolVolumes: []string{"RG1/NA1/CP1/VOL-1"},
-		AzureNFSStorageDriverConfigDefaults: drivers.AzureNFSStorageDriverConfigDefaults{
+		AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
 			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 				Size: "20971520",
 			},
@@ -1640,9 +1640,9 @@ func getStructsForSubvolumeImport() (
 		},
 	}
 
-	azureNFSStorage := []drivers.AzureNFSStorageDriverPool{azureNFSSDPool}
+	azureNFSStorage := []drivers.AzureNASStorageDriverPool{azureNFSSDPool}
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
 		Storage:                   azureNFSStorage,
@@ -1764,7 +1764,7 @@ func TestSubvolumeRename(t *testing.T) {
 	assert.Nil(t, result, "Unable to Rename")
 }
 
-func getStructsForWaitForSubvolumeCreate() (*drivers.AzureNFSStorageDriverConfig, *api.Subvolume) {
+func getStructsForWaitForSubvolumeCreate() (*drivers.AzureNASStorageDriverConfig, *api.Subvolume) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files-subvolume",
@@ -1773,7 +1773,7 @@ func getStructsForWaitForSubvolumeCreate() (*drivers.AzureNFSStorageDriverConfig
 		DebugTraceFlags:   debugTraceFlags,
 	}
 
-	azureNFSSDPool := drivers.AzureNFSStorageDriverPool{
+	azureNFSSDPool := drivers.AzureNASStorageDriverPool{
 		Labels:         map[string]string{"key1": "val1"},
 		Region:         "region1",
 		Zone:           "zone1",
@@ -1790,7 +1790,7 @@ func getStructsForWaitForSubvolumeCreate() (*drivers.AzureNFSStorageDriverConfig
 		NetappAccounts:  []string{"NA1", "NA2"},
 		CapacityPools:   []string{"RG1/NA1/CP1", "RG1/NA1/CP2"},
 		FilePoolVolumes: []string{"RG1/NA1/CP1/VOL-1"},
-		AzureNFSStorageDriverConfigDefaults: drivers.AzureNFSStorageDriverConfigDefaults{
+		AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
 			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 				Size: "20971520",
 			},
@@ -1800,9 +1800,9 @@ func getStructsForWaitForSubvolumeCreate() (*drivers.AzureNFSStorageDriverConfig
 		},
 	}
 
-	azureNFSStorage := []drivers.AzureNFSStorageDriverPool{azureNFSSDPool}
+	azureNFSStorage := []drivers.AzureNASStorageDriverPool{azureNFSSDPool}
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
 		Storage:                   azureNFSStorage,
@@ -1935,7 +1935,7 @@ func TestSubvolumeWaitForSubvolumeCreate_OtherStates(t *testing.T) {
 	}
 }
 
-func getStructsForSubvolumeDestroy() (*drivers.AzureNFSStorageDriverConfig, *storage.VolumeConfig, *api.Subvolume) {
+func getStructsForSubvolumeDestroy() (*drivers.AzureNASStorageDriverConfig, *storage.VolumeConfig, *api.Subvolume) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files-subvolume",
@@ -1944,7 +1944,7 @@ func getStructsForSubvolumeDestroy() (*drivers.AzureNFSStorageDriverConfig, *sto
 		DebugTraceFlags:   debugTraceFlags,
 	}
 
-	azureNFSSDPool := drivers.AzureNFSStorageDriverPool{
+	azureNFSSDPool := drivers.AzureNASStorageDriverPool{
 		Labels:         map[string]string{"key1": "val1"},
 		Region:         "region1",
 		Zone:           "zone1",
@@ -1961,7 +1961,7 @@ func getStructsForSubvolumeDestroy() (*drivers.AzureNFSStorageDriverConfig, *sto
 		NetappAccounts:  []string{"NA1", "NA2"},
 		CapacityPools:   []string{"RG1/NA1/CP1", "RG1/NA1/CP2"},
 		FilePoolVolumes: []string{"RG1/NA1/CP1/VOL-1"},
-		AzureNFSStorageDriverConfigDefaults: drivers.AzureNFSStorageDriverConfigDefaults{
+		AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
 			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 				Size: "20971520",
 			},
@@ -1971,9 +1971,9 @@ func getStructsForSubvolumeDestroy() (*drivers.AzureNFSStorageDriverConfig, *sto
 		},
 	}
 
-	azureNFSStorage := []drivers.AzureNFSStorageDriverPool{azureNFSSDPool}
+	azureNFSStorage := []drivers.AzureNASStorageDriverPool{azureNFSSDPool}
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
 		Storage:                   azureNFSStorage,
@@ -2135,7 +2135,7 @@ func TestSubvolumeDestroy_ErrorParsingVolumeConfig(t *testing.T) {
 }
 
 func getStructsForSubvolumePublish() (
-	*drivers.AzureNFSStorageDriverConfig, *storage.VolumeConfig, *api.FileSystem, *utils.VolumePublishInfo,
+	*drivers.AzureNASStorageDriverConfig, *storage.VolumeConfig, *api.FileSystem, *utils.VolumePublishInfo,
 ) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -2145,7 +2145,7 @@ func getStructsForSubvolumePublish() (
 		DebugTraceFlags:   debugTraceFlags,
 	}
 
-	azureNFSSDPool := drivers.AzureNFSStorageDriverPool{
+	azureNFSSDPool := drivers.AzureNASStorageDriverPool{
 		Labels:         map[string]string{"key1": "val1"},
 		Region:         "region1",
 		Zone:           "zone1",
@@ -2162,7 +2162,7 @@ func getStructsForSubvolumePublish() (
 		NetappAccounts:  []string{"NA1", "NA2"},
 		CapacityPools:   []string{"RG1/NA1/CP1", "RG1/NA1/CP2"},
 		FilePoolVolumes: []string{"RG1/NA1/CP1/VOL-1"},
-		AzureNFSStorageDriverConfigDefaults: drivers.AzureNFSStorageDriverConfigDefaults{
+		AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
 			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 				Size: "20971520",
 			},
@@ -2172,9 +2172,9 @@ func getStructsForSubvolumePublish() (
 		},
 	}
 
-	azureNFSStorage := []drivers.AzureNFSStorageDriverPool{azureNFSSDPool}
+	azureNFSStorage := []drivers.AzureNASStorageDriverPool{azureNFSSDPool}
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
 		Storage:                   azureNFSStorage,
@@ -2283,7 +2283,7 @@ func TestSubvolumeCanSanpshot(t *testing.T) {
 }
 
 func getStructsForSubvolumeCreateSnapshot() (
-	*drivers.AzureNFSStorageDriverConfig, *storage.VolumeConfig,
+	*drivers.AzureNASStorageDriverConfig, *storage.VolumeConfig,
 	*api.Subvolume, *api.SubvolumeCreateRequest, *storage.SnapshotConfig,
 ) {
 	prefix := "trident"
@@ -2296,7 +2296,7 @@ func getStructsForSubvolumeCreateSnapshot() (
 		DebugTraceFlags:   debugTraceFlags,
 	}
 
-	azureNFSSDPool := drivers.AzureNFSStorageDriverPool{
+	azureNFSSDPool := drivers.AzureNASStorageDriverPool{
 		Labels:         map[string]string{"key1": "val1"},
 		Region:         "region1",
 		Zone:           "zone1",
@@ -2313,7 +2313,7 @@ func getStructsForSubvolumeCreateSnapshot() (
 		NetappAccounts:  []string{"NA1", "NA2"},
 		CapacityPools:   []string{"RG1/NA1/CP1", "RG1/NA1/CP2"},
 		FilePoolVolumes: []string{"RG1/NA1/CP1/VOL-1"},
-		AzureNFSStorageDriverConfigDefaults: drivers.AzureNFSStorageDriverConfigDefaults{
+		AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
 			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 				Size: "20971520",
 			},
@@ -2323,9 +2323,9 @@ func getStructsForSubvolumeCreateSnapshot() (
 		},
 	}
 
-	azureNFSStorage := []drivers.AzureNFSStorageDriverPool{azureNFSSDPool}
+	azureNFSStorage := []drivers.AzureNASStorageDriverPool{azureNFSSDPool}
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		SubscriptionID:            SubscriptionID,
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
@@ -2629,7 +2629,7 @@ func TestSubvolumeGetSnapshot_ErrorSubvolumeNotFound(t *testing.T) {
 }
 
 func getStructsForSubvolumeGetSnapshots() (
-	*drivers.AzureNFSStorageDriverConfig, *storage.VolumeConfig, *api.Subvolume, *[]*api.Subvolume,
+	*drivers.AzureNASStorageDriverConfig, *storage.VolumeConfig, *api.Subvolume, *[]*api.Subvolume,
 ) {
 	prefix := "trident"
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -2641,7 +2641,7 @@ func getStructsForSubvolumeGetSnapshots() (
 		DebugTraceFlags:   debugTraceFlags,
 	}
 
-	azureNFSSDPool := drivers.AzureNFSStorageDriverPool{
+	azureNFSSDPool := drivers.AzureNASStorageDriverPool{
 		Labels:         map[string]string{"key1": "val1"},
 		Region:         "region1",
 		Zone:           "zone1",
@@ -2658,7 +2658,7 @@ func getStructsForSubvolumeGetSnapshots() (
 		NetappAccounts:  []string{"NA1", "NA2"},
 		CapacityPools:   []string{"RG1/NA1/CP1", "RG1/NA1/CP2"},
 		FilePoolVolumes: []string{"RG1/NA1/CP1/VOL-1"},
-		AzureNFSStorageDriverConfigDefaults: drivers.AzureNFSStorageDriverConfigDefaults{
+		AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
 			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 				Size: "20971520",
 			},
@@ -2668,9 +2668,9 @@ func getStructsForSubvolumeGetSnapshots() (
 		},
 	}
 
-	azureNFSStorage := []drivers.AzureNFSStorageDriverPool{azureNFSSDPool}
+	azureNFSStorage := []drivers.AzureNASStorageDriverPool{azureNFSSDPool}
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		SubscriptionID:            SubscriptionID,
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
@@ -3075,11 +3075,11 @@ func TestSubvolumeResize_SubvolumeStateError(t *testing.T) {
 func TestSubvolumeGetStorageBackendSpecs_VirtualPoolDoesNotExist(t *testing.T) {
 	commonConfig, azureNFSSDPool, _ := getStructsForSubvolumeInitializeStoragePools()
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
-		AzureNFSStorageDriverPool: azureNFSSDPool,
-		Storage: []drivers.AzureNFSStorageDriverPool{
+		AzureNASStorageDriverPool: azureNFSSDPool,
+		Storage: []drivers.AzureNASStorageDriverPool{
 			azureNFSSDPool,
 		},
 	}
@@ -3116,11 +3116,11 @@ func TestSubvolumeGetStorageBackendSpecs_VirtualPoolDoesNotExist(t *testing.T) {
 func TestSubvolumeGetStorageBackendSpecs_VirtualPoolExists(t *testing.T) {
 	commonConfig, azureNFSSDPool, _ := getStructsForSubvolumeInitializeStoragePools()
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
-		AzureNFSStorageDriverPool: azureNFSSDPool,
-		Storage: []drivers.AzureNFSStorageDriverPool{
+		AzureNASStorageDriverPool: azureNFSSDPool,
+		Storage: []drivers.AzureNASStorageDriverPool{
 			azureNFSSDPool,
 		},
 	}
@@ -3324,7 +3324,7 @@ func TestSubvolumeGetVolumeExternal_Error(t *testing.T) {
 	assert.Error(t, resultErr, "no error")
 }
 
-func getStructsForSubvolumes() (*drivers.AzureNFSStorageDriverConfig, *[]*api.Subvolume) {
+func getStructsForSubvolumes() (*drivers.AzureNASStorageDriverConfig, *[]*api.Subvolume) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files-subvolume",
@@ -3333,7 +3333,7 @@ func getStructsForSubvolumes() (*drivers.AzureNFSStorageDriverConfig, *[]*api.Su
 		DebugTraceFlags:   debugTraceFlags,
 	}
 
-	azureNFSSDPool := drivers.AzureNFSStorageDriverPool{
+	azureNFSSDPool := drivers.AzureNASStorageDriverPool{
 		Labels:         map[string]string{"key1": "val1"},
 		Region:         "region1",
 		Zone:           "zone1",
@@ -3350,7 +3350,7 @@ func getStructsForSubvolumes() (*drivers.AzureNFSStorageDriverConfig, *[]*api.Su
 		NetappAccounts:  []string{"NA1", "NA2"},
 		CapacityPools:   []string{"RG1/NA1/CP1", "RG1/NA1/CP2"},
 		FilePoolVolumes: []string{"RG1/NA1/CP1/VOL-1"},
-		AzureNFSStorageDriverConfigDefaults: drivers.AzureNFSStorageDriverConfigDefaults{
+		AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
 			CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 				Size: "20971520",
 			},
@@ -3360,9 +3360,9 @@ func getStructsForSubvolumes() (*drivers.AzureNFSStorageDriverConfig, *[]*api.Su
 		},
 	}
 
-	azureNFSStorage := []drivers.AzureNFSStorageDriverPool{azureNFSSDPool}
+	azureNFSStorage := []drivers.AzureNASStorageDriverPool{azureNFSSDPool}
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
 		Storage:                   azureNFSStorage,
@@ -3616,11 +3616,11 @@ func TestSubvolumeGetCommonConfig(t *testing.T) {
 func TestSubvolumegetAllFilePoolVolumes_VirtualPools(t *testing.T) {
 	commonConfig, azureNFSSDPool, _ := getStructsForSubvolumeInitializeStoragePools()
 
-	config := &drivers.AzureNFSStorageDriverConfig{
+	config := &drivers.AzureNASStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 		NfsMountOptions:           "nfsvers=4.1",
-		AzureNFSStorageDriverPool: azureNFSSDPool,
-		Storage: []drivers.AzureNFSStorageDriverPool{
+		AzureNASStorageDriverPool: azureNFSSDPool,
+		Storage: []drivers.AzureNASStorageDriverPool{
 			azureNFSSDPool,
 		},
 	}

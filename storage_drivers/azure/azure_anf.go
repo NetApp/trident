@@ -68,10 +68,10 @@ var (
 	csiRegex                 = regexp.MustCompile(`^pvc-[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}$`)
 )
 
-// NFSStorageDriver is for storage provisioning using the Azure NetApp Files service.
-type NFSStorageDriver struct {
+// NASStorageDriver is for storage provisioning using the Azure NetApp Files service.
+type NASStorageDriver struct {
 	initialized         bool
-	Config              drivers.AzureNFSStorageDriverConfig
+	Config              drivers.AzureNASStorageDriverConfig
 	telemetry           *Telemetry
 	SDK                 api.Azure
 	pools               map[string]storage.Pool
@@ -84,12 +84,12 @@ type Telemetry struct {
 }
 
 // Name returns the name of this driver.
-func (d *NFSStorageDriver) Name() string {
-	return drivers.AzureNFSStorageDriverName
+func (d *NASStorageDriver) Name() string {
+	return drivers.AzureNASStorageDriverName
 }
 
 // defaultBackendName returns the default name of the backend managed by this driver instance.
-func (d *NFSStorageDriver) defaultBackendName() string {
+func (d *NASStorageDriver) defaultBackendName() string {
 	id := utils.RandomString(6)
 	if len(d.Config.ClientID) > 5 {
 		id = d.Config.ClientID[0:5]
@@ -98,7 +98,7 @@ func (d *NFSStorageDriver) defaultBackendName() string {
 }
 
 // BackendName returns the name of the backend managed by this driver instance.
-func (d *NFSStorageDriver) BackendName() string {
+func (d *NASStorageDriver) BackendName() string {
 	if d.Config.BackendName != "" {
 		return d.Config.BackendName
 	} else {
@@ -108,12 +108,12 @@ func (d *NFSStorageDriver) BackendName() string {
 }
 
 // poolName constructs the name of the pool reported by this driver instance.
-func (d *NFSStorageDriver) poolName(name string) string {
+func (d *NASStorageDriver) poolName(name string) string {
 	return fmt.Sprintf("%s_%s", d.BackendName(), strings.Replace(name, "-", "", -1))
 }
 
 // validateVolumeName checks that the name of a new volume matches the requirements of an ANF volume name.
-func (d *NFSStorageDriver) validateVolumeName(name string) error {
+func (d *NASStorageDriver) validateVolumeName(name string) error {
 	if !volumeNameRegex.MatchString(name) {
 		return fmt.Errorf("volume name '%s' is not allowed; it must be 1-64 characters long, "+
 			"begin with a letter, and contain only letters, digits, hyphens, and underscores", name)
@@ -122,7 +122,7 @@ func (d *NFSStorageDriver) validateVolumeName(name string) error {
 }
 
 // validateCreationToken checks that the creation token of a new volume matches the requirements of a creation token.
-func (d *NFSStorageDriver) validateCreationToken(name string) error {
+func (d *NASStorageDriver) validateCreationToken(name string) error {
 	if !volumeCreationTokenRegex.MatchString(name) {
 		return fmt.Errorf("volume internal name '%s' is not allowed; it must be 1-80 characters long, "+
 			"begin with a letter, and contain only letters, digits, and hyphens", name)
@@ -132,7 +132,7 @@ func (d *NFSStorageDriver) validateCreationToken(name string) error {
 
 // defaultCreateTimeout sets the driver timeout for volume create/delete operations.  Docker gets more time, since
 // it doesn't have a mechanism to retry.
-func (d *NFSStorageDriver) defaultCreateTimeout() time.Duration {
+func (d *NASStorageDriver) defaultCreateTimeout() time.Duration {
 	switch d.Config.DriverContext {
 	case tridentconfig.ContextDocker:
 		return tridentconfig.DockerCreateTimeout
@@ -142,7 +142,7 @@ func (d *NFSStorageDriver) defaultCreateTimeout() time.Duration {
 }
 
 // defaultTimeout controls the driver timeout for most workflows.
-func (d *NFSStorageDriver) defaultTimeout() time.Duration {
+func (d *NASStorageDriver) defaultTimeout() time.Duration {
 	switch d.Config.DriverContext {
 	case tridentconfig.ContextDocker:
 		return tridentconfig.DockerDefaultTimeout
@@ -152,12 +152,12 @@ func (d *NFSStorageDriver) defaultTimeout() time.Duration {
 }
 
 // Initialize initializes this driver from the provided config.
-func (d *NFSStorageDriver) Initialize(
+func (d *NASStorageDriver) Initialize(
 	ctx context.Context, context tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Initialize", "Type": "NFSStorageDriver"}
+		fields := log.Fields{"Method": "Initialize", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Initialize")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Initialize")
 	}
@@ -213,14 +213,14 @@ func (d *NFSStorageDriver) Initialize(
 }
 
 // Initialized returns whether this driver has been initialized (and not terminated).
-func (d *NFSStorageDriver) Initialized() bool {
+func (d *NASStorageDriver) Initialized() bool {
 	return d.initialized
 }
 
 // Terminate stops the driver prior to its being unloaded.
-func (d *NFSStorageDriver) Terminate(ctx context.Context, _ string) {
+func (d *NASStorageDriver) Terminate(ctx context.Context, _ string) {
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Terminate", "Type": "NFSStorageDriver"}
+		fields := log.Fields{"Method": "Terminate", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Terminate")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Terminate")
 	}
@@ -229,11 +229,11 @@ func (d *NFSStorageDriver) Terminate(ctx context.Context, _ string) {
 }
 
 // populateConfigurationDefaults fills in default values for configuration settings if not supplied in the config.
-func (d *NFSStorageDriver) populateConfigurationDefaults(
-	ctx context.Context, config *drivers.AzureNFSStorageDriverConfig,
+func (d *NASStorageDriver) populateConfigurationDefaults(
+	ctx context.Context, config *drivers.AzureNASStorageDriverConfig,
 ) {
 	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "NFSStorageDriver"}
+		fields := log.Fields{"Method": "populateConfigurationDefaults", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> populateConfigurationDefaults")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< populateConfigurationDefaults")
 	}
@@ -287,7 +287,7 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 }
 
 // initializeStoragePools defines the pools reported to Trident, whether physical or virtual.
-func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
+func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 	d.pools = make(map[string]storage.Pool)
 
 	if len(d.Config.Storage) == 0 {
@@ -456,7 +456,7 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
 }
 
 // initializeTelemetry assembles all the telemetry data to be used as volume labels.
-func (d *NFSStorageDriver) initializeTelemetry(_ context.Context, backendUUID string) {
+func (d *NASStorageDriver) initializeTelemetry(_ context.Context, backendUUID string) {
 	telemetry := tridentconfig.OrchestratorTelemetry
 	telemetry.TridentBackendUUID = backendUUID
 	d.telemetry = &Telemetry{
@@ -466,20 +466,20 @@ func (d *NFSStorageDriver) initializeTelemetry(_ context.Context, backendUUID st
 }
 
 // initializeAzureConfig parses the Azure config, mixing in the specified common config.
-func (d *NFSStorageDriver) initializeAzureConfig(
+func (d *NASStorageDriver) initializeAzureConfig(
 	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 	backendSecret map[string]string,
-) (*drivers.AzureNFSStorageDriverConfig, error) {
+) (*drivers.AzureNASStorageDriverConfig, error) {
 	if commonConfig.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "initializeAzureConfig", "Type": "NFSStorageDriver"}
+		fields := log.Fields{"Method": "initializeAzureConfig", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> initializeAzureConfig")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< initializeAzureConfig")
 	}
 
-	config := &drivers.AzureNFSStorageDriverConfig{}
+	config := &drivers.AzureNASStorageDriverConfig{}
 	config.CommonStorageDriverConfig = commonConfig
 
-	// decode configJSON into AzureNFSStorageDriverConfig object
+	// decode configJSON into AzureNASStorageDriverConfig object
 	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
 		return nil, fmt.Errorf("could not decode JSON configuration; %v", err)
 	}
@@ -496,11 +496,11 @@ func (d *NFSStorageDriver) initializeAzureConfig(
 }
 
 // initializeAzureSDKClient creates and initializes an Azure SDK client.
-func (d *NFSStorageDriver) initializeAzureSDKClient(
-	ctx context.Context, config *drivers.AzureNFSStorageDriverConfig,
+func (d *NASStorageDriver) initializeAzureSDKClient(
+	ctx context.Context, config *drivers.AzureNASStorageDriverConfig,
 ) error {
 	if config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "initializeAzureSDKClient", "Type": "NFSStorageDriver"}
+		fields := log.Fields{"Method": "initializeAzureSDKClient", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> initializeAzureSDKClient")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< initializeAzureSDKClient")
 	}
@@ -552,9 +552,9 @@ func (d *NFSStorageDriver) initializeAzureSDKClient(
 }
 
 // validate ensures the driver configuration and execution environment are valid and working.
-func (d *NFSStorageDriver) validate(ctx context.Context) error {
+func (d *NASStorageDriver) validate(ctx context.Context) error {
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "validate", "Type": "NFSStorageDriver"}
+		fields := log.Fields{"Method": "validate", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> validate")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< validate")
 	}
@@ -625,7 +625,7 @@ func (d *NFSStorageDriver) validate(ctx context.Context) error {
 }
 
 // Create creates a new volume.
-func (d *NFSStorageDriver) Create(
+func (d *NASStorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
 	name := volConfig.InternalName
@@ -633,7 +633,7 @@ func (d *NFSStorageDriver) Create(
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Create",
-			"Type":   "NFSStorageDriver",
+			"Type":   "NASStorageDriver",
 			"name":   name,
 			"attrs":  volAttributes,
 		}
@@ -755,33 +755,39 @@ func (d *NFSStorageDriver) Create(
 	// Determine protocol from mount options
 	var protocolTypes []string
 	var cifsAccess, nfsV3Access, nfsV41Access bool
+	var apiExportRule api.ExportRule
+	var exportPolicy api.ExportPolicy
 
-	nfsVersion, err := utils.GetNFSVersionFromMountOptions(mountOptions, nfsVersion3, supportedNFSVersions)
-	if err != nil {
-		return err
-	}
-	switch nfsVersion {
-	case nfsVersion3:
-		nfsV3Access = true
-		protocolTypes = []string{api.ProtocolTypeNFSv3}
-	case nfsVersion4:
-		fallthrough
-	case nfsVersion41:
-		nfsV41Access = true
-		protocolTypes = []string{api.ProtocolTypeNFSv41}
-	}
+	if d.Config.NASType == sa.SMB {
+		protocolTypes = []string{api.ProtocolTypeCIFS}
+	} else {
+		nfsVersion, err := utils.GetNFSVersionFromMountOptions(mountOptions, nfsVersion3, supportedNFSVersions)
+		if err != nil {
+			return err
+		}
+		switch nfsVersion {
+		case nfsVersion3:
+			nfsV3Access = true
+			protocolTypes = []string{api.ProtocolTypeNFSv3}
+		case nfsVersion4:
+			fallthrough
+		case nfsVersion41:
+			nfsV41Access = true
+			protocolTypes = []string{api.ProtocolTypeNFSv41}
+		}
 
-	apiExportRule := api.ExportRule{
-		AllowedClients: pool.InternalAttributes()[ExportRule],
-		Cifs:           cifsAccess,
-		Nfsv3:          nfsV3Access,
-		Nfsv41:         nfsV41Access,
-		RuleIndex:      1,
-		UnixReadOnly:   false,
-		UnixReadWrite:  true,
-	}
-	exportPolicy := api.ExportPolicy{
-		Rules: []api.ExportRule{apiExportRule},
+		apiExportRule = api.ExportRule{
+			AllowedClients: pool.InternalAttributes()[ExportRule],
+			Cifs:           cifsAccess,
+			Nfsv3:          nfsV3Access,
+			Nfsv41:         nfsV41Access,
+			RuleIndex:      1,
+			UnixReadOnly:   false,
+			UnixReadWrite:  true,
+		}
+		exportPolicy = api.ExportPolicy{
+			Rules: []api.ExportRule{apiExportRule},
+		}
 	}
 
 	labels := make(map[string]string)
@@ -807,16 +813,27 @@ func (d *NFSStorageDriver) Create(
 		return fmt.Errorf("no subnets found for storage pool %s", pool.Name())
 	}
 
-	Logc(ctx).WithFields(log.Fields{
-		"creationToken":   name,
-		"size":            sizeBytes,
-		"unixPermissions": unixPermissions,
-		"serviceLevel":    serviceLevel,
-		"snapshotDir":     snapshotDirBool,
-		"protocolTypes":   protocolTypes,
-		"exportPolicy":    fmt.Sprintf("%+v", exportPolicy),
-		"networkFeatures": networkFeatures,
-	}).Debug("Creating volume.")
+	if d.Config.NASType == sa.SMB {
+		Logc(ctx).WithFields(log.Fields{
+			"creationToken":   name,
+			"size":            sizeBytes,
+			"serviceLevel":    serviceLevel,
+			"snapshotDir":     snapshotDirBool,
+			"protocolTypes":   protocolTypes,
+			"networkFeatures": networkFeatures,
+		}).Debug("Creating volume.")
+	} else {
+		Logc(ctx).WithFields(log.Fields{
+			"creationToken":   name,
+			"size":            sizeBytes,
+			"unixPermissions": unixPermissions,
+			"serviceLevel":    serviceLevel,
+			"snapshotDir":     snapshotDirBool,
+			"protocolTypes":   protocolTypes,
+			"exportPolicy":    fmt.Sprintf("%+v", exportPolicy),
+			"networkFeatures": networkFeatures,
+		}).Debug("Creating volume.")
+	}
 
 	createRequest := &api.FilesystemCreateRequest{
 		ResourceGroup:     cPool.ResourceGroup,
@@ -825,13 +842,17 @@ func (d *NFSStorageDriver) Create(
 		Name:              volConfig.Name,
 		SubnetID:          subnet.ID,
 		CreationToken:     name,
-		ExportPolicy:      exportPolicy,
 		Labels:            labels,
 		ProtocolTypes:     protocolTypes,
 		QuotaInBytes:      int64(sizeBytes),
 		SnapshotDirectory: snapshotDirBool,
-		UnixPermissions:   unixPermissions,
 		NetworkFeatures:   networkFeatures,
+	}
+
+	// Add unix permissions and export policy fields only to NFS volume
+	if d.Config.NASType == sa.NFS {
+		createRequest.UnixPermissions = unixPermissions
+		createRequest.ExportPolicy = exportPolicy
 	}
 
 	// Create the volume
@@ -848,7 +869,7 @@ func (d *NFSStorageDriver) Create(
 }
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
-func (d *NFSStorageDriver) CreateClone(
+func (d *NASStorageDriver) CreateClone(
 	ctx context.Context, sourceVolConfig, cloneVolConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
 	name := cloneVolConfig.InternalName
@@ -858,7 +879,7 @@ func (d *NFSStorageDriver) CreateClone(
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":   "CreateClone",
-			"Type":     "NFSStorageDriver",
+			"Type":     "NASStorageDriver",
 			"name":     name,
 			"source":   source,
 			"snapshot": snapshot,
@@ -1025,11 +1046,11 @@ func (d *NFSStorageDriver) CreateClone(
 
 // Import finds an existing volume and makes it available for containers.  If ImportNotManaged is false, the
 // volume is fully brought under Trident's management.
-func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
+func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "Import",
-			"Type":         "NFSStorageDriver",
+			"Type":         "NASStorageDriver",
 			"originalName": originalName,
 			"newName":      volConfig.InternalName,
 		}
@@ -1117,11 +1138,11 @@ func (d *NFSStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 }
 
 // Rename changes the name of a volume.  Not supported by this driver.
-func (d *NFSStorageDriver) Rename(ctx context.Context, name, newName string) error {
+func (d *NASStorageDriver) Rename(ctx context.Context, name, newName string) error {
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":  "Rename",
-			"Type":    "NFSStorageDriver",
+			"Type":    "NASStorageDriver",
 			"name":    name,
 			"newName": newName,
 		}
@@ -1136,7 +1157,7 @@ func (d *NFSStorageDriver) Rename(ctx context.Context, name, newName string) err
 }
 
 // getTelemetryLabels builds the standard telemetry labels that are set on each volume.
-func (d *NFSStorageDriver) getTelemetryLabels(ctx context.Context) string {
+func (d *NASStorageDriver) getTelemetryLabels(ctx context.Context) string {
 	telemetry := map[string]Telemetry{drivers.TridentLabelTag: *d.telemetry}
 
 	telemetryJSON, err := json.Marshal(telemetry)
@@ -1148,7 +1169,7 @@ func (d *NFSStorageDriver) getTelemetryLabels(ctx context.Context) string {
 }
 
 // updateTelemetryLabels updates a volume's labels to include the standard telemetry labels.
-func (d *NFSStorageDriver) updateTelemetryLabels(ctx context.Context, volume *api.FileSystem) map[string]string {
+func (d *NASStorageDriver) updateTelemetryLabels(ctx context.Context, volume *api.FileSystem) map[string]string {
 	if volume.Labels == nil {
 		volume.Labels = make(map[string]string)
 	}
@@ -1161,7 +1182,7 @@ func (d *NFSStorageDriver) updateTelemetryLabels(ctx context.Context, volume *ap
 // waitForVolumeCreate waits for volume creation to complete by reaching the Available state.  If the
 // volume reaches a terminal state (Error), the volume is deleted.  If the wait times out and the volume
 // is still creating, a VolumeCreatingError is returned so the caller may try again.
-func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.FileSystem) error {
+func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.FileSystem) error {
 	state, err := d.SDK.WaitForVolumeState(
 		ctx, volume, api.StateAvailable, []string{api.StateError}, d.volumeCreateTimeout)
 	if err != nil {
@@ -1205,13 +1226,13 @@ func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 }
 
 // Destroy deletes a volume.
-func (d *NFSStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
+func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Destroy",
-			"Type":   "NFSStorageDriver",
+			"Type":   "NASStorageDriver",
 			"name":   name,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> Destroy")
@@ -1253,7 +1274,7 @@ func (d *NFSStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
-func (d *NFSStorageDriver) Publish(
+func (d *NASStorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
@@ -1261,7 +1282,7 @@ func (d *NFSStorageDriver) Publish(
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "Publish",
-			"Type":   "NFSStorageDriver",
+			"Type":   "NASStorageDriver",
 			"name":   name,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> Publish")
@@ -1304,12 +1325,12 @@ func (d *NFSStorageDriver) Publish(
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
-func (d *NFSStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
+func (d *NASStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
 	return nil
 }
 
 // GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
-func (d *NFSStorageDriver) GetSnapshot(
+func (d *NASStorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 	internalSnapName := snapConfig.InternalName
@@ -1318,7 +1339,7 @@ func (d *NFSStorageDriver) GetSnapshot(
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "GetSnapshot",
-			"Type":         "NFSStorageDriver",
+			"Type":         "NASStorageDriver",
 			"snapshotName": internalSnapName,
 			"volumeName":   internalVolName,
 		}
@@ -1371,7 +1392,7 @@ func (d *NFSStorageDriver) GetSnapshot(
 }
 
 // GetSnapshots returns the list of snapshots associated with the specified volume.
-func (d *NFSStorageDriver) GetSnapshots(
+func (d *NASStorageDriver) GetSnapshots(
 	ctx context.Context, volConfig *storage.VolumeConfig,
 ) ([]*storage.Snapshot, error) {
 	internalVolName := volConfig.InternalName
@@ -1379,7 +1400,7 @@ func (d *NFSStorageDriver) GetSnapshots(
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":     "GetSnapshots",
-			"Type":       "NFSStorageDriver",
+			"Type":       "NASStorageDriver",
 			"volumeName": internalVolName,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> GetSnapshots")
@@ -1429,7 +1450,7 @@ func (d *NFSStorageDriver) GetSnapshots(
 }
 
 // CreateSnapshot creates a snapshot for the given volume.
-func (d *NFSStorageDriver) CreateSnapshot(
+func (d *NASStorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 	internalSnapName := snapConfig.InternalName
@@ -1438,7 +1459,7 @@ func (d *NFSStorageDriver) CreateSnapshot(
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "CreateSnapshot",
-			"Type":         "NFSStorageDriver",
+			"Type":         "NASStorageDriver",
 			"snapshotName": internalSnapName,
 			"volumeName":   internalVolName,
 		}
@@ -1487,7 +1508,7 @@ func (d *NFSStorageDriver) CreateSnapshot(
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.  Not supported by this driver.
-func (d *NFSStorageDriver) RestoreSnapshot(
+func (d *NASStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
 	internalSnapName := snapConfig.InternalName
@@ -1496,7 +1517,7 @@ func (d *NFSStorageDriver) RestoreSnapshot(
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "RestoreSnapshot",
-			"Type":         "NFSStorageDriver",
+			"Type":         "NASStorageDriver",
 			"snapshotName": internalSnapName,
 			"volumeName":   internalVolName,
 		}
@@ -1508,7 +1529,7 @@ func (d *NFSStorageDriver) RestoreSnapshot(
 }
 
 // DeleteSnapshot deletes a snapshot of a volume.
-func (d *NFSStorageDriver) DeleteSnapshot(
+func (d *NASStorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) error {
 	internalSnapName := snapConfig.InternalName
@@ -1517,7 +1538,7 @@ func (d *NFSStorageDriver) DeleteSnapshot(
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":       "DeleteSnapshot",
-			"Type":         "NFSStorageDriver",
+			"Type":         "NASStorageDriver",
 			"snapshotName": internalSnapName,
 			"volumeName":   internalVolName,
 		}
@@ -1560,9 +1581,9 @@ func (d *NFSStorageDriver) DeleteSnapshot(
 }
 
 // List returns the list of volumes associated with this backend.
-func (d *NFSStorageDriver) List(ctx context.Context) ([]string, error) {
+func (d *NASStorageDriver) List(ctx context.Context) ([]string, error) {
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "List", "Type": "NFSStorageDriver"}
+		fields := log.Fields{"Method": "List", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> List")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< List")
 	}
@@ -1601,9 +1622,9 @@ func (d *NFSStorageDriver) List(ctx context.Context) ([]string, error) {
 }
 
 // Get tests for the existence of a volume.
-func (d *NFSStorageDriver) Get(ctx context.Context, name string) error {
+func (d *NASStorageDriver) Get(ctx context.Context, name string) error {
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "Get", "Type": "NFSStorageDriver"}
+		fields := log.Fields{"Method": "Get", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> Get")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Get")
 	}
@@ -1621,13 +1642,13 @@ func (d *NFSStorageDriver) Get(ctx context.Context, name string) error {
 }
 
 // Resize increases a volume's quota.
-func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method":    "Resize",
-			"Type":      "NFSStorageDriver",
+			"Type":      "NASStorageDriver",
 			"name":      name,
 			"sizeBytes": sizeBytes,
 		}
@@ -1689,7 +1710,7 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 }
 
 // GetStorageBackendSpecs retrieves storage capabilities and register pools with specified backend.
-func (d *NFSStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
+func (d *NASStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
 	backend.SetName(d.BackendName())
 
 	for _, pool := range d.pools {
@@ -1701,18 +1722,18 @@ func (d *NFSStorageDriver) GetStorageBackendSpecs(_ context.Context, backend sto
 }
 
 // CreatePrepare is called prior to volume creation.  Currently its only role is to create the internal volume name.
-func (d *NFSStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
+func (d *NASStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
 	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig.Name)
 }
 
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
-func (d *NFSStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
+func (d *NASStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return []string{}
 }
 
 // GetInternalVolumeName accepts the name of a volume being created and returns what the internal name
 // should be, depending on backend requirements and Trident's operating context.
-func (d *NFSStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
+func (d *NASStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return *d.Config.StoragePrefix + name
@@ -1729,13 +1750,13 @@ func (d *NFSStorageDriver) GetInternalVolumeName(ctx context.Context, name strin
 }
 
 // CreateFollowup is called after volume creation and sets the access info in the volume config.
-func (d *NFSStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
+func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	name := volConfig.InternalName
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "CreateFollowup",
-			"Type":   "NFSStorageDriver",
+			"Type":   "NASStorageDriver",
 			"name":   name,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> CreateFollowup")
@@ -1771,20 +1792,20 @@ func (d *NFSStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 }
 
 // GetProtocol returns the protocol supported by this driver (File).
-func (d *NFSStorageDriver) GetProtocol(context.Context) tridentconfig.Protocol {
+func (d *NASStorageDriver) GetProtocol(context.Context) tridentconfig.Protocol {
 	return tridentconfig.File
 }
 
 // StoreConfig adds this backend's config to the persistent config struct, as needed by Trident's persistence layer.
-func (d *NFSStorageDriver) StoreConfig(_ context.Context, b *storage.PersistentStorageBackendConfig) {
+func (d *NASStorageDriver) StoreConfig(_ context.Context, b *storage.PersistentStorageBackendConfig) {
 	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
 	b.AzureConfig = &d.Config
 }
 
 // GetExternalConfig returns returns a clone of this backend's config, sanitized for external consumption.
-func (d *NFSStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
+func (d *NASStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
-	var cloneConfig drivers.AzureNFSStorageDriverConfig
+	var cloneConfig drivers.AzureNASStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
 	cloneConfig.ClientSecret = utils.REDACTED // redact the Secret
 	cloneConfig.Credentials = map[string]string{
@@ -1797,7 +1818,7 @@ func (d *NFSStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 // GetVolumeExternal queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
 // representation of the volume.
-func (d *NFSStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
+func (d *NASStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
 	// Update resource cache as needed
 	if err := d.SDK.RefreshAzureResources(ctx); err != nil {
 		return nil, fmt.Errorf("could not update ANF resource cache; %v", err)
@@ -1815,9 +1836,9 @@ func (d *NFSStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
 // container volumes managed by this driver.  It then writes a VolumeExternal
 // representation of each volume to the supplied channel, closing the channel
 // when finished.
-func (d *NFSStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channel chan *storage.VolumeExternalWrapper) {
+func (d *NASStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channel chan *storage.VolumeExternalWrapper) {
 	if d.Config.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "GetVolumeExternalWrappers", "Type": "NFSStorageDriver"}
+		fields := log.Fields{"Method": "GetVolumeExternalWrappers", "Type": "NASStorageDriver"}
 		Logc(ctx).WithFields(fields).Debug(">>>> GetVolumeExternalWrappers")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< GetVolumeExternalWrappers")
 	}
@@ -1861,7 +1882,7 @@ func (d *NFSStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 // getExternalVolume is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
-func (d *NFSStorageDriver) getVolumeExternal(volumeAttrs *api.FileSystem) *storage.VolumeExternal {
+func (d *NASStorageDriver) getVolumeExternal(volumeAttrs *api.FileSystem) *storage.VolumeExternal {
 	volumeConfig := &storage.VolumeConfig{
 		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            volumeAttrs.Name,
@@ -1886,20 +1907,20 @@ func (d *NFSStorageDriver) getVolumeExternal(volumeAttrs *api.FileSystem) *stora
 	}
 }
 
-// String implements stringer interface for the NFSStorageDriver driver.
-func (d NFSStorageDriver) String() string {
+// String implements stringer interface for the NASStorageDriver driver.
+func (d NASStorageDriver) String() string {
 	return utils.ToStringRedacted(&d, []string{"SDK"}, d.GetExternalConfig(context.Background()))
 }
 
-// GoString implements GoStringer interface for the NFSStorageDriver driver.
-func (d NFSStorageDriver) GoString() string {
+// GoString implements GoStringer interface for the NASStorageDriver driver.
+func (d NASStorageDriver) GoString() string {
 	return d.String()
 }
 
 // GetUpdateType returns a bitmap populated with updates to the driver.
-func (d *NFSStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driver) *roaring.Bitmap {
+func (d *NASStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driver) *roaring.Bitmap {
 	bitmap := roaring.New()
-	dOrig, ok := driverOrig.(*NFSStorageDriver)
+	dOrig, ok := driverOrig.(*NASStorageDriver)
 	if !ok {
 		bitmap.Add(storage.InvalidUpdate)
 		return bitmap
@@ -1918,11 +1939,11 @@ func (d *NFSStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.D
 
 // ReconcileNodeAccess updates a per-backend export policy to match the set of Kubernetes cluster
 // nodes.  Not supported by this driver.
-func (d *NFSStorageDriver) ReconcileNodeAccess(ctx context.Context, _ []*utils.Node, _ string) error {
+func (d *NASStorageDriver) ReconcileNodeAccess(ctx context.Context, _ []*utils.Node, _ string) error {
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
 			"Method": "ReconcileNodeAccess",
-			"Type":   "NFSStorageDriver",
+			"Type":   "NASStorageDriver",
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> ReconcileNodeAccess")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< ReconcileNodeAccess")
@@ -1940,6 +1961,6 @@ func validateStoragePrefix(storagePrefix string) error {
 }
 
 // GetCommonConfig returns driver's CommonConfig
-func (d NFSStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+func (d NASStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
 }

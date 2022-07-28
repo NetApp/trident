@@ -93,8 +93,8 @@ func NewStorageBackendForConfig(
 		storageDriver = &ontap.SANEconomyStorageDriver{}
 	case drivers.SolidfireSANStorageDriverName:
 		storageDriver = &solidfire.SANStorageDriver{}
-	case drivers.AzureNFSStorageDriverName:
-		storageDriver = &azure.NFSStorageDriver{}
+	case drivers.AzureNASStorageDriverName:
+		storageDriver = &azure.NASStorageDriver{}
 	case drivers.AzureNASBlockStorageDriverName:
 		storageDriver = &azure.NASBlockStorageDriver{}
 	case drivers.GCPNFSStorageDriverName:
