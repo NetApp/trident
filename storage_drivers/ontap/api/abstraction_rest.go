@@ -1602,7 +1602,7 @@ func (d OntapAPIREST) isLunMapped(
 					if err != nil {
 						return alreadyMapped, lunID, err
 					}
-					if lun != nil || lun.LunMaps != nil {
+					if lun != nil && len(lun.LunMaps) > 0 {
 						lunID = int(lun.LunMaps[0].LogicalUnitNumber)
 						alreadyMapped = true
 
@@ -1924,7 +1924,7 @@ func (d OntapAPIREST) isIgroupAdded(ctx context.Context, initiator, initiatorGro
 	if err != nil {
 		return alreadyAdded, err
 	}
-	if igroup != nil || igroup.Initiators != nil {
+	if igroup != nil {
 		for _, i := range igroup.Initiators {
 			if i.Name == initiator {
 				Logc(ctx).Debugf("Initiator %v already in Igroup %v", initiator, initiatorGroupName)
