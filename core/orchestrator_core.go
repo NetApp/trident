@@ -2930,37 +2930,40 @@ func (o *TridentOrchestrator) publishVolume(
 		return fmt.Errorf("backend %s not found", volume.BackendUUID)
 	}
 
-	// Check if we're confident our publication status is synced with the container orchestrator
-	if !o.volumePublicationsSynced {
-		err := o.updatePublicationSyncStatus(ctx)
-		if err != nil {
-			msg := "error updating volume publication sync status"
-			Logc(ctx).WithError(err).Error(msg)
-			return fmt.Errorf(msg)
-		}
-	}
-	// Enable publish enforcement if the volume is currently not published anywhere and isn't already enforced
-	if !volume.Config.AccessInfo.PublishEnforcement {
-		// Only enforce volume publication access if we're confident we're synced with the container orchestrator
-		if o.volumePublicationsSynced {
-			publications := o.listVolumePublicationsForVolume(ctx, volumeName)
-			// If there are no volume publications or the only publication is the current one, we can enable enforcement
-			var safeToEnable bool
-			switch len(publications) {
-			case 0:
-				safeToEnable = true
-			case 1:
-				if publications[0].VolumeName == volumeName {
-					safeToEnable = true
-				}
-			default:
-				safeToEnable = false
+	// We only need to worry about publications in CSI deployments
+	if config.CurrentDriverContext == config.ContextCSI {
+		// Check if we're confident our publication status is synced with the container orchestrator
+		if !o.volumePublicationsSynced {
+			err := o.updatePublicationSyncStatus(ctx)
+			if err != nil {
+				msg := "error updating volume publication sync status"
+				Logc(ctx).WithError(err).Error(msg)
+				return fmt.Errorf(msg)
 			}
-			if safeToEnable {
-				err := backend.EnablePublishEnforcement(ctx, volume)
-				if err != nil {
-					Logc(ctx).WithError(err).Warnf("Error enabling volume publish enforcement for volume %s",
-						volumeName)
+		}
+		// Enable publish enforcement if the volume is currently not published anywhere and isn't already enforced
+		if !volume.Config.AccessInfo.PublishEnforcement {
+			// Only enforce volume publication access if we're confident we're synced with the container orchestrator
+			if o.volumePublicationsSynced {
+				publications := o.listVolumePublicationsForVolume(ctx, volumeName)
+				// If there are no volume publications or the only publication is the current one, we can enable enforcement
+				var safeToEnable bool
+				switch len(publications) {
+				case 0:
+					safeToEnable = true
+				case 1:
+					if publications[0].VolumeName == volumeName {
+						safeToEnable = true
+					}
+				default:
+					safeToEnable = false
+				}
+				if safeToEnable {
+					err := backend.EnablePublishEnforcement(ctx, volume)
+					if err != nil {
+						Logc(ctx).WithError(err).Warnf("Error enabling volume publish enforcement for volume %s",
+							volumeName)
+					}
 				}
 			}
 		}

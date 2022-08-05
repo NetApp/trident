@@ -526,6 +526,9 @@ func TestGetChapInfo(t *testing.T) {
 
 func TestOntapSanUnpublish(t *testing.T) {
 	ctx := context.Background()
+	originalContext := tridentconfig.CurrentDriverContext
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
 
 	type args struct {
 		publishEnforcement bool

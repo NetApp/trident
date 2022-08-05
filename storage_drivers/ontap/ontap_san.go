@@ -762,7 +762,7 @@ func (d *SANStorageDriver) Publish(
 	lunPath := lunPath(name)
 	igroupName := d.Config.IgroupName
 	// Use the node specific igroup if publish enforcement is enabled
-	if volConfig.AccessInfo.PublishEnforcement {
+	if volConfig.AccessInfo.PublishEnforcement && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
 		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
 		err = ensureIGroupExistsAbstraction(ctx, d.GetAPI(), igroupName)
 	}
@@ -801,7 +801,7 @@ func (d *SANStorageDriver) Unpublish(
 		defer Logc(ctx).WithFields(fields).Debug("<<<< Unpublish")
 	}
 
-	if !volConfig.AccessInfo.PublishEnforcement {
+	if !volConfig.AccessInfo.PublishEnforcement || tridentconfig.CurrentDriverContext != tridentconfig.ContextCSI {
 		// Nothing to do if publish enforcement is not enabled
 		return nil
 	}
@@ -1005,8 +1005,8 @@ func (d *SANStorageDriver) GetInternalVolumeName(_ context.Context, name string)
 }
 
 func (d *SANStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
-	if !volConfig.ImportNotManaged {
-		// All new ONTAP SAN volumes start with publish enforcement on, unless they're unmanaged imports
+	if !volConfig.ImportNotManaged && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
+		// All new CSI ONTAP SAN volumes start with publish enforcement on, unless they're unmanaged imports
 		volConfig.AccessInfo.PublishEnforcement = true
 	}
 	createPrepareCommon(ctx, d, volConfig)
