@@ -1110,7 +1110,7 @@ func (d OntapAPIREST) VolumeCloneCreate(ctx context.Context, cloneName, sourceNa
 		return fmt.Errorf("error creating clone: %v", err)
 	}
 
-	return d.pollVolumeExistence(ctx, cloneName)
+	return nil
 }
 
 func (d OntapAPIREST) VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {

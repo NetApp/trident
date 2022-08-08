@@ -1060,7 +1060,7 @@ func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volu
 	params.HTTPClient = c.httpClient
 
 	params.SVMNameQueryParameter = &c.svmName
-	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"name"})
 
 	params.SetCloneParentVolumeNameQueryParameter(ToStringPointer(volumeName))
 	params.SetCloneParentSnapshotNameQueryParameter(ToStringPointer(snapshotName))
@@ -1406,7 +1406,7 @@ func (c RestClient) SnapshotListByName(ctx context.Context, volumeUUID, snapshot
 	params.NameQueryParameter = ToStringPointer(snapshotName)
 
 	params.SVMNameQueryParameter = ToStringPointer(c.svmName)
-	params.SetFieldsQueryParameter([]string{"**"}) // TODO trim these down to just what we need
+	params.SetFieldsQueryParameter([]string{"name", "create_time"})
 
 	return c.api.Storage.SnapshotCollectionGet(params, c.authInfo)
 }
