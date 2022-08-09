@@ -14,11 +14,11 @@ func TestLockCreated(t *testing.T) {
 	Lock(ctx(), "testContext", "myLock")
 	defer Unlock(ctx(), "testContext", "myLock")
 
-	if _, ok := sharedLocks.lockMap["myLock"]; !ok {
+	if _, ok := sharedLocks.Load("myLock"); !ok {
 		t.Error("Expected lock myLock to exist.")
 	}
 
-	if _, ok := sharedLocks.lockMap["myLock2"]; ok {
+	if _, ok := sharedLocks.Load("myLock2"); ok {
 		t.Error("Did not expect lock myLock2 to exist.")
 	}
 }
@@ -27,12 +27,12 @@ func TestLockReused(t *testing.T) {
 	Lock(ctx(), "testContext", "reuseLock")
 	Unlock(ctx(), "testContext", "reuseLock")
 
-	lock1 := sharedLocks.lockMap["reuseLock"]
+	lock1, _ := sharedLocks.Load("reuseLock")
 
 	Lock(ctx(), "testContext", "reuseLock")
 	Unlock(ctx(), "testContext", "reuseLock")
 
-	lock2 := sharedLocks.lockMap["reuseLock"]
+	lock2, _ := sharedLocks.Load("reuseLock")
 
 	if lock1 != lock2 {
 		t.Error("Expected locks to match.")
@@ -79,6 +79,11 @@ func TestLockBehavior(t *testing.T) {
 	r := make(chan string, 2)
 	m1 := make(chan string, 3)
 	m2 := make(chan string, 3)
+
+	// We could introduce a delay between the methods but that would involve
+	// leaving control to the go runtime to execute the methods. The proper
+	// fix would be to ensure the methods are not sharing variables in a
+	// concurrent context
 	go acquire1(m1, r)
 	go acquire2(m2, r)
 

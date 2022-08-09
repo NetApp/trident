@@ -22,13 +22,13 @@ const (
 func (o *TridentOrchestrator) StartTransactionMonitor(
 	ctx context.Context, txnPeriod, txnMaxAge time.Duration,
 ) {
+	o.txnMonitorTicker = time.NewTicker(txnPeriod)
+	o.txnMonitorChannel = make(chan struct{})
+	Logc(ctx).Debug("Transaction monitor started.")
+
+	// Perform the check once and run it in a goroutine for every tick
+	o.checkLongRunningTransactions(ctx, txnMaxAge)
 	go func() {
-		o.txnMonitorTicker = time.NewTicker(txnPeriod)
-		o.txnMonitorChannel = make(chan struct{})
-		Logc(ctx).Debug("Transaction monitor started.")
-
-		o.checkLongRunningTransactions(ctx, txnMaxAge)
-
 		for {
 			select {
 			case tick := <-o.txnMonitorTicker.C:

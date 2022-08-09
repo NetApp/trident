@@ -30,7 +30,11 @@ func init() {
 }
 
 func waitForTransactionMontitorToStart(o *TridentOrchestrator) {
-	if o.txnMonitorChannel == nil {
+	// wait for the transaction monitor goroutine to be started
+	for {
+		if o.bootstrapped {
+			break
+		}
 		time.Sleep(1 * time.Second)
 	}
 }
@@ -53,7 +57,7 @@ func TestStartStop(t *testing.T) {
 
 // TestLongRunningTransaction uses the Fake driver to simulate Kubernetes sending multiple calls to create a volume.
 func TestLongRunningTransaction(t *testing.T) {
-	o, storeClient := setupOrchestratorAndBackend(t)
+	o, storeClient := setupOrchestratorAndBackend(t, true)
 
 	volName := fakeDriver.PVC_creating_01
 	volumeConfig := tu.GenerateVolumeConfig(volName, 1, "slow", config.File)
@@ -91,8 +95,8 @@ func TestLongRunningTransaction(t *testing.T) {
 
 // TestCancelledLongRunningTransaction tests that a transaction older than the max age is cancelled.
 func TestCancelledLongRunningTransaction(t *testing.T) {
-	o, storeClient := setupOrchestratorAndBackend(t)
-	restartTransactionMonitor(o)
+	// Disable transaction monitor for now and then restart later with a slower tick interval
+	o, storeClient := setupOrchestratorAndBackend(t, false)
 
 	volName := fakeDriver.PVC_creating_01
 	volumeConfig := tu.GenerateVolumeConfig(volName, 1, "slow", config.File)
@@ -112,6 +116,12 @@ func TestCancelledLongRunningTransaction(t *testing.T) {
 
 	// Allow time to check for expired transaction and to reap the transaction
 	time.Sleep(maxAge + (2 * time.Second))
+
+	// now restart the transaction monitor with a helper method with lesser tick
+	// interval for running the check that cleans up long running transactions
+	restartTransactionMonitor(o)
+	waitForTransactionMontitorToStart(o)
+
 	volTxns, err = storeClient.GetVolumeTransactions(ctx())
 	if err != nil {
 		t.Errorf("failed to get volume transactions: %v", err)
@@ -121,8 +131,7 @@ func TestCancelledLongRunningTransaction(t *testing.T) {
 
 // TestUpdateTransactionVolumeCreatingTransaction tests that a VolumeCreatingTransaction can be updated.
 func TestUpdateVolumeCreatingTransaction(t *testing.T) {
-	o, storeClient := setupOrchestratorAndBackend(t)
-	restartTransactionMonitor(o)
+	o, storeClient := setupOrchestratorAndBackend(t, true)
 
 	volName := fakeDriver.PVC_creating_01
 	volumeConfig := tu.GenerateVolumeConfig(volName, 1, "slow", config.File)
@@ -158,8 +167,7 @@ func TestUpdateVolumeCreatingTransaction(t *testing.T) {
 
 // TestErrorVolumeCreatingTransaction tests that the VolumeCreatingTransaction is deleted if an error is thrown
 func TestErrorVolumeCreatingTransaction(t *testing.T) {
-	o, storeClient := setupOrchestratorAndBackend(t)
-	restartTransactionMonitor(o)
+	o, storeClient := setupOrchestratorAndBackend(t, true)
 
 	volName := fakeDriver.PVC_creating_02
 	volumeConfig := tu.GenerateVolumeConfig(volName, 1, "slow", config.File)
@@ -193,8 +201,7 @@ func TestErrorVolumeCreatingTransaction(t *testing.T) {
 
 // TestVolumeCreatingTwoTransaction tests that two volumeCreatingTransactions work as expected
 func TestVolumeCreatingTwoTransactions(t *testing.T) {
-	o, storeClient := setupOrchestratorAndBackend(t)
-	restartTransactionMonitor(o)
+	o, storeClient := setupOrchestratorAndBackend(t, true)
 
 	volName := "volToClone_01"
 	cloneName := fakeDriver.PVC_creating_clone_03
@@ -256,10 +263,10 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 	assert.Equal(t, volName02, volTxns[0].VolumeCreatingConfig.InternalName, "failed to find matching transaction")
 }
 
-func setupOrchestratorAndBackend(t *testing.T) (*TridentOrchestrator, *persistentstore.InMemoryClient) {
+func setupOrchestratorAndBackend(t *testing.T, monitorTransactions bool) (*TridentOrchestrator, *persistentstore.InMemoryClient) {
 	storeClient := persistentstore.NewInMemoryClient()
 	o := NewTridentOrchestrator(storeClient)
-	if err := o.Bootstrap(true); err != nil {
+	if err := o.Bootstrap(monitorTransactions); err != nil {
 		t.Errorf("Failure occurred during bootstrapping %v", err)
 	}
 	// Wait for bootstrap to complete
@@ -299,6 +306,10 @@ func setupOrchestratorAndBackend(t *testing.T) (*TridentOrchestrator, *persisten
 func restartTransactionMonitor(o *TridentOrchestrator) {
 	// Bootstrap starts the transaction monitor.
 	// Need to stop and reinitialize transaction monitor with testable limits.
+
+	// Does not need to be used for all the test cases by default as it introduces a data race within the
+	// orchestrator variables if immediately called after NewTridentOrchestrator, which does start the
+	// transaction monitor as part of the bootstrap
 	o.StopTransactionMonitor()
 	o.StartTransactionMonitor(ctx(), period, maxAge)
 	time.Sleep(1 * time.Second)

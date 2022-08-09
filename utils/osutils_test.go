@@ -108,10 +108,10 @@ func TestShellProcess(t *testing.T) {
 // fakeExecCommand is a function that initialises a new exec.Cmd, one which will
 // simply call TestShellProcess rather than the command it is provided. It will
 // also pass through the command and its arguments as an argument to TestShellProcess
-func fakeExecCommand(command string, args ...string) *exec.Cmd {
+func fakeExecCommand(ctx context.Context, command string, args ...string) *exec.Cmd {
 	cs := []string{"-test.run=TestShellProcess", "--", command}
 	cs = append(cs, args...)
-	cmd := exec.Command(os.Args[0], cs...)
+	cmd := exec.CommandContext(ctx, os.Args[0], cs...)
 	cmd.Env = []string{
 		"GO_TEST=1", fmt.Sprintf("GO_TEST_RETURN_VALUE=%s", execReturnValue),
 		fmt.Sprintf("GO_TEST_RETURN_CODE=%d", execReturnCode), fmt.Sprintf("GO_TEST_DELAY=%s", execDelay),
@@ -123,7 +123,7 @@ func Test_multipathdIsRunning(t *testing.T) {
 	ExecCommand = fakeExecCommand
 	// Reset exec command after tests
 	defer func() {
-		ExecCommand = exec.Command
+		ExecCommand = exec.CommandContext
 	}()
 	tests := []struct {
 		name          string
@@ -149,7 +149,7 @@ func Test_execCommand(t *testing.T) {
 	ExecCommand = fakeExecCommand
 	// Reset exec command after tests
 	defer func() {
-		ExecCommand = exec.Command
+		ExecCommand = exec.CommandContext
 	}()
 	type args struct {
 		ctx  context.Context
@@ -190,7 +190,7 @@ func Test_execCommandRedacted(t *testing.T) {
 	ExecCommand = fakeExecCommand
 	// Reset exec command after tests
 	defer func() {
-		ExecCommand = exec.Command
+		ExecCommand = exec.CommandContext
 	}()
 	type args struct {
 		ctx             context.Context
@@ -236,7 +236,7 @@ func Test_execCommandWithTimeout(t *testing.T) {
 	ExecCommand = fakeExecCommand
 	// Reset exec command after tests
 	defer func() {
-		ExecCommand = exec.Command
+		ExecCommand = exec.CommandContext
 	}()
 	type args struct {
 		ctx            context.Context

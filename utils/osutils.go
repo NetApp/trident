@@ -29,7 +29,7 @@ var (
 
 	chrootPathPrefix string
 
-	ExecCommand = exec.Command
+	ExecCommand = exec.CommandContext
 )
 
 func init() {
@@ -86,7 +86,11 @@ func execCommand(ctx context.Context, name string, args ...string) ([]byte, erro
 		"args":    args,
 	}).Debug(">>>> osutils.execCommand.")
 
-	out, err := ExecCommand(name, args...).CombinedOutput()
+	// create context with a cancellation
+	cancelCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	out, err := ExecCommand(cancelCtx, name, args...).CombinedOutput()
 
 	Logc(ctx).WithFields(log.Fields{
 		"command": name,
@@ -97,7 +101,7 @@ func execCommand(ctx context.Context, name string, args ...string) ([]byte, erro
 	return out, err
 }
 
-// execCommand invokes an external process, and redacts sensitive arguments
+// execCommandRedacted invokes an external process, and redacts sensitive arguments
 func execCommandRedacted(ctx context.Context, name string, args []string,
 	secretsToRedact map[string]string,
 ) ([]byte, error) {
@@ -118,7 +122,10 @@ func execCommandRedacted(ctx context.Context, name string, args []string,
 		"args":    sanitizedArgs,
 	}).Debug(">>>> osutils.execCommand.")
 
-	out, err := ExecCommand(name, args...).CombinedOutput()
+	// create context with a cancellation
+	cancelCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	out, err := ExecCommand(cancelCtx, name, args...).CombinedOutput()
 
 	Logc(ctx).WithFields(log.Fields{
 		"command": name,
@@ -135,7 +142,8 @@ type execCommandResult struct {
 	Error  error
 }
 
-// execCommand invokes an external shell command
+// execCommandWithTimeout invokes an external shell command and lets it time out if it exceeds the
+// specified interval
 func execCommandWithTimeout(
 	ctx context.Context, name string, timeoutSeconds time.Duration, logOutput bool, args ...string,
 ) ([]byte, error) {
@@ -147,7 +155,11 @@ func execCommandWithTimeout(
 		"args":           args,
 	}).Debug(">>>> osutils.execCommandWithTimeout.")
 
-	cmd := ExecCommand(name, args...)
+	// create context with a cancellation
+	cancelCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	cmd := ExecCommand(cancelCtx, name, args...)
 	done := make(chan execCommandResult, 1)
 	var result execCommandResult
 
@@ -158,7 +170,10 @@ func execCommandWithTimeout(
 
 	select {
 	case <-time.After(timeout):
-		if err := cmd.Process.Kill(); err != nil {
+		// Without a proper cancel context, the goroutine that runs
+		// cmd will not be gracefully terminated
+		cancel()
+		if err := cancelCtx.Err(); err != nil {
 			Logc(ctx).WithFields(log.Fields{
 				"process": name,
 				"error":   err,

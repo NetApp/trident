@@ -68,7 +68,7 @@ func TestNFSActiveOnHost(t *testing.T) {
 	ExecCommand = fakeExecCommand
 	// Reset exec command after tests
 	defer func() {
-		ExecCommand = exec.Command
+		ExecCommand = exec.CommandContext
 	}()
 	type args struct {
 		ctx context.Context
@@ -121,7 +121,7 @@ func TestISCSIActiveOnHost(t *testing.T) {
 	ExecCommand = fakeExecCommand
 	// Reset exec command after tests
 	defer func() {
-		ExecCommand = exec.Command
+		ExecCommand = exec.CommandContext
 	}()
 	type args struct {
 		ctx  context.Context

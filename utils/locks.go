@@ -7,41 +7,20 @@ import (
 	. "github.com/netapp/trident/logger"
 )
 
-type locks struct {
-	lockMap    map[string]*sync.Mutex
-	createLock *sync.Mutex
-}
-
-var sharedLocks *locks
-
-// init initializes the shared locks struct exactly once per runtime.
-func init() {
-	sharedLocks = &locks{
-		lockMap:    map[string]*sync.Mutex{},
-		createLock: &sync.Mutex{},
-	}
-}
+// sync.Map is like a Go map[interface{}]interface{} but is safe for concurrent use by multiple
+// goroutines without additional locking or coordination.
+var sharedLocks sync.Map
 
 // getLock returns a mutex with the specified ID.  If the lock does not exist, one is created.
-// This method uses the check-lock-check pattern to defend against race conditions where multiple
-// callers try to get a non-existent lock at the same time.
+// This method uses sync.Map primitive (concurrency safe map) to defend against race conditions where multiple
+// callers try to get a lock at the same time.
 func getLock(ctx context.Context, lockID string) *sync.Mutex {
-	var lock *sync.Mutex
-	var ok bool
-
-	if lock, ok = sharedLocks.lockMap[lockID]; !ok {
-
-		sharedLocks.createLock.Lock()
-		defer sharedLocks.createLock.Unlock()
-
-		if lock, ok = sharedLocks.lockMap[lockID]; !ok {
-			lock = &sync.Mutex{}
-			sharedLocks.lockMap[lockID] = lock
-			Logc(ctx).WithField("lock", lockID).Debug("Created shared lock.")
-		}
+	newLock := &sync.Mutex{}
+	storedLock, loaded := sharedLocks.LoadOrStore(lockID, newLock)
+	if !loaded {
+		Logc(ctx).WithField("lock", lockID).Debug("Created shared lock.")
 	}
-
-	return lock
+	return storedLock.(*sync.Mutex)
 }
 
 // Lock acquires a mutex with the specified ID.  The mutex does not need to exist before
