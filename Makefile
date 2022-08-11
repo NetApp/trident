@@ -95,6 +95,8 @@ TRIDENT_TAG := ${REGISTRY_ADDR}/${TRIDENT_TAG}
 endif
 DIST_REGISTRY ?= docker.io/netapp
 TRIDENT_DIST_TAG := ${DIST_REGISTRY}/${TRIDENT_IMAGE}:${TRIDENT_VERSION}
+# Image name passed as a build argument for trident to use as the default trident image during install
+DEFAULT_TRIDENT_IMAGE_TAG ?= ${TRIDENT_DIST_TAG}
 
 ## trident operator variable
 OPERATOR_IMAGE ?= trident-operator
@@ -104,7 +106,7 @@ DEFAULT_TRIDENT_OPERATOR_IMAGE := ${DEFAULT_TRIDENT_OPERATOR_REPO}:${DEFAULT_TRI
 OPERATOR_DIST_TAG := ${DIST_REGISTRY}/${OPERATOR_IMAGE}:${TRIDENT_VERSION}
 
 # Go compiler flags need to be properly encapsulated with double quotes to handle spaces in values
-BUILD_FLAGS = "-s -w -X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${TRIDENT_CONFIG_PKG}.BuildImage=$(TRIDENT_DIST_TAG)\" -X \"${OPERATOR_CONFIG_PKG}.BuildImage=$(OPERATOR_DIST_TAG)\""
+BUILD_FLAGS = "-s -w -X \"${TRIDENT_CONFIG_PKG}.BuildHash=$(GITHASH)\" -X \"${TRIDENT_CONFIG_PKG}.BuildType=$(BUILD_TYPE)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"${TRIDENT_CONFIG_PKG}.BuildTime=$(BUILD_TIME)\" -X \"${TRIDENT_CONFIG_PKG}.BuildImage=$(DEFAULT_TRIDENT_IMAGE_TAG)\" -X \"${OPERATOR_CONFIG_PKG}.BuildImage=$(OPERATOR_DIST_TAG)\""
 
 ## Trident build targets
 
