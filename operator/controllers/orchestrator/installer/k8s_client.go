@@ -1,7 +1,6 @@
 package installer
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -42,6 +41,63 @@ func (k *K8sClient) CreateCustomResourceDefinition(crdName, crdYAML string) erro
 		return fmt.Errorf("could not create CRD %s; err: %v", crdName, err)
 	}
 	log.WithField("CRD", crdName).Infof("Created CRD.")
+	return nil
+}
+
+// PutCustomResourceDefinition ensures a CRD is created and on the most recent CRD version.
+func (k *K8sClient) PutCustomResourceDefinition(
+	currentCRD *apiextensionv1.CustomResourceDefinition, crdName string, createCRD bool, newCRDYAML string,
+) error {
+	logFields := log.Fields{
+		"CRD": crdName,
+	}
+
+	// If the CRD exists, patch it with the most current definition to avoid stale CRDs from previous installations.
+	if createCRD {
+		// Create the CRDs and wait for them to be registered in Kubernetes.
+		log.WithFields(logFields).Infof("Installer will create a fresh CRD.")
+
+		if err := k.CreateCustomResourceDefinition(crdName, newCRDYAML); err != nil {
+			return err
+		}
+
+		// Wait for the CRD to be fully established.
+		if err := k.WaitForCRDEstablished(crdName, k8sTimeout); err != nil {
+			// If CRD registration failed *and* we created the CRD, clean up by deleting the CRD.
+			log.WithFields(log.Fields{
+				"CRD": crdName,
+				"err": err,
+			}).Errorf("CRD not established.")
+
+			if err = k.DeleteCustomResourceDefinition(crdName, newCRDYAML); err != nil {
+				log.WithFields(log.Fields{
+					"CRD": crdName,
+					"err": err,
+				}).Errorf("Could not delete CRD.")
+			}
+			return err
+		}
+	} else {
+		// Patch the CRD.
+		log.WithFields(logFields).Infof("CRD present; patching to ensure it is not stale.")
+
+		// Generate the deltas between the currentCRD and the new CRD YAML.
+		patchBytes, err := k8sclient.GenericPatch(currentCRD, []byte(newCRDYAML))
+		if err != nil {
+			return fmt.Errorf("error in creating the two-way merge patch for %s CRD; %v", crdName, err)
+		}
+
+		// Patch the CRD with latest CRD definition.
+		patchType := types.MergePatchType
+		if err = k.PatchCRD(crdName, patchBytes, patchType); err != nil {
+			log.WithFields(log.Fields{
+				"CRD": crdName,
+				"err": err,
+			}).Errorf("Could not patch CRD.")
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -168,7 +224,7 @@ func (k *K8sClient) PutCSIDriver(currentCSIDriver *storagev1.CSIDriver, createCS
 		log.WithFields(logFields).Debug("Patching Trident CSI driver CR.")
 
 		// Identify the deltas
-		patchBytes, err := genericPatch(currentCSIDriver, []byte(newCSIDriverYAML))
+		patchBytes, err := k8sclient.GenericPatch(currentCSIDriver, []byte(newCSIDriverYAML))
 		if err != nil {
 			return fmt.Errorf("error in creating the two-way merge patch for current CSI driver %q: %v",
 				CSIDriverName, err)
@@ -327,7 +383,7 @@ func (k *K8sClient) PutClusterRole(currentClusterRole *rbacv1.ClusterRole, creat
 		log.WithFields(logFields).Debug("Patching Trident Cluster role.")
 
 		// Identify the deltas
-		patchBytes, err := genericPatch(currentClusterRole, []byte(newClusterRoleYAML))
+		patchBytes, err := k8sclient.GenericPatch(currentClusterRole, []byte(newClusterRoleYAML))
 		if err != nil {
 			return fmt.Errorf("error in creating the two-way merge patch for current cluster role %q: %v",
 				clusterRoleName, err)
@@ -489,7 +545,7 @@ func (k *K8sClient) PutClusterRoleBinding(currentClusterRoleBinding *rbacv1.Clus
 		log.WithFields(logFields).Debug("Patching Trident Cluster role binding.")
 
 		// Identify the deltas
-		patchBytes, err := genericPatch(currentClusterRoleBinding, []byte(newClusterRoleBindingYAML))
+		patchBytes, err := k8sclient.GenericPatch(currentClusterRoleBinding, []byte(newClusterRoleBindingYAML))
 		if err != nil {
 			return fmt.Errorf("error in creating the two-way merge patch for current cluster role binding %q: %v",
 				clusterRoleBindingName, err)
@@ -653,7 +709,7 @@ func (k *K8sClient) PutResourceQuota(
 		log.WithFields(logFields).Debug("Patching Trident resource quota.")
 
 		// Identify the deltas
-		patchBytes, err := genericPatch(currentResourceQuota, []byte(newResourceQuotaYAML))
+		patchBytes, err := k8sclient.GenericPatch(currentResourceQuota, []byte(newResourceQuotaYAML))
 		if err != nil {
 			return fmt.Errorf("error in creating the two-way merge patch for current resource quota %q: %v",
 				resourceQuotaName, err)
@@ -807,7 +863,7 @@ func (k *K8sClient) PutDaemonSet(currentDaemonSet *appsv1.DaemonSet, createDaemo
 		log.WithFields(logFields).Debug("Patching Trident daemonset.")
 
 		// Identify the deltas
-		patchBytes, err := genericPatch(currentDaemonSet, []byte(newDaemonSetYAML))
+		patchBytes, err := k8sclient.GenericPatch(currentDaemonSet, []byte(newDaemonSetYAML))
 		if err != nil {
 			return fmt.Errorf("error in creating the two-way merge patch for current DaemonSet %q: %v",
 				daemonSetName, err)
@@ -963,7 +1019,7 @@ func (k *K8sClient) PutDeployment(currentDeployment *appsv1.Deployment, createDe
 		log.WithFields(logFields).Debug("Patching Trident deployment.")
 
 		// Identify the deltas
-		patchBytes, err := genericPatch(currentDeployment, []byte(newDeploymentYAML))
+		patchBytes, err := k8sclient.GenericPatch(currentDeployment, []byte(newDeploymentYAML))
 		if err != nil {
 			return fmt.Errorf("error in creating the two-way merge patch for current Deployment %q: %v",
 				deploymentName, err)
@@ -1123,7 +1179,7 @@ func (k *K8sClient) PutPodSecurityPolicy(currentPSP *policyv1beta1.PodSecurityPo
 		log.WithFields(logFields).Debug("Patching Trident Pod security policy.")
 
 		// Identify the deltas
-		patchBytes, err := genericPatch(currentPSP, []byte(newPSPYAML))
+		patchBytes, err := k8sclient.GenericPatch(currentPSP, []byte(newPSPYAML))
 		if err != nil {
 			return fmt.Errorf("error in creating the two-way merge patch for current Pod security policy %q: %v",
 				pspName, err)
@@ -1462,7 +1518,7 @@ func (k *K8sClient) PutService(currentService *corev1.Service, createService boo
 		log.WithFields(logFields).Debug("Patching Trident service.")
 
 		// Identify the deltas
-		patchBytes, err := genericPatch(currentService, []byte(newServiceYAML))
+		patchBytes, err := k8sclient.GenericPatch(currentService, []byte(newServiceYAML))
 		if err != nil {
 			return fmt.Errorf("error in creating the two-way merge patch for current Service %q: %v",
 				serviceName, err)
@@ -1641,7 +1697,7 @@ func (k *K8sClient) PutServiceAccount(currentServiceAccount *corev1.ServiceAccou
 		log.WithFields(logFields).Debug("Patching Trident Service account.")
 
 		// Identify the deltas
-		patchBytes, err := genericPatch(currentServiceAccount, []byte(newServiceAccountYAML))
+		patchBytes, err := k8sclient.GenericPatch(currentServiceAccount, []byte(newServiceAccountYAML))
 		if err != nil {
 			return false, fmt.Errorf("error in creating the two-way merge patch for current Service account %q: %v",
 				serviceAccountName, err)
@@ -2054,22 +2110,4 @@ func (k *K8sClient) GetCSISnapshotterVersion(currentDeployment *appsv1.Deploymen
 	}
 
 	return snapshotCRDVersion
-}
-
-// genericPatch takes current object, corresponding YAML to identify the changes and the patch that should be created
-func genericPatch(original interface{}, modifiedYAML []byte) ([]byte, error) {
-	// Get existing object in JSON format
-	originalJSON, err := json.Marshal(original)
-	if err != nil {
-		return nil, fmt.Errorf("error in marshaling current object; %v", err)
-	}
-
-	// Convert new object from YAML to JSON format
-	modifiedJSON, err := yaml.YAMLToJSON(modifiedYAML)
-	if err != nil {
-		return nil, fmt.Errorf("could not convert new object from YAML to JSON; %v", err)
-	}
-
-	// JSON Merge patch
-	return jsonpatch.MergePatch(originalJSON, modifiedJSON)
 }

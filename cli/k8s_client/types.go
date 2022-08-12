@@ -77,6 +77,7 @@ type KubernetesClient interface {
 	DeletePVByLabel(label string) error
 	GetCRD(crdName string) (*apiextensionv1.CustomResourceDefinition, error)
 	CheckCRDExists(crdName string) (bool, error)
+	PatchCRD(crdName string, patchBytes []byte, patchType types.PatchType) error
 	DeleteCRD(crdName string) error
 	GetPodSecurityPolicyByLabel(label string) (*v1beta1.PodSecurityPolicy, error)
 	GetPodSecurityPoliciesByLabel(label string) ([]v1beta1.PodSecurityPolicy, error)

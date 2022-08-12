@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"testing"
 
-	corev1 "k8s.io/api/core/v1"
-
+	"github.com/ghodss/yaml"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
+	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	mockExtendedK8sClient "github.com/netapp/trident/mocks/mock_operator/mock_controllers/mock_orchestrator/mock_installer"
 )
 
@@ -132,5 +134,45 @@ func TestInstaller_createOrPatchTridentResourceQuota(t *testing.T) {
 	mockK8sClient.EXPECT().RemoveMultipleResourceQuotas(unwantedResourceQuotas).Return(nil)
 	mockK8sClient.EXPECT().PutResourceQuota(resourceQuota, true, gomock.Any(), nodeLabel).Return(nil)
 	expectedErr = installer.createOrPatchTridentResourceQuota(controllingCRDetails, labels, true)
+	assert.Nil(t, expectedErr, "expected nil error")
+}
+
+func TestCreateOrPatchCRD(t *testing.T) {
+	mockK8sClient := newMockKubeClient(t)
+	installer := newTestInstaller(mockK8sClient)
+
+	// Setup values for inputs and outputs of mocked functions.
+	crdName := VersionCRDName // use any valid CRD name here
+	crdYAML := k8sclient.GetVersionCRDYAML()
+
+	var crd v1.CustomResourceDefinition
+	if err := yaml.Unmarshal([]byte(crdYAML), &crd); err != nil {
+		t.Fatalf("unable to create CRD for tests")
+	}
+
+	mockK8sClient.EXPECT().CheckCRDExists(crdName).Return(false, k8sClientError)
+	expectedErr := installer.CreateOrPatchCRD(crdName, crdYAML, false)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	mockK8sClient.EXPECT().CheckCRDExists(crdName).Return(true, k8sClientError)
+	expectedErr = installer.CreateOrPatchCRD(crdName, crdYAML, false)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	// If CRD exists and crdUpdateNeeded is false, don't get the crd or patch it.
+	mockK8sClient.EXPECT().CheckCRDExists(crdName).Return(true, nil)
+	expectedErr = installer.CreateOrPatchCRD(crdName, crdYAML, false)
+	assert.Nil(t, expectedErr, "expected nil error")
+
+	// crdUpdateNeeded is true here, so getCRD will get called.
+	mockK8sClient.EXPECT().CheckCRDExists(crdName).Return(true, nil)
+	mockK8sClient.EXPECT().GetCRD(crdName).Return(&crd, nil)
+	mockK8sClient.EXPECT().PutCustomResourceDefinition(&crd, crdName, false, crdYAML).Return(k8sClientError)
+	expectedErr = installer.CreateOrPatchCRD(crdName, crdYAML, true)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	mockK8sClient.EXPECT().CheckCRDExists(crdName).Return(true, nil)
+	mockK8sClient.EXPECT().GetCRD(crdName).Return(&crd, nil)
+	mockK8sClient.EXPECT().PutCustomResourceDefinition(&crd, crdName, false, crdYAML).Return(nil)
+	expectedErr = installer.CreateOrPatchCRD(crdName, crdYAML, true)
 	assert.Nil(t, expectedErr, "expected nil error")
 }

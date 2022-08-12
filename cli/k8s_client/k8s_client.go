@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
+	jsonpatch "github.com/evanphx/json-patch/v5"
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
@@ -71,11 +72,16 @@ var (
 	patchOpts  = metav1.PatchOptions{}
 
 	ctx = context.TODO
+
+	yamlToJSON     = yaml.YAMLToJSON
+	jsonMarshal    = json.Marshal
+	jsonUnmarshal  = json.Unmarshal
+	jsonMergePatch = jsonpatch.MergePatch
 )
 
 type KubeClient struct {
 	clientset    kubernetes.Interface
-	extClientset *apiextension.Clientset
+	extClientset apiextension.Interface
 	apiResources map[string]*metav1.APIResourceList
 	restConfig   *rest.Config
 	namespace    string
@@ -2194,6 +2200,22 @@ func (k *KubeClient) createObjectByYAML(yamlData string) error {
 	return nil
 }
 
+// PatchCRD patches a CRD with a supplied YAML/JSON document in []byte format.
+func (k *KubeClient) PatchCRD(crdName string, patchBytes []byte, patchType types.PatchType) error {
+	log.WithField("name", crdName).Debug("Patching CRD.")
+
+	// Update the object
+	patchOptions := metav1.PatchOptions{}
+	if _, err := k.extClientset.ApiextensionsV1().CustomResourceDefinitions().Patch(ctx(), crdName, patchType,
+		patchBytes, patchOptions); err != nil {
+		return err
+	}
+
+	log.WithField("name", crdName).Debug("Patched CRD.")
+
+	return nil
+}
+
 // DeleteObjectByFile deletes one or more objects on the server from a YAML/JSON file at the specified path.
 func (k *KubeClient) DeleteObjectByFile(filePath string, ignoreNotFound bool) error {
 	content, err := ioutil.ReadFile(filePath)
@@ -3011,4 +3033,22 @@ func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 
 func (k *KubeClient) GetCRDClient() (*crdclient.Clientset, error) {
 	return crdclient.NewForConfig(k.restConfig)
+}
+
+// GenericPatch merges an object with a new YAML definition.
+func GenericPatch(original interface{}, modifiedYAML []byte) ([]byte, error) {
+	// Get existing object in JSON format
+	originalJSON, err := jsonMarshal(original)
+	if err != nil {
+		return nil, fmt.Errorf("error in marshaling current object; %v", err)
+	}
+
+	// Convert new object from YAML to JSON format
+	modifiedJSON, err := yamlToJSON(modifiedYAML)
+	if err != nil {
+		return nil, fmt.Errorf("could not convert new object from YAML to JSON; %v", err)
+	}
+
+	// JSON Merge patch
+	return jsonMergePatch(originalJSON, modifiedJSON)
 }

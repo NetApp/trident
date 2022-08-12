@@ -107,16 +107,23 @@ type Controller struct {
 	// time, and makes it easy to ensure we are never processing the same item
 	// simultaneously in two different workers.
 	workqueue workqueue.RateLimitingInterface
+
+	// crdUpdateNeeded is a temporary flag that is set true when a new orchestrator controller is created,
+	// and false when operations that need to happen exactly once during installs are successful.
+	// TODO: Once Trident v22.01 approaches EOL or CRD versioning schema is established,
+	// re-evaluate if this is necessary.
+	crdUpdateNeeded bool
 }
 
 func NewController(clients *clients.Clients) (*Controller, error) {
 	log.WithField("Controller", ControllerName).Info("Initializing controller.")
 
 	c := &Controller{
-		Clients:   clients,
-		mutex:     &sync.Mutex{},
-		stopChan:  make(chan struct{}),
-		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "TridentOrchestrator"),
+		Clients:         clients,
+		mutex:           &sync.Mutex{},
+		stopChan:        make(chan struct{}),
+		workqueue:       workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "TridentOrchestrator"),
+		crdUpdateNeeded: true,
 	}
 
 	// Set up event broadcaster
@@ -1289,8 +1296,8 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 		return utils.ReconcileFailedError(err)
 	}
 
-	if identifiedSpecValues, identifiedTridentVersion, err = i.InstallOrPatchTrident(tridentCR, currentInstalledTridentVersion,
-		shouldUpdate); err != nil {
+	if identifiedSpecValues, identifiedTridentVersion, err = i.InstallOrPatchTrident(tridentCR,
+		currentInstalledTridentVersion, shouldUpdate, c.crdUpdateNeeded); err != nil {
 		// Update status of the tridentCR  to `Failed`
 		debugMessage := "Updating Trident Orchestrator CR after failed installation."
 		statusMessage := fmt.Sprintf("Failed to install Trident; err: %s", err.Error())
@@ -1308,6 +1315,8 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 		// Install failed, so fail the reconcile loop
 		return utils.ReconcileFailedError(err)
 	}
+	// Set crdUpdateNeeded operations to false
+	c.crdUpdateNeeded = false
 
 	// Update status of the tridentCR  to `Installed`
 	debugMessage := "Updating TridentOrchestrator CR after installation."
@@ -1447,7 +1456,7 @@ func (c *Controller) ensureTridentOrchestratorCRDExist() error {
 		return err
 	}
 
-	return i.CreateCRD(TridentOrchestratorCRDName, k8sclient.GetOrchestratorCRDYAML())
+	return i.CreateOrPatchCRD(TridentOrchestratorCRDName, k8sclient.GetOrchestratorCRDYAML(), false)
 }
 
 // createTridentOrchestratorCR creates a new TridentOrchestrator CR

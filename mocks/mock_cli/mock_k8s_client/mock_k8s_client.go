@@ -1544,6 +1544,20 @@ func (mr *MockKubernetesClientMockRecorder) Namespace() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Namespace", reflect.TypeOf((*MockKubernetesClient)(nil).Namespace))
 }
 
+// PatchCRD mocks base method.
+func (m *MockKubernetesClient) PatchCRD(arg0 string, arg1 []byte, arg2 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchCRD", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchCRD indicates an expected call of PatchCRD.
+func (mr *MockKubernetesClientMockRecorder) PatchCRD(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCRD", reflect.TypeOf((*MockKubernetesClient)(nil).PatchCRD), arg0, arg1, arg2)
+}
+
 // PatchCSIDriverByLabel mocks base method.
 func (m *MockKubernetesClient) PatchCSIDriverByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
 	m.ctrl.T.Helper()

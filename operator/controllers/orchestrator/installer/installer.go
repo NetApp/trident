@@ -406,7 +406,7 @@ func (i *Installer) setInstallationParams(
 }
 
 func (i *Installer) InstallOrPatchTrident(
-	cr netappv1.TridentOrchestrator, currentInstallationVersion string, k8sUpdateNeeded bool,
+	cr netappv1.TridentOrchestrator, currentInstallationVersion string, k8sUpdateNeeded, crdUpdateNeeded bool,
 ) (*netappv1.TridentOrchestratorSpecValues, string, error) {
 	var returnError error
 	var newServiceAccount bool
@@ -444,7 +444,7 @@ func (i *Installer) InstallOrPatchTrident(
 	}
 
 	// Create CRDs and ensure they are established
-	returnError = i.createAndEnsureCRDs()
+	returnError = i.createAndEnsureCRDs(crdUpdateNeeded)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident CRDs; %v", returnError)
 		return nil, "", returnError
@@ -554,124 +554,76 @@ func (i *Installer) InstallOrPatchTrident(
 }
 
 // createCRDs creates and establishes each of the CRDs individually
-func (i *Installer) createCRDs() error {
+func (i *Installer) createCRDs(performOperationOnce bool) error {
 	var err error
 
-	if err = i.CreateCRD(VersionCRDName, k8sclient.GetVersionCRDYAML()); err != nil {
+	if err = i.CreateOrPatchCRD(VersionCRDName, k8sclient.GetVersionCRDYAML(), false); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(BackendCRDName, k8sclient.GetBackendCRDYAML()); err != nil {
+	if err = i.CreateOrPatchCRD(BackendCRDName, k8sclient.GetBackendCRDYAML(), false); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(MirrorRelationshipCRDName, k8sclient.GetMirrorRelationshipCRDYAML()); err != nil {
+	if err = i.CreateOrPatchCRD(SnapshotInfoCRDName, k8sclient.GetSnapshotInfoCRDYAML(), false); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(SnapshotInfoCRDName, k8sclient.GetSnapshotInfoCRDYAML()); err != nil {
+	if err = i.CreateOrPatchCRD(BackendConfigCRDName, k8sclient.GetBackendConfigCRDYAML(), false); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(BackendConfigCRDName, k8sclient.GetBackendConfigCRDYAML()); err != nil {
+	if err = i.CreateOrPatchCRD(StorageClassCRDName, k8sclient.GetStorageClassCRDYAML(), false); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(StorageClassCRDName, k8sclient.GetStorageClassCRDYAML()); err != nil {
+	if err = i.CreateOrPatchCRD(VolumeCRDName, k8sclient.GetVolumeCRDYAML(), false); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(VolumeCRDName, k8sclient.GetVolumeCRDYAML()); err != nil {
+	if err = i.CreateOrPatchCRD(VolumePublicationCRDName, k8sclient.GetVolumePublicationCRDYAML(), false); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(VolumePublicationCRDName, k8sclient.GetVolumePublicationCRDYAML()); err != nil {
+	if err = i.CreateOrPatchCRD(NodeCRDName, k8sclient.GetNodeCRDYAML(), false); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(NodeCRDName, k8sclient.GetNodeCRDYAML()); err != nil {
+	if err = i.CreateOrPatchCRD(TransactionCRDName, k8sclient.GetTransactionCRDYAML(), false); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(TransactionCRDName, k8sclient.GetTransactionCRDYAML()); err != nil {
+	if err = i.CreateOrPatchCRD(SnapshotCRDName, k8sclient.GetSnapshotCRDYAML(), false); err != nil {
 		return err
 	}
-	if err = i.CreateCRD(SnapshotCRDName, k8sclient.GetSnapshotCRDYAML()); err != nil {
+	if err = i.CreateOrPatchCRD(MirrorRelationshipCRDName, k8sclient.GetMirrorRelationshipCRDYAML(), performOperationOnce); err != nil {
 		return err
 	}
 
 	return err
 }
 
-// CreateCRD creates and establishes the CRD
-func (i *Installer) CreateCRD(crdName, crdYAML string) error {
-	// Discover CRD data
-	crdExist, returnError := i.client.CheckCRDExists(crdName)
-	if returnError != nil {
-		return fmt.Errorf("unable to identify if %v CRD exists; err: %v", crdName, returnError)
+// CreateOrPatchCRD creates and establishes a CRD or patches an existing one.
+// TODO: Once Trident v22.01 approaches EOL or CRD versioning schema is established,
+//  re-evaluate if performOperationOnce is necessary.
+func (i *Installer) CreateOrPatchCRD(crdName, crdYAML string, performOperationOnce bool) error {
+	var currentCRD *apiextensionv1.CustomResourceDefinition
+	var err error
+
+	// Discover CRD data.
+	crdExists, err := i.client.CheckCRDExists(crdName)
+	if err != nil {
+		return fmt.Errorf("unable to identify if %v CRD exists; err: %v", crdName, err)
 	}
 
-	if crdExist {
-		log.WithField("CRD", crdName).Infof("CRD present.")
-	} else {
-		// Create the CRDs and wait for them to be registered in Kubernetes
-		log.WithField("CRD", crdName).Infof("Installer will create a fresh CRD.")
-
-		if returnError = i.client.CreateCustomResourceDefinition(crdName, crdYAML); returnError != nil {
-			return returnError
-		}
-
-		// Wait for the CRD to be fully established
-		if returnError = i.client.WaitForCRDEstablished(crdName, k8sTimeout); returnError != nil {
-			// If CRD registration failed *and* we created the CRD, clean up by deleting the CRD
+	if crdExists {
+		// Avoid patching the CRD iff the CRD already exists and performOperationOnce is false.
+		if !performOperationOnce {
 			log.WithFields(log.Fields{
-				"CRD": crdName,
-				"err": returnError,
-			}).Errorf("CRD not established.")
-
-			if err := i.client.DeleteCustomResourceDefinition(crdName, crdYAML); err != nil {
-				log.WithFields(log.Fields{
-					"CRD": crdName,
-					"err": err,
-				}).Errorf("Could not delete CRD.")
-			}
-			return returnError
+				"CRD":       crdName,
+				"crdExists": crdExists,
+			}).Debugf("Found existing %s CRD; creation or patch is not required.", crdName)
+			return nil
 		}
-	}
 
-	return returnError
-}
-
-// ensureCRDEstablished waits until a CRD is Established.
-func (i *Installer) ensureCRDEstablished(crdName string) error {
-	checkCRDEstablished := func() error {
-		crd, err := i.client.GetCRD(crdName)
+		currentCRD, err = i.client.GetCRD(crdName)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not retrieve the %v CRD; %v", crdName, err)
 		}
-		for _, condition := range crd.Status.Conditions {
-			if condition.Type == apiextensionv1.Established {
-				switch condition.Status {
-				case apiextensionv1.ConditionTrue:
-					return nil
-				default:
-					return fmt.Errorf("CRD %s Established condition is %s", crdName, condition.Status)
-				}
-			}
-		}
-		return fmt.Errorf("CRD %s Established condition is not yet available", crdName)
 	}
 
-	checkCRDNotify := func(err error, duration time.Duration) {
-		log.WithFields(log.Fields{
-			"CRD": crdName,
-			"err": err,
-		}).Debug("CRD not yet established, waiting.")
-	}
-
-	checkCRDBackoff := backoff.NewExponentialBackOff()
-	checkCRDBackoff.MaxInterval = 5 * time.Second
-	checkCRDBackoff.MaxElapsedTime = k8sTimeout
-
-	log.WithField("CRD", crdName).Trace("Waiting for CRD to be established.")
-
-	if err := backoff.RetryNotify(checkCRDEstablished, checkCRDBackoff, checkCRDNotify); err != nil {
-		return fmt.Errorf("CRD was not established after %3.2f seconds", k8sTimeout.Seconds())
-	}
-
-	log.WithField("CRD", crdName).Debug("CRD established.")
-	return nil
+	return i.client.PutCustomResourceDefinition(currentCRD, crdName, !crdExists, crdYAML)
 }
 
 func (i *Installer) createOrPatchK8sCSIDriver(controllingCRDetails, labels map[string]string, shouldUpdate bool) error {
@@ -895,8 +847,8 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(
 	return nil
 }
 
-func (i *Installer) createAndEnsureCRDs() (returnError error) {
-	returnError = i.createCRDs()
+func (i *Installer) createAndEnsureCRDs(performOperationOnce bool) (returnError error) {
+	returnError = i.createCRDs(performOperationOnce)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident CRDs; %v", returnError)
 	}

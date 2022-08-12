@@ -46,24 +46,24 @@ func (m *MockTridentInstaller) EXPECT() *MockTridentInstallerMockRecorder {
 	return m.recorder
 }
 
-// CreateCRD mocks base method.
-func (m *MockTridentInstaller) CreateCRD(arg0, arg1 string) error {
+// CreateOrPatchCRD mocks base method.
+func (m *MockTridentInstaller) CreateOrPatchCRD(arg0, arg1 string, arg2 bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCRD", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateOrPatchCRD", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateCRD indicates an expected call of CreateCRD.
-func (mr *MockTridentInstallerMockRecorder) CreateCRD(arg0, arg1 interface{}) *gomock.Call {
+// CreateOrPatchCRD indicates an expected call of CreateOrPatchCRD.
+func (mr *MockTridentInstallerMockRecorder) CreateOrPatchCRD(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCRD", reflect.TypeOf((*MockTridentInstaller)(nil).CreateCRD), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrPatchCRD", reflect.TypeOf((*MockTridentInstaller)(nil).CreateOrPatchCRD), arg0, arg1, arg2)
 }
 
 // InstallOrPatchTrident mocks base method.
-func (m *MockTridentInstaller) InstallOrPatchTrident(arg0 v1.TridentOrchestrator, arg1 string, arg2 bool) (*v1.TridentOrchestratorSpecValues, string, error) {
+func (m *MockTridentInstaller) InstallOrPatchTrident(arg0 v1.TridentOrchestrator, arg1 string, arg2, arg3 bool) (*v1.TridentOrchestratorSpecValues, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InstallOrPatchTrident", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "InstallOrPatchTrident", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*v1.TridentOrchestratorSpecValues)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -71,9 +71,9 @@ func (m *MockTridentInstaller) InstallOrPatchTrident(arg0 v1.TridentOrchestrator
 }
 
 // InstallOrPatchTrident indicates an expected call of InstallOrPatchTrident.
-func (mr *MockTridentInstallerMockRecorder) InstallOrPatchTrident(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockTridentInstallerMockRecorder) InstallOrPatchTrident(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InstallOrPatchTrident", reflect.TypeOf((*MockTridentInstaller)(nil).InstallOrPatchTrident), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InstallOrPatchTrident", reflect.TypeOf((*MockTridentInstaller)(nil).InstallOrPatchTrident), arg0, arg1, arg2, arg3)
 }
 
 // ObliviateCRDs mocks base method.
@@ -2115,6 +2115,20 @@ func (mr *MockExtendedK8sClientMockRecorder) Namespace() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Namespace", reflect.TypeOf((*MockExtendedK8sClient)(nil).Namespace))
 }
 
+// PatchCRD mocks base method.
+func (m *MockExtendedK8sClient) PatchCRD(arg0 string, arg1 []byte, arg2 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchCRD", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchCRD indicates an expected call of PatchCRD.
+func (mr *MockExtendedK8sClientMockRecorder) PatchCRD(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCRD", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchCRD), arg0, arg1, arg2)
+}
+
 // PatchCSIDriverByLabel mocks base method.
 func (m *MockExtendedK8sClient) PatchCSIDriverByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
 	m.ctrl.T.Helper()
@@ -2337,6 +2351,20 @@ func (m *MockExtendedK8sClient) PutClusterRoleBinding(arg0 *v12.ClusterRoleBindi
 func (mr *MockExtendedK8sClientMockRecorder) PutClusterRoleBinding(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutClusterRoleBinding", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutClusterRoleBinding), arg0, arg1, arg2, arg3)
+}
+
+// PutCustomResourceDefinition mocks base method.
+func (m *MockExtendedK8sClient) PutCustomResourceDefinition(arg0 *v14.CustomResourceDefinition, arg1 string, arg2 bool, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutCustomResourceDefinition", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PutCustomResourceDefinition indicates an expected call of PutCustomResourceDefinition.
+func (mr *MockExtendedK8sClientMockRecorder) PutCustomResourceDefinition(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutCustomResourceDefinition", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutCustomResourceDefinition), arg0, arg1, arg2, arg3)
 }
 
 // PutDaemonSet mocks base method.

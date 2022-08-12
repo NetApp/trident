@@ -22,6 +22,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	policy "k8s.io/api/policy/v1beta1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/netapp/trident/cli/api"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
@@ -664,7 +665,6 @@ func installTrident() (returnError error) {
 	}
 
 	// Discover CRD data
-	allCRDsPresent := true
 	var installedCRDs []string
 	for _, crdName := range CRDnames {
 		// See if any of the CRDs exist
@@ -678,7 +678,6 @@ func installTrident() (returnError error) {
 			installedCRDs = append(installedCRDs, crdName)
 		} else {
 			log.WithField("CRD", crdName).Debug("CRD not present.")
-			allCRDsPresent = false
 		}
 	}
 
@@ -745,20 +744,16 @@ func installTrident() (returnError error) {
 		return
 	}
 
-	// Create the CRDs and wait for them to be established in Kubernetes
-	if !allCRDsPresent {
+	// Create or update CRDs and ensure they are established.
+	if returnError = createAndEnsureCRDs(); returnError != nil {
+		log.Errorf("could not create or update the Trident CRDs; %v", returnError)
+		return
+	}
 
-		// Create CRDs and ensure they are established
-		if returnError = createAndEnsureCRDs(); returnError != nil {
-			log.Errorf("could not create the Trident CRDs; %v", returnError)
-			return
-		}
-
-		// Ensure we can create a CRD client
-		if _, returnError = getCRDClient(); returnError != nil {
-			log.Errorf("Could not create CRD client; %v", returnError)
-			return
-		}
+	// Ensure we can create a CRD client.
+	if _, returnError = getCRDClient(); returnError != nil {
+		log.Errorf("Could not create CRD client; %v", returnError)
+		return
 	}
 
 	// Create pod security policy
@@ -1160,7 +1155,8 @@ func createNamespace() (returnError error) {
 	return nil
 }
 
-func createAndEnsureCRDs() (returnError error) {
+// createAndEnsureCRDs creates CRDs or updates existing ones. If we are on an upgrade install, CRDs should be updated.
+func createAndEnsureCRDs() error {
 	var bundleCRDYAML string
 	if useYAML && fileExists(crdsPath) {
 
@@ -1176,20 +1172,37 @@ func createAndEnsureCRDs() (returnError error) {
 
 	crdMap := getCRDMapFromBundle(bundleCRDYAML)
 
-	// Ensure crdMap has all the CRDs, nothing is missing or extra
-	returnError = validateCRDs(crdMap)
-	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Trident CRDs; %v", returnError)
-		return
+	// Ensure crdMap has all the CRDs, nothing is missing or extra.
+	if err := validateCRDs(crdMap); err != nil {
+		return fmt.Errorf("could not create the Trident CRDs; %v", err)
 	}
 
-	returnError = createCRDs(crdMap)
-	if returnError != nil {
-		returnError = fmt.Errorf("could not create the Trident CRDs; %v", returnError)
-		return
+	log.Info("Creating or patching the Trident CRDs.")
+
+	// Loop through all CRDs and check if each exists; if it does, update it. Otherwise, create it.
+	for crdName, crdYAML := range crdMap {
+
+		crdExists, err := client.CheckCRDExists(crdName)
+		if err != nil {
+			return fmt.Errorf("unable to identify if %v CRD exists; err: %v", crdName, err)
+		}
+
+		if crdExists {
+			log.Debugf("%v CRD present; patching CRD to ensure it is not stale.", crdName)
+
+			if err = patchCRD(crdName, crdYAML); err != nil {
+				return fmt.Errorf("could not patch the Trident %s CRD; %v", crdName, err)
+			}
+		} else {
+			log.Debugf("%v CRD not present; creating a fresh CRD.", crdName)
+
+			if err = createCRD(crdName, crdYAML); err != nil {
+				return fmt.Errorf("could not create the Trident %s CRD; %v", crdName, err)
+			}
+		}
 	}
 
-	log.Info("Created custom resource definitions.")
+	log.Info("Applied latest Trident CRDs.")
 
 	return nil
 }
@@ -1255,62 +1268,59 @@ func validateCRDs(crdMap map[string]string) error {
 	return nil
 }
 
-// createCRDs creates and establishes each of the CRDs individually
-func createCRDs(crdMap map[string]string) error {
+// createCRD creates and establishes the CRD.
+func createCRD(crdName, crdYAML string) error {
 	var returnError error
 
-	for crdName, crdYAML := range crdMap {
-		if returnError = createCRD(crdName, crdYAML); returnError != nil {
-			return returnError
-		}
+	// Create the CRDs and wait for them to be registered in Kubernetes.
+	log.Debugf("Installer will create a fresh %v CRD.", crdName)
+
+	if returnError = createCustomResourceDefinition(crdName, crdYAML); returnError != nil {
+		return returnError
 	}
 
-	return returnError
-}
-
-// createCRD creates and establishes the CRD
-func createCRD(crdName, crdYAML string) error {
-	// Discover CRD data
-	crdExists, returnError := client.CheckCRDExists(crdName)
-	if returnError != nil {
-		return fmt.Errorf("unable to identify if %v CRD exists; err: %v", crdName, returnError)
-	}
-
-	if crdExists {
-		log.Infof("Trident %v CRD present.", crdName)
-	} else {
-		// Create the CRDs and wait for them to be registered in Kubernetes
-		log.Infof("Installer will create a fresh %v CRD.", crdName)
-
-		if returnError = createCustomResourceDefinition(crdName, crdYAML); returnError != nil {
-			return returnError
+	// Wait for the CRD to be fully established.
+	if returnError = ensureCRDEstablished(crdName); returnError != nil {
+		// If CRD registration failed *and* we created the CRDs, clean up by deleting the CRD.
+		log.Errorf("CRD %v not established; %v", crdName, returnError)
+		if err := deleteCustomResourceDefinition(crdName, crdYAML); err != nil {
+			log.Errorf("Could not delete CRD %v; %v", crdName, err)
 		}
 
-		// Wait for the CRD to be fully established
-		if returnError = ensureCRDEstablished(crdName); returnError != nil {
-			// If CRD registration failed *and* we created the CRDs, clean up by deleting all the CRDs
-			log.Errorf("CRD %v not established; %v", crdName, returnError)
-			if err := deleteCustomResourceDefinition(crdName, crdYAML); err != nil {
-				log.Errorf("Could not delete CRD %v; %v", crdName, err)
-			}
-			return returnError
-		}
+		return returnError
 	}
 
 	return returnError
 }
 
 func createCustomResourceDefinition(crdName, crdYAML string) (returnError error) {
-	var logFields log.Fields
-
 	returnError = client.CreateObjectByYAML(crdYAML)
-	logFields = log.Fields{"namespace": TridentPodNamespace}
 	if returnError != nil {
-		returnError = fmt.Errorf("could not create custom resource  %v in %s; %v", crdName, TridentPodNamespace,
+		returnError = fmt.Errorf("could not create custom resource %v in %s; %v", crdName, TridentPodNamespace,
 			returnError)
 		return
 	}
-	log.WithFields(logFields).Infof("Created custom resource definitions %v.", crdName)
+	log.Debugf("Created custom resource definition %v.", crdName)
+	return nil
+}
+
+// patchCRD patches an existing CRD to meet Trident's expected specification in the installer.
+func patchCRD(crdName, crdYAML string) error {
+	currentCRD, err := client.GetCRD(crdName)
+	if err != nil {
+		return fmt.Errorf("could not retrieve the %v CRD; %v", crdName, err)
+	}
+
+	// Generate the deltas between the currentCRD and the new CRD YAML using a json merge patch strategy.
+	patchBytes, err := k8sclient.GenericPatch(currentCRD, []byte(crdYAML))
+	if err != nil {
+		return fmt.Errorf("error in creating the two-way merge patch for %s CRD; %v", crdName, err)
+	}
+
+	if err = client.PatchCRD(crdName, patchBytes, types.MergePatchType); err != nil {
+		return fmt.Errorf("could not patch custom resource %v in %s; %v", crdName, TridentPodNamespace, err)
+	}
+	log.Debugf("Patched custom resource definition %v.", crdName)
 	return nil
 }
 

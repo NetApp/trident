@@ -123,6 +123,180 @@ func TestCreateCustomResourceDefinition(t *testing.T) {
 	}
 }
 
+func TestPutCustomResourceDefinition(t *testing.T) {
+	k8sClientErr := fmt.Errorf("k8s client err")
+	crdName := "trident.netapp.io"
+	crdYAML := `
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      schema:
+          openAPIV3Schema:
+              type: object
+              nullable: false`
+	crd := &v1.CustomResourceDefinition{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: crdName,
+		},
+		Spec: v1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Versions: []v1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema: &v1.CustomResourceValidation{
+						OpenAPIV3Schema: &v1.JSONSchemaProps{
+							Type:     "object",
+							Nullable: false,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	type input struct {
+		currentCRD *v1.CustomResourceDefinition
+		createCRD  bool
+		newCRDYAML string
+		crdName    string
+	}
+
+	type output struct {
+		errorExpected bool
+	}
+
+	tests := map[string]struct {
+		input  input
+		output output
+		mocks  func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{})
+	}{
+		"expect to fail with k8s error when CRD needs created": {
+			input: input{
+				currentCRD: crd.DeepCopy(),
+				createCRD:  true,
+				newCRDYAML: crdYAML,
+				crdName:    crdName,
+			},
+			output: output{
+				errorExpected: true,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// args[0] = currentCRD, args[1] = createCRD, args[2] = newCRDYAML, args[3] = crdName
+				crdYAML, _ := args[2].(string)
+				mockKubeClient.EXPECT().CreateObjectByYAML(crdYAML).Return(k8sClientErr)
+			},
+		},
+		"expect to fail with k8s error while waiting for the CRD to be established": {
+			input: input{
+				currentCRD: crd.DeepCopy(),
+				createCRD:  true,
+				newCRDYAML: crdYAML,
+				crdName:    crdName,
+			},
+			output: output{
+				errorExpected: true,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// args[0] = currentCRD, args[1] = createCRD, args[2] = newCRDYAML, args[3] = crdName
+				crdYAML, _ := args[2].(string)
+				crdName, _ := args[3].(string)
+				k8sTimeout = 5 * time.Millisecond // set the timeout so the test doesn't hang
+				mockKubeClient.EXPECT().CreateObjectByYAML(crdYAML).Return(nil)
+				mockKubeClient.EXPECT().GetCRD(crdName).Return(nil, k8sClientErr).AnyTimes()
+				mockKubeClient.EXPECT().DeleteObjectByYAML(crdYAML, false).Return(k8sClientErr)
+			},
+		},
+		"expect to fail with k8s error while attempting to patch an existing CRD": {
+			input: input{
+				currentCRD: crd.DeepCopy(),
+				createCRD:  false,
+				newCRDYAML: crdYAML,
+				crdName:    crdName,
+			},
+			output: output{
+				errorExpected: true,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// args[0] = currentCRD, args[1] = createCRD, args[2] = newCRDYAML, args[3] = crdName
+				crd := args[0].(*v1.CustomResourceDefinition)
+				crdYAML, _ := args[2].(string)
+				crdName, _ := args[3].(string)
+				patchType := types.MergePatchType
+
+				// Generate the deltas between the currentCRD and the new CRD YAML.
+				patchBytes, err := k8sclient.GenericPatch(crd, []byte(crdYAML))
+				if err != nil {
+					t.Fatalf("can't generate GenericPatch")
+				}
+				patchBytesMatcher := &JSONMatcher{patchBytes}
+				mockKubeClient.EXPECT().PatchCRD(crdName, patchBytesMatcher, patchType).Return(k8sClientErr)
+			},
+		},
+		"expect to pass with no k8s error while attempting to patch an existing CRD": {
+			input: input{
+				currentCRD: crd.DeepCopy(),
+				createCRD:  false,
+				newCRDYAML: crdYAML,
+				crdName:    crdName,
+			},
+			output: output{
+				errorExpected: false,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// args[0] = currentCRD, args[1] = createCRD, args[2] = newCRDYAML, args[3] = crdName
+				crd := args[0].(*v1.CustomResourceDefinition)
+				crdYAML, _ := args[2].(string)
+				crdName, _ := args[3].(string)
+				patchType := types.MergePatchType
+
+				// Generate the deltas between the currentCRD and the new CRD YAML.
+				patchBytes, err := k8sclient.GenericPatch(crd, []byte(crdYAML))
+				if err != nil {
+					t.Fatalf("can't generate GenericPatch")
+				}
+				patchBytesMatcher := &JSONMatcher{patchBytes}
+				mockKubeClient.EXPECT().PatchCRD(crdName, patchBytesMatcher, patchType).Return(nil)
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(
+			name, func(t *testing.T) {
+				// Setup mock controller and kube client.
+				mockCtrl := gomock.NewController(t)
+				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
+
+				// Extract the input and output variables from the test case definition.
+				currentCRD, createCRD, newCRDYAML, crdName := test.input.currentCRD, test.input.createCRD,
+					test.input.newCRDYAML, test.input.crdName
+
+				errorExpected := test.output.errorExpected
+
+				test.mocks(mockKubeClient, currentCRD, createCRD, newCRDYAML, crdName)
+				extendedK8sClient := &K8sClient{mockKubeClient}
+
+				actualErr := extendedK8sClient.PutCustomResourceDefinition(currentCRD, crdName, createCRD, newCRDYAML)
+
+				if errorExpected {
+					assert.NotNil(t, actualErr, "expected non-nil error")
+				} else {
+					assert.Nil(t, actualErr, "expected nil error")
+				}
+			},
+		)
+	}
+}
+
 func TestDeleteCustomResourceDefinition(t *testing.T) {
 	crdName := "crd-name"
 	crdYAML := "crd-yaml"
@@ -642,7 +816,7 @@ func TestPutCSIDriver(t *testing.T) {
 					test.input.createCSIDriver, test.input.newCSIDriverYAML, test.input.appLabel
 
 				if !createCSIDriver {
-					if patchBytes, err = genericPatch(currentCSIDriver, []byte(newCSIDriverYAML)); err != nil {
+					if patchBytes, err = k8sclient.GenericPatch(currentCSIDriver, []byte(newCSIDriverYAML)); err != nil {
 						t.Fatal(err)
 					}
 					patchType = types.MergePatchType
@@ -1096,7 +1270,7 @@ func TestPutClusterRole(t *testing.T) {
 					test.input.createClusterRole, test.input.newClusterRoleYAML, test.input.appLabel
 
 				if !createClusterRole {
-					if patchBytes, err = genericPatch(currentClusterRole, []byte(newClusterRoleYAML)); err != nil {
+					if patchBytes, err = k8sclient.GenericPatch(currentClusterRole, []byte(newClusterRoleYAML)); err != nil {
 						t.Fatal(err)
 					}
 					patchType = types.MergePatchType
@@ -1555,7 +1729,7 @@ func TestPutClusterRoleBinding(t *testing.T) {
 					test.input.createClusterRoleBinding, test.input.newClusterRoleBindingYAML, test.input.appLabel
 
 				if !createClusterRoleBinding {
-					if patchBytes, err = genericPatch(currentClusterRoleBinding,
+					if patchBytes, err = k8sclient.GenericPatch(currentClusterRoleBinding,
 						[]byte(newClusterRoleBindingYAML)); err != nil {
 						t.Fatal(err)
 					}
@@ -2009,7 +2183,7 @@ func TestPutDaemonSet(t *testing.T) {
 					test.input.createDaemonSet, test.input.newDaemonSetYAML, test.input.nodeLabel
 
 				if !createDaemonSet {
-					if patchBytes, err = genericPatch(currentDaemonSet, []byte(newDaemonSetYAML)); err != nil {
+					if patchBytes, err = k8sclient.GenericPatch(currentDaemonSet, []byte(newDaemonSetYAML)); err != nil {
 						t.Fatal(err)
 					}
 					patchType = types.MergePatchType
@@ -2449,7 +2623,7 @@ func TestPutDeployment(t *testing.T) {
 					test.input.createDeployment, test.input.newDeploymentYAML, test.input.appLabel
 
 				if !createDeployment {
-					if patchBytes, err = genericPatch(currentDeployment, []byte(newDeploymentYAML)); err != nil {
+					if patchBytes, err = k8sclient.GenericPatch(currentDeployment, []byte(newDeploymentYAML)); err != nil {
 						t.Fatal(err)
 					}
 					patchType = types.MergePatchType
@@ -2887,7 +3061,7 @@ func TestPutPodSecurityPolicy(t *testing.T) {
 					test.input.createPSP, test.input.newPSPYAML, test.input.appLabel
 
 				if !createPSP {
-					if patchBytes, err = genericPatch(currentPSP, []byte(newPSPYAML)); err != nil {
+					if patchBytes, err = k8sclient.GenericPatch(currentPSP, []byte(newPSPYAML)); err != nil {
 						t.Fatal(err)
 					}
 					patchType = types.MergePatchType
@@ -3916,7 +4090,7 @@ func TestPutResourceQuota(t *testing.T) {
 					test.input.createResourceQuota, test.input.newResourceQuotaYAML, test.input.appLabel
 
 				if !createResourceQuota {
-					if patchBytes, err = genericPatch(currentResourceQuota, []byte(newResourceQuotaYAML)); err != nil {
+					if patchBytes, err = k8sclient.GenericPatch(currentResourceQuota, []byte(newResourceQuotaYAML)); err != nil {
 						t.Fatal(err)
 					}
 					patchType = types.MergePatchType
@@ -4214,7 +4388,7 @@ func TestPutService(t *testing.T) {
 					test.input.createService, test.input.newServiceYAML, test.input.appLabel
 
 				if !createService {
-					if patchBytes, err = genericPatch(currentService, []byte(newServiceYAML)); err != nil {
+					if patchBytes, err = k8sclient.GenericPatch(currentService, []byte(newServiceYAML)); err != nil {
 						t.Fatal(err)
 					}
 					patchType = types.MergePatchType
@@ -4723,7 +4897,7 @@ func TestPutServiceAccount(t *testing.T) {
 					test.input.newServiceAccountYAML, test.input.appLabel
 
 				if !createServiceAccount {
-					if patchBytes, err = genericPatch(currentServiceAccount,
+					if patchBytes, err = k8sclient.GenericPatch(currentServiceAccount,
 						[]byte(newServiceAccountYAML)); err != nil {
 						t.Fatal(err)
 					}
@@ -5507,7 +5681,6 @@ func TestPutOpenShiftSCC(t *testing.T) {
 				currentOpenShiftSCCJSON, createOpenShiftSCC, newOpenShiftSCCYAML := test.input.currentOpenShiftSCCJSON,
 					test.input.createOpenShiftSCC, test.input.newOpenShiftSCCYAML
 
-				// may need to replace the call to genericPatch with the code in the else-block of the put
 				if !createOpenShiftSCC {
 					// Convert new object from YAML to JSON format
 					modifiedJSON, err := yaml.YAMLToJSON([]byte(newOpenShiftSCCYAML))

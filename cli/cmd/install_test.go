@@ -3,11 +3,30 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/types"
+
+	k8sclient "github.com/netapp/trident/cli/k8s_client"
+	mockK8sClient "github.com/netapp/trident/mocks/mock_cli/mock_k8s_client"
 )
+
+var (
+	k8sClientError = errors.New("k8s error")
+	genericError   = errors.New("generic error")
+)
+
+func newMockKubeClient(t *testing.T) *mockK8sClient.MockKubernetesClient {
+	mockCtrl := gomock.NewController(t)
+	mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
+	return mockKubeClient
+}
 
 func TestGetCRDMapFromBundle(t *testing.T) {
 	CRDBundle := createCRDBundle(CRDnames)
@@ -66,6 +85,142 @@ func createCRDBundle(crdNames []string) string {
 	}
 
 	return crdBundle
+}
+
+func TestCreateCRD(t *testing.T) {
+	mockKubeClient := newMockKubeClient(t)
+	client = mockKubeClient
+	k8sTimeout = 100 * time.Millisecond
+	name := VersionCRDName
+	yaml := k8sclient.GetVersionCRDYAML()
+	crd := &v1.CustomResourceDefinition{
+		Status: v1.CustomResourceDefinitionStatus{
+			Conditions: []v1.CustomResourceDefinitionCondition{
+				{
+					Status: v1.ConditionTrue,
+					Type:   v1.Established,
+				},
+			},
+		},
+	}
+
+	mockKubeClient.EXPECT().CreateObjectByYAML(yaml).Return(k8sClientError)
+	expectedErr := createCRD(name, yaml)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	// CRD returned from GetCRD has the appropriate fields and returns safely
+	mockKubeClient.EXPECT().CreateObjectByYAML(yaml).Return(nil)
+	mockKubeClient.EXPECT().GetCRD(name).Return(crd, nil).AnyTimes()
+	expectedErr = createCRD(name, yaml)
+	assert.Nil(t, expectedErr, "expected nil error")
+
+	// Set the crd status conditions false to force a failure in ensureCRDEstablished
+	crd.Status.Conditions[0].Status = v1.ConditionFalse
+	mockKubeClient.EXPECT().CreateObjectByYAML(yaml).Return(nil)
+	mockKubeClient.EXPECT().GetCRD(name).Return(crd, k8sClientError).AnyTimes()
+	mockKubeClient.EXPECT().DeleteObjectByYAML(yaml, true).Return(nil)
+
+	expectedErr = createCRD(name, yaml)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	// Set the crd status conditions false to force a failure in ensureCRDEstablished
+	crd.Status.Conditions[0].Status = v1.ConditionFalse
+	mockKubeClient.EXPECT().CreateObjectByYAML(yaml).Return(nil)
+	mockKubeClient.EXPECT().GetCRD(name).Return(crd, k8sClientError).AnyTimes()
+	mockKubeClient.EXPECT().DeleteObjectByYAML(yaml, true).Return(k8sClientError)
+
+	expectedErr = createCRD(name, yaml)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	client = nil // reset the client to nil
+}
+
+func TestCreateCustomResourceDefinition(t *testing.T) {
+	mockKubeClient := newMockKubeClient(t)
+	client = mockKubeClient
+	name := VersionCRDName
+	yaml := k8sclient.GetVersionCRDYAML()
+
+	mockKubeClient.EXPECT().CreateObjectByYAML(yaml).Return(k8sClientError)
+	expectedErr := createCustomResourceDefinition(name, yaml)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	mockKubeClient.EXPECT().CreateObjectByYAML(yaml).Return(nil)
+	expectedErr = createCustomResourceDefinition(name, yaml)
+	assert.Nil(t, expectedErr, "expected nil error")
+
+	client = nil // reset the client to nil
+}
+
+func TestPatchCRD(t *testing.T) {
+	mockKubeClient := newMockKubeClient(t)
+	client = mockKubeClient
+	k8sTimeout = 100 * time.Millisecond
+	name := VersionCRDName
+	yaml := k8sclient.GetVersionCRDYAML()
+	crd := &v1.CustomResourceDefinition{
+		Status: v1.CustomResourceDefinitionStatus{
+			Conditions: []v1.CustomResourceDefinitionCondition{
+				{
+					Status: v1.ConditionTrue,
+					Type:   v1.Established,
+				},
+			},
+		},
+	}
+
+	// Fail at GetCRD
+	mockKubeClient.EXPECT().GetCRD(name).Return(crd, k8sClientError)
+	expectedErr := patchCRD(name, yaml)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	// Fail at PatchCRD
+	mockKubeClient.EXPECT().GetCRD(name).Return(crd, nil)
+	mockKubeClient.EXPECT().PatchCRD(name, gomock.Any(), types.MergePatchType).Return(k8sClientError)
+	expectedErr = patchCRD(name, yaml)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	// Succeed at PatchCRD
+	mockKubeClient.EXPECT().GetCRD(name).Return(crd, nil)
+	mockKubeClient.EXPECT().PatchCRD(name, gomock.Any(), types.MergePatchType).Return(nil)
+	expectedErr = patchCRD(name, yaml)
+	assert.Nil(t, expectedErr, "expected nil error")
+
+	client = nil // reset the client to nil
+}
+
+func TestUpdateCustomResourceDefinition(t *testing.T) {
+	mockKubeClient := newMockKubeClient(t)
+	client = mockKubeClient
+	name := VersionCRDName
+	yaml := k8sclient.GetVersionCRDYAML()
+	crd := &v1.CustomResourceDefinition{
+		Status: v1.CustomResourceDefinitionStatus{
+			Conditions: []v1.CustomResourceDefinitionCondition{
+				{
+					Status: v1.ConditionTrue,
+					Type:   v1.Established,
+				},
+			},
+		},
+	}
+	patchType := types.MergePatchType
+
+	mockKubeClient.EXPECT().GetCRD(name).Return(crd, k8sClientError)
+	expectedErr := patchCRD(name, yaml)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	mockKubeClient.EXPECT().GetCRD(name).Return(crd, nil)
+	mockKubeClient.EXPECT().PatchCRD(name, gomock.Any(), patchType).Return(k8sClientError)
+	expectedErr = patchCRD(name, yaml)
+	assert.NotNil(t, expectedErr, "expected non-nil error")
+
+	mockKubeClient.EXPECT().GetCRD(name).Return(crd, nil)
+	mockKubeClient.EXPECT().PatchCRD(name, gomock.Any(), patchType).Return(nil)
+	expectedErr = patchCRD(name, yaml)
+	assert.Nil(t, expectedErr, "expected nil error")
+
+	client = nil // reset the client to nil
 }
 
 var CRDTemplate = `

@@ -10,6 +10,7 @@ import (
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	storagev1 "k8s.io/api/storage/v1"
+	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	v15 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
@@ -17,9 +18,10 @@ import (
 
 // TridentInstaller is responsible for installing, patching, or uninstalling orchestrator controlled instances of Trident.
 type TridentInstaller interface {
-	CreateCRD(crdName, crdYAML string) error
-	InstallOrPatchTrident(cr v15.TridentOrchestrator, currentInstallationVersion string, shouldUpdate bool) (*v15.TridentOrchestratorSpecValues,
-		string, error)
+	CreateOrPatchCRD(crdName, crdYAML string, performOperationOnce bool) error
+	InstallOrPatchTrident(
+		cr v15.TridentOrchestrator, currentInstallationVersion string, shouldUpdate, crdUpdateNeeded bool,
+	) (*v15.TridentOrchestratorSpecValues, string, error)
 	ObliviateCRDs() error
 	TridentDeploymentInformation(deploymentLabel string) (*appsv1.Deployment, []appsv1.Deployment, bool, error)
 	TridentDaemonSetInformation() (*appsv1.DaemonSet, []appsv1.DaemonSet, bool, error)
@@ -33,6 +35,9 @@ type ExtendedK8sClient interface {
 	k8sclient.KubernetesClient
 
 	CreateCustomResourceDefinition(crdName, crdYAML string) error
+	PutCustomResourceDefinition(
+		currentCRD *apiextensionv1.CustomResourceDefinition, crdName string, createCRD bool, newCRDYAML string,
+	) error
 	WaitForCRDEstablished(crdName string, timeout time.Duration) error
 	DeleteCustomResourceDefinition(crdName, crdYAML string) error
 
