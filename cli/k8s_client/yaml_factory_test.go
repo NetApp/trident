@@ -629,6 +629,7 @@ func TestGetOpenShiftSCCYAML(t *testing.T) {
 	namespace := "trident"
 	labels := map[string]string{"app": "controller.csi.trident.netapp.io"}
 	crdDetails := map[string]string{"kind": "ReplicaSet"}
+	allowPrivilegeEscalation := true
 
 	expected := scc.SecurityContextConstraints{
 		TypeMeta: metav1.TypeMeta{
@@ -654,16 +655,17 @@ func TestGetOpenShiftSCCYAML(t *testing.T) {
 		AllowHostIPC:             true,
 		AllowHostNetwork:         true,
 		AllowHostPID:             true,
-		AllowHostPorts:           true,
+		AllowHostPorts:           false,
+		AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 		AllowPrivilegedContainer: true,
-		DefaultAddCapabilities:   []v1.Capability{},
+		DefaultAddCapabilities:   nil,
 		FSGroup: scc.FSGroupStrategyOptions{
 			Type: "RunAsAny",
 		},
 		Groups:                   []string{},
 		Priority:                 nil,
 		ReadOnlyRootFilesystem:   false,
-		RequiredDropCapabilities: []v1.Capability{},
+		RequiredDropCapabilities: nil,
 		RunAsUser: scc.RunAsUserStrategyOptions{
 			Type: "RunAsAny",
 		},
@@ -681,27 +683,7 @@ func TestGetOpenShiftSCCYAML(t *testing.T) {
 
 	actualYAML := GetOpenShiftSCCYAML(sccName, user, namespace, labels, crdDetails)
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
-	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
-	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
-	assert.True(t, reflect.DeepEqual(expected.AllowHostDirVolumePlugin, actual.AllowHostDirVolumePlugin))
-	assert.True(t, reflect.DeepEqual(expected.AllowHostIPC, actual.AllowHostIPC))
-	assert.True(t, reflect.DeepEqual(expected.AllowHostNetwork, actual.AllowHostNetwork))
-	assert.True(t, reflect.DeepEqual(expected.AllowHostPID, actual.AllowHostPID))
-	assert.True(t, reflect.DeepEqual(expected.AllowHostPorts, actual.AllowHostPorts))
-	assert.True(t, reflect.DeepEqual(expected.AllowPrivilegedContainer, actual.AllowPrivilegedContainer))
-	assert.True(t, reflect.DeepEqual(expected.AllowedCapabilities, actual.AllowedCapabilities))
-	assert.Empty(t, expected.DefaultAddCapabilities, actual.DefaultAddCapabilities)
-	assert.True(t, reflect.DeepEqual(expected.FSGroup, actual.FSGroup))
-	assert.True(t, reflect.DeepEqual(expected.Groups, actual.Groups))
-	assert.True(t, reflect.DeepEqual(expected.Priority, actual.Priority))
-	assert.True(t, reflect.DeepEqual(expected.ReadOnlyRootFilesystem, actual.ReadOnlyRootFilesystem))
-	assert.Empty(t, expected.RequiredDropCapabilities, actual.RequiredDropCapabilities)
-	assert.True(t, reflect.DeepEqual(expected.RunAsUser, actual.RunAsUser))
-	assert.True(t, reflect.DeepEqual(expected.SELinuxContext, actual.SELinuxContext))
-	assert.True(t, reflect.DeepEqual(expected.SeccompProfiles, actual.SeccompProfiles))
-	assert.True(t, reflect.DeepEqual(expected.SupplementalGroups, actual.SupplementalGroups))
-	assert.True(t, reflect.DeepEqual(expected.Users, actual.Users))
-	assert.True(t, reflect.DeepEqual(expected.Volumes, actual.Volumes))
+	assert.Equal(t, expected, actual)
 }
 
 func TestGetOpenShiftSCCYAML_UnprivilegedUser(t *testing.T) {

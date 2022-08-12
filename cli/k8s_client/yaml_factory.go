@@ -1438,11 +1438,10 @@ allowHostDirVolumePlugin: true
 allowHostIPC: true
 allowHostNetwork: true
 allowHostPID: true
-allowHostPorts: true
+allowHostPorts: false
 allowPrivilegeEscalation: true
 allowPrivilegedContainer: true
-allowedUnsafeSysctls:
-- '*'
+allowedUnsafeSysctls: null
 defaultAddCapabilities: null
 fsGroup:
   type: RunAsAny
