@@ -13,13 +13,13 @@ import (
 )
 
 func GetFilesystemStats(ctx context.Context, _ string) (int64, int64, int64, int64, int64, int64, error) {
-	Logc(ctx).Debug(">>>> ofilesystem_darwin.GetFilesystemStats")
-	defer Logc(ctx).Debug("<<<< ofilesystem_darwin.GetFilesystemStats")
+	Logc(ctx).Debug(">>>> filesystem_darwin.GetFilesystemStats")
+	defer Logc(ctx).Debug("<<<< filesystem_darwin.GetFilesystemStats")
 	return 0, 0, 0, 0, 0, 0, errors.New("GetFilesystemStats is not supported for darwin")
 }
 
 func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
-	Logc(ctx).Debug(">>>> ofilesystem_darwin.getFilesystemSize")
-	defer Logc(ctx).Debug("<<<< ofilesystem_darwin.getFilesystemSize")
+	Logc(ctx).Debug(">>>> filesystem_darwin.getFilesystemSize")
+	defer Logc(ctx).Debug("<<<< filesystem_darwin.getFilesystemSize")
 	return 0, errors.New("getFilesystemSize is not supported for darwin")
 }

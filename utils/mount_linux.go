@@ -24,8 +24,8 @@ import (
 // but it could still be a mount point.
 func IsLikelyNotMountPoint(ctx context.Context, mountpoint string) (bool, error) {
 	fields := log.Fields{"mountpoint": mountpoint}
-	Logc(ctx).WithFields(fields).Debug(">>>> k8s_utils_linux.IsLikelyNotMountPoint")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< k8s_utils_linux.IsLikelyNotMountPoint")
+	Logc(ctx).WithFields(fields).Debug(">>>> mount_linux.IsLikelyNotMountPoint")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< mount_linux.IsLikelyNotMountPoint")
 
 	stat, err := os.Stat(mountpoint)
 	if err != nil {

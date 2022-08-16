@@ -9,7 +9,7 @@ import (
 )
 
 func IsLikelyNotMountPoint(ctx context.Context, mountpoint string) (bool, error) {
-	Logc(ctx).Debug(">>>> k8s_utils_windows.IsLikelyNotMountPoint")
-	defer Logc(ctx).Debug("<<<< k8s_utils_windows.IsLikelyNotMountPoint")
+	Logc(ctx).Debug(">>>> mount_windows.IsLikelyNotMountPoint")
+	defer Logc(ctx).Debug("<<<< mount_windows.IsLikelyNotMountPoint")
 	return false, errors.New("IsLikelyNotMountPoint is not supported for Windows")
 }
