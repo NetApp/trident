@@ -52,8 +52,12 @@ func getDeploymentName(csi bool) string {
 	}
 }
 
-func getDaemonSetName() string {
-	return TridentCSI
+func getDaemonSetName(windows bool) string {
+	if windows {
+		return TridentCSIWindows
+	} else {
+		return TridentCSI
+	}
 }
 
 func getCSIDriverName() string {

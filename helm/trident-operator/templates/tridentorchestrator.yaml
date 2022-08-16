@@ -50,3 +50,4 @@ spec:
       {{- end}}
     {{- end}}
   {{- end }}
+  windows: {{ .Values.windows }}

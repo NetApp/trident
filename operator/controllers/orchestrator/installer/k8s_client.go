@@ -206,7 +206,9 @@ func (k *K8sClient) GetCSIDriverInformation(csiDriverName, appLabel string, shou
 }
 
 // PutCSIDriver creates or updates a CSI Driver associated with Trident.
-func (k *K8sClient) PutCSIDriver(currentCSIDriver *storagev1.CSIDriver, createCSIDriver bool, newCSIDriverYAML, appLabel string) error {
+func (k *K8sClient) PutCSIDriver(
+	currentCSIDriver *storagev1.CSIDriver, createCSIDriver bool, newCSIDriverYAML, appLabel string,
+) error {
 	CSIDriverName := getCSIDriverName()
 	logFields := log.Fields{
 		"CSIDriver": CSIDriverName,
@@ -365,7 +367,9 @@ func (k *K8sClient) GetClusterRoleInformation(clusterRoleName, appLabel string, 
 }
 
 // PutClusterRole creates or updates a Cluster Role associated with Trident.
-func (k *K8sClient) PutClusterRole(currentClusterRole *rbacv1.ClusterRole, createClusterRole bool, newClusterRoleYAML, appLabel string) error {
+func (k *K8sClient) PutClusterRole(
+	currentClusterRole *rbacv1.ClusterRole, createClusterRole bool, newClusterRoleYAML, appLabel string,
+) error {
 	clusterRoleName := getClusterRoleName(true)
 	logFields := log.Fields{
 		"clusterRole": clusterRoleName,
@@ -472,7 +476,9 @@ func (k *K8sClient) RemoveMultipleClusterRoles(unwantedClusterRoles []rbacv1.Clu
 }
 
 // GetClusterRoleBindingInformation gets the info on a Cluster Role Binding associated with Trident.
-func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRoleBinding,
+func (k *K8sClient) GetClusterRoleBindingInformation(
+	clusterRoleBindingName, appLabel string, shouldUpdate bool,
+) (*rbacv1.ClusterRoleBinding,
 	[]rbacv1.ClusterRoleBinding, bool, error,
 ) {
 	createClusterRoleBinding := true
@@ -527,7 +533,10 @@ func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName, app
 }
 
 // PutClusterRoleBinding creates or updates a Cluster Role Binding associated with Trident.
-func (k *K8sClient) PutClusterRoleBinding(currentClusterRoleBinding *rbacv1.ClusterRoleBinding, createClusterRoleBinding bool, newClusterRoleBindingYAML, appLabel string) error {
+func (k *K8sClient) PutClusterRoleBinding(
+	currentClusterRoleBinding *rbacv1.ClusterRoleBinding, createClusterRoleBinding bool,
+	newClusterRoleBindingYAML, appLabel string,
+) error {
 	clusterRoleBindingName := getClusterRoleBindingName(true)
 	logFields := log.Fields{
 		"clusterRoleBinding": clusterRoleBindingName,
@@ -775,8 +784,9 @@ func (k *K8sClient) RemoveMultipleResourceQuotas(unwantedResourceQuotas []corev1
 				}).Warning("Could not delete resource quota.")
 
 				anyError = true
-				undeletedResourceQuotas = append(undeletedResourceQuotas, fmt.Sprintf("%v/%v", unwantedResourceQuota.Namespace,
-					unwantedResourceQuota.Name))
+				undeletedResourceQuotas = append(undeletedResourceQuotas,
+					fmt.Sprintf("%v/%v", unwantedResourceQuota.Namespace,
+						unwantedResourceQuota.Name))
 			} else {
 				log.WithFields(log.Fields{
 					"resourcequota": unwantedResourceQuota.Name,
@@ -794,14 +804,17 @@ func (k *K8sClient) RemoveMultipleResourceQuotas(unwantedResourceQuotas []corev1
 }
 
 // GetDaemonSetInformation identifies the Operator-based Trident daemonset information and any unwanted daemonsets
-func (k *K8sClient) GetDaemonSetInformation(daemonSetName, nodeLabel, namespace string) (*appsv1.DaemonSet,
+func (k *K8sClient) GetDaemonSetInformation(nodeLabel, namespace string, isWindows bool) (*appsv1.DaemonSet,
 	[]appsv1.DaemonSet, bool, error,
 ) {
 	createDaemonSet := true
+	linuxDS := getDaemonSetName(false)
+	windowsDS := getDaemonSetName(true)
 	var currentDaemonSet *appsv1.DaemonSet
 	var unwantedDaemonSets []appsv1.DaemonSet
 
-	if daemonSets, err := k.GetDaemonSetsByLabel(nodeLabel, true); err != nil {
+	daemonSets, err := k.GetDaemonSetsByLabel(nodeLabel, true)
+	if err != nil {
 		log.WithField("label", nodeLabel).Errorf("Unable to get list of daemonset by label.")
 		return nil, nil, true, fmt.Errorf("unable to get list of daemonset")
 	} else if len(daemonSets) == 0 {
@@ -810,30 +823,30 @@ func (k *K8sClient) GetDaemonSetInformation(daemonSetName, nodeLabel, namespace 
 			"namespace": namespace,
 		}).Info("No Trident daemonsets found by label.")
 	} else {
-		// Rules:
-		// 1. If there is no daemonSet named trident-csi in CR namespace and one or many other daemonSets
+		// Rules
+		// 1. If no daemonSet(s) named trident-csi/trident-csi-windows exists in CR namespace and one or many other daemonSets
 		//    exist that matches the label then remove all the daemonSet.
-		// 2. If there is a daemonSet named trident-csi in CR namespace and one or many other daemonSets
+		// 2. If daemonSet named trident-csi/trident-csi-windows exists in CR namespace and one or many other daemonSets
 		//    exist that matches the label then remove all other daemonSets.
 		for _, daemonSet := range daemonSets {
-			if daemonSet.Namespace == namespace && daemonSet.Name == daemonSetName {
+			if daemonSet.Namespace == namespace && (daemonSet.Name == linuxDS || daemonSet.Name == windowsDS) {
 				// Found a daemonSet named in the same namespace
 				log.WithFields(log.Fields{
 					"daemonSet": daemonSet.Name,
 					"namespace": daemonSet.Namespace,
 				}).Infof("A Trident daemonSet was found by label.")
 
-				// allocate new memory for currentDaemonSet to avoid unintentional reassignment due to daemonSet
-				// having the same address across iterations
-				currentDaemonSet = &appsv1.DaemonSet{}
-				*currentDaemonSet = daemonSet
-				createDaemonSet = false
+				if isWindows && daemonSet.Name == windowsDS || !isWindows && daemonSet.Name == linuxDS {
+					currentDaemonSet = &appsv1.DaemonSet{}
+					*currentDaemonSet = daemonSet
+					createDaemonSet = false
+				}
 			} else {
 				log.WithFields(log.Fields{
 					"daemonSet":          daemonSet.Name,
 					"daemonSetNamespace": daemonSet.Namespace,
-				}).Errorf("A daemonSet was found by label which does not meet either name %s or namespace '%s"+
-					"' requirement, marking it for deletion.", daemonSetName, namespace)
+				}).Errorf("A daemonSet was found by label which does not meet either names %s, %s or namespace '%s"+
+					"' requirement, marking it for deletion.", linuxDS, windowsDS, namespace)
 
 				unwantedDaemonSets = append(unwantedDaemonSets, daemonSet)
 			}
@@ -844,8 +857,9 @@ func (k *K8sClient) GetDaemonSetInformation(daemonSetName, nodeLabel, namespace 
 }
 
 // PutDaemonSet creates or updates a Trident DaemonSet.
-func (k *K8sClient) PutDaemonSet(currentDaemonSet *appsv1.DaemonSet, createDaemonSet bool, newDaemonSetYAML, nodeLabel string) error {
-	daemonSetName := getDaemonSetName()
+func (k *K8sClient) PutDaemonSet(
+	currentDaemonSet *appsv1.DaemonSet, createDaemonSet bool, newDaemonSetYAML, nodeLabel, daemonSetName string,
+) error {
 	logFields := log.Fields{
 		"daemonset": daemonSetName,
 		"namespace": k.Namespace(),
@@ -871,7 +885,7 @@ func (k *K8sClient) PutDaemonSet(currentDaemonSet *appsv1.DaemonSet, createDaemo
 
 		// Apply the patch to the current DaemonSet
 		patchType := types.MergePatchType
-		if err = k.PatchDaemonSetByLabel(nodeLabel, patchBytes, patchType); err != nil {
+		if err = k.PatchDaemonSetByLabelAndName(nodeLabel, daemonSetName, patchBytes, patchType); err != nil {
 			return fmt.Errorf("could not patch Trident DaemonSet; %v", err)
 		}
 
@@ -999,7 +1013,9 @@ func (k *K8sClient) GetDeploymentInformation(deploymentName, appLabel, namespace
 }
 
 // PutDeployment creates or updates a Trident Deployment.
-func (k *K8sClient) PutDeployment(currentDeployment *appsv1.Deployment, createDeployment bool, newDeploymentYAML, appLabel string) error {
+func (k *K8sClient) PutDeployment(
+	currentDeployment *appsv1.Deployment, createDeployment bool, newDeploymentYAML, appLabel string,
+) error {
 	deploymentName := getDeploymentName(true)
 	logFields := log.Fields{
 		"deployment": deploymentName,
@@ -1107,7 +1123,9 @@ func (k *K8sClient) RemoveMultipleDeployments(unwantedDeployments []appsv1.Deplo
 
 // GetPodSecurityPolicyInformation identifies the Operator-based Trident PSP information and any unwanted
 // PSPs.
-func (k *K8sClient) GetPodSecurityPolicyInformation(pspName, appLabel string, shouldUpdate bool) (*policyv1beta1.PodSecurityPolicy,
+func (k *K8sClient) GetPodSecurityPolicyInformation(
+	pspName, appLabel string, shouldUpdate bool,
+) (*policyv1beta1.PodSecurityPolicy,
 	[]policyv1beta1.PodSecurityPolicy, bool, error,
 ) {
 	createPSP := true
@@ -1160,7 +1178,9 @@ func (k *K8sClient) GetPodSecurityPolicyInformation(pspName, appLabel string, sh
 }
 
 // PutPodSecurityPolicy creates or updates a PSP.
-func (k *K8sClient) PutPodSecurityPolicy(currentPSP *policyv1beta1.PodSecurityPolicy, createPSP bool, newPSPYAML, appLabel string) error {
+func (k *K8sClient) PutPodSecurityPolicy(
+	currentPSP *policyv1beta1.PodSecurityPolicy, createPSP bool, newPSPYAML, appLabel string,
+) error {
 	pspName := getPSPName()
 	logFields := log.Fields{
 		"podSecurityPolicy": pspName,
@@ -1499,7 +1519,9 @@ func (k *K8sClient) GetServiceInformation(serviceName, appLabel, namespace strin
 }
 
 // PutService creates or updates a Service associated with Trident.
-func (k *K8sClient) PutService(currentService *corev1.Service, createService bool, newServiceYAML, appLabel string) error {
+func (k *K8sClient) PutService(
+	currentService *corev1.Service, createService bool, newServiceYAML, appLabel string,
+) error {
 	serviceName := getServiceName()
 	logFields := log.Fields{
 		"service":   serviceName,
@@ -1611,7 +1633,9 @@ func (k *K8sClient) RemoveMultipleServices(unwantedServices []corev1.Service) er
 
 // GetServiceAccountInformation identifies the Operator-based Trident Service Account info and any unwanted
 // Service Accounts.
-func (k *K8sClient) GetServiceAccountInformation(serviceAccountName, appLabel, namespace string, shouldUpdate bool) (*corev1.ServiceAccount,
+func (k *K8sClient) GetServiceAccountInformation(
+	serviceAccountName, appLabel, namespace string, shouldUpdate bool,
+) (*corev1.ServiceAccount,
 	[]corev1.ServiceAccount, []string, bool, error,
 ) {
 	createServiceAccount := true
@@ -1673,7 +1697,9 @@ func (k *K8sClient) GetServiceAccountInformation(serviceAccountName, appLabel, n
 }
 
 // PutServiceAccount creates or updates a Service Account associated with Trident.
-func (k *K8sClient) PutServiceAccount(currentServiceAccount *corev1.ServiceAccount, createServiceAccount bool, newServiceAccountYAML, appLabel string) (bool,
+func (k *K8sClient) PutServiceAccount(
+	currentServiceAccount *corev1.ServiceAccount, createServiceAccount bool, newServiceAccountYAML, appLabel string,
+) (bool,
 	error,
 ) {
 	newServiceAccount := false
@@ -1795,7 +1821,9 @@ func (k *K8sClient) RemoveMultipleServiceAccounts(unwantedServiceAccounts []core
 
 // GetTridentOpenShiftSCCInformation gets OpenShiftSCC info with a supplied name,
 // username and determines if new OpenShiftSCC should be created
-func (k *K8sClient) GetTridentOpenShiftSCCInformation(openShiftSCCName, openShiftSCCUserName string, shouldUpdate bool) ([]byte,
+func (k *K8sClient) GetTridentOpenShiftSCCInformation(
+	openShiftSCCName, openShiftSCCUserName string, shouldUpdate bool,
+) ([]byte,
 	bool, bool, error,
 ) {
 	createOpenShiftSCC := true
@@ -1827,7 +1855,8 @@ func (k *K8sClient) GetTridentOpenShiftSCCInformation(openShiftSCCName, openShif
 }
 
 // PutOpenShiftSCC creates or updates OpenShiftSCCs associated with Trident.
-func (k *K8sClient) PutOpenShiftSCC(currentOpenShiftSCCJSON []byte,
+func (k *K8sClient) PutOpenShiftSCC(
+	currentOpenShiftSCCJSON []byte,
 	createOpenShiftSCC bool, newOpenShiftSCCYAML string,
 ) error {
 	openShiftSCCOldUserName := "trident-csi"
@@ -1873,7 +1902,8 @@ func (k *K8sClient) PutOpenShiftSCC(currentOpenShiftSCCJSON []byte,
 }
 
 // DeleteOpenShiftSCC deletes an Operator-based OpenShiftSCC associated with Trident.
-func (k *K8sClient) DeleteOpenShiftSCC(openShiftSCCUserName, openShiftSCCName,
+func (k *K8sClient) DeleteOpenShiftSCC(
+	openShiftSCCUserName, openShiftSCCName,
 	appLabelValue string,
 ) error {
 	var removeExistingSCC bool

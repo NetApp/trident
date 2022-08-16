@@ -1178,6 +1178,7 @@ kind: DaemonSet
 metadata:
   name: {DAEMONSET_NAME}
   {LABELS}
+  {OWNER_REF}
 spec:
   selector:
     matchLabels:

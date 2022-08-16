@@ -52,6 +52,7 @@ var (
 	debug              bool
 	useIPv6            bool
 	silenceAutosupport bool
+	windows            bool
 
 	logFormat     string
 	probePort     string
@@ -272,6 +273,7 @@ func (i *Installer) setInstallationParams(
 	csi = true
 	debug = cr.Spec.Debug
 	useIPv6 = cr.Spec.IPv6
+	windows = cr.Spec.Windows
 	silenceAutosupport = cr.Spec.SilenceAutosupport
 	if cr.Spec.AutosupportProxy != "" {
 		autosupportProxy = cr.Spec.AutosupportProxy
@@ -505,9 +507,20 @@ func (i *Installer) InstallOrPatchTrident(
 	}
 
 	// Create or update the Trident CSI daemonset
-	returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, newServiceAccount)
+	if windows {
+		returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, newServiceAccount,
+			true)
+		if returnError != nil {
+			returnError = fmt.Errorf("failed to create or patch Trident daemonset %s; %v", getDaemonSetName(true),
+				returnError)
+			return nil, "", returnError
+		}
+	}
+
+	returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, newServiceAccount, false)
 	if returnError != nil {
-		returnError = fmt.Errorf("failed to create the Trident DaemonSet; %v", returnError)
+		returnError = fmt.Errorf("failed to create or patch Trident daemonset %s; %v", getDaemonSetName(false),
+			returnError)
 		return nil, "", returnError
 	}
 
@@ -1025,7 +1038,8 @@ func (i *Installer) createOrPatchTridentResourceQuota(
 		nodeLabels[k] = v
 	}
 	nodeLabels[appLabelKey] = TridentNodeLabelValue
-	newResourceQuotaYAML := k8sclient.GetResourceQuotaYAML(resourceQuotaName, i.namespace, nodeLabels, controllingCRDetails)
+	newResourceQuotaYAML := k8sclient.GetResourceQuotaYAML(resourceQuotaName, i.namespace, nodeLabels,
+		controllingCRDetails)
 
 	err = i.client.PutResourceQuota(currentResourceQuota, createResourceQuota, newResourceQuotaYAML, nodeLabel)
 	if err != nil {
@@ -1116,13 +1130,12 @@ func (i *Installer) TridentDeploymentInformation(
 }
 
 func (i *Installer) createOrPatchTridentDaemonSet(
-	controllingCRDetails, labels map[string]string, shouldUpdate, newServiceAccount bool,
+	controllingCRDetails, labels map[string]string, shouldUpdate, newServiceAccount, isWindows bool,
 ) error {
-	daemonSetName := getDaemonSetName()
 	nodeLabel := TridentNodeLabel
 
-	currentDaemonSet, unwantedDaemonSets, createDaemonSet, err := i.client.GetDaemonSetInformation(daemonSetName,
-		nodeLabel, i.namespace)
+	currentDaemonSet, unwantedDaemonSets, createDaemonSet, err := i.client.GetDaemonSetInformation(nodeLabel,
+		i.namespace, isWindows)
 	if err != nil {
 		return fmt.Errorf("failed to get Trident daemonsets; %v", err)
 	}
@@ -1149,7 +1162,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 	}
 
 	daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
-		DaemonsetName:        daemonSetName,
+		DaemonsetName:        getDaemonSetName(isWindows),
 		TridentImage:         tridentImage,
 		ImageRegistry:        imageRegistry,
 		KubeletDir:           kubeletDir,
@@ -1164,9 +1177,16 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		NodeSelector:         nodePluginNodeSelector,
 		Tolerations:          tolerations,
 	}
-	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAML(daemonSetArgs)
 
-	err = i.client.PutDaemonSet(currentDaemonSet, createDaemonSet, newDaemonSetYAML, nodeLabel)
+	var newDaemonSetYAML string
+	if isWindows {
+		newDaemonSetYAML = k8sclient.GetCSIDaemonSetYAMLWindows(daemonSetArgs)
+	} else {
+		newDaemonSetYAML = k8sclient.GetCSIDaemonSetYAML(daemonSetArgs)
+	}
+
+	err = i.client.PutDaemonSet(currentDaemonSet, createDaemonSet, newDaemonSetYAML, nodeLabel,
+		getDaemonSetName(isWindows))
 	if err != nil {
 		return fmt.Errorf("failed to create or patch Trident daemonset; %v", err)
 	}
@@ -1180,9 +1200,8 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 func (i *Installer) TridentDaemonSetInformation() (*appsv1.DaemonSet,
 	[]appsv1.DaemonSet, bool, error,
 ) {
-	daemonSetName := getDaemonSetName()
 	nodeLabel := TridentNodeLabel
-	return i.client.GetDaemonSetInformation(daemonSetName, nodeLabel, i.namespace)
+	return i.client.GetDaemonSetInformation(nodeLabel, i.namespace, false)
 }
 
 func (i *Installer) waitForTridentPod() (*v1.Pod, error) {

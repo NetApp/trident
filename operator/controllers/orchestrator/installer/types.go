@@ -49,24 +49,36 @@ type ExtendedK8sClient interface {
 
 	GetClusterRoleInformation(clusterRoleName, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRole,
 		[]rbacv1.ClusterRole, bool, error)
-	PutClusterRole(currentClusterRole *rbacv1.ClusterRole, createClusterRole bool, newClusterRoleYAML, appLabel string) error
+	PutClusterRole(
+		currentClusterRole *rbacv1.ClusterRole, createClusterRole bool, newClusterRoleYAML, appLabel string,
+	) error
 	DeleteTridentClusterRole(clusterRoleName, appLabel string) error
 	RemoveMultipleClusterRoles(unwantedClusterRoles []rbacv1.ClusterRole) error
 
-	GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRoleBinding,
+	GetClusterRoleBindingInformation(
+		clusterRoleBindingName, appLabel string, shouldUpdate bool,
+	) (*rbacv1.ClusterRoleBinding,
 		[]rbacv1.ClusterRoleBinding, bool, error)
-	PutClusterRoleBinding(currentClusterRoleBinding *rbacv1.ClusterRoleBinding, createClusterRoleBinding bool, newClusterRoleBindingYAML, appLabel string) error
+	PutClusterRoleBinding(
+		currentClusterRoleBinding *rbacv1.ClusterRoleBinding, createClusterRoleBinding bool,
+		newClusterRoleBindingYAML, appLabel string,
+	) error
 	DeleteTridentClusterRoleBinding(clusterRoleBindingName, appLabel string) error
 	RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings []rbacv1.ClusterRoleBinding) error
 
-	GetResourceQuotaInformation(resourceQuotaName, appLabel, namespace string) (*corev1.ResourceQuota, []corev1.ResourceQuota, bool, error)
-	PutResourceQuota(currentResourceQuota *corev1.ResourceQuota, createResourceQuota bool, newDeploymentYAML, appLabel string) error
+	GetResourceQuotaInformation(resourceQuotaName, appLabel, namespace string) (*corev1.ResourceQuota,
+		[]corev1.ResourceQuota, bool, error)
+	PutResourceQuota(
+		currentResourceQuota *corev1.ResourceQuota, createResourceQuota bool, newDeploymentYAML, appLabel string,
+	) error
 	DeleteTridentResourceQuota(nodeLabel string) error
 	RemoveMultipleResourceQuotas(unwantedResourceQuotas []corev1.ResourceQuota) error
 
-	GetDaemonSetInformation(daemonSetName, nodeLabel, namespace string) (*appsv1.DaemonSet, []appsv1.DaemonSet, bool,
+	GetDaemonSetInformation(nodeLabel, namespace string, isWindows bool) (*appsv1.DaemonSet, []appsv1.DaemonSet, bool,
 		error)
-	PutDaemonSet(currentDaemonSet *appsv1.DaemonSet, createDaemonSet bool, newDaemonSetYAML, nodeLabel string) error
+	PutDaemonSet(
+		currentDaemonSet *appsv1.DaemonSet, createDaemonSet bool, newDaemonSetYAML, nodeLabel, daemonSetName string,
+	) error
 	DeleteTridentDaemonSet(nodeLabel string) error
 	RemoveMultipleDaemonSets(unwantedDaemonSets []appsv1.DaemonSet) error
 
@@ -94,19 +106,27 @@ type ExtendedK8sClient interface {
 	DeleteTridentService(serviceName, appLabel, namespace string) error
 	RemoveMultipleServices(unwantedServices []corev1.Service) error
 
-	GetServiceAccountInformation(serviceAccountName, appLabel, namespace string, shouldUpdate bool) (*corev1.ServiceAccount,
+	GetServiceAccountInformation(
+		serviceAccountName, appLabel, namespace string, shouldUpdate bool,
+	) (*corev1.ServiceAccount,
 		[]corev1.ServiceAccount, []string, bool, error)
-	PutServiceAccount(currentServiceAccount *corev1.ServiceAccount, createServiceAccount bool, newServiceAccountYAML, appLabel string) (bool,
+	PutServiceAccount(
+		currentServiceAccount *corev1.ServiceAccount, createServiceAccount bool, newServiceAccountYAML, appLabel string,
+	) (bool,
 		error)
 	DeleteTridentServiceAccount(serviceAccountName, appLabel, namespace string) error
 	RemoveMultipleServiceAccounts(unwantedServiceAccounts []corev1.ServiceAccount) error
 
 	GetTridentOpenShiftSCCInformation(openShiftSCCName, openShiftSCCUserName string, shouldUpdate bool) ([]byte, bool,
 		bool, error)
-	PutOpenShiftSCC(currentOpenShiftSCCJSON []byte,
-		createOpenShiftSCC bool, newOpenShiftSCCYAML string) error
-	DeleteOpenShiftSCC(openShiftSCCUserName, openShiftSCCName,
-		appLabelValue string) error
+	PutOpenShiftSCC(
+		currentOpenShiftSCCJSON []byte,
+		createOpenShiftSCC bool, newOpenShiftSCCYAML string,
+	) error
+	DeleteOpenShiftSCC(
+		openShiftSCCUserName, openShiftSCCName,
+		appLabelValue string,
+	) error
 
 	DeleteTridentStatefulSet(appLabel string) error
 	RemoveMultipleStatefulSets(unwantedStatefulSets []appsv1.StatefulSet) error

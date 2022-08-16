@@ -185,10 +185,10 @@ func (k *KubeClient) discoverKubernetesFlavor() OrchestratorFlavor {
 			continue
 		}
 
-		//log.WithFields(log.Fields{
+		// log.WithFields(log.Fields{
 		//	"group":    gv.Group,
 		//	"version":  gv.Version,
-		//}).Debug("Considering dynamic resource, looking for openshift group.")
+		// }).Debug("Considering dynamic resource, looking for openshift group.")
 
 		// OCP will have an openshift api server we can use to determine if the environment is OCP or Kubernetes
 		if strings.Contains(gv.Group, "config.openshift.io") {
@@ -876,6 +876,30 @@ func (k *KubeClient) deleteDaemonSetForeground(name, namespace string) error {
 	}
 
 	log.WithFields(logFields).Debug("Completed foreground deletion of DaemonSet.")
+
+	return nil
+}
+
+// PatchDaemonSetByLabelAndName patches a DaemonSet object matching the specified label and name
+// in the namespace of the client.
+func (k *KubeClient) PatchDaemonSetByLabelAndName(
+	label, daemonSetName string, patchBytes []byte, patchType types.PatchType,
+) error {
+	daemonSet, err := k.GetDaemonSetByLabelAndName(label, daemonSetName, false)
+	if err != nil {
+		return err
+	}
+
+	if _, err = k.clientset.AppsV1().DaemonSets(k.namespace).Patch(ctx(), daemonSet.Name,
+		patchType, patchBytes, patchOpts); err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"label":     label,
+		"DaemonSet": daemonSet.Name,
+		"namespace": k.namespace,
+	}).Debug("Patched Kubernetes DaemonSet.")
 
 	return nil
 }
@@ -2528,12 +2552,12 @@ func (k *KubeClient) getDynamicResourceFromResourceList(
 	}
 
 	for _, resource := range resources.APIResources {
-		//log.WithFields(log.Fields{
+		// log.WithFields(log.Fields{
 		//	"group":    groupVersion.Group,
 		//	"version":  groupVersion.Version,
 		//	"kind":     resource.Kind,
 		//	"resource": resource.Name,
-		//}).Debug("Considering dynamic API resource.")
+		// }).Debug("Considering dynamic API resource.")
 
 		if resource.Kind == gvk.Kind {
 

@@ -5,3 +5,4 @@ metadata:
 spec:
   debug: true
   namespace: trident
+  windows: false

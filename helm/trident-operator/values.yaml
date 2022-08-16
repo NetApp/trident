@@ -100,3 +100,6 @@ tridentSkipK8sVersionCheck: false
 
 # tridentProbePort allows overriding the default port used for k8s liveness/readiness probes
 tridentProbePort: ""
+
+# windows allows trident to be installed on windows worker node
+windows: false

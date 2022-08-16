@@ -56,6 +56,7 @@ type KubernetesClient interface {
 	DeleteDaemonSetByLabelAndName(label, name string) error
 	DeleteDaemonSet(name, namespace string, foreground bool) error
 	PatchDaemonSetByLabel(label string, patchBytes []byte, patchType types.PatchType) error
+	PatchDaemonSetByLabelAndName(label, daemonSetName string, patchBytes []byte, patchType types.PatchType) error
 	GetConfigMapByLabel(label string, allNamespaces bool) (*v1.ConfigMap, error)
 	GetConfigMapsByLabel(label string, allNamespaces bool) ([]v1.ConfigMap, error)
 	CheckConfigMapExistsByLabel(label string, allNamespaces bool) (bool, string, error)

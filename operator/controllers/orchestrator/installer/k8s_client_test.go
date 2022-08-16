@@ -816,7 +816,8 @@ func TestPutCSIDriver(t *testing.T) {
 					test.input.createCSIDriver, test.input.newCSIDriverYAML, test.input.appLabel
 
 				if !createCSIDriver {
-					if patchBytes, err = k8sclient.GenericPatch(currentCSIDriver, []byte(newCSIDriverYAML)); err != nil {
+					if patchBytes, err = k8sclient.GenericPatch(currentCSIDriver,
+						[]byte(newCSIDriverYAML)); err != nil {
 						t.Fatal(err)
 					}
 					patchType = types.MergePatchType
@@ -1270,7 +1271,8 @@ func TestPutClusterRole(t *testing.T) {
 					test.input.createClusterRole, test.input.newClusterRoleYAML, test.input.appLabel
 
 				if !createClusterRole {
-					if patchBytes, err = k8sclient.GenericPatch(currentClusterRole, []byte(newClusterRoleYAML)); err != nil {
+					if patchBytes, err = k8sclient.GenericPatch(currentClusterRole,
+						[]byte(newClusterRoleYAML)); err != nil {
 						t.Fatal(err)
 					}
 					patchType = types.MergePatchType
@@ -1934,14 +1936,13 @@ func TestRemoveMultipleClusterRoleBindings(t *testing.T) {
 
 func TestGetDaemonSetInformation(t *testing.T) {
 	// declare and initialize variables used throughout the test cases
-	var label, name, invalidName, namespace string
-	var validDaemonSet, invalidDaemonSet appsv1.DaemonSet
-	var unwantedDaemonSets, combinationDaemonSets []appsv1.DaemonSet
+	var label, name, namespace string
+	var validDaemonSet appsv1.DaemonSet
+	var unwantedDaemonSets []appsv1.DaemonSet
 
 	label = "label"
-	name = "name"
+	name = "trident-csi"
 	namespace = "namespace"
-	invalidName = ""
 
 	validDaemonSet = appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -1949,21 +1950,14 @@ func TestGetDaemonSetInformation(t *testing.T) {
 			Namespace: namespace,
 		},
 	}
-	invalidDaemonSet = appsv1.DaemonSet{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      invalidName,
-			Namespace: namespace,
-		},
-	}
-	unwantedDaemonSets = []appsv1.DaemonSet{invalidDaemonSet, invalidDaemonSet}
-	combinationDaemonSets = append([]appsv1.DaemonSet{validDaemonSet}, append(combinationDaemonSets,
-		unwantedDaemonSets...)...)
+
+	unwantedDaemonSets = append(unwantedDaemonSets, validDaemonSet)
 
 	// setup input and output test types for easy use
 	type input struct {
 		label     string
-		name      string
 		namespace string
+		windows   bool
 	}
 
 	type output struct {
@@ -1982,8 +1976,8 @@ func TestGetDaemonSetInformation(t *testing.T) {
 		"expect to fail with k8s error": {
 			input: input{
 				label:     label,
-				name:      name,
 				namespace: namespace,
+				windows:   false,
 			},
 			output: output{
 				currentDaemonSet:   nil,
@@ -1994,14 +1988,14 @@ func TestGetDaemonSetInformation(t *testing.T) {
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient) {
 				// mock calls here
 				mockKubeClient.EXPECT().GetDaemonSetsByLabel(label, true).Return(nil,
-					fmt.Errorf(""))
+					fmt.Errorf("unable to get list of daemonset"))
 			},
 		},
 		"expect to pass with no daemonset found and no k8s error": {
 			input: input{
 				label:     label,
-				name:      invalidName,
 				namespace: "",
+				windows:   false,
 			},
 			output: output{
 				currentDaemonSet:   nil,
@@ -2017,18 +2011,39 @@ func TestGetDaemonSetInformation(t *testing.T) {
 		"expect to pass with current daemonset found and no k8s error": {
 			input: input{
 				label:     label,
-				name:      name,
 				namespace: namespace,
+				windows:   false,
 			},
 			output: output{
 				currentDaemonSet:   &validDaemonSet,
-				unwantedDaemonSets: unwantedDaemonSets,
+				unwantedDaemonSets: nil,
 				createDaemonSet:    false,
 				err:                nil,
 			},
 			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient) {
 				// mock calls here
-				mockKubeClient.EXPECT().GetDaemonSetsByLabel(label, true).Return(combinationDaemonSets, nil)
+				daemonSets := make([]appsv1.DaemonSet, 0)
+				daemonSets = append(daemonSets, validDaemonSet)
+				mockKubeClient.EXPECT().GetDaemonSetsByLabel(label, true).Return(daemonSets, nil)
+			},
+		},
+		"expect to pass with no daemonset found in given namespace": {
+			input: input{
+				label:     label,
+				namespace: "trident-namespace",
+				windows:   true,
+			},
+			output: output{
+				currentDaemonSet:   nil,
+				unwantedDaemonSets: unwantedDaemonSets,
+				createDaemonSet:    true,
+				err:                nil,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient) {
+				// mock calls here
+				daemonSets := make([]appsv1.DaemonSet, 0)
+				daemonSets = append(daemonSets, validDaemonSet)
+				mockKubeClient.EXPECT().GetDaemonSetsByLabel(label, true).Return(daemonSets, nil)
 			},
 		},
 	}
@@ -2041,7 +2056,7 @@ func TestGetDaemonSetInformation(t *testing.T) {
 				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
 
 				// extract the input variables from the test case definition
-				label, name, namespace := test.input.label, test.input.name, test.input.namespace
+				label, namespace, isWindows := test.input.label, test.input.namespace, test.input.windows
 
 				// extract the output variables from the test case definition
 				expectedDaemonSet, expectedUnwantedDaemonSets, expectedCreateDaemonSet,
@@ -2051,8 +2066,8 @@ func TestGetDaemonSetInformation(t *testing.T) {
 				// mock out the k8s client calls needed to test this
 				test.mocks(mockKubeClient)
 				extendedK8sClient := &K8sClient{mockKubeClient}
-				currentDaemonSet, unwantedDaemonsSets, createDaemonSet, err := extendedK8sClient.GetDaemonSetInformation(name,
-					label, namespace)
+				currentDaemonSet, unwantedDaemonsSets, createDaemonSet, err := extendedK8sClient.GetDaemonSetInformation(
+					label, namespace, isWindows)
 
 				assert.EqualValues(t, expectedDaemonSet, currentDaemonSet)
 				assert.EqualValues(t, expectedUnwantedDaemonSets, unwantedDaemonsSets)
@@ -2065,7 +2080,7 @@ func TestGetDaemonSetInformation(t *testing.T) {
 }
 
 func TestPutDaemonSet(t *testing.T) {
-	daemonSetName := TridentCSILabel
+	daemonSetName := TridentCSI
 	nodeLabel := "app=node.csi.trident.netapp.io"
 	daemonSet := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -2143,7 +2158,7 @@ func TestPutDaemonSet(t *testing.T) {
 				patchBytes, _ := args[2].([]byte)
 				patchType, _ := args[3].(types.PatchType)
 				patchBytesMatcher := &JSONMatcher{patchBytes}
-				mockKubeClient.EXPECT().PatchDaemonSetByLabel(nodeLabel, patchBytesMatcher,
+				mockKubeClient.EXPECT().PatchDaemonSetByLabelAndName(nodeLabel, daemonSetName, patchBytesMatcher,
 					patchType).Return(nil)
 			},
 		},
@@ -2161,7 +2176,7 @@ func TestPutDaemonSet(t *testing.T) {
 				patchBytes, _ := args[2].([]byte)
 				patchType, _ := args[3].(types.PatchType)
 				patchBytesMatcher := &JSONMatcher{patchBytes}
-				mockKubeClient.EXPECT().PatchDaemonSetByLabel(nodeLabel, patchBytesMatcher,
+				mockKubeClient.EXPECT().PatchDaemonSetByLabelAndName(nodeLabel, daemonSetName, patchBytesMatcher,
 					patchType).Return(k8sClientErr)
 			},
 		},
@@ -2183,7 +2198,8 @@ func TestPutDaemonSet(t *testing.T) {
 					test.input.createDaemonSet, test.input.newDaemonSetYAML, test.input.nodeLabel
 
 				if !createDaemonSet {
-					if patchBytes, err = k8sclient.GenericPatch(currentDaemonSet, []byte(newDaemonSetYAML)); err != nil {
+					if patchBytes, err = k8sclient.GenericPatch(currentDaemonSet,
+						[]byte(newDaemonSetYAML)); err != nil {
 						t.Fatal(err)
 					}
 					patchType = types.MergePatchType
@@ -2201,7 +2217,153 @@ func TestPutDaemonSet(t *testing.T) {
 
 				// make the call
 				err = extendedK8sClient.PutDaemonSet(currentDaemonSet, createDaemonSet, newDaemonSetYAML,
-					nodeLabel)
+					nodeLabel, daemonSetName)
+
+				assert.Equal(t, expectedErr, err)
+			},
+		)
+	}
+}
+
+func TestPutDaemonSet_Windows(t *testing.T) {
+	daemonSetName := TridentCSIWindows
+	nodeLabel := "app=node.csi.trident.netapp.io"
+	daemonSet := &appsv1.DaemonSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: daemonSetName,
+		},
+	}
+	version, _ := utils.ParseSemantic("1.21.3")
+	daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
+		DaemonsetName:        daemonSetName,
+		ImagePullSecrets:     make([]string, 0),
+		Labels:               make(map[string]string),
+		ControllingCRDetails: make(map[string]string),
+		Debug:                false,
+		Version:              version,
+	}
+	newDaemonSetYAML := k8sclient.GetCSIDaemonSetYAMLWindows(daemonSetArgs)
+	k8sClientErr := fmt.Errorf("k8s error")
+
+	// defining a custom input type makes testing different cases easier
+	type input struct {
+		currentDaemonSet *appsv1.DaemonSet
+		createDaemonSet  bool
+		newDaemonSetYAML string
+		nodeLabel        string
+		patchBytes       []byte
+		patchType        types.PatchType
+	}
+
+	// setup values for the test table with input, expected output, and mocks
+	tests := map[string]struct {
+		input  input
+		output error
+		// args[0] = newDaemonSetYAML, args[1] = nodeLabel, args[2] = patchBytes, args[3] = patchType
+		mocks func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{})
+	}{
+		"expect to pass when creating a DaemonSet and no k8s error occurs": {
+			input: input{
+				currentDaemonSet: nil,
+				createDaemonSet:  true,
+				newDaemonSetYAML: newDaemonSetYAML,
+				nodeLabel:        nodeLabel,
+			},
+			output: nil,
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// mock calls here
+				objectYAML := args[0].(string)
+				mockKubeClient.EXPECT().CreateObjectByYAML(objectYAML).Return(nil)
+			},
+		},
+		"expect to fail when creating a DaemonSet and a k8s error occurs": {
+			input: input{
+				currentDaemonSet: nil,
+				createDaemonSet:  true,
+				newDaemonSetYAML: newDaemonSetYAML,
+				nodeLabel:        nodeLabel,
+			},
+			output: fmt.Errorf("could not create Trident daemonset; %v", k8sClientErr),
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// mock calls here
+				objectYAML := args[0].(string)
+				mockKubeClient.EXPECT().CreateObjectByYAML(objectYAML).Return(k8sClientErr)
+			},
+		},
+		"expect to pass when updating a DaemonSet and no k8s error occurs": {
+			input: input{
+				currentDaemonSet: daemonSet,
+				createDaemonSet:  false,
+				nodeLabel:        nodeLabel,
+				newDaemonSetYAML: newDaemonSetYAML,
+			},
+			output: nil,
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// mock calls here
+				nodeLabel, _ := args[1].(string)
+				patchBytes, _ := args[2].([]byte)
+				patchType, _ := args[3].(types.PatchType)
+				patchBytesMatcher := &JSONMatcher{patchBytes}
+				mockKubeClient.EXPECT().PatchDaemonSetByLabelAndName(nodeLabel, daemonSetName, patchBytesMatcher,
+					patchType).Return(nil)
+			},
+		},
+		"expect to fail when updating a DaemonSet and a k8s error occurs": {
+			input: input{
+				currentDaemonSet: daemonSet,
+				createDaemonSet:  false,
+				nodeLabel:        nodeLabel,
+				newDaemonSetYAML: newDaemonSetYAML,
+			},
+			output: fmt.Errorf("could not patch Trident DaemonSet; %v", k8sClientErr),
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// mock calls here
+				nodeLabel, _ := args[1].(string)
+				patchBytes, _ := args[2].([]byte)
+				patchType, _ := args[3].(types.PatchType)
+				patchBytesMatcher := &JSONMatcher{patchBytes}
+				mockKubeClient.EXPECT().PatchDaemonSetByLabelAndName(nodeLabel, daemonSetName, patchBytesMatcher,
+					patchType).Return(k8sClientErr)
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(
+			name, func(t *testing.T) {
+				var err error
+				var patchBytes []byte
+				var patchType types.PatchType
+
+				// setup mock controller and kube client
+				mockCtrl := gomock.NewController(t)
+				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
+
+				// extract the input variables from the test case definition
+				currentDaemonSet, createDaemonSet, newDaemonSetYAML, nodeLabel := test.input.currentDaemonSet,
+					test.input.createDaemonSet, test.input.newDaemonSetYAML, test.input.nodeLabel
+
+				if !createDaemonSet {
+					if patchBytes, err = k8sclient.GenericPatch(currentDaemonSet,
+						[]byte(newDaemonSetYAML)); err != nil {
+						t.Fatal(err)
+					}
+					patchType = types.MergePatchType
+				}
+
+				// extract the output err
+				expectedErr := test.output
+
+				// mock out calls found in every test case
+				mockKubeClient.EXPECT().Namespace().AnyTimes()
+
+				// mock out the k8s client calls needed to test this
+				test.mocks(mockKubeClient, newDaemonSetYAML, nodeLabel, patchBytes, patchType)
+				extendedK8sClient := &K8sClient{mockKubeClient}
+
+				// make the call
+				err = extendedK8sClient.PutDaemonSet(currentDaemonSet, createDaemonSet, newDaemonSetYAML,
+					nodeLabel, daemonSetName)
 
 				assert.Equal(t, expectedErr, err)
 			},
@@ -2217,12 +2379,28 @@ func TestDeleteTridentDaemonSet(t *testing.T) {
 	getDaemonSetsErr := fmt.Errorf("unable to get list of daemonset")
 	nodeLabel := "node-label"
 	daemonSetName := "daemonSetName"
+	daemonSetName2 := "daemonSetName2"
 	namespace := "namespace"
 
 	unwantedDaemonSets = []appsv1.DaemonSet{
 		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      daemonSetName,
+				Namespace: namespace,
+			},
+		},
+	}
+
+	unwantedDaemonSets2 := []appsv1.DaemonSet{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      daemonSetName,
+				Namespace: namespace,
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      daemonSetName2,
 				Namespace: namespace,
 			},
 		},
@@ -2270,6 +2448,15 @@ func TestDeleteTridentDaemonSet(t *testing.T) {
 				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName,
 					namespace, true).Return(nil).
 					MaxTimes(len(unwantedDaemonSets))
+			},
+		},
+		"expect to pass when multiple daemon sets are found and RemoveMultipleDeployments succeeds": {
+			input:  nodeLabel,
+			output: nil,
+			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
+				mockK8sClient.EXPECT().GetDaemonSetsByLabel(nodeLabel, true).Return(unwantedDaemonSets2, nil)
+				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName, namespace, true).Return(nil)
+				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName2, namespace, true).Return(nil)
 			},
 		},
 	}
@@ -2623,7 +2810,8 @@ func TestPutDeployment(t *testing.T) {
 					test.input.createDeployment, test.input.newDeploymentYAML, test.input.appLabel
 
 				if !createDeployment {
-					if patchBytes, err = k8sclient.GenericPatch(currentDeployment, []byte(newDeploymentYAML)); err != nil {
+					if patchBytes, err = k8sclient.GenericPatch(currentDeployment,
+						[]byte(newDeploymentYAML)); err != nil {
 						t.Fatal(err)
 					}
 					patchType = types.MergePatchType
@@ -4090,7 +4278,8 @@ func TestPutResourceQuota(t *testing.T) {
 					test.input.createResourceQuota, test.input.newResourceQuotaYAML, test.input.appLabel
 
 				if !createResourceQuota {
-					if patchBytes, err = k8sclient.GenericPatch(currentResourceQuota, []byte(newResourceQuotaYAML)); err != nil {
+					if patchBytes, err = k8sclient.GenericPatch(currentResourceQuota,
+						[]byte(newResourceQuotaYAML)); err != nil {
 						t.Fatal(err)
 					}
 					patchType = types.MergePatchType
@@ -4107,7 +4296,8 @@ func TestPutResourceQuota(t *testing.T) {
 				extendedK8sClient := &K8sClient{mockKubeClient}
 
 				// make the call
-				err = extendedK8sClient.PutResourceQuota(currentResourceQuota, createResourceQuota, newResourceQuotaYAML, appLabel)
+				err = extendedK8sClient.PutResourceQuota(currentResourceQuota, createResourceQuota,
+					newResourceQuotaYAML, appLabel)
 
 				assert.Equal(t, expectedErr, err != nil)
 			},

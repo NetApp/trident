@@ -55,6 +55,7 @@ type TridentOrchestratorSpec struct {
 	ControllerPluginTolerations  []Toleration      `json:"controllerPluginTolerations,omitempty"`
 	NodePluginNodeSelector       map[string]string `json:"nodePluginNodeSelector,omitempty"`
 	NodePluginTolerations        []Toleration      `json:"nodePluginTolerations,omitempty"`
+	Windows                      bool              `json:"windows,omitempty"`
 }
 
 // Toleration

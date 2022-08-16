@@ -264,6 +264,7 @@ rules:
       - patch
     resourceNames:
       - trident-csi
+      - trident-csi-windows
       - trident
   - apiGroups:
       - ""
