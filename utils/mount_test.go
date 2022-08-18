@@ -3,6 +3,7 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -98,4 +99,48 @@ func TestParseProcSelfMountinfo(t *testing.T) {
 			assert.Equal(t, tests[i].expected, m)
 		})
 	}
+}
+
+func TestCheckMountOptionsPositive(t *testing.T) {
+	ctx := context.Background()
+	mountInfo := MountInfo{
+		MountId:      0,
+		ParentId:     0,
+		DeviceId:     "",
+		Root:         "",
+		MountPoint:   "",
+		MountOptions: []string{"m1", "m2"},
+		FsType:       "",
+		MountSource:  "",
+		SuperOptions: []string{"sm1", "sm2"},
+	}
+	res := CheckMountOptions(ctx, mountInfo, "m1")
+	assert.NoError(t, res, "mount option mismatch")
+
+	res = CheckMountOptions(ctx, mountInfo, "sm2")
+	assert.NoError(t, res, "mount option mismatch")
+
+	// no mount option should not result in error
+	res = CheckMountOptions(ctx, mountInfo, "")
+	assert.NoError(t, res, "mount option mismatch")
+}
+
+func TestCheckMountOptionsNegative(t *testing.T) {
+	ctx := context.Background()
+	mountInfo := MountInfo{
+		MountId:      0,
+		ParentId:     0,
+		DeviceId:     "",
+		Root:         "",
+		MountPoint:   "",
+		MountOptions: []string{"m1", "m2"},
+		FsType:       "",
+		MountSource:  "",
+		SuperOptions: []string{"sm1", "sm2"},
+	}
+	res := CheckMountOptions(ctx, mountInfo, "m9")
+	assert.Error(t, res, "expecting mount option mismatch")
+
+	res = CheckMountOptions(ctx, mountInfo, "sm9")
+	assert.Error(t, res, "expecting mount option mismatch")
 }

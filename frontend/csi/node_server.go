@@ -25,11 +25,11 @@ import (
 )
 
 const (
-	tridentDeviceInfoPath      = "/var/lib/trident/tracking"
-	lockID                     = "csi_node_server"
-	volumePublishInfoFilename  = "volumePublishInfo.json"
-	nodePrepBreadcrumbFilename = "nodePrepInfo.json"
-	umountMaxDuration          = 30 * time.Second
+	tridentDeviceInfoPath         = "/var/lib/trident/tracking"
+	lockID                        = "csi_node_server"
+	volumePublishInfoFilename     = "volumePublishInfo.json"
+	nodePrepBreadcrumbFilename    = "nodePrepInfo.json"
+	AttachISCSIVolumeTimeoutShort = 15 * time.Second
 )
 
 var topologyLabels = make(map[string]string)
@@ -189,7 +189,7 @@ func (p *Plugin) NodeUnpublishVolume(
 		notMountPoint, err = utils.IsLikelyNotMountPoint(ctx, targetPath)
 	} else {
 		var mounted bool
-		mounted, err = utils.IsMounted(ctx, "", targetPath)
+		mounted, err = utils.IsMounted(ctx, "", targetPath, "")
 		notMountPoint = !mounted
 	}
 
@@ -205,7 +205,7 @@ func (p *Plugin) NodeUnpublishVolume(
 	if notMountPoint {
 		Logc(ctx).Debug("Volume not mounted, proceeding to unpublish volume")
 	} else {
-		if err = utils.WaitForUmount(ctx, targetPath, umountMaxDuration); err != nil {
+		if err = utils.Umount(ctx, targetPath); err != nil {
 			Logc(ctx).WithFields(log.Fields{"path": targetPath, "error": err}).Error("unable to unmount volume.")
 			return nil, status.Errorf(codes.InvalidArgument, "unable to unmount volume; %s", err)
 		}
@@ -836,7 +836,8 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}
 
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
-	if err := utils.AttachISCSIVolume(ctx, req.VolumeContext["internalName"], "", publishInfo); err != nil {
+	if err := utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo,
+		AttachISCSIVolumeTimeoutShort); err != nil {
 		// Did we fail to log in?
 		if utils.IsAuthError(err) {
 			// Update CHAP info from the controller and try one more time
@@ -844,7 +845,8 @@ func (p *Plugin) nodeStageISCSIVolume(
 			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
-			if err = utils.AttachISCSIVolume(ctx, req.VolumeContext["internalName"], "", publishInfo); err != nil {
+			if err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo,
+				AttachISCSIVolumeTimeoutShort); err != nil {
 				// Bail out no matter what as we've now tried with updated credentials
 				return nil, status.Error(codes.Internal, err.Error())
 			}
@@ -1011,7 +1013,8 @@ func (p *Plugin) nodeStageNFSBlockVolume(ctx context.Context, req *csi.NodeStage
 	publishInfo.NfsUniqueID = req.PublishContext["nfsUniqueID"]
 	publishInfo.SubvolumeName = req.PublishContext["subvolumeName"]
 	publishInfo.FilesystemType = req.PublishContext["filesystemType"]
-	publishInfo.SubvolumeMountOptions = utils.SanitizeMountOptions(req.PublishContext["subvolumeMountOptions"], []string{"ro"})
+	publishInfo.SubvolumeMountOptions = utils.SanitizeMountOptions(req.PublishContext["subvolumeMountOptions"],
+		[]string{"ro"})
 
 	// The NFS mount path should be same for all the Subvolumes belonging to the same NFS volumes
 	// thus use NFS volume's Unique ID. This also means the subvolumes from different Virtual Pools,
@@ -1079,8 +1082,9 @@ func (p *Plugin) nodeUnstageNFSBlockVolume(
 		// Check if it is mounted or not (ideally it should never be mounted)
 		isLoopDeviceMounted, err := utils.IsLoopDeviceMounted(ctx, loopDevice.Name)
 		if err != nil {
-			return nil, status.Error(codes.Internal, fmt.Sprintf("unable to identify if loop device '%s' is mounted: %s",
-				loopDevice.Name, err.Error()))
+			return nil, status.Error(codes.Internal,
+				fmt.Sprintf("unable to identify if loop device '%s' is mounted: %s",
+					loopDevice.Name, err.Error()))
 		}
 		// If not mounted any more proceed to remove the device and/or remove the NFS mount point
 		if !isLoopDeviceMounted {
@@ -1108,7 +1112,7 @@ func (p *Plugin) nodeUnstageNFSBlockVolume(
 
 	// Identify if the NFS mount point has any subvolumes in use by loop devices, if not then it is safe to remove it
 	if utils.SafeToRemoveNFSMount(ctx, nfsMountpoint) {
-		if err = utils.RemoveMountPoint(ctx, nfsMountpoint); err != nil {
+		if err = utils.RemoveMountPointRetry(ctx, nfsMountpoint); err != nil {
 			Logc(ctx).Errorf("Failed to remove NFS mountpoint '%s': %s", nfsMountpoint, err.Error())
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -1142,7 +1146,8 @@ func (p *Plugin) nodePublishNFSBlockVolume(
 
 	publishInfo.SubvolumeMountOptions = getSubvolumeMountOptions(false, publishInfo.SubvolumeMountOptions)
 
-	err = utils.MountDevice(ctx, publishInfo.StagingMountpoint, req.TargetPath, publishInfo.SubvolumeMountOptions, false)
+	err = utils.MountDevice(ctx, publishInfo.StagingMountpoint, req.TargetPath, publishInfo.SubvolumeMountOptions,
+		false)
 	if err != nil {
 		if os.IsPermission(err) {
 			return nil, status.Error(codes.PermissionDenied, err.Error())

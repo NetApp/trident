@@ -97,7 +97,7 @@ func IsNFSShareMounted(ctx context.Context, exportPath, mountpoint string) (bool
 // IsMounted checks whether the specified device is attached at the given mountpoint.
 // If no source device is specified, any existing mount with the specified mountpoint returns true.
 // If no mountpoint is specified, any existing mount with the specified device returns true.
-func IsMounted(ctx context.Context, sourceDevice, mountpoint string) (bool, error) {
+func IsMounted(ctx context.Context, sourceDevice, mountpoint string, mountOptions string) (bool, error) {
 	logFields := log.Fields{"source": sourceDevice, "target": mountpoint}
 	Logc(ctx).WithFields(logFields).Debug(">>>> mount.IsMounted")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< mount.IsMounted")
@@ -147,6 +147,10 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint string) (bool, erro
 				continue
 			} else {
 				Logc(ctx).Debugf("Device found: %v", sourceDevice)
+
+				if err = CheckMountOptions(ctx, procMount, mountOptions); err != nil {
+					Logc(ctx).WithFields(logFields).Errorf("checking mount options failed; %s", err)
+				}
 			}
 		}
 
@@ -156,6 +160,23 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint string) (bool, erro
 
 	Logc(ctx).WithFields(logFields).Debug("Mount information not found.")
 	return false, nil
+}
+
+// CheckMountOptions check if the new mount options are different from already mounted options.
+// Return an error if there is mismatch with the mount options.
+func CheckMountOptions(ctx context.Context, procMount MountInfo, mountOptions string) error {
+	// We have the source already mounted. Compare the mount options from the request.
+	optionSlice := strings.Split(strings.TrimPrefix(mountOptions, "-o"), ",")
+	for _, option := range optionSlice {
+		if option != "" && !AreMountOptionsInList(option,
+			procMount.MountOptions) && !AreMountOptionsInList(option,
+			procMount.SuperOptions) {
+
+			return errors.New("mismatch in mount option: " + option +
+				", this might cause mount failure")
+		}
+	}
+	return nil
 }
 
 // GetMountInfo returns the list of mounts found in /proc/self/mountinfo
@@ -183,7 +204,7 @@ func MountDevice(ctx context.Context, device, mountpoint, options string, isMoun
 		args = []string{device, mountpoint}
 	}
 
-	mounted, _ := IsMounted(ctx, device, mountpoint)
+	mounted, _ := IsMounted(ctx, device, mountpoint, options)
 	exists := PathExists(mountpoint)
 
 	Logc(ctx).Debugf("Already mounted: %v, mountpoint exists: %v", mounted, exists)
@@ -288,46 +309,11 @@ func Umount(ctx context.Context, mountpoint string) (err error) {
 	return
 }
 
-// WaitForUmount detaches from the supplied location, retrying until it succeeds.
-func WaitForUmount(ctx context.Context, mountpoint string, maxDuration time.Duration) error {
-	logFields := log.Fields{"mountpoint": mountpoint}
-	Logc(ctx).WithFields(logFields).Debug(">>>> mount.WaitForUmount")
-	defer Logc(ctx).WithFields(logFields).Debug("<<<< mount.WaitForUmount")
-
-	umountVolume := func() error {
-		return Umount(ctx, mountpoint)
-	}
-
-	umountNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(log.Fields{
-			"increment": duration,
-			"error":     err,
-		}).Debug("Unmount failed, retrying.")
-	}
-
-	umountBackoff := backoff.NewExponentialBackOff()
-	umountBackoff.InitialInterval = 1 * time.Second
-	umountBackoff.Multiplier = 2
-	umountBackoff.RandomizationFactor = 0.1
-	umountBackoff.MaxElapsedTime = maxDuration
-
-	// Run the umount using an exponential backoff
-	if err := backoff.RetryNotify(umountVolume, umountBackoff, umountNotify); err != nil {
-		Logc(ctx).Warnf("Could not unmount device after %3.2f seconds.", maxDuration.Seconds())
-		return err
-	}
-
-	Logc(ctx).WithFields(logFields).Info("Device unmounted.")
-	return nil
-}
-
 // RemoveMountPoint attempts to unmount and remove the directory of the mountPointPath.  This method should
 // be idempotent and safe to call again if it fails the first time.
 func RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 	Logc(ctx).Debug(">>>> mount.RemoveMountPoint")
 	defer Logc(ctx).Debug("<<<< mount.RemoveMountPoint")
-
-	const umountMaxWait = 15 * time.Second
 
 	// If the directory does not exist, return nil.
 	if _, err := os.Stat(mountPointPath); err != nil {
@@ -338,7 +324,7 @@ func RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 	}
 
 	// Unmount the path.  Umount() returns nil if the path exists but is not a mount.
-	if err := WaitForUmount(ctx, mountPointPath, umountMaxWait); err != nil {
+	if err := Umount(ctx, mountPointPath); err != nil {
 		Logc(ctx).WithField("mountPointPath", mountPointPath).Errorf("Umount failed; %s", err)
 		return err
 	}
@@ -350,6 +336,39 @@ func RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 	}
 
 	return nil
+}
+
+// RemoveMountPointRetry attempts to unmount and remove the directory of the mountPointPath.  This method should
+// be idempotent and safe to call again if it fails the first time.
+func RemoveMountPointRetry(ctx context.Context, mountPointPath string) error {
+	Logc(ctx).Debug(">>>> mount.RemoveMountPoint")
+	defer Logc(ctx).Debug("<<<< mount.RemoveMountPoint")
+
+	const removeMountPointMaxWait = 15 * time.Second
+
+	removeMountPoint := func() error {
+		return RemoveMountPoint(ctx, mountPointPath)
+	}
+
+	removeMountPointNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Remove mount point failed, retrying.")
+	}
+
+	removeMountPointBackoff := backoff.NewExponentialBackOff()
+	removeMountPointBackoff.InitialInterval = 1 * time.Second
+	removeMountPointBackoff.Multiplier = 2
+	removeMountPointBackoff.RandomizationFactor = 0.1
+	removeMountPointBackoff.MaxElapsedTime = removeMountPointMaxWait
+
+	// Run the RemoveMountPoint using an exponential backoff
+	if err := backoff.RetryNotify(removeMountPoint, removeMountPointBackoff, removeMountPointNotify); err != nil {
+		Logc(ctx).Warnf("Could not remove device after %3.2f seconds.", removeMountPointMaxWait.Seconds())
+		return err
+	}
+
+	Logc(ctx).Info("Device removed.")
+	return nil
+
 }
 
 const (

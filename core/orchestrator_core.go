@@ -36,6 +36,7 @@ import (
 const (
 	NodeAccessReconcilePeriod      = time.Second * 30
 	NodeRegistrationCooldownPeriod = time.Second * 30
+	AttachISCSIVolumeTimeoutLong   = time.Second * 90
 )
 
 // recordTiming is used to record in Prometheus the total time taken for an operation as follows:
@@ -3187,7 +3188,7 @@ func (o *TridentOrchestrator) AttachVolume(
 			return utils.MountDevice(ctx, loopDeviceName, mountpoint, publishInfo.SubvolumeMountOptions, isRawBlock)
 		}
 	} else {
-		return utils.AttachISCSIVolume(ctx, volumeName, mountpoint, publishInfo)
+		return utils.AttachISCSIVolumeRetry(ctx, volumeName, mountpoint, publishInfo, AttachISCSIVolumeTimeoutLong)
 	}
 }
 
@@ -3945,7 +3946,8 @@ func (o *TridentOrchestrator) getProtocol(
 		err      error
 	}
 
-	err = fmt.Errorf("incompatible volume mode (%s), access mode (%s) and protocol (%s)", volumeMode, accessMode, protocol)
+	err = fmt.Errorf("incompatible volume mode (%s), access mode (%s) and protocol (%s)", volumeMode, accessMode,
+		protocol)
 
 	protocolTable := map[accessVariables]protocolResult{
 		{config.Filesystem, config.ModeAny, config.ProtocolAny}: {config.ProtocolAny, nil},
@@ -3992,7 +3994,8 @@ func (o *TridentOrchestrator) getProtocol(
 	res, isValid := protocolTable[accessVariables{volumeMode, accessMode, protocol}]
 
 	if !isValid {
-		return config.ProtocolAny, fmt.Errorf("invalid volume mode (%s), access mode (%s) or protocol (%s)", volumeMode, accessMode, protocol)
+		return config.ProtocolAny, fmt.Errorf("invalid volume mode (%s), access mode (%s) or protocol (%s)", volumeMode,
+			accessMode, protocol)
 	}
 
 	return res.protocol, res.err

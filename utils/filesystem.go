@@ -68,24 +68,34 @@ func formatVolume(ctx context.Context, device, fstype string) error {
 	logFields := log.Fields{"device": device, "fsType": fstype}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.formatVolume")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.formatVolume")
+	var err error
+
+	switch fstype {
+	case fsXfs:
+		_, err = execCommand(ctx, "mkfs.xfs", "-f", device)
+	case fsExt3:
+		_, err = execCommand(ctx, "mkfs.ext3", "-F", device)
+	case fsExt4:
+		_, err = execCommand(ctx, "mkfs.ext4", "-F", device)
+	default:
+		return fmt.Errorf("unsupported file system type: %s", fstype)
+	}
+
+	return err
+}
+
+// formatVolume creates a filesystem for the supplied device of the supplied type.
+func formatVolumeRetry(ctx context.Context, device, fstype string) error {
+	logFields := log.Fields{"device": device, "fsType": fstype}
+	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.formatVolumeRetry")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.formatVolumeRetry")
 
 	maxDuration := 30 * time.Second
 
 	formatVolume := func() error {
-		var err error
 
-		switch fstype {
-		case fsXfs:
-			_, err = execCommand(ctx, "mkfs.xfs", "-f", device)
-		case fsExt3:
-			_, err = execCommand(ctx, "mkfs.ext3", "-F", device)
-		case fsExt4:
-			_, err = execCommand(ctx, "mkfs.ext4", "-F", device)
-		default:
-			return fmt.Errorf("unsupported file system type: %s", fstype)
-		}
+		return formatVolume(ctx, device, fstype)
 
-		return err
 	}
 
 	formatNotify := func(err error, duration time.Duration) {

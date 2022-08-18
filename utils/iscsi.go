@@ -32,6 +32,32 @@ const (
 	unknownFstype                       = "<unknown>"
 )
 
+// AttachISCSIVolumeRetry attaches a volume with retry by invoking AttachISCSIVolume with backoff.
+func AttachISCSIVolumeRetry(ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo,
+	timeout time.Duration) error {
+	Logc(ctx).Debug(">>>> iscsi.AttachISCSIVolumeRetry")
+	defer Logc(ctx).Debug("<<<< iscsi.AttachISCSIVolumeRetry")
+	var err error
+
+	checkAttachISCSIVolume := func() error {
+		return AttachISCSIVolume(ctx, name, mountpoint, publishInfo)
+	}
+
+	attachNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Attach iSCSI volume is not yet through, waiting.")
+	}
+
+	attachBackoff := backoff.NewExponentialBackOff()
+	attachBackoff.InitialInterval = 1 * time.Second
+	attachBackoff.Multiplier = 1.414 // approx sqrt(2)
+	attachBackoff.RandomizationFactor = 0.1
+	attachBackoff.MaxElapsedTime = timeout
+
+	err = backoff.RetryNotify(checkAttachISCSIVolume, attachBackoff, attachNotify)
+	return err
+
+}
+
 // AttachISCSIVolume attaches the volume to the local host.  This method must be able to accomplish its task using only the data passed in.
 // It may be assumed that this method always runs on the host to which the volume will be attached.  If the mountpoint
 // parameter is specified, the volume will be mounted.  The device path is set on the in-out publishInfo parameter
@@ -190,7 +216,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	// in-use volumes, or creating volumes from snapshots taken from in-use volumes.  This is only safe to do
 	// if a device is not mounted.  The fsck command returns a non-zero exit code if filesystem errors are found,
 	// even if they are completely and automatically fixed, so we don't return any error here.
-	mounted, err := IsMounted(ctx, devicePath, "")
+	mounted, err := IsMounted(ctx, devicePath, "", "")
 	if err != nil {
 		return err
 	}
@@ -318,42 +344,23 @@ func waitForDeviceScan(ctx context.Context, lunID int, iSCSINodeName string) err
 	Logc(ctx).Debugf("Scanning paths: %v", paths)
 	found := make([]string, 0)
 
-	checkAllDevicesExist := func() error {
-		allDevicesExist := true
-		found = make([]string, 0)
-		// Check if all paths present, and return nil (success) if so
-		for _, p := range paths {
-			dirname := p + "/block"
-			if !PathExists(dirname) {
-				// Set flag to false as device is missing
-				allDevicesExist = false
-			} else {
-				found = append(found, dirname)
-			}
-		}
-		if allDevicesExist {
-			// We have found all devices, return success
-			Logc(ctx).Debugf("All Paths found: %v", found)
-			return nil
+	allDevicesExist := true
+
+	// Check if all paths present, and return nil (success) if so
+	for _, p := range paths {
+		dirname := p + "/block"
+		if !PathExists(dirname) {
+			// Set flag to false as device is missing
+			allDevicesExist = false
 		} else {
-			// We have not found all devices, return error to retry again.
-			return errors.New("not all devices present yet")
+			found = append(found, dirname)
+			Logc(ctx).Debugf("Paths found: %v", dirname)
 		}
 	}
 
-	devicesNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("All devices not yet present, waiting.")
-	}
+	if len(found) == 0 {
 
-	deviceBackoff := backoff.NewExponentialBackOff()
-	deviceBackoff.InitialInterval = 1 * time.Second
-	deviceBackoff.Multiplier = 1.414 // approx sqrt(2)
-	deviceBackoff.RandomizationFactor = 0.1
-	deviceBackoff.MaxElapsedTime = iSCSIDeviceDiscoveryTimeoutSecs * time.Second
-
-	if err := backoff.RetryNotify(checkAllDevicesExist, deviceBackoff, devicesNotify); err != nil && len(found) == 0 {
-
-		Logc(ctx).Warnf("Could not find any devices after %d seconds.", iSCSIDeviceDiscoveryTimeoutSecs)
+		Logc(ctx).Warnf("Could not find any devices ")
 
 		// log info about current status of host when no devices are found
 		if _, err := execCommand(ctx, "ls", "-al", "/dev"); err != nil {
@@ -379,7 +386,13 @@ func waitForDeviceScan(ctx context.Context, lunID int, iSCSINodeName string) err
 
 	}
 
-	Logc(ctx).Debugf("Paths found: %v", found)
+	if allDevicesExist {
+		// We have found all devices.
+		Logc(ctx).Debugf("All Paths found: %v", found)
+	} else {
+		// We have found some devices but not all.
+		Logc(ctx).Debugf("Some Paths found: %v", found)
+	}
 	return nil
 }
 
@@ -605,8 +618,8 @@ func iSCSISessionExistsToTargetIQN(ctx context.Context, targetIQN string) (bool,
 // needs to login to.
 func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]string, bool, error) {
 	logFields := log.Fields{
-		"targetIQN":  targetIQN,
-		"portals": portals,
+		"targetIQN": targetIQN,
+		"portals":   portals,
 	}
 
 	Logc(ctx).WithFields(logFields).Debug(">>>> iscsi.portalsToLogin")
@@ -1174,7 +1187,8 @@ func loginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, porta
 			"--value=" + publishInfo.IscsiTargetUsername:  "--value=" + REDACTED,
 			"--value=" + publishInfo.IscsiTargetSecret:    "--value=" + REDACTED,
 		}
-		authMethodArgs := append(args, []string{"--op=update", "--name", "node.session.auth.authmethod", "--value=CHAP"}...)
+		authMethodArgs := append(args,
+			[]string{"--op=update", "--name", "node.session.auth.authmethod", "--value=CHAP"}...)
 		if _, err := execIscsiadmCommand(ctx, authMethodArgs...); err != nil {
 			Logc(ctx).Error("Error running iscsiadm set authmethod.")
 			return err
@@ -1317,8 +1331,8 @@ func EnsureISCSISessions(ctx context.Context, publishInfo *VolumePublishInfo, po
 	}
 
 	if publishInfo.UseCHAP && len(loggedInPortals) == 0 {
-		//login failed for all portals using CHAP, verify if any login failed due to authorization failure,
-		//return AuthError; NodeStageISCSIVolume() would handle appropriately
+		// login failed for all portals using CHAP, verify if any login failed due to authorization failure,
+		// return AuthError; NodeStageISCSIVolume() would handle appropriately
 		if loginFailedDueToChap {
 			return successfulLogin, AuthError("iSCSI login failed: CHAP authorization failure")
 		}

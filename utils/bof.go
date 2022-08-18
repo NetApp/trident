@@ -96,14 +96,14 @@ func AttachBlockOnFileVolume(
 			return "", "", err
 		}
 
-		existingFstype, err := getDeviceFSType(ctx, loopDevice.Name)
+		existingFstype, err := getDeviceFSTypeRetry(ctx, loopDevice.Name)
 		if err != nil {
 			return "", "", err
 		}
 
 		if existingFstype == "" {
 			Logc(ctx).WithFields(log.Fields{"device": loopDevice.Name, "fsType": fsType}).Debug("Formatting Device.")
-			err := formatVolume(ctx, loopDevice.Name, fsType)
+			err := formatVolumeRetry(ctx, loopDevice.Name, fsType)
 			if err != nil {
 				return "", "", fmt.Errorf("error formatting device %s: %v", loopDevice.Name, err)
 			}
@@ -123,7 +123,7 @@ func AttachBlockOnFileVolume(
 		}
 	}
 
-	mounted, err := IsMounted(ctx, loopDevice.Name, "")
+	mounted, err := IsMounted(ctx, loopDevice.Name, "", "")
 	if err != nil {
 		return "", "", err
 	}

@@ -21,38 +21,18 @@ import (
 	. "github.com/netapp/trident/logger"
 )
 
-// waitForDevice accepts a device name and waits until it is present and returns error if it times out
+// waitForDevice accepts a device name and checks if it is present
 func waitForDevice(ctx context.Context, device string) error {
 	fields := log.Fields{"device": device}
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.waitForDevice")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.waitForDevice")
 
-	maxDuration := multipathDeviceDiscoveryTimeoutSecs * time.Second
-
-	checkDeviceExists := func() error {
-		if !PathExists(device) {
-			return errors.New("device not yet present")
-		}
-		return nil
-	}
-
-	deviceNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("Device not yet present, waiting.")
-	}
-
-	deviceBackoff := backoff.NewExponentialBackOff()
-	deviceBackoff.InitialInterval = 1 * time.Second
-	deviceBackoff.Multiplier = 1.414 // approx sqrt(2)
-	deviceBackoff.RandomizationFactor = 0.1
-	deviceBackoff.MaxElapsedTime = maxDuration
-
-	// Run the check using an exponential backoff
-	if err := backoff.RetryNotify(checkDeviceExists, deviceBackoff, deviceNotify); err != nil {
-		return fmt.Errorf("could not find device after %3.2f seconds", maxDuration.Seconds())
+	if !PathExists(device) {
+		return errors.New("device not yet present")
 	} else {
 		Logc(ctx).WithField("device", device).Debug("Device found.")
-		return nil
 	}
+	return nil
 }
 
 // flushDevice flushes any outstanding I/O to all paths to a device.
@@ -63,14 +43,20 @@ func flushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, force bool) er
 	for _, device := range deviceInfo.Devices {
 		err := flushOneDevice(ctx, "/dev/"+device)
 		if err != nil && !force {
-			return err
+			// Return error only if this is a standalone device, i.e. no multipath device is present for this device.
+			// If a multipath device exists, then it should be flushed before flushing the device,
+			// hence ignore the error for this device.
+			if deviceInfo.MultipathDevice == "" {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-// ensureDeviceReadableWithRetry reads first 4 KiBs of the device to ensures it is readable and retries on errors
+// ensureDeviceReadableWithRetry reads first 4 KiBs of the device to ensures it is readable and retries on errors.
+// This function will be deleted when BOF is moved to centralized retry.
 func ensureDeviceReadableWithRetry(ctx context.Context, device string) error {
 	readNotify := func(err error, duration time.Duration) {
 		Logc(ctx).WithField("increment", duration).Debug("Failed to read the device, retrying.")
@@ -223,6 +209,39 @@ func getDeviceFSType(ctx context.Context, device string) (string, error) {
 	}
 
 	return fsType, nil
+}
+
+// getDeviceFSTypeRetry returns the filesystem for the supplied device.
+// This function will be deleted when BOF is moved to centralized retry
+func getDeviceFSTypeRetry(ctx context.Context, device string) (string, error) {
+	Logc(ctx).WithField("device", device).Debug(">>>> devices.getDeviceFSTypeRetry")
+	defer Logc(ctx).Debug("<<<< devices.getDeviceFSTypeRetry")
+
+	maxDuration := multipathDeviceDiscoveryTimeoutSecs * time.Second
+
+	checkDeviceFSType := func() error {
+		_, err := getDeviceFSType(ctx, device)
+		return err
+	}
+
+	FSTypeNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("FS type not available yet, waiting.")
+	}
+
+	fsTypeBackoff := backoff.NewExponentialBackOff()
+	fsTypeBackoff.InitialInterval = 1 * time.Second
+	fsTypeBackoff.Multiplier = 1.414 // approx sqrt(2)
+	fsTypeBackoff.RandomizationFactor = 0.1
+	fsTypeBackoff.MaxElapsedTime = maxDuration
+
+	// Run the check using an exponential backoff
+	if err := backoff.RetryNotify(checkDeviceFSType, fsTypeBackoff, FSTypeNotify); err != nil {
+		return "", fmt.Errorf("could not determine FS type after %3.2f seconds", maxDuration.Seconds())
+	} else {
+		Logc(ctx).WithField("FS type", device).Debug("Able to determine FS type.")
+		fstype, err := getDeviceFSType(ctx, device)
+		return fstype, err
+	}
 }
 
 func ISCSIRescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {
@@ -764,8 +783,11 @@ func GetISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 // waitForMultipathDeviceForDevices accepts a list of sd* device names which are associated with same LUN
 // and waits until a multipath device is present for at least one of those.  It returns the name of the
 // multipath device, or an empty string if multipathd isn't running or there is only one path.
-func waitForMultipathDeviceForDevices(ctx context.Context, advertisedPortalCount int, devices []string) string {
+func waitForMultipathDeviceForDevices(ctx context.Context, advertisedPortalCount int, devices []string) (string, error) {
 	fields := log.Fields{"devices": devices}
+	var findMultipathsValue string = ""
+	var err error = nil
+
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.waitForMultipathDeviceForDevices")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.waitForMultipathDeviceForDevices")
 
@@ -773,7 +795,7 @@ func waitForMultipathDeviceForDevices(ctx context.Context, advertisedPortalCount
 	// taking time to be acknowledged
 	if len(devices) < 1 {
 		Logc(ctx).Debugf("Skipping multipath discovery, %d device(s) specified.", len(devices))
-		return ""
+		return "", nil
 	}
 
 	if !multipathdIsRunning(ctx) {
@@ -784,9 +806,9 @@ func waitForMultipathDeviceForDevices(ctx context.Context, advertisedPortalCount
 				"number of devices (%d) or portals (%d) is greater than 1.", len(devices), advertisedPortalCount)
 		}
 
-		return ""
+		return "", nil
 	} else {
-		if findMultipathsValue, err := identifyFindMultipathsValue(ctx); err != nil {
+		if findMultipathsValue, err = identifyFindMultipathsValue(ctx); err != nil {
 			// If Trident is unable to find the find_multipaths value, assume it to be default "no"
 			Logc(ctx).Errorf("unable to get the find_multipaths value from the multipath.conf: %v", err)
 		} else if findMultipathsValue == "yes" || findMultipathsValue == "smart" {
@@ -796,43 +818,26 @@ func waitForMultipathDeviceForDevices(ctx context.Context, advertisedPortalCount
 
 			if advertisedPortalCount <= 1 {
 				Logc(ctx).Warnf("Skipping multipath discovery, %d portal(s) specified.", advertisedPortalCount)
-				return ""
+				return "", nil
 			}
 		}
 
-		maxDuration := multipathDeviceDiscoveryTimeoutSecs * time.Second
 		multipathDevice := ""
 
-		checkMultipathDeviceExists := func() error {
-			for _, device := range devices {
-				multipathDevice = findMultipathDeviceForDevice(ctx, device)
-				if multipathDevice != "" {
-					return nil
-				}
+		for _, device := range devices {
+			multipathDevice = findMultipathDeviceForDevice(ctx, device)
+			if multipathDevice != "" {
+				break
 			}
-			if multipathDevice == "" {
-				return errors.New("multipath device not yet present")
-			}
-			return nil
 		}
+		if multipathDevice == "" {
+			Logc(ctx).WithField("multipathDevice", multipathDevice).Warn("Multipath device not found.")
+			return "", fmt.Errorf("multipath device not found when it is expected")
 
-		deviceNotify := func(err error, duration time.Duration) {
-			Logc(ctx).WithField("increment", duration).Debug("Multipath device not yet present, waiting.")
-		}
-
-		multipathDeviceBackoff := backoff.NewExponentialBackOff()
-		multipathDeviceBackoff.InitialInterval = 1 * time.Second
-		multipathDeviceBackoff.Multiplier = 1.414 // approx sqrt(2)
-		multipathDeviceBackoff.RandomizationFactor = 0.1
-		multipathDeviceBackoff.MaxElapsedTime = maxDuration
-
-		// Run the check/scan using an exponential backoff
-		if err := backoff.RetryNotify(checkMultipathDeviceExists, multipathDeviceBackoff, deviceNotify); err != nil {
-			Logc(ctx).Warnf("Could not find multipath device after %3.2f seconds.", maxDuration.Seconds())
 		} else {
 			Logc(ctx).WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
 		}
-		return multipathDevice
+		return multipathDevice, nil
 	}
 }
 
@@ -1040,7 +1045,7 @@ func getDeviceInfoForLUN(
 
 	fsType := ""
 	if needFSType {
-		err = ensureDeviceReadableWithRetry(ctx, devicePath)
+		err = ensureDeviceReadable(ctx, devicePath)
 		if err != nil {
 			return nil, err
 		}
@@ -1136,6 +1141,7 @@ func waitForMultipathDeviceForLUN(ctx context.Context, lunID, advertisedPortalCo
 		return err
 	}
 
-	waitForMultipathDeviceForDevices(ctx, advertisedPortalCount, devices)
-	return nil
+	_, err = waitForMultipathDeviceForDevices(ctx, advertisedPortalCount, devices)
+
+	return err
 }
