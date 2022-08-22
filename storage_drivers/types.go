@@ -24,6 +24,7 @@ type DriverConfig interface {
 	SetBackendName(backendName string)
 	InjectSecrets(secretMap map[string]string) error
 	ExtractSecrets() map[string]string
+	ResetSecrets()
 	HideSensitiveWithSecretName(secretName string)
 	GetAndHideSensitive(secretName string) map[string]string
 	CheckForCRDControllerForbiddenAttributes() []string
@@ -183,21 +184,12 @@ func (d *OntapStorageDriverConfig) InjectSecrets(secretMap map[string]string) er
 	var ok bool
 	// Inject the credentials from the secretMap into the driver's config
 	if _, ok = secretMap[strings.ToLower("ClientPrivateKey")]; ok {
-		if d.ClientPrivateKey != "" {
-			log.Warn("clientPrivateKey is specified in both config and secret; overriding from secret.")
-		}
 		d.ClientPrivateKey = secretMap[strings.ToLower("ClientPrivateKey")]
 	}
 	if _, ok = secretMap[strings.ToLower("Username")]; ok {
-		if d.Username != "" {
-			log.Warn("Username is specified in both config and secret; overriding from secret.")
-		}
 		d.Username = secretMap[strings.ToLower("Username")]
 	}
 	if _, ok = secretMap[strings.ToLower("Password")]; ok {
-		if d.Password != "" {
-			log.Warn("Password is specified in both config and secret; overriding from secret.")
-		}
 		d.Password = secretMap[strings.ToLower("Password")]
 	}
 	// CHAP settings
@@ -242,6 +234,21 @@ func (d *OntapStorageDriverConfig) ExtractSecrets() map[string]string {
 	}
 
 	return secretMap
+}
+
+// ResetSecrets function removes sensitive fields it contains (credentials, etc.)
+func (d *OntapStorageDriverConfig) ResetSecrets() {
+	d.ClientPrivateKey = ""
+	d.Username = ""
+	d.Password = ""
+
+	// CHAP settings
+	if d.UseCHAP {
+		d.ChapUsername = ""
+		d.ChapInitiatorSecret = ""
+		d.ChapTargetUsername = ""
+		d.ChapTargetInitiatorSecret = ""
+	}
 }
 
 // HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
@@ -352,6 +359,11 @@ func (d *SolidfireStorageDriverConfig) ExtractSecrets() map[string]string {
 	return secretMap
 }
 
+// RemoveSecrets function removes sensitive fields it contains (credentials, etc.)
+func (d *SolidfireStorageDriverConfig) ResetSecrets() {
+	d.EndPoint = ""
+}
+
 // HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
 // with secretName.
 func (d *SolidfireStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
@@ -459,6 +471,12 @@ func (d *AzureNASStorageDriverConfig) ExtractSecrets() map[string]string {
 	secretMap["ClientSecret"] = d.ClientSecret
 
 	return secretMap
+}
+
+// RemoveSecrets function removes sensitive fields it contains (credentials, etc.)
+func (d *AzureNASStorageDriverConfig) ResetSecrets() {
+	d.ClientID = ""
+	d.ClientSecret = ""
 }
 
 // HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
@@ -577,6 +595,12 @@ func (d *GCPNFSStorageDriverConfig) ExtractSecrets() map[string]string {
 	return secretMap
 }
 
+// RemoveSecrets function removes sensitive fields it contains (credentials, etc.)
+func (d *GCPNFSStorageDriverConfig) ResetSecrets() {
+	d.APIKey.PrivateKey = ""
+	d.APIKey.PrivateKeyID = ""
+}
+
 // HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
 // with secretName.
 func (d *GCPNFSStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
@@ -673,6 +697,11 @@ func (d *AstraDSStorageDriverConfig) ExtractSecrets() map[string]string {
 	}
 }
 
+// RemoveSecrets function removes sensitive fields it contains (credentials, etc.)
+func (d *AstraDSStorageDriverConfig) ResetSecrets() {
+	d.Kubeconfig = ""
+}
+
 // HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
 // with secretName.
 func (d *AstraDSStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
@@ -745,6 +774,12 @@ func (d *FakeStorageDriverConfig) ExtractSecrets() map[string]string {
 	secretMap["Password"] = d.Password
 
 	return secretMap
+}
+
+// RemoveSecrets function removes sensitive fields it contains (credentials, etc.)
+func (d *FakeStorageDriverConfig) ResetSecrets() {
+	d.Username = ""
+	d.Password = ""
 }
 
 // HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),

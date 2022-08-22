@@ -4,6 +4,11 @@
 
 ## Changes since v22.07.0
 
+**Fixes:**
+
+- Fixed issue specific to ONTAP backend created using `credentials` field failing to come online during 22.07.0
+  upgrade (Issue [#759](https://github.com/NetApp/trident/issues/759))
+
 **Enhancements**
 
 - **Kubernetes:** Added support for Kubernetes 1.25.

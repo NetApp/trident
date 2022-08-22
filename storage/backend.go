@@ -1130,6 +1130,9 @@ func (p *BackendPersistent) InjectBackendSecrets(secretMap map[string]string) er
 		return fmt.Errorf("cannot inject secrets: %v", err)
 	}
 
+	// After secret has been extracted, reset credentials
+	driverConfig.ResetSecrets()
+
 	return driverConfig.InjectSecrets(secretMap)
 }
 

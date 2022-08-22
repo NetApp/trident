@@ -301,6 +301,57 @@ func TestOntapStorageDriverConfig_ExtractSecrets(t *testing.T) {
 	assertions(secretMap)
 }
 
+func TestOntapStorageDriverConfig_ResetSecrets(t *testing.T) {
+	secretName := "keep-it-secret-keep-it-safe"
+	fieldMap := map[string]string{
+		"ClientPrivateKey":          "clientPrivateKey",
+		"Username":                  "username",
+		"Password":                  "password",
+		"ChapUsername":              "chapUsername",
+		"ChapInitiatorSecret":       "chapInitiatorSecret",
+		"ChapTargetUsername":        "chapTargetUsername",
+		"ChapTargetInitiatorSecret": "chapTargetInitiatorSecret",
+	}
+
+	// This behavior will need to be repeated.
+	assertions := func(config *OntapStorageDriverConfig) {
+		// Convert the current config to a map.
+		var configMap map[string]interface{}
+		data, _ := json.Marshal(&config)
+		json.Unmarshal(data, &configMap)
+
+		// Look through each field in fieldMap. If it exists in the config, the value
+		// should be empty
+		for key := range fieldMap {
+			if actualInterface, ok := configMap[key]; ok {
+				assert.Equal(t, "", actualInterface)
+			}
+		}
+	}
+
+	config := &OntapStorageDriverConfig{
+		Username:         secretName,
+		Password:         "",
+		ClientPrivateKey: secretName,
+	}
+	config.ResetSecrets()
+	assertions(config)
+
+	// UseChap == true
+	config = &OntapStorageDriverConfig{
+		Username:                  secretName,
+		Password:                  secretName,
+		ClientPrivateKey:          secretName,
+		UseCHAP:                   true,
+		ChapUsername:              secretName,
+		ChapInitiatorSecret:       secretName,
+		ChapTargetUsername:        secretName,
+		ChapTargetInitiatorSecret: secretName,
+	}
+	config.ResetSecrets()
+	assertions(config)
+}
+
 func TestOntapStorageDriverConfig_HideSensitiveWithSecretName(t *testing.T) {
 	secretName := "keep-it-secret-keep-it-safe"
 	fieldMap := map[string]string{
@@ -596,6 +647,23 @@ func TestSolidfireStorageDriverConfig_ExtractSecrets(t *testing.T) {
 	}
 }
 
+func TestSolidfireStorageDriverConfig_ResetSecrets(t *testing.T) {
+	endPoint := "/endpoint"
+	config := SolidfireStorageDriverConfig{
+		EndPoint: endPoint,
+	}
+
+	config.ResetSecrets()
+	secretMap := config.ExtractSecrets()
+
+	if val, ok := secretMap["EndPoint"]; ok {
+		assert.NotEqual(t, endPoint, val)
+		assert.Equal(t, "", val)
+	} else {
+		t.Fatal("KVP is invalid")
+	}
+}
+
 func TestSolidfireStorageDriverConfig_HideSensitiveWithSecretName(t *testing.T) {
 	endPoint := "/endpoint"
 	config := SolidfireStorageDriverConfig{
@@ -787,6 +855,32 @@ func TestAzureNASStorageDriverConfig_ExtractSecrets(t *testing.T) {
 		assert.Equal(t, privateKeyID, val)
 	} else {
 		t.Fatal("KVP does not exist in secret map")
+	}
+}
+
+func TestAzureNASStorageDriverConfig_ResetSecrets(t *testing.T) {
+	privateKey := "1234567890987654321"
+	privateKeyID := "1234567890987654321"
+	config := AzureNASStorageDriverConfig{
+		ClientID:     privateKey,
+		ClientSecret: privateKeyID,
+	}
+
+	config.ResetSecrets()
+	secretMap := config.ExtractSecrets()
+
+	if val, ok := secretMap["ClientID"]; ok {
+		assert.NotEqual(t, privateKey, val)
+		assert.Equal(t, "", val)
+	} else {
+		t.Fatal("KVP is invalid")
+	}
+
+	if val, ok := secretMap["ClientSecret"]; ok {
+		assert.NotEqual(t, privateKeyID, val)
+		assert.Equal(t, "", val)
+	} else {
+		t.Fatal("KVP is invalid")
 	}
 }
 
@@ -1000,6 +1094,34 @@ func TestGCPNFSStorageDriverConfig_ExtractSecrets(t *testing.T) {
 	}
 }
 
+func TestGCPNFSStorageDriverConfig_ResetSecrets(t *testing.T) {
+	privateKey := "key"
+	privateKeyID := "id"
+	config := GCPNFSStorageDriverConfig{
+		APIKey: GCPPrivateKey{
+			PrivateKey:   privateKey,
+			PrivateKeyID: privateKeyID,
+		},
+	}
+
+	config.ResetSecrets()
+	secretMap := config.ExtractSecrets()
+
+	if val, ok := secretMap["Private_Key"]; ok {
+		assert.NotEqual(t, privateKey, val)
+		assert.Equal(t, "", val)
+	} else {
+		t.Fatal("KVP is invalid")
+	}
+
+	if val, ok := secretMap["Private_Key_ID"]; ok {
+		assert.NotEqual(t, privateKeyID, val)
+		assert.Equal(t, "", val)
+	} else {
+		t.Fatal("KVP is invalid")
+	}
+}
+
 func TestGCPNFSStorageDriverConfig_HideSensitiveWithSecretName(t *testing.T) {
 	privateKey := "key"
 	privateKeyID := "id"
@@ -1184,6 +1306,23 @@ func TestAstraDSStorageDriverConfig_ExtractSecrets(t *testing.T) {
 	}
 }
 
+func TestAstraDSStorageDriverConfig_ResetSecrets(t *testing.T) {
+	kubeconfig := "kubeconfig-01"
+	config := AstraDSStorageDriverConfig{
+		Kubeconfig: kubeconfig,
+	}
+
+	config.ResetSecrets()
+	secretMap := config.ExtractSecrets()
+
+	if val, ok := secretMap["Kubeconfig"]; ok {
+		assert.NotEqual(t, kubeconfig, val)
+		assert.Equal(t, "", val)
+	} else {
+		t.Fatal("KVP is invalid")
+	}
+}
+
 func TestAstraDSStorageDriverConfig_HideSensitiveWithSecretName(t *testing.T) {
 	kubeconfig := "kubeconfig-01"
 	config := AstraDSStorageDriverConfig{
@@ -1325,6 +1464,32 @@ func TestFakeStorageDriverConfig_ExtractSecrets(t *testing.T) {
 		assert.Equal(t, pass, val)
 	} else {
 		t.Fatal("KVP does not exist in secret map")
+	}
+}
+
+func TestFakeStorageDriverConfig_ResetSecrets(t *testing.T) {
+	user := "user"
+	pass := "pass"
+	config := FakeStorageDriverConfig{
+		Username: user,
+		Password: pass,
+	}
+
+	config.ResetSecrets()
+	secretMap := config.ExtractSecrets()
+
+	if val, ok := secretMap["Username"]; ok {
+		assert.NotEqual(t, user, val)
+		assert.Equal(t, "", val)
+	} else {
+		t.Fatal("KVP is invalid")
+	}
+
+	if val, ok := secretMap["Password"]; ok {
+		assert.NotEqual(t, pass, val)
+		assert.Equal(t, "", val)
+	} else {
+		t.Fatal("KVP is invalid")
 	}
 }
 
