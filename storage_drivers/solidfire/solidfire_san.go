@@ -1144,7 +1144,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 
 		// Inform the host about the device removal
-		if err = utils.PrepareDeviceForRemoval(ctx, 0, v.Iqn, true); err != nil {
+		if err = utils.PrepareDeviceForRemoval(ctx, 0, v.Iqn, true, false); err != nil {
 			Logc(ctx).Warningf("Unable to prepare device for removal, attempting to detach anyway: %v", err)
 		}
 		// Logout from the session

@@ -65,10 +65,10 @@ func TestGetIPAddressesExceptingNondefaultRoutes(t *testing.T) {
 }
 
 func TestNFSActiveOnHost(t *testing.T) {
-	ExecCommand = fakeExecCommand
+	execCmd = fakeExecCommand
 	// Reset exec command after tests
 	defer func() {
-		ExecCommand = exec.CommandContext
+		execCmd = exec.CommandContext
 	}()
 	type args struct {
 		ctx context.Context
@@ -118,10 +118,10 @@ func TestNFSActiveOnHost(t *testing.T) {
 }
 
 func TestISCSIActiveOnHost(t *testing.T) {
-	ExecCommand = fakeExecCommand
+	execCmd = fakeExecCommand
 	// Reset exec command after tests
 	defer func() {
-		ExecCommand = exec.CommandContext
+		execCmd = exec.CommandContext
 	}()
 	type args struct {
 		ctx  context.Context

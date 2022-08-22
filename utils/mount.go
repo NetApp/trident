@@ -262,17 +262,25 @@ func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) (
 	return nil
 }
 
+const (
+	umountNotMounted = "not mounted"
+	umountTimeout    = 10
+)
+
 // Umount detaches from the supplied location.
 func Umount(ctx context.Context, mountpoint string) (err error) {
 	Logc(ctx).WithField("mountpoint", mountpoint).Debug(">>>> mount.Umount")
 	defer Logc(ctx).Debug("<<<< mount.Umount")
 
-	if _, err = execCommandWithTimeout(ctx, "umount", 10, true, mountpoint); err != nil {
-		Logc(ctx).WithField("error", err).Error("Umount failed.")
+	var out []byte
+	if out, err = execCommandWithTimeout(ctx, "umount", umountTimeout, true, mountpoint); err != nil {
+		if strings.Contains(string(out), umountNotMounted) {
+			err = nil
+		}
 		if IsTimeoutError(err) {
-			var out []byte
-			out, err = execCommandWithTimeout(ctx, "umount", 10, true, mountpoint, "-f")
-			if strings.Contains(string(out), "not mounted") {
+			Logc(ctx).WithField("error", err).Error("Umount failed, attempting to force umount")
+			out, err = execCommandWithTimeout(ctx, "umount", umountTimeout, true, mountpoint, "-f")
+			if strings.Contains(string(out), umountNotMounted) {
 				err = nil
 			}
 		}
@@ -291,7 +299,10 @@ func WaitForUmount(ctx context.Context, mountpoint string, maxDuration time.Dura
 	}
 
 	umountNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("Unmount failed, retrying.")
+		Logc(ctx).WithFields(log.Fields{
+			"increment": duration,
+			"error":     err,
+		}).Debug("Unmount failed, retrying.")
 	}
 
 	umountBackoff := backoff.NewExponentialBackOff()

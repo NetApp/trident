@@ -59,12 +59,23 @@ func (p *Plugin) NodeStageVolume(
 
 func (p *Plugin) NodeUnstageVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
+) (*csi.NodeUnstageVolumeResponse, error) {
+	return p.nodeUnstageVolume(ctx, req, false)
+}
+
+// nodeUnstageVolume detaches a volume from a node. Setting force=true may cause data loss.
+func (p *Plugin) nodeUnstageVolume(
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, force bool,
 ) (response *csi.NodeUnstageVolumeResponse, responseErr error) {
 	lockContext := "NodeUnstageVolume-" + req.GetVolumeId()
 	utils.Lock(ctx, lockContext, lockID)
 	defer utils.Unlock(ctx, lockContext, lockID)
 
-	fields := log.Fields{"Method": "NodeUnstageVolume", "Type": "CSI_Node"}
+	fields := log.Fields{
+		"Method": "NodeUnstageVolume",
+		"Type":   "CSI_Node",
+		"Force":  force,
+	}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeUnstageVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeUnstageVolume")
 
@@ -100,10 +111,18 @@ func (p *Plugin) NodeUnstageVolume(
 
 	switch protocol {
 	case tridentconfig.File:
+		if force {
+			Logc(ctx).WithFields(fields).WithField("protocol", tridentconfig.File).
+				Warning("forced unstage not supported for this protocol")
+		}
 		return p.nodeUnstageNFSVolume(ctx, req)
 	case tridentconfig.Block:
-		return p.nodeUnstageISCSIVolume(ctx, req, publishInfo)
+		return p.nodeUnstageISCSIVolume(ctx, req, publishInfo, force)
 	case tridentconfig.BlockOnFile:
+		if force {
+			Logc(ctx).WithFields(fields).WithField("protocol", tridentconfig.BlockOnFile).
+				Warning("forced unstage not supported for this protocol")
+		}
 		return p.nodeUnstageNFSBlockVolume(ctx, req, publishInfo)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
@@ -853,11 +872,11 @@ func (p *Plugin) updateChapInfoFromController(
 }
 
 func (p *Plugin) nodeUnstageISCSIVolume(
-	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
 	// Delete the device from the host
 	err := utils.PrepareDeviceForRemoval(ctx, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN,
-		p.unsafeDetach)
+		p.unsafeDetach, force)
 	if nil != err && !p.unsafeDetach {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

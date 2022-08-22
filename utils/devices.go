@@ -885,7 +885,7 @@ func findDevicesForMultipathDevice(ctx context.Context, device string) []string 
 }
 
 // PrepareDeviceForRemoval informs Linux that a device will be removed.
-func PrepareDeviceForRemoval(ctx context.Context, lunID int, iSCSINodeName string, force bool) error {
+func PrepareDeviceForRemoval(ctx context.Context, lunID int, iSCSINodeName string, unsafe, force bool) error {
 	fields := log.Fields{
 		"lunID":            lunID,
 		"iSCSINodeName":    iSCSINodeName,
@@ -910,11 +910,11 @@ func PrepareDeviceForRemoval(ctx context.Context, lunID int, iSCSINodeName strin
 		return nil
 	}
 
-	return removeSCSIDevice(ctx, deviceInfo, force)
+	return removeSCSIDevice(ctx, deviceInfo, unsafe, force)
 }
 
 // PrepareDeviceAtMountPathForRemoval informs Linux that a device will be removed.
-func PrepareDeviceAtMountPathForRemoval(ctx context.Context, mountpoint string, unmount, force bool) error {
+func PrepareDeviceAtMountPathForRemoval(ctx context.Context, mountpoint string, unmount, unsafe, force bool) error {
 	fields := log.Fields{"mountpoint": mountpoint}
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.PrepareDeviceAtMountPathForRemoval")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.PrepareDeviceAtMountPathForRemoval")
@@ -930,38 +930,42 @@ func PrepareDeviceAtMountPathForRemoval(ctx context.Context, mountpoint string, 
 		}
 	}
 
-	return removeSCSIDevice(ctx, deviceInfo, force)
+	return removeSCSIDevice(ctx, deviceInfo, unsafe, force)
 }
 
 // removeSCSIDevice informs Linux that a device will be removed.  The deviceInfo provided only needs
 // the devices and multipathDevice fields set.
-// IMPORTANT: The force argument has significant ramifications. Setting force=true will cause
-// the function to ignore errors, and try as hard as possible to remove the device, even if
-// that results in data loss, data corruption, or putting the system into an invalid state.
-// Setting force=false will fail at the first problem encountered, so that callers can be
-// assured that a successful return indicates that the device was cleanly removed.
+// IMPORTANT: The unsafe and force arguments have significant ramifications. Setting unsafe=true will cause the
+// function to ignore errors, and try to the remove the device even if that results in data loss, data corruption,
+// or putting the system into an invalid state. Setting force=true will cause data loss, as it does not wait for the
+// device to flush any remaining data. Setting unsafe=false and force=false will fail at the first problem encountered,
+// so that callers can be assured that a successful return indicates that the device was cleanly removed.
 // This is important because while most of the time the top priority is to avoid data
 // loss or data corruption, there are times when data loss is unavoidable, or has already
 // happened, and in those cases it's better to be able to clean up than to be stuck in an
 // endless retry loop.
-func removeSCSIDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, force bool) error {
+func removeSCSIDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, unsafe, force bool) error {
 	listAllISCSIDevices(ctx)
 
 	// Flush multipath device
-	err := multipathFlushDevice(ctx, deviceInfo)
-	if nil != err && !force {
-		return err
+	if !force {
+		err := multipathFlushDevice(ctx, deviceInfo)
+		if nil != err && !unsafe {
+			return err
+		}
 	}
 
 	// Flush devices
-	err = flushDevice(ctx, deviceInfo, force)
-	if nil != err && !force {
-		return err
+	if !force {
+		err := flushDevice(ctx, deviceInfo, unsafe)
+		if nil != err && !unsafe {
+			return err
+		}
 	}
 
 	// Remove device
-	err = removeDevice(ctx, deviceInfo, force)
-	if nil != err && !force {
+	err := removeDevice(ctx, deviceInfo, unsafe)
+	if nil != err && !unsafe {
 		return err
 	}
 

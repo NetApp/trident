@@ -120,10 +120,10 @@ func fakeExecCommand(ctx context.Context, command string, args ...string) *exec.
 }
 
 func Test_multipathdIsRunning(t *testing.T) {
-	ExecCommand = fakeExecCommand
+	execCmd = fakeExecCommand
 	// Reset exec command after tests
 	defer func() {
-		ExecCommand = exec.CommandContext
+		execCmd = exec.CommandContext
 	}()
 	tests := []struct {
 		name          string
@@ -146,10 +146,10 @@ func Test_multipathdIsRunning(t *testing.T) {
 }
 
 func Test_execCommand(t *testing.T) {
-	ExecCommand = fakeExecCommand
+	execCmd = fakeExecCommand
 	// Reset exec command after tests
 	defer func() {
-		ExecCommand = exec.CommandContext
+		execCmd = exec.CommandContext
 	}()
 	type args struct {
 		ctx  context.Context
@@ -187,10 +187,10 @@ func Test_execCommand(t *testing.T) {
 }
 
 func Test_execCommandRedacted(t *testing.T) {
-	ExecCommand = fakeExecCommand
+	execCmd = fakeExecCommand
 	// Reset exec command after tests
 	defer func() {
-		ExecCommand = exec.CommandContext
+		execCmd = exec.CommandContext
 	}()
 	type args struct {
 		ctx             context.Context
@@ -233,10 +233,10 @@ func Test_execCommandRedacted(t *testing.T) {
 }
 
 func Test_execCommandWithTimeout(t *testing.T) {
-	ExecCommand = fakeExecCommand
+	execCmd = fakeExecCommand
 	// Reset exec command after tests
 	defer func() {
-		ExecCommand = exec.CommandContext
+		execCmd = exec.CommandContext
 	}()
 	type args struct {
 		ctx            context.Context

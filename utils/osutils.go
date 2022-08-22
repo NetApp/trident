@@ -29,7 +29,7 @@ var (
 
 	chrootPathPrefix string
 
-	ExecCommand = exec.CommandContext
+	execCmd = exec.CommandContext
 )
 
 func init() {
@@ -90,7 +90,7 @@ func execCommand(ctx context.Context, name string, args ...string) ([]byte, erro
 	cancelCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	out, err := ExecCommand(cancelCtx, name, args...).CombinedOutput()
+	out, err := execCmd(cancelCtx, name, args...).CombinedOutput()
 
 	Logc(ctx).WithFields(log.Fields{
 		"command": name,
@@ -125,7 +125,7 @@ func execCommandRedacted(ctx context.Context, name string, args []string,
 	// create context with a cancellation
 	cancelCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	out, err := ExecCommand(cancelCtx, name, args...).CombinedOutput()
+	out, err := execCmd(cancelCtx, name, args...).CombinedOutput()
 
 	Logc(ctx).WithFields(log.Fields{
 		"command": name,
@@ -156,10 +156,10 @@ func execCommandWithTimeout(
 	}).Debug(">>>> osutils.execCommandWithTimeout.")
 
 	// create context with a cancellation
-	cancelCtx, cancel := context.WithCancel(ctx)
+	cancelCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	cmd := ExecCommand(cancelCtx, name, args...)
+	cmd := execCmd(cancelCtx, name, args...)
 	done := make(chan execCommandResult, 1)
 	var result execCommandResult
 
@@ -169,21 +169,18 @@ func execCommandWithTimeout(
 	}()
 
 	select {
-	case <-time.After(timeout):
-		// Without a proper cancel context, the goroutine that runs
-		// cmd will not be gracefully terminated
-		cancel()
-		if err := cancelCtx.Err(); err != nil {
-			Logc(ctx).WithFields(log.Fields{
-				"process": name,
-				"error":   err,
-			}).Error("failed to kill process")
-			result = execCommandResult{Output: nil, Error: err}
-		} else {
+	case <-cancelCtx.Done():
+		if err := cancelCtx.Err(); err == context.DeadlineExceeded {
 			Logc(ctx).WithFields(log.Fields{
 				"process": name,
 			}).Error("process killed after timeout")
 			result = execCommandResult{Output: nil, Error: TimeoutError("process killed after timeout")}
+		} else {
+			Logc(ctx).WithFields(log.Fields{
+				"process": name,
+				"error":   err,
+			}).Error("context ended unexpectedly")
+			result = execCommandResult{Output: nil, Error: fmt.Errorf("context ended unexpectedly: %v", err)}
 		}
 	case result = <-done:
 		break
