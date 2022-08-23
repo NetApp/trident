@@ -138,6 +138,33 @@ type OntapStorageDriverConfig struct {
 	ReplicationSchedule       string                   `json:"replicationSchedule"`
 }
 
+type OntapStorageDriverPool struct {
+	Labels                           map[string]string   `json:"labels"`
+	Region                           string              `json:"region"`
+	Zone                             string              `json:"zone"`
+	SupportedTopologies              []map[string]string `json:"supportedTopologies"`
+	OntapStorageDriverConfigDefaults `json:"defaults"`
+}
+
+type OntapStorageDriverConfigDefaults struct {
+	SpaceAllocation   string `json:"spaceAllocation"`
+	SpaceReserve      string `json:"spaceReserve"`
+	SnapshotPolicy    string `json:"snapshotPolicy"`
+	SnapshotReserve   string `json:"snapshotReserve"`
+	SnapshotDir       string `json:"snapshotDir"`
+	UnixPermissions   string `json:"unixPermissions"`
+	ExportPolicy      string `json:"exportPolicy"`
+	SecurityStyle     string `json:"securityStyle"`
+	SplitOnClone      string `json:"splitOnClone"`
+	FileSystemType    string `json:"fileSystemType"`
+	Encryption        string `json:"encryption"`
+	Mirroring         string `json:"mirroring"`
+	TieringPolicy     string `json:"tieringPolicy"`
+	QosPolicy         string `json:"qosPolicy"`
+	AdaptiveQosPolicy string `json:"adaptiveQosPolicy"`
+	CommonStorageDriverConfigDefaults
+}
+
 // String makes OntapStorageDriverConfig satisfy the Stringer interface.
 func (d OntapStorageDriverConfig) String() string {
 	return utils.ToStringRedacted(&d, GetOntapConfigRedactList(), nil)
@@ -260,33 +287,6 @@ func (d OntapStorageDriverConfig) SpecOnlyValidation() error {
 	}
 
 	return nil
-}
-
-type OntapStorageDriverPool struct {
-	Labels                           map[string]string   `json:"labels"`
-	Region                           string              `json:"region"`
-	Zone                             string              `json:"zone"`
-	SupportedTopologies              []map[string]string `json:"supportedTopologies"`
-	OntapStorageDriverConfigDefaults `json:"defaults"`
-}
-
-type OntapStorageDriverConfigDefaults struct {
-	SpaceAllocation   string `json:"spaceAllocation"`
-	SpaceReserve      string `json:"spaceReserve"`
-	SnapshotPolicy    string `json:"snapshotPolicy"`
-	SnapshotReserve   string `json:"snapshotReserve"`
-	SnapshotDir       string `json:"snapshotDir"`
-	UnixPermissions   string `json:"unixPermissions"`
-	ExportPolicy      string `json:"exportPolicy"`
-	SecurityStyle     string `json:"securityStyle"`
-	SplitOnClone      string `json:"splitOnClone"`
-	FileSystemType    string `json:"fileSystemType"`
-	Encryption        string `json:"encryption"`
-	Mirroring         string `json:"mirroring"`
-	TieringPolicy     string `json:"tieringPolicy"`
-	QosPolicy         string `json:"qosPolicy"`
-	AdaptiveQosPolicy string `json:"adaptiveQosPolicy"`
-	CommonStorageDriverConfigDefaults
 }
 
 // SolidfireStorageDriverConfig holds settings for SolidfireStorageDrivers

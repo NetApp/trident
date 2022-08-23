@@ -3,13 +3,455 @@
 package storagedrivers
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils"
 )
+
+func TestMain(m *testing.M) {
+	// Disable any standard log output.
+	log.SetOutput(ioutil.Discard)
+	os.Exit(m.Run())
+}
+
+func TestValidateCommonSettings(t *testing.T) {
+	type output struct {
+		config        *CommonStorageDriverConfig
+		errorExpected bool
+	}
+
+	type test struct {
+		configJSON string
+		output     output
+	}
+
+	// Need to escape quotes because the raw storage prefix will be converted to a string.
+	prefix := "\"trident_\""
+	storagePrefixRaw := json.RawMessage(prefix)
+	storagePrefix := string(storagePrefixRaw[1 : len(storagePrefixRaw)-1])
+
+	tests := map[string]test{
+		"fails to unmarshal the config when JSON field is wrong type": {
+			configJSON: `{
+				"version": "1"
+			}`,
+			output: output{
+				config:        nil,
+				errorExpected: true,
+			},
+		},
+		"fails when storage driver name isn't specified": {
+			configJSON: `{
+				"version": 1,
+				"storageDriverName": ""
+			}`,
+			output: output{
+				config:        nil,
+				errorExpected: true,
+			},
+		},
+		"fails when the driver version is not equal to the config version": {
+			configJSON: `{
+				"version": 2,
+				"storageDriverName": "ontap-nas"
+			}`,
+			output: output{
+				config:        nil,
+				errorExpected: true,
+			},
+		},
+		"fails when raw storage prefix is of invalid type": {
+			configJSON: `{
+				"version": 1,
+				"storageDriverName": "ontap-nas",
+				"storagePrefix": true
+			}`,
+			output: output{
+				config:        nil,
+				errorExpected: true,
+			},
+		},
+		"succeeds but storage prefix is not specified": {
+			configJSON: `{
+				"version": 1,
+				"storageDriverName": "ontap-nas"
+			}`,
+			output: output{
+				config: &CommonStorageDriverConfig{
+					Version:           1,
+					StorageDriverName: "ontap-nas",
+					StoragePrefixRaw:  nil,
+					StoragePrefix:     nil,
+				},
+				errorExpected: false,
+			},
+		},
+		"fails when limitVolumeSize is invalid": {
+			configJSON: `{
+				"version": 1,
+				"storageDriverName": "ontap-nas",
+				"storagePrefix": "trident_",
+				"limitVolumeSize": "Gi"
+			}`,
+			output: output{
+				config:        nil,
+				errorExpected: true,
+			},
+		},
+		"fails when invalid credentials are specified": {
+			configJSON: `{
+				"version": 1,
+				"storageDriverName": "ontap-nas",
+				"storagePrefix": "trident_",
+				"credentials": {
+					"name": "", "type": "KMIP"
+				}
+			}`,
+			output: output{
+				config:        nil,
+				errorExpected: true,
+			},
+		},
+		"succeeds when entire config is valid": {
+			configJSON: `{
+				"version": 1,
+				"storageDriverName": "ontap-nas",
+				"storagePrefix": "trident_",
+				"disableDelete": true,
+				"debug": true,
+				"credentials": {
+					"name": "secret1",
+					"type": "secret"
+				}
+			}`,
+			output: output{
+				config: &CommonStorageDriverConfig{
+					Version:           1,
+					StorageDriverName: "ontap-nas",
+					Debug:             true,
+					DisableDelete:     true,
+					StoragePrefixRaw:  storagePrefixRaw,
+					StoragePrefix:     &storagePrefix,
+					Credentials: map[string]string{
+						"name": "secret1",
+						"type": "secret",
+					},
+				},
+				errorExpected: false,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := context.TODO()
+			actual, err := ValidateCommonSettings(ctx, test.configJSON)
+			if test.output.errorExpected {
+				assert.Error(t, err)
+			} else {
+				assert.Nil(t, err)
+				assert.EqualValues(t, test.output.config, actual)
+			}
+		})
+	}
+}
+
+func TestParseRawStoragePrefix(t *testing.T) {
+	validStoragePrefix := "trident_"
+	emptyStoragePrefix := ""
+
+	type test struct {
+		storagePrefixRaw json.RawMessage
+		expectedPrefix   *string
+		errorExpected    bool
+	}
+
+	tests := map[string]test{
+		"returns nil pointer with valid but empty storagePrefixRaw bytes": {
+			storagePrefixRaw: json.RawMessage("{}"),
+			expectedPrefix:   nil,
+			errorExpected:    false,
+		},
+		"returns pointer to empty string with no storagePrefixRaw string": {
+			storagePrefixRaw: json.RawMessage(""),
+			expectedPrefix:   nil, // Use the address of an uninitialized string will default to "".
+			errorExpected:    false,
+		},
+		"returns pointer to empty string with empty but valid storagePrefixRaw string": {
+			storagePrefixRaw: json.RawMessage("\"\""),
+			expectedPrefix:   &emptyStoragePrefix, // Use the address of an uninitialized string will default to "".
+			errorExpected:    false,
+		},
+		"returns storage prefix specified in storagePrefixRaw string": {
+			storagePrefixRaw: json.RawMessage("\"trident_\""),
+			expectedPrefix:   &validStoragePrefix,
+			errorExpected:    false,
+		},
+		"returns nil pointer with error": {
+			storagePrefixRaw: json.RawMessage("."),
+			expectedPrefix:   nil,
+			errorExpected:    true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := context.TODO()
+			storagePrefix, err := parseRawStoragePrefix(ctx, test.storagePrefixRaw)
+
+			if test.errorExpected {
+				assert.Nil(t, storagePrefix)
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				if test.expectedPrefix != nil && storagePrefix != nil {
+					assert.Equal(t, *test.expectedPrefix, *storagePrefix)
+				} else {
+					assert.Equal(t, test.expectedPrefix, storagePrefix)
+				}
+			}
+		})
+	}
+}
+
+func TestGetDefaultStoragePrefix(t *testing.T) {
+	tests := []struct {
+		context  config.DriverContext
+		expected string
+	}{
+		{
+			context:  "",
+			expected: "",
+		},
+		{
+			context:  config.ContextCSI,
+			expected: DefaultTridentStoragePrefix,
+		},
+		{
+			context:  config.ContextDocker,
+			expected: DefaultDockerStoragePrefix,
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			actual := GetDefaultStoragePrefix(test.context)
+			assert.Equal(t, test.expected, actual)
+		})
+	}
+}
+
+func TestGetDefaultIgroupName(t *testing.T) {
+	tests := []struct {
+		context  config.DriverContext
+		expected string
+	}{
+		{
+			context:  "",
+			expected: DefaultTridentIgroupName,
+		},
+		{
+			context:  config.ContextCSI,
+			expected: DefaultTridentIgroupName,
+		},
+		{
+			context:  config.ContextDocker,
+			expected: DefaultDockerIgroupName,
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			actual := GetDefaultIgroupName(test.context)
+			assert.Equal(t, test.expected, actual)
+		})
+	}
+}
+
+func TestSanitizeCommonStorageDriverConfig(t *testing.T) {
+	config := &CommonStorageDriverConfig{
+		StoragePrefixRaw: nil,
+	}
+	SanitizeCommonStorageDriverConfig(config)
+	assert.NotEmpty(t, config.StoragePrefixRaw)
+}
+
+func TestGetCommonInternalVolumeName(t *testing.T) {
+	const name = "volume"
+	for _, test := range []struct {
+		prefix   *string
+		expected string
+	}{
+		{
+			prefix:   &[]string{"specific"}[0],
+			expected: fmt.Sprintf("specific-%s", name),
+		},
+		{
+			prefix:   &[]string{""}[0],
+			expected: name,
+		},
+		{
+			prefix:   nil,
+			expected: fmt.Sprintf("%s-%s", config.OrchestratorName, name),
+		},
+	} {
+		c := CommonStorageDriverConfig{
+			Version:           1,
+			StorageDriverName: "fake",
+			StoragePrefix:     test.prefix,
+		}
+		got := GetCommonInternalVolumeName(&c, name)
+		if test.expected != got {
+			t.Errorf("Mismatch between volume names.  Expected %s, got %s",
+				test.expected, got)
+		}
+	}
+}
+
+func TestCheckVolumeSizeLimits(t *testing.T) {
+	ctx := context.TODO()
+	requestedSize := uint64(1073741824) // 1Gi
+
+	// Returns because LimitVolumeSize not specified.
+	config := &CommonStorageDriverConfig{
+		LimitVolumeSize: "",
+	}
+	shouldLimit, sizeLimit, err := CheckVolumeSizeLimits(ctx, requestedSize, config)
+	assert.False(t, shouldLimit, "expected should limit to be false")
+	assert.Zero(t, sizeLimit, "expected zero size limit")
+	assert.Nil(t, err, "expected nil error")
+
+	// Errors when LimitVolumeSize is not empty but invalid and cannot be parsed.
+	config = &CommonStorageDriverConfig{
+		LimitVolumeSize: "Gi",
+	}
+	shouldLimit, sizeLimit, err = CheckVolumeSizeLimits(ctx, requestedSize, config)
+	assert.False(t, shouldLimit, "expected should limit to be false")
+	assert.Zero(t, sizeLimit, "expected zero size limit")
+	assert.NotNil(t, err, "expected non-nil error")
+
+	requestedSize = uint64(2000000000)
+	config = &CommonStorageDriverConfig{
+		LimitVolumeSize: "1Gi",
+	}
+	shouldLimit, sizeLimit, err = CheckVolumeSizeLimits(ctx, requestedSize, config)
+	assert.True(t, shouldLimit, "expected should limit to be true")
+	assert.Equal(t, sizeLimit, uint64(1073741824), "expected size limit of 1Gi")
+	assert.NotNil(t, err, "expected non-nil error")
+
+	requestedSize = uint64(1000000000)
+	config = &CommonStorageDriverConfig{
+		LimitVolumeSize: "1Gi",
+	}
+	shouldLimit, sizeLimit, err = CheckVolumeSizeLimits(ctx, requestedSize, config)
+	assert.True(t, shouldLimit, "expected should limit to be true")
+	assert.Equal(t, sizeLimit, uint64(1073741824), "expected size limit of 1Gi")
+	assert.Nil(t, err, "expected nil error")
+}
+
+func TestCheckMinVolumeSize(t *testing.T) {
+	tests := []struct {
+		requestedSizeBytes  uint64
+		minimumVolSizeBytes uint64
+		expected            error
+	}{
+		{
+			requestedSizeBytes:  1000000000,
+			minimumVolSizeBytes: 999999999,
+			expected:            nil,
+		},
+		{
+			requestedSizeBytes:  1000000000,
+			minimumVolSizeBytes: 1000000000,
+			expected:            nil,
+		},
+		{
+			requestedSizeBytes:  1000000000,
+			minimumVolSizeBytes: 1000000001,
+			expected:            utils.UnsupportedCapacityRangeError(fmt.Errorf("test")),
+		},
+		{
+			requestedSizeBytes:  1000000000,
+			minimumVolSizeBytes: 1000000001,
+			expected: fmt.Errorf("wrapping the UnsuppportedCapacityError; %w", utils.UnsupportedCapacityRangeError(
+				fmt.Errorf("test"))),
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("CheckMinimumVolSize: %d", i), func(t *testing.T) {
+			actualErr := CheckMinVolumeSize(test.requestedSizeBytes, test.minimumVolSizeBytes)
+			actualIsUnsupportedCapError, _ := utils.HasUnsupportedCapacityRangeError(actualErr)
+			expectedIsUnsupportedCapError, _ := utils.HasUnsupportedCapacityRangeError(test.expected)
+			assert.Equal(t, actualIsUnsupportedCapError, expectedIsUnsupportedCapError)
+		})
+	}
+}
+
+func TestClone(t *testing.T) {
+	type test struct {
+		source      interface{}
+		destination interface{}
+		shouldEqual bool
+	}
+
+	tests := map[string]test{
+		"succeeds when destination is a pointer type": {
+			source: &CommonStorageDriverConfigDefaults{
+				Size: "100Gi",
+			},
+			destination: &CommonStorageDriverConfigDefaults{},
+			shouldEqual: true,
+		},
+		"fails when destination is a non-pointer type": {
+			source:      "anything",
+			destination: "",
+			shouldEqual: false,
+		},
+		"fails when source is nil": {
+			source:      nil,
+			destination: "",
+			shouldEqual: false,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			Clone(context.TODO(), test.source, test.destination)
+			if test.shouldEqual {
+				assert.EqualValues(t, test.source, test.destination)
+			} else {
+				assert.NotEqual(t, test.source, test.destination)
+			}
+		})
+	}
+}
+
+func TestCheckSupportedFilesystem(t *testing.T) {
+	ctx := context.TODO()
+	validFilesystem := "xfs"
+	invalidFilesystem := "ext2"
+
+	fsType, err := CheckSupportedFilesystem(ctx, validFilesystem, "")
+	assert.Equal(t, validFilesystem, fsType)
+	assert.Nil(t, err, "expected nil error")
+
+	fsType, err = CheckSupportedFilesystem(ctx, invalidFilesystem, "")
+	assert.Empty(t, "")
+	assert.NotNil(t, err, "expected non-nil error")
+
+	fsType, err = CheckSupportedFilesystem(ctx, "", "")
+	assert.Empty(t, "")
+	assert.NotNil(t, err, "expected non-nil error")
+}
 
 func TestAreSameCredentials(t *testing.T) {
 	type Credentials struct {
@@ -52,6 +494,48 @@ func TestAreSameCredentials(t *testing.T) {
 	}
 }
 
+func TestEnsureMountOption(t *testing.T) {
+	// This is an exported method for ensureJoinedStringContainsElem so tests are similar.
+	tests := []struct {
+		mountOptions string
+		option       string
+		sep          string
+		expected     string
+	}{
+		{
+			mountOptions: "",
+			option:       "def",
+			expected:     "def",
+		},
+		{
+			mountOptions: "abc",
+			option:       "",
+			expected:     "abc",
+		},
+		{
+			mountOptions: "abc",
+			option:       "efg",
+			expected:     "abc,efg",
+		},
+		{
+			mountOptions: "abc,def",
+			option:       "efg",
+			expected:     "abc,def,efg",
+		},
+		{
+			mountOptions: "def g",
+			option:       "efg",
+			expected:     "def g,efg",
+		},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			actual := EnsureMountOption(test.mountOptions, test.option)
+			assert.Equal(t, test.expected, actual)
+		})
+	}
+}
+
 func TestEnsureJoinedStringContainsElem(t *testing.T) {
 	tests := []struct {
 		joined   string
@@ -87,45 +571,6 @@ func TestEnsureJoinedStringContainsElem(t *testing.T) {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			actual := ensureJoinedStringContainsElem(test.joined, test.elem, test.sep)
 			assert.Equal(t, test.expected, actual)
-		})
-	}
-}
-
-func TestCheckMinVolumeSize(t *testing.T) {
-	tests := []struct {
-		requestedSizeBytes  uint64
-		minimumVolSizeBytes uint64
-		expected            error
-	}{
-		{
-			requestedSizeBytes:  1000000000,
-			minimumVolSizeBytes: 999999999,
-			expected:            nil,
-		},
-		{
-			requestedSizeBytes:  1000000000,
-			minimumVolSizeBytes: 1000000000,
-			expected:            nil,
-		},
-		{
-			requestedSizeBytes:  1000000000,
-			minimumVolSizeBytes: 1000000001,
-			expected:            utils.UnsupportedCapacityRangeError(fmt.Errorf("test")),
-		},
-		{
-			requestedSizeBytes:  1000000000,
-			minimumVolSizeBytes: 1000000001,
-			expected: fmt.Errorf("wrapping the UnsuppportedCapacityError; %w", utils.UnsupportedCapacityRangeError(
-				fmt.Errorf("test"))),
-		},
-	}
-
-	for i, test := range tests {
-		t.Run(fmt.Sprintf("CheckMinimumVolSize: %d", i), func(t *testing.T) {
-			actualErr := CheckMinVolumeSize(test.requestedSizeBytes, test.minimumVolSizeBytes)
-			actualIsUnsupportedCapError, _ := utils.HasUnsupportedCapacityRangeError(actualErr)
-			expectedIsUnsupportedCapError, _ := utils.HasUnsupportedCapacityRangeError(test.expected)
-			assert.Equal(t, actualIsUnsupportedCapError, expectedIsUnsupportedCapError)
 		})
 	}
 }
