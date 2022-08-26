@@ -1435,7 +1435,6 @@ const (
 	DefaultNfsMountOptionsDocker     = "-o nfsvers=3"
 	DefaultNfsMountOptionsKubernetes = ""
 	DefaultSplitOnClone              = "false"
-	DefaultEncryption                = "false"
 	DefaultMirroring                 = "false"
 	DefaultLimitAggregateUsage       = ""
 	DefaultLimitVolumeSize           = ""
@@ -1527,10 +1526,6 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 
 	if config.FileSystemType == "" {
 		config.FileSystemType = drivers.DefaultFileSystemType
-	}
-
-	if config.Encryption == "" {
-		config.Encryption = DefaultEncryption
 	}
 
 	if config.Mirroring == "" {
@@ -2674,9 +2669,7 @@ func ValidateStoragePools(
 		}
 
 		// Validate Encryption
-		if pool.InternalAttributes()[Encryption] == "" {
-			return fmt.Errorf("encryption cannot by empty in pool %s", poolName)
-		} else {
+		if pool.InternalAttributes()[Encryption] != "" {
 			_, err := strconv.ParseBool(pool.InternalAttributes()[Encryption])
 			if err != nil {
 				return fmt.Errorf("invalid value for encryption in pool %s: %v", poolName, err)
@@ -2868,6 +2861,8 @@ func getVolumeOptsCommon(
 		if encryption, ok := encryptionReq.Value().(bool); ok {
 			if encryption {
 				opts["encryption"] = "true"
+			} else {
+				opts["encryption"] = "false"
 			}
 		} else {
 			Logc(ctx).WithFields(log.Fields{
@@ -3181,4 +3176,18 @@ func sanitizeDataLIF(dataLIF string) string {
 	result := strings.TrimPrefix(dataLIF, "[")
 	result = strings.TrimSuffix(result, "]")
 	return result
+}
+
+// GetEncryptionValue: Returns "true"/"false" if encryption is explicitely mentioned in the
+// backend or storage class. Otherwise, it returns "nil" which enables NAE/NVE on the volume
+// depending on the aggregate properties.
+func GetEncryptionValue(encryption string) (*bool, error) {
+	if encryption != "" {
+		enable, err := strconv.ParseBool(encryption)
+		if err != nil {
+			return nil, err
+		}
+		return &enable, err
+	}
+	return nil, nil
 }

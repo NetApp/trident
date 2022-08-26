@@ -1845,9 +1845,7 @@ func ValidateStoragePoolsAbstraction(
 		}
 
 		// Validate Encryption
-		if pool.InternalAttributes()[Encryption] == "" {
-			return fmt.Errorf("encryption cannot by empty in pool %s", poolName)
-		} else {
+		if pool.InternalAttributes()[Encryption] != "" {
 			_, err := strconv.ParseBool(pool.InternalAttributes()[Encryption])
 			if err != nil {
 				return fmt.Errorf("invalid value for encryption in pool %s: %v", poolName, err)

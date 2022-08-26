@@ -768,7 +768,7 @@ func (c Client) LunSize(flexvolName string) (int, error) {
 func (c Client) FlexGroupCreate(
 	ctx context.Context, name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy,
 	unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup,
-	encrypt bool, snapshotReserve int,
+	encrypt *bool, snapshotReserve int,
 ) (*azgo.VolumeCreateAsyncResponse, error) {
 	junctionPath := fmt.Sprintf("/%s", name)
 
@@ -783,10 +783,16 @@ func (c Client) FlexGroupCreate(
 		SetUnixPermissions(unixPermissions).
 		SetExportPolicy(exportPolicy).
 		SetVolumeSecurityStyle(securityStyle).
-		SetEncrypt(encrypt).
 		SetAggrList(aggrList).
 		SetJunctionPath(junctionPath).
 		SetVolumeComment(comment)
+
+	// For encrypt == nil - we don't explicitely set the encrypt argument.
+	// If destination aggregate is NAE enabled, new volume will be aggregate encrypted
+	// else it will be volume encrypted as per Ontap's default behaviour.
+	if encrypt != nil {
+		request.SetEncrypt(*encrypt)
+	}
 
 	switch qosPolicyGroup.Kind {
 	case QosPolicyGroupKind:
@@ -1147,7 +1153,7 @@ func (c Client) JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error) {
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix -encrypt false
 func (c Client) VolumeCreate(
 	ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool,
+	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int, dpVolume bool,
 ) (*azgo.VolumeCreateResponse, error) {
 	request := azgo.NewVolumeCreateRequest().
@@ -1158,8 +1164,14 @@ func (c Client) VolumeCreate(
 		SetSnapshotPolicy(snapshotPolicy).
 		SetExportPolicy(exportPolicy).
 		SetVolumeSecurityStyle(securityStyle).
-		SetEncrypt(encrypt).
 		SetVolumeComment(comment)
+
+	// For encrypt == nil - we don't explicitely set the encrypt argument.
+	// If destination aggregate is NAE enabled, new volume will be aggregate encrypted
+	// else it will be volume encrypted as per Ontap's default behaviour.
+	if encrypt != nil {
+		request.SetEncrypt(*encrypt)
+	}
 
 	if snapshotReserve != NumericalValueNotSet {
 		request.SetPercentageSnapshotReserve(snapshotReserve)
@@ -1553,7 +1565,7 @@ func (c Client) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
 
 // VolumeListByAttrs returns the names of all Flexvols matching the specified attributes
 func (c Client) VolumeListByAttrs(
-	prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir, encrypt bool, snapReserve int,
+	prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir bool, encrypt *bool, snapReserve int,
 ) (*azgo.VolumeGetIterResponse, error) {
 	// Limit the Flexvols to those matching the specified attributes
 	query := &azgo.VolumeGetIterRequestQuery{}
@@ -1578,8 +1590,11 @@ func (c Client) VolumeListByAttrs(
 		SetVolumeIdAttributes(*queryVolIDAttrs).
 		SetVolumeSpaceAttributes(*queryVolSpaceAttrs).
 		SetVolumeSnapshotAttributes(*queryVolSnapshotAttrs).
-		SetVolumeStateAttributes(*queryVolStateAttrs).
-		SetEncrypt(encrypt)
+		SetVolumeStateAttributes(*queryVolStateAttrs)
+
+	if encrypt != nil {
+		volumeAttributes.SetEncrypt(*encrypt)
+	}
 
 	query.SetVolumeAttributes(*volumeAttributes)
 

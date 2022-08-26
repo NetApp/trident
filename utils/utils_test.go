@@ -1428,3 +1428,18 @@ func TestTitle(t *testing.T) {
 		assert.Equal(t, testCase.ExpectedResult, result)
 	}
 }
+
+func TestGetPrintableBoolPtrValue(t *testing.T) {
+	var bPtr *bool
+	pval := GetPrintableBoolPtrValue(bPtr)
+	assert.Equal(t, "none", pval)
+
+	tmp := false
+	bPtr = &tmp
+	pval = GetPrintableBoolPtrValue(bPtr)
+	assert.Equal(t, "false", pval)
+
+	tmp = true
+	pval = GetPrintableBoolPtrValue(bPtr)
+	assert.Equal(t, "true", pval)
+}

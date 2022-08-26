@@ -187,7 +187,7 @@ func (mr *MockZapiClientInterfaceMockRecorder) ExportRuleGetIterRequest(arg0 int
 }
 
 // FlexGroupCreate mocks base method.
-func (m *MockZapiClientInterface) FlexGroupCreate(arg0 context.Context, arg1 string, arg2 int, arg3 []string, arg4, arg5, arg6, arg7, arg8, arg9, arg10 string, arg11 api.QosPolicyGroup, arg12 bool, arg13 int) (*azgo.VolumeCreateAsyncResponse, error) {
+func (m *MockZapiClientInterface) FlexGroupCreate(arg0 context.Context, arg1 string, arg2 int, arg3 []string, arg4, arg5, arg6, arg7, arg8, arg9, arg10 string, arg11 api.QosPolicyGroup, arg12 *bool, arg13 int) (*azgo.VolumeCreateAsyncResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlexGroupCreate", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
 	ret0, _ := ret[0].(*azgo.VolumeCreateAsyncResponse)
@@ -1843,7 +1843,7 @@ func (mr *MockZapiClientInterfaceMockRecorder) VolumeCloneSplitStart(arg0 interf
 }
 
 // VolumeCreate mocks base method.
-func (m *MockZapiClientInterface) VolumeCreate(arg0 context.Context, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 string, arg11 api.QosPolicyGroup, arg12 bool, arg13 int, arg14 bool) (*azgo.VolumeCreateResponse, error) {
+func (m *MockZapiClientInterface) VolumeCreate(arg0 context.Context, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 string, arg11 api.QosPolicyGroup, arg12 *bool, arg13 int, arg14 bool) (*azgo.VolumeCreateResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VolumeCreate", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
 	ret0, _ := ret[0].(*azgo.VolumeCreateResponse)
@@ -1978,7 +1978,7 @@ func (mr *MockZapiClientInterfaceMockRecorder) VolumeListAllBackedBySnapshot(arg
 }
 
 // VolumeListByAttrs mocks base method.
-func (m *MockZapiClientInterface) VolumeListByAttrs(arg0, arg1, arg2, arg3, arg4 string, arg5, arg6 bool, arg7 int) (*azgo.VolumeGetIterResponse, error) {
+func (m *MockZapiClientInterface) VolumeListByAttrs(arg0, arg1, arg2, arg3, arg4 string, arg5 bool, arg6 *bool, arg7 int) (*azgo.VolumeGetIterResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VolumeListByAttrs", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 	ret0, _ := ret[0].(*azgo.VolumeGetIterResponse)

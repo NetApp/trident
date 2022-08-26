@@ -976,3 +976,13 @@ func ConsistentRead(filename string, attempts int) ([]byte, error) {
 func Title(str string) string {
 	return cases.Title(language.Und, cases.NoLower).String(str)
 }
+
+func GetPrintableBoolPtrValue(bPtr *bool) string {
+	if bPtr != nil {
+		if *bPtr {
+			return "true"
+		}
+		return "false"
+	}
+	return "none"
+}

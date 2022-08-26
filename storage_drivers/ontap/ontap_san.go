@@ -287,7 +287,7 @@ func (d *SANStorageDriver) Create(
 		return checkVolumeSizeLimitsError
 	}
 
-	enableEncryption, err := strconv.ParseBool(encryption)
+	enableEncryption, err := GetEncryptionValue(encryption)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for encryption: %v", err)
 	}
@@ -321,7 +321,7 @@ func (d *SANStorageDriver) Create(
 		"snapshotDir":       snapshotDir,
 		"exportPolicy":      exportPolicy,
 		"securityStyle":     securityStyle,
-		"encryption":        enableEncryption,
+		"encryption":        utils.GetPrintableBoolPtrValue(enableEncryption),
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
 	}).Debug("Creating Flexvol.")

@@ -8,7 +8,7 @@ type Volume struct {
 	AccessType        string
 	Aggregates        []string
 	Comment           string
-	Encrypt           bool
+	Encrypt           *bool
 	ExportPolicy      string
 	JunctionPath      string
 	Name              string

@@ -276,7 +276,7 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
 	}
 
-	enableEncryption, err := strconv.ParseBool(encryption)
+	enableEncryption, err := GetEncryptionValue(encryption)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for encryption: %v", err)
 	}
@@ -306,7 +306,7 @@ func (d *NASStorageDriver) Create(
 		"snapshotDir":       enableSnapshotDir,
 		"exportPolicy":      exportPolicy,
 		"securityStyle":     securityStyle,
-		"encryption":        enableEncryption,
+		"encryption":        utils.GetPrintableBoolPtrValue(enableEncryption),
 		"tieringPolicy":     tieringPolicy,
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,

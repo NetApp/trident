@@ -113,7 +113,7 @@ type ZapiClientInterface interface {
 	FlexGroupCreate(
 		ctx context.Context, name string, size int, aggrs []azgo.AggrNameType,
 		spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
-		qosPolicyGroup QosPolicyGroup, encrypt bool, snapshotReserve int,
+		qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int,
 	) (*azgo.VolumeCreateAsyncResponse, error)
 	// FlexGroupDestroy destroys a FlexGroup
 	FlexGroupDestroy(ctx context.Context, name string, force bool) (*azgo.VolumeDestroyAsyncResponse, error)
@@ -149,7 +149,7 @@ type ZapiClientInterface interface {
 	VolumeCreate(
 		ctx context.Context,
 		name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
-		qosPolicyGroup QosPolicyGroup, encrypt bool, snapshotReserve int, dpVolume bool,
+		qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool,
 	) (*azgo.VolumeCreateResponse, error)
 	VolumeModifyExportPolicy(volumeName, exportPolicyName string) (*azgo.VolumeModifyIterResponse, error)
 	VolumeModifyUnixPermissions(volumeName, unixPermissions string) (*azgo.VolumeModifyIterResponse, error)
@@ -193,7 +193,7 @@ type ZapiClientInterface interface {
 	VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error)
 	// VolumeListByAttrs returns the names of all Flexvols matching the specified attributes
 	VolumeListByAttrs(
-		prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir, encrypt bool,
+		prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir bool, encrypt *bool,
 		snapReserve int,
 	) (*azgo.VolumeGetIterResponse, error)
 	// VolumeListAllBackedBySnapshot returns the names of all FlexVols backed by the specified snapshot

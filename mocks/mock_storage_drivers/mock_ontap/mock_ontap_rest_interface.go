@@ -281,7 +281,7 @@ func (mr *MockRestClientInterfaceMockRecorder) ExportRuleList(arg0, arg1 interfa
 }
 
 // FlexGroupCreate mocks base method.
-func (m *MockRestClientInterface) FlexGroupCreate(arg0 context.Context, arg1 string, arg2 int, arg3 []string, arg4, arg5, arg6, arg7, arg8, arg9, arg10 string, arg11 api.QosPolicyGroup, arg12 bool, arg13 int) error {
+func (m *MockRestClientInterface) FlexGroupCreate(arg0 context.Context, arg1 string, arg2 int, arg3 []string, arg4, arg5, arg6, arg7, arg8, arg9, arg10 string, arg11 api.QosPolicyGroup, arg12 *bool, arg13 int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlexGroupCreate", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
 	ret0, _ := ret[0].(error)
@@ -1556,7 +1556,7 @@ func (mr *MockRestClientInterfaceMockRecorder) VolumeCloneSplitStart(arg0, arg1 
 }
 
 // VolumeCreate mocks base method.
-func (m *MockRestClientInterface) VolumeCreate(arg0 context.Context, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 string, arg11 api.QosPolicyGroup, arg12 bool, arg13 int) error {
+func (m *MockRestClientInterface) VolumeCreate(arg0 context.Context, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 string, arg11 api.QosPolicyGroup, arg12 *bool, arg13 int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VolumeCreate", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
 	ret0, _ := ret[0].(error)

@@ -492,7 +492,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
 	}
 
-	enableEncryption, err := strconv.ParseBool(encryption)
+	enableEncryption, err := GetEncryptionValue(encryption)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for encryption: %v", err)
 	}
@@ -549,7 +549,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		"exportPolicy":    exportPolicy,
 		"aggregates":      vserverAggrNames,
 		"securityStyle":   securityStyle,
-		"encryption":      enableEncryption,
+		"encryption":      utils.GetPrintableBoolPtrValue(enableEncryption),
 		"qosPolicy":       qosPolicy,
 	}).Debug("Creating FlexGroup.")
 

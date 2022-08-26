@@ -1097,7 +1097,7 @@ func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volu
 func (c RestClient) createVolumeByStyle(
 	ctx context.Context,
 	name string, sizeInBytes int64, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool,
+	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int, style string,
 ) error {
 	params := storage.NewVolumeCreateParamsWithTimeout(c.httpClient.Timeout)
@@ -1128,9 +1128,13 @@ func (c RestClient) createVolumeByStyle(
 	}
 	volumeInfo.Svm = &models.VolumeSvm{Name: c.svmName}
 
-	if encrypt {
-		volumeInfo.Encryption = &models.VolumeEncryption{Enabled: true}
+	// For encrypt == nil - we don't explicitely set the encrypt argument.
+	// If destination aggregate is NAE enabled, new volume will be aggregate encrypted
+	// else it will be volume encrypted as per Ontap's default behaviour.
+	if encrypt != nil {
+		volumeInfo.Encryption = &models.VolumeEncryption{Enabled: *encrypt}
 	}
+
 	if qosPolicyGroup.Kind != InvalidQosPolicyGroupKind {
 		if qosPolicyGroup.Name != "" {
 			volumeInfo.Qos = &models.VolumeQos{
@@ -1200,10 +1204,11 @@ func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) 
 		if err = json.Unmarshal(volume, cliVolume); err != nil {
 			return nil, fmt.Errorf("error parsing volume data; %v", err)
 		}
+
 		volumes = append(volumes, &Volume{
 			Name:           cliVolume.Name,
 			Aggregates:     []string{cliVolume.Aggregate},
-			Encrypt:        cliVolume.Encrypt,
+			Encrypt:        &cliVolume.Encrypt,
 			TieringPolicy:  cliVolume.TieringPolicy,
 			SnapshotDir:    cliVolume.SnapdirAccess,
 			SpaceReserve:   cliVolume.SpaceGuarantee,
@@ -1219,7 +1224,7 @@ func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) 
 // -encrypt false
 func (c RestClient) VolumeCreate(
 	ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool,
+	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int,
 ) error {
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(size)
@@ -3264,7 +3269,9 @@ func (c RestClient) CliPassthroughVolumeGet(ctx context.Context, volume *Volume)
 	}
 	cmdRef += fmt.Sprintf("&percent-snapshot-space=%v", volume.SnapshotReserve)
 	cmdRef += fmt.Sprintf("&snapdir-access=%v", volume.SnapshotDir)
-	cmdRef += fmt.Sprintf("&encrypt=%v", volume.Encrypt)
+	if volume.Encrypt != nil {
+		cmdRef += fmt.Sprintf("&encrypt=%v", *volume.Encrypt)
+	}
 
 	req := c.generateGETRequest(baseURL + cmdRef)
 
@@ -3635,7 +3642,7 @@ func ToSliceVolumeAggregatesItems(aggrs []string) []*models.VolumeAggregatesItem
 // -security-style unix -encrypt false
 func (c RestClient) FlexGroupCreate(
 	ctx context.Context, name string, size int, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions,
-	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt bool,
+	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int,
 ) error {
 	return c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions,

@@ -465,7 +465,7 @@ func (d *SANEconomyStorageDriver) Create(
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 	)
 
-	enableEncryption, err := strconv.ParseBool(encryption)
+	enableEncryption, err := GetEncryptionValue(encryption)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for encryption: %v", err)
 	}
@@ -1319,8 +1319,8 @@ func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
 // LUN or it creates a new Flexvol with the needed attributes.  The name of the matching volume is returned,
 // as is a boolean indicating whether the volume was newly created to satisfy this request.
 func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
-	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir,
-	encrypt bool, sizeBytes uint64, opts map[string]string, config drivers.OntapStorageDriverConfig,
+	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool,
+	encrypt *bool, sizeBytes uint64, opts map[string]string, config drivers.OntapStorageDriverConfig,
 	storagePool storage.Pool, ignoredVols map[string]struct{},
 ) (string, bool, error) {
 	shouldLimitVolumeSize, flexvolSizeLimit, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
@@ -1359,7 +1359,7 @@ func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 // the purpose of containing LUN supplied as container volumes by this driver.
 // Once this method returns, the Flexvol exists, is mounted
 func (d *SANEconomyStorageDriver) createFlexvolForLUN(
-	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir, encrypt bool,
+	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool, encrypt *bool,
 	opts map[string]string, storagePool storage.Pool,
 ) (string, error) {
 	var (
@@ -1368,7 +1368,6 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 		unixPermissions = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
 		exportPolicy    = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
 		securityStyle   = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
-		encryption      = encrypt
 	)
 
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, storagePool.InternalAttributes()[SnapshotReserve])
@@ -1388,7 +1387,7 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 			"snapshotDir":     enableSnapshotDir,
 			"exportPolicy":    exportPolicy,
 			"securityStyle":   securityStyle,
-			"encryption":      encryption,
+			"encryption":      utils.GetPrintableBoolPtrValue(encrypt),
 		},
 	).Debug("Creating Flexvol for LUNs.")
 
@@ -1419,7 +1418,7 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 // considered an error.  If more than one matching Flexvol is found, one of those
 // is returned at random.
 func (d *SANEconomyStorageDriver) getFlexvolForLUN(
-	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir, encrypt bool,
+	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool, encrypt *bool,
 	sizeBytes uint64, shouldLimitFlexvolSize bool, flexvolSizeLimit uint64, ignoredVols map[string]struct{},
 ) (string, error) {
 	// Get all volumes matching the specified attributes

@@ -1137,3 +1137,28 @@ func TestCheckAggregateLimits(t *testing.T) {
 	err = checkAggregateLimits(ctx, aggr, "none", 1024, *ontapConfig, mockZapiClient)
 	assert.Nil(t, err, "Unexpected error")
 }
+
+func TestGetEncryptionValue(t *testing.T) {
+	// sending empty volume attrs
+	encryption := ""
+	val, err := GetEncryptionValue(encryption)
+	assert.NoError(t, err)
+	assert.Nil(t, val)
+
+	// sending invalid encryption value
+	encryption = "dummy"
+	_, err = GetEncryptionValue(encryption)
+	assert.Error(t, err)
+
+	// sending encryption value as true
+	encryption = "true"
+	val, err = GetEncryptionValue(encryption)
+	assert.NoError(t, err)
+	assert.Equal(t, true, *val)
+
+	// sending encryption value as false
+	encryption = "false"
+	val, err = GetEncryptionValue(encryption)
+	assert.NoError(t, err)
+	assert.Equal(t, false, *val)
+}
