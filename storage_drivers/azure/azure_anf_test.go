@@ -1995,6 +1995,7 @@ func TestCreateClone_NoSnapshot(t *testing.T) {
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 	driver.Config.NetworkFeatures = api.NetworkFeaturesBasic
+	driver.Config.NASType = sa.NFS
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2029,6 +2030,7 @@ func TestCreateClone_Snapshot(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NASType = sa.NFS
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2387,6 +2389,7 @@ func TestCreateClone_CreateFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NASType = sa.NFS
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)

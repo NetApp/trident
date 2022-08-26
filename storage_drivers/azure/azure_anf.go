@@ -1021,14 +1021,18 @@ func (d *NASStorageDriver) CreateClone(
 		Name:              cloneVolConfig.Name,
 		SubnetID:          sourceVolume.SubnetID,
 		CreationToken:     name,
-		ExportPolicy:      sourceVolume.ExportPolicy,
 		Labels:            labels,
 		ProtocolTypes:     sourceVolume.ProtocolTypes,
 		QuotaInBytes:      sourceVolume.QuotaInBytes,
 		SnapshotDirectory: sourceVolume.SnapshotDirectory,
 		SnapshotID:        sourceSnapshot.SnapshotID,
-		UnixPermissions:   sourceVolume.UnixPermissions,
 		NetworkFeatures:   sourceVolume.NetworkFeatures,
+	}
+
+	// Add unix permissions and export policy fields only to NFS volume
+	if d.Config.NASType == sa.NFS {
+		createRequest.ExportPolicy = sourceVolume.ExportPolicy
+		createRequest.UnixPermissions = sourceVolume.UnixPermissions
 	}
 
 	// Clone the volume
