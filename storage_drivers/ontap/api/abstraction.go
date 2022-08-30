@@ -84,7 +84,7 @@ type OntapAPI interface {
 	LunCreate(ctx context.Context, lun Lun) error
 	LunDestroy(ctx context.Context, lunPath string) error
 	LunGetComment(ctx context.Context, lunPath string) (string, bool, error)
-	LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context string) error
+	LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks string) error
 	ParseLunComment(ctx context.Context, commentJSON string) (map[string]string, error)
 	LunSetQosPolicyGroup(ctx context.Context, lunPath string, qosPolicyGroup QosPolicyGroup) error
 	LunGetByName(ctx context.Context, name string) (*Lun, error)

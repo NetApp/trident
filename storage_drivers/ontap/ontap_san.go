@@ -253,6 +253,7 @@ func (d *SANStorageDriver) Create(
 		tieringPolicy     = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
+		luksEncryption    = storagePool.InternalAttributes()[LUKSEncryption]
 	)
 
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
@@ -308,6 +309,7 @@ func (d *SANStorageDriver) Create(
 	}
 	volConfig.QosPolicy = qosPolicy
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
+	volConfig.LUKSEncryption = luksEncryption
 
 	Logc(ctx).WithFields(log.Fields{
 		"name":              name,
@@ -321,6 +323,7 @@ func (d *SANStorageDriver) Create(
 		"snapshotDir":       snapshotDir,
 		"exportPolicy":      exportPolicy,
 		"securityStyle":     securityStyle,
+		"LUKSEncryption":    luksEncryption,
 		"encryption":        utils.GetPrintableBoolPtrValue(enableEncryption),
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
@@ -428,9 +431,8 @@ func (d *SANStorageDriver) Create(
 
 			// Save the fstype in a LUN attribute so we know what to do in Attach.  If this fails, clean up and
 			// move on to the next pool.
-			// TODO: Change this for LUN Attributes when available, not planning on shipping like this
-			// Save the context and fstype in LUN comment
-			err = d.API.LunSetAttribute(ctx, lunPath, LUNAttributeFSType, fstype, string(d.Config.DriverContext))
+			// Save the context, fstype, and LUKS value in LUN comment
+			err = d.API.LunSetAttribute(ctx, lunPath, LUNAttributeFSType, fstype, string(d.Config.DriverContext), d.Config.LUKSEncryption)
 			if err != nil {
 
 				errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error saving file system type for LUN %s: %v",
@@ -1287,6 +1289,16 @@ func (d *SANStorageDriver) Resize(
 			" for SAN resize operations.")
 		volConfig.Size = strconv.FormatUint(uint64(currentLunSize), 10)
 		return nil
+	}
+
+	if volConfig.LUKSEncryption != "" {
+		luks, err := strconv.ParseBool(volConfig.LUKSEncryption)
+		if err != nil {
+			return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v", luks)
+		}
+		if luks {
+			return fmt.Errorf("cannot resize LUKS encrypted volumes")
+		}
 	}
 
 	if aggrLimitsErr := checkAggregateLimitsForFlexvolAbstraction(

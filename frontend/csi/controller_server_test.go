@@ -101,8 +101,57 @@ func TestControllerPublishVolume(t *testing.T) {
 	// Verify we record the volume publication
 	mockOrchestrator.EXPECT().AddVolumePublication(ctx, gomock.Any()).Return(nil)
 
-	_, err := controllerServer.ControllerPublishVolume(ctx, req)
+	publishResponse, err := controllerServer.ControllerPublishVolume(ctx, req)
 	assert.Nilf(t, err, "unexpected error publishing volume; %v", err)
+
+	publishContext := publishResponse.PublishContext
+	expectedPublishContext := map[string]string{"mountOptions": "", "protocol": ""}
+	assert.Equal(t, expectedPublishContext, publishContext)
+}
+
+func TestControllerPublishVolume_BlockProtocol(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked orchestrator
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	// Create a mocked helper
+	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
+	// Create an instance of ControllerServer for this test
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Create fake objects for this test
+	req := generateFakePublishVolumeRequest()
+	fakeNode := generateFakeNode(req.NodeId)
+	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
+	fakeVolumeExternal.Config.Protocol = tridentconfig.Block
+
+	// Mimic not finding the volume publication
+	mockOrchestrator.EXPECT().GetVolumePublication(ctx, req.VolumeId, req.NodeId).Return(nil,
+		utils.NotFoundError("not found"))
+	mockOrchestrator.EXPECT().GetVolume(ctx, req.VolumeId).Return(fakeVolumeExternal, nil)
+	mockOrchestrator.EXPECT().GetNode(ctx, req.NodeId).Return(fakeNode, nil)
+	mockOrchestrator.EXPECT().PublishVolume(ctx, req.VolumeId, gomock.Any()).Return(nil)
+	// Verify we record the volume publication
+	mockOrchestrator.EXPECT().AddVolumePublication(ctx, gomock.Any()).Return(nil)
+
+	publishResponse, err := controllerServer.ControllerPublishVolume(ctx, req)
+	assert.Nilf(t, err, "unexpected error publishing volume; %v", err)
+	publishContext := publishResponse.PublishContext
+	expectedPublishContext := map[string]string{
+		"filesystemType":         "",
+		"iscsiIgroup":            "",
+		"iscsiInterface":         "",
+		"iscsiLunNumber":         "0",
+		"iscsiLunSerial":         "",
+		"iscsiTargetIqn":         "",
+		"iscsiTargetPortalCount": "1",
+		"LUKSEncryption":         "",
+		"mountOptions":           "",
+		"p1":                     "",
+		"protocol":               "block",
+		"sharedTarget":           "false",
+		"useCHAP":                "false",
+	}
+	assert.Equal(t, expectedPublishContext, publishContext)
 }
 
 // TestControllerPublishVolumeExistsWithSameOptions verifies behavior when a publich call comes in for the same

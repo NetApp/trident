@@ -34,6 +34,7 @@ type VolumeConfig struct {
 	BlockSize                 string                 `json:"blockSize"`
 	FileSystem                string                 `json:"fileSystem"`
 	Encryption                string                 `json:"encryption"`
+	LUKSEncryption            string                 `json:"LUKSEncryption,omitempty"`
 	CloneSourceVolume         string                 `json:"cloneSourceVolume"`
 	CloneSourceVolumeInternal string                 `json:"cloneSourceVolumeInternal"`
 	CloneSourceSnapshot       string                 `json:"cloneSourceSnapshot"`

@@ -340,7 +340,7 @@ func (d OntapAPIZAPI) LunGetComment(ctx context.Context, lunPath string) (string
 	return fstype, parse, nil
 }
 
-func (d OntapAPIZAPI) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context string) error {
+func (d OntapAPIZAPI) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks string) error {
 	var attrResponse interface{}
 	var err error
 	if fstype != "" {
@@ -355,6 +355,12 @@ func (d OntapAPIZAPI) LunSetAttribute(ctx context.Context, lunPath, attribute, f
 	}
 	if err = azgo.GetError(ctx, attrResponse, err); err != nil {
 		Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the driver context attribute for new LUN.")
+	}
+	if luks != "" {
+		attrResponse, err = d.api.LunSetAttribute(lunPath, "LUKS", luks)
+		if err = azgo.GetError(ctx, attrResponse, err); err != nil {
+			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the luks attribute for new LUN.")
+		}
 	}
 
 	return nil

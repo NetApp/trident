@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/netapp/trident/utils"
-
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
@@ -21,6 +19,7 @@ import (
 	. "github.com/netapp/trident/logger"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 )
 
 /////////////////////////////////////////////////////////////////////////////

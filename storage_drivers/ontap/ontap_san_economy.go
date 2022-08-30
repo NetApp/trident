@@ -463,6 +463,7 @@ func (d *SANEconomyStorageDriver) Create(
 		tieringPolicy     = utils.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
+		luksEncryption    = storagePool.InternalAttributes()[LUKSEncryption]
 	)
 
 	enableEncryption, err := GetEncryptionValue(encryption)
@@ -488,6 +489,7 @@ func (d *SANEconomyStorageDriver) Create(
 	}
 	volConfig.QosPolicy = qosPolicy
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
+	volConfig.LUKSEncryption = luksEncryption
 
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
@@ -633,6 +635,14 @@ func (d *SANEconomyStorageDriver) Create(
 			Logc(ctx).WithField("name", name).Warning("Failed to save the driver context attribute for new volume.")
 		}
 
+		if luksEncryption != "" {
+			// Save the luksEncryption as a LUN attribute
+			attrResponse, err = d.API.LunSetAttribute(lunPath, "LUKS", d.Config.LUKSEncryption)
+			if err = azgo.GetError(ctx, attrResponse, err); err != nil {
+				Logc(ctx).WithField("name", name).Error("Failed to save the LUKS attribute for new volume.")
+			}
+		}
+
 		// Resize Flexvol to be the same size or bigger than sum of constituent LUNs because ONTAP creates
 		// larger LUNs sometimes based on internal geometry
 		lunSize := uint64(lunCreateResponse.Result.ActualSize())
@@ -682,6 +692,7 @@ func (d *SANEconomyStorageDriver) CreateClone(
 	isFromSnapshot := snapshot != ""
 	qosPolicy := cloneVolConfig.QosPolicy
 	adaptiveQosPolicy := cloneVolConfig.AdaptiveQosPolicy
+	luksEncryption := cloneVolConfig.LUKSEncryption
 
 	if d.Config.DebugTraceFlags["method"] {
 		fields := log.Fields{
@@ -692,6 +703,7 @@ func (d *SANEconomyStorageDriver) CreateClone(
 			"snapshot":          snapshot,
 			"qosPolicy":         qosPolicy,
 			"adaptiveQosPolicy": adaptiveQosPolicy,
+			"LUKSEncryption":    luksEncryption,
 		}
 		Logc(ctx).WithFields(fields).Debug(">>>> CreateClone")
 		defer Logc(ctx).WithFields(fields).Debug("<<<< CreateClone")
@@ -1886,6 +1898,16 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 
 	if flexvolSize < totalLunSize {
 		return fmt.Errorf("requested size %d is less than existing volume size %d", flexvolSize, totalLunSize)
+	}
+
+	if volConfig.LUKSEncryption != "" {
+		luks, err := strconv.ParseBool(volConfig.LUKSEncryption)
+		if err != nil {
+			return fmt.Errorf("could not parse LUKSEncryption from volume config into a boolean, got %v", luks)
+		}
+		if luks {
+			return fmt.Errorf("cannot resize LUKS encrypted volumes")
+		}
 	}
 
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(

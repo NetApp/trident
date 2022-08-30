@@ -1427,11 +1427,11 @@ func (d OntapAPIREST) LunDestroy(ctx context.Context, lunPath string) error {
 }
 
 // TODO: Change this for LUN Attributes when available
-func (d OntapAPIREST) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context string) error {
+func (d OntapAPIREST) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks string) error {
 	if strings.Contains(lunPath, failureLUNSetAttr) {
 		return errors.New("injected error")
 	}
-	return d.LunSetComments(ctx, lunPath, fstype, context)
+	return d.LunSetComments(ctx, lunPath, fstype, context, luks)
 }
 
 // TODO: Change this for LUN Attributes when available
@@ -1442,8 +1442,8 @@ func (d OntapAPIREST) LunGetComment(ctx context.Context, lunPath string) (string
 }
 
 // TODO: Change this for LUN Attributes when available
-func (d OntapAPIREST) LunSetComments(ctx context.Context, lunPath, fstype, context string) error {
-	setComment, err := d.GetCommentJSON(ctx, fstype, context, 254)
+func (d OntapAPIREST) LunSetComments(ctx context.Context, lunPath, fstype, context, luks string) error {
+	setComment, err := d.GetCommentJSON(ctx, fstype, context, luks, 254)
 	if err != nil {
 		return err
 	}
@@ -1454,12 +1454,13 @@ func (d OntapAPIREST) LunSetComments(ctx context.Context, lunPath, fstype, conte
 // GetCommentJSON returns a JSON-formatted string containing the labels on this LUN.
 // This is a temporary solution until we are able to implement LUN attributes in REST
 // For example: {"lunAttributes":{"fstype":"xfs","driverContext":"csi"}}
-func (d OntapAPIREST) GetCommentJSON(ctx context.Context, fstype, context string, commentLimit int) (string,
+func (d OntapAPIREST) GetCommentJSON(ctx context.Context, fstype, context, luks string, commentLimit int) (string,
 	error,
 ) {
 	lunCommentMap := make(map[string]map[string]string)
 	newcommentMap := make(map[string]string)
 	newcommentMap["fstype"] = fstype
+	newcommentMap["LUKS"] = luks
 	newcommentMap["driverContext"] = context
 	lunCommentMap["lunAttributes"] = newcommentMap
 

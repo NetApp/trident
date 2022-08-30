@@ -370,11 +370,12 @@ func (p *Plugin) ControllerPublishVolume(
 
 	// Set up volume publish info with what we know about the node
 	volumePublishInfo := &utils.VolumePublishInfo{
-		Localhost: false,
-		HostIQN:   []string{nodeInfo.IQN},
-		HostIP:    nodeInfo.IPs,
-		HostName:  nodeInfo.Name,
-		Unmanaged: volume.Config.ImportNotManaged,
+		Localhost:      false,
+		HostIQN:        []string{nodeInfo.IQN},
+		HostIP:         nodeInfo.IPs,
+		HostName:       nodeInfo.Name,
+		Unmanaged:      volume.Config.ImportNotManaged,
+		LUKSEncryption: volume.Config.LUKSEncryption,
 	}
 
 	// Update NFS export rules (?), add node IQN to igroup, etc.
@@ -428,6 +429,7 @@ func (p *Plugin) ControllerPublishVolume(
 		}
 		publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
 		publishInfo["useCHAP"] = strconv.FormatBool(volumePublishInfo.UseCHAP)
+		publishInfo["LUKSEncryption"] = volumePublishInfo.LUKSEncryption
 		publishInfo["sharedTarget"] = strconv.FormatBool(volumePublishInfo.SharedTarget)
 	case tridentconfig.BlockOnFile:
 		publishInfo["subvolumeMountOptions"] = volumePublishInfo.SubvolumeMountOptions

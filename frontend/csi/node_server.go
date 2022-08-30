@@ -785,6 +785,18 @@ func (p *Plugin) nodeStageISCSIVolume(
 		SharedTarget:   sharedTarget,
 	}
 	publishInfo.UseCHAP = useCHAP
+	luks, ok := req.PublishContext["LUKSEncryption"]
+	if ok && luks != "" {
+		publishInfo.LUKSEncryption = luks
+		// TODO(ameade): when luks volume publishing is supported, remove this
+		luksBool, err := strconv.ParseBool(luks)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "could not parse LUKSEncryption into a bool, got %v", luks)
+		}
+		if luksBool {
+			return nil, status.Error(codes.InvalidArgument, "cannot stage LUKS encrypted volumes")
+		}
+	}
 
 	err = unstashIscsiTargetPortals(publishInfo, req.PublishContext)
 	if nil != err {

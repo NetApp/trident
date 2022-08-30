@@ -1559,8 +1559,7 @@ func (mr *MockExtendedK8sClientMockRecorder) GetDaemonSetByLabelAndName(arg0, ar
 }
 
 // GetDaemonSetInformation mocks base method.
-func (m *MockExtendedK8sClient) GetDaemonSetInformation(arg0, arg1 string, arg2 bool) (*v10.DaemonSet, []v10.DaemonSet,
-	bool, error) {
+func (m *MockExtendedK8sClient) GetDaemonSetInformation(arg0, arg1 string, arg2 bool) (*v10.DaemonSet, []v10.DaemonSet, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDaemonSetInformation", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*v10.DaemonSet)
@@ -2172,23 +2171,6 @@ func (mr *MockExtendedK8sClientMockRecorder) PatchClusterRoleByLabel(arg0, arg1,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchClusterRoleByLabel), arg0, arg1, arg2)
 }
 
-// PatchDaemonSetByLabelAndName mocks base method.
-func (m *MockExtendedK8sClient) PatchDaemonSetByLabelAndName(arg0 string, arg1 string, arg2 []byte,
-	arg3 types.PatchType) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PatchDaemonSetByLabelAndName", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchDaemonSetByLabelAndName indicates an expected call of PatchDaemonSetByLabelAndName.
-func (mr *MockExtendedK8sClientMockRecorder) PatchDaemonSetByLabelAndName(arg0, arg1,
-	arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDaemonSetByLabelAndName",
-		reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchDaemonSetByLabelAndName), arg0, arg1, arg2, arg3)
-}
-
 // PatchDaemonSetByLabel mocks base method.
 func (m *MockExtendedK8sClient) PatchDaemonSetByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
 	m.ctrl.T.Helper()
@@ -2201,6 +2183,20 @@ func (m *MockExtendedK8sClient) PatchDaemonSetByLabel(arg0 string, arg1 []byte, 
 func (mr *MockExtendedK8sClientMockRecorder) PatchDaemonSetByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDaemonSetByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchDaemonSetByLabel), arg0, arg1, arg2)
+}
+
+// PatchDaemonSetByLabelAndName mocks base method.
+func (m *MockExtendedK8sClient) PatchDaemonSetByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchDaemonSetByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchDaemonSetByLabelAndName indicates an expected call of PatchDaemonSetByLabelAndName.
+func (mr *MockExtendedK8sClientMockRecorder) PatchDaemonSetByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDaemonSetByLabelAndName", reflect.TypeOf((*MockExtendedK8sClient)(nil).PatchDaemonSetByLabelAndName), arg0, arg1, arg2, arg3)
 }
 
 // PatchDeploymentByLabel mocks base method.
@@ -2396,8 +2392,7 @@ func (m *MockExtendedK8sClient) PutDaemonSet(arg0 *v10.DaemonSet, arg1 bool, arg
 // PutDaemonSet indicates an expected call of PutDaemonSet.
 func (mr *MockExtendedK8sClientMockRecorder) PutDaemonSet(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutDaemonSet",
-		reflect.TypeOf((*MockExtendedK8sClient)(nil).PutDaemonSet), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutDaemonSet", reflect.TypeOf((*MockExtendedK8sClient)(nil).PutDaemonSet), arg0, arg1, arg2, arg3, arg4)
 }
 
 // PutDeployment mocks base method.

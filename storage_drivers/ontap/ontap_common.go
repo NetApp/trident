@@ -57,6 +57,7 @@ const (
 	Snapshots             = "snapshots"
 	Clones                = "clones"
 	Encryption            = "encryption"
+	LUKSEncryption        = "LUKSEncryption"
 	FileSystemType        = "fileSystemType"
 	ProvisioningType      = "provisioningType"
 	SplitOnClone          = "splitOnClone"
@@ -1435,6 +1436,7 @@ const (
 	DefaultNfsMountOptionsDocker     = "-o nfsvers=3"
 	DefaultNfsMountOptionsKubernetes = ""
 	DefaultSplitOnClone              = "false"
+	DefaultLuksEncryption            = "false"
 	DefaultMirroring                 = "false"
 	DefaultLimitAggregateUsage       = ""
 	DefaultLimitVolumeSize           = ""
@@ -1528,6 +1530,10 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.FileSystemType = drivers.DefaultFileSystemType
 	}
 
+	if config.LUKSEncryption == "" {
+		config.LUKSEncryption = DefaultLuksEncryption
+	}
+
 	if config.Mirroring == "" {
 		config.Mirroring = DefaultMirroring
 	}
@@ -1562,6 +1568,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"SplitOnClone":        config.SplitOnClone,
 		"FileSystemType":      config.FileSystemType,
 		"Encryption":          config.Encryption,
+		"LUKSEncryption":      config.LUKSEncryption,
 		"Mirroring":           config.Mirroring,
 		"LimitAggregateUsage": config.LimitAggregateUsage,
 		"LimitVolumeSize":     config.LimitVolumeSize,
@@ -2467,6 +2474,7 @@ func InitializeStoragePoolsCommon(
 		pool.InternalAttributes()[SnapshotReserve] = config.SnapshotReserve
 		pool.InternalAttributes()[SplitOnClone] = config.SplitOnClone
 		pool.InternalAttributes()[Encryption] = config.Encryption
+		pool.InternalAttributes()[LUKSEncryption] = config.LUKSEncryption
 		pool.InternalAttributes()[UnixPermissions] = config.UnixPermissions
 		pool.InternalAttributes()[SnapshotDir] = config.SnapshotDir
 		pool.InternalAttributes()[ExportPolicy] = config.ExportPolicy
@@ -2562,6 +2570,11 @@ func InitializeStoragePoolsCommon(
 			encryption = vpool.Encryption
 		}
 
+		luksEncryption := config.LUKSEncryption
+		if vpool.LUKSEncryption != "" {
+			luksEncryption = vpool.LUKSEncryption
+		}
+
 		tieringPolicy := config.TieringPolicy
 		if vpool.TieringPolicy != "" {
 			tieringPolicy = vpool.TieringPolicy
@@ -2622,6 +2635,7 @@ func InitializeStoragePoolsCommon(
 		pool.InternalAttributes()[SecurityStyle] = securityStyle
 		pool.InternalAttributes()[TieringPolicy] = tieringPolicy
 		pool.InternalAttributes()[QosPolicy] = qosPolicy
+		pool.InternalAttributes()[LUKSEncryption] = luksEncryption
 		pool.InternalAttributes()[AdaptiveQosPolicy] = adaptiveQosPolicy
 		pool.SetSupportedTopologies(supportedTopologies)
 

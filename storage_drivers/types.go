@@ -158,6 +158,7 @@ type OntapStorageDriverConfigDefaults struct {
 	SplitOnClone      string `json:"splitOnClone"`
 	FileSystemType    string `json:"fileSystemType"`
 	Encryption        string `json:"encryption"`
+	LUKSEncryption    string `json:"LUKSEncryption"`
 	Mirroring         string `json:"mirroring"`
 	TieringPolicy     string `json:"tieringPolicy"`
 	QosPolicy         string `json:"qosPolicy"`

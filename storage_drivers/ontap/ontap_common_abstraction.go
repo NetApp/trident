@@ -1642,6 +1642,7 @@ func InitializeStoragePoolsCommonAbstraction(
 		pool.InternalAttributes()[SnapshotReserve] = config.SnapshotReserve
 		pool.InternalAttributes()[SplitOnClone] = config.SplitOnClone
 		pool.InternalAttributes()[Encryption] = config.Encryption
+		pool.InternalAttributes()[LUKSEncryption] = config.LUKSEncryption
 		pool.InternalAttributes()[UnixPermissions] = config.UnixPermissions
 		pool.InternalAttributes()[SnapshotDir] = config.SnapshotDir
 		pool.InternalAttributes()[ExportPolicy] = config.ExportPolicy
@@ -1736,6 +1737,10 @@ func InitializeStoragePoolsCommonAbstraction(
 		if vpool.Encryption != "" {
 			encryption = vpool.Encryption
 		}
+		luksEncryption := config.LUKSEncryption
+		if vpool.LUKSEncryption != "" {
+			luksEncryption = vpool.LUKSEncryption
+		}
 
 		tieringPolicy := config.TieringPolicy
 		if vpool.TieringPolicy != "" {
@@ -1792,6 +1797,7 @@ func InitializeStoragePoolsCommonAbstraction(
 		pool.InternalAttributes()[SnapshotReserve] = snapshotReserve
 		pool.InternalAttributes()[SplitOnClone] = splitOnClone
 		pool.InternalAttributes()[UnixPermissions] = unixPermissions
+		pool.InternalAttributes()[LUKSEncryption] = luksEncryption
 		pool.InternalAttributes()[SnapshotDir] = snapshotDir
 		pool.InternalAttributes()[ExportPolicy] = exportPolicy
 		pool.InternalAttributes()[SecurityStyle] = securityStyle

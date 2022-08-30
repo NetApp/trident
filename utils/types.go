@@ -60,6 +60,7 @@ type VolumePublishInfo struct {
 	Unmanaged         bool     `json:"unmanaged,omitempty"`
 	StagingMountpoint string   `json:"stagingMountpoint,omitempty"` // NOTE: Added in 22.04 release
 	TridentUUID       string   `json:"tridentUUID,omitempty"`       // NOTE: Added in 22.07 release
+	LUKSEncryption    string   `json:"LUKSEncryption,omitempty"`
 	VolumeAccessInfo
 }
 

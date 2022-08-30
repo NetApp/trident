@@ -392,8 +392,8 @@ func expectLunAndVolumeCreateSequence(ctx context.Context, mockAPI *mockapi.Mock
 		},
 	).MaxTimes(1)
 
-	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
-		func(ctx context.Context, lunPath, attribute, fstype, context string) error {
+	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
+		func(ctx context.Context, lunPath, attribute, fstype, context, luks string) error {
 			return nil
 		},
 	).MaxTimes(1)
@@ -418,9 +418,10 @@ func TestOntapSanVolumeCreate(t *testing.T) {
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
 	volConfig := &storage.VolumeConfig{
-		Size:       "1g",
-		Encryption: "false",
-		FileSystem: "xfs",
+		Size:           "1g",
+		Encryption:     "false",
+		LUKSEncryption: "false",
+		FileSystem:     "xfs",
 	}
 	volAttrs := map[string]sa.Request{}
 

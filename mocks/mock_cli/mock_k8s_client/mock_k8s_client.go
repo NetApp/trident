@@ -1600,23 +1600,6 @@ func (mr *MockKubernetesClientMockRecorder) PatchClusterRoleByLabel(arg0, arg1, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchClusterRoleByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).PatchClusterRoleByLabel), arg0, arg1, arg2)
 }
 
-// PatchDaemonSetByLabelAndName mocks base method.
-func (m *MockKubernetesClient) PatchDaemonSetByLabelAndName(arg0 string, arg1 string,arg2 []byte,
-	arg3 types.PatchType) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PatchDaemonSetByLabelAndName", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchDaemonSetByLabelAndName indicates an expected call of PatchDaemonSetByLabel.
-func (mr *MockKubernetesClientMockRecorder) PatchDaemonSetByLabelAndName(arg0, arg1,
-	arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDaemonSetByLabelAndName",
-		reflect.TypeOf((*MockKubernetesClient)(nil).PatchDaemonSetByLabelAndName), arg0, arg1, arg2, arg3)
-}
-
 // PatchDaemonSetByLabel mocks base method.
 func (m *MockKubernetesClient) PatchDaemonSetByLabel(arg0 string, arg1 []byte, arg2 types.PatchType) error {
 	m.ctrl.T.Helper()
@@ -1629,6 +1612,20 @@ func (m *MockKubernetesClient) PatchDaemonSetByLabel(arg0 string, arg1 []byte, a
 func (mr *MockKubernetesClientMockRecorder) PatchDaemonSetByLabel(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDaemonSetByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).PatchDaemonSetByLabel), arg0, arg1, arg2)
+}
+
+// PatchDaemonSetByLabelAndName mocks base method.
+func (m *MockKubernetesClient) PatchDaemonSetByLabelAndName(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchDaemonSetByLabelAndName", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchDaemonSetByLabelAndName indicates an expected call of PatchDaemonSetByLabelAndName.
+func (mr *MockKubernetesClientMockRecorder) PatchDaemonSetByLabelAndName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDaemonSetByLabelAndName", reflect.TypeOf((*MockKubernetesClient)(nil).PatchDaemonSetByLabelAndName), arg0, arg1, arg2, arg3)
 }
 
 // PatchDeploymentByLabel mocks base method.
