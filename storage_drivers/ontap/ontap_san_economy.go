@@ -637,7 +637,7 @@ func (d *SANEconomyStorageDriver) Create(
 
 		if luksEncryption != "" {
 			// Save the luksEncryption as a LUN attribute
-			attrResponse, err = d.API.LunSetAttribute(lunPath, "LUKS", d.Config.LUKSEncryption)
+			attrResponse, err = d.API.LunSetAttribute(lunPath, "LUKS", luksEncryption)
 			if err = azgo.GetError(ctx, attrResponse, err); err != nil {
 				Logc(ctx).WithField("name", name).Error("Failed to save the LUKS attribute for new volume.")
 			}

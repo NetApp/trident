@@ -432,7 +432,7 @@ func (d *SANStorageDriver) Create(
 			// Save the fstype in a LUN attribute so we know what to do in Attach.  If this fails, clean up and
 			// move on to the next pool.
 			// Save the context, fstype, and LUKS value in LUN comment
-			err = d.API.LunSetAttribute(ctx, lunPath, LUNAttributeFSType, fstype, string(d.Config.DriverContext), d.Config.LUKSEncryption)
+			err = d.API.LunSetAttribute(ctx, lunPath, LUNAttributeFSType, fstype, string(d.Config.DriverContext), luksEncryption)
 			if err != nil {
 
 				errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error saving file system type for LUN %s: %v",

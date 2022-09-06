@@ -367,7 +367,7 @@ func TestOntapSanTerminate(t *testing.T) {
 	}
 }
 
-func expectLunAndVolumeCreateSequence(ctx context.Context, mockAPI *mockapi.MockOntapAPI) {
+func expectLunAndVolumeCreateSequence(ctx context.Context, mockAPI *mockapi.MockOntapAPI, fsType, luks string) {
 	// expected call sequenece is:
 	//   check the volume exists (should return false)
 	//   create the volume
@@ -392,7 +392,7 @@ func expectLunAndVolumeCreateSequence(ctx context.Context, mockAPI *mockapi.Mock
 		},
 	).MaxTimes(1)
 
-	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
+	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), fsType, gomock.Any(), luks).DoAndReturn(
 		func(ctx context.Context, lunPath, attribute, fstype, context, luks string) error {
 			return nil
 		},
@@ -404,7 +404,8 @@ func TestOntapSanVolumeCreate(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	expectLunAndVolumeCreateSequence(ctx, mockAPI)
+	luks := "true"
+	expectLunAndVolumeCreateSequence(ctx, mockAPI, "xfs", luks)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
@@ -413,15 +414,15 @@ func TestOntapSanVolumeCreate(t *testing.T) {
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
-		"tieringPolicy": "none",
+		"tieringPolicy":  "none",
+		"LUKSEncryption": luks,
 	})
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
 	volConfig := &storage.VolumeConfig{
-		Size:           "1g",
-		Encryption:     "false",
-		LUKSEncryption: "false",
-		FileSystem:     "xfs",
+		Size:       "1g",
+		Encryption: "false",
+		FileSystem: "xfs",
 	}
 	volAttrs := map[string]sa.Request{}
 
