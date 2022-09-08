@@ -93,9 +93,7 @@ func formatVolumeRetry(ctx context.Context, device, fstype string) error {
 	maxDuration := 30 * time.Second
 
 	formatVolume := func() error {
-
 		return formatVolume(ctx, device, fstype)
-
 	}
 
 	formatNotify := func(err error, duration time.Duration) {

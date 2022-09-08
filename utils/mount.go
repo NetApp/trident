@@ -97,7 +97,7 @@ func IsNFSShareMounted(ctx context.Context, exportPath, mountpoint string) (bool
 // IsMounted checks whether the specified device is attached at the given mountpoint.
 // If no source device is specified, any existing mount with the specified mountpoint returns true.
 // If no mountpoint is specified, any existing mount with the specified device returns true.
-func IsMounted(ctx context.Context, sourceDevice, mountpoint string, mountOptions string) (bool, error) {
+func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions string) (bool, error) {
 	logFields := log.Fields{"source": sourceDevice, "target": mountpoint}
 	Logc(ctx).WithFields(logFields).Debug(">>>> mount.IsMounted")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< mount.IsMounted")
@@ -368,7 +368,6 @@ func RemoveMountPointRetry(ctx context.Context, mountPointPath string) error {
 
 	Logc(ctx).Info("Device removed.")
 	return nil
-
 }
 
 const (

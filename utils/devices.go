@@ -783,62 +783,30 @@ func GetISCSIDevices(ctx context.Context) ([]*ScsiDeviceInfo, error) {
 // waitForMultipathDeviceForDevices accepts a list of sd* device names which are associated with same LUN
 // and waits until a multipath device is present for at least one of those.  It returns the name of the
 // multipath device, or an empty string if multipathd isn't running or there is only one path.
-func waitForMultipathDeviceForDevices(ctx context.Context, advertisedPortalCount int, devices []string) (string, error) {
+func waitForMultipathDeviceForDevices(ctx context.Context, devices []string) (string, error) {
 	fields := log.Fields{"devices": devices}
-	var findMultipathsValue string = ""
-	var err error = nil
 
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.waitForMultipathDeviceForDevices")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.waitForMultipathDeviceForDevices")
 
-	// Even is the device len = 1, we should check for the multipath device, other devices may be
-	// taking time to be acknowledged
-	if len(devices) < 1 {
-		Logc(ctx).Debugf("Skipping multipath discovery, %d device(s) specified.", len(devices))
-		return "", nil
+	multipathDevice := ""
+
+	for _, device := range devices {
+		multipathDevice = findMultipathDeviceForDevice(ctx, device)
+		if multipathDevice != "" {
+			break
+		}
 	}
 
-	if !multipathdIsRunning(ctx) {
-		Logc(ctx).Debug("Skipping multipath discovery, multipathd isn't running.")
+	if multipathDevice == "" {
+		Logc(ctx).WithField("multipathDevice", multipathDevice).Warn("Multipath device not found.")
+		return "", fmt.Errorf("multipath device not found when it is expected")
 
-		if len(devices) > 1 || advertisedPortalCount > 1 {
-			Logc(ctx).Warnf("A multipath device may not exist, the multipathd is not running, however the "+
-				"number of devices (%d) or portals (%d) is greater than 1.", len(devices), advertisedPortalCount)
-		}
-
-		return "", nil
 	} else {
-		if findMultipathsValue, err = identifyFindMultipathsValue(ctx); err != nil {
-			// If Trident is unable to find the find_multipaths value, assume it to be default "no"
-			Logc(ctx).Errorf("unable to get the find_multipaths value from the multipath.conf: %v", err)
-		} else if findMultipathsValue == "yes" || findMultipathsValue == "smart" {
-			Logc(ctx).Warnf("A multipath device may not exist, the multipathd is running but find_multipaths "+
-				"value is set to '%s' in the multipath configuration. !!!Please correct this issue!!!",
-				findMultipathsValue)
-
-			if advertisedPortalCount <= 1 {
-				Logc(ctx).Warnf("Skipping multipath discovery, %d portal(s) specified.", advertisedPortalCount)
-				return "", nil
-			}
-		}
-
-		multipathDevice := ""
-
-		for _, device := range devices {
-			multipathDevice = findMultipathDeviceForDevice(ctx, device)
-			if multipathDevice != "" {
-				break
-			}
-		}
-		if multipathDevice == "" {
-			Logc(ctx).WithField("multipathDevice", multipathDevice).Warn("Multipath device not found.")
-			return "", fmt.Errorf("multipath device not found when it is expected")
-
-		} else {
-			Logc(ctx).WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
-		}
-		return multipathDevice, nil
+		Logc(ctx).WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
 	}
+
+	return multipathDevice, nil
 }
 
 // findMultipathDeviceForDevice finds the devicemapper parent of a device name like /dev/sdx.
@@ -1121,7 +1089,7 @@ func getDeviceInfoForMountPath(ctx context.Context, mountpath string) (*ScsiDevi
 // for the given LUN, this function waits for the associated multipath device to be present
 // first find the /dev/sd* devices assocaited with the LUN
 // Wait for the maultipath device dm-* for the /dev/sd* devices.
-func waitForMultipathDeviceForLUN(ctx context.Context, lunID, advertisedPortalCount int, iSCSINodeName string) error {
+func waitForMultipathDeviceForLUN(ctx context.Context, lunID int, iSCSINodeName string) error {
 	fields := log.Fields{
 		"lunID":         lunID,
 		"iSCSINodeName": iSCSINodeName,
@@ -1141,7 +1109,7 @@ func waitForMultipathDeviceForLUN(ctx context.Context, lunID, advertisedPortalCo
 		return err
 	}
 
-	_, err = waitForMultipathDeviceForDevices(ctx, advertisedPortalCount, devices)
+	_, err = waitForMultipathDeviceForDevices(ctx, devices)
 
 	return err
 }

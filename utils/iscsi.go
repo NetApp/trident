@@ -25,7 +25,6 @@ import (
 const (
 	iSCSIErrNoObjsFound                 = 21
 	iSCSIErrLoginAuthFailed             = 24
-	iSCSIDeviceDiscoveryTimeoutSecs     = 10
 	multipathDeviceDiscoveryTimeoutSecs = 90
 	temporaryMountDir                   = "/tmp_mnt"
 	volumeMountDir                      = "/vol_mnt"
@@ -33,11 +32,16 @@ const (
 )
 
 // AttachISCSIVolumeRetry attaches a volume with retry by invoking AttachISCSIVolume with backoff.
-func AttachISCSIVolumeRetry(ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo,
-	timeout time.Duration) error {
+func AttachISCSIVolumeRetry(
+	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, timeout time.Duration,
+) error {
 	Logc(ctx).Debug(">>>> iscsi.AttachISCSIVolumeRetry")
 	defer Logc(ctx).Debug("<<<< iscsi.AttachISCSIVolumeRetry")
 	var err error
+
+	if err = iSCSIPreChecks(ctx); err != nil {
+		return err
+	}
 
 	checkAttachISCSIVolume := func() error {
 		return AttachISCSIVolume(ctx, name, mountpoint, publishInfo)
@@ -55,7 +59,6 @@ func AttachISCSIVolumeRetry(ctx context.Context, name, mountpoint string, publis
 
 	err = backoff.RetryNotify(checkAttachISCSIVolume, attachBackoff, attachNotify)
 	return err
-
 }
 
 // AttachISCSIVolume attaches the volume to the local host.  This method must be able to accomplish its task using only the data passed in.
@@ -80,8 +83,6 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		portals = append(portals, ensureHostportFormatted(p))
 	}
 
-	advertisedPortalCount := 1 + len(publishInfo.IscsiPortals) // "1 +" to account for IscsiTargetPortal
-
 	if publishInfo.IscsiInterface == "" {
 		publishInfo.IscsiInterface = "default"
 	}
@@ -96,12 +97,9 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		"fstype":         publishInfo.FilesystemType,
 	}).Debug("Attaching iSCSI volume.")
 
-	if !ISCSISupported(ctx) {
-		err := errors.New("unable to attach: open-iscsi tools not found on host")
-		Logc(ctx).Errorf("Unable to attach volume: open-iscsi utils not found")
+	if err = iSCSIPreChecks(ctx); err != nil {
 		return err
 	}
-
 	// Ensure we are logged into correct portals
 	pendingPortalsToLogin, loggedIn, err := portalsToLogin(ctx, publishInfo.IscsiTargetIQN, portals)
 	if err != nil {
@@ -147,7 +145,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	}
 
 	// Wait for multipath device i.e. /dev/dm-* for the given LUN
-	err = waitForMultipathDeviceForLUN(ctx, lunID, advertisedPortalCount, publishInfo.IscsiTargetIQN)
+	err = waitForMultipathDeviceForLUN(ctx, lunID, publishInfo.IscsiTargetIQN)
 	if err != nil {
 		return err
 	}
@@ -1496,4 +1494,27 @@ func identifyFindMultipathsValue(ctx context.Context) (string, error) {
 
 		return findMultipathsValue, nil
 	}
+}
+
+// iSCSIPreChecks to check if all the required tools are present and configured correctly for the  volume
+// attachment to go through
+func iSCSIPreChecks(ctx context.Context) error {
+	if !ISCSISupported(ctx) {
+		err := errors.New("unable to attach: open-iscsi tools not found on host")
+		return err
+	}
+
+	if !multipathdIsRunning(ctx) {
+		return fmt.Errorf("multipathd is not running")
+	} else {
+		if findMultipathsValue, err := identifyFindMultipathsValue(ctx); err != nil {
+			// If Trident is unable to find the find_multipaths value, assume it to be default "no"
+			Logc(ctx).Errorf("unable to get the find_multipaths value from the /etc/multipath.conf: %v", err)
+		} else if findMultipathsValue == "yes" || findMultipathsValue == "smart" {
+			return fmt.Errorf("multipathd: unsupported find_multipaths: %s value;"+
+				" please set the value to no in /etc/multipath.conf file", findMultipathsValue)
+		}
+	}
+
+	return nil
 }
