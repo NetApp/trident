@@ -7,8 +7,6 @@ import (
 
 	"github.com/netapp/trident/config"
 
-	log "github.com/sirupsen/logrus"
-
 	tridentutils "github.com/netapp/trident/utils"
 )
 
@@ -43,27 +41,7 @@ var (
 	BuildImage = "docker.io/netapp/trident-operator:" + operatorVersion + "-custom.0"
 
 	OperatorVersion = tridentutils.MustParseDate(Version())
-
-	OperatorTelemetry = Telemetry{Version: OperatorVersion.String()}
 )
-
-func PlatformAtLeast(platformName, version string) bool {
-	if OperatorTelemetry.Platform == platformName {
-		platformVersion := tridentutils.MustParseSemantic(OperatorTelemetry.PlatformVersion)
-		requiredVersion, err := tridentutils.ParseSemantic(version)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"platform": platformName,
-				"version":  version,
-			}).Errorf("Platform version check failed. %+v", err)
-			return false
-		}
-		if platformVersion.AtLeast(requiredVersion) {
-			return true
-		}
-	}
-	return false
-}
 
 func Version() string {
 	var version string
