@@ -1073,6 +1073,12 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		return fmt.Errorf("could not find volume %s; %v", originalName, err)
 	}
 
+	// Don't allow import for dual-protocol volume.
+	// For dual-protocol volume the ProtocolTypes has two values [NFSv3, CIFS]
+	if len(volume.ProtocolTypes) > 1 {
+		return fmt.Errorf("trident doesn't support importing a dual-protocol volume '%s'", originalName)
+	}
+
 	// Ensure the volume may be imported by a capacity pool managed by this backend
 	if err = d.SDK.EnsureVolumeInValidCapacityPool(ctx, volume); err != nil {
 		return err
@@ -1098,33 +1104,50 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		}
 		labels := d.updateTelemetryLabels(ctx, volume)
 
-		// Update volume unix permissions.  Permissions specified in a PVC annotation take precedence
-		// over the backend's unixPermissions config.
-		unixPermissions := volConfig.UnixPermissions
-		if unixPermissions == "" {
-			unixPermissions = d.Config.UnixPermissions
-		}
-		if unixPermissions == "" {
-			unixPermissions = volume.UnixPermissions
-		}
-		if unixPermissions != "" {
-			if err = utils.ValidateOctalUnixPermissions(unixPermissions); err != nil {
-				return fmt.Errorf("could not import volume %s; %v", originalName, err)
+		if d.Config.NASType == sa.SMB && volume.ProtocolTypes[0] == api.ProtocolTypeCIFS {
+			if err = d.SDK.ModifyVolume(ctx, volume, labels, nil); err != nil {
+				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
+					"Could not import volume, volume modify failed.")
+				return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)
 			}
-		}
 
-		if err = d.SDK.ModifyVolume(ctx, volume, labels, &unixPermissions); err != nil {
-			Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
-				"Could not import volume, volume modify failed.")
-			return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)
-		}
+			Logc(ctx).WithFields(log.Fields{
+				"name":          volume.Name,
+				"creationToken": volume.CreationToken,
+				"labels":        labels,
+			}).Info("Volume modified.")
 
-		Logc(ctx).WithFields(log.Fields{
-			"name":            volume.Name,
-			"creationToken":   volume.CreationToken,
-			"labels":          labels,
-			"unixPermissions": unixPermissions,
-		}).Info("Volume modified.")
+		} else if d.Config.NASType == sa.NFS && (volume.ProtocolTypes[0] == api.ProtocolTypeNFSv3 || volume.
+			ProtocolTypes[0] == api.ProtocolTypeNFSv41) {
+			// Update volume unix permissions.  Permissions specified in a PVC annotation take precedence
+			// over the backend's unixPermissions config.
+			unixPermissions := volConfig.UnixPermissions
+			if unixPermissions == "" {
+				unixPermissions = d.Config.UnixPermissions
+			}
+			if unixPermissions == "" {
+				unixPermissions = volume.UnixPermissions
+			}
+			if unixPermissions != "" {
+				if err = utils.ValidateOctalUnixPermissions(unixPermissions); err != nil {
+					return fmt.Errorf("could not import volume %s; %v", originalName, err)
+				}
+			}
+			if err = d.SDK.ModifyVolume(ctx, volume, labels, &unixPermissions); err != nil {
+				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
+					"Could not import volume, volume modify failed.")
+				return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)
+			}
+
+			Logc(ctx).WithFields(log.Fields{
+				"name":            volume.Name,
+				"creationToken":   volume.CreationToken,
+				"labels":          labels,
+				"unixPermissions": unixPermissions,
+			}).Info("Volume modified.")
+		} else {
+			return fmt.Errorf("could not import volume '%s' due to backend and volume mismatch", originalName)
+		}
 
 		if _, err = d.SDK.WaitForVolumeState(
 			ctx, volume, api.StateAvailable, []string{api.StateError}, d.defaultTimeout()); err != nil {

@@ -5,6 +5,7 @@ package azure
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -1995,7 +1996,7 @@ func TestCreateClone_NoSnapshot(t *testing.T) {
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 	driver.Config.NetworkFeatures = api.NetworkFeaturesBasic
-	driver.Config.NASType = sa.NFS
+	driver.Config.NASType = "nfs"
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2030,7 +2031,7 @@ func TestCreateClone_Snapshot(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
-	driver.Config.NASType = sa.NFS
+	driver.Config.NASType = "nfs"
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2389,7 +2390,7 @@ func TestCreateClone_CreateFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
-	driver.Config.NASType = sa.NFS
+	driver.Config.NASType = "nfs"
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2452,6 +2453,42 @@ func getStructsForImport(ctx context.Context, driver *NASStorageDriver) (*storag
 	return volConfig, originalFilesystem
 }
 
+func getStructsForSMBImport(ctx context.Context, driver *NASStorageDriver) (*storage.VolumeConfig, *api.FileSystem) {
+	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
+
+	volConfig := &storage.VolumeConfig{
+		Version:      "1",
+		Name:         "testvol1",
+		InternalName: "trident-testvol1",
+	}
+
+	volumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "importMe")
+
+	labels := make(map[string]string)
+	labels[drivers.TridentLabelTag] = driver.getTelemetryLabels(ctx)
+	labels[storage.ProvisioningLabelTag] = ""
+
+	originalFilesystem := &api.FileSystem{
+		ID:                volumeID,
+		ResourceGroup:     "RG1",
+		NetAppAccount:     "NA1",
+		CapacityPool:      "CP1",
+		Name:              "importMe",
+		FullName:          "RG1/NA1/CP1/importMe",
+		Location:          Location,
+		Labels:            make(map[string]string),
+		ProvisioningState: api.StateAvailable,
+		CreationToken:     "importMe",
+		ProtocolTypes:     []string{api.ProtocolTypeCIFS},
+		QuotaInBytes:      VolumeSizeI64,
+		ServiceLevel:      api.ServiceLevelUltra,
+		SnapshotDirectory: true,
+		SubnetID:          subnetID,
+	}
+
+	return volConfig, originalFilesystem
+}
+
 func TestImport_Managed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
@@ -2461,6 +2498,7 @@ func TestImport_Managed(t *testing.T) {
 	driver.initializeStoragePools(ctx)
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
 
 	originalName := "importMe"
 
@@ -2486,6 +2524,93 @@ func TestImport_Managed(t *testing.T) {
 	assert.Equal(t, originalFilesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
 }
 
+func TestImport_SMB_Managed(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.NASType = "smb"
+
+	originalName := "importMe"
+
+	volConfig, originalFilesystem := getStructsForSMBImport(ctx, driver)
+
+	expectedLabels := map[string]string{
+		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
+	}
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
+		nil).Return(nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.NoError(t, result, "import failed")
+	assert.Equal(t, originalName, volConfig.InternalName, "internal name mismatch")
+	assert.Equal(t, originalFilesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestImport_SMB_Failed(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.NASType = "smb"
+	driver.Config.UnixPermissions = "0770"
+
+	originalName := "importMe"
+
+	volConfig, originalFilesystem := getStructsForSMBImport(ctx, driver)
+
+	expectedLabels := map[string]string{
+		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
+	}
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
+		nil).Return(errors.New("unix permissions not applicable for SMB")).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, result, "import failed")
+}
+
+func TestImport_DualProtocolVolume(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	originalName := "importMe"
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+
+	// Dual-protocol volume has ProtocolTypes as [NFSv3, CIFS]
+	originalFilesystem.ProtocolTypes = append(originalFilesystem.ProtocolTypes, "CIFS")
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, result, "import failed")
+}
+
 func TestImport_ManagedWithLabels(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
@@ -2495,6 +2620,7 @@ func TestImport_ManagedWithLabels(t *testing.T) {
 	driver.initializeStoragePools(ctx)
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.UnixPermissions = ""
+	driver.Config.NASType = "nfs"
 
 	originalName := "importMe"
 
@@ -2632,6 +2758,7 @@ func TestImport_InvalidUnixPermissions(t *testing.T) {
 	driver.initializeStoragePools(ctx)
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.UnixPermissions = "8888"
+	driver.Config.NASType = "nfs"
 
 	originalName := "importMe"
 
@@ -2657,6 +2784,7 @@ func TestImport_ModifyVolumeFailed(t *testing.T) {
 	driver.initializeStoragePools(ctx)
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
 
 	originalName := "importMe"
 
@@ -2689,6 +2817,7 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 	driver.initializeStoragePools(ctx)
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
 
 	originalName := "importMe"
 
@@ -2712,6 +2841,28 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 	assert.Error(t, result, "expected error")
 	assert.Equal(t, "trident-testvol1", volConfig.InternalName, "internal name mismatch")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
+}
+
+func TestImport_BackendVolumeMismatch(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	originalName := "importMe"
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, result, "import should fail")
 }
 
 func TestRename(t *testing.T) {
