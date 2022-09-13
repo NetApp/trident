@@ -458,10 +458,13 @@ func (i *Installer) InstallOrPatchTrident(
 	}
 
 	// Create or patch or update the RBAC PSPs
-	returnError = i.createOrPatchTridentPodSecurityPolicy(controllingCRDetails, labels, shouldUpdate)
-	if returnError != nil {
-		returnError = fmt.Errorf("failed to create the Trident pod security policy; %v", returnError)
-		return nil, "", returnError
+	pspRemovedVersion := utils.MustParseMajorMinorVersion(commonconfig.PodSecurityPoliciesRemovedKubernetesVersion)
+	if i.client.ServerVersion().LessThan(pspRemovedVersion) {
+		returnError = i.createOrPatchTridentPodSecurityPolicy(controllingCRDetails, labels, shouldUpdate)
+		if returnError != nil {
+			returnError = fmt.Errorf("failed to create the Trident pod security policy; %v", returnError)
+			return nil, "", returnError
+		}
 	}
 
 	// Create or update the CSI Driver object if necessary

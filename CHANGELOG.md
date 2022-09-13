@@ -2,7 +2,13 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v22.04.0
+## Changes since v22.07.0
+
+**Enhancements**
+
+- **Kubernetes:** Added support for Kubernetes 1.25.
+
+## v22.04.0
 
 **Fixes:**
 

@@ -418,13 +418,18 @@ func prepareYAMLFilePaths() error {
 	deploymentPath = path.Join(setupPath, DeploymentFilename)
 	servicePath = path.Join(setupPath, ServiceFilename)
 	daemonsetPath = path.Join(setupPath, DaemonSetFilename)
-	podSecurityPolicyPath = path.Join(setupPath, PodSecurityPolicyFilename)
 	resourceQuotaPath = path.Join(setupPath, ResourceQuotaFilename)
 	windowsDaemonSetPath = path.Join(setupPath, WindowsDaemonSetFilename)
 
 	setupYAMLPaths = []string{
 		namespacePath, serviceAccountPath, clusterRolePath, clusterRoleBindingPath, crdsPath,
-		deploymentPath, servicePath, daemonsetPath, windowsDaemonSetPath, podSecurityPolicyPath, resourceQuotaPath,
+		deploymentPath, servicePath, daemonsetPath, windowsDaemonSetPath, resourceQuotaPath,
+	}
+
+	pspRemovedVersion := utils.MustParseMajorMinorVersion(tridentconfig.PodSecurityPoliciesRemovedKubernetesVersion)
+	if client.ServerVersion().LessThan(pspRemovedVersion) {
+		podSecurityPolicyPath = path.Join(setupPath, PodSecurityPolicyFilename)
+		setupYAMLPaths = append(setupYAMLPaths, podSecurityPolicyPath)
 	}
 
 	return nil
@@ -557,9 +562,13 @@ func prepareYAMLFiles() error {
 			return fmt.Errorf("could not write DaemonSet Windows YAML file; %v", err)
 		}
 	}
-	podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
-	if err = writeFile(podSecurityPolicyPath, podSecurityPolicyYAML); err != nil {
-		return fmt.Errorf("could not write pod security policy YAML file; %v", err)
+
+	pspRemovedVersion := utils.MustParseMajorMinorVersion(tridentconfig.PodSecurityPoliciesRemovedKubernetesVersion)
+	if client.ServerVersion().LessThan(pspRemovedVersion) {
+		podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
+		if err = writeFile(podSecurityPolicyPath, podSecurityPolicyYAML); err != nil {
+			return fmt.Errorf("could not write pod security policy YAML file; %v", err)
+		}
 	}
 
 	return nil
@@ -757,35 +766,38 @@ func installTrident() (returnError error) {
 	}
 
 	// Create pod security policy
-	if useYAML && fileExists(podSecurityPolicyPath) {
-		returnError = validateTridentPodSecurityPolicy()
-		if returnError != nil {
-			returnError = fmt.Errorf("please correct the pod security policy YAML file; %v", returnError)
-			return
-		}
-		// Delete the object in case it already exists and we need to update it
-		if err := client.DeleteObjectByFile(podSecurityPolicyPath, true); err != nil {
-			returnError = fmt.Errorf("could not delete pod security policy; %v", err)
-			return
-		}
-		returnError = client.CreateObjectByFile(podSecurityPolicyPath)
-		logFields = log.Fields{"path": podSecurityPolicyPath}
-	} else {
-		// Delete the object in case it already exists and we need to update it
-		pspYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
+	pspRemovedVersion := utils.MustParseMajorMinorVersion(tridentconfig.PodSecurityPoliciesRemovedKubernetesVersion)
+	if client.ServerVersion().LessThan(pspRemovedVersion) {
+		if useYAML && fileExists(podSecurityPolicyPath) {
+			returnError = validateTridentPodSecurityPolicy()
+			if returnError != nil {
+				returnError = fmt.Errorf("please correct the pod security policy YAML file; %v", returnError)
+				return
+			}
+			// Delete the object in case it already exists and we need to update it
+			if err := client.DeleteObjectByFile(podSecurityPolicyPath, true); err != nil {
+				returnError = fmt.Errorf("could not delete pod security policy; %v", err)
+				return
+			}
+			returnError = client.CreateObjectByFile(podSecurityPolicyPath)
+			logFields = log.Fields{"path": podSecurityPolicyPath}
+		} else {
+			// Delete the object in case it already exists and we need to update it
+			pspYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
 
-		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
-			returnError = fmt.Errorf("could not delete pod security policy; %v", err)
+			if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
+				returnError = fmt.Errorf("could not delete pod security policy; %v", err)
+				return
+			}
+			returnError = client.CreateObjectByYAML(pspYAML)
+			logFields = log.Fields{}
+		}
+		if returnError != nil {
+			returnError = fmt.Errorf("could not create Trident pod security policy; %v", returnError)
 			return
 		}
-		returnError = client.CreateObjectByYAML(pspYAML)
-		logFields = log.Fields{}
+		log.WithFields(logFields).Info("Created Trident pod security policy.")
 	}
-	if returnError != nil {
-		returnError = fmt.Errorf("could not create Trident pod security policy; %v", returnError)
-		return
-	}
-	log.WithFields(logFields).Info("Created Trident pod security policy.")
 
 	// Patch the CRD definitions with finalizers to protect them
 	if returnError = protectCustomResourceDefinitions(); returnError != nil {

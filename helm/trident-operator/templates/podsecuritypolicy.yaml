@@ -1,3 +1,4 @@
+{{- if semverCompare "<1.25-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
@@ -16,3 +17,4 @@ spec:
     rule: RunAsAny
   volumes:
     - projected
+{{- end }}

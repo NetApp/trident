@@ -10,6 +10,7 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/utils"
 )
 
 func init() {
@@ -364,15 +365,18 @@ func uninstallTrident() error {
 	anyErrors = removeRBACObjects(log.InfoLevel) || anyErrors
 
 	// Delete pod security policy
-	podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
-	if !csi {
-		podSecurityPolicyYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
-	}
-	if err = client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
-		log.WithField("error", err).Warning("Could not delete pod security policy.")
-		anyErrors = true
-	} else {
-		log.WithField("podSecurityPolicy", "tridentpods").Info("Deleted pod security policy.")
+	pspRemovedVersion := utils.MustParseMajorMinorVersion(tridentconfig.PodSecurityPoliciesRemovedKubernetesVersion)
+	if client.ServerVersion().LessThan(pspRemovedVersion) {
+		podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
+		if !csi {
+			podSecurityPolicyYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
+		}
+		if err = client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
+			log.WithField("error", err).Warning("Could not delete pod security policy.")
+			anyErrors = true
+		} else {
+			log.WithField("podSecurityPolicy", "tridentpods").Info("Deleted pod security policy.")
+		}
 	}
 
 	if csi {

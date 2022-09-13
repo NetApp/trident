@@ -139,7 +139,7 @@ const (
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin        = "v1.19"
 	KubernetesVersionMinWindows = "v1.20"
-	KubernetesVersionMax        = "v1.24"
+	KubernetesVersionMax        = "v1.25"
 
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
 	KubernetesCSISidecarRegistry = "registry.k8s.io/sig-storage"
@@ -149,6 +149,8 @@ const (
 	// Pod Security Standards
 	PodSecurityStandardsEnforceLabel   = "pod-security.kubernetes.io/enforce"
 	PodSecurityStandardsEnforceProfile = "privileged"
+
+	PodSecurityPoliciesRemovedKubernetesVersion = "1.25"
 
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
