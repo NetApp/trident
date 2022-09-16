@@ -30,6 +30,7 @@ const (
 	volumePublishInfoFilename     = "volumePublishInfo.json"
 	nodePrepBreadcrumbFilename    = "nodePrepInfo.json"
 	AttachISCSIVolumeTimeoutShort = 15 * time.Second
+	iSCSINodeUnstageMaxDuration   = 15 * time.Second
 )
 
 var topologyLabels = make(map[string]string)
@@ -117,7 +118,7 @@ func (p *Plugin) nodeUnstageVolume(
 		}
 		return p.nodeUnstageNFSVolume(ctx, req)
 	case tridentconfig.Block:
-		return p.nodeUnstageISCSIVolume(ctx, req, publishInfo, force)
+		return p.nodeUnstageISCSIVolumeRetry(ctx, req, publishInfo, force)
 	case tridentconfig.BlockOnFile:
 		if force {
 			Logc(ctx).WithFields(fields).WithField("protocol", tridentconfig.BlockOnFile).
@@ -887,12 +888,12 @@ func (p *Plugin) updateChapInfoFromController(
 
 func (p *Plugin) nodeUnstageISCSIVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo, force bool,
-) (*csi.NodeUnstageVolumeResponse, error) {
+) error {
 	// Delete the device from the host
 	err := utils.PrepareDeviceForRemoval(ctx, int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN,
 		p.unsafeDetach, force)
 	if nil != err && !p.unsafeDetach {
-		return nil, status.Error(codes.Internal, err.Error())
+		return status.Error(codes.Internal, err.Error())
 	}
 
 	// Get map of hosts and sessions for given Target IQN
@@ -932,20 +933,47 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Delete the device info we saved to the staging path so unstage can succeed
 	if err := p.clearStagedDeviceInfo(ctx, stagingTargetPath, volumeId); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return status.Error(codes.Internal, err.Error())
 	}
 
 	// Ensure that the temporary mount point created during a filesystem expand operation is removed.
 	if err := utils.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
 		Logc(ctx).WithField("stagingTargetPath", stagingTargetPath).Errorf(
 			"Failed to remove directory in staging target path; %s", err)
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to remove temporary directory "+
+		return status.Error(codes.Internal, fmt.Sprintf("failed to remove temporary directory "+
 			"in staging target path %s; %s", stagingTargetPath, err))
+	}
+
+	return nil
+}
+
+func (p *Plugin) nodeUnstageISCSIVolumeRetry(
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo, force bool,
+) (*csi.NodeUnstageVolumeResponse, error) {
+	nodeUnstageISCSIVolumeNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Failed to unstage the volume, retrying.")
+	}
+
+	nodeUnstageISCSIVolumeAttempt := func() error {
+		return p.nodeUnstageISCSIVolume(ctx, req, publishInfo, force)
+	}
+
+	nodeUnstageISCSIVolumeBackoff := backoff.NewExponentialBackOff()
+	nodeUnstageISCSIVolumeBackoff.InitialInterval = 1 * time.Second
+	nodeUnstageISCSIVolumeBackoff.Multiplier = 1.414 // approx sqrt(2)
+	nodeUnstageISCSIVolumeBackoff.RandomizationFactor = 0.1
+	nodeUnstageISCSIVolumeBackoff.MaxElapsedTime = iSCSINodeUnstageMaxDuration
+
+	// Run the un-staging using an exponential backoff
+	if err := backoff.RetryNotify(nodeUnstageISCSIVolumeAttempt, nodeUnstageISCSIVolumeBackoff,
+		nodeUnstageISCSIVolumeNotify); err != nil {
+		Logc(ctx).Error("failed to unstage volume")
+		return nil, err
 	}
 
 	return &csi.NodeUnstageVolumeResponse{}, nil
