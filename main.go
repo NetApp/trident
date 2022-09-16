@@ -101,6 +101,10 @@ var (
 	metricsPort    = flag.String("metrics_port", "8001", "Storage orchestrator metrics port")
 	enableMetrics  = flag.Bool("metrics", false, "Enable metrics interface")
 
+	// iSCSI
+	iSCSISelfHealingInterval = flag.Duration("iscsi_self_healing_interval", config.IscsiSelfHealingInterval,
+		"Interval at which the iSCSI self-healing thread is invoked")
+
 	storeClient  persistentstore.Client
 	enableDocker bool
 	enableCSI    bool
@@ -382,13 +386,15 @@ func main() {
 			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, *aesKey, orchestrator, &controllerHelper)
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, &nodeHelper, *enableForceDetach)
+				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, &nodeHelper, *enableForceDetach,
+				*iSCSISelfHealingInterval)
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
 		case csi.CSIAllInOne:
 			txnMonitor = true
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, *aesKey, orchestrator, &controllerHelper, &nodeHelper, *csiUnsafeNodeDetach)
+				*httpsClientKey, *aesKey, orchestrator, &controllerHelper, &nodeHelper, *csiUnsafeNodeDetach,
+				*iSCSISelfHealingInterval)
 		}
 		if err != nil {
 			log.Fatalf("Unable to start the CSI frontend. %v", err)
@@ -455,6 +461,7 @@ func main() {
 			log.Error(err)
 		}
 	}
+
 	if err = orchestrator.Bootstrap(txnMonitor); err != nil {
 		log.Error(err.Error())
 	}

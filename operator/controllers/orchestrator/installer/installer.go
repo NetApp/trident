@@ -540,7 +540,8 @@ func (i *Installer) InstallOrPatchTrident(
 		return nil, "", returnError
 	}
 
-	returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, reuseServiceAccountMap, false)
+	returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, reuseServiceAccountMap,
+		false)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create or patch Trident daemonset %s; %v", getDaemonSetName(false),
 			returnError)
@@ -549,7 +550,8 @@ func (i *Installer) InstallOrPatchTrident(
 
 	// Create or update the Trident CSI daemonset
 	if windows {
-		returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, reuseServiceAccountMap,
+		returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate,
+			reuseServiceAccountMap,
 			true)
 		if returnError != nil {
 			returnError = fmt.Errorf("failed to create or patch Trident daemonset %s; %v", getDaemonSetName(true),
@@ -640,7 +642,8 @@ func (i *Installer) createCRDs(performOperationOnce bool) error {
 	if err = i.CreateOrPatchCRD(VolumeReferenceCRDName, k8sclient.GetVolumeReferenceCRDYAML(), false); err != nil {
 		return err
 	}
-	if err = i.CreateOrPatchCRD(MirrorRelationshipCRDName, k8sclient.GetMirrorRelationshipCRDYAML(), performOperationOnce); err != nil {
+	if err = i.CreateOrPatchCRD(MirrorRelationshipCRDName, k8sclient.GetMirrorRelationshipCRDYAML(),
+		performOperationOnce); err != nil {
 		return err
 	}
 
@@ -801,7 +804,8 @@ func (i *Installer) createOrPatchTridentServiceAccounts(
 	currentServiceAccountMap,
 		unwantedServiceAccounts,
 		serviceAccountSecretMap,
-		reuseServiceAccountMap, err := i.client.GetMultipleServiceAccountInformation(serviceAccountNames, appLabel, i.namespace, shouldUpdate)
+		reuseServiceAccountMap, err := i.client.GetMultipleServiceAccountInformation(serviceAccountNames, appLabel,
+		i.namespace, shouldUpdate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Trident service accounts with controller label; %v", err)
 	}
@@ -810,7 +814,8 @@ func (i *Installer) createOrPatchTridentServiceAccounts(
 	nodeServiceAccountMap,
 		unwantedNodeServiceAccounts,
 		nodeServiceAccountSecretMap,
-		reuseNodeServiceAccountMap, err := i.client.GetMultipleServiceAccountInformation(serviceAccountNames, TridentNodeLabel,
+		reuseNodeServiceAccountMap, err := i.client.GetMultipleServiceAccountInformation(serviceAccountNames,
+		TridentNodeLabel,
 		i.namespace, shouldUpdate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Trident service accounts with node label; %v", err)
@@ -843,7 +848,8 @@ func (i *Installer) createOrPatchTridentServiceAccounts(
 		_, err = i.client.PutServiceAccount(currentServiceAccountMap[accountName], reuseServiceAccountMap[accountName],
 			newServiceAccountYAML, labelString)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create or patch Trident service account %v got error: %v", accountName, err)
+			return nil, fmt.Errorf("failed to create or patch Trident service account %v got error: %v", accountName,
+				err)
 		}
 	}
 
@@ -1072,13 +1078,16 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(
 		}
 
 		appLabels, _ := getAppLabelForResource(openShiftSCCNames[idx])
-		newOpenShiftSCCYAML := k8sclient.GetOpenShiftSCCYAML(openShiftSCCNames[idx], openShiftSCCUserNames[idx], i.namespace,
+		newOpenShiftSCCYAML := k8sclient.GetOpenShiftSCCYAML(openShiftSCCNames[idx], openShiftSCCUserNames[idx],
+			i.namespace,
 			appLabels, controllingCRDetails, isLinuxNodeSCCUser(openShiftSCCUserNames[idx]))
 
-		err = i.client.PutOpenShiftSCC(currentOpenShiftSCCJSONMap[openShiftSCCNames[idx]], reuseOpenShiftSCCMap[openShiftSCCNames[idx]],
+		err = i.client.PutOpenShiftSCC(currentOpenShiftSCCJSONMap[openShiftSCCNames[idx]],
+			reuseOpenShiftSCCMap[openShiftSCCNames[idx]],
 			newOpenShiftSCCYAML)
 		if err != nil {
-			return fmt.Errorf("failed to create or patch Trident OpenShift SCC name %v got error: %v", openShiftSCCNames[idx], err)
+			return fmt.Errorf("failed to create or patch Trident OpenShift SCC name %v got error: %v",
+				openShiftSCCNames[idx], err)
 		}
 	}
 
@@ -1655,10 +1664,9 @@ func (i *Installer) waitForRESTInterface(tridentPodName string) error {
 }
 
 // getTridentClientVersionInfo takes trident image name and identifies the Trident client version
-func (i *Installer) getTridentClientVersionInfo(imageName string, controllingCRDetails map[string]string) (*api.
-	ClientVersionResponse,
-	error,
-) {
+func (i *Installer) getTridentClientVersionInfo(
+	imageName string, controllingCRDetails map[string]string,
+) (*api.ClientVersionResponse, error) {
 	clientVersionYAML, err := i.getTridentVersionYAML(imageName, controllingCRDetails)
 	if err != nil {
 		return nil, err

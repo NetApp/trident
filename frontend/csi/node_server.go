@@ -27,6 +27,7 @@ const (
 	lockID                        = "csi_node_server"
 	AttachISCSIVolumeTimeoutShort = 20 * time.Second
 	iSCSINodeUnstageMaxDuration   = 15 * time.Second
+	iSCSISelfHealingLockContext   = "ISCSISelfHealingThread"
 )
 
 var (
@@ -1449,4 +1450,17 @@ func (p *Plugin) getVolumeIdAndStagingPath(req RequestHandler) (string, string, 
 	}
 
 	return volumeId, stagingTargetPath, nil
+}
+
+// iSCSISelfHealing  is a function to implement iSCSI self-healing functionality which would correct sessions which
+// are in faulty state. This function is invoked periodically.
+func iSCSISelfHealing(ctx context.Context) {
+	utils.Lock(ctx, iSCSISelfHealingLockContext, lockID)
+	defer utils.Unlock(ctx, iSCSISelfHealingLockContext, lockID)
+
+	// Do Self healing work here
+	log.Info("******** Do self healing work here ********")
+	// Self healing work is complete
+
+	return
 }
