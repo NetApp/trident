@@ -272,6 +272,10 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 		config.NetworkFeatures = defaultNetworkFeatures
 	}
 
+	if config.NASType == "" {
+		config.NASType = sa.NFS
+	}
+
 	Logc(ctx).WithFields(log.Fields{
 		"StoragePrefix":   *config.StoragePrefix,
 		"Size":            config.Size,
@@ -303,12 +307,7 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 		pool.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 		pool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
 		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
-
-		nasType := d.Config.NASType
-		if nasType == "" {
-			nasType = sa.NFS
-		}
-		pool.Attributes()[sa.NASType] = sa.NewStringOffer(nasType)
+		pool.Attributes()[sa.NASType] = sa.NewStringOffer(d.Config.NASType)
 
 		if d.Config.Region != "" {
 			pool.Attributes()[sa.Region] = sa.NewStringOffer(d.Config.Region)
@@ -422,9 +421,7 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 			if vpool.NASType != "" {
 				nasType = vpool.NASType
 			}
-			if nasType == "" {
-				nasType = sa.NFS
-			}
+
 			pool.Attributes()[sa.NASType] = sa.NewStringOffer(nasType)
 
 			if region != "" {

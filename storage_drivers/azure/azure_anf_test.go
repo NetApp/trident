@@ -820,6 +820,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	_, driver := newMockANFDriver(t)
 	driver.Config = *config
 
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
 
 	pool0 := storage.NewStoragePool(nil, "myANFBackend_pool_0")
@@ -2854,7 +2855,7 @@ func TestImport_BackendVolumeMismatch(t *testing.T) {
 
 	originalName := "importMe"
 
-	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+	volConfig, originalFilesystem := getStructsForSMBImport(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
