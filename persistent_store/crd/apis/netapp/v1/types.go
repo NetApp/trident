@@ -41,6 +41,10 @@ type TridentVolumePublication struct {
 	ReadOnly bool `json:"readOnly"`
 	// AccessMode describes how the CO intends to use the volume
 	AccessMode int32 `json:"accessMode,omitempty"`
+	// NotSafeToAttach indicates that the volume is unsafe to attach and detach
+	NotSafeToAttach bool `json:"notSafeToAttach,omitempty"`
+	// Unpublished indicates that k8s has attempted to unpublish this publication
+	Unpublished bool `json:"unpublished,omitempty"`
 }
 
 // TridentVolumePublicationList is a list of TridentVolumePublication objects.

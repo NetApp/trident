@@ -1,10 +1,9 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package csi
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"testing"
 
@@ -92,14 +91,9 @@ func TestControllerPublishVolume(t *testing.T) {
 	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
 	fakeNode := generateFakeNode(req.NodeId)
 
-	// Mimic not finding the volume publication
-	mockOrchestrator.EXPECT().GetVolumePublication(ctx, req.VolumeId, req.NodeId).Return(nil,
-		utils.NotFoundError("not found"))
 	mockOrchestrator.EXPECT().GetVolume(ctx, req.VolumeId).Return(fakeVolumeExternal, nil)
 	mockOrchestrator.EXPECT().GetNode(ctx, req.NodeId).Return(fakeNode, nil)
 	mockOrchestrator.EXPECT().PublishVolume(ctx, req.VolumeId, gomock.Any()).Return(nil)
-	// Verify we record the volume publication
-	mockOrchestrator.EXPECT().AddVolumePublication(ctx, gomock.Any()).Return(nil)
 
 	publishResponse, err := controllerServer.ControllerPublishVolume(ctx, req)
 	assert.Nilf(t, err, "unexpected error publishing volume; %v", err)
@@ -124,14 +118,9 @@ func TestControllerPublishVolume_BlockProtocol(t *testing.T) {
 	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
 	fakeVolumeExternal.Config.Protocol = tridentconfig.Block
 
-	// Mimic not finding the volume publication
-	mockOrchestrator.EXPECT().GetVolumePublication(ctx, req.VolumeId, req.NodeId).Return(nil,
-		utils.NotFoundError("not found"))
 	mockOrchestrator.EXPECT().GetVolume(ctx, req.VolumeId).Return(fakeVolumeExternal, nil)
 	mockOrchestrator.EXPECT().GetNode(ctx, req.NodeId).Return(fakeNode, nil)
 	mockOrchestrator.EXPECT().PublishVolume(ctx, req.VolumeId, gomock.Any()).Return(nil)
-	// Verify we record the volume publication
-	mockOrchestrator.EXPECT().AddVolumePublication(ctx, gomock.Any()).Return(nil)
 
 	publishResponse, err := controllerServer.ControllerPublishVolume(ctx, req)
 	assert.Nilf(t, err, "unexpected error publishing volume; %v", err)
@@ -154,122 +143,6 @@ func TestControllerPublishVolume_BlockProtocol(t *testing.T) {
 	assert.Equal(t, expectedPublishContext, publishContext)
 }
 
-// TestControllerPublishVolumeExistsWithSameOptions verifies behavior when a publich call comes in for the same
-// volume/node with the same publish options
-func TestControllerPublishVolumeExistsWithSameOptions(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	// Create a mocked orchestrator
-	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-	// Create a mocked helper
-	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
-	// Create an instance of ControllerServer for this test
-	controllerServer := generateController(mockOrchestrator, mockHelper)
-
-	// Create fake objects for this test
-	req := generateFakePublishVolumeRequest()
-	expectedPublication := generateVolumePublicationFromCSIPublishRequest(req)
-	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
-	fakeNode := generateFakeNode(req.NodeId)
-
-	// Mimic finding the volume publication
-	mockOrchestrator.EXPECT().GetVolumePublication(ctx, req.VolumeId, req.NodeId).Return(expectedPublication, nil)
-	mockOrchestrator.EXPECT().GetVolume(ctx, req.VolumeId).Return(fakeVolumeExternal, nil)
-	mockOrchestrator.EXPECT().GetNode(ctx, req.NodeId).Return(fakeNode, nil)
-	mockOrchestrator.EXPECT().PublishVolume(ctx, req.VolumeId, gomock.Any()).Return(nil)
-	// Verify we don't rerecord the volume publication
-	mockOrchestrator.EXPECT().AddVolumePublication(ctx, gomock.Any()).Times(0)
-
-	_, err := controllerServer.ControllerPublishVolume(ctx, req)
-	assert.Nil(t, err, "unexpected error publishing volume")
-}
-
-// TestControllerPublishVolumeExistsWithDifferentOptions verifies behavior when a publich call comes in for the same
-// volume/node with different publish options
-func TestControllerPublishVolumeExistsWithDifferentOptions(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	// Create a mocked orchestrator
-	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-	// Create a mocked helper
-	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
-	// Create an instance of ControllerServer for this test
-	controllerServer := generateController(mockOrchestrator, mockHelper)
-
-	// Create fake objects for this test
-	req := generateFakePublishVolumeRequest()
-	foundPublication := generateVolumePublicationFromCSIPublishRequest(req)
-	foundPublication.ReadOnly = !foundPublication.ReadOnly
-	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
-	fakeNode := generateFakeNode(req.NodeId)
-
-	// Mimic finding the volume publication
-	mockOrchestrator.EXPECT().GetVolumePublication(ctx, req.VolumeId, req.NodeId).Return(foundPublication, nil)
-	mockOrchestrator.EXPECT().GetVolume(ctx, req.VolumeId).Return(fakeVolumeExternal, nil)
-	mockOrchestrator.EXPECT().GetNode(ctx, req.NodeId).Return(fakeNode, nil)
-	// Verify we don't publish the volume
-	mockOrchestrator.EXPECT().PublishVolume(ctx, req.VolumeId, gomock.Any()).Times(0)
-	// Verify we don't rerecord the volume publication
-	mockOrchestrator.EXPECT().AddVolumePublication(ctx, gomock.Any()).Times(0)
-
-	_, err := controllerServer.ControllerPublishVolume(ctx, req)
-	assert.NotNil(t, err, "unexpected success publishing volume")
-}
-
-func TestControllerPublishVolumePublishingError(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	// Create a mocked orchestrator
-	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-	// Create a mocked helper
-	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
-	// Create an instance of ControllerServer for this test
-	controllerServer := generateController(mockOrchestrator, mockHelper)
-
-	// Create fake objects for this test
-	req := generateFakePublishVolumeRequest()
-	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
-	fakeNode := generateFakeNode(req.NodeId)
-
-	// Mimic not finding the volume publication
-	mockOrchestrator.EXPECT().GetVolumePublication(ctx, req.VolumeId, req.NodeId).Return(nil,
-		utils.NotFoundError("not found"))
-	mockOrchestrator.EXPECT().GetVolume(ctx, req.VolumeId).Return(fakeVolumeExternal, nil)
-	mockOrchestrator.EXPECT().GetNode(ctx, req.NodeId).Return(fakeNode, nil)
-	// Simulate an error during volume publishing
-	mockOrchestrator.EXPECT().PublishVolume(ctx, req.VolumeId, gomock.Any()).Return(fmt.Errorf("some error"))
-	// Verify we still record the volume publication if publishing fails
-	mockOrchestrator.EXPECT().AddVolumePublication(ctx, gomock.Any()).Return(nil)
-
-	_, err := controllerServer.ControllerPublishVolume(ctx, req)
-	assert.NotNil(t, err, "unexpected success publishing volume")
-}
-
-func TestControllerPublishVolumeTVPError(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	// Create a mocked orchestrator
-	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-	// Create a mocked helper
-	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
-	// Create an instance of ControllerServer for this test
-	controllerServer := generateController(mockOrchestrator, mockHelper)
-
-	// Create fake objects for this test
-	req := generateFakePublishVolumeRequest()
-	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
-	fakeNode := generateFakeNode(req.NodeId)
-
-	// Mimic not finding the volume publication
-	mockOrchestrator.EXPECT().GetVolumePublication(ctx, req.VolumeId, req.NodeId).Return(nil,
-		utils.NotFoundError("not found"))
-	mockOrchestrator.EXPECT().GetVolume(ctx, req.VolumeId).Return(fakeVolumeExternal, nil)
-	mockOrchestrator.EXPECT().GetNode(ctx, req.NodeId).Return(fakeNode, nil)
-	// Verify we do not publish the volume
-	mockOrchestrator.EXPECT().PublishVolume(ctx, req.VolumeId, gomock.Any()).Times(0)
-	// Simulate an error during recording of volume publication
-	mockOrchestrator.EXPECT().AddVolumePublication(ctx, gomock.Any()).Return(fmt.Errorf("some error"))
-
-	_, err := controllerServer.ControllerPublishVolume(ctx, req)
-	assert.NotNil(t, err, "unexpected success publishing volume")
-}
-
 func TestControllerUnpublishVolume(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	// Create a mocked orchestrator
@@ -283,53 +156,9 @@ func TestControllerUnpublishVolume(t *testing.T) {
 	req := generateFakeUnpublishVolumeRequest()
 
 	mockOrchestrator.EXPECT().UnpublishVolume(ctx, req.VolumeId, gomock.Any()).Return(nil)
-	// Verify we remove the volume publication on a successful volume unpublish
-	mockOrchestrator.EXPECT().DeleteVolumePublication(ctx, req.VolumeId, req.NodeId).Return(nil)
 
 	_, err := controllerServer.ControllerUnpublishVolume(ctx, req)
 	assert.Nil(t, err, "unexpected error unpublishing volume")
-}
-
-func TestControllerUnpublishVolume_UnpublishError(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	// Create a mocked orchestrator
-	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-	// Create a mocked helper
-	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
-	// Create an instance of ControllerServer for this test
-	controllerServer := generateController(mockOrchestrator, mockHelper)
-
-	// Create fake objects for this test
-	req := generateFakeUnpublishVolumeRequest()
-
-	// Simulate an error during volume unpublishing
-	mockOrchestrator.EXPECT().UnpublishVolume(ctx, req.VolumeId, gomock.Any()).Return(fmt.Errorf("some error"))
-	// Verify we do not remove the volume publication if unpublishing fails
-	mockOrchestrator.EXPECT().DeleteVolumePublication(ctx, gomock.Any(), gomock.Any()).Times(0)
-
-	_, err := controllerServer.ControllerUnpublishVolume(ctx, req)
-	assert.NotNil(t, err, "unexpected success unpublishing volume")
-}
-
-func TestControllerUnpublishVolume_DeleteVolumePublicationError(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	// Create a mocked orchestrator
-	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-	// Create a mocked helper
-	mockHelper := mockhelpers.NewMockHybridPlugin(mockCtrl)
-	// Create an instance of ControllerServer for this test
-	controllerServer := generateController(mockOrchestrator, mockHelper)
-
-	// Create fake objects for this test
-	req := generateFakeUnpublishVolumeRequest()
-
-	// Simulate an error during volume unpublishing
-	mockOrchestrator.EXPECT().UnpublishVolume(ctx, req.VolumeId, gomock.Any()).Return(nil).Times(1)
-	// Verify we do not remove the volume publication if unpublishing fails
-	mockOrchestrator.EXPECT().DeleteVolumePublication(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed")).Times(1)
-
-	_, err := controllerServer.ControllerUnpublishVolume(ctx, req)
-	assert.NotNil(t, err, "unexpected success unpublishing volume")
 }
 
 func TestControllerUnpublishVolume_NotFoundErrors(t *testing.T) {
@@ -345,9 +174,7 @@ func TestControllerUnpublishVolume_NotFoundErrors(t *testing.T) {
 	req := generateFakeUnpublishVolumeRequest()
 
 	// Simulate an error during volume unpublishing
-	mockOrchestrator.EXPECT().UnpublishVolume(ctx, req.VolumeId, gomock.Any()).Return(utils.NotFoundError("not found")).Times(1)
-	// Verify we do not remove the volume publication if unpublishing fails
-	mockOrchestrator.EXPECT().DeleteVolumePublication(ctx, gomock.Any(), gomock.Any()).Return(utils.NotFoundError("not found")).Times(1)
+	mockOrchestrator.EXPECT().UnpublishVolume(ctx, req.VolumeId, gomock.Any()).Return(utils.NotFoundError("not found"))
 
 	_, err := controllerServer.ControllerUnpublishVolume(ctx, req)
 	assert.Nil(t, err, "unexpected error unpublishing volume")

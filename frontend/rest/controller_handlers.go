@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"runtime"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -965,8 +966,15 @@ func UpdateVolumePublication(w http.ResponseWriter, r *http.Request) {
 	response := &VolumePublicationsResponse{}
 	UpdateGeneric(w, r, response,
 		func(vars map[string]string, _ []byte) int {
-			notSafeToAttach := vars["notSafeToAttach"] == "true"
-			err := orchestrator.UpdateVolumePublication(r.Context(), vars["volume"], vars["node"], &notSafeToAttach)
+			var notSafeToAttach *bool
+			if notSafeToAttachVar, ok := vars["notSafeToAttach"]; ok {
+				notSafe, err := strconv.ParseBool(notSafeToAttachVar)
+				if err != nil {
+					return httpStatusCodeForGetUpdateList(err)
+				}
+				notSafeToAttach = &notSafe
+			}
+			err := orchestrator.UpdateVolumePublication(r.Context(), vars["volume"], vars["node"], notSafeToAttach)
 			if err != nil {
 				response.Error = err.Error()
 			}

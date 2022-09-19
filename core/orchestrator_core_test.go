@@ -2747,101 +2747,146 @@ func TestAddVolumePublicationError(t *testing.T) {
 
 func TestUpdateVolumePublication(t *testing.T) {
 	type updateArgs struct {
-		TestDesc string
-		PubName  string
-		Node     string
-		Vol      string
-		Dirty    *bool
-		Expected bool
+		name       string
+		startDirty bool
+		setDirty   *bool
+		setup      func(*mockpersistentstore.MockStoreClient, *mockstorage.MockBackend, *storage.Volume,
+			*utils.VolumePublication)
+		wantErr     assert.ErrorAssertionFunc
+		wantDirty   assert.BoolAssertionFunc
+		wantInCache assert.BoolAssertionFunc
 	}
 
-	truth := true
-	untrue := false
+	var (
+		truth  = true
+		untrue = false
+	)
 
-	node1 := "bar"
-	node2 := "foo"
-	node3 := "foo"
-	vol1 := "foo"
-	vol2 := "bar"
-	vol3 := "foo"
-
-	fakeName1 := utils.GenerateVolumePublishName(vol1, node1)
-	fakePub := &utils.VolumePublication{
-		Name:            fakeName1,
-		NodeName:        node1,
-		VolumeName:      vol1,
-		ReadOnly:        true,
-		AccessMode:      1,
-		NotSafeToAttach: true,
+	tt := []updateArgs{
+		{
+			"nil is no update", false, nil,
+			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
+				vol *storage.Volume, pub *utils.VolumePublication,
+			) {
+				// Nil should cause no update to occur
+			},
+			assert.NoError, assert.False, assert.True,
+		},
+		{
+			"clean to dirty", false, &truth,
+			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
+				vol *storage.Volume, pub *utils.VolumePublication,
+			) {
+				// Volume should be unpublished and the publication updated
+				backend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, gomock.Any()).Return(nil)
+				storeClient.EXPECT().UpdateVolumePublication(gomock.Any(), pub).Return(nil)
+			},
+			assert.NoError, assert.True, assert.True,
+		},
+		{
+			"dirty to clean", true, &untrue,
+			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
+				vol *storage.Volume, pub *utils.VolumePublication,
+			) {
+				// Publication should be deleted
+				storeClient.EXPECT().DeleteVolumePublication(gomock.Any(), pub).Return(nil)
+			},
+			assert.NoError, assert.True, assert.False,
+		},
+		{
+			"clean stays clean", false, &untrue,
+			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
+				vol *storage.Volume, pub *utils.VolumePublication,
+			) {
+				// Nothing should happen
+			},
+			assert.NoError, assert.False, assert.True,
+		},
+		{
+			"dirty stays dirty", true, &truth,
+			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
+				vol *storage.Volume, pub *utils.VolumePublication,
+			) {
+				// Nothing should happen
+			},
+			assert.NoError, assert.True, assert.True,
+		},
+		{
+			"unpublish fails", false, &truth,
+			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
+				vol *storage.Volume, pub *utils.VolumePublication,
+			) {
+				// Throw error during unpublish, expect values to not change
+				backend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, gomock.Any()).Return(fmt.Errorf("error"))
+			},
+			assert.Error, assert.False, assert.True,
+		},
+		{
+			"update fails", false, &truth,
+			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
+				vol *storage.Volume, pub *utils.VolumePublication,
+			) {
+				// Throw error when updating the publication, expect values to not change
+				backend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, gomock.Any()).Return(nil)
+				storeClient.EXPECT().UpdateVolumePublication(gomock.Any(), pub).Return(fmt.Errorf("error"))
+			},
+			assert.Error, assert.False, assert.True,
+		},
+		{
+			"delete fails", true, &untrue,
+			func(storeClient *mockpersistentstore.MockStoreClient, backend *mockstorage.MockBackend,
+				vol *storage.Volume, pub *utils.VolumePublication,
+			) {
+				// Throw error during delete, expect publication is still in cache and values are unchanged
+				storeClient.EXPECT().DeleteVolumePublication(gomock.Any(), pub).Return(fmt.Errorf("error"))
+			},
+			assert.Error, assert.True, assert.True,
+		},
 	}
 
-	fakeName2 := utils.GenerateVolumePublishName(vol2, node2)
-	fakePub2 := &utils.VolumePublication{
-		Name:            fakeName2,
-		NodeName:        node2,
-		VolumeName:      vol2,
-		ReadOnly:        true,
-		AccessMode:      1,
-		NotSafeToAttach: false,
-	}
+	for _, tr := range tt {
+		t.Run(tr.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			orchestrator := getOrchestrator(t, false)
+			// Create a mocked persistent store client
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
 
-	fakeName3 := utils.GenerateVolumePublishName(vol3, node3)
-	fakePub3 := &utils.VolumePublication{
-		Name:            fakeName3,
-		NodeName:        node3,
-		VolumeName:      vol3,
-		ReadOnly:        true,
-		AccessMode:      1,
-		NotSafeToAttach: false,
-	}
+			vol := &storage.Volume{
+				Config:      &storage.VolumeConfig{Name: "bar"},
+				BackendUUID: "12345",
+			}
 
-	pubs := map[string]*utils.VolumePublication{
-		fakeName1: fakePub,
-		fakeName2: fakePub2,
-		fakeName3: fakePub3,
-	}
+			mockBackend.EXPECT().BackendUUID().Return(vol.BackendUUID).AnyTimes() // Always return the right UUID
 
-	args := []updateArgs{
-		{"nil is no update", fakeName1, node1, vol1, nil, true},
-		{"true to false", fakeName1, node1, vol1, &untrue, false},
-		{"false to true", fakeName2, node2, vol2, &truth, true},
-		{"false stays false", fakeName3, node3, vol3, &untrue, false},
-	}
+			volPub := &utils.VolumePublication{
+				Name:            "foobar",
+				NodeName:        "foo",
+				VolumeName:      vol.Config.Name,
+				NotSafeToAttach: tr.startDirty,
+			}
 
-	mockCtrl := gomock.NewController(t)
-	orchestrator := getOrchestrator(t, false)
-	// Create a mocked persistent store client
-	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-	mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
-	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			node := &utils.Node{Name: volPub.NodeName}
 
-	mockBackend := mockstorage.NewMockBackend(mockCtrl)
-	backendID := "foo"
-
-	for _, arg := range args {
-		t.Run(arg.TestDesc, func(t *testing.T) {
-			pub := pubs[arg.PubName]
-			vol := &storage.Volume{BackendUUID: backendID}
-			node := &utils.Node{Name: arg.Node}
-
-			mockBackend.EXPECT().UnpublishVolume(gomock.Any(), vol.Config, gomock.Any()).Return(nil).AnyTimes()
+			tr.setup(mockStoreClient, mockBackend, vol, volPub)
 
 			orchestrator.storeClient = mockStoreClient
-			orchestrator.backends[backendID] = mockBackend
+			orchestrator.backends[vol.BackendUUID] = mockBackend
+			orchestrator.volumes[vol.Config.Name] = vol
+			orchestrator.nodes[node.Name] = node
+			orchestrator.addVolumePublicationToCache(volPub)
 
-			orchestrator.volumes[arg.Vol] = vol
-			orchestrator.nodes[arg.Node] = node
-			err := orchestrator.addVolumePublication(context.Background(), pub)
-			assert.Nil(t, err, "add volume publication err was not nil")
-			err = orchestrator.updateVolumePublication(context.Background(), arg.Vol, arg.Node, arg.Dirty)
-			assert.Nil(t, err, "update volume publication did not return an error")
-			aPub, err := orchestrator.getVolumePublication(arg.Vol, arg.Node)
-			assert.Nil(t, err, "get volume publication error was not nil")
-			assert.Equal(t, arg.Expected, aPub.NotSafeToAttach, "value of updated field did not match the desired value")
-			err = orchestrator.deleteVolumePublication(context.Background(), arg.Vol, arg.Node)
-			assert.Nil(t, err, "delete volume publication did not return an error")
+			err := orchestrator.updateVolumePublication(context.Background(), vol.Config.Name, node.Name, tr.setDirty)
+			if !tr.wantErr(t, err, "unexpected result") {
+				return
+			}
+			if !tr.wantDirty(t, volPub.NotSafeToAttach, "publication dirty flag is incorrect") {
+				return
+			}
+			_, ok := orchestrator.volumePublications[vol.Config.Name][node.Name]
+			if !tr.wantInCache(t, ok, "publication cache is incorrect") {
+				return
+			}
 		})
 	}
 }
@@ -3209,8 +3254,6 @@ func TestDeleteVolumePublication(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	// Create a mocked persistent store client
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-	// Set the store client behavior we don't care about for this testcase
-	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
 	// Create a fake VolumePublication
 	fakePub := &utils.VolumePublication{
 		Name:       "foo/bar",
@@ -3233,6 +3276,8 @@ func TestDeleteVolumePublication(t *testing.T) {
 		ReadOnly:   true,
 		AccessMode: 1,
 	}
+	fakeNode := &utils.Node{Name: "biz"}
+	fakeNode2 := &utils.Node{Name: "buz"}
 	// Create an instance of the orchestrator for this test
 	orchestrator := getOrchestrator(t, false)
 	// Add the mocked objects to the orchestrator
@@ -3241,6 +3286,7 @@ func TestDeleteVolumePublication(t *testing.T) {
 	orchestrator.addVolumePublicationToCache(fakePub)
 	orchestrator.addVolumePublicationToCache(fakePub2)
 	orchestrator.addVolumePublicationToCache(fakePub3)
+	orchestrator.nodes = map[string]*utils.Node{fakeNode.Name: fakeNode, fakeNode2.Name: fakeNode2}
 
 	// Verify if this is the last nodeID for a given volume the volume entry is completely removed from the cache
 	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub2).Return(nil)
@@ -3283,8 +3329,7 @@ func TestDeleteVolumePublicationNotFound(t *testing.T) {
 	orchestrator.addVolumePublicationToCache(fakePub)
 
 	err := orchestrator.DeleteVolumePublication(context.Background(), "NotFound", "NotFound")
-	assert.NotNil(t, err, fmt.Sprintf("unexpected success deleting volume publication"))
-	assert.True(t, utils.IsNotFoundError(err), "incorrect error type returned")
+	assert.Nil(t, err, fmt.Sprintf("unexpected error deleting volume publication"))
 }
 
 func TestDeleteVolumePublicationNotFoundPersistence(t *testing.T) {
@@ -3301,6 +3346,7 @@ func TestDeleteVolumePublicationNotFoundPersistence(t *testing.T) {
 		ReadOnly:   true,
 		AccessMode: 1,
 	}
+	fakeNode := &utils.Node{Name: fakePub.NodeName}
 	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub).Return(utils.NotFoundError("not found"))
 	// Create an instance of the orchestrator for this test
 	orchestrator := getOrchestrator(t, false)
@@ -3308,6 +3354,7 @@ func TestDeleteVolumePublicationNotFoundPersistence(t *testing.T) {
 	orchestrator.storeClient = mockStoreClient
 	// Populate volume publications
 	orchestrator.addVolumePublicationToCache(fakePub)
+	orchestrator.nodes = map[string]*utils.Node{fakeNode.Name: fakeNode}
 
 	// Verify delete is idempotent when the persistence object is missing
 	err := orchestrator.DeleteVolumePublication(context.Background(), fakePub.VolumeName, fakePub.NodeName)
@@ -3884,6 +3931,9 @@ func TestDeleteBackend(t *testing.T) {
 }
 
 func TestPublishVolumeFailedToUpdatePersistentStore(t *testing.T) {
+	config.CurrentDriverContext = config.ContextCSI
+	defer func() { config.CurrentDriverContext = "" }()
+
 	// Boilerplate mocking code
 	mockCtrl := gomock.NewController(t)
 
@@ -3893,12 +3943,9 @@ func TestPublishVolumeFailedToUpdatePersistentStore(t *testing.T) {
 
 	// Create mocked backend that returns the expected object
 	mockBackend := mockstorage.NewMockBackend(mockCtrl)
-	mockBackend.EXPECT().PublishVolume(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
 	// Create a mocked persistent store client
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-	// Set the store client behavior we don't care about for this testcase
-	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
-	mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Times(1).Return(expectedError)
+	mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(expectedError)
 
 	// Create an instance of the orchestrator
 	orchestrator := getOrchestrator(t, false)
@@ -3910,12 +3957,7 @@ func TestPublishVolumeFailedToUpdatePersistentStore(t *testing.T) {
 
 	// Run the test
 	err := orchestrator.PublishVolume(ctx(), "fake-volume", &utils.VolumePublishInfo{})
-
-	// Verify the results
-	if err != expectedError {
-		t.Log("Did not get expected error from Publish Volume")
-		t.Fail()
-	}
+	assert.Error(t, err, "Unexpected success publishing volume.")
 }
 
 func TestGetCHAP(t *testing.T) {
@@ -4012,6 +4054,7 @@ func TestPublishVolume(t *testing.T) {
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
@@ -4032,6 +4075,7 @@ func TestPublishVolume(t *testing.T) {
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
@@ -4053,6 +4097,7 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
 				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(nil)
 				mockBackend.EXPECT().EnablePublishEnforcement(ctx(), volume).DoAndReturn(
@@ -4079,6 +4124,7 @@ func TestPublishVolume(t *testing.T) {
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().EnablePublishEnforcement(ctx(), volume).DoAndReturn(
 					func(ctx context.Context, volume *storage.Volume) error {
 						volume.Config.AccessInfo.PublishEnforcement = true
@@ -4103,6 +4149,7 @@ func TestPublishVolume(t *testing.T) {
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
@@ -4123,6 +4170,7 @@ func TestPublishVolume(t *testing.T) {
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
@@ -4144,6 +4192,7 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
 				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(nil)
 				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
@@ -4166,6 +4215,7 @@ func TestPublishVolume(t *testing.T) {
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().PublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().UpdateVolume(ctx(), volume).Return(nil)
@@ -4218,6 +4268,7 @@ func TestPublishVolume(t *testing.T) {
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient,
 				volume *storage.Volume,
 			) {
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().GetVersion(ctx()).Return(nil, fmt.Errorf("some error"))
 			},
 			wantErr:     assert.Error,
@@ -4237,6 +4288,7 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
 				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(fmt.Errorf("some error"))
 			},
@@ -4257,6 +4309,7 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
 				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(nil)
 				mockBackend.EXPECT().EnablePublishEnforcement(ctx(), gomock.Any()).Return(fmt.Errorf("some error"))
@@ -4281,6 +4334,7 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
 				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(nil)
 				mockBackend.EXPECT().EnablePublishEnforcement(ctx(), volume).DoAndReturn(
@@ -4308,6 +4362,7 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
 				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(nil)
 				mockBackend.EXPECT().EnablePublishEnforcement(ctx(), volume).DoAndReturn(
@@ -4335,6 +4390,7 @@ func TestPublishVolume(t *testing.T) {
 				volume *storage.Volume,
 			) {
 				version := &config.PersistentStateVersion{}
+				mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().GetVersion(ctx()).Return(version, nil)
 				mockStoreClient.EXPECT().SetVersion(ctx(), version).Return(nil)
 				mockBackend.EXPECT().EnablePublishEnforcement(ctx(), volume).DoAndReturn(
@@ -4394,6 +4450,40 @@ func TestPublishVolume(t *testing.T) {
 	}
 }
 
+func TestPublishVolume_DirtyPublication(t *testing.T) {
+	config.CurrentDriverContext = config.ContextCSI
+	defer func() { config.CurrentDriverContext = "" }()
+
+	var (
+		mockCtrl        = gomock.NewController(t)
+		mockBackend     = mockstorage.NewMockBackend(mockCtrl)
+		mockStoreClient = mockpersistentstore.NewMockStoreClient(mockCtrl)
+		backendUUID     = "12345"
+		volumeName      = "foo"
+		nodeName        = "bar"
+	)
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+	node := &utils.Node{Name: nodeName}
+	pub := &utils.VolumePublication{
+		Name:            utils.GenerateVolumePublishName(volumeName, nodeName),
+		NodeName:        nodeName,
+		VolumeName:      volumeName,
+		NotSafeToAttach: true,
+	}
+	vol := &storage.Volume{BackendUUID: backendUUID, State: storage.VolumeStateOnline}
+
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+	o.backends = map[string]storage.Backend{backendUUID: mockBackend}
+	o.nodes = map[string]*utils.Node{node.Name: node}
+	o.volumes = map[string]*storage.Volume{volumeName: vol}
+	o.addVolumePublicationToCache(pub)
+
+	err := o.publishVolume(ctx(), volumeName, &utils.VolumePublishInfo{HostName: nodeName})
+	assert.Error(t, err, "Unexpected success publishing dirty publication")
+}
+
 func TestUnpublishVolume(t *testing.T) {
 	var (
 		backendUUID     = "1234"
@@ -4408,6 +4498,11 @@ func TestUnpublishVolume(t *testing.T) {
 			NodeName:   nodeName,
 			VolumeName: volumeName,
 		}
+		dirtyPublication = &utils.VolumePublication{
+			NodeName:        nodeName,
+			VolumeName:      volumeName,
+			NotSafeToAttach: true,
+		}
 		otherVolPublication = &utils.VolumePublication{
 			NodeName:   nodeName,
 			VolumeName: otherVolumeName,
@@ -4418,48 +4513,73 @@ func TestUnpublishVolume(t *testing.T) {
 		}
 	)
 	tt := []struct {
-		name         string
-		volumeName   string
-		nodeName     string
-		volumes      map[string]*storage.Volume
-		nodes        map[string]*utils.Node
-		publications map[string]map[string]*utils.VolumePublication
-		mocks        func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient)
-		wantErr      assert.ErrorAssertionFunc
+		name            string
+		volumeName      string
+		nodeName        string
+		dirty           bool
+		driverContext   config.DriverContext
+		volumes         map[string]*storage.Volume
+		nodes           map[string]*utils.Node
+		publications    map[string]map[string]*utils.VolumePublication
+		mocks           func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient)
+		wantErr         assert.ErrorAssertionFunc
+		wantUnpublished assert.BoolAssertionFunc
 	}{
 		{
-			name:         "NoOtherPublicationsNodeNotDeleted",
-			volumeName:   volumeName,
-			nodeName:     nodeName,
-			volumes:      map[string]*storage.Volume{volumeName: volume},
-			nodes:        map[string]*utils.Node{nodeName: node},
-			publications: map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
+			name:          "NoOtherPublications",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{volumeName: volume},
+			nodes:         map[string]*utils.Node{nodeName: node},
+			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 			},
-			wantErr: assert.NoError,
+			wantErr:         assert.NoError,
+			wantUnpublished: assert.False,
 		},
 		{
-			name:         "NoOtherPublicationsNodeDeleted",
-			volumeName:   volumeName,
-			nodeName:     nodeName,
-			volumes:      map[string]*storage.Volume{volumeName: volume},
-			nodes:        map[string]*utils.Node{nodeName: deletedNode},
-			publications: map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
+			name:          "DirtyUnpublish",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			dirty:         true,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{volumeName: volume},
+			nodes:         map[string]*utils.Node{nodeName: node},
+			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
-				mockStoreClient.EXPECT().DeleteNode(ctx(), deletedNode).Return(nil)
-				mockBackend.EXPECT().InvalidateNodeAccess()
-				mockBackend.EXPECT().ReconcileNodeAccess(ctx(), []*utils.Node{}).Return(nil)
+				// We should not delete the publication if this is a dirty unpublish call
+				mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), gomock.Any()).Return(nil).Times(0)
 			},
-			wantErr: assert.NoError,
+			wantErr:         assert.NoError,
+			wantUnpublished: assert.False,
 		},
 		{
-			name:       "OtherPublicationsNodeDeleted",
-			volumeName: volumeName,
-			nodeName:   nodeName,
-			volumes:    map[string]*storage.Volume{volumeName: volume},
-			nodes:      map[string]*utils.Node{nodeName: deletedNode},
+			name:          "DirtyPublication",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{volumeName: volume},
+			nodes:         map[string]*utils.Node{nodeName: node},
+			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: dirtyPublication}},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				// We've already unpublished so make sure we don't call it again
+				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil).Times(0)
+				mockStoreClient.EXPECT().UpdateVolumePublication(ctx(), dirtyPublication).Return(nil)
+			},
+			wantErr:         assert.NoError,
+			wantUnpublished: assert.True,
+		},
+		{
+			name:          "OtherPublications",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{volumeName: volume},
+			nodes:         map[string]*utils.Node{nodeName: deletedNode},
 			publications: map[string]map[string]*utils.VolumePublication{
 				volumeName: {
 					nodeName: publication,
@@ -4470,33 +4590,17 @@ func TestUnpublishVolume(t *testing.T) {
 			},
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 			},
-			wantErr: assert.NoError,
+			wantErr:         assert.NoError,
+			wantUnpublished: assert.False,
 		},
 		{
-			name:       "OtherPublicationsNodeNotDeleted",
-			volumeName: volumeName,
-			nodeName:   nodeName,
-			volumes:    map[string]*storage.Volume{volumeName: volume},
-			nodes:      map[string]*utils.Node{nodeName: node},
-			publications: map[string]map[string]*utils.VolumePublication{
-				volumeName: {
-					nodeName: publication,
-				},
-				otherVolumeName: {
-					nodeName: otherVolPublication,
-				},
-			},
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
-				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name:       "OtherPublicationsDifferentNode",
-			volumeName: volumeName,
-			nodeName:   nodeName,
-			volumes:    map[string]*storage.Volume{volumeName: volume},
+			name:          "OtherPublicationsDifferentNode",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{volumeName: volume},
 			nodes: map[string]*utils.Node{
 				nodeName:      node,
 				otherNodeName: node,
@@ -4509,76 +4613,86 @@ func TestUnpublishVolume(t *testing.T) {
 			},
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
 			},
-			wantErr: assert.NoError,
+			wantErr:         assert.NoError,
+			wantUnpublished: assert.False,
 		},
 		{
-			name:       "OtherPublicationsDifferentNodeMissing",
-			volumeName: volumeName,
-			nodeName:   nodeName,
-			volumes:    map[string]*storage.Volume{volumeName: volume},
-			nodes:      map[string]*utils.Node{nodeName: node},
-			publications: map[string]map[string]*utils.VolumePublication{
-				volumeName: {
-					nodeName:      publication,
-					otherNodeName: otherNodePublication,
-				},
-			},
+			name:          "VolumeNotFound",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{},
+			nodes:         map[string]*utils.Node{nodeName: node},
+			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			wantErr:         assert.Error,
+			wantUnpublished: assert.False,
+		},
+		{
+			name:          "BackendNotFound",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{volumeName: {}},
+			nodes:         map[string]*utils.Node{nodeName: node},
+			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+			},
+			wantErr:         assert.Error,
+			wantUnpublished: assert.False,
+		},
+
+		{
+			name:          "PublicationNotFound_CSI",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{volumeName: volume},
+			nodes:         map[string]*utils.Node{nodeName: node},
+			publications:  map[string]map[string]*utils.VolumePublication{},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				// There is no publication, so there is nothing to unpublish, so no calls should be made
+			},
+			wantErr:         assert.NoError,
+			wantUnpublished: assert.False,
+		},
+		{
+			name:          "PublicationNotFound_Docker",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextDocker,
+			volumes:       map[string]*storage.Volume{volumeName: volume},
+			nodes:         map[string]*utils.Node{nodeName: node},
+			publications:  map[string]map[string]*utils.VolumePublication{},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				// There is no publication, but there might still be a volume published, so call it anyway
 				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil)
 			},
-			wantErr: assert.NoError,
+			wantErr:         assert.NoError,
+			wantUnpublished: assert.False,
 		},
 		{
-			name:         "VolumeNotFound",
-			volumeName:   volumeName,
-			nodeName:     nodeName,
-			volumes:      map[string]*storage.Volume{},
-			nodes:        map[string]*utils.Node{nodeName: node},
-			publications: map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
-			},
-			wantErr: assert.Error,
-		},
-		{
-			name:         "NodeNotFound",
-			volumeName:   volumeName,
-			nodeName:     nodeName,
-			volumes:      map[string]*storage.Volume{volumeName: volume},
-			nodes:        map[string]*utils.Node{},
-			publications: map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
-			},
-			wantErr: assert.Error,
-		},
-		{
-			name:         "BackendNotFound",
-			volumeName:   volumeName,
-			nodeName:     nodeName,
-			volumes:      map[string]*storage.Volume{volumeName: {}},
-			nodes:        map[string]*utils.Node{nodeName: node},
-			publications: map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
-			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
-			},
-			wantErr: assert.Error,
-		},
-		{
-			name:         "BackendUnpublishError",
-			volumeName:   volumeName,
-			nodeName:     nodeName,
-			volumes:      map[string]*storage.Volume{volumeName: volume},
-			nodes:        map[string]*utils.Node{nodeName: node},
-			publications: map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
+			name:          "BackendUnpublishError",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes:       map[string]*storage.Volume{volumeName: volume},
+			nodes:         map[string]*utils.Node{nodeName: node},
+			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockBackend.EXPECT().UnpublishVolume(ctx(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("some error"))
 			},
-			wantErr: assert.Error,
+			wantErr:         assert.Error,
+			wantUnpublished: assert.False,
 		},
 	}
 
 	for _, tr := range tt {
 		t.Run(tr.name, func(t *testing.T) {
-			config.CurrentDriverContext = config.ContextCSI
+			config.CurrentDriverContext = tr.driverContext
 			defer func() { config.CurrentDriverContext = "" }()
 			mockCtrl := gomock.NewController(t)
 			// Create a fake backend with UUID
@@ -4598,9 +4712,15 @@ func TestUnpublishVolume(t *testing.T) {
 
 			tr.mocks(mockBackend, mockStoreClient)
 
-			err := o.unpublishVolume(ctx(), tr.volumeName, tr.nodeName)
+			err := o.unpublishVolume(ctx(), tr.volumeName, tr.nodeName, tr.dirty)
 			if !tr.wantErr(t, err, "Unexpected Result") {
 				return
+			}
+			pub, ok := o.volumePublications[volumeName][nodeName]
+			if ok {
+				if !tr.wantUnpublished(t, pub.Unpublished, "Unpublished flag is incorrect") {
+					return
+				}
 			}
 		})
 	}

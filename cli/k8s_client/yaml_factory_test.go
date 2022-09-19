@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2022 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -986,6 +986,12 @@ func TestGetCRDsYAML(t *testing.T) {
 				"accessMode": {
 					Type:   "integer",
 					Format: "int32",
+				},
+				"notSafeToAttach": {
+					Type: "boolean",
+				},
+				"unpublished": {
+					Type: "boolean",
 				},
 			},
 			Required: []string{"volumeID", "nodeID", "readOnly"},
@@ -2192,6 +2198,12 @@ func TestGetVolumePublicationCRDYAML(t *testing.T) {
 				"accessMode": {
 					Type:   "integer",
 					Format: "int32",
+				},
+				"notSafeToAttach": {
+					Type: "boolean",
+				},
+				"unpublished": {
+					Type: "boolean",
 				},
 			},
 			Required: []string{"volumeID", "nodeID", "readOnly"},

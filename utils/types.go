@@ -8,6 +8,10 @@ type VolumeAccessInfo struct {
 	NfsBlockAccessInfo
 	MountOptions       string `json:"mountOptions,omitempty"`
 	PublishEnforcement bool   `json:"publishEnforcement,omitempty"`
+	ReadOnly           bool   `json:"readOnly,omitempty"`
+	// The access mode values are defined by CSI
+	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
+	AccessMode int32 `json:"accessMode,omitempty"`
 }
 
 type IscsiChapInfo struct {
@@ -77,6 +81,7 @@ type VolumePublication struct {
 	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
 	AccessMode      int32 `json:"accessMode"`
 	NotSafeToAttach bool  `json:"notSafeToAttach"`
+	Unpublished     bool  `json:"unpublished"` // Normally should not be set except during force detach scenarios
 }
 
 type VolumePublicationExternal struct {

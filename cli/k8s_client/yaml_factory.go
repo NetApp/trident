@@ -2045,6 +2045,10 @@ spec:
             accessMode:
               type: integer
               format: int32
+            notSafeToAttach:
+              type: boolean
+            unpublished:
+              type: boolean
           required:
               - volumeID
               - nodeID

@@ -337,35 +337,11 @@ func (p *Plugin) ControllerPublishVolume(
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
-	// TODO (akerr): Discover all hosts currently mounting this volume
-
 	// Get node attributes from the node ID
 	nodeInfo, err := p.orchestrator.GetNode(ctx, nodeID)
 	if err != nil {
 		Logc(ctx).WithField("node", nodeID).Error("Node info not found.")
 		return nil, status.Error(codes.NotFound, err.Error())
-	}
-
-	// Verify the publication is new or the same as the existing publication
-	vp := generateVolumePublicationFromCSIPublishRequest(req)
-	err = p.verifyVolumePublicationIsNew(ctx, vp)
-	// If err == nil then the volume publication already exists with the requested values, so we do not need to do
-	// anything
-	if err != nil {
-		if utils.IsNotFoundError(err) {
-			// Volume publication does not exist, add it
-			if err := p.orchestrator.AddVolumePublication(ctx, vp); err != nil {
-				msg := "error recording volume publication"
-				Logc(ctx).WithError(err).Error(msg)
-				return nil, status.Error(codes.Internal, msg)
-			}
-		} else if utils.IsFoundError(err) {
-			// Volume publication exists, but with different values, we cannot handle this
-			return nil, status.Error(codes.AlreadyExists, err.Error())
-		} else {
-			// Something else went wrong
-			return nil, status.Error(codes.Internal, err.Error())
-		}
 	}
 
 	// Set up volume publish info with what we know about the node
@@ -377,6 +353,7 @@ func (p *Plugin) ControllerPublishVolume(
 		Unmanaged:      volume.Config.ImportNotManaged,
 		LUKSEncryption: volume.Config.LUKSEncryption,
 	}
+	populatePublishInfoFromCSIPublishRequest(volumePublishInfo, req)
 
 	// Update NFS export rules (?), add node IQN to igroup, etc.
 	err = p.orchestrator.PublishVolume(ctx, volume.Config.Name, volumePublishInfo)
@@ -459,19 +436,13 @@ func (p *Plugin) verifyVolumePublicationIsNew(ctx context.Context, vp *utils.Vol
 	}
 }
 
-func generateVolumePublicationFromCSIPublishRequest(req *csi.ControllerPublishVolumeRequest) *utils.VolumePublication {
-	vp := &utils.VolumePublication{
-		Name:       utils.GenerateVolumePublishName(req.GetVolumeId(), req.GetNodeId()),
-		VolumeName: req.GetVolumeId(),
-		NodeName:   req.GetNodeId(),
-		ReadOnly:   req.GetReadonly(),
-	}
+func populatePublishInfoFromCSIPublishRequest(info *utils.VolumePublishInfo, req *csi.ControllerPublishVolumeRequest) {
+	info.ReadOnly = req.GetReadonly()
 	if req.VolumeCapability != nil {
 		if req.VolumeCapability.GetAccessMode() != nil {
-			vp.AccessMode = int32(req.VolumeCapability.GetAccessMode().GetMode())
+			info.AccessMode = int32(req.VolumeCapability.GetAccessMode().GetMode())
 		}
 	}
-	return vp
 }
 
 func (p *Plugin) ControllerUnpublishVolume(
@@ -500,15 +471,6 @@ func (p *Plugin) ControllerUnpublishVolume(
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 		Logc(ctx).WithFields(logFields).WithError(err).Warning("Unpublish targets not found, continuing.")
-	}
-
-	// Remove the stateful publish tracking record.
-	if err := p.orchestrator.DeleteVolumePublication(ctx, req.GetVolumeId(), req.GetNodeId()); err != nil {
-		if !utils.IsNotFoundError(err) {
-			Logc(ctx).WithFields(logFields).WithError(err).Error("Could not remove volume publication record.")
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		Logc(ctx).WithFields(logFields).Warning("Volume publication record not found, returning success.")
 	}
 
 	return &csi.ControllerUnpublishVolumeResponse{}, nil
